@@ -1,6 +1,6 @@
 #ifdef TP_SKYRIM
 
-#include <Games/Skyrim/Actor.h>
+#include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
 #include <Games/Memory.h>
 
@@ -56,9 +56,11 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
+TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
 
 TCharacterConstructor* RealCharacterConstructor;
 TCharacterConstructor2* RealCharacterConstructor2;
+TCharacterDestructor* RealCharacterDestructor;
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -78,6 +80,21 @@ Actor* TP_MAKE_THISCALL(HookCharacterConstructor2, Actor, uint8_t aUnk)
     return apThis;
 }
 
+Actor* TP_MAKE_THISCALL(HookCharacterDestructor, Actor)
+{
+    TP_EMPTY_HOOK_PLACEHOLDER;
+
+    auto pExtension = apThis->GetExtension();
+
+    if(pExtension)
+    {
+        pExtension->~ActorExtension();
+    }
+
+    ThisCall(RealCharacterDestructor, apThis);
+
+    return apThis;
+}
 
 GamePtr<Actor> Actor::New() noexcept
 {
@@ -88,7 +105,7 @@ GamePtr<Actor> Actor::New() noexcept
     return pActor;
 }
 
-void Actor::UnequipAll() noexcept
+void Actor::UnEquipAll() noexcept
 {
     // For each change 
     const auto pContainerChanges = GetContainerChanges()->entries;
@@ -102,25 +119,19 @@ void Actor::UnequipAll() noexcept
             {
                 if (pDataList)
                 {
-#if TP_SKYRIM64
-                    pDataList->lock.Lock();
-#endif
+                    BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                     // Right slot
-                    if (pDataList->bitfield && ((pDataList->bitfield->data[2] >> 6) & 1))
+                    if (pDataList->Contains(ExtraData::Worn))
                     {
-                        EquipManager::Unequip(this, pChange->form, pDataList, 1, 1, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, 0, true, false, true, false, nullptr);
                     }
 
                     // Left slot
-                    if (pDataList->bitfield && (pDataList->bitfield->data[2] >> 7))
+                    if (pDataList->Contains(ExtraData::WornLeft))
                     {
-                        EquipManager::Unequip(this, pChange->form, pDataList, 1, 0, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, 1, true, false, true, false, nullptr);
                     }
-
-#if TP_SKYRIM64
-                    pDataList->lock.Unlock();
-#endif
                 }
             }
         }
@@ -131,6 +142,9 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     {
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406929C0 - 0x140000000);
+        POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405CDDA0 - 0x140000000);
+
+    
 
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();

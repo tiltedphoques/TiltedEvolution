@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ActionEvent.h>
+
 struct ActorExtension
 {
     enum
@@ -7,10 +9,13 @@ struct ActorExtension
         kRemote = 1 << 0
     };
 
-    void InitializeExtension() noexcept;
-
     bool IsRemote() const noexcept;
     void SetRemote(bool aSet) noexcept;
 
-    uint32_t onlineFlags;
+    ActionEvent LatestAnimation{};
+    ActionEvent LatestVariables{};
+
+private:
+
+    uint32_t onlineFlags{ 0 };
 };

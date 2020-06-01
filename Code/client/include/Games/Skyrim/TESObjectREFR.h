@@ -9,6 +9,7 @@
 #include <Games/Skyrim/ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
+struct AnimationVariables;
 struct TESWorldSpace;
 
 struct TESObjectREFR : TESForm
@@ -132,8 +133,9 @@ struct TESObjectREFR : TESForm
     virtual void sub_9B();
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
-    Vector<uint32_t> GetAnimationVariables() noexcept;
-    void SetAnimationVariables(const Vector<uint32_t>& aVariables) noexcept;
+
+    void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
+    void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
 
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;

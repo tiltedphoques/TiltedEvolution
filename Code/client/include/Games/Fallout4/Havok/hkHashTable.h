@@ -1,8 +1,8 @@
 #pragma once
 
-#if TP_SKYRIM
+#if TP_FALLOUT4
 
-#include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Games/Fallout4/Misc/BSFixedString.h>
 
 #pragma pack(push, 1) // This structure is packed in havok 
 

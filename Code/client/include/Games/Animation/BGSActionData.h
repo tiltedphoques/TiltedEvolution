@@ -18,7 +18,5 @@ struct BGSActionData : ActionInput, ActionOutput
     virtual uintptr_t Perform() { return 0; }
 
     uint32_t someFlag;
-#if TP_PLATFORM_64
     uint32_t pad5C;
-#endif
 };

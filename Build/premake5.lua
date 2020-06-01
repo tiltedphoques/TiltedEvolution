@@ -132,6 +132,7 @@ workspace ("Tilted Online Framework")
             includedirs
             {
                 "../Code/tests/include/",
+                "../Code/encoding/include/",
                 "../Libraries/entt/src/",
                 coreBasePath .. "/Code/core/include/",
             }
@@ -144,6 +145,7 @@ workspace ("Tilted Online Framework")
 			
             links
             {
+                "Encoding",
                 "Core",
                 "mimalloc"
             }
@@ -168,6 +170,7 @@ workspace ("Tilted Online Framework")
                 {
                     "../Code/client/include/",
                     "../Code/script/include/",
+                    "../Code/encoding/include/",
                     "../Code/protocol/cpp/",
                     "../Libraries/entt/src/",
                     "../Libraries/",
@@ -205,6 +208,7 @@ workspace ("Tilted Online Framework")
                 
                 links
                 {
+                    "Encoding",
                     "Core",
                     "Reverse",
                     "Hooks",
@@ -311,6 +315,49 @@ workspace ("Tilted Online Framework")
             dependson 
             {
                 "_CodeGen"
+            }
+            
+            filter { "action:gmake*", "language:C++" }
+                defines
+                {
+                    'POSIX',
+                    'LINUX',
+                    'GNUC',
+                    'GNU_COMPILER',
+                }
+                
+                links
+                {
+                    "stdc++fs",
+                    "ssl",
+                    "crypto"
+                }
+
+            filter ""
+
+        project ("Encoding")
+            kind ("StaticLib")
+            language ("C++")
+                
+            filter {}
+            
+            includedirs
+            {
+                "../Code/encoding/include/",
+                "../Libraries/",
+                coreBasePath .. "/Code/core/include/",
+            }
+
+            files
+            {
+                "../Code/encoding/include/**.h",
+                "../Code/encoding/src/**.cpp",
+            }
+			
+            links
+            {
+                "Core",
+                "mimalloc"
             }
             
             filter { "action:gmake*", "language:C++" }

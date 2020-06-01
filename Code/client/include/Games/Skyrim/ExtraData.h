@@ -43,9 +43,7 @@ struct BSExtraDataList
     };
 
     Bitfield* bitfield;
-#if TP_PLATFORM_64
     BSRecursiveLock lock;
-#endif
 };
 
 #endif

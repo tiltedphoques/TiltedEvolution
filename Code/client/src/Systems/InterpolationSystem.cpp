@@ -48,14 +48,8 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     NiPoint3 position{};
     TiltedPhoques::Lerp(first.Position, second.Position, delta)
         .Decompose(position.x, position.y, position.z);
-
-    const auto speed = TiltedPhoques::Lerp(first.Speed, second.Speed, delta);
     
     apActor->ForcePosition(position);
-    apActor->SetSpeed(speed);
-
-    if(apActor->processManager && apActor->processManager->middleProcess)
-        apActor->processManager->middleProcess->direction = second.Direction;
 
     float firstX, firstY, firstZ;
     float secondX, secondY, secondZ;

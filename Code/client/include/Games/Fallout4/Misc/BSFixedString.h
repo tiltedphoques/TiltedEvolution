@@ -6,7 +6,8 @@
 
 struct BSFixedString
 {
-    TP_NOCOPYMOVE(BSFixedString);
+    BSFixedString(const BSFixedString&) = delete;
+    BSFixedString& operator=(const BSFixedString&) = delete;
 
     struct Data
     {
@@ -47,7 +48,10 @@ struct BSFixedString
 
     // Be careful using this, the destructor does NOT release the memory, call Release manually if you wish to delete it
     BSFixedString(const char* acpData);
+    BSFixedString(BSFixedString&& aRhs);
     ~BSFixedString();
+
+    BSFixedString& operator=(BSFixedString&& aRhs);
 
     void Release();
 

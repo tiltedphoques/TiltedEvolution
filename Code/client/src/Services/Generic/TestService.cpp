@@ -50,11 +50,9 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
 #ifdef TP_SKYRIM
-   // pActor->UnequipAll();
+    pActor->UnEquipAll();
 #endif
-   // pActor->LoadInventory(&loadBuffer);
-
-   // pActor->GetExtension()->SetRemote(true);
+    pActor->LoadInventory(&loadBuffer);
 
     m_actors.emplace_back(pActor);
 }
@@ -82,66 +80,7 @@ void TestService::RunDiff()
         BSAnimationGraphManager* pManager = nullptr;
         if (pActor->animationGraphHolder.GetBSAnimationGraph(&pManager))
         {
-#if TP_SKYRIM64
-            if (pManager->animationGraphIndex < pManager->animationGraphs.size)
-            {
-                const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-                if (pGraph)
-                {
-                    const auto pDb = pGraph->hkxDB;
-                    const auto pBuckets = pDb->animationVariables.buckets;
-                    const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
-
-                    if (pBuckets && pVariableSet && s_nameToId.empty())
-                    {
-                        for (auto i = 0; i < pDb->animationVariables.bucketCount; ++i)
-                        {
-                            auto pBucket = &pDb->animationVariables.buckets[i];
-                            if (!pBucket->next)
-                                continue;
-
-                            while (pBucket != pDb->animationVariables.end)
-                            {
-                                const auto variableIndex = pBucket->value;
-                                if (pVariableSet->size > variableIndex)
-                                {
-                                    const auto value = pVariableSet->data[variableIndex];
-
-                                    s_nameToId[variableIndex] = pBucket->key;
-                                }
-
-                                pBucket = pBucket->next;
-                            }
-                        }
-                    }
-
-                    if (pVariableSet && !s_nameToId.empty() && pVariableSet->size >= s_nameToId.size())
-                    {
-                        if(s_component.Variables.empty())
-                        {
-                            for (auto i = 0; i < s_nameToId.size(); ++i)
-                            {
-                                s_component.Variables.push_back(pVariableSet->data[i]);
-                            }
-                        }
-
-                        for(auto i = 0; i < s_nameToId.size(); ++i)
-                        {
-                            if(s_component.Variables[i] != pVariableSet->data[i])
-                            {
-                                // TimeDelta, Speed, SpeedSampled, TurnSpeedDamped are changed every frame, don't print it
-                                if (i != 53 && i != 0 && i != 1 && i != 40 && i != 13)
-                                {
-                                    spdlog::info("{} id: {} changed from {} to {}", s_nameToId[i], i, *(float*)&s_component.Variables[i], *(float*)&pVariableSet->data[i]);
-                                }
-
-                                s_component.Variables[i] = pVariableSet->data[i];
-                            }
-                        }
-                    }
-                }
-            }
-#endif
+            pManager->DumpAnimationVariables();
 
             pManager->Release();
         }

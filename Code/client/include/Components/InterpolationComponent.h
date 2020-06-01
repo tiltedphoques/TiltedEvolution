@@ -11,8 +11,6 @@ struct InterpolationComponent
         uint64_t Tick;
         Vector3<float> Position;
         Vector3<float> Rotation;
-        float Speed;
-        float Direction;
     };
 
     List<TimePoint> TimePoints;

@@ -174,7 +174,7 @@ struct Actor : TESObjectREFR
     void SetSpeed(float aSpeed) noexcept;
 
     void SetLevelMod(uint32_t aLevel) noexcept;
-    void UnequipAll() noexcept;
+    void UnEquipAll() noexcept;
 
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
@@ -231,7 +231,7 @@ struct Actor : TESObjectREFR
     uint32_t unkB0;
     uint32_t unkB4[5];
     void* pad138[2];
-    struct IMovementDrivenControl* movementDrivenControl;
+    struct IMovementDrivenControl* movementDrivenControl; // MovementControllerNPC
     uint32_t unk0D4;
     void* unkD8;
     void* unkDC;

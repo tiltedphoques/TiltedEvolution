@@ -4,10 +4,12 @@
 #include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
+#include <Games/Fallout4/Havok/BShkbAnimationGraph.h>
+#include <Games/Fallout4/Havok/BShkbHkxDB.h>
+#include <Games/Fallout4/Havok/hkbBehaviorGraph.h>
 
 void BSAnimationGraphManager::DumpAnimationVariables()
 {
-#if TP_SKYRIM64
     if (animationGraphIndex < animationGraphs.size)
     {
         const auto pGraph = animationGraphs.Get(animationGraphIndex);
@@ -23,7 +25,7 @@ void BSAnimationGraphManager::DumpAnimationVariables()
 
                 for(auto i = 0; i < pDb->animationVariables.bucketCount; ++i)
                 {
-                    auto pBucket = &pDb->animationVariables.buckets[i];
+                    auto pBucket = &pBuckets[i];
                     if (!pBucket->next)
                         continue;
 
@@ -34,7 +36,7 @@ void BSAnimationGraphManager::DumpAnimationVariables()
                         {
                             const auto value = pVariableSet->data[variableIndex];
 
-                            variables[variableIndex] = pBucket->key;
+                            variables[variableIndex] = pBucket->key.AsAscii();
                         }
 
                         pBucket = pBucket->next;
@@ -48,5 +50,4 @@ void BSAnimationGraphManager::DumpAnimationVariables()
             }
         }
     }
-#endif
 }

@@ -137,8 +137,16 @@ struct TESObjectREFR : TESForm
     virtual void sub_C3();
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
-    Vector<uint32_t> GetAnimationVariables() noexcept;
-    void SetAnimationVariables(const Vector<uint32_t>& aVariables) noexcept;
+
+    uint64_t GetAnimationFlags() const noexcept;
+    uint32_t GetAnimationVariable(uint32_t aId) const noexcept;
+
+    void SetAnimationFlags(uint64_t aFlags) const noexcept;
+    void SetAnimationVariable(uint32_t aId, uint32_t aValue) const noexcept;
+
+    void SaveAnimationVariables(Buffer::Writer& aWriter) const noexcept;
+    void LoadAnimationVariables(Buffer::Reader& aReader) const noexcept;
+
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
 

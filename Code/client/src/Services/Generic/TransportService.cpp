@@ -13,18 +13,21 @@
 
 #include <Packet.hpp>
 #include <ScratchAllocator.hpp>
+#include <Services/ImguiService.h>
+#include <imgui.h>
 
 #define TRANSPORT_HANDLE(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: Handle##packetName(message.functionName()); break;
 #define TRANSPORT_DISPATCH(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: dispatcher.trigger(message.functionName()); break;
 
 using TiltedPhoques::Packet;
 
-TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
+TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
+    m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
     m_connected = false;
 }
@@ -144,6 +147,23 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
         pCellId->set_base(baseId);
 
         Send(message);
+    }
+}
+
+void TransportService::OnDraw() noexcept
+{
+    if(IsOnline())
+    {
+        ImGui::Begin("Network");
+
+        auto status = GetConnectionStatus();
+        status.m_flOutBytesPerSec /= 1024;
+        status.m_flInBytesPerSec /= 1024;
+
+        ImGui::InputFloat("Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::End();
     }
 }
 

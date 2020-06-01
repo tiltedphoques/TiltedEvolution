@@ -38,6 +38,10 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, T
         apSpawnRequest->mutable_base_id()->set_mod(characterComponent.BaseId.ModId);
         apSpawnRequest->mutable_base_id()->set_base(characterComponent.BaseId.BaseId);
     }
+
+    const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
+    *(apSpawnRequest->mutable_current_variables()) = animationComponent.CurrentVariables;
+    *(apSpawnRequest->mutable_current_action()) = animationComponent.CurrentAction;
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
@@ -80,11 +84,11 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                 continue;
 
             auto& message = messages[playerComponent.ConnectionId];
-            auto pSnapshot = message.mutable_reference_movement_snapshot();
-            auto& movements = *pSnapshot->mutable_movements();
+            auto pSnapshot = message.mutable_reference_movement_snapshot()->add_entries();
+            auto& movement = *pSnapshot->mutable_movement();
             auto& actions = *pSnapshot->mutable_actions();
 
-            TiltedMessages::Movement movement;
+            pSnapshot->set_server_id(World::ToInteger(entity));
 
             float x, y, z;
             movementComponent.Position.Decompose(x, y, z);
@@ -96,25 +100,14 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
             movementComponent.Rotation.Decompose(x, y, z);
 
             movement.mutable_rotation()->set_x(x);
-            movement.mutable_rotation()->set_y(y);
             movement.mutable_rotation()->set_z(z);
-
-            movement.set_speed(movementComponent.Speed);
-            movement.set_direction(movementComponent.Direction);
-
-            movements[World::ToInteger(entity)] = movement;
 
             if(!animationComponent.Actions.empty())
             {
-                TiltedMessages::ActorActionData actorActionData;
-
                 for(auto& action : animationComponent.Actions)
                 {
-                    const auto pAction = actorActionData.add_actions();
-                    *pAction = action;
+                    *actions.add_actions() = action;
                 }
-
-                actions[World::ToInteger(entity)] = actorActionData;
             }
         }
     });
@@ -131,7 +124,8 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 
     for(auto kvp : messages)
     {
-        GameServer::Get()->Send(kvp.first, kvp.second);
+        if(kvp.second.reference_movement_snapshot().entries_size() > 0)
+            GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
 
@@ -205,9 +199,9 @@ void CharacterService::OnReferenceMovementSnapshot(
 {
     auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
 
-    for (auto kvp : acMessage.Packet.movements())
+    for (auto& entry : acMessage.Packet.entries())
     {
-        auto itor = view.find(entt::entity(kvp.first));
+        auto itor = view.find(entt::entity(entry.server_id()));
 
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
@@ -215,16 +209,16 @@ void CharacterService::OnReferenceMovementSnapshot(
         Script::Npc npc(*itor, m_world);
 
         auto& movementComponent = view.get<MovementComponent>(*itor);
+        auto& animationComponent = view.get<AnimationComponent>(*itor);
+
         movementComponent.Tick = acMessage.Packet.tick();
 
         auto movementCopy = movementComponent;
 
-        auto movement = kvp.second;
+        auto& movement = entry.movement();
 
         movementComponent.Position = Vector3<float>(movement.position().x(), movement.position().y(), movement.position().z());
-        movementComponent.Rotation = Vector3<float>(movement.rotation().x(), movement.rotation().y(), movement.rotation().z());
-        movementComponent.Speed = movement.speed();
-        movementComponent.Direction = movement.direction();
+        movementComponent.Rotation = Vector3<float>(movement.rotation().x(), 0.f, movement.rotation().z());
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -233,29 +227,18 @@ void CharacterService::OnReferenceMovementSnapshot(
             movementComponent = movementCopy;
         }
 
-        movementComponent.Sent = false;
-    }
-
-    for (auto kvp : acMessage.Packet.actions())
-    {
-        auto itor = view.find(entt::entity(kvp.first));
-
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
-            continue;
-
-        //TODO: HandleAction
-        //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
-
-        auto& animationComponent = view.get<AnimationComponent>(*itor);
-        auto& actions = kvp.second;
-
-        for(auto& action : actions.actions())
+        for (auto& action : entry.actions().actions())
         {
+            //TODO: HandleAction
+            //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
+
             animationComponent.Actions.push_back(action);
         }
 
         if (!animationComponent.Actions.empty())
-            animationComponent.CurrentAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+            animationComponent.CurrentVariables = animationComponent.Actions[animationComponent.Actions.size() - 1];
+
+        movementComponent.Sent = false;
     }
 }
 
@@ -289,24 +272,21 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
     m_world.emplace<CellIdComponent>(cEntity, packet.cell_id());
 
-    CharacterComponent characterComponent;
+    CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = packet.change_flags();
     characterComponent.SaveBuffer.assign(packet.npc_buffer().c_str(), packet.npc_buffer().size());
     characterComponent.InventoryBuffer.assign(packet.inventory_buffer().c_str(), packet.inventory_buffer().size());
     characterComponent.BaseId = FormIdComponent(packet.base_id());
 
-    m_world.emplace<CharacterComponent>(cEntity, std::move(characterComponent));
-
-    MovementComponent movementComponent;
+    MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
     movementComponent.Position = Vector3<float>(packet.movement().position().x(), packet.movement().position().y(), packet.movement().position().z());
-    movementComponent.Rotation = Vector3<float>(packet.movement().rotation().x(), packet.movement().rotation().y(), packet.movement().rotation().z());
-    movementComponent.Speed = packet.movement().speed();
-    movementComponent.Direction = packet.movement().direction();
+    movementComponent.Rotation = Vector3<float>(packet.movement().rotation().x(), 0.f, packet.movement().rotation().z());
     movementComponent.Sent = false;
 
-    m_world.emplace<MovementComponent>(cEntity, movementComponent);
-    m_world.emplace<AnimationComponent>(cEntity);
+    auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
+    animationComponent.CurrentVariables = packet.current_variables();
+    animationComponent.CurrentAction = packet.current_action();
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)

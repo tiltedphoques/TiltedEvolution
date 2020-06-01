@@ -14,7 +14,7 @@ struct IAnimationGraphManagerHolder
     virtual void sub_2c();
 #endif
 
-    virtual bool GetBSAnimationGraph(BSAnimationGraphManager** aPtr);
+    virtual bool GetBSAnimationGraph(BSAnimationGraphManager** aPtr) const;
     virtual uint32_t sub_3();
     virtual uint32_t sub_4();
     virtual uint32_t sub_5();
@@ -39,4 +39,6 @@ struct IAnimationGraphManagerHolder
 
     bool SetVariableFloat(BSFixedString* apVariable, float aValue);
     bool IsReady();
+
+    bool ReSendAnimationEvent(BSFixedString* apAnimEvent);
 };

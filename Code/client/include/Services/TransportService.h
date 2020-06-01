@@ -2,6 +2,7 @@
 
 #include "Client.hpp"
 
+struct ImguiService;
 struct CellChangeEvent;
 struct UpdateEvent;
 
@@ -16,7 +17,7 @@ using TiltedPhoques::Client;
 
 struct TransportService : Client
 {
-    TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
+    TransportService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) noexcept;
     ~TransportService() noexcept = default;
 
     TP_NOCOPYMOVE(TransportService);
@@ -35,6 +36,7 @@ protected:
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
+    void OnDraw() noexcept;
 
     // Packet handlers
     void HandleAuthenticationResponse(const TiltedMessages::AuthenticationResponse& acMessage) noexcept;
@@ -47,4 +49,6 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_cellChangeConnection;
+    entt::scoped_connection m_drawImGuiConnection;
+
 };
