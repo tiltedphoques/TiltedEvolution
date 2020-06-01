@@ -29,13 +29,13 @@ Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred.
 
 ### Compiling the project
 
-In the project, you can switch configurations of `Win32`/`x64` and `Skyrim`/`Fallout4`. In the end, all project should be compiled successfully.
+In the project, you can switch between `Skyrim`/`Fallout4`. In the end, all project should be compiled successfully (maybe).
 
 ## Linking the files to the game
 
 ### Configuration file
 
-First it is required to copy over the ``tp_loader.conf`` file located in ``Mod\Build`` to the relevant bin directory (``Mod\Build\bin\<x32|x64>``). For Fallout, you will need to edit the following parameters to the following values:
+First it is required to copy over the ``tp_loader.conf`` file located in ``Mod\Build`` to the relevant bin directory (``Mod\Build\bin\x64``). For Fallout, you will need to edit the following parameters to the following values:
 
 ```
 GameId64=377160
@@ -44,7 +44,7 @@ DllRelease=Full/Path/To/FalloutTogether.dll
 DllDebug=Full/Path/To/FalloutTogether_d.dll
 ```
 
-For Skyrim and Skyrim SE, you will only need to add the full path in front of the `Skyrim(SE).exe` and `.dll`.
+For Skyrim and Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`.
 
 ### (Optional:) Shortcuts to binaries
 
@@ -52,7 +52,7 @@ For convenience, create a shortcut link of the `Loader.exe` and the `GameServer.
 
 ### Setting up CEF
 
-We currently use CEF for the main UI. To get CEF running, you will need to copy over the CEF files located in ``Mod\Libraries\TiltedUI\ThirdParty\CEF\bin\<Win32|Win64>\Release`` to the root directory of the compiled binaries: ``Mod\Build\bin\<x32|x64>``.
+We currently use CEF for the main UI. To get CEF running, you will need to copy over the CEF files located in ``Mod\Libraries\TiltedUI\ThirdParty\CEF\bin\Win64\Release`` to the root directory of the compiled binaries: ``Mod\Build\bin\x64``.
 
 ## Verifying
 
