@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+option optimize_for = SPEED;
+option cc_generic_services = false;
+
+package TiltedMessages;
+
+message ClientMessage
+{
+    oneof Content
+    {
+        AuthenticationRequest authentication_request = 1;
+        CharacterAssignRequest character_assign_request = 2;
+        CancelCharacterAssignRequest cancel_character_assign_request = 3;
+        CharacterRemoveRequest character_remove_request = 4;
+        CellEnterRequest cell_enter_request = 5;
+        ReferenceMovementSnapshot reference_movement_snapshot = 6;
+        RpcCallsRequest rpc_calls_request = 7;
+    }
+}
+
+message ServerMessage
+{
+    oneof Content
+    {
+        AuthenticationResponse authentication_response = 1;
+        CharacterAssignResponse character_assign_response = 2;
+        StringCacheContent string_cache_content = 3;
+        CharacterSpawnRequest character_spawn_request = 4;
+        ReferenceMovementSnapshot reference_movement_snapshot = 5;
+        ReplicateNetObjects replicated_net_objects = 6;
+    }
+}
+
+message GameId
+{
+    uint32 base = 1;
+    uint32 mod = 2;
+}
+
+message Vector3
+{
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Movement
+{
+    Vector3 position = 1;
+    Vector3 rotation = 2;
+    float speed = 3;
+    float direction = 4;
+}
+
+message ActionData
+{
+    GameId action_id = 1;
+    GameId target_id = 2;
+    uint64 tick = 3;
+    uint32 idle_id = 4;
+    uint32 state_1 = 5;
+    uint32 state_2 = 6;
+    float value = 7;
+    uint32 type = 9;
+    repeated uint32 variables = 10;
+}
+
+message Mods
+{
+    message Entry
+    {
+        string filename = 1;
+        uint32 id = 2;
+    }
+
+    repeated Entry standard_mods = 1;
+    repeated Entry lite_mods = 2;
+}
+
+message Scripts
+{
+    bytes data = 1;
+}
+
+message FullObjects
+{
+    bytes data = 1;
+}
+
+message AuthenticationRequest
+{
+    string token = 1;
+    Mods mods = 2;
+}
+
+message AuthenticationResponse
+{
+    bool accepted = 1;
+    Mods mods = 2;
+    Scripts scripts = 3;
+    FullObjects objects = 4;
+}
+
+message CellEnterRequest
+{
+    GameId cell_id = 1;
+}
+
+message CharacterAssignRequest
+{
+    GameId id = 1;
+    uint32 cookie = 2;
+    bytes npc_buffer = 3;
+    uint32 change_flags = 4;
+    GameId cell_id = 5;
+    Movement movement = 6;
+    GameId base_id = 7;
+    bytes inventory_buffer = 8;
+}
+
+message  CharacterAssignResponse
+{
+    uint32 cookie = 1;
+    uint32 server_id = 2;
+    bool ownership = 3;
+}
+
+message CharacterRemoveRequest
+{
+    uint32 server_id = 1;
+}
+
+message CancelCharacterAssignRequest
+{
+    uint32 cookie = 1;
+}
+
+message StringCacheContent
+{
+    map<uint32, string> data = 1;
+}
+
+message CharacterSpawnRequest
+{
+    uint32 server_id = 1;
+    GameId game_id = 2;
+    bytes npc_buffer = 3;
+    uint32 change_flags = 4;
+    Movement movement = 5;
+    GameId base_id = 6;
+    bytes inventory_buffer = 7;
+}
+
+message ReferenceMovementSnapshot
+{
+    uint64 tick = 1;
+    map<uint32, Movement> movements = 2;
+    map<uint32, ActorActionData> actions = 3; 
+}
+
+message ActorActionData
+{
+    repeated ActionData actions = 1;
+}
+
+message RpcCallsRequest
+{
+    bytes data = 1;
+}
+
+message ReplicateNetObjects
+{
+    bytes data = 1;
+}

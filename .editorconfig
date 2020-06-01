@@ -1,0 +1,10 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Makes git happier and use spaces for indentation
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true

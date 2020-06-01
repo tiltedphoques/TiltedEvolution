@@ -1,0 +1,71 @@
+#include <GameServer.h>
+
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <filesystem>
+
+int main(int argc, char** argv)
+{
+    std::error_code ec;
+    std::filesystem::create_directory("logs", ec);
+
+    auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("logs/tp_game_server.log", 1048576 * 5, 3);
+    auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
+
+    auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{ console, rotatingLogger });
+    set_default_logger(logger);
+
+    cxxopts::Options options(argv[0], "Game server for "
+#if SKYRIM
+        "Skyrim"
+#elif FALLOUT4
+        "Fallout 4"
+#else
+        "Unknown game"
+#endif
+        );
+
+    uint16_t port = 10578;
+    bool premium = false;
+    bool verbose = false;
+    std::string name, token;
+
+    options.add_options()
+        ("p,port", "port to run on", cxxopts::value<uint16_t>(port)->default_value("10578"), "N")
+        ("premium", "Use the premium tick rates", cxxopts::value<bool>(premium)->default_value("false"), "true/false")
+        ("h,help", "Display the help message")
+        ("n,name", "Name to advertise to the public server list", cxxopts::value<>(name))
+        ("v,verbose", "Log verbose", cxxopts::value<bool>(verbose)->default_value("false"), "true/false")
+        ("t,token", "The token required to connect to the server, acts as a password", cxxopts::value<>(token));
+
+    try
+    {
+        const auto result = options.parse(argc, argv);
+
+        if(verbose)
+        {
+            logger->set_level(spdlog::level::debug);
+        }
+
+        if (result.count("help"))
+        {
+            std::cout << options.help({ "" }) << std::endl;
+            return 0;
+        }
+
+        GameServer server(port, premium, name.c_str(), token.c_str());
+
+        while(server.IsListening())
+            server.Update();
+    }
+    catch (const cxxopts::OptionException& e)
+    {
+        std::cout << "Options parse error: " << e.what() << std::endl;
+        return -1;
+    }
+
+    spdlog::shutdown();
+
+    return 0;
+}
