@@ -8,7 +8,7 @@ When asked to initialize Git LFS, say that you want it initialized.
 
 ### CLI
 
-Run the following command: ``git clone --recursive git@gitlab.com:TiltedPhoques/SkyrimTogether/Mod.git``
+Run the following command: ``git clone --recursive https://github.com/tiltedphoques/TiltedOnline.git``
 
 ## Setting up the environment
 
