@@ -1,9 +1,5 @@
 # Getting started
 
-## Note on forking
-
-Do not fork this repository - we use feature branches instead. Feature branches are small fragments that you are working on (e.g.: NPC inventory) which are derived directly from the ``master`` branch of the main repository. Forking the main repository brings issues with the CI/CD pipeline, which we avoid by using feature branches.
-
 ## Cloning the repository
 
 Preferred way is cloning using SSH, so that you don't need to re-authenticate all the time.
@@ -12,21 +8,7 @@ When asked to initialize Git LFS, say that you want it initialized.
 
 ### CLI
 
-Ensure that your public key has been uploaded to your profile: https://gitlab.com/profile/keys
-
-Then run the following command: ``git clone --recursive git@gitlab.com:TiltedPhoques/SkyrimTogether/Mod.git``
-
-### Cloning using GitHub for Desktop
-
-To prevent re-authentication attemps, we'll need to create a new token that serves as a password:
-
-https://gitlab.com/profile/personal_access_tokens
-
-Then clone by manually cloning the repository by using the HTTPS link in the GitHub for Desktop application:
-
-``https://gitlab.com/TiltedPhoques/SkyrimTogether/Mod.git``
-
-The login credentials are your username and the generated token. Be careful though, the token will never be shown again once you refresh or close the page.
+Run the following command: ``git clone --recursive git@gitlab.com:TiltedPhoques/SkyrimTogether/Mod.git``
 
 ## Setting up the environment
 
