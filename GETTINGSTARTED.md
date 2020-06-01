@@ -83,3 +83,17 @@ Run the following command to create a new branch: ``git checkout -b feature-some
 ### GitHub for Desktop
 
 In the application, go to ``Branch -> New branch...``. Give this an appropriate name (don't forget the prefix) and ensure that the branch is based on the ``master`` branch.
+
+## Understanding the code
+
+**Client** is the core mod it is broken down in Games/ Services/ and Systems/.
+- Games/ contains all code that is skyrim and fallout 4 related, it mostly contains class structures and hooks to different parts of the engine
+- Services/ contains the different services that handle the actual sync, display, gameplay
+- Systems/ contains specific tasks like interpolation, consuming animations
+
+**Server** is the ... server !
+It doesn't contain much it's a translation layer more than anything at the moment.
+
+When getting started, looking at the **TestService** in the client is a good start, it pretty much shows how to get a service to listen to update events, and to spawn a copy of yourself.
+
+Once you get the hang of it **ScriptService** is interesting as it shows how to iterate over the world entities, retrieve the components and manipulate them correctly.
