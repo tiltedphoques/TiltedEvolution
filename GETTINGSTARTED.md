@@ -12,6 +12,12 @@ Run the following command: ``git clone --recursive https://github.com/tiltedphoq
 
 ## Setting up the environment
 
+### Requirements
+
+The following requirements are needed as mentioned in the [Readme](https://github.com/tiltedphoques/TiltedOnline#windows):
+
+You will need [Visual Studio 2019](https://www.visualstudio.com/downloads/) (the community edition is freely available for download) and [Directx SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) to build the project, aswell [Node.js](https://nodejs.org/en/) for the scripts to run properly.
+
 ### Generating the project files
 
 Before we generate the project files, synchronize and initialize the submodules that are required by the project. This is required so that the submodules are used in the generation process. In a CLI, run the following commands:
@@ -23,13 +29,16 @@ git submodule update --init --recursive
 
 After updating the submodules, you're required to generate the project files using the ``MakeVS201?Projects.*`` file.
 
-Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred.
+Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred. Future versions of the project could cause issues with older VS versions, since it could rely on functions not available in those.
 
 **Important:** You will need to do this step every time after you have merged from the main repository to avoid conflicts.
 
 ### Compiling the project
 
-In the project, you can switch between `Skyrim`/`Fallout4`. In the end, all project should be compiled successfully (maybe).
+Open the solution "Tilted Online Framework.sln" found in (``Mod\Build\projects``).
+In the project, you can switch the configurations between `Skyrim`/`Fallout4`. 
+Compile via the Menu Option "Build > Build Solution". 
+In the end, all projects should be compiled successfully (maybe).
 
 ## Linking the files to the game
 
@@ -44,7 +53,8 @@ DllRelease=Full/Path/To/FalloutTogether.dll
 DllDebug=Full/Path/To/FalloutTogether_d.dll
 ```
 
-For Skyrim and Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`.
+For Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`. 
+This is only neccessary if you moved the .dll in your Skyrim SE/Fallout4 installation folder.
 
 ### (Optional:) Shortcuts to binaries
 
@@ -56,7 +66,22 @@ We currently use CEF for the main UI. To get CEF running, you will need to copy 
 
 ## Verifying
 
-If everything has worked as planned, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of the game. After launching the game's Server.exe, you should be able to connect in-game by hitting the F7 key.
+If everything has worked as planned, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of the game. After launching the game's Server.exe, you should be able to connect in-game by using the UI in the top left corner. Pressing RCTRL thrice should show your mouse, so youre able to use the UI.
+
+### (Optional: ) Server parameters
+
+Following are the parameters to start a server, they are all optional.
+
+Eg. SkyrimTogetherServer.exe --name "SkyrimTogether Server" --port "10578" --premium
+
+```
+  -p, --port N     port to run on (default: 10578)
+      --premium    Use the premium tick rates (60 ticks instead of 20 ticks)
+  -h, --help       Display the help message
+  -n, --name arg   Name to advertise to the public server list
+  -v, --verbose    Log verbose
+  -t, --token arg  The token required to connect to the server, acts as a password
+```
 
 ## Debugging
 

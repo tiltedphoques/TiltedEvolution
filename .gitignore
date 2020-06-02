@@ -54,3 +54,4 @@ Artifacts/logs**
 
 *.vs*
 **/obj/**
+/Setup.bat
