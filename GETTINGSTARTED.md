@@ -29,7 +29,7 @@ Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred.
 
 ### Compiling the project
 
-In the project, you can switch between `Skyrim`/`Fallout4`. In the end, all project should be compiled successfully (maybe).
+In the project, you can switch the configurations between `Skyrim`/`Fallout4`. In the end, all projects should be compiled successfully (maybe).
 
 ## Linking the files to the game
 
@@ -44,7 +44,8 @@ DllRelease=Full/Path/To/FalloutTogether.dll
 DllDebug=Full/Path/To/FalloutTogether_d.dll
 ```
 
-For Skyrim and Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`.
+For Skyrim and Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`. 
+Adding the fullpath to the .dll is only neccessary if you moved it in your Skyrim/Fallout4 installation folder.
 
 ### (Optional:) Shortcuts to binaries
 
@@ -56,7 +57,7 @@ We currently use CEF for the main UI. To get CEF running, you will need to copy 
 
 ## Verifying
 
-If everything has worked as planned, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of the game. After launching the game's Server.exe, you should be able to connect in-game by hitting the F7 key.
+If everything has worked as planned, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of the game. After launching the game's Server.exe, you should be able to connect in-game by using the UI in the top left corner. Pressing RCTRL thrice should show your mouse, so youre able to use the UI.
 
 ## Debugging
 
