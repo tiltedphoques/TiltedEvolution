@@ -10,4 +10,4 @@ You are NOT allowed to :
 - Sell the work, including access to servers and/or any service or content relying on games and licenses owned by ZeniMax Media Inc.
 - Use the source code provided here to develop a competing product.
 
-Skyrim and Fallout are registered trademarks of ZeniMax Media Inc and it's affiliates in the The U.S. and other countries.
+Skyrim and Fallout are registered trademarks of ZeniMax Media Inc and its affiliates in the The U.S. and other countries.
