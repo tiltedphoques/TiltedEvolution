@@ -59,7 +59,7 @@ We currently use CEF for the main UI. To get CEF running, you will need to copy 
 
 If everything has worked as planned, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of the game. After launching the game's Server.exe, you should be able to connect in-game by using the UI in the top left corner. Pressing RCTRL thrice should show your mouse, so youre able to use the UI.
 
-## (Optional: ) Server parameters
+### (Optional: ) Server parameters
 
 Following are the arguments to start a server, they are optional.
 
