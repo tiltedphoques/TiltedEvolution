@@ -23,7 +23,7 @@ git submodule update --init --recursive
 
 After updating the submodules, you're required to generate the project files using the ``MakeVS201?Projects.*`` file.
 
-Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred.
+Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred. Future versions of the project could cause issues with older VS versions, since it could rely on functions not available in those.
 
 **Important:** You will need to do this step every time after you have merged from the main repository to avoid conflicts.
 
@@ -58,6 +58,21 @@ We currently use CEF for the main UI. To get CEF running, you will need to copy 
 ## Verifying
 
 If everything has worked as planned, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of the game. After launching the game's Server.exe, you should be able to connect in-game by using the UI in the top left corner. Pressing RCTRL thrice should show your mouse, so youre able to use the UI.
+
+## (Optional: ) Server parameters
+
+Following are the arguments to start a server, they are optional.
+
+Eg. SkyrimTogetherServer.exe --name "SkyrimTogether Server" --port "10578" --premium
+
+```
+  -p, --port N     port to run on (default: 10578)
+      --premium    Use the premium tick rates (60 ticks instead of 20 ticks)
+  -h, --help       Display the help message
+  -n, --name arg   Name to advertise to the public server list
+  -v, --verbose    Log verbose
+  -t, --token arg  The token required to connect to the server, acts as a password
+```
 
 ## Debugging
 
