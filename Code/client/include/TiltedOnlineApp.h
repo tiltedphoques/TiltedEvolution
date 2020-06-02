@@ -24,4 +24,5 @@ protected:
 
     void InstallHooks();
     void UninstallHooks();
+
 };

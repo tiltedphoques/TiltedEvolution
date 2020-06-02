@@ -218,6 +218,7 @@ workspace ("Tilted Online Framework")
                     "Script",
                     "sqlite3",
                     "imgui",
+                    "Version",
                 }
                 
                 dependson 

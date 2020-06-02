@@ -14,6 +14,8 @@
 #include <Services/OverlayService.h>
 #include <Services/ImguiService.h>
 
+#include <ScriptExtender.h>
+
 using TiltedPhoques::Debug;
 
 TiltedOnlineApp::TiltedOnlineApp()
@@ -47,6 +49,8 @@ bool TiltedOnlineApp::BeginMain()
 
     World::Create();
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
+
+    InjectScriptExtenderDll();
 
     return true;
 }
