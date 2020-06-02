@@ -29,24 +29,21 @@ int main(int argc, char** argv)
     uint16_t port = 10578;
     bool premium = false;
     bool verbose = false;
-    std::string name, token;
+    std::string name, token, logLevel;
 
     options.add_options()
         ("p,port", "port to run on", cxxopts::value<uint16_t>(port)->default_value("10578"), "N")
         ("premium", "Use the premium tick rates", cxxopts::value<bool>(premium)->default_value("false"), "true/false")
         ("h,help", "Display the help message")
         ("n,name", "Name to advertise to the public server list", cxxopts::value<>(name))
-        ("v,verbose", "Log verbose", cxxopts::value<bool>(verbose)->default_value("false"), "true/false")
+        ("l,log", "Log level.", cxxopts::value<>(logLevel)->default_value("info"), "trace/debug/info/warning/error/critical/off")
         ("t,token", "The token required to connect to the server, acts as a password", cxxopts::value<>(token));
 
     try
     {
         const auto result = options.parse(argc, argv);
 
-        if(verbose)
-        {
-            logger->set_level(spdlog::level::debug);
-        }
+        logger->set_level(spdlog::level::from_str(logLevel));
 
         if (result.count("help"))
         {
