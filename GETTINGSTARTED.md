@@ -12,6 +12,12 @@ Run the following command: ``git clone --recursive https://github.com/tiltedphoq
 
 ## Setting up the environment
 
+### Requirements
+
+The following requirements are needed as mentioned in the [Readme](https://github.com/tiltedphoques/TiltedOnline#windows):
+
+You will need [Visual Studio 2019](https://www.visualstudio.com/downloads/) (the community edition is freely available for download) and the [Directx SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) to build the project, [Python 3](https://www.python.org/downloads/), [Python 2](https://www.python.org/downloads/) and [Node.js](https://nodejs.org/en/) for the scripts to run properly.
+
 ### Generating the project files
 
 Before we generate the project files, synchronize and initialize the submodules that are required by the project. This is required so that the submodules are used in the generation process. In a CLI, run the following commands:
@@ -29,7 +35,10 @@ Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred. Futur
 
 ### Compiling the project
 
-In the project, you can switch the configurations between `Skyrim`/`Fallout4`. In the end, all projects should be compiled successfully (maybe).
+Open the solution "Tilted Online Framework.sln" found in (``Mod\Build\projects``).
+In the project, you can switch the configurations between `Skyrim`/`Fallout4`. 
+Compile via the Menu Option "Build > Build Solution". 
+In the end, all projects should be compiled successfully (maybe).
 
 ## Linking the files to the game
 
@@ -44,8 +53,8 @@ DllRelease=Full/Path/To/FalloutTogether.dll
 DllDebug=Full/Path/To/FalloutTogether_d.dll
 ```
 
-For Skyrim and Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`. 
-Adding the fullpath to the .dll is only neccessary if you moved it in your Skyrim/Fallout4 installation folder.
+For Skyrim SE, you will only need to add the full path in front of the `SkyrimSE.exe` and `.dll`. 
+This is only neccessary if you moved the .dll in your Skyrim SE/Fallout4 installation folder.
 
 ### (Optional:) Shortcuts to binaries
 
