@@ -61,7 +61,7 @@ If everything has worked as planned, a Tilted Reverse Console will pop up and th
 
 ### (Optional: ) Server parameters
 
-Following are the arguments to start a server, they are optional.
+Following are the parameters to start a server, they are all optional.
 
 Eg. SkyrimTogetherServer.exe --name "SkyrimTogether Server" --port "10578" --premium
 
