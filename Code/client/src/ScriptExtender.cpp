@@ -2,24 +2,22 @@
 
 int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersion)
 {
-    const wchar_t* filename = acFilePath.c_str();
+    const auto filename = acFilePath.c_str();
 
     DWORD dwHandle, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
     if (0 == sz)
     {
         return 1;
     }
-    char* buf = new char[sz];
+    std::string buf(sz, '\0');
     if (!GetFileVersionInfoW(filename, dwHandle, sz, &buf[0]))
     {
-        delete[] buf;
         return 2;
     }
     VS_FIXEDFILEINFO* pvi;
     sz = sizeof(VS_FIXEDFILEINFO);
-    if (!VerQueryValueA(&buf[0], "\\", (LPVOID*)&pvi, (unsigned int*)&sz))
+    if (!VerQueryValueA(&buf[0], "\\", reinterpret_cast<LPVOID*>(&pvi), reinterpret_cast<unsigned int*>(&sz)))
     {
-        delete[] buf;
         return 3;
     }
 
@@ -28,14 +26,13 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
     aVersion.versions[2] = pvi->dwFileVersionLS >> 16;
     aVersion.versions[3] = pvi->dwFileVersionLS & 0xFFFF;
 
-    delete[] buf;
     return 0;
 }
 
 void InjectScriptExtenderDll()
 {  
     // Get the path of the game, where the Script Extender dll resides
-    std::filesystem::path gamePath = std::filesystem::current_path();
+    const std::filesystem::path gamePath = std::filesystem::current_path();
 
     // Find applicable DLLs
     std::list<std::filesystem::path> potentialDllFiles;
@@ -61,13 +58,13 @@ void InjectScriptExtenderDll()
     }
 
     // From all files, use the latest dll version
-    FileVersion latestScriptExtenderDllVersion;
-    for (auto i = 0; i < FileVersion::scVersionSize; ++i)
+    FileVersion latestScriptExtenderDllVersion{};
+    for (auto& version : latestScriptExtenderDllVersion.versions)
     {
-        latestScriptExtenderDllVersion.versions[i] = 0;
+        version = 0;
     }
     std::filesystem::path latestScriptExtenderDllVersionPath;
-    bool hasApplicableScriptExtenderDll = false;
+    auto hasApplicableScriptExtenderDll = false;
 
     // Loop over every potential DLL to find the latest one
     for (const auto& entry : potentialDllFiles)
@@ -95,7 +92,7 @@ void InjectScriptExtenderDll()
     // Inject the latest ScriptExtender DLL
     if (hasApplicableScriptExtenderDll)
     {
-        auto handle = LoadLibrary(latestScriptExtenderDllVersionPath.c_str());
+        const auto handle = LoadLibrary(latestScriptExtenderDllVersionPath.c_str());
         if (!handle)
         {
             spdlog::error("Failed to inject {}! Check your privileges or re-download the Script Extender files.", latestScriptExtenderDllVersionPath.filename().string());
