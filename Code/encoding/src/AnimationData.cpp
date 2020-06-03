@@ -1,6 +1,8 @@
-#if TP_SKYRIM
+
 
 #include <AnimationData.h>
+
+#if TP_SKYRIM
 
 std::array<uint32_t, AnimationData::kBooleanCount> AnimationData::s_booleanLookUpTable{
     129,
@@ -69,8 +71,6 @@ std::array<uint32_t, AnimationData::kBooleanCount> AnimationData::s_booleanLookU
     204
 };
 
-static_assert(AnimationData::kBooleanCount <= 64);
-
 std::array<uint32_t, AnimationData::kFloatCount> AnimationData::s_floatLookupTable{
     kSpeed,
     kDirection,
@@ -88,5 +88,14 @@ std::array<uint32_t, AnimationData::kIntegerCount> AnimationData::s_integerLooku
     kiRightHandType
 };
 
+#elif TP_FALLOUT
+
+std::array<uint32_t, AnimationData::kBooleanCount> AnimationData::s_booleanLookUpTable{};
+
+std::array<uint32_t, AnimationData::kFloatCount> AnimationData::s_floatLookupTable{};
+
+std::array<uint32_t, AnimationData::kIntegerCount> AnimationData::s_integerLookupTable{};
+
 #endif
 
+static_assert(AnimationData::kBooleanCount <= 64);

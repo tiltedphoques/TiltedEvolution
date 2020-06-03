@@ -71,7 +71,6 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
                 if (pVariableSet && pVariableSet->size > 255)
                 {
-#if TP_SKYRIM64
                     aVariables.Booleans = 0;
 
                     for (size_t i = 0; i < AnimationData::s_booleanLookUpTable.size(); ++i)
@@ -93,11 +92,6 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                         const auto idx = AnimationData::s_integerLookupTable[i];
                         aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
                     }
-                   
-                    //data.push_back(pVariableSet->data[38]);
-                    //data.push_back(pVariableSet->data[114]);
-                    //data.push_back(pVariableSet->data[115]);
-#endif
                 }
             }
         }
@@ -121,7 +115,6 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
                 if (pVariableSet && pVariableSet->size >= 298)
                 {
-#if TP_SKYRIM64
                     for (size_t i = 0; i < AnimationData::s_booleanLookUpTable.size(); ++i)
                     {
                         const auto idx = AnimationData::s_booleanLookUpTable[i];
@@ -143,12 +136,6 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                         const auto idx = AnimationData::s_integerLookupTable[i];
                         *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers[i];
                     }
-
-                    // boolean
-                    //pVariableSet->data[38] = aVariables[i++];
-                   // pVariableSet->data[114] = aVariables[i++];
-                    //pVariableSet->data[115] = aVariables[i++];
-#endif
                 }
             }
         }

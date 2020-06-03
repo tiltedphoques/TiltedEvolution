@@ -21,9 +21,6 @@ static TPerformAction* RealPerformAction;
 
 thread_local bool g_forceAnimation = false;
 
-static std::ofstream animStuff{ "logs/animation_dump.txt", std::ios::binary };
-static std::mutex animLock;
-
 uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apAction)
 {
     auto pActor = apAction->actor;
@@ -44,7 +41,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         const auto res = ThisCall(RealPerformAction, apThis, apAction);
 
-        // This is a weird case where it gets spammed and doesn't do much
+        // This is a weird case where it gets spammed and doesn't do much, not sure if it still needs to be sent over the network
         if (apAction->someFlag == 1)
             return res;
 
@@ -57,11 +54,6 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
             pExtension->LatestAnimation = action;
 
         pExtension->LatestVariables = action;
-
-        animLock.lock();
-        action.Save(animStuff);
-        animStuff.flush();
-        animLock.unlock();
 
         World::Get().GetRunner().Trigger(action);
 
