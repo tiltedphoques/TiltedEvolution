@@ -1,11 +1,10 @@
 #pragma once
 
-#if TP_SKYRIM
-
 #include <array>
 
 struct AnimationData
 {
+#if TP_SKYRIM
     enum Flags
     {
         kbEquipOk = 0,
@@ -113,10 +112,95 @@ struct AnimationData
         kiRightHandType = 35,
         kIntegerCount = 8
     };
+#elif TP_FALLOUT
+
+enum Flags
+{
+    kbEquipOk = 0,
+    kbMotionDriven,
+    kIsBeastRace,
+    kIsSneaking,
+    kIsBleedingOut,
+    kIsCastingDual,
+    kIs1HM,
+    kIsCastingRight,
+    kIsCastingLeft,
+    kIsBlockHit,
+    kIsPlayer,
+    kIsNPC,
+    kbIsSynced,
+    kbVoiceReady,
+    kbWantCastLeft,
+    kbWantCastRight,
+    kbWantCastVoice,
+    kb1HM_MLh_attack,
+    kb1HMCombat,
+    kbAnimationDriven,
+    kbCastReady,
+    kbAllowRotation,
+    kbMagicDraw,
+    kbMLh_Ready,
+    kbMRh_Ready,
+    kbInMoveState,
+    kbSprintOK,
+    kbIdlePlaying,
+    kbIsDialogueExpressive,
+    kbAnimObjectLoaded,
+    kbEquipUnequip,
+    kbAttached,
+    kbIsH2HSolo,
+    kbHeadTracking,
+    kbIsRiding,
+    kbTalkable,
+    kbRitualSpellActive,
+    kbInJumpState,
+    kbHeadTrackSpine,
+    kbLeftHandAttack,
+    kbIsInMT,
+    kbHumanoidFootIKEnable,
+    kbHumanoidFootIKDisable,
+    kbStaggerPlayerOverride,
+    kbNoStagger,
+    kbIsStaffLeftCasting,
+    kbPerkShieldCharge,
+    kbPerkQuickShot,
+    kIsAttacking,
+    kIsBlocking,
+    kIsBashing,
+    kIsStaggering,
+    kIsRecoiling,
+    kIsEquipping,
+    kIsUnequipping,
+    kIsInFurniture,
+    kbNeutralState,
+    kiSyncIdleLocomotion,
+    kiSyncForwardState,
+    kiSyncTurnState,
+    kiIsInSneak,
+    kiWantBlock,
+    kiRegularAttack,
+    kbBowDrawn,
+    kBooleanCount
+};
+
+enum Actions
+{
+};
+
+enum FloatVariables
+{
+    kFloatCount = 0
+};
+
+enum IntegerVariables
+{
+    kIntegerCount = 0
+};
+
+#endif
 
     static std::array<uint32_t, kBooleanCount> s_booleanLookUpTable;
     static std::array<uint32_t, kFloatCount> s_floatLookupTable;
     static std::array<uint32_t, kIntegerCount> s_integerLookupTable;
 };
 
-#endif
