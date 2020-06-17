@@ -13,7 +13,6 @@ struct ActorExtension
     void SetRemote(bool aSet) noexcept;
 
     ActionEvent LatestAnimation{};
-    ActionEvent LatestVariables{};
 
 private:
 

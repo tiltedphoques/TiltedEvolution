@@ -4,9 +4,11 @@
 #error Include Components.h instead
 #endif
 
+#include <ActionEvent.h>
+
 struct AnimationComponent
 {
-    Vector<TiltedMessages::ActionData> Actions;
-    TiltedMessages::ActionData CurrentAction;
-    TiltedMessages::ActionData CurrentVariables;
+    Vector<ActionEvent> Actions;
+    ActionEvent CurrentAction;
+    ActionEvent LastSerializedAction;
 };

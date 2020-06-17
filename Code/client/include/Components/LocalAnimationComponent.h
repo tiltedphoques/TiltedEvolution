@@ -10,7 +10,7 @@
 struct LocalAnimationComponent
 {
     Vector<ActionEvent> Actions;
-    AnimationVariablesComponent Variables;
+    ActionEvent LastProcessedAction;
 
     [[nodiscard]] Outcome<ActionEvent, bool> GetLatestAction() const noexcept
     {

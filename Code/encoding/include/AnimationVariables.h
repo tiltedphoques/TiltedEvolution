@@ -6,9 +6,9 @@
 
 struct AnimationVariables
 {
-    uint64_t Booleans;
-    std::array<uint32_t, AnimationData::kIntegerCount> Integers;
-    std::array<float, AnimationData::kFloatCount> Floats;
+    uint64_t Booleans{ 0 };
+    std::array<uint32_t, AnimationData::kIntegerCount> Integers{};
+    std::array<float, AnimationData::kFloatCount> Floats{};
 
     bool operator==(const AnimationVariables& acRhs) const noexcept;
     bool operator!=(const AnimationVariables& acRhs) const noexcept;

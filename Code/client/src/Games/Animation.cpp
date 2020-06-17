@@ -53,8 +53,6 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         if (res)
             pExtension->LatestAnimation = action;
 
-        pExtension->LatestVariables = action;
-
         World::Get().GetRunner().Trigger(action);
 
         return res;

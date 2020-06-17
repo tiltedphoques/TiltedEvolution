@@ -274,6 +274,7 @@ workspace ("Tilted Online Framework")
                 "../Code/protocol/cpp/",
                 "../Code/server/include/",
                 "../Code/script/include/",
+                "../Code/encoding/include/",
                 "../Libraries/entt/src/",
                 "../Libraries/",
                 coreBasePath .. "/Code/core/include/",
@@ -302,6 +303,7 @@ workspace ("Tilted Online Framework")
 			
             links
             {
+                "Encoding",
                 "Connect",
                 "SteamNet",
                 "protobuf",
