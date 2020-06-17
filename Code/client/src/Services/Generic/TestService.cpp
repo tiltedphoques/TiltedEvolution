@@ -8,10 +8,6 @@
 
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
-#include <Games/Skyrim/Havok/BShkbHkxDB.h>
-#include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
-#include <Games/Skyrim/Havok/hkbVariableValueSet.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
 #include <Games/Fallout4/Forms/TESNPC.h>

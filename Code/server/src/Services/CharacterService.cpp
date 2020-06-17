@@ -33,15 +33,21 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, T
         apSpawnRequest->mutable_game_id()->set_base(pFormIdComponent->BaseId);
     }
 
-    if(characterComponent.BaseId)
+    if (characterComponent.BaseId)
     {
         apSpawnRequest->mutable_base_id()->set_mod(characterComponent.BaseId.ModId);
         apSpawnRequest->mutable_base_id()->set_base(characterComponent.BaseId.BaseId);
     }
 
+    uint8_t scratch[1 << 12];
+
+    ViewBuffer buffer(scratch, std::size(scratch));
+    Buffer::Writer writer(&buffer);
+
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    *(apSpawnRequest->mutable_current_variables()) = animationComponent.CurrentVariables;
-    *(apSpawnRequest->mutable_current_action()) = animationComponent.CurrentAction;
+    animationComponent.CurrentAction.GenerateDiff(ActionEvent{}, writer);
+
+    apSpawnRequest->mutable_current_action()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
@@ -56,7 +62,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
     lastSendTimePoint = now;
 
     auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent > ();
+    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
 
     Map<ConnectionId_t, TiltedMessages::ServerMessage> messages;
 
@@ -70,61 +76,74 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
     }
 
     characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, const auto& movementComponent, const auto& animationComponent, const auto& ownerComponent)
-    {
-        // If we have nothing new to send skip this
-        if (movementComponent.Sent == true)
-            return;
-
-        for (auto player : playerView)
         {
-            const auto& playerComponent = playerView.get<PlayerComponent>(player);
+            // If we have nothing new to send skip this
+            if (movementComponent.Sent == true)
+                return;
 
-            if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
-                playerComponent.ConnectionId == ownerComponent.ConnectionId)
-                continue;
-
-            auto& message = messages[playerComponent.ConnectionId];
-            auto pSnapshot = message.mutable_reference_movement_snapshot()->add_entries();
-            auto& movement = *pSnapshot->mutable_movement();
-            auto& actions = *pSnapshot->mutable_actions();
-
-            pSnapshot->set_server_id(World::ToInteger(entity));
-
-            float x, y, z;
-            movementComponent.Position.Decompose(x, y, z);
-
-            movement.mutable_position()->set_x(x);
-            movement.mutable_position()->set_y(y);
-            movement.mutable_position()->set_z(z);
-
-            movementComponent.Rotation.Decompose(x, y, z);
-
-            movement.mutable_rotation()->set_x(x);
-            movement.mutable_rotation()->set_z(z);
-
-            if(!animationComponent.Actions.empty())
+            for (auto player : playerView)
             {
-                for(auto& action : animationComponent.Actions)
+                const auto& playerComponent = playerView.get<PlayerComponent>(player);
+
+                if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
+                    playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                    continue;
+
+                auto& message = messages[playerComponent.ConnectionId];
+                auto pSnapshot = message.mutable_reference_movement_snapshot()->add_entries();
+                auto& movement = *pSnapshot->mutable_movement();
+                auto& actions = *pSnapshot->mutable_actions();
+
+                pSnapshot->set_server_id(World::ToInteger(entity));
+
+                float x, y, z;
+                movementComponent.Position.Decompose(x, y, z);
+
+                movement.mutable_position()->set_x(x);
+                movement.mutable_position()->set_y(y);
+                movement.mutable_position()->set_z(z);
+
+                movementComponent.Rotation.Decompose(x, y, z);
+
+                movement.mutable_rotation()->set_x(x);
+                movement.mutable_rotation()->set_z(z);
+
+                auto lastSerializedAction = animationComponent.LastSerializedAction;
+
+                if (!animationComponent.Actions.empty())
                 {
-                    *actions.add_actions() = action;
+                    for (auto& action : animationComponent.Actions)
+                    {
+                        uint8_t scratch[1 << 12];
+
+                        ViewBuffer buffer(scratch, std::size(scratch));
+                        Buffer::Writer writer(&buffer);
+
+                        action.GenerateDiff(lastSerializedAction, writer);
+                        lastSerializedAction = action;
+
+                        actions.add_actions()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
+                    }
                 }
             }
-        }
-    });
+        });
 
     m_world.view<AnimationComponent>().each([](auto entity, auto& animationComponent)
-    {
-        animationComponent.Actions.clear();
-    });
+        {
+            if (!animationComponent.Actions.empty())
+                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+
+            animationComponent.Actions.clear();
+        });
 
     m_world.view<MovementComponent>().each([](auto entity, auto& movementComponent)
-    {
-        movementComponent.Sent = true;
-    });
+        {
+            movementComponent.Sent = true;
+        });
 
-    for(auto kvp : messages)
+    for (auto kvp : messages)
     {
-        if(kvp.second.reference_movement_snapshot().entries_size() > 0)
+        if (kvp.second.reference_movement_snapshot().entries_size() > 0)
             GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
@@ -142,11 +161,11 @@ void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages
         auto view = m_world.view<FormIdComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, &gameId](auto entity)
-        {
-            const auto& formIdComponent = view.get(entity);
+            {
+                const auto& formIdComponent = view.get(entity);
 
-            return formIdComponent.BaseId == gameId.base() && formIdComponent.ModId == gameId.mod();
-        });
+                return formIdComponent.BaseId == gameId.base() && formIdComponent.ModId == gameId.mod();
+            });
 
         if (itor != std::end(view))
         {
@@ -183,15 +202,15 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
 
     m_world.view<PlayerComponent, CellIdComponent>().each(
         [&message, &characterCellIdComponent, &characterOwnerComponent](
-        auto entity, const auto& playerComponent, const auto& cellIdComponent)
-    {
-        if(characterOwnerComponent.ConnectionId)
+            auto entity, const auto& playerComponent, const auto& cellIdComponent)
+        {
+            if (characterOwnerComponent.ConnectionId)
 
-        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
-            return;
+                if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
+                    return;
 
-        GameServer::Get()->Send(playerComponent.ConnectionId, message);
-    });
+            GameServer::Get()->Send(playerComponent.ConnectionId, message);
+        });
 }
 
 void CharacterService::OnReferenceMovementSnapshot(
@@ -213,7 +232,7 @@ void CharacterService::OnReferenceMovementSnapshot(
 
         movementComponent.Tick = acMessage.Packet.tick();
 
-        auto movementCopy = movementComponent;
+        const auto movementCopy = movementComponent;
 
         auto& movement = entry.movement();
 
@@ -222,7 +241,7 @@ void CharacterService::OnReferenceMovementSnapshot(
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
-        if(canceled)
+        if (canceled)
         {
             movementComponent = movementCopy;
         }
@@ -232,11 +251,12 @@ void CharacterService::OnReferenceMovementSnapshot(
             //TODO: HandleAction
             //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
 
-            animationComponent.Actions.push_back(action);
-        }
+            ViewBuffer buffer((uint8_t*)action.data(), action.size());
+            Buffer::Reader reader(&buffer);
+            animationComponent.CurrentAction.ApplyDiff(reader);
 
-        if (!animationComponent.Actions.empty())
-            animationComponent.CurrentVariables = animationComponent.Actions[animationComponent.Actions.size() - 1];
+            animationComponent.Actions.push_back(animationComponent.CurrentAction);
+        }
 
         movementComponent.Sent = false;
     }
@@ -259,7 +279,7 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
     {
         m_world.emplace<FormIdComponent>(cEntity, gameId.base(), gameId.mod());
     }
-    else if(acMessage.Packet.has_base_id() && !isTemporary)
+    else if (acMessage.Packet.has_base_id() && !isTemporary)
     {
         spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.ConnectionId);
         return;
@@ -285,8 +305,11 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
     movementComponent.Sent = false;
 
     auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
-    animationComponent.CurrentVariables = packet.current_variables();
-    animationComponent.CurrentAction = packet.current_action();
+
+    ViewBuffer buffer((uint8_t*)packet.current_action().data(), packet.current_action().size());
+    Buffer::Reader reader(&buffer);
+
+    animationComponent.CurrentAction.ApplyDiff(reader);
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)
@@ -310,7 +333,7 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
         auto& playerComponent = playerView.get<PlayerComponent>(cPlayer);
         playerComponent.Character = cEntity;
 
-        Script::Player player(cPlayer, m_world);
+        const Script::Player player(cPlayer, m_world);
         m_world.GetScriptService().HandlePlayerEnterWorld(player);
     }
 

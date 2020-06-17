@@ -11,9 +11,6 @@
 #include <Games/Fallout4/Misc/ProcessManager.h>
 #include <Games/Fallout4/Misc/MiddleProcess.h>
 
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-
 #include <Components.h>
 #include <World.h>
 #include "ViewBuffer.hpp"
@@ -24,41 +21,33 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
 {
     auto& actions = aAnimationComponent.TimePoints;
 
-    for(auto it = std::begin(actions); it != std::end(actions); )
+    const auto it = std::begin(actions);
+    if (it != std::end(actions) && it->Tick <= aTick)
     {
         const auto& first = *it;
 
-        const auto actionId = aWorld.GetModSystem().GetGameId(first.action_id().mod(), first.action_id().base());
-        const auto targetId = aWorld.GetModSystem().GetGameId(first.target_id().mod(), first.target_id().base());
+        const auto actionId = first.ActionId;
+        const auto targetId = first.TargetId;
 
         const auto pAction = RTTI_CAST(TESForm::GetById(actionId), TESForm, BGSAction);
         const auto pTarget = RTTI_CAST(TESForm::GetById(targetId), TESForm, TESObjectREFR);
 
-        apActor->actorState.flags1 = first.state_1();
-        apActor->actorState.flags2 = first.state_2();
+        apActor->actorState.flags1 = first.State1;
+        apActor->actorState.flags2 = first.State2;
 
-        auto& variables = first.variables();
+        apActor->LoadAnimationVariables(first.Variables);
 
-        /*apActor->SetAnimationFlags(first.flags());
-
-        if(!variables.empty())
-        {
-            Buffer buffer((uint8_t*)variables.data(), variables.size());
-            Buffer::Reader reader(&buffer);
-
-            apActor->LoadAnimationVariables(reader);
-        }*/
+        aAnimationComponent.LastRanAction = first;
 
         // Play the animation
-        TESActionData actionData(first.type() & 0x3, apActor, pAction, pTarget);
-        actionData.eventName = BSFixedString(first.text().c_str());
-        actionData.idleForm = RTTI_CAST(TESForm::GetById(first.idle_id()), TESForm, TESIdleForm);
-        actionData.someFlag = ((first.type() & 0x4) != 0) ? 1 : 0;
+        TESActionData actionData(first.Type & 0x3, apActor, pAction, pTarget);
+        actionData.eventName = BSFixedString(first.EventName.c_str());
+        actionData.idleForm = RTTI_CAST(TESForm::GetById(first.IdleId), TESForm, TESIdleForm);
+        actionData.someFlag = ((first.Type & 0x4) != 0) ? 1 : 0;
 
         const auto result = ActorMediator::Get()->ForceAction(&actionData);
 
         actions.pop_front();
-        it = std::begin(actions);
     }
 }
 
@@ -67,24 +56,19 @@ void AnimationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
     aWorld.emplace<RemoteAnimationComponent>(aEntity);
 }
 
-void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const TiltedMessages::ActionData& acActionData) noexcept
+void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept
 {
     auto itor = std::begin(aAnimationComponent.TimePoints);
     const auto end = std::cend(aAnimationComponent.TimePoints);
 
-    while (itor != end)
-    {
-        if (itor->tick() > acActionData.tick())
-        {
-            aAnimationComponent.TimePoints.insert(itor, acActionData);
+    auto& lastProcessedAction = aAnimationComponent.LastProcessedAction;
 
-            return;
-        }
+    TiltedPhoques::ViewBuffer buffer((uint8_t*)acActionDiff.data(), acActionDiff.size());
+    Buffer::Reader reader(&buffer);
 
-        ++itor;
-    }
+    lastProcessedAction.ApplyDiff(reader);
 
-    aAnimationComponent.TimePoints.push_back(acActionData);
+    aAnimationComponent.TimePoints.push_back(lastProcessedAction);
 }
 
 void AnimationSystem::Serialize(World& aWorld, TiltedMessages::ReferenceMovementSnapshot& aMovementSnapshot, LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
@@ -111,7 +95,7 @@ void AnimationSystem::Serialize(World& aWorld, TiltedMessages::ReferenceMovement
         const auto pAction = pActorActions->Add();
 
         // Try to serialize, if it fails remove it
-        if(!Serialize(aWorld, actionEvent , *pAction))
+        if (!Serialize(aWorld, actionEvent, animationComponent.LastProcessedAction, pAction))
             pActorActions->RemoveLast();
     }
 
@@ -121,14 +105,9 @@ void AnimationSystem::Serialize(World& aWorld, TiltedMessages::ReferenceMovement
         localComponent.CurrentAction = latestAction.MoveResult();
 
     animationComponent.Actions.clear();
-
-    spdlog::info("Size {}", movement.ByteSizeLong());
-
-   // if (!actorActions.actions().empty())
-   //     pActions->operator[](localComponent.Id) = std::move(actorActions);
 }
 
-bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, TiltedMessages::ActionData& aActionData)
+bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, ActionEvent& aLastProcessedAction, std::string* apData)
 {
     uint32_t actionBaseId = 0;
     uint32_t actionModId = 0;
@@ -140,20 +119,12 @@ bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, 
     if (!aWorld.GetModSystem().GetServerModId(aActionEvent.TargetId, targetModId, targetBaseId))
         return false;
 
-    // TODO: Send target id, have to resolve the server id first and then send it
+    uint8_t scratch[1 << 12];
+    TiltedPhoques::ViewBuffer buffer(scratch, std::size(scratch));
+    Buffer::Writer writer(&buffer);
+    aActionEvent.GenerateDiff(aLastProcessedAction, writer);
 
-    aActionData.mutable_action_id()->set_base(actionBaseId);
-    aActionData.mutable_action_id()->set_mod(actionModId);
-    aActionData.mutable_target_id()->set_base(targetBaseId);
-    aActionData.mutable_target_id()->set_mod(targetModId);
-    aActionData.set_tick(aActionEvent.Tick);
-    aActionData.set_idle_id(aActionEvent.IdleId);
-    aActionData.set_state_1(aActionEvent.State1);
-    aActionData.set_state_2(aActionEvent.State2);
-    aActionData.set_type(aActionEvent.Type);
-    aActionData.set_text(aActionEvent.EventName.c_str());
-
-    //aActionData.mutable_variables()->assign(aActionEvent.Variables.c_str(), aActionEvent.Variables.size());
+    apData->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
 
     return true;
 }

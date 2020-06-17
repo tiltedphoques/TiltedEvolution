@@ -18,6 +18,7 @@
 #include <Stl.hpp>
 #include <Outcome.hpp>
 #include <Vector3.hpp>
+#include <ViewBuffer.hpp>
 
 #include <any>
 #include <mutex>

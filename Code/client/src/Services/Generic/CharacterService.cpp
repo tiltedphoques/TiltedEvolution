@@ -172,7 +172,6 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
 
         auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
         AnimationSystem::AddAction(remoteAnimationComponent, acMessage.current_action());
-        AnimationSystem::AddAction(remoteAnimationComponent, acMessage.current_variables());
 
         spdlog::info("Actor created {:x}", reinterpret_cast<uintptr_t>(&(pActor->processManager->middleProcess->direction)));
 
@@ -183,8 +182,6 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
 void CharacterService::OnReferenceMovementSnapshot(const TiltedMessages::ReferenceMovementSnapshot& acMessage) noexcept
 {
     auto view = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>();
-
-    spdlog::info("Got movement for {} entries", acMessage.entries().size()); 
 
     for (auto& entry : acMessage.entries())
     {
@@ -310,10 +307,8 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     // Serialize actions
     const auto pExtension = pActor->GetExtension();
     const auto action = pExtension->LatestAnimation;
-    const auto vars = pExtension->LatestVariables;
 
-    AnimationSystem::Serialize(m_world, action, *pAssignmentRequest->mutable_current_action());
-    AnimationSystem::Serialize(m_world, vars, *pAssignmentRequest->mutable_current_variables());
+    AnimationSystem::Serialize(m_world, action, ActionEvent{}, pAssignmentRequest->mutable_current_action());
 
     if (m_transport.Send(message))
     {
@@ -379,7 +374,7 @@ void CharacterService::RunLocalUpdates() noexcept
         AnimationSystem::Serialize(m_world, *pSnapshot, localComponent, animationComponent, formIdComponent);
     });
 
-    spdlog::info("Send snapshot size : {}", message.ByteSizeLong());
+    // spdlog::info("Send snapshot size : {}", message.ByteSizeLong());
 
     m_transport.Send(message);
 }

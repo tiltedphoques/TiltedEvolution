@@ -6,5 +6,7 @@
 
 struct RemoteAnimationComponent
 {
-    List<TiltedMessages::ActionData> TimePoints;
+    List<ActionEvent> TimePoints;
+    ActionEvent LastRanAction;
+    ActionEvent LastProcessedAction;
 };
