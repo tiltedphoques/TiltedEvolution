@@ -11,6 +11,23 @@ BSFixedString::BSFixedString(const char* acpData)
     ThisCall(s_constructor, this, acpData);
 }
 
+BSFixedString::BSFixedString(BSFixedString&& aRhs)
+{
+    m_data = aRhs.m_data;
+    aRhs.m_data = nullptr;
+}
+
+BSFixedString& BSFixedString::operator=(BSFixedString&& aRhs)
+{
+    Release();
+
+    m_data = aRhs.m_data;
+    aRhs.m_data = nullptr;
+
+    return *this;
+}
+
+
 void BSFixedString::Release()
 {
     TP_THIS_FUNCTION(TConstructor, void, BSFixedString);

@@ -1,10 +1,5 @@
 #include <Games/ActorExtension.h>
 
-void ActorExtension::InitializeExtension() noexcept
-{
-    onlineFlags = 0;
-}
-
 bool ActorExtension::IsRemote() const noexcept
 {
     return onlineFlags & kRemote;

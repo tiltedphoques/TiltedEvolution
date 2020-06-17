@@ -1,13 +1,6 @@
-#include <entt/entt.hpp>
-
-struct Position
-{
-    float x, y, z;
-};
+#include "encoding.h"
 
 int main()
 {
-    entt::registry registry;
-
-    registry.create();
+    RunEncodingTests();
 }

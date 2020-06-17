@@ -6,7 +6,7 @@
 #include <Games/Fallout4/Forms/BGSAction.h>
 #include <Games/Fallout4/Forms/TESIdleForm.h>
 
-#include <Events/ActionEvent.h>
+#include <ActionEvent.h>
 
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>
@@ -31,22 +31,31 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         ActionEvent action;
         action.State1 = pActor->actorState.flags1;
         action.State2 = pActor->actorState.flags2;
+        action.Type = apAction->unkInput | (apAction->someFlag ? 0x4 : 0);
+        action.Tick = World::Get().GetTick();
+        action.ActorId = pActor->formID;
+        action.ActionId = apAction->action->formID;
+        action.TargetId = apAction->target ? apAction->target->formID : 0;
 
-        action.Type = apAction->unkInput;
+        pActor->SaveAnimationVariables(action.Variables);
 
         const auto res = ThisCall(RealPerformAction, apThis, apAction);
 
-        if (res != 0)
-        {
-            action.Tick = World::Get().GetTick();
-            action.ActorId = pActor->formID;
-            action.ActionId = apAction->action->formID;
-            action.TargetId = apAction->target ? apAction->target->formID : 0;
-            action.IdleId = apAction->idleForm ? apAction->idleForm->formID : 0;
-            action.Variables = pActor->GetAnimationVariables();
+        // This is a weird case where it gets spammed and doesn't do much, not sure if it still needs to be sent over the network
+        if (apAction->someFlag == 1)
+            return res;
 
-            World::Get().GetRunner().Trigger(action);
-        }
+        action.EventName = apAction->eventName.AsAscii();
+        action.TargetEventName = apAction->targetEventName.AsAscii();
+        action.IdleId = apAction->idleForm ? apAction->idleForm->formID : 0;
+
+        // Save for later
+        if (res)
+            pExtension->LatestAnimation = action;
+
+        pExtension->LatestVariables = action;
+
+        World::Get().GetRunner().Trigger(action);
 
         return res;
     }
@@ -68,11 +77,60 @@ ActorMediator* ActorMediator::Get() noexcept
     return *(s_actorMediator.Get());
 }
 
-bool ActorMediator::PerformAction(TESActionData* apAction, float aValue) noexcept
+bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
 {
+    if (apAction->actor->formID == 0x13482)
+    {
+        /*static Set<uint32_t> s_ids;
+
+        spdlog::error("New frame");
+        for(auto i = 0; i < action.Variables.size(); ++i)
+        {
+            auto& oldVars = pExtension->LatestVariables.Variables;
+            auto& newVars = action.Variables;
+            if(oldVars[i] != newVars[i] && s_ids.count(i) == 0)
+            {
+                //s_ids.insert(i);
+                spdlog::info("Var {} changed from {} to {}", i, oldVars[i], newVars[i]);
+            }
+        }*/
+        spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
+    }
+
     const auto res = ThisCall(RealPerformAction, this, apAction);
+    //const auto res = RePerformAction(apAction, aValue);
+
+    if (res && apAction->actor->formID == 0x13482)
+    {
+        spdlog::info("Passed !");
+    }
 
     return res != 0;
+}
+
+bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
+{
+    TP_THIS_FUNCTION(TAnimationStep, uint8_t, ActorMediator, TESActionData*);
+    using TApplyAnimationVariables = void* (void*, TESActionData*);
+
+    POINTER_SKYRIMSE(TApplyAnimationVariables, ApplyAnimationVariables, 0x63D0F0);
+    POINTER_SKYRIMSE(TAnimationStep, PerformComplexAction, 0x63B0F0);
+    POINTER_SKYRIMSE(void*, qword_142F271B8, 0x142F271B8 - 0x140000000);
+
+    POINTER_FALLOUT4(TAnimationStep, PerformComplexAction, 0x140E211A0 - 0x140000000);
+    uint8_t result = 0;
+
+    auto pActor = static_cast<Actor*>(apAction->actor);
+    if (!pActor || pActor->animationGraphHolder.IsReady())
+    {
+        result = ThisCall(PerformComplexAction, this, apAction);
+
+#if TP_SKYRIM64
+        ApplyAnimationVariables(*qword_142F271B8.Get(), apAction);
+#endif
+    }
+
+    return result;
 }
 
 ActionInput::ActionInput(uint32_t aParam1, Actor* apActor, BGSAction* apAction, TESObjectREFR* apTarget)
@@ -92,12 +150,12 @@ void ActionInput::Release()
 
 ActionOutput::ActionOutput()
     : eventName("")
-    , unkName("")
+    , targetEventName("")
 {
     // skip vtable as we never use this directly
 
     result = 0;
-    unkPointer = nullptr;
+    targetIdleForm = nullptr;
     idleForm = nullptr;
     unk1 = 0;
 }
@@ -105,7 +163,7 @@ ActionOutput::ActionOutput()
 void ActionOutput::Release()
 {
     eventName.Release();
-    unkName.Release();
+    targetEventName.Release();
 }
 
 BGSActionData::BGSActionData(uint32_t aParam1, Actor* apActor, BGSAction* apAction, TESObjectREFR* apTarget)

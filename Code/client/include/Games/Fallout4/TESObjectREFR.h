@@ -8,6 +8,7 @@
 struct NiNode;
 struct BSFaceGenNiNode;
 struct TESObjectCELL;
+struct AnimationVariables;
 
 struct TESObjectREFR : TESForm
 {
@@ -137,8 +138,10 @@ struct TESObjectREFR : TESForm
     virtual void sub_C3();
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
-    Vector<uint32_t> GetAnimationVariables() noexcept;
-    void SetAnimationVariables(const Vector<uint32_t>& aVariables) noexcept;
+
+    void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
+    void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
+
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
 

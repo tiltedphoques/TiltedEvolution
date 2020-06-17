@@ -21,7 +21,7 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ReferenceSpawnedEvent.h>
-#include <Events/ActionEvent.h>
+#include <ActionEvent.h>
 #include <World.h>
 
 
@@ -170,6 +170,10 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
         //    pActor->processManager->Deserialize(acMessage.inventory_buffer(), pActor);
         }
 
+        auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
+        AnimationSystem::AddAction(remoteAnimationComponent, acMessage.current_action());
+        AnimationSystem::AddAction(remoteAnimationComponent, acMessage.current_variables());
+
         spdlog::info("Actor created {:x}", reinterpret_cast<uintptr_t>(&(pActor->processManager->middleProcess->direction)));
 
         m_dispatcher.trigger(ReferenceSpawnedEvent(pActor->formID, pActor->formType, cEntity));
@@ -180,9 +184,11 @@ void CharacterService::OnReferenceMovementSnapshot(const TiltedMessages::Referen
 {
     auto view = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>();
 
-    for (auto kvp : acMessage.movements())
+    spdlog::info("Got movement for {} entries", acMessage.entries().size()); 
+
+    for (auto& entry : acMessage.entries())
     {
-        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = kvp.first, view](entt::entity entity)
+        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = entry.server_id(), view](entt::entity entity)
         {
             return view.get<RemoteComponent>(entity).Id == serverId;
         });
@@ -191,32 +197,17 @@ void CharacterService::OnReferenceMovementSnapshot(const TiltedMessages::Referen
             continue;
 
         auto& interpolationComponent = view.get<InterpolationComponent>(*itor);
-        auto& movement = kvp.second;
+        auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
+        auto& movement = entry.movement();
 
         InterpolationComponent::TimePoint point;
         point.Tick = acMessage.tick();
         point.Position = Vector3<float>(movement.position().x(), movement.position().y(), movement.position().z());
-        point.Rotation = Vector3<float>(movement.rotation().x(), movement.rotation().y(), movement.rotation().z());
-        point.Speed = movement.speed();
-        point.Direction = movement.direction();
+        point.Rotation = Vector3<float>(movement.rotation().x(), 0.f, movement.rotation().z());
 
         InterpolationSystem::AddPoint(interpolationComponent, point);
-    }
 
-    for (auto kvp : acMessage.actions())
-    {
-        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = kvp.first, view](entt::entity entity)
-        {
-            return view.get<RemoteComponent>(entity).Id == serverId;
-        });
-
-        if (itor == std::end(view))
-            continue;
-
-        auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
-        auto& actions = kvp.second;
-
-        for(auto& action : actions.actions())
+        for (auto& action : entry.actions().actions())
         {
             AnimationSystem::AddAction(animationComponent, action);
         }
@@ -270,27 +261,23 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     TiltedMessages::ClientMessage message;
     auto pAssignmentRequest = message.mutable_character_assign_request();
+    // Set general info
     pAssignmentRequest->set_cookie(sCookieSeed);
     pAssignmentRequest->mutable_id()->set_base(baseId);
     pAssignmentRequest->mutable_cell_id()->set_base(cellBaseId);
     pAssignmentRequest->mutable_id()->set_mod(modId);
     pAssignmentRequest->mutable_cell_id()->set_mod(cellModId);
-    pAssignmentRequest->mutable_cell_id()->set_mod(cellModId);
 
+    // Set movement info
     auto pMovement = pAssignmentRequest->mutable_movement();
     pMovement->mutable_position()->set_x(pActor->position.x);
     pMovement->mutable_position()->set_y(pActor->position.y);
     pMovement->mutable_position()->set_z(pActor->position.z);
 
     pMovement->mutable_rotation()->set_x(pActor->rotation.x);
-    pMovement->mutable_rotation()->set_y(pActor->rotation.y);
     pMovement->mutable_rotation()->set_z(pActor->rotation.z);
 
-    pMovement->set_speed(pActor->GetSpeed());
-
-    if(pActor->processManager && pActor->processManager->middleProcess)
-        pMovement->set_direction(pActor->processManager->middleProcess->direction);
-    
+    // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
 
@@ -319,6 +306,14 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
         pAssignmentRequest->mutable_base_id()->set_base(baseNpcId);
         pAssignmentRequest->mutable_base_id()->set_mod(modNpcId);
     }
+
+    // Serialize actions
+    const auto pExtension = pActor->GetExtension();
+    const auto action = pExtension->LatestAnimation;
+    const auto vars = pExtension->LatestVariables;
+
+    AnimationSystem::Serialize(m_world, action, *pAssignmentRequest->mutable_current_action());
+    AnimationSystem::Serialize(m_world, vars, *pAssignmentRequest->mutable_current_variables());
 
     if (m_transport.Send(message))
     {
@@ -378,65 +373,13 @@ void CharacterService::RunLocalUpdates() noexcept
     auto pSnapshot = message.mutable_reference_movement_snapshot();
     pSnapshot->set_tick(m_transport.GetClock().GetCurrentTick());
 
-    auto pMovements = pSnapshot->mutable_movements();
-    auto pActions = pSnapshot->mutable_actions();
-
     m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>()
-        .each([pMovements, pActions, this](auto entity, auto& localComponent, auto& animationComponent, auto& formIdComponent)
+        .each([pSnapshot, this](LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
     {
-        auto pForm = TESForm::GetById(formIdComponent.Id);
-        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-        if (!pActor)
-            return;
-
-        TiltedMessages::Movement movement;
-        movement.mutable_position()->set_x(pActor->position.x);
-        movement.mutable_position()->set_y(pActor->position.y);
-        movement.mutable_position()->set_z(pActor->position.z);
-
-        movement.mutable_rotation()->set_x(pActor->rotation.x);
-        movement.mutable_rotation()->set_y(pActor->rotation.y);
-        movement.mutable_rotation()->set_z(pActor->rotation.z);
-
-        movement.set_speed(pActor->GetSpeed());
-        if(pActor->processManager && pActor->processManager->middleProcess)
-            movement.set_direction(pActor->processManager->middleProcess->direction);
-
-        TiltedMessages::ActorActionData actorActions;
-        for(auto& actionEvent : animationComponent.Actions)
-        {
-            uint32_t actionBaseId = 0;
-            uint32_t actionModId = 0;
-            if (!m_world.GetModSystem().GetServerModId(actionEvent.ActionId, actionModId, actionBaseId))
-                return;
-
-            // TODO: Send target id, have to resolve the server id first and then send it
-
-            TiltedMessages::ActionData* pActionData = actorActions.add_actions();
-
-            pActionData->mutable_action_id()->set_base(actionBaseId);
-            pActionData->mutable_action_id()->set_mod(actionModId);
-            pActionData->set_tick(actionEvent.Tick);
-            pActionData->set_idle_id(actionEvent.IdleId);
-            pActionData->set_state_1(actionEvent.State1);
-            pActionData->set_state_2(actionEvent.State2);
-            pActionData->set_value(actionEvent.Value);
-            pActionData->set_type(actionEvent.Type);
-            pActionData->mutable_variables()->Add(std::begin(actionEvent.Variables), std::end(actionEvent.Variables));
-        }
-
-        auto latestAction = animationComponent.GetLatestAction();
-
-        if (latestAction)
-            localComponent.CurrentAction = latestAction.MoveResult();
-
-        animationComponent.Actions.clear();
-
-        pMovements->operator[](localComponent.Id) = std::move(movement);
-
-        if(!actorActions.actions().empty())
-            pActions->operator[](localComponent.Id) = std::move(actorActions);
+        AnimationSystem::Serialize(m_world, *pSnapshot, localComponent, animationComponent, formIdComponent);
     });
+
+    spdlog::info("Send snapshot size : {}", message.ByteSizeLong());
 
     m_transport.Send(message);
 }

@@ -10,15 +10,23 @@
 #include <Games/Fallout4/Forms/TESWorldSpace.h>
 #include <Games/Fallout4/Forms/TESObjectCELL.h>
 #include <Games/Fallout4/Forms/TESNPC.h>
-#include <Games/Fallout4/ExtraData.h>
 
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
 #include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
 #include <Games/Skyrim/Havok/hkbVariableValueSet.h>
 
+#include <AnimationData.h>
+#include <AnimationVariables.h>
+
+#include <Games/Fallout4/BSAnimationGraphManager.h>
+#include <Games/Fallout4/Havok/BShkbAnimationGraph.h>
+#include <Games/Fallout4/Havok/hkbBehaviorGraph.h>
+#include <Games/Fallout4/Havok/hkbVariableValueSet.h>
+
 #include <Games/TES.h>
 
+#include <Serialization.hpp>
 
 static thread_local bool s_recursionBarrier = false;
 
@@ -47,13 +55,13 @@ void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
     ThisCall(RealRotateZ, this, aZ);
 }
 
-Vector<uint32_t> TESObjectREFR::GetAnimationVariables() noexcept
+using TiltedPhoques::Serialization;
+
+void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const noexcept
 {
-#if TP_SKYRIM64
     BSAnimationGraphManager* pManager = nullptr;
     if (animationGraphHolder.GetBSAnimationGraph(&pManager))
     {
-
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
             const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
@@ -61,30 +69,40 @@ Vector<uint32_t> TESObjectREFR::GetAnimationVariables() noexcept
             {
                 const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
 
-                if (pVariableSet && pVariableSet->size > 0)
+                if (pVariableSet && pVariableSet->size > 255)
                 {
-                    Vector<uint32_t> data(pVariableSet->size);
+                    aVariables.Booleans = 0;
 
-                    for (auto i = 0; i < data.size(); ++i)
+                    for (size_t i = 0; i < AnimationData::s_booleanLookUpTable.size(); ++i)
                     {
-                        data[i] = pVariableSet->data[i];
+                        const auto idx = AnimationData::s_booleanLookUpTable[i];
+
+                        if (pVariableSet->size > idx && pVariableSet->data[idx] != 0)
+                            aVariables.Booleans |= (1ull << i);
                     }
 
-                    return data;
+                    for (size_t i = 0; i < AnimationData::kFloatCount; ++i)
+                    {
+                        const auto idx = AnimationData::s_floatLookupTable[i];
+                        aVariables.Floats[i] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
+                    }
+
+                    for (size_t i = 0; i < AnimationData::kIntegerCount; ++i)
+                    {
+                        const auto idx = AnimationData::s_integerLookupTable[i];
+                        aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
+                    }
                 }
             }
         }
 
         pManager->Release();
     }
-#endif
-
-    return {};
 }
 
-void TESObjectREFR::SetAnimationVariables(const Vector<uint32_t>& aVariables) noexcept
+void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables) const noexcept
 {
-#if TP_SKYRIM64
+
     BSAnimationGraphManager* pManager = nullptr;
     if (animationGraphHolder.GetBSAnimationGraph(&pManager))
     {
@@ -95,11 +113,28 @@ void TESObjectREFR::SetAnimationVariables(const Vector<uint32_t>& aVariables) no
             {
                 const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
 
-                if (pVariableSet && pVariableSet->size == aVariables.size())
+                if (pVariableSet && pVariableSet->size >= 298)
                 {
-                    for (auto i = 0; i < aVariables.size(); ++i)
+                    for (size_t i = 0; i < AnimationData::s_booleanLookUpTable.size(); ++i)
                     {
-                        pVariableSet->data[i] = aVariables[i];
+                        const auto idx = AnimationData::s_booleanLookUpTable[i];
+
+                        if (pVariableSet->size > idx)
+                        {
+                            pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
+                        }
+                    }
+
+                    for (size_t i = 0; i < AnimationData::kFloatCount; ++i)
+                    {
+                        const auto idx = AnimationData::s_floatLookupTable[i];
+                        *reinterpret_cast<float*>(&pVariableSet->data[idx]) = aVariables.Floats[i];
+                    }
+
+                    for (size_t i = 0; i < AnimationData::kIntegerCount; ++i)
+                    {
+                        const auto idx = AnimationData::s_integerLookupTable[i];
+                        *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers[i];
                     }
                 }
             }
@@ -107,7 +142,6 @@ void TESObjectREFR::SetAnimationVariables(const Vector<uint32_t>& aVariables) no
 
         pManager->Release();
     }
-#endif
 }
 
 uint32_t TESObjectREFR::GetCellId() const noexcept
@@ -207,6 +241,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     auto pActor = New();
     // Prevent saving
     pActor->SetSkipSaveFlag(true);
+    pActor->GetExtension()->SetRemote(true);
 
     const auto pPlayer = static_cast<Actor*>(GetById(0x14));
     auto pCell = pPlayer->parentCell;
@@ -225,6 +260,8 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);
 
+    pActor->ForcePosition(position);
+
     pActor->flags &= 0xFFDFFFFF;
 
     return pActor;
@@ -238,9 +275,9 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
     POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x8F660);
 
 #if TP_FALLOUT4
-    auto pExtraDataList = extraData;
+    const auto pExtraDataList = extraData;
 #else
-    auto pExtraDataList = &extraData;
+    const auto pExtraDataList = &extraData;
 #endif
 
     ThisCall(realSetLevelMod, pExtraDataList, aLevel);
@@ -287,7 +324,7 @@ PlayerCharacter* PlayerCharacter::Get() noexcept
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
-    const auto pExtension = apThis->GetExtension();
+    const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
     const auto bIsRemote = pExtension && pExtension->IsRemote();
 
     if (bIsRemote && !s_recursionBarrier)

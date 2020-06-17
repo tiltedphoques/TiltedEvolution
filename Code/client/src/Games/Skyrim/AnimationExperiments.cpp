@@ -3,8 +3,13 @@ thread_local const char* g_animErrorCode = "";
 #if TP_SKYRIM64
 
 #include <Games/Animation/TESActionData.h>
+#include <Games/References.h>
 
 #include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Games/Skyrim/DefaultObjectManager.h>
+#include <Games/Skyrim/BSAnimationGraphManager.h>
+#include <Games/Skyrim/DefaultStringManager.h>
+#include <Games/Animation/ActorMediator.h>
 
 #include <World.h>
 
@@ -19,9 +24,12 @@ thread_local const char* g_animErrorCode = "";
 #include <Games/Skyrim/Havok/hkbGenerator.h>
 #include <Games/Skyrim/Havok/BShkbHkxDB.h>
 
+#pragma optimize( "", off )
 
-using TApplyAnimationVariables = void* (float, TESActionData*, char);
+using TApplyAnimationVariables = void* (void*, TESActionData*);
 POINTER_SKYRIMSE(TApplyAnimationVariables, ApplyAnimationVariables, 0x63D0F0);
+
+POINTER_SKYRIMSE(void*, qword_142F271B8, 0x142F271B8 - 0x140000000);
 
 extern thread_local bool g_forceAnimation;
 
@@ -201,7 +209,7 @@ bool BShkbAnimationGraph::ReSendEvent(BSFixedString* apEventName)
     return ThisCall(InternalSendEvent, this, apEventName);*/
 }
 
-/*
+
 uint32_t BSAnimationGraphManager::ReSendEvent(BSFixedString* apEventName)
 {
     BSScopedLock<BSRecursiveLock> _(lock);
@@ -272,20 +280,31 @@ uint8_t Class142F3A1E8::SendGraphAction(TESActionData* apAction)
     return apAction->actor->animationGraphHolder.ReSendAnimationEvent(&apAction->eventName);
 }
 
-uint8_t ActorMediator::RePerformAction(TESActionData* apAction, float aUnk) noexcept
+bool ActorMediator::RePerformAction(TESActionData* apAction) noexcept
 {
-    TP_THIS_FUNCTION(TAnimationStep, uint8_t, ActorMediator, TESActionData*, float);
+    TP_THIS_FUNCTION(TAnimationStep, uint8_t, ActorMediator, TESActionData*);
 
     POINTER_SKYRIMSE(TAnimationStep, PerformIdleAction, 0x63B060);
     POINTER_SKYRIMSE(TAnimationStep, PerformComplexAction, 0x63B0F0);
-    
+
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
     if(!pActor || pActor->animationGraphHolder.IsReady())
     {
-        result = ThisCall(PerformIdleAction, this, apAction, aUnk);
-        if (result == 0)
+        //result = ThisCall(PerformIdleAction, this, apAction);
+
+        //if (apAction->someFlag & BGSActionData::kTransitionNoAnimation)
+        //    apAction->someFlag = BGSActionData::kSkip;
+        //else
+        {
+            result = ThisCall(PerformComplexAction, this, apAction);
+            //result = RePerformComplexAction(apAction);
+        }
+
+        ApplyAnimationVariables(*qword_142F271B8.Get(), apAction);
+
+        /*if (result == 0)
             g_animErrorCode = "PerformIdleAction failed";
 
         if(result)
@@ -294,28 +313,61 @@ uint8_t ActorMediator::RePerformAction(TESActionData* apAction, float aUnk) noex
                 apAction->someFlag = BGSActionData::kSkip;
             else
             {
-                //result = ThisCall(PerformComplexAction, apThis, apAction, aUnk);
-                result = RePerformComplexAction(apAction, aUnk);
+                result = ThisCall(PerformComplexAction, this, apAction);
+                //result = RePerformComplexAction(apAction);
             }
         }
         else if ((apAction->someFlag & BGSActionData::kTransitionNoAnimation) == 0)
         {
-            ApplyAnimationVariables(aUnk, apAction, 0);
-        }
+            ApplyAnimationVariables(*qword_142F271B8.Get(), apAction);
+        }*/
     }
 
     return result;
 }
 
-void ActorMediator::RePerformIdleAction(TESActionData* apData, float aValue) noexcept
+bool ActorMediator::RePerformIdleAction(TESActionData* apData) noexcept
 {
+    using Tsub_14063CAA0 = bool(void*, TESActionData*);
+    using Tsub_14063CFB0 = bool(void*, TESActionData*);
+    using Tsub_1405CCB20 = bool(void*, TESActionData*);
+    using Tsub_1404ECF50 = bool(void*, TESActionData*);
+
+    POINTER_SKYRIMSE(Tsub_14063CAA0, sub_14063CAA0, 0x14063CAA0 - 0x140000000);
+    POINTER_SKYRIMSE(Tsub_14063CFB0, sub_14063CFB0, 0x14063CFB0 - 0x140000000);
+    POINTER_SKYRIMSE(Tsub_1405CCB20, sub_1405CCB20, 0x1405CCB20 - 0x140000000);
+    POINTER_SKYRIMSE(Tsub_1404ECF50, sub_1404ECF50, 0x1404ECF50 - 0x140000000);
+
+    POINTER_SKYRIMSE(void*, qword_142F271C8, 0x142F271C8 - 0x140000000);
+    POINTER_SKYRIMSE(void*, qword_142EFF990, 0x142EFF990 - 0x140000000);
+
+    bool result = true;
+
     if(((apData->someFlag >> 1) & 1) == 0)
     {
-        
+        if(!sub_14063CAA0(*qword_142F271B8.Get(), apData))
+        {
+            result = false;
+        }
+
+        if (sub_1405CCB20(*qword_142F271C8.Get(), apData))
+        {
+            if (result && !sub_14063CFB0(*qword_142F271B8.Get(), apData))
+                result = false;
+        }
+        else
+        {
+            result = false;
+        }
+
+        // Has something to do with the target refr
+        sub_1404ECF50(*qword_142EFF990.Get(), apData);
     }
+
+    return result;
 }
 
-uintptr_t ActorMediator::RePerformComplexAction(TESActionData* apData, float aValue) noexcept
+bool ActorMediator::RePerformComplexAction(TESActionData* apData) noexcept
 {
     TP_THIS_FUNCTION(Tsub_1404ED090, uint8_t, void, TESActionData*);
     
@@ -337,7 +389,7 @@ uintptr_t ActorMediator::RePerformComplexAction(TESActionData* apData, float aVa
         qword_142F3A1E8->SendGraphAction(apData);
     }
 
-    ApplyAnimationVariables(aValue, apData, result);
+    ApplyAnimationVariables(*qword_142F271B8.Get(), apData);
 
     if (!v4)
         return result;
@@ -357,7 +409,7 @@ bool TESActionData::ComputeResult()
     POINTER_SKYRIMSE(Tsub_1401A1D50, sub_1401A1D50, 0x1A1D50);
 
     result = 0;
-    if (unkPointer)
+    if (targetIdleForm)
     {
         if (!_strnicmp(eventName, "NA_", 3))
         {
@@ -375,6 +427,7 @@ bool TESActionData::ComputeResult()
 
     return result > 0;
 }
-*/
+
+#pragma optimize( "", on )
 
 #endif

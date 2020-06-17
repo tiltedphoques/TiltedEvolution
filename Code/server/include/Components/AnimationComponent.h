@@ -8,4 +8,5 @@ struct AnimationComponent
 {
     Vector<TiltedMessages::ActionData> Actions;
     TiltedMessages::ActionData CurrentAction;
+    TiltedMessages::ActionData CurrentVariables;
 };

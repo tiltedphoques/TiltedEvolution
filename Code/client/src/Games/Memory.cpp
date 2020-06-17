@@ -4,6 +4,8 @@
 #include <MimallocAllocator.hpp>
 #include <mimalloc.h>
 
+#pragma optimize( "", off )
+
 struct GameHeap;
 
 TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, size_t aAlignment, bool aAligned);
@@ -37,11 +39,18 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
     if (!pPointer)
         return nullptr;
 
+    ActorExtension* pExtension = nullptr;
+
     switch (aSize)
     {
-        case sizeof(ExActor) : static_cast<ExActor*>(pPointer)->InitializeExtension(); break;
-        case sizeof(ExPlayerCharacter) : static_cast<ExPlayerCharacter*>(pPointer)->InitializeExtension(); break;
+        case sizeof(ExActor) : pExtension = static_cast<ActorExtension*>(static_cast<ExActor*>(pPointer)); break;
+        case sizeof(ExPlayerCharacter) : pExtension = static_cast<ActorExtension*>(static_cast<ExPlayerCharacter*>(pPointer));  break;
         default: break;
+    }
+
+    if(pExtension)
+    {
+        new (pExtension) ActorExtension;
     }
 
     return pPointer;
@@ -131,3 +140,4 @@ static TiltedPhoques::Initializer s_memoryHooks([]()
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });
 
+#pragma optimize( "", on )

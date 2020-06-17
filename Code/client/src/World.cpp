@@ -16,15 +16,14 @@
 
 World::World()
     : m_runner(m_dispatcher)
-    , m_transport(*this, m_dispatcher)
+    , m_transport(*this, m_dispatcher, set<ImguiService>())
     , m_modSystem(m_dispatcher)
     , m_lastFrameTime{ std::chrono::high_resolution_clock::now() }
 {
     set<DiscoveryService>(*this, m_dispatcher);
     set<EntityService>(*this, m_dispatcher);
     set<OverlayService>();
-    set<ImguiService>();
-    set<InputService>(ctx<OverlayService>());
+    set<InputService>(set<OverlayService>());
     set<CharacterService>(*this, m_dispatcher, m_transport);
     set<TestService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);

@@ -8,10 +8,11 @@ struct ActorMediator
 
     static ActorMediator* Get() noexcept;
 
-    bool PerformAction(TESActionData* apAction, float aValue) noexcept;
+    bool PerformAction(TESActionData* apAction) noexcept;
+    bool ForceAction(TESActionData* apAction) noexcept;
 
     // Reverse engineering stuff, do not use
-    uint8_t RePerformAction(TESActionData* apAction, float aValue) noexcept;
-    void RePerformIdleAction(TESActionData* apData, float aValue) noexcept;
-    uintptr_t RePerformComplexAction(TESActionData* apData, float aValue) noexcept;
+    bool RePerformAction(TESActionData* apAction) noexcept;
+    bool RePerformIdleAction(TESActionData* apData) noexcept;
+    bool RePerformComplexAction(TESActionData* apData) noexcept;
 };

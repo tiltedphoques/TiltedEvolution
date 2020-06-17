@@ -5,6 +5,7 @@
 #include <Games/Primitives.h>
 
 struct BSFixedString;
+struct BShkbAnimationGraph;
 
 struct BSAnimationGraphManager
 {
@@ -20,7 +21,7 @@ struct BSAnimationGraphManager
     volatile LONG refCount;
 
     void* pad_ptrs[6];
-    BSTSmallArray<void*> animationGraphs;
+    BSTSmallArray<BShkbAnimationGraph> animationGraphs;
     uint8_t pad54[0xC8 - 0x58];
     BSRecursiveLock lock; // C8
     void* unkD0; // D0
