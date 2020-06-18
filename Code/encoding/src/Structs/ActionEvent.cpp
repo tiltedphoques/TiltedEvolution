@@ -1,4 +1,4 @@
-#include "ActionEvent.h"
+#include <Structs/ActionEvent.h>
 #include <Serialization.hpp>
 #include <sstream>
 
@@ -19,7 +19,7 @@ enum DifferentialFlags
 bool ActionEvent::operator==(const ActionEvent& acRhs) const noexcept
 {
     return Tick == acRhs.Tick && 
-        ActorId == acRhs.ActorId && 
+        // ActorId == acRhs.ActorId && // ActorId is a local field as it is filled up latter by the game client
         ActionId == acRhs.ActionId &&
         State1 == acRhs.State1 &&
         State2 == acRhs.State2 &&
@@ -61,7 +61,7 @@ void ActionEvent::Load(std::istream& aInput)
     Variables.Load(aInput);
 }
 
-void ActionEvent::GenerateDiff(const ActionEvent& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     uint8_t flags = 0;
 
@@ -141,7 +141,7 @@ void ActionEvent::GenerateDiff(const ActionEvent& aPrevious, TiltedPhoques::Buff
     }
 }
 
-void ActionEvent::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void ActionEvent::ApplyDifferential(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     uint64_t flags = 0;
 

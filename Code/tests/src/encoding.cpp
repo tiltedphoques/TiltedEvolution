@@ -1,68 +1,96 @@
-#include <fstream>
-#include <ActionEvent.h>
-#include <iostream>
-#include <Stl.hpp>
-#include <iomanip>
+#include "catch.hpp"
+#include <Messages/ClientMessageFactory.h>
+#include <Messages/AuthenticationRequest.h>
+#include <Structs/ActionEvent.h>
 
-void RunEncodingTests()
+using namespace TiltedPhoques;
+
+TEST_CASE("Encoding factory", "[encoding.factory]")
 {
-    TiltedPhoques::Map<uint32_t, TiltedPhoques::Vector<ActionEvent>> events;
+    Buffer buff(1000);
 
-    std::ifstream animDump{ "animation_dump.txt", std::ios::binary};
-    while(!animDump.eof() && animDump.is_open())
+    AuthenticationRequest request;
+    request.Token = "TesSt";
+
+    Buffer::Writer writer(&buff);
+    request.Serialize(writer);
+
+    Buffer::Reader reader(&buff);
+
+    const ClientMessageFactory factory;
+    auto pMessage = factory.Extract(reader);
+
+    REQUIRE(pMessage);
+    REQUIRE(pMessage->GetOpcode() == request.GetOpcode());
+
+    auto pRequest = CastUnique<AuthenticationRequest>(std::move(pMessage));
+    REQUIRE(pRequest->Token == request.Token);
+}
+
+TEST_CASE("Differential structures", "[encoding.differential]")
+{
+    GIVEN("Full ActionEvent")
     {
-        ActionEvent evt;
-        evt.Load(animDump);
+        ActionEvent sendAction, recvAction;
 
-        if (evt.ActorId == 0)
-            break;
+        sendAction.ActionId = 42;
+        sendAction.State1 = 6547;
+        sendAction.Tick = 48;
+        sendAction.ActorId = 12345678;
+        sendAction.EventName = "test";
+        sendAction.IdleId = 87964;
+        sendAction.State2 = 8963;
+        sendAction.TargetEventName = "toast";
+        sendAction.TargetId = 963741;
+        sendAction.Type = 4;
 
-        //if(evt.ActionId != 0x13002)
-        events[evt.ActorId].push_back(evt);
-    }
-
-    uint64_t totalData = 0;
-    uint64_t eventCount = 0;
-
-    for(auto& vec : events)
-    {
-        auto& eventVector = vec.second;
-
-        eventCount += eventVector.size();
-
-        if(eventVector.size() > 1)
         {
-            TiltedPhoques::Buffer buff(8000);
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
 
-            uint64_t totalSessionData = 0;
+            sendAction.GenerateDifferential(recvAction, writer);
 
-            auto current = eventVector[0];
-            for(auto i = 1u; i < eventVector.size(); ++i)
-            {
-                auto next = eventVector[i];
+            Buffer::Reader reader(&buff);
+            recvAction.ApplyDifferential(reader);
 
-                TiltedPhoques::Buffer::Writer writer(&buff);
-                TiltedPhoques::Buffer::Reader reader(&buff);
+            REQUIRE(sendAction == recvAction);
+        }
 
-                next.GenerateDiff(current, writer);
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
 
-                totalSessionData += writer.GetBytePosition();
+            sendAction.EventName = "Plot twist !";
 
-                current.ApplyDiff(reader);
+            sendAction.GenerateDifferential(recvAction, writer);
 
-                if(current != next)
-                {
-                    std::cout << "FAILED" << std::endl;
-                }
-            }
+            Buffer::Reader reader(&buff);
+            recvAction.ApplyDifferential(reader);
 
-            totalData += totalSessionData;
-
-            std::cout << std::hex << "Id: " << vec.first << " has " << std::dec << vec.second.size() << " events, cost average: "
-                << std::setprecision(3) << float(totalSessionData) / eventVector.size() << " bytes/event" << std::endl;
+            REQUIRE(sendAction == recvAction);
         }
     }
+}
 
-    std::cout << std::dec << eventCount << " events, total cost : " << totalData << " cost average: "
-        << std::setprecision(3) << float(totalData) / eventCount << " bytes/event" << std::endl;
+TEST_CASE("Packets", "[encoding.packets]")
+{
+    SECTION("AuthenticationRequest")
+    {
+        Buffer buff(1000);
+
+        AuthenticationRequest sendMessage, recvMessage;
+        sendMessage.Token = "TesSt";
+
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
 }

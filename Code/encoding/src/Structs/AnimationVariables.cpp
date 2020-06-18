@@ -1,5 +1,5 @@
-#include <AnimationVariables.h>
-#include "Serialization.hpp"
+#include <Structs/AnimationVariables.h>
+#include <Serialization.hpp>
 
 bool AnimationVariables::operator==(const AnimationVariables& acRhs) const noexcept
 {

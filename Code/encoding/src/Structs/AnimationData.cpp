@@ -1,6 +1,6 @@
 
 
-#include <AnimationData.h>
+#include <Structs/AnimationData.h>
 
 #if TP_SKYRIM
 

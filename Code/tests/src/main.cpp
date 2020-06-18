@@ -1,6 +1,2 @@
-#include "encoding.h"
-
-int main()
-{
-    RunEncodingTests();
-}
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"

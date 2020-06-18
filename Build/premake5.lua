@@ -135,6 +135,7 @@ workspace ("Tilted Online Framework")
                 "../Code/encoding/include/",
                 "../Libraries/entt/src/",
                 coreBasePath .. "/Code/core/include/",
+                coreBasePath .. "/ThirdParty"
             }
 
             files
