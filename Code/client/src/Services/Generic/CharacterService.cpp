@@ -21,7 +21,7 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ReferenceSpawnedEvent.h>
-#include <ActionEvent.h>
+#include <Structs/ActionEvent.h>
 #include <World.h>
 
 

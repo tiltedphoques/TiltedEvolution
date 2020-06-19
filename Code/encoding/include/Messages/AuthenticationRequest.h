@@ -12,9 +12,7 @@ struct AuthenticationRequest final : ClientMessage
     }
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
-    void SerializeDifferential(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
-    void DeserializeDifferential(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
     bool operator==(const AuthenticationRequest& achRhs) const noexcept
     {

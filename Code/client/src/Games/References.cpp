@@ -16,8 +16,8 @@
 #include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
 #include <Games/Skyrim/Havok/hkbVariableValueSet.h>
 
-#include <AnimationData.h>
-#include <AnimationVariables.h>
+#include <Structs/AnimationData.h>
+#include <Structs/AnimationVariables.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
 #include <Games/Fallout4/Havok/BShkbAnimationGraph.h>

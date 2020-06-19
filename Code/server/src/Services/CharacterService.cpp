@@ -45,7 +45,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, T
     Buffer::Writer writer(&buffer);
 
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    animationComponent.CurrentAction.GenerateDiff(ActionEvent{}, writer);
+    animationComponent.CurrentAction.GenerateDifferential(ActionEvent{}, writer);
 
     apSpawnRequest->mutable_current_action()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
 }
@@ -119,7 +119,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                         ViewBuffer buffer(scratch, std::size(scratch));
                         Buffer::Writer writer(&buffer);
 
-                        action.GenerateDiff(lastSerializedAction, writer);
+                        action.GenerateDifferential(lastSerializedAction, writer);
                         lastSerializedAction = action;
 
                         actions.add_actions()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
@@ -253,7 +253,7 @@ void CharacterService::OnReferenceMovementSnapshot(
 
             ViewBuffer buffer((uint8_t*)action.data(), action.size());
             Buffer::Reader reader(&buffer);
-            animationComponent.CurrentAction.ApplyDiff(reader);
+            animationComponent.CurrentAction.ApplyDifferential(reader);
 
             animationComponent.Actions.push_back(animationComponent.CurrentAction);
         }
@@ -309,7 +309,7 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
     ViewBuffer buffer((uint8_t*)packet.current_action().data(), packet.current_action().size());
     Buffer::Reader reader(&buffer);
 
-    animationComponent.CurrentAction.ApplyDiff(reader);
+    animationComponent.CurrentAction.ApplyDifferential(reader);
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)

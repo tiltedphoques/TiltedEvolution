@@ -39,10 +39,13 @@ struct ServerMessage : TiltedPhoques::AllocatorCompatible
 
     virtual ~ServerMessage() = default;
 
+    void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     virtual void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     virtual void SerializeDifferential(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     virtual void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept;
     virtual void DeserializeDifferential(TiltedPhoques::Buffer::Reader& aReader) noexcept;
+
+    [[nodiscard]] ServerOpcode GetOpcode() const noexcept;
 
 private:
     ServerOpcode m_opcode;

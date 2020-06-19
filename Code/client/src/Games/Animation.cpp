@@ -6,7 +6,7 @@
 #include <Games/Fallout4/Forms/BGSAction.h>
 #include <Games/Fallout4/Forms/TESIdleForm.h>
 
-#include <ActionEvent.h>
+#include <Structs/ActionEvent.h>
 
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>

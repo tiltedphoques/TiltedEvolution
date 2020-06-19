@@ -39,6 +39,18 @@ void ServerMessage::DeserializeDifferential(TiltedPhoques::Buffer::Reader& aRead
 {
 }
 
+ServerOpcode ServerMessage::GetOpcode() const noexcept
+{
+    return m_opcode;
+}
+
+void ServerMessage::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+{
+    ServerMessage::SerializeRaw(aWriter);
+    SerializeRaw(aWriter);
+    SerializeDifferential(aWriter);
+}
+
 void ServerMessage::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     aWriter.WriteBits(m_opcode, sizeof(m_opcode) * 8);

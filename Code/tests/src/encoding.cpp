@@ -1,6 +1,7 @@
 #include "catch.hpp"
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>
+#include <Messages/AuthenticationResponse.h>
 #include <Structs/ActionEvent.h>
 #include <Structs/Mods.h>
 
@@ -105,6 +106,34 @@ TEST_CASE("Packets", "[encoding.packets]")
         sendMessage.Mods.StandardMods.push_back({ "Hi", 14 });
         sendMessage.Mods.LiteMods.push_back({ "Test", 8 });
         sendMessage.Mods.LiteMods.push_back({ "Toast", 49 });
+
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
+    SECTION("AuthenticationResponse")
+    {
+        Buffer buff(1000);
+
+        AuthenticationResponse sendMessage, recvMessage;
+        sendMessage.Accepted = true;
+        sendMessage.Mods.StandardMods.push_back({ "Hello", 42 });
+        sendMessage.Mods.StandardMods.push_back({ "Hi", 14 });
+        sendMessage.Mods.LiteMods.push_back({ "Test", 8 });
+        sendMessage.Mods.LiteMods.push_back({ "Toast", 49 });
+        sendMessage.Scripts.push_back(1);
+        sendMessage.Scripts.push_back(2);
+        sendMessage.ReplicatedObjects.push_back(3);
+        sendMessage.ReplicatedObjects.push_back(4);
 
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);

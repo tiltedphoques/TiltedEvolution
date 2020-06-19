@@ -4,7 +4,7 @@
 #error Include Components.h instead
 #endif
 
-#include <ActionEvent.h>
+#include <Structs/ActionEvent.h>
 
 struct LocalComponent
 {

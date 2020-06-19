@@ -66,7 +66,7 @@ void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, c
     TiltedPhoques::ViewBuffer buffer((uint8_t*)acActionDiff.data(), acActionDiff.size());
     Buffer::Reader reader(&buffer);
 
-    lastProcessedAction.ApplyDiff(reader);
+    lastProcessedAction.ApplyDifferential(reader);
 
     aAnimationComponent.TimePoints.push_back(lastProcessedAction);
 }
@@ -122,7 +122,7 @@ bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, 
     uint8_t scratch[1 << 12];
     TiltedPhoques::ViewBuffer buffer(scratch, std::size(scratch));
     Buffer::Writer writer(&buffer);
-    aActionEvent.GenerateDiff(aLastProcessedAction, writer);
+    aActionEvent.GenerateDifferential(aLastProcessedAction, writer);
 
     apData->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
 
