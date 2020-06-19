@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Buffer.hpp>
+#include <Structs/Mods.h>
 
 struct AuthenticationRequest final : ClientMessage
 {
@@ -17,8 +18,11 @@ struct AuthenticationRequest final : ClientMessage
 
     bool operator==(const AuthenticationRequest& achRhs) const noexcept
     {
-        return Token == achRhs.Token && GetOpcode() == achRhs.GetOpcode();
+        return Token == achRhs.Token &&
+            Mods == achRhs.Mods &&
+            GetOpcode() == achRhs.GetOpcode();
     }
 
     String Token;
+    Mods Mods;
 };

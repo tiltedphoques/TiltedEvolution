@@ -2,6 +2,7 @@
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>
 #include <Structs/ActionEvent.h>
+#include <Structs/Mods.h>
 
 using namespace TiltedPhoques;
 
@@ -70,6 +71,26 @@ TEST_CASE("Differential structures", "[encoding.differential]")
             REQUIRE(sendAction == recvAction);
         }
     }
+
+    GIVEN("Full Mods")
+    {
+        Mods sendMods, recvMods;
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+
+        sendMods.StandardMods.push_back({ "Hello", 42 });
+        sendMods.StandardMods.push_back({ "Hi", 14 });
+        sendMods.LiteMods.push_back({ "Test", 8 });
+        sendMods.LiteMods.push_back({ "Toast", 49 });
+
+        sendMods.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+        recvMods.Deserialize(reader);
+
+        REQUIRE(sendMods == recvMods);
+    }
 }
 
 TEST_CASE("Packets", "[encoding.packets]")
@@ -80,6 +101,10 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         AuthenticationRequest sendMessage, recvMessage;
         sendMessage.Token = "TesSt";
+        sendMessage.Mods.StandardMods.push_back({ "Hello", 42 });
+        sendMessage.Mods.StandardMods.push_back({ "Hi", 14 });
+        sendMessage.Mods.LiteMods.push_back({ "Test", 8 });
+        sendMessage.Mods.LiteMods.push_back({ "Toast", 49 });
 
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);
