@@ -107,7 +107,7 @@ void AnimationSystem::Serialize(World& aWorld, TiltedMessages::ReferenceMovement
     animationComponent.Actions.clear();
 }
 
-bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, ActionEvent& aLastProcessedAction, std::string* apData)
+bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, const ActionEvent& aLastProcessedAction, std::string* apData)
 {
     uint32_t actionBaseId = 0;
     uint32_t actionModId = 0;

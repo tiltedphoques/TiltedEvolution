@@ -143,8 +143,8 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 
     for (auto kvp : messages)
     {
-        if (kvp.second.reference_movement_snapshot().entries_size() > 0)
-            GameServer::Get()->Send(kvp.first, kvp.second);
+       // if (kvp.second.reference_movement_snapshot().entries_size() > 0)
+       //     GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
 
@@ -181,7 +181,7 @@ void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages
             pResponse->set_server_id(World::ToInteger(*itor));
             pResponse->set_ownership(false);
 
-            pServer->Send(acMessage.ConnectionId, message);
+         //   pServer->Send(acMessage.ConnectionId, message);
 
             return;
         }
@@ -209,7 +209,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
                 if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
                     return;
 
-            GameServer::Get()->Send(playerComponent.ConnectionId, message);
+           // GameServer::Get()->Send(playerComponent.ConnectionId, message);
         });
 }
 
@@ -343,7 +343,7 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
     pResponse->set_server_id(World::ToInteger(cEntity));
     pResponse->set_ownership(true);
 
-    pServer->Send(acMessage.ConnectionId, message);
+   // pServer->Send(acMessage.ConnectionId, message);
 
     auto& dispatcher = m_world.GetDispatcher();
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));

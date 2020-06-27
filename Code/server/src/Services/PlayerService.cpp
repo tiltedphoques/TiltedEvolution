@@ -40,6 +40,6 @@ void PlayerService::HandleCellEnter(const PacketEvent<TiltedMessages::CellEnterR
         const auto pRequest = message.mutable_character_spawn_request();
         CharacterService::Serialize(m_world, character, pRequest);
 
-        GameServer::Get()->Send(acMessage.ConnectionId, message);
+        //GameServer::Get()->Send(acMessage.ConnectionId, message);
     }
 }

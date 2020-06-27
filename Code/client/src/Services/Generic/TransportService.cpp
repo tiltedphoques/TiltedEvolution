@@ -12,6 +12,7 @@
 #include <World.h>
 
 #include <Packet.hpp>
+#include <Messages/AuthenticationRequest.h>
 #include <ScratchAllocator.hpp>
 #include <Services/ImguiService.h>
 #include <imgui.h>
@@ -67,6 +68,25 @@ bool TransportService::Send(const TiltedMessages::ClientMessage& acMessage) cons
     return false;
 }
 
+bool TransportService::Send(const ClientMessage& acMessage) const noexcept
+{
+    if (IsConnected())
+    {
+        Buffer buffer(1 << 16);
+        Buffer::Writer writer(&buffer);
+        writer.WriteBits(0, 8); // Write first byte as packet needs it
+
+        acMessage.Serialize(writer);
+        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.GetBytePosition());
+
+        Client::Send(&packet);
+
+        return true;
+    }
+
+    return false;
+}
+
 void TransportService::OnConsume(const void* apData, uint32_t aSize)
 {
     TiltedMessages::ServerMessage message;
@@ -93,10 +113,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 
 void TransportService::OnConnected()
 {
-    TiltedMessages::ClientMessage message;
-    const auto cpAuthenticationRequest = message.mutable_authentication_request();
-    cpAuthenticationRequest->set_token("");
-    const auto cpMods = cpAuthenticationRequest->mutable_mods();
+    AuthenticationRequest request;
 
     const auto cpModManager = ModManager::Get();
 
@@ -105,13 +122,13 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        const auto cpEntry = pMod->IsLite() ? cpMods->add_lite_mods() : cpMods->add_standard_mods();
+        auto& entry = pMod->IsLite() ? request.Mods.LiteMods.emplace_back() : request.Mods.StandardMods.emplace_back();
 
-        cpEntry->set_filename(pMod->filename);
-        cpEntry->set_id(pMod->GetId());
+        entry.Id = pMod->GetId();
+        entry.Filename = pMod->filename;
     }
 
-    Send(message);
+    Send(request);
 }
 
 void TransportService::OnDisconnected(EDisconnectReason aReason)

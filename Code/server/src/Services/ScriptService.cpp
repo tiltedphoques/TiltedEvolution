@@ -49,17 +49,19 @@ void ScriptService::Initialize() noexcept
     LoadFullScripts("scripts");
 }
 
-void ScriptService::Serialize(TiltedMessages::Scripts* apScripts) noexcept
+Vector<uint8_t> ScriptService::SerializeScripts() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
 
     GetNetState()->SerializeDefinitions(writer);
 
-    apScripts->set_data(reinterpret_cast<const char*>(buff.GetData()), writer.GetBytePosition());
+    Vector<uint8_t> data(buff.GetData(), buff.GetData() + writer.GetBytePosition());
+
+    return data;
 }
 
-void ScriptService::Serialize(TiltedMessages::ReplicateNetObjects* apReplicateNetObjects) noexcept
+Vector<uint8_t> ScriptService::GenerateDifferential() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
@@ -67,18 +69,20 @@ void ScriptService::Serialize(TiltedMessages::ReplicateNetObjects* apReplicateNe
     const auto ret = GetNetState()->GenerateDifferentialSnapshot(writer);
     if(ret)
     {
-        apReplicateNetObjects->set_data(reinterpret_cast<const char*>(buff.GetData()), writer.GetBytePosition());
+        return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.GetBytePosition());
     }
+
+    return {};
 }
 
-void ScriptService::Serialize(TiltedMessages::FullObjects* apReplicateNetObjects) noexcept
+Vector<uint8_t> ScriptService::GenerateFull() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
 
     GetNetState()->GenerateFullSnapshot(writer);
 
-    apReplicateNetObjects->set_data(reinterpret_cast<const char*>(buff.GetData()), writer.GetBytePosition());
+    return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.GetBytePosition());
 }
 
 std::tuple<bool, String> ScriptService::HandlePlayerConnect(const Script::Player& aPlayer) noexcept
@@ -114,12 +118,12 @@ void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
     TiltedMessages::ServerMessage message;
     auto* pReplicatedNetObjects = message.mutable_replicated_net_objects();
 
-    Serialize(pReplicatedNetObjects);
+    //Serialize(pReplicatedNetObjects);
 
     // Only send if the snapshot contains anything changed
     if(pReplicatedNetObjects->data().size() > 0)
     {
-        GameServer::Get()->SendToLoaded(message);       
+    //    GameServer::Get()->SendToLoaded(message);       
     }
 
     CallEvent("onUpdate", acEvent.Delta);

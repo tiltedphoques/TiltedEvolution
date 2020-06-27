@@ -19,9 +19,9 @@ struct ScriptService : ScriptStore
 
     TP_NOCOPYMOVE(ScriptService);
 
-    void Serialize(TiltedMessages::Scripts* apScripts) noexcept;
-    void Serialize(TiltedMessages::ReplicateNetObjects* apReplicateNetObjects) noexcept;
-    void Serialize(TiltedMessages::FullObjects* apReplicateNetObjects) noexcept;
+    Vector<uint8_t> SerializeScripts() noexcept;
+    Vector<uint8_t> GenerateDifferential() noexcept;
+    Vector<uint8_t> GenerateFull() noexcept;
 
     std::tuple<bool, String> HandlePlayerConnect(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandlePlayerEnterWorld(const Script::Player& aPlayer) noexcept;
