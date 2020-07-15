@@ -25,8 +25,8 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher, Imgui
     , m_transport(aTransportService)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this);
-    m_scriptsConnection = m_dispatcher.sink<TiltedMessages::Scripts>().connect<&ScriptService::OnScripts>(this);
-    m_replicatedInitConnection = m_dispatcher.sink<TiltedMessages::FullObjects>().connect < &ScriptService::OnNetObjectsInitalize >(this);
+    m_scriptsConnection = m_dispatcher.sink<Scripts>().connect<&ScriptService::OnScripts>(this);
+    m_replicatedInitConnection = m_dispatcher.sink<FullObjects>().connect < &ScriptService::OnNetObjectsInitalize >(this);
     m_replicatedUpdateConnection = m_dispatcher.sink<TiltedMessages::ReplicateNetObjects>().connect < &ScriptService::OnNetObjectsUpdate >(this);
 
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&ScriptService::OnConnected>(this);
@@ -83,17 +83,17 @@ void ScriptService::OnDraw() noexcept
     ImGui::End();
 }
 
-void ScriptService::OnScripts(const TiltedMessages::Scripts& acScripts) noexcept
+void ScriptService::OnScripts(const Scripts& acScripts) noexcept
 {
-    Buffer buff(reinterpret_cast<const uint8_t*>(acScripts.data().c_str()), acScripts.data().size());
+    Buffer buff(reinterpret_cast<const uint8_t*>(acScripts.Data.data()), acScripts.Data.size());
     Buffer::Reader reader(&buff);
 
     GetNetState()->LoadDefinitions(reader);
 }
 
-void ScriptService::OnNetObjectsInitalize(const TiltedMessages::FullObjects& acNetObjects) noexcept
+void ScriptService::OnNetObjectsInitalize(const FullObjects& acNetObjects) noexcept
 {
-    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.data().c_str()), acNetObjects.data().size());
+    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.Data.data()), acNetObjects.Data.size());
     Buffer::Reader reader(&buff);
 
     GetNetState()->LoadFullSnapshot(reader);

@@ -3,19 +3,11 @@
 #include "Message.h"
 #include <Buffer.hpp>
 #include <Structs/Mods.h>
+#include <Structs/Scripts.h>
+#include <Structs/FullObjects.h>
 
 struct AuthenticationResponse final : ServerMessage
 {
-    struct Scripts
-    {
-        Vector<uint8_t> Data{};
-    };
-
-    struct ReplicatedObjects
-    {
-        Vector<uint8_t> Data{};
-    };
-
     AuthenticationResponse()
         : ServerMessage(kAuthenticationResponse)
     {
@@ -29,12 +21,12 @@ struct AuthenticationResponse final : ServerMessage
         return GetOpcode() == achRhs.GetOpcode() && 
             Accepted == achRhs.Accepted && 
             Mods == achRhs.Mods && 
-            Scripts.Data == achRhs.Scripts.Data &&
-            ReplicatedObjects.Data == achRhs.ReplicatedObjects.Data;
+            Scripts == achRhs.Scripts &&
+            ReplicatedObjects == achRhs.ReplicatedObjects;
     }
 
     bool Accepted{ false };
     Mods Mods{};
     Scripts Scripts{};
-    ReplicatedObjects ReplicatedObjects{};
+    FullObjects ReplicatedObjects{};
 };

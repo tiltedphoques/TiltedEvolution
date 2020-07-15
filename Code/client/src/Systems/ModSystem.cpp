@@ -1,5 +1,7 @@
 #include <Systems/ModSystem.h>
 
+#include <Structs/Mods.h>
+
 #include <Games/TES.h>
 
 ModSystem::ModSystem(entt::dispatcher& aDispatcher) noexcept
@@ -8,7 +10,7 @@ ModSystem::ModSystem(entt::dispatcher& aDispatcher) noexcept
     // Deal with temporary ids
     m_standardToServer[0xFF] = std::numeric_limits<uint32_t>::max();
 
-    m_modsConnection = aDispatcher.sink<TiltedMessages::Mods>().connect<&ModSystem::HandleMods>(this);
+    m_modsConnection = aDispatcher.sink<Mods>().connect<&ModSystem::HandleMods>(this);
 }
 
 bool ModSystem::GetServerModId(const uint32_t aGameId, uint32_t& aModId, uint32_t& aBaseId) const noexcept
@@ -61,7 +63,7 @@ uint32_t ModSystem::GetGameId(uint32_t aServerId, uint32_t aFormId) const noexce
     return 0;
 }
 
-void ModSystem::HandleMods(const TiltedMessages::Mods& acMods) noexcept
+void ModSystem::HandleMods(const Mods& acMods) noexcept
 {
     m_serverToGame.clear();
     m_liteToServer.clear();
@@ -70,29 +72,29 @@ void ModSystem::HandleMods(const TiltedMessages::Mods& acMods) noexcept
 
     const auto pModManager = ModManager::Get();
 
-    for (auto& mod : acMods.lite_mods())
+    for (auto& mod : acMods.LiteMods)
     {
-        const auto pMod = pModManager->GetByName(mod.filename().c_str());
+        const auto pMod = pModManager->GetByName(mod.Filename.c_str());
         if (!pMod)
         {
             // Shouldn't happen
             continue;
         }
 
-        m_serverToGame.emplace(mod.id(), GameMod{ pMod->GetId() & 0xFFF, true });
-        m_liteToServer.emplace(pMod->GetId(), mod.id());
+        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFFF, true });
+        m_liteToServer.emplace(pMod->GetId(), mod.Id);
     }
 
-    for (auto& mod : acMods.standard_mods())
+    for (auto& mod : acMods.StandardMods)
     {
-        auto pMod = pModManager->GetByName(mod.filename().c_str());
+        auto pMod = pModManager->GetByName(mod.Filename.c_str());
         if (!pMod)
         {
             // Shouldn't happen
             continue;
         }
 
-        m_serverToGame.emplace(mod.id(), GameMod{ pMod->GetId() & 0xFF, false });
-        m_standardToServer[pMod->GetId() & 0xFF] = mod.id();
+        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFF, false });
+        m_standardToServer[pMod->GetId() & 0xFF] = mod.Id;
     }
 }

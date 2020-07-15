@@ -1,5 +1,7 @@
 #pragma once
 
+struct Mods;
+
 struct ModSystem
 {
     ModSystem(entt::dispatcher& aDispatcher) noexcept;
@@ -14,7 +16,7 @@ struct ModSystem
 
 protected:
 
-    void HandleMods(const TiltedMessages::Mods& acMods) noexcept;
+    void HandleMods(const Mods& acMods) noexcept;
 
 private:
 
