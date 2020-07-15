@@ -6,6 +6,16 @@
 
 struct AuthenticationResponse final : ServerMessage
 {
+    struct Scripts
+    {
+        Vector<uint8_t> Data{};
+    };
+
+    struct ReplicatedObjects
+    {
+        Vector<uint8_t> Data{};
+    };
+
     AuthenticationResponse()
         : ServerMessage(kAuthenticationResponse)
     {
@@ -19,12 +29,12 @@ struct AuthenticationResponse final : ServerMessage
         return GetOpcode() == achRhs.GetOpcode() && 
             Accepted == achRhs.Accepted && 
             Mods == achRhs.Mods && 
-            Scripts == achRhs.Scripts &&
-            ReplicatedObjects == achRhs.ReplicatedObjects;
+            Scripts.Data == achRhs.Scripts.Data &&
+            ReplicatedObjects.Data == achRhs.ReplicatedObjects.Data;
     }
 
     bool Accepted{ false };
     Mods Mods{};
-    Vector<uint8_t> Scripts{};
-    Vector<uint8_t> ReplicatedObjects{};
+    Scripts Scripts{};
+    ReplicatedObjects ReplicatedObjects{};
 };

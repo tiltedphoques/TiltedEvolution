@@ -52,7 +52,7 @@ void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     if(result)
     {
         pRemoteRpcCallsRequest->set_data(buff.GetData(), writer.GetBytePosition());
-        m_transport.Send(message);
+        //m_transport.Send(message);
     }
 }
 

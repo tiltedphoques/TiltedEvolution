@@ -247,8 +247,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         spdlog::info(oss.str(), aConnectionId);
 
-        serverResponse.Scripts = scripts.SerializeScripts();
-        serverResponse.ReplicatedObjects = scripts.GenerateFull();
+        serverResponse.Scripts.Data = scripts.SerializeScripts();
+        serverResponse.ReplicatedObjects.Data = scripts.GenerateFull();
 
         Send(aConnectionId, serverResponse);
     }

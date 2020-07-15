@@ -7,6 +7,7 @@ struct ImguiService;
 struct CellChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
+struct AuthenticationResponse;
 
 struct World;
 
@@ -19,7 +20,6 @@ struct TransportService : Client
 
     TP_NOCOPYMOVE(TransportService);
 
-    bool Send(const TiltedMessages::ClientMessage& acMessage) const noexcept;
     bool Send(const ClientMessage& acMessage) const noexcept;
 
     void OnConsume(const void* apData, uint32_t aSize) override;
@@ -37,7 +37,7 @@ protected:
     void OnDraw() noexcept;
 
     // Packet handlers
-    void HandleAuthenticationResponse(const TiltedMessages::AuthenticationResponse& acMessage) noexcept;
+    void HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept;
 
 private:
 

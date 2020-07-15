@@ -36,6 +36,7 @@
 #include <Entry.hpp>
 #include <Debug.hpp>
 #include <Buffer.hpp>
+#include <ViewBuffer.hpp>
 #include <ThisCall.hpp>
 #include <TaskQueue.hpp>
 #include <Math.hpp>

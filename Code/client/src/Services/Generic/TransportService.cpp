@@ -1,7 +1,5 @@
 #include <Services/TransportService.h>
 
-#include <client_server.pb.h>
-
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -16,6 +14,9 @@
 #include <ScratchAllocator.hpp>
 #include <Services/ImguiService.h>
 #include <imgui.h>
+
+#include <Messages/AuthenticationResponse.h>
+#include <Messages/ServerMessageFactory.h>
 
 #define TRANSPORT_HANDLE(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: Handle##packetName(message.functionName()); break;
 #define TRANSPORT_DISPATCH(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: dispatcher.trigger(message.functionName()); break;
@@ -33,7 +34,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
     m_connected = false;
 }
 
-bool TransportService::Send(const TiltedMessages::ClientMessage& acMessage) const noexcept
+bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 {
     static thread_local ScratchAllocator s_allocator(1 << 18);
 
@@ -42,34 +43,6 @@ bool TransportService::Send(const TiltedMessages::ClientMessage& acMessage) cons
         ~ScopedReset() { s_allocator.Reset(); }
     } allocatorGuard;
 
-    if (IsConnected())
-    {
-        ScopedAllocator _{s_allocator};
-
-        // We first try to allocate using the scratch pool
-        auto pPacket = TiltedPhoques::MakeUnique<Packet>(acMessage.ByteSize());
-
-        // If it failed to allocate the packet object or the underlying buffer, fallback to the default allocator (usually malloc/free)
-        if(!pPacket || !pPacket->IsValid())
-            pPacket.reset(Allocator::GetDefault()->New<Packet>(acMessage.ByteSize()));
-
-        if (pPacket && pPacket->IsValid() && acMessage.SerializeToArray(pPacket->GetData(), static_cast<int>(pPacket->GetSize())))
-        {
-            Client::Send(pPacket.get());
-
-            return true;
-        }
-        else
-        {
-            // TODO: Understand wtf is going on here
-        }
-    }
-
-    return false;
-}
-
-bool TransportService::Send(const ClientMessage& acMessage) const noexcept
-{
     if (IsConnected())
     {
         Buffer buffer(1 << 16);
@@ -89,24 +62,27 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 
 void TransportService::OnConsume(const void* apData, uint32_t aSize)
 {
-    TiltedMessages::ServerMessage message;
-    if (!message.ParseFromArray(apData, aSize))
+    ServerMessageFactory factory;
+    TiltedPhoques::ViewBuffer buf((uint8_t*)apData, aSize);
+    Buffer::Reader reader(&buf);
+
+    auto pMessage = factory.Extract(reader);
+    if (!pMessage)
     {
+        spdlog::error("Couldn't parse packet from server");
         return;
     }
 
-    auto& dispatcher = m_dispatcher;
-
-    switch (message.Content_case())
+    switch (pMessage->GetOpcode())
     {
-        TRANSPORT_HANDLE(AuthenticationResponse, authentication_response);
-        TRANSPORT_DISPATCH(StringCacheContent, string_cache_content);
-        TRANSPORT_DISPATCH(CharacterAssignResponse, character_assign_response);
-        TRANSPORT_DISPATCH(CharacterSpawnRequest, character_spawn_request);
-        TRANSPORT_DISPATCH(ReferenceMovementSnapshot, reference_movement_snapshot);
-        TRANSPORT_DISPATCH(ReplicatedNetObjects, replicated_net_objects);
+    case kAuthenticationResponse:
+    {
+        const auto pRealMessage = TiltedPhoques::CastUnique<AuthenticationResponse>(std::move(pMessage));
+        HandleAuthenticationResponse(*pRealMessage);
+    }
+    break;
     default:
-        assert(false);
+        spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());
         break;
     }
 }
@@ -163,7 +139,7 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
         pCellId->set_mod(modId);
         pCellId->set_base(baseId);
 
-        Send(message);
+        //Send(message);
     }
 }
 
@@ -184,18 +160,18 @@ void TransportService::OnDraw() noexcept
     }
 }
 
-void TransportService::HandleAuthenticationResponse(const TiltedMessages::AuthenticationResponse& acMessage) noexcept
+void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
     m_connected = true;
 
     // Dispatch the mods to anyone who needs it
-    m_dispatcher.trigger(acMessage.mods());
+    m_dispatcher.trigger(acMessage.Mods);
 
     // Dispatch the scripts to anyone who needs it
-    m_dispatcher.trigger(acMessage.scripts());
+    m_dispatcher.trigger(acMessage.Scripts);
 
     // Dispatch the replicated objects
-    m_dispatcher.trigger(acMessage.objects());
+    m_dispatcher.trigger(acMessage.ReplicatedObjects);
 
     // Notify we are ready for action
     m_dispatcher.trigger(ConnectedEvent());

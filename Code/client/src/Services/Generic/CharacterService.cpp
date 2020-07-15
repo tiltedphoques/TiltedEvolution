@@ -310,7 +310,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     AnimationSystem::Serialize(m_world, action, ActionEvent{}, pAssignmentRequest->mutable_current_action());
 
-    if (m_transport.Send(message))
+    //if (m_transport.Send(message))
     {
         aRegistry.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
 
@@ -329,7 +329,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         auto pCancelRequest = message.mutable_cancel_character_assign_request();
         pCancelRequest->set_cookie(waitingComponent.Cookie);
 
-        m_transport.Send(message);
+        //m_transport.Send(message);
 
         aRegistry.remove<WaitingForAssignmentComponent>(aEntity);
     }
@@ -342,7 +342,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         auto pRemoveRequest = message.mutable_character_remove_request();
         pRemoveRequest->set_server_id(localComponent.Id);
 
-        m_transport.Send(message);
+        //m_transport.Send(message);
 
         aRegistry.remove<LocalComponent>(aEntity);
     }
@@ -376,7 +376,7 @@ void CharacterService::RunLocalUpdates() noexcept
 
     // spdlog::info("Send snapshot size : {}", message.ByteSizeLong());
 
-    m_transport.Send(message);
+    //m_transport.Send(message);
 }
 
 void CharacterService::RunRemoteUpdates() noexcept

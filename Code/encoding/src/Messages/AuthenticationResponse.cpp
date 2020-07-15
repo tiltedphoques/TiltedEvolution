@@ -4,10 +4,10 @@ void AuthenticationResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
 {
     Serialization::WriteBool(aWriter, Accepted);
     Mods.Serialize(aWriter);
-    Serialization::WriteVarInt(aWriter, Scripts.size());
-    aWriter.WriteBytes(Scripts.data(), Scripts.size());
-    Serialization::WriteVarInt(aWriter, ReplicatedObjects.size());
-    aWriter.WriteBytes(ReplicatedObjects.data(), ReplicatedObjects.size());
+    Serialization::WriteVarInt(aWriter, Scripts.Data.size());
+    aWriter.WriteBytes(Scripts.Data.data(), Scripts.Data.size());
+    Serialization::WriteVarInt(aWriter, ReplicatedObjects.Data.size());
+    aWriter.WriteBytes(ReplicatedObjects.Data.data(), ReplicatedObjects.Data.size());
 }
 
 void AuthenticationResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -15,9 +15,9 @@ void AuthenticationResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     Accepted = Serialization::ReadBool(aReader);
     Mods.Deserialize(aReader);
     const auto scriptsLength = Serialization::ReadVarInt(aReader);
-    Scripts.resize(scriptsLength);
-    aReader.ReadBytes(Scripts.data(), scriptsLength);
+    Scripts.Data.resize(scriptsLength);
+    aReader.ReadBytes(Scripts.Data.data(), scriptsLength);
     const auto replicatedObjectsLength = Serialization::ReadVarInt(aReader);
-    ReplicatedObjects.resize(replicatedObjectsLength);
-    aReader.ReadBytes(ReplicatedObjects.data(), replicatedObjectsLength);
+    ReplicatedObjects.Data.resize(replicatedObjectsLength);
+    aReader.ReadBytes(ReplicatedObjects.Data.data(), replicatedObjectsLength);
 }
