@@ -2,6 +2,7 @@
 
 #include <World.h>
 #include <Messages/Message.h>
+#include <Messages/AuthenticationRequest.h>
 
 using TiltedPhoques::String;
 using TiltedPhoques::Server;

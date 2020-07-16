@@ -70,7 +70,7 @@ workspace ("Tilted Online Framework")
         
     filter { "action:gmake*", "language:C++" }
         buildoptions { "-g -fpermissive" }
-        linkoptions ("-lm -lpthread -pthread -Wl,--no-as-needed -lrt -g -fPIC -static")
+        linkoptions ("-lm -lpthread -pthread -Wl,--no-as-needed -lrt -g -fPIC")
 
     filter { "configurations:Skyrim" }
         defines { "NDEBUG", "PUBLIC_BUILD", "TP_SKYRIM" }
@@ -224,6 +224,7 @@ workspace ("Tilted Online Framework")
                     "sqlite3",
                     "imgui",
                     "Version",
+                    "snappy"
                 }
                 
                 dependson 
@@ -307,6 +308,7 @@ workspace ("Tilted Online Framework")
             {
                 "Encoding",
                 "Connect",
+                "snappy",
                 "SteamNet",
                 "protobuf",
                 "Script",
