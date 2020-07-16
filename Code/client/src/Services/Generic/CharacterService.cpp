@@ -21,7 +21,11 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ReferenceSpawnedEvent.h>
+
 #include <Structs/ActionEvent.h>
+#include <Messages/CancelAssignmentRequest.h>
+#include <Messages/RemoveCharacterRequest.h>
+
 #include <World.h>
 
 
@@ -325,11 +329,10 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
     {
         auto& waitingComponent = aRegistry.get<WaitingForAssignmentComponent>(aEntity);
 
-        TiltedMessages::ClientMessage message;
-        auto pCancelRequest = message.mutable_cancel_character_assign_request();
-        pCancelRequest->set_cookie(waitingComponent.Cookie);
+        CancelAssignmentRequest message;
+        message.Cookie = waitingComponent.Cookie;
 
-        //m_transport.Send(message);
+        m_transport.Send(message);
 
         aRegistry.remove<WaitingForAssignmentComponent>(aEntity);
     }
@@ -338,11 +341,10 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
     {
         auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
 
-        TiltedMessages::ClientMessage message;
-        auto pRemoveRequest = message.mutable_character_remove_request();
-        pRemoveRequest->set_server_id(localComponent.Id);
+        RemoveCharacterRequest message;
+        message.ServerId = localComponent.Id;
 
-        //m_transport.Send(message);
+        m_transport.Send(message);
 
         aRegistry.remove<LocalComponent>(aEntity);
     }

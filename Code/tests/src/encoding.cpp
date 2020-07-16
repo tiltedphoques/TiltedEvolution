@@ -2,8 +2,15 @@
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/AuthenticationResponse.h>
+#include <Messages/CancelAssignmentRequest.h>
+#include <Messages/RemoveCharacterRequest.h>
 #include <Structs/ActionEvent.h>
 #include <Structs/Mods.h>
+#include <Structs/FullObjects.h>
+#include <Structs/Objects.h>
+#include <Structs/Scripts.h>
+#include <Structs/GameId.h>
+#include <Structs/Vector3_NetQuantize.h>
 
 using namespace TiltedPhoques;
 
@@ -27,6 +34,105 @@ TEST_CASE("Encoding factory", "[encoding.factory]")
 
     auto pRequest = CastUnique<AuthenticationRequest>(std::move(pMessage));
     REQUIRE(pRequest->Token == request.Token);
+}
+
+TEST_CASE("Static structures", "[encoding.static]")
+{
+    GIVEN("FullObjects")
+    {
+        FullObjects sendObjects, recvObjects;
+        sendObjects.Data.push_back(42);
+        sendObjects.Data.push_back(13);
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("Objects")
+    {
+        Objects sendObjects, recvObjects;
+        sendObjects.Data.push_back(42);
+        sendObjects.Data.push_back(13);
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("Scripts")
+    {
+        Scripts sendObjects, recvObjects;
+        sendObjects.Data.push_back(42);
+        sendObjects.Data.push_back(13);
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("GameId")
+    {
+        GameId sendObjects, recvObjects;
+        sendObjects.ModId = 1456987;
+        sendObjects.BaseId = 0x789654;
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("Vector3_NetQuantize")
+    {
+        Vector3_NetQuantize sendObjects, recvObjects;
+        sendObjects.X = 142.56f;
+        sendObjects.Y = 45687.7f;
+        sendObjects.Z = -142.56f;
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
 }
 
 TEST_CASE("Differential structures", "[encoding.differential]")
@@ -135,6 +241,44 @@ TEST_CASE("Packets", "[encoding.packets]")
         sendMessage.ReplicatedObjects.Data.push_back(3);
         sendMessage.ReplicatedObjects.Data.push_back(4);
 
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
+    SECTION("CancelAssignmentRequest")
+    {
+        Buffer buff(1000);
+
+        CancelAssignmentRequest sendMessage, recvMessage;
+        sendMessage.Cookie = 14523698;
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
+    SECTION("RemoveCharacterRequest")
+    {
+        Buffer buff(1000);
+
+        RemoveCharacterRequest sendMessage, recvMessage;
+        sendMessage.ServerId = 14523698;
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);
 
