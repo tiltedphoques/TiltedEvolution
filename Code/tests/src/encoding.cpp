@@ -11,6 +11,10 @@
 #include <Structs/Scripts.h>
 #include <Structs/GameId.h>
 #include <Structs/Vector3_NetQuantize.h>
+#include <Structs/Vector2_NetQuantize.h>
+#include <Structs/Rotator2_NetQuantize.h>
+
+#include <Math.hpp>
 
 using namespace TiltedPhoques;
 
@@ -120,6 +124,64 @@ TEST_CASE("Static structures", "[encoding.static]")
         sendObjects.X = 142.56f;
         sendObjects.Y = 45687.7f;
         sendObjects.Z = -142.56f;
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("Vector2_NetQuantize")
+    {
+        Vector2_NetQuantize sendObjects, recvObjects;
+        sendObjects.X = 1000.89f;
+        sendObjects.Y = -485632.75f;
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("Rotator2_NetQuantize")
+    {
+        Rotator2_NetQuantize sendObjects, recvObjects;
+        sendObjects.X = 1.89f;
+        sendObjects.Y = TiltedPhoques::Pi * 2.0;
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendObjects.Serialize(writer);
+
+            Buffer::Reader reader(&buff);
+            recvObjects.Deserialize(reader);
+
+            REQUIRE(sendObjects == recvObjects);
+        }
+    }
+
+    GIVEN("Rotator2_NetQuantize needing wrap")
+    {
+        // This test is a bit dangerous as floating errors can lead to sendObjects != recvObjects but the difference is minuscule so we don't care abut such cases
+        Rotator2_NetQuantize sendObjects, recvObjects;
+        sendObjects.X = -1.87f;
+        sendObjects.Y = TiltedPhoques::Pi * 18.0 + 3.6f;
 
         {
             Buffer buff(1000);
