@@ -25,7 +25,7 @@ void PlayerService::HandleCellEnter(const PacketEvent<TiltedMessages::CellEnterR
         return;
     }
 
-    m_world.assign_or_replace<CellIdComponent>(*itor, acMessage.Packet.cell_id());
+    //m_world.assign_or_replace<CellIdComponent>(*itor, acMessage.Packet.cell_id());
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)

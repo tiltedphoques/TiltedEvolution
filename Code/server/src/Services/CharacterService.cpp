@@ -8,10 +8,12 @@
 #include <Scripts/Npc.h>
 #include <Scripts/Player.h>
 
+#include <Messages/AssignCharacterRequest.h>
+
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
-    , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<TiltedMessages::CharacterAssignRequest>>().connect<&CharacterService::OnCharacterAssignRequest>(this))
+    , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<TiltedMessages::ReferenceMovementSnapshot>>().connect<&CharacterService::OnReferenceMovementSnapshot>(this))
 {
@@ -148,11 +150,12 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
     }
 }
 
-void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages::CharacterAssignRequest>& acMessage) const noexcept
+void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
-    const auto gameId = acMessage.Packet.id();
+    auto& message = acMessage.Packet;
+    const auto& refId = message.ReferenceId;
 
-    const auto isCustom = (gameId.mod() == 0 && gameId.base() == 0x14) || gameId.mod() == std::numeric_limits<uint32_t>::max();
+    const auto isCustom = (refId.ModId == 0 && refId.BaseId == 0x14) || refId.ModId == std::numeric_limits<uint32_t>::max();
 
     // Check if id is the player
     if (!isCustom)
@@ -160,28 +163,28 @@ void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages
         // Look for the character
         auto view = m_world.view<FormIdComponent>();
 
-        const auto itor = std::find_if(std::begin(view), std::end(view), [view, &gameId](auto entity)
+        const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
                 const auto& formIdComponent = view.get(entity);
 
-                return formIdComponent.BaseId == gameId.base() && formIdComponent.ModId == gameId.mod();
+                return formIdComponent.BaseId == refId.BaseId && formIdComponent.ModId == refId.ModId;
             });
 
         if (itor != std::end(view))
         {
             // This entity already has an owner
-            spdlog::info("FormId: {:x}:{:x} is already managed", gameId.mod(), gameId.base());
+            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             const auto pServer = GameServer::Get();
 
-            TiltedMessages::ServerMessage message;
-            auto pResponse = message.mutable_character_assign_response();
+            TiltedMessages::ServerMessage smessage;
+            auto pResponse = smessage.mutable_character_assign_response();
 
-            pResponse->set_cookie(acMessage.Packet.cookie());
+            pResponse->set_cookie(message.Cookie);
             pResponse->set_server_id(World::ToInteger(*itor));
             pResponse->set_ownership(false);
 
-         //   pServer->Send(acMessage.ConnectionId, message);
+         //   pServer->Send(acMessage.ConnectionId, smessage);
 
             return;
         }
@@ -262,54 +265,52 @@ void CharacterService::OnReferenceMovementSnapshot(
     }
 }
 
-void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::CharacterAssignRequest>& acMessage) const noexcept
+void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
-    const auto gameId = acMessage.Packet.id();
-    const auto baseId = acMessage.Packet.base_id();
+    auto& message = acMessage.Packet;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x}  assigned to {:x}", gameId.mod(), gameId.base(), baseId.mod(), baseId.base(), acMessage.ConnectionId);
+    const auto gameId = message.ReferenceId;
+    const auto baseId = message.FormId;
+
+    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x}  assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
     const auto cEntity = m_world.create();
-    const auto isTemporary = gameId.mod() == std::numeric_limits<uint32_t>::max();
-    const auto isPlayer = (gameId.mod() == 0 && gameId.base() == 0x14);
+    const auto isTemporary = gameId.ModId == std::numeric_limits<uint32_t>::max();
+    const auto isPlayer = (gameId.ModId == 0 && gameId.BaseId == 0x14);
     const auto isCustom = isPlayer || isTemporary;
 
     // For player characters and temporary forms
     if (!isCustom)
     {
-        m_world.emplace<FormIdComponent>(cEntity, gameId.base(), gameId.mod());
+        m_world.emplace<FormIdComponent>(cEntity, gameId.BaseId, gameId.ModId);
     }
-    else if (acMessage.Packet.has_base_id() && !isTemporary)
+    else if (baseId != GameId{} && !isTemporary)
     {
         spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.ConnectionId);
         return;
     }
 
-    auto& packet = acMessage.Packet;
     const auto pServer = GameServer::Get();
 
     m_world.emplace<ScriptsComponent>(cEntity);
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
-    m_world.emplace<CellIdComponent>(cEntity, packet.cell_id());
+    m_world.emplace<CellIdComponent>(cEntity, message.CellId);
 
     CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
-    characterComponent.ChangeFlags = packet.change_flags();
-    characterComponent.SaveBuffer.assign(packet.npc_buffer().c_str(), packet.npc_buffer().size());
-    characterComponent.InventoryBuffer.assign(packet.inventory_buffer().c_str(), packet.inventory_buffer().size());
-    characterComponent.BaseId = FormIdComponent(packet.base_id());
+    characterComponent.ChangeFlags = message.ChangeFlags;
+    characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
+    //characterComponent.InventoryBuffer = std::move(message.InventoryBuffer);
+    characterComponent.BaseId = FormIdComponent(message.FormId);
 
     MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
-    movementComponent.Position = Vector3<float>(packet.movement().position().x(), packet.movement().position().y(), packet.movement().position().z());
-    movementComponent.Rotation = Vector3<float>(packet.movement().rotation().x(), 0.f, packet.movement().rotation().z());
+    movementComponent.Position = Vector3<float>(message.Position.X, message.Position.Y, message.Position.Z);
+    movementComponent.Rotation = Vector3<float>(message.Rotation.X, 0.f, message.Rotation.Y);
     movementComponent.Sent = false;
 
     auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
 
-    ViewBuffer buffer((uint8_t*)packet.current_action().data(), packet.current_action().size());
-    Buffer::Reader reader(&buffer);
-
-    animationComponent.CurrentAction.ApplyDifferential(reader);
+    animationComponent.CurrentAction = message.LatestAction;
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)
@@ -337,13 +338,13 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
         m_world.GetScriptService().HandlePlayerEnterWorld(player);
     }
 
-    TiltedMessages::ServerMessage message;
-    auto pResponse = message.mutable_character_assign_response();
-    pResponse->set_cookie(acMessage.Packet.cookie());
+    TiltedMessages::ServerMessage smessage;
+    auto pResponse = smessage.mutable_character_assign_response();
+    pResponse->set_cookie(message.Cookie);
     pResponse->set_server_id(World::ToInteger(cEntity));
     pResponse->set_ownership(true);
 
-   // pServer->Send(acMessage.ConnectionId, message);
+   // pServer->Send(acMessage.ConnectionId, smessage);
 
     auto& dispatcher = m_world.GetDispatcher();
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));

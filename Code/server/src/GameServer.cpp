@@ -6,12 +6,19 @@
 #include <Events/UpdateEvent.h>
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>
+#include <Messages/CancelAssignmentRequest.h>
+#include <Messages/RemoveCharacterRequest.h>
+#include <Messages/AssignCharacterRequest.h>
 #include <Messages/AuthenticationResponse.h>
 
 #include <Scripts/Player.h>
 
 #define SERVER_HANDLE(packetName, functionName) case TiltedMessages::ClientMessage::k##packetName: Handle##packetName(aConnectionId, message.functionName()); break;
-#define SERVER_DISPATCH(packetName, functionName) case TiltedMessages::ClientMessage::k##packetName: dispatcher.trigger(PacketEvent<TiltedMessages::packetName>(message.mutable_##functionName(), aConnectionId)); break;
+#define SERVER_DISPATCH(packetName) case k##packetName: \
+{\
+    const auto pRealMessage = CastUnique<packetName>(std::move(pMessage)); \
+    dispatcher.trigger(PacketEvent<packetName>(pRealMessage.get(), aConnectionId)); break; \
+}
 
 GameServer* GameServer::s_pInstance = nullptr;
 
@@ -77,8 +84,11 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
     {
         const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(pMessage));
         HandleAuthenticationRequest(aConnectionId, pRealMessage);
-    }
         break;
+    }
+        SERVER_DISPATCH(RemoveCharacterRequest);
+        SERVER_DISPATCH(AssignCharacterRequest);
+        SERVER_DISPATCH(CancelAssignmentRequest);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;
