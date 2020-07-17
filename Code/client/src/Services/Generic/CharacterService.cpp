@@ -26,6 +26,7 @@
 #include <Messages/CancelAssignmentRequest.h>
 #include <Messages/RemoveCharacterRequest.h>
 #include <Messages/AssignCharacterRequest.h>
+#include <Messages/AssignCharacterResponse.h>
 
 #include <World.h>
 
@@ -44,7 +45,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&CharacterService::OnConnected>(this);
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&CharacterService::OnDisconnected>(this);
 
-    m_characterAssignConnection = m_dispatcher.sink<TiltedMessages::CharacterAssignResponse>().connect<&CharacterService::OnCharacterAssign>(this);
+    m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
     m_characterSpawnConnection = m_dispatcher.sink<TiltedMessages::CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
     m_referenceMovementSnapshotConnection = m_dispatcher.sink<TiltedMessages::ReferenceMovementSnapshot>().connect<&CharacterService::OnReferenceMovementSnapshot>(this);
 }
@@ -97,10 +98,10 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
 }
 
-void CharacterService::OnCharacterAssign(const TiltedMessages::CharacterAssignResponse& acMessage) noexcept
+void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept
 {
     auto view = m_world.view<WaitingForAssignmentComponent>();
-    const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.cookie()](auto entity)
+    const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.Cookie](auto entity)
     {
         return view.get(entity).Cookie == cookie;
     });
@@ -108,14 +109,14 @@ void CharacterService::OnCharacterAssign(const TiltedMessages::CharacterAssignRe
     if (itor == std::end(view))
         return;
 
-    if (acMessage.ownership())
+    if (acMessage.Owner)
     {
-        m_world.emplace<LocalComponent>(*itor, acMessage.server_id());
+        m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
         m_world.emplace<LocalAnimationComponent>(*itor);
     }
     else
     {
-        m_world.emplace<RemoteComponent>(*itor, acMessage.server_id());
+        m_world.emplace<RemoteComponent>(*itor, acMessage.ServerId);
 
         const auto& formIdComponent = m_world.get<FormIdComponent>(*itor);
 

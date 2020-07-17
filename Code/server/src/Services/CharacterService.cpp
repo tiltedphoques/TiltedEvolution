@@ -9,6 +9,7 @@
 #include <Scripts/Player.h>
 
 #include <Messages/AssignCharacterRequest.h>
+#include <Messages/AssignCharacterResponse.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -177,14 +178,12 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             const auto pServer = GameServer::Get();
 
-            TiltedMessages::ServerMessage smessage;
-            auto pResponse = smessage.mutable_character_assign_response();
+            AssignCharacterResponse response;
+            response.Cookie = message.Cookie;
+            response.ServerId = World::ToInteger(*itor);
+            response.Owner = false;
 
-            pResponse->set_cookie(message.Cookie);
-            pResponse->set_server_id(World::ToInteger(*itor));
-            pResponse->set_ownership(false);
-
-         //   pServer->Send(acMessage.ConnectionId, smessage);
+            pServer->Send(acMessage.ConnectionId, response);
 
             return;
         }
@@ -338,13 +337,12 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
         m_world.GetScriptService().HandlePlayerEnterWorld(player);
     }
 
-    TiltedMessages::ServerMessage smessage;
-    auto pResponse = smessage.mutable_character_assign_response();
-    pResponse->set_cookie(message.Cookie);
-    pResponse->set_server_id(World::ToInteger(cEntity));
-    pResponse->set_ownership(true);
+    AssignCharacterResponse response;
+    response.Cookie = message.Cookie;
+    response.ServerId = World::ToInteger(cEntity);
+    response.Owner = true;
 
-   // pServer->Send(acMessage.ConnectionId, smessage);
+    pServer->Send(acMessage.ConnectionId, response);
 
     auto& dispatcher = m_world.GetDispatcher();
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
