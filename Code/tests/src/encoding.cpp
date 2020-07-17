@@ -4,6 +4,7 @@
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/CancelAssignmentRequest.h>
 #include <Messages/RemoveCharacterRequest.h>
+#include <Messages/AssignCharacterRequest.h>
 #include <Structs/ActionEvent.h>
 #include <Structs/Mods.h>
 #include <Structs/FullObjects.h>
@@ -341,6 +342,49 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         RemoveCharacterRequest sendMessage, recvMessage;
         sendMessage.ServerId = 14523698;
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
+    SECTION("AssignCharacterRequest")
+    {
+        Buffer buff(1000);
+
+        ActionEvent sendAction;
+        sendAction.ActionId = 42;
+        sendAction.State1 = 6547;
+        sendAction.Tick = 48;
+        sendAction.ActorId = 12345678;
+        sendAction.EventName = "test";
+        sendAction.IdleId = 87964;
+        sendAction.State2 = 8963;
+        sendAction.TargetEventName = "toast";
+        sendAction.TargetId = 963741;
+        sendAction.Type = 4;
+
+        AssignCharacterRequest sendMessage, recvMessage;
+        sendMessage.Cookie = 14523698;
+        sendMessage.AppearanceBuffer = "toto";
+        sendMessage.CellId.BaseId = 45;
+        sendMessage.FormId.ModId = 48;
+        sendMessage.ReferenceId.BaseId = 456799;
+        sendMessage.ReferenceId.ModId = 4079;
+        sendMessage.LatestAction = sendAction;
+        sendMessage.Position.X = -452.4f;
+        sendMessage.Position.Y = 452.4f;
+        sendMessage.Position.Z = 125452.4f;
+        sendMessage.Rotation.X = -1.87f;
+        sendMessage.Rotation.Y = 45.35f;
+
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);
 

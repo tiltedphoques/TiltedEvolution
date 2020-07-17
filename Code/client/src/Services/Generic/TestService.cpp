@@ -24,7 +24,7 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
-    std::string data;
+    String data;
 
     pPlayerBaseForm->Serialize(&data);
 

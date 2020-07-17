@@ -4,7 +4,8 @@ enum ClientOpcode : unsigned char
 {
     kAuthenticationRequest = 0,
     kCancelAssignmentRequest,
-    kRemoveCharacterRequest
+    kRemoveCharacterRequest,
+    kAssignCharacterRequest
 };
 
 enum ServerOpcode : unsigned char

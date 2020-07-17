@@ -25,6 +25,7 @@
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
 #include <Messages/RemoveCharacterRequest.h>
+#include <Messages/AssignCharacterRequest.h>
 
 #include <World.h>
 
@@ -157,11 +158,11 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
             }
 
             pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
-            pNpc->Deserialize(acMessage.npc_buffer(), acMessage.change_flags());
+            //pNpc->Deserialize(acMessage.npc_buffer(), acMessage.change_flags());
         }
         else
         {
-            pNpc = TESNPC::Create(acMessage.npc_buffer(), acMessage.change_flags());
+           // pNpc = TESNPC::Create(acMessage.npc_buffer(), acMessage.change_flags());
             FaceGenSystem::Setup(m_world, cEntity);
         }
 
@@ -260,23 +261,20 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     if (!World::Get().GetModSystem().GetServerModId(pActor->GetCellId(), cellModId, cellBaseId))
         return;
 
-    TiltedMessages::ClientMessage message;
-    auto pAssignmentRequest = message.mutable_character_assign_request();
-    // Set general info
-    pAssignmentRequest->set_cookie(sCookieSeed);
-    pAssignmentRequest->mutable_id()->set_base(baseId);
-    pAssignmentRequest->mutable_cell_id()->set_base(cellBaseId);
-    pAssignmentRequest->mutable_id()->set_mod(modId);
-    pAssignmentRequest->mutable_cell_id()->set_mod(cellModId);
+    AssignCharacterRequest message;
 
-    // Set movement info
-    auto pMovement = pAssignmentRequest->mutable_movement();
-    pMovement->mutable_position()->set_x(pActor->position.x);
-    pMovement->mutable_position()->set_y(pActor->position.y);
-    pMovement->mutable_position()->set_z(pActor->position.z);
+    message.Cookie = sCookieSeed;
+    message.ReferenceId.BaseId = baseId;
+    message.ReferenceId.ModId = modId;
+    message.CellId.BaseId = cellBaseId;
+    message.CellId.ModId = cellModId;
 
-    pMovement->mutable_rotation()->set_x(pActor->rotation.x);
-    pMovement->mutable_rotation()->set_z(pActor->rotation.z);
+    message.Position.X = pActor->position.x;
+    message.Position.Y = pActor->position.y;
+    message.Position.Z = pActor->position.z;
+
+    message.Rotation.X = pActor->rotation.x;
+    message.Rotation.Y = pActor->rotation.z;
 
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
@@ -291,8 +289,8 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     if(isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
     {
-        pAssignmentRequest->set_change_flags(changeFlags);
-        pNpc->Serialize(pAssignmentRequest->mutable_npc_buffer());
+        message.ChangeFlags = changeFlags;
+        pNpc->Serialize(&message.AppearanceBuffer);
     }
 
     //pActor->processManager->Serialize(pAssignmentRequest->mutable_inventory_buffer());
@@ -304,17 +302,16 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
         if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, modNpcId, baseNpcId))
             return;
 
-        pAssignmentRequest->mutable_base_id()->set_base(baseNpcId);
-        pAssignmentRequest->mutable_base_id()->set_mod(modNpcId);
+        message.FormId.BaseId = baseNpcId;
+        message.FormId.ModId = modNpcId;
     }
 
     // Serialize actions
     const auto pExtension = pActor->GetExtension();
-    const auto action = pExtension->LatestAnimation;
 
-    AnimationSystem::Serialize(m_world, action, ActionEvent{}, pAssignmentRequest->mutable_current_action());
+    message.LatestAction = pExtension->LatestAnimation;
 
-    //if (m_transport.Send(message))
+    if (m_transport.Send(message))
     {
         aRegistry.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
 
