@@ -11,5 +11,6 @@ enum ClientOpcode : unsigned char
 enum ServerOpcode : unsigned char
 {
     kAuthenticationResponse = 0,
-    kAssignCharacterResponse
+    kAssignCharacterResponse,
+    kServerReferencesMoveRequest
 };

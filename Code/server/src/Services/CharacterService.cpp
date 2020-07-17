@@ -10,6 +10,7 @@
 
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
+#include <Messages/ServerReferencesMoveRequest.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -67,15 +68,14 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
     auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
     const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
 
-    Map<ConnectionId_t, TiltedMessages::ServerMessage> messages;
+    Map<ConnectionId_t, ServerReferencesMoveRequest> messages;
 
     for (auto player : playerView)
     {
         const auto& playerComponent = playerView.get<PlayerComponent>(player);
         auto& message = messages[playerComponent.ConnectionId];
 
-        auto pSnapshot = message.mutable_reference_movement_snapshot();
-        pSnapshot->set_tick(GameServer::Get()->GetTick());
+        message.Tick = GameServer::Get()->GetTick();
     }
 
     characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, const auto& movementComponent, const auto& animationComponent, const auto& ownerComponent)
@@ -93,29 +93,25 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                     continue;
 
                 auto& message = messages[playerComponent.ConnectionId];
-                auto pSnapshot = message.mutable_reference_movement_snapshot()->add_entries();
-                auto& movement = *pSnapshot->mutable_movement();
-                auto& actions = *pSnapshot->mutable_actions();
-
-                pSnapshot->set_server_id(World::ToInteger(entity));
+                auto& movement = message.Movements[World::ToInteger(entity)];
 
                 float x, y, z;
                 movementComponent.Position.Decompose(x, y, z);
 
-                movement.mutable_position()->set_x(x);
-                movement.mutable_position()->set_y(y);
-                movement.mutable_position()->set_z(z);
+                movement.Position.X = x;
+                movement.Position.Y = y;
+                movement.Position.Z = z;
 
                 movementComponent.Rotation.Decompose(x, y, z);
 
-                movement.mutable_rotation()->set_x(x);
-                movement.mutable_rotation()->set_z(z);
+                movement.Rotation.X = x;
+                movement.Rotation.Y = z;
 
                 auto lastSerializedAction = animationComponent.LastSerializedAction;
 
                 if (!animationComponent.Actions.empty())
                 {
-                    for (auto& action : animationComponent.Actions)
+                    /*for (auto& action : animationComponent.Actions)
                     {
                         uint8_t scratch[1 << 12];
 
@@ -126,7 +122,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                         lastSerializedAction = action;
 
                         actions.add_actions()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
-                    }
+                    }*/
                 }
             }
         });
@@ -146,8 +142,8 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 
     for (auto kvp : messages)
     {
-       // if (kvp.second.reference_movement_snapshot().entries_size() > 0)
-       //     GameServer::Get()->Send(kvp.first, kvp.second);
+        if (kvp.second.Movements.size() > 0)
+            GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
 
