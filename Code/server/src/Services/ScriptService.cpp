@@ -6,6 +6,9 @@
 
 #include <Events/UpdateEvent.h>
 
+#include <Messages/ClientRpcCalls.h>
+#include <Messages/ServerScriptUpdate.h>
+
 #include <Components.h>
 #include <GameServer.h>
 
@@ -13,7 +16,7 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : ScriptStore(true)
     , m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
-    , m_rpcCallsRequest(aDispatcher.sink< PacketEvent<TiltedMessages::RpcCallsRequest>>().connect<&ScriptService::OnRpcCalls>(this))
+    , m_rpcCallsRequest(aDispatcher.sink< PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
 {
     Initialize();
 }
@@ -61,7 +64,7 @@ Vector<uint8_t> ScriptService::SerializeScripts() noexcept
     return data;
 }
 
-Vector<uint8_t> ScriptService::GenerateDifferential() noexcept
+Objects ScriptService::GenerateDifferential() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
@@ -69,7 +72,10 @@ Vector<uint8_t> ScriptService::GenerateDifferential() noexcept
     const auto ret = GetNetState()->GenerateDifferentialSnapshot(writer);
     if(ret)
     {
-        return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.Size());
+        Objects objects;
+        objects.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
+
+        return objects;
     }
 
     return {};
@@ -115,23 +121,22 @@ void ScriptService::RegisterExtensions(ScriptContext& aContext)
 
 void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
-    TiltedMessages::ServerMessage message;
-    auto* pReplicatedNetObjects = message.mutable_replicated_net_objects();
+    ServerScriptUpdate message;
 
-    //Serialize(pReplicatedNetObjects);
+    message.Data = GenerateDifferential();
 
     // Only send if the snapshot contains anything changed
-    if(pReplicatedNetObjects->data().size() > 0)
+    if(message.Data.IsEmpty() == false)
     {
-    //    GameServer::Get()->SendToLoaded(message);       
+        GameServer::Get()->SendToLoaded(message);       
     }
 
     CallEvent("onUpdate", acEvent.Delta);
 }
 
-void ScriptService::OnRpcCalls(const PacketEvent<TiltedMessages::RpcCallsRequest>& acRpcCalls) noexcept
+void ScriptService::OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept
 {
-    auto& data = acRpcCalls.Packet.data();
+    auto& data = acRpcCalls.Packet.Data;
 
     Buffer buff(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
     Buffer::Reader reader(&buff);

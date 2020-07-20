@@ -3,6 +3,11 @@
 
 using TiltedPhoques::Serialization;
 
+bool Objects::IsEmpty() const noexcept
+{
+    return Data.empty();
+}
+
 bool Objects::operator==(const Objects& acRhs) const noexcept
 {
     return Data == acRhs.Data;

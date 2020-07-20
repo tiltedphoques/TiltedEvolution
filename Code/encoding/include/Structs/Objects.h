@@ -13,6 +13,7 @@ struct Objects
     Objects() = default;
     ~Objects() = default;
 
+    [[nodiscard]] bool IsEmpty() const noexcept;
     bool operator==(const Objects& acRhs) const noexcept;
     bool operator!=(const Objects& acRhs) const noexcept;
 

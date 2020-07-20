@@ -15,6 +15,8 @@
 #include <Games/Fallout4/Forms/TESForm.h>
 #include <Games/Fallout4/Actor.h>
 
+#include <Messages/ClientRpcCalls.h>
+
 #include <imgui.h>
 
 
@@ -42,8 +44,7 @@ ScriptService::~ScriptService() noexcept
 
 void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    TiltedMessages::ClientMessage message;
-    auto pRemoteRpcCallsRequest = message.mutable_rpc_calls_request();
+    ClientRpcCalls message;
 
     Buffer buff(10000);
     Buffer::Writer writer(&buff);
@@ -51,8 +52,8 @@ void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     const auto result = GetNetState()->GenerateCallRequest(writer);
     if(result)
     {
-        pRemoteRpcCallsRequest->set_data(buff.GetData(), writer.Size());
-        //m_transport.Send(message);
+        message.Data.assign(reinterpret_cast<const char*>(buff.GetData()), writer.Size());
+        m_transport.Send(message);
     }
 }
 

@@ -7,12 +7,14 @@ enum ClientOpcode : unsigned char
     kRemoveCharacterRequest,
     kAssignCharacterRequest,
     kClientReferencesMoveRequest,
-    kEnterCellRequest
+    kEnterCellRequest,
+    kClientRpcCalls
 };
 
 enum ServerOpcode : unsigned char
 {
     kAuthenticationResponse = 0,
     kAssignCharacterResponse,
-    kServerReferencesMoveRequest
+    kServerReferencesMoveRequest,
+    kServerScriptUpdate
 };

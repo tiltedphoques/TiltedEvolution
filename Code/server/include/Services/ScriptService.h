@@ -4,7 +4,10 @@
 #include <ScriptStore.h>
 #include <Events/PacketEvent.h>
 
+#include <Structs/Objects.h>
+
 struct World;
+struct ClientRpcCalls;
 
 namespace Script
 {
@@ -20,7 +23,7 @@ struct ScriptService : ScriptStore
     TP_NOCOPYMOVE(ScriptService);
 
     Vector<uint8_t> SerializeScripts() noexcept;
-    Vector<uint8_t> GenerateDifferential() noexcept;
+    Objects GenerateDifferential() noexcept;
     Vector<uint8_t> GenerateFull() noexcept;
 
     std::tuple<bool, String> HandlePlayerConnect(const Script::Player& aPlayer) noexcept;
@@ -34,7 +37,7 @@ protected:
     void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnRpcCalls(const PacketEvent<TiltedMessages::RpcCallsRequest>& acRpcCalls) noexcept;
+    void OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept;
 
     void BindStaticFunctions(ScriptContext& aContext) noexcept;
     void BindTypes(ScriptContext& aContext) noexcept;

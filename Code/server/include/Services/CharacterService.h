@@ -6,6 +6,7 @@ struct UpdateEvent;
 struct CharacterSpawnedEvent;
 struct World;
 struct AssignCharacterRequest;
+struct ClientReferencesMoveRequest;
 
 struct CharacterService
 {
@@ -21,7 +22,7 @@ protected:
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept;
-    void OnReferenceMovementSnapshot(const PacketEvent<TiltedMessages::ReferenceMovementSnapshot>& acMessage) const noexcept;
+    void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 

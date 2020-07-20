@@ -11,13 +11,14 @@
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
-    , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<TiltedMessages::ReferenceMovementSnapshot>>().connect<&CharacterService::OnReferenceMovementSnapshot>(this))
+    , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
 {
 }
 
@@ -211,14 +212,16 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         });
 }
 
-void CharacterService::OnReferenceMovementSnapshot(
-    const PacketEvent<TiltedMessages::ReferenceMovementSnapshot>& acMessage) const noexcept
+void CharacterService::OnReferencesMoveRequest(
+    const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
     auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
 
-    for (auto& entry : acMessage.Packet.entries())
+    auto& message = acMessage.Packet;
+
+    for (auto& entry : message.Movements)
     {
-        auto itor = view.find(entt::entity(entry.server_id()));
+        auto itor = view.find(entt::entity(entry.first));
 
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
@@ -228,14 +231,14 @@ void CharacterService::OnReferenceMovementSnapshot(
         auto& movementComponent = view.get<MovementComponent>(*itor);
         auto& animationComponent = view.get<AnimationComponent>(*itor);
 
-        movementComponent.Tick = acMessage.Packet.tick();
+        movementComponent.Tick = message.Tick;
 
         const auto movementCopy = movementComponent;
 
-        auto& movement = entry.movement();
+        auto& movement = entry.second;
 
-        movementComponent.Position = Vector3<float>(movement.position().x(), movement.position().y(), movement.position().z());
-        movementComponent.Rotation = Vector3<float>(movement.rotation().x(), 0.f, movement.rotation().z());
+        movementComponent.Position = Vector3<float>(movement.Position.X, movement.Position.Y, movement.Position.Z);
+        movementComponent.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -244,7 +247,7 @@ void CharacterService::OnReferenceMovementSnapshot(
             movementComponent = movementCopy;
         }
 
-        for (auto& action : entry.actions().actions())
+       /* for (auto& action : entry.actions().actions())
         {
             //TODO: HandleAction
             //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
@@ -254,7 +257,7 @@ void CharacterService::OnReferenceMovementSnapshot(
             animationComponent.CurrentAction.ApplyDifferential(reader);
 
             animationComponent.Actions.push_back(animationComponent.CurrentAction);
-        }
+        }*/
 
         movementComponent.Sent = false;
     }
