@@ -11,6 +11,8 @@
 #include <Games/Fallout4/Misc/ProcessManager.h>
 #include <Games/Fallout4/Misc/MiddleProcess.h>
 
+#include <Messages/ClientReferencesMoveRequest.h>
+
 #include <Components.h>
 #include <World.h>
 #include "ViewBuffer.hpp"
@@ -71,25 +73,23 @@ void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, c
     aAnimationComponent.TimePoints.push_back(lastProcessedAction);
 }
 
-void AnimationSystem::Serialize(World& aWorld, TiltedMessages::ReferenceMovementSnapshot& aMovementSnapshot, LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
+void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMovementSnapshot, LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
 {
     const auto pForm = TESForm::GetById(formIdComponent.Id);
     const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
     if (!pActor)
         return;
 
-    auto pEntry = aMovementSnapshot.add_entries();
-    pEntry->set_server_id(localComponent.Id);
+    auto& movement = aMovementSnapshot.Movements[localComponent.Id];
 
-    TiltedMessages::Movement& movement = *pEntry->mutable_movement();;
-    movement.mutable_position()->set_x(pActor->position.x);
-    movement.mutable_position()->set_y(pActor->position.y);
-    movement.mutable_position()->set_z(pActor->position.z);
+    movement.Position.X = pActor->position.x;
+    movement.Position.Y = pActor->position.y;
+    movement.Position.Z = pActor->position.z;
 
-    movement.mutable_rotation()->set_x(pActor->rotation.x);
-    movement.mutable_rotation()->set_z(pActor->rotation.z);
+    movement.Rotation.X = pActor->rotation.x;
+    movement.Rotation.Y = pActor->rotation.z;
 
-    auto* pActorActions = pEntry->mutable_actions()->mutable_actions();
+    /*auto* pActorActions = pEntry->mutable_actions()->mutable_actions();
     for (auto& actionEvent : animationComponent.Actions)
     {
         const auto pAction = pActorActions->Add();
@@ -97,7 +97,7 @@ void AnimationSystem::Serialize(World& aWorld, TiltedMessages::ReferenceMovement
         // Try to serialize, if it fails remove it
         if (!Serialize(aWorld, actionEvent, animationComponent.LastProcessedAction, pAction))
             pActorActions->RemoveLast();
-    }
+    }*/
 
     auto latestAction = animationComponent.GetLatestAction();
 
@@ -124,7 +124,7 @@ bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, 
     Buffer::Writer writer(&buffer);
     aActionEvent.GenerateDifferential(aLastProcessedAction, writer);
 
-    apData->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
+    apData->assign(buffer.GetData(), buffer.GetData() + writer.Size());
 
     return true;
 }

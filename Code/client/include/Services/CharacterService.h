@@ -7,6 +7,7 @@ struct ReferenceSpawnedEvent;
 struct FormIdComponent;
 struct ActionEvent;
 struct AssignCharacterResponse;
+struct ServerReferencesMoveRequest;
 
 struct World;
 struct TransportService;
@@ -25,7 +26,7 @@ struct CharacterService
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
     void OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept;
     void OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequest& acMessage) const noexcept;
-    void OnReferenceMovementSnapshot(const TiltedMessages::ReferenceMovementSnapshot& acMessage) noexcept;
+    void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) noexcept;
 
 private:

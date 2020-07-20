@@ -27,7 +27,7 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher, Imgui
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this);
     m_scriptsConnection = m_dispatcher.sink<Scripts>().connect<&ScriptService::OnScripts>(this);
     m_replicatedInitConnection = m_dispatcher.sink<FullObjects>().connect < &ScriptService::OnNetObjectsInitalize >(this);
-    m_replicatedUpdateConnection = m_dispatcher.sink<TiltedMessages::ReplicateNetObjects>().connect < &ScriptService::OnNetObjectsUpdate >(this);
+    m_replicatedUpdateConnection = m_dispatcher.sink<Objects>().connect < &ScriptService::OnNetObjectsUpdate >(this);
 
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&ScriptService::OnConnected>(this);
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&ScriptService::OnDisconnected>(this);
@@ -51,7 +51,7 @@ void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     const auto result = GetNetState()->GenerateCallRequest(writer);
     if(result)
     {
-        pRemoteRpcCallsRequest->set_data(buff.GetData(), writer.GetBytePosition());
+        pRemoteRpcCallsRequest->set_data(buff.GetData(), writer.Size());
         //m_transport.Send(message);
     }
 }
@@ -99,9 +99,9 @@ void ScriptService::OnNetObjectsInitalize(const FullObjects& acNetObjects) noexc
     GetNetState()->LoadFullSnapshot(reader);
 }
 
-void ScriptService::OnNetObjectsUpdate(const TiltedMessages::ReplicateNetObjects& acNetObjects) noexcept
+void ScriptService::OnNetObjectsUpdate(const Objects& acNetObjects) noexcept
 {
-    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.data().c_str()), acNetObjects.data().size());
+    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.Data.data()), acNetObjects.Data.size());
     Buffer::Reader reader(&buff);
 
     GetNetState()->ApplyDifferentialSnapshot(reader);

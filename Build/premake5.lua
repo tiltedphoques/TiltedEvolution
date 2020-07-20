@@ -91,34 +91,6 @@ workspace ("Tilted Online Framework")
     filter {}
 
     group ("Utilities")
-        project ("_CodeGen")
-            kind ("Utility")
-            
-            files 
-            {
-                "../Code/protocol/client_server.proto"
-            }
-            
-            filter { "files:**.proto", "action:vs*" }
-                buildmessage ("CodeGen %{file.name}")
-                buildcommands { '"$(SolutionDir)../../Libraries/TiltedConnect/Build/protoc.exe" --cpp_out=../../Code/protocol/cpp/ -I ../../Code/protocol %{file.name}' }
-                buildoutputs
-                { 
-                    "../Code/protocol/cpp/%{file.basename}.cc",
-                    "../Code/protocol/cpp/%{file.basename}.h"
-                }
-                
-            filter { "files:**.proto", "action:gmake*" }
-                buildmessage ("CodeGen %{file.name}")
-                buildcommands { '../../Libraries/TiltedConnect/Build/protoc --cpp_out=../../Code/protocol/cpp/ -I ../../Code/protocol %{file.name}' }
-                buildoutputs
-                { 
-                    "../Code/protocol/cpp/%{file.basename}.cc",
-                    "../Code/protocol/cpp/%{file.basename}.h"
-                }
-                
-            filter {}
-            
         project ("_MakeProjects")
             kind ("Utility")
             
@@ -226,11 +198,6 @@ workspace ("Tilted Online Framework")
                     "Version",
                     "snappy"
                 }
-                
-                dependson 
-                {
-                    "_CodeGen"
-                }
 
             
             project ("tp_process")
@@ -316,11 +283,6 @@ workspace ("Tilted Online Framework")
                 "mimalloc",
                 "Lua",
                 "sqlite3"
-            }
-            
-            dependson 
-            {
-                "_CodeGen"
             }
             
             filter { "action:gmake*", "language:C++" }

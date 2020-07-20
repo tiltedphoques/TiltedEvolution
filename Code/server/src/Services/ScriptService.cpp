@@ -56,7 +56,7 @@ Vector<uint8_t> ScriptService::SerializeScripts() noexcept
 
     GetNetState()->SerializeDefinitions(writer);
 
-    Vector<uint8_t> data(buff.GetData(), buff.GetData() + writer.GetBytePosition());
+    Vector<uint8_t> data(buff.GetData(), buff.GetData() + writer.Size());
 
     return data;
 }
@@ -69,7 +69,7 @@ Vector<uint8_t> ScriptService::GenerateDifferential() noexcept
     const auto ret = GetNetState()->GenerateDifferentialSnapshot(writer);
     if(ret)
     {
-        return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.GetBytePosition());
+        return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.Size());
     }
 
     return {};
@@ -82,7 +82,7 @@ Vector<uint8_t> ScriptService::GenerateFull() noexcept
 
     GetNetState()->GenerateFullSnapshot(writer);
 
-    return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.GetBytePosition());
+    return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.Size());
 }
 
 std::tuple<bool, String> ScriptService::HandlePlayerConnect(const Script::Player& aPlayer) noexcept

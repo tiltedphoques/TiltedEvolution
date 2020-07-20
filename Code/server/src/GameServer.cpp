@@ -68,7 +68,6 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
     ViewBuffer buf((uint8_t*)apData, aSize);
     Buffer::Reader reader(&buf);
 
-
     auto pMessage = factory.Extract(reader);
     if(!pMessage)
     {
@@ -160,7 +159,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.GetBytePosition());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();

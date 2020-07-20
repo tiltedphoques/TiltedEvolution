@@ -17,9 +17,16 @@
 
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ServerMessageFactory.h>
+#include <Messages/AssignCharacterResponse.h>
+#include <Messages/ServerReferencesMoveRequest.h>
 
-#define TRANSPORT_HANDLE(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: Handle##packetName(message.functionName()); break;
-#define TRANSPORT_DISPATCH(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: dispatcher.trigger(message.functionName()); break;
+#define TRANSPORT_DISPATCH(packetName) \
+case k##packetName: \
+    { \
+    const auto pRealMessage = TiltedPhoques::CastUnique<packetName>(std::move(pMessage)); \
+    m_dispatcher.trigger(*pRealMessage); \
+    } \
+    break; 
 
 using TiltedPhoques::Packet;
 
@@ -50,7 +57,7 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
         writer.WriteBits(0, 8); // Write first byte as packet needs it
 
         acMessage.Serialize(writer);
-        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.GetBytePosition());
+        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
 
         Client::Send(&packet);
 
@@ -81,6 +88,10 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
         HandleAuthenticationResponse(*pRealMessage);
     }
     break;
+
+    TRANSPORT_DISPATCH(AssignCharacterResponse);
+    TRANSPORT_DISPATCH(ServerReferencesMoveRequest);
+
     default:
         spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());
         break;

@@ -27,6 +27,8 @@
 #include <Messages/RemoveCharacterRequest.h>
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
+#include <Messages/ServerReferencesMoveRequest.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 
 #include <World.h>
 
@@ -47,7 +49,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
     m_characterSpawnConnection = m_dispatcher.sink<TiltedMessages::CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
-    m_referenceMovementSnapshotConnection = m_dispatcher.sink<TiltedMessages::ReferenceMovementSnapshot>().connect<&CharacterService::OnReferenceMovementSnapshot>(this);
+    m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -185,13 +187,13 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
     }
 }
 
-void CharacterService::OnReferenceMovementSnapshot(const TiltedMessages::ReferenceMovementSnapshot& acMessage) noexcept
+void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept
 {
     auto view = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>();
 
-    for (auto& entry : acMessage.entries())
+    for (auto& entry : acMessage.Movements)
     {
-        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = entry.server_id(), view](entt::entity entity)
+        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = entry.first, view](entt::entity entity)
         {
             return view.get<RemoteComponent>(entity).Id == serverId;
         });
@@ -201,19 +203,19 @@ void CharacterService::OnReferenceMovementSnapshot(const TiltedMessages::Referen
 
         auto& interpolationComponent = view.get<InterpolationComponent>(*itor);
         auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
-        auto& movement = entry.movement();
+        auto& movement = entry.second;
 
         InterpolationComponent::TimePoint point;
-        point.Tick = acMessage.tick();
-        point.Position = Vector3<float>(movement.position().x(), movement.position().y(), movement.position().z());
-        point.Rotation = Vector3<float>(movement.rotation().x(), 0.f, movement.rotation().z());
+        point.Tick = acMessage.Tick;
+        point.Position = Vector3<float>(movement.Position.X, movement.Position.Y, movement.Position.Z);
+        point.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
 
         InterpolationSystem::AddPoint(interpolationComponent, point);
 
-        for (auto& action : entry.actions().actions())
+       /* for (auto& action : entry.actions().actions())
         {
             AnimationSystem::AddAction(animationComponent, action);
-        }
+        } */
     }
 }
 
@@ -229,7 +231,6 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) noexcept
     if(itor != std::end(view))
     {
         auto& localComponent = view.get<LocalAnimationComponent>(*itor);
-        auto outcome = localComponent.GetLatestAction();
 
         localComponent.Append(acActionEvent);
     }
@@ -364,19 +365,18 @@ void CharacterService::RunLocalUpdates() noexcept
 
     lastSendTimePoint = now;
 
-    TiltedMessages::ClientMessage message;
-    auto pSnapshot = message.mutable_reference_movement_snapshot();
-    pSnapshot->set_tick(m_transport.GetClock().GetCurrentTick());
+    ClientReferencesMoveRequest message;
+    message.Tick = m_transport.GetClock().GetCurrentTick();
 
     m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>()
-        .each([pSnapshot, this](LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
+        .each([&message, this](LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
     {
-        AnimationSystem::Serialize(m_world, *pSnapshot, localComponent, animationComponent, formIdComponent);
+        AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
     });
 
-    // spdlog::info("Send snapshot size : {}", message.ByteSizeLong());
+    spdlog::info("Send snapshot count : {}", message.Movements.size());
 
-    //m_transport.Send(message);
+    m_transport.Send(message);
 }
 
 void CharacterService::RunRemoteUpdates() noexcept

@@ -51,7 +51,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, T
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
     animationComponent.CurrentAction.GenerateDifferential(ActionEvent{}, writer);
 
-    apSpawnRequest->mutable_current_action()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
+    apSpawnRequest->mutable_current_action()->assign(buffer.GetData(), buffer.GetData() + writer.Size());
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
