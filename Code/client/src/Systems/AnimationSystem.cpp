@@ -80,7 +80,8 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
     if (!pActor)
         return;
 
-    auto& movement = aMovementSnapshot.Movements[localComponent.Id];
+    auto& update = aMovementSnapshot.Updates[localComponent.Id];
+    auto& movement = update.UpdatedMovement;
 
     movement.Position.X = pActor->position.x;
     movement.Position.Y = pActor->position.y;
@@ -89,15 +90,10 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
     movement.Rotation.X = pActor->rotation.x;
     movement.Rotation.Y = pActor->rotation.z;
 
-    /*auto* pActorActions = pEntry->mutable_actions()->mutable_actions();
-    for (auto& actionEvent : animationComponent.Actions)
+    for (auto& entry : animationComponent.Actions)
     {
-        const auto pAction = pActorActions->Add();
-
-        // Try to serialize, if it fails remove it
-        if (!Serialize(aWorld, actionEvent, animationComponent.LastProcessedAction, pAction))
-            pActorActions->RemoveLast();
-    }*/
+        update.ActionEvents.push_back(entry);
+    }
 
     auto latestAction = animationComponent.GetLatestAction();
 

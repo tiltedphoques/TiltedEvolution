@@ -219,7 +219,7 @@ void CharacterService::OnReferencesMoveRequest(
 
     auto& message = acMessage.Packet;
 
-    for (auto& entry : message.Movements)
+    for (auto& entry : message.Updates)
     {
         auto itor = view.find(entt::entity(entry.first));
 
@@ -235,7 +235,8 @@ void CharacterService::OnReferencesMoveRequest(
 
         const auto movementCopy = movementComponent;
 
-        auto& movement = entry.second;
+        auto& update = entry.second;
+        auto& movement = update.UpdatedMovement;
 
         movementComponent.Position = Vector3<float>(movement.Position.X, movement.Position.Y, movement.Position.Z);
         movementComponent.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
@@ -247,17 +248,15 @@ void CharacterService::OnReferencesMoveRequest(
             movementComponent = movementCopy;
         }
 
-       /* for (auto& action : entry.actions().actions())
+        for (auto& action : update.ActionEvents)
         {
             //TODO: HandleAction
             //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
 
-            ViewBuffer buffer((uint8_t*)action.data(), action.size());
-            Buffer::Reader reader(&buffer);
-            animationComponent.CurrentAction.ApplyDifferential(reader);
+            animationComponent.CurrentAction = action;
 
             animationComponent.Actions.push_back(animationComponent.CurrentAction);
-        }*/
+        }
 
         movementComponent.Sent = false;
     }
