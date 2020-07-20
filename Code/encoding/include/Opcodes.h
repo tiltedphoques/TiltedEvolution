@@ -6,7 +6,8 @@ enum ClientOpcode : unsigned char
     kCancelAssignmentRequest,
     kRemoveCharacterRequest,
     kAssignCharacterRequest,
-    kClientReferencesMoveRequest
+    kClientReferencesMoveRequest,
+    kEnterCellRequest
 };
 
 enum ServerOpcode : unsigned char

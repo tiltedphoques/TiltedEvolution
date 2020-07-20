@@ -23,6 +23,7 @@ struct ServerReferencesMoveRequest final : ServerMessage
     bool operator==(const ServerReferencesMoveRequest& acRhs) const noexcept
     {
         return Movements == acRhs.Movements &&
+            Tick == acRhs.Tick &&
             GetOpcode() == acRhs.GetOpcode();
     }
     

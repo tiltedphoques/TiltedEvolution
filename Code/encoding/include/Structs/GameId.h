@@ -7,6 +7,7 @@ using TiltedPhoques::Buffer;
 struct GameId
 {
     GameId() = default;
+    GameId(uint32_t aModId, uint32_t aBaseId) noexcept;
     ~GameId() = default;
 
     bool operator==(const GameId& acRhs) const noexcept;

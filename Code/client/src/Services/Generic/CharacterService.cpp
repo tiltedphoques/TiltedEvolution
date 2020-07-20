@@ -170,6 +170,7 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
         }
 
         auto pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
+        //pActor->ForcePosition();
 
         pActor->GetExtension()->SetRemote(true);
 

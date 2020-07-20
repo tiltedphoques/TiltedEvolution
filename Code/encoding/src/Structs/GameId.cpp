@@ -3,6 +3,12 @@
 
 using TiltedPhoques::Serialization;
 
+GameId::GameId(uint32_t aModId, uint32_t aBaseId) noexcept
+    : ModId(aModId)
+    , BaseId(aBaseId)
+{
+}
+
 bool GameId::operator==(const GameId& acRhs) const noexcept
 {
     return BaseId == acRhs.BaseId &&

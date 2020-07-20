@@ -10,6 +10,8 @@
 #include <Messages/RemoveCharacterRequest.h>
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AuthenticationResponse.h>
+#include <Messages/EnterCellRequest.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 
 #include <Scripts/Player.h>
 
@@ -88,6 +90,8 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         SERVER_DISPATCH(RemoveCharacterRequest);
         SERVER_DISPATCH(AssignCharacterRequest);
         SERVER_DISPATCH(CancelAssignmentRequest);
+        SERVER_DISPATCH(ClientReferencesMoveRequest);
+        SERVER_DISPATCH(EnterCellRequest);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;

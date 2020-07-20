@@ -19,6 +19,7 @@
 #include <Messages/ServerMessageFactory.h>
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
+#include <Messages/EnterCellRequest.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -52,6 +53,8 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 
     if (IsConnected())
     {
+        ScopedAllocator _{ s_allocator };
+
         Buffer buffer(1 << 16);
         Buffer::Writer writer(&buffer);
         writer.WriteBits(0, 8); // Write first byte as packet needs it
@@ -143,14 +146,10 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
 
     if(m_world.GetModSystem().GetServerModId(acEvent.CellId, modId, baseId))
     {
-        TiltedMessages::ClientMessage message;
-        const auto pCellEnterRequest = message.mutable_cell_enter_request();
-        auto pCellId = pCellEnterRequest->mutable_cell_id();
+        EnterCellRequest message;
+        message.CellId = GameId(modId, baseId);
 
-        pCellId->set_mod(modId);
-        pCellId->set_base(baseId);
-
-        //Send(message);
+        Send(message);
     }
 }
 
@@ -161,8 +160,8 @@ void TransportService::OnDraw() noexcept
         ImGui::Begin("Network");
 
         auto status = GetConnectionStatus();
-        status.m_flOutBytesPerSec /= 1024;
-        status.m_flInBytesPerSec /= 1024;
+        status.m_flOutBytesPerSec /= 1024.f;
+        status.m_flInBytesPerSec /= 1024.f;
 
         ImGui::InputFloat("Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
         ImGui::InputFloat("In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
