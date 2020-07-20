@@ -260,8 +260,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         spdlog::info(oss.str(), aConnectionId);
 
-        serverResponse.Scripts.Data = scripts.SerializeScripts();
-        serverResponse.ReplicatedObjects.Data = scripts.GenerateFull();
+        serverResponse.Scripts = std::move(scripts.SerializeScripts());
+        serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
 
         Send(aConnectionId, serverResponse);
     }

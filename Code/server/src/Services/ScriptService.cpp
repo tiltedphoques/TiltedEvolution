@@ -52,16 +52,17 @@ void ScriptService::Initialize() noexcept
     LoadFullScripts("scripts");
 }
 
-Vector<uint8_t> ScriptService::SerializeScripts() noexcept
+Scripts ScriptService::SerializeScripts() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
 
     GetNetState()->SerializeDefinitions(writer);
 
-    Vector<uint8_t> data(buff.GetData(), buff.GetData() + writer.Size());
+    Scripts scripts;
+    scripts.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
 
-    return data;
+    return scripts;
 }
 
 Objects ScriptService::GenerateDifferential() noexcept
@@ -81,14 +82,17 @@ Objects ScriptService::GenerateDifferential() noexcept
     return {};
 }
 
-Vector<uint8_t> ScriptService::GenerateFull() noexcept
+FullObjects ScriptService::GenerateFull() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
 
     GetNetState()->GenerateFullSnapshot(writer);
 
-    return Vector<uint8_t>(buff.GetData(), buff.GetData() + writer.Size());
+    FullObjects objects;
+    objects.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
+
+    return objects;
 }
 
 std::tuple<bool, String> ScriptService::HandlePlayerConnect(const Script::Player& aPlayer) noexcept
