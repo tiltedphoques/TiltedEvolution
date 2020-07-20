@@ -4,9 +4,9 @@
 void ClientReferencesMoveRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, Tick);
-    Serialization::WriteVarInt(aWriter, Movements.size());
+    Serialization::WriteVarInt(aWriter, Updates.size());
 
-    for (const auto& kvp : Movements)
+    for (const auto& kvp : Updates)
     {
         Serialization::WriteVarInt(aWriter, kvp.first);
         kvp.second.Serialize(aWriter);
@@ -23,6 +23,6 @@ void ClientReferencesMoveRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& 
     for (auto i = 0u; i < count; ++i)
     {
         auto serverId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-        Movements[serverId].Deserialize(aReader);
+        Updates[serverId].Deserialize(aReader);
     }
 }
