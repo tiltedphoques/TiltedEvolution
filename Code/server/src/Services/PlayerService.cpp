@@ -4,6 +4,7 @@
 #include <GameServer.h>
 
 #include <Messages/EnterCellRequest.h>
+#include <Messages/CharacterSpawnRequest.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -40,10 +41,9 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
         if (ownedComponent.ConnectionId == acMessage.ConnectionId)
             continue;
 
-        TiltedMessages::ServerMessage message;
-        const auto pRequest = message.mutable_character_spawn_request();
-        CharacterService::Serialize(m_world, character, pRequest);
+        CharacterSpawnRequest message;
+        CharacterService::Serialize(m_world, character, &message);
 
-        //GameServer::Get()->Send(acMessage.ConnectionId, message);
+        GameServer::Get()->Send(acMessage.ConnectionId, message);
     }
 }

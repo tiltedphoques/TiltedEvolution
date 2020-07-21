@@ -1,6 +1,7 @@
 #include <Systems/ModSystem.h>
 
 #include <Structs/Mods.h>
+#include <Structs/GameId.h>
 
 #include <Games/TES.h>
 
@@ -61,6 +62,11 @@ uint32_t ModSystem::GetGameId(uint32_t aServerId, uint32_t aFormId) const noexce
     }
 
     return 0;
+}
+
+uint32_t ModSystem::GetGameId(const GameId& acGameId) const noexcept
+{
+    return GetGameId(acGameId.ModId, acGameId.BaseId);
 }
 
 void ModSystem::HandleMods(const Mods& acMods) noexcept

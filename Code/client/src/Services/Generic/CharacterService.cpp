@@ -29,6 +29,7 @@
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/CharacterSpawnRequest.h>
 
 #include <World.h>
 
@@ -48,7 +49,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&CharacterService::OnDisconnected>(this);
 
     m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
-    m_characterSpawnConnection = m_dispatcher.sink<TiltedMessages::CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
+    m_characterSpawnConnection = m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
     m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
 }
 
@@ -136,23 +137,23 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     m_world.remove<WaitingForAssignmentComponent>(*itor);
 }
 
-void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequest& acMessage) const noexcept
+void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
     // Temporary fix to load only custom forms
-    if(!acMessage.has_game_id())
+    if (acMessage.FormId == GameId{})
     {
         const auto cEntity = m_world.create();
 
-        m_world.emplace<RemoteComponent>(cEntity, acMessage.server_id());
+        m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId);
 
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
 
         TESNPC* pNpc = nullptr;
 
-        if(acMessage.has_base_id())
+        if (acMessage.BaseId != GameId{})
         {
-            const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.base_id().mod(), acMessage.base_id().base());
+            const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
             if(cNpcId == 0)
             {
                 m_world.destroy(cEntity);
@@ -161,11 +162,11 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
             }
 
             pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
-            //pNpc->Deserialize(acMessage.npc_buffer(), acMessage.change_flags());
+            pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
         {
-           // pNpc = TESNPC::Create(acMessage.npc_buffer(), acMessage.change_flags());
+            pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
             FaceGenSystem::Setup(m_world, cEntity);
         }
 
@@ -174,13 +175,13 @@ void CharacterService::OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequ
 
         pActor->GetExtension()->SetRemote(true);
 
-        if(!acMessage.inventory_buffer().empty())
+        if(!acMessage.InventoryBuffer.empty())
         {
         //    pActor->processManager->Deserialize(acMessage.inventory_buffer(), pActor);
         }
 
         auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
-        AnimationSystem::AddAction(remoteAnimationComponent, acMessage.current_action());
+        remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
 
         spdlog::info("Actor created {:x}", reinterpret_cast<uintptr_t>(&(pActor->processManager->middleProcess->direction)));
 
@@ -192,7 +193,7 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 {
     auto view = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>();
 
-    for (auto& entry : acMessage.Movements)
+    for (auto& entry : acMessage.Updates)
     {
         auto itor = std::find_if(std::begin(view), std::end(view), [serverId = entry.first, view](entt::entity entity)
         {
@@ -204,19 +205,20 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 
         auto& interpolationComponent = view.get<InterpolationComponent>(*itor);
         auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
-        auto& movement = entry.second;
+        auto& update = entry.second;
+        auto& movement = update.UpdatedMovement;
 
         InterpolationComponent::TimePoint point;
         point.Tick = acMessage.Tick;
-        point.Position = Vector3<float>(movement.Position.X, movement.Position.Y, movement.Position.Z);
+        point.Position = movement.Position;
         point.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
 
         InterpolationSystem::AddPoint(interpolationComponent, point);
 
-       /* for (auto& action : entry.actions().actions())
+        for (auto& action : update.ActionEvents)
         {
-            AnimationSystem::AddAction(animationComponent, action);
-        } */
+            animationComponent.TimePoints.push_back(action);
+        }
     }
 }
 
@@ -272,9 +274,9 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.CellId.BaseId = cellBaseId;
     message.CellId.ModId = cellModId;
 
-    message.Position.X = pActor->position.x;
-    message.Position.Y = pActor->position.y;
-    message.Position.Z = pActor->position.z;
+    message.Position.m_x = pActor->position.x;
+    message.Position.m_y = pActor->position.y;
+    message.Position.m_z = pActor->position.z;
 
     message.Rotation.X = pActor->rotation.x;
     message.Rotation.Y = pActor->rotation.z;
@@ -375,7 +377,7 @@ void CharacterService::RunLocalUpdates() noexcept
         AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
     });
 
-    spdlog::info("Send snapshot count : {}", message.Movements.size());
+    spdlog::info("Send snapshot count : {}", message.Updates.size());
 
     m_transport.Send(message);
 }

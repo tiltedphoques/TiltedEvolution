@@ -163,8 +163,20 @@ void TransportService::OnDraw() noexcept
         status.m_flOutBytesPerSec /= 1024.f;
         status.m_flInBytesPerSec /= 1024.f;
 
-        ImGui::InputFloat("Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Net Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Net In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+        auto stats = GetStatistics();
+        float protocolSent = float(stats.SentBytes) / 1024.f;
+        float protocolReceived = float(stats.RecvBytes) / 1024.f;
+        float uncompressedSent = float(stats.UncompressedSentBytes) / 1024.f;
+        float uncompressedReceived = float(stats.UncompressedRecvBytes) / 1024.f;
+
+        ImGui::InputFloat("Protocol Out kBps", (float*)&protocolSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Protocol In kBps", (float*)&protocolReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::InputFloat("User Out kBps", (float*)&uncompressedSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("User In kBps", (float*)&uncompressedReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
         ImGui::End();
     }

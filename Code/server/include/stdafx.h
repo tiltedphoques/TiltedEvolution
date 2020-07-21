@@ -32,8 +32,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <client_server.pb.h>
-
 #include <entt/entt.hpp>
 
 extern "C"

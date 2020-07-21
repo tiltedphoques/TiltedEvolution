@@ -29,8 +29,6 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     , m_name(std::move(aName))
     , m_token(std::move(aToken))
 {
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
     assert(s_pInstance == nullptr);
 
     s_pInstance = this;

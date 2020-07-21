@@ -122,9 +122,9 @@ TEST_CASE("Static structures", "[encoding.static]")
     GIVEN("Vector3_NetQuantize")
     {
         Vector3_NetQuantize sendObjects, recvObjects;
-        sendObjects.X = 142.56f;
-        sendObjects.Y = 45687.7f;
-        sendObjects.Z = -142.56f;
+        sendObjects.m_x = 142.56f;
+        sendObjects.m_y = 45687.7f;
+        sendObjects.m_z = -142.56f;
 
         {
             Buffer buff(1000);
@@ -379,9 +379,9 @@ TEST_CASE("Packets", "[encoding.packets]")
         sendMessage.ReferenceId.BaseId = 456799;
         sendMessage.ReferenceId.ModId = 4079;
         sendMessage.LatestAction = sendAction;
-        sendMessage.Position.X = -452.4f;
-        sendMessage.Position.Y = 452.4f;
-        sendMessage.Position.Z = 125452.4f;
+        sendMessage.Position.m_x = -452.4f;
+        sendMessage.Position.m_y = 452.4f;
+        sendMessage.Position.m_z = 125452.4f;
         sendMessage.Rotation.X = -1.87f;
         sendMessage.Rotation.Y = 45.35f;
 

@@ -6,6 +6,7 @@ struct UpdateEvent;
 struct CharacterSpawnedEvent;
 struct World;
 struct AssignCharacterRequest;
+struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
 
 struct CharacterService
@@ -15,7 +16,7 @@ struct CharacterService
 
     TP_NOCOPYMOVE(CharacterService);
 
-    static void Serialize(const World& aRegistry, entt::entity aEntity, TiltedMessages::CharacterSpawnRequest* apSpawnRequest) noexcept;
+    static void Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept;
 
 protected:
 

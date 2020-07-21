@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/GameId.h>
-#include <Structs/ActionEvent.h>
-#include <Structs/Movement.h>
+#include <Structs/ReferenceUpdate.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>
 
@@ -22,11 +20,11 @@ struct ServerReferencesMoveRequest final : ServerMessage
 
     bool operator==(const ServerReferencesMoveRequest& acRhs) const noexcept
     {
-        return Movements == acRhs.Movements &&
+        return Updates == acRhs.Updates &&
             Tick == acRhs.Tick &&
             GetOpcode() == acRhs.GetOpcode();
     }
     
     uint64_t Tick{};
-    Map<uint32_t, Movement> Movements{};
+    Map<uint32_t, ReferenceUpdate> Updates{};
 };

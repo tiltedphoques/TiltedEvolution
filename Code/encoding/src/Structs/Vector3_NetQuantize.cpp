@@ -13,6 +13,12 @@ bool Vector3_NetQuantize::operator!=(const Vector3_NetQuantize& acRhs) const noe
     return !this->operator==(acRhs);
 }
 
+Vector3_NetQuantize& Vector3_NetQuantize::operator=(const Vector3<float>& acRhs) noexcept
+{
+    Vector3<float>::operator=(acRhs);
+    return *this;
+}
+
 void Vector3_NetQuantize::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     aWriter.WriteBits(Pack(), 64);
@@ -36,18 +42,18 @@ void Vector3_NetQuantize::Unpack(uint64_t aValue) noexcept
     auto yValue = static_cast<float>((aValue >> 23) & ((1 << 20) - 1));
     auto zValue = static_cast<float>((aValue >> 43) & ((1 << 20) - 1));
 
-    X = xSign ? -xValue : xValue;
-    Y = ySign ? -yValue : yValue;
-    Z = zSign ? -zValue : zValue;
+    m_x = xSign ? -xValue : xValue;
+    m_y = ySign ? -yValue : yValue;
+    m_z = zSign ? -zValue : zValue;
 }
 
 uint64_t Vector3_NetQuantize::Pack() const noexcept
 {
     uint64_t data = 0;
 
-    int32_t x = static_cast<int32_t>(X);
-    int32_t y = static_cast<int32_t>(Y);
-    int32_t z = static_cast<int32_t>(Z);
+    int32_t x = static_cast<int32_t>(m_x);
+    int32_t y = static_cast<int32_t>(m_y);
+    int32_t z = static_cast<int32_t>(m_z);
 
     data |= (x < 0) ? 1 : 0;
     data |= (y < 0) ? 2 : 0;

@@ -144,7 +144,6 @@ workspace ("Tilted Online Framework")
                     "../Code/client/include/",
                     "../Code/script/include/",
                     "../Code/encoding/include/",
-                    "../Code/protocol/cpp/",
                     "../Libraries/entt/src/",
                     "../Libraries/",
                     coreBasePath .. "/Code/core/include/",
@@ -166,10 +165,7 @@ workspace ("Tilted Online Framework")
                 {
                     "../Code/client/include/**.h",
                     "../Code/client/src/**.cpp",
-                    "../Libraries/spdlog/spdlog.cpp",
-                    
-                    "../Code/protocol/cpp/client_server.pb.cc",
-                    "../Code/protocol/cpp/client_server.pb.h",
+                    "../Libraries/spdlog/spdlog.cpp"
                 }
                 
                 pchheader ("stdafx.h")
@@ -241,7 +237,6 @@ workspace ("Tilted Online Framework")
             
             includedirs
             {
-                "../Code/protocol/cpp/",
                 "../Code/server/include/",
                 "../Code/script/include/",
                 "../Code/encoding/include/",
@@ -259,9 +254,7 @@ workspace ("Tilted Online Framework")
             {
                 "../Code/server/include/**.h",
                 "../Code/server/src/**.cpp",
-                "../Libraries/spdlog/spdlog.cpp",
-                "../Code/protocol/cpp/client_server.pb.cc",
-                "../Code/protocol/cpp/client_server.pb.h",
+                "../Libraries/spdlog/spdlog.cpp"
             }
             
             pchheader ("stdafx.h")
@@ -277,7 +270,6 @@ workspace ("Tilted Online Framework")
                 "Connect",
                 "snappy",
                 "SteamNet",
-                "protobuf",
                 "Script",
                 "Core",
                 "mimalloc",

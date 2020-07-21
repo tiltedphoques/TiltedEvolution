@@ -64,9 +64,6 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
 
 void TestService::RunDiff()
 {
-    static AnimationVariablesComponent s_component;
-    static std::map<uint32_t, const char*> s_nameToId;
-
     if (m_actors.empty())
         return;
 

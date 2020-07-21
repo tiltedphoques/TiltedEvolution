@@ -12,6 +12,7 @@
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/CharacterSpawnRequest.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -22,26 +23,34 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
 {
 }
 
-void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, TiltedMessages::CharacterSpawnRequest* apSpawnRequest) noexcept
+void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
 {
     const auto& characterComponent = aRegistry.get<CharacterComponent>(aEntity);
 
-    apSpawnRequest->set_server_id(World::ToInteger(aEntity));
-    apSpawnRequest->mutable_npc_buffer()->assign(characterComponent.SaveBuffer.c_str(), characterComponent.SaveBuffer.size());
-    apSpawnRequest->mutable_inventory_buffer()->assign(characterComponent.InventoryBuffer.c_str(), characterComponent.InventoryBuffer.size());
-    apSpawnRequest->set_change_flags(characterComponent.ChangeFlags);
+    apSpawnRequest->ServerId = World::ToInteger(aEntity);
+    apSpawnRequest->AppearanceBuffer = characterComponent.SaveBuffer;
+    apSpawnRequest->InventoryBuffer = characterComponent.InventoryBuffer;
+    apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
     {
-        apSpawnRequest->mutable_game_id()->set_mod(pFormIdComponent->ModId);
-        apSpawnRequest->mutable_game_id()->set_base(pFormIdComponent->BaseId);
+        apSpawnRequest->FormId.BaseId = pFormIdComponent->BaseId;
+        apSpawnRequest->FormId.ModId = pFormIdComponent->ModId;
     }
 
     if (characterComponent.BaseId)
     {
-        apSpawnRequest->mutable_base_id()->set_mod(characterComponent.BaseId.ModId);
-        apSpawnRequest->mutable_base_id()->set_base(characterComponent.BaseId.BaseId);
+        apSpawnRequest->FormId.BaseId = characterComponent.BaseId.BaseId;
+        apSpawnRequest->FormId.ModId = characterComponent.BaseId.ModId;
+    }
+
+    const auto* pMovementComponent = aRegistry.try_get<MovementComponent>(aEntity);
+    if (pMovementComponent)
+    {
+        apSpawnRequest->Position = pMovementComponent->Position;
+        apSpawnRequest->Rotation.X = pMovementComponent->Rotation.m_x;
+        apSpawnRequest->Rotation.Y = pMovementComponent->Rotation.m_z;
     }
 
     uint8_t scratch[1 << 12];
@@ -50,9 +59,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, T
     Buffer::Writer writer(&buffer);
 
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    animationComponent.CurrentAction.GenerateDifferential(ActionEvent{}, writer);
-
-    apSpawnRequest->mutable_current_action()->assign(buffer.GetData(), buffer.GetData() + writer.Size());
+    apSpawnRequest->LatestAction = animationComponent.CurrentAction;
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
@@ -94,14 +101,13 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                     continue;
 
                 auto& message = messages[playerComponent.ConnectionId];
-                auto& movement = message.Movements[World::ToInteger(entity)];
+                auto& update = message.Updates[World::ToInteger(entity)];
+                auto& movement = update.UpdatedMovement;
 
                 float x, y, z;
                 movementComponent.Position.Decompose(x, y, z);
 
-                movement.Position.X = x;
-                movement.Position.Y = y;
-                movement.Position.Z = z;
+                movement.Position = movementComponent.Position;
 
                 movementComponent.Rotation.Decompose(x, y, z);
 
@@ -110,21 +116,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 
                 auto lastSerializedAction = animationComponent.LastSerializedAction;
 
-                if (!animationComponent.Actions.empty())
-                {
-                    /*for (auto& action : animationComponent.Actions)
-                    {
-                        uint8_t scratch[1 << 12];
-
-                        ViewBuffer buffer(scratch, std::size(scratch));
-                        Buffer::Writer writer(&buffer);
-
-                        action.GenerateDifferential(lastSerializedAction, writer);
-                        lastSerializedAction = action;
-
-                        actions.add_actions()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
-                    }*/
-                }
+                update.ActionEvents = animationComponent.Actions;
             }
         });
 
@@ -143,7 +135,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 
     for (auto kvp : messages)
     {
-        if (kvp.second.Movements.size() > 0)
+        if (kvp.second.Updates.size() > 0)
             GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
@@ -192,9 +184,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept
 {
-    TiltedMessages::ServerMessage message;
-    const auto pRequest = message.mutable_character_spawn_request();
-    Serialize(m_world, acEvent.Entity, pRequest);
+    CharacterSpawnRequest message;
+    Serialize(m_world, acEvent.Entity, &message);
 
     const auto& characterCellIdComponent = m_world.get<CellIdComponent>(acEvent.Entity);
     const auto& characterOwnerComponent = m_world.get<OwnerComponent>(acEvent.Entity);
@@ -208,7 +199,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
                 if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
                     return;
 
-           // GameServer::Get()->Send(playerComponent.ConnectionId, message);
+            GameServer::Get()->Send(playerComponent.ConnectionId, message);
         });
 }
 
@@ -238,7 +229,7 @@ void CharacterService::OnReferencesMoveRequest(
         auto& update = entry.second;
         auto& movement = update.UpdatedMovement;
 
-        movementComponent.Position = Vector3<float>(movement.Position.X, movement.Position.Y, movement.Position.Z);
+        movementComponent.Position = movement.Position;
         movementComponent.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
@@ -301,7 +292,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
     MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
-    movementComponent.Position = Vector3<float>(message.Position.X, message.Position.Y, message.Position.Z);
+    movementComponent.Position = message.Position;
     movementComponent.Rotation = Vector3<float>(message.Rotation.X, 0.f, message.Rotation.Y);
     movementComponent.Sent = false;
 

@@ -68,8 +68,6 @@ extern "C"
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol.hpp>
 
-#include "client_server.pb.h"
-
 using TiltedPhoques::AutoPtr;
 using TiltedPhoques::Set;
 using TiltedPhoques::List;

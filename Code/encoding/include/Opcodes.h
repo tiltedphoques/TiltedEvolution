@@ -16,5 +16,6 @@ enum ServerOpcode : unsigned char
     kAuthenticationResponse = 0,
     kAssignCharacterResponse,
     kServerReferencesMoveRequest,
-    kServerScriptUpdate
+    kServerScriptUpdate,
+    kCharacterSpawnRequest
 };

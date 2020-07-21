@@ -83,9 +83,9 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
     auto& update = aMovementSnapshot.Updates[localComponent.Id];
     auto& movement = update.UpdatedMovement;
 
-    movement.Position.X = pActor->position.x;
-    movement.Position.Y = pActor->position.y;
-    movement.Position.Z = pActor->position.z;
+    movement.Position.m_x = pActor->position.x;
+    movement.Position.m_y = pActor->position.y;
+    movement.Position.m_z = pActor->position.z;
 
     movement.Rotation.X = pActor->rotation.x;
     movement.Rotation.Y = pActor->rotation.z;
