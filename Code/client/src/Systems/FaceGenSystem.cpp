@@ -111,6 +111,15 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
         }
 
         CreateTints(tints, pTexture);
+
+        for (auto i = 0u; i < tints.length; ++i)
+        {
+            tints[i]->texture->~TESTexture();
+            Memory::Free(tints[i]->texture);
+            Memory::Free(tints[i]);
+        }
+
+        Memory::Free(tints.data);
         
         pMaterial->renderedTexture = pTexture;
 
