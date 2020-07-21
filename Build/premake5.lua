@@ -48,12 +48,7 @@ workspace ("Tilted Online Framework")
     
     cppdialect "C++17"
 
-    -- Add x32 for oldrim, probably won't work
-    if (os.istarget("Windows") == true) then
-        platforms { "x64" }
-    else
-        platforms { "x64" }
-    end
+	platforms { "x64" }
 
     includedirs
     { 
@@ -79,10 +74,6 @@ workspace ("Tilted Online Framework")
     filter { "configurations:Fallout4" }
         defines { "NDEBUG", "PUBLIC_BUILD", "TP_FALLOUT" }
         optimize ("On")
-        
-    filter { "architecture:*86" }
-        libdirs { "lib/x32" }
-        targetdir ("bin/x32")
 
     filter { "architecture:*64" }
         libdirs { "lib/x64" }

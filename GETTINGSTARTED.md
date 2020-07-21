@@ -85,7 +85,7 @@ Eg. SkyrimTogetherServer.exe --name "SkyrimTogether Server" --port "10578" --pre
 
 ## Debugging
 
-In Visual Studio, go to ``Debug -> Attach to process`` and select the game(s) ("TESV.exe", "SkyrimSE.exe" or "Fallout4.exe") and click on ``Attach``.
+In Visual Studio, go to ``Debug -> Attach to process`` and select the game(s) ("SkyrimSE.exe" or "Fallout4.exe") and click on ``Attach``.
 
 If you explicitly require a debugger, you can add the line ``Debug::WaitForDebugger();`` in the ``TiltedOnlineApp::TiltedOnlineApp()`` ctor. This will block the game from running on startup until a debugger has been attached.
 
