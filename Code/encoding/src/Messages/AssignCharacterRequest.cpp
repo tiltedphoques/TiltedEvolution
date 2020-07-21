@@ -8,6 +8,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     CellId.Serialize(aWriter);
     Position.Serialize(aWriter);
     Rotation.Serialize(aWriter);
+    aWriter.WriteBits(ChangeFlags, 32);
     Serialization::WriteString(aWriter, AppearanceBuffer);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
 }
@@ -22,6 +23,11 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     CellId.Deserialize(aReader);
     Position.Deserialize(aReader);
     Rotation.Deserialize(aReader);
+
+    uint64_t dest = 0;
+    aReader.ReadBits(dest, 32);
+    ChangeFlags = dest & 0xFFFFFFFF;
+
     AppearanceBuffer = Serialization::ReadString(aReader);
 
     LatestAction = ActionEvent{};
