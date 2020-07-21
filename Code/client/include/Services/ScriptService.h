@@ -1,6 +1,9 @@
 #pragma once
 
 #include <ScriptStore.h>
+#include <Structs/Scripts.h>
+#include <Structs/FullObjects.h>
+#include <Structs/Objects.h>
 
 struct RemoteComponent;
 struct TransportService;
@@ -25,9 +28,9 @@ protected:
 
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnDraw() noexcept;
-    void OnScripts(const TiltedMessages::Scripts& acScripts) noexcept;
-    void OnNetObjectsInitalize(const TiltedMessages::FullObjects& acNetObjects) noexcept;
-    void OnNetObjectsUpdate(const TiltedMessages::ReplicateNetObjects& acNetObjects) noexcept;
+    void OnScripts(const Scripts& acScripts) noexcept;
+    void OnNetObjectsInitalize(const FullObjects& acNetObjects) noexcept;
+    void OnNetObjectsUpdate(const Objects& acNetObjects) noexcept;
     void OnConnected(const ConnectedEvent&) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
     void DisplayNetObject(NetObject* apObject);

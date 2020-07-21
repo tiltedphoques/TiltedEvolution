@@ -5,6 +5,9 @@
 struct UpdateEvent;
 struct CharacterSpawnedEvent;
 struct World;
+struct AssignCharacterRequest;
+struct CharacterSpawnRequest;
+struct ClientReferencesMoveRequest;
 
 struct CharacterService
 {
@@ -13,16 +16,16 @@ struct CharacterService
 
     TP_NOCOPYMOVE(CharacterService);
 
-    static void Serialize(const World& aRegistry, entt::entity aEntity, TiltedMessages::CharacterSpawnRequest* apSpawnRequest) noexcept;
+    static void Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept;
 
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnCharacterAssignRequest(const PacketEvent<TiltedMessages::CharacterAssignRequest>& acMessage) const noexcept;
+    void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept;
-    void OnReferenceMovementSnapshot(const PacketEvent<TiltedMessages::ReferenceMovementSnapshot>& acMessage) const noexcept;
+    void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
 
-    void CreateCharacter(const PacketEvent<TiltedMessages::CharacterAssignRequest>& acMessage) const noexcept;
+    void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
 private:
 

@@ -3,6 +3,7 @@
 #include <Events/PacketEvent.h>
 
 struct World;
+struct EnterCellRequest;
 
 struct PlayerService
 {
@@ -13,7 +14,7 @@ struct PlayerService
 
 protected:
 
-    void HandleCellEnter(const PacketEvent<TiltedMessages::CellEnterRequest>& acMessage) noexcept;
+    void HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) noexcept;
 
 private:
 

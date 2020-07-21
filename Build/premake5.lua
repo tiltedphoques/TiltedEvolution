@@ -65,7 +65,7 @@ workspace ("Tilted Online Framework")
         
     filter { "action:gmake*", "language:C++" }
         buildoptions { "-g -fpermissive" }
-        linkoptions ("-lm -lpthread -pthread -Wl,--no-as-needed -lrt -g -fPIC -static")
+        linkoptions ("-lm -lpthread -pthread -Wl,--no-as-needed -lrt -g -fPIC")
 
     filter { "configurations:Skyrim" }
         defines { "NDEBUG", "PUBLIC_BUILD", "TP_SKYRIM" }
@@ -82,34 +82,6 @@ workspace ("Tilted Online Framework")
     filter {}
 
     group ("Utilities")
-        project ("_CodeGen")
-            kind ("Utility")
-            
-            files 
-            {
-                "../Code/protocol/client_server.proto"
-            }
-            
-            filter { "files:**.proto", "action:vs*" }
-                buildmessage ("CodeGen %{file.name}")
-                buildcommands { '"$(SolutionDir)../../Libraries/TiltedConnect/Build/protoc.exe" --cpp_out=../../Code/protocol/cpp/ -I ../../Code/protocol %{file.name}' }
-                buildoutputs
-                { 
-                    "../Code/protocol/cpp/%{file.basename}.cc",
-                    "../Code/protocol/cpp/%{file.basename}.h"
-                }
-                
-            filter { "files:**.proto", "action:gmake*" }
-                buildmessage ("CodeGen %{file.name}")
-                buildcommands { '../../Libraries/TiltedConnect/Build/protoc --cpp_out=../../Code/protocol/cpp/ -I ../../Code/protocol %{file.name}' }
-                buildoutputs
-                { 
-                    "../Code/protocol/cpp/%{file.basename}.cc",
-                    "../Code/protocol/cpp/%{file.basename}.h"
-                }
-                
-            filter {}
-            
         project ("_MakeProjects")
             kind ("Utility")
             
@@ -163,7 +135,6 @@ workspace ("Tilted Online Framework")
                     "../Code/client/include/",
                     "../Code/script/include/",
                     "../Code/encoding/include/",
-                    "../Code/protocol/cpp/",
                     "../Libraries/entt/src/",
                     "../Libraries/",
                     coreBasePath .. "/Code/core/include/",
@@ -185,10 +156,7 @@ workspace ("Tilted Online Framework")
                 {
                     "../Code/client/include/**.h",
                     "../Code/client/src/**.cpp",
-                    "../Libraries/spdlog/spdlog.cpp",
-                    
-                    "../Code/protocol/cpp/client_server.pb.cc",
-                    "../Code/protocol/cpp/client_server.pb.h",
+                    "../Libraries/spdlog/spdlog.cpp"
                 }
                 
                 pchheader ("stdafx.h")
@@ -215,11 +183,7 @@ workspace ("Tilted Online Framework")
                     "sqlite3",
                     "imgui",
                     "Version",
-                }
-                
-                dependson 
-                {
-                    "_CodeGen"
+                    "snappy"
                 }
 
             
@@ -264,7 +228,6 @@ workspace ("Tilted Online Framework")
             
             includedirs
             {
-                "../Code/protocol/cpp/",
                 "../Code/server/include/",
                 "../Code/script/include/",
                 "../Code/encoding/include/",
@@ -282,9 +245,7 @@ workspace ("Tilted Online Framework")
             {
                 "../Code/server/include/**.h",
                 "../Code/server/src/**.cpp",
-                "../Libraries/spdlog/spdlog.cpp",
-                "../Code/protocol/cpp/client_server.pb.cc",
-                "../Code/protocol/cpp/client_server.pb.h",
+                "../Libraries/spdlog/spdlog.cpp"
             }
             
             pchheader ("stdafx.h")
@@ -298,18 +259,13 @@ workspace ("Tilted Online Framework")
             {
                 "Encoding",
                 "Connect",
+                "snappy",
                 "SteamNet",
-                "protobuf",
                 "Script",
                 "Core",
                 "mimalloc",
                 "Lua",
                 "sqlite3"
-            }
-            
-            dependson 
-            {
-                "_CodeGen"
             }
             
             filter { "action:gmake*", "language:C++" }

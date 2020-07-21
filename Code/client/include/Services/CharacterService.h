@@ -6,6 +6,9 @@ struct DisconnectedEvent;
 struct ReferenceSpawnedEvent;
 struct FormIdComponent;
 struct ActionEvent;
+struct AssignCharacterResponse;
+struct CharacterSpawnRequest;
+struct ServerReferencesMoveRequest;
 
 struct World;
 struct TransportService;
@@ -22,9 +25,9 @@ struct CharacterService
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
-    void OnCharacterAssign(const TiltedMessages::CharacterAssignResponse& acMessage) noexcept;
-    void OnCharacterSpawn(const TiltedMessages::CharacterSpawnRequest& acMessage) const noexcept;
-    void OnReferenceMovementSnapshot(const TiltedMessages::ReferenceMovementSnapshot& acMessage) noexcept;
+    void OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept;
+    void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
+    void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) noexcept;
 
 private:
@@ -45,7 +48,7 @@ private:
     entt::scoped_connection m_actionConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
-    entt::scoped_connection m_characterAssignConnection;
+    entt::scoped_connection m_assignCharacterConnection;
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
 };

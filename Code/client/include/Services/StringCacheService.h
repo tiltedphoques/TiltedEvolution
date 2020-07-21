@@ -20,7 +20,7 @@ struct StringCacheService
     void HandleConnected(const ConnectedEvent&) noexcept;
     void HandleDisconnected(const DisconnectedEvent&) noexcept;
 
-    void HandleStringCacheContent(const TiltedMessages::StringCacheContent&) noexcept;
+    //void HandleStringCacheContent(const TiltedMessages::StringCacheContent&) noexcept;
 
 private:
 

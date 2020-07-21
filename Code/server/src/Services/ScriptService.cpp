@@ -6,6 +6,9 @@
 
 #include <Events/UpdateEvent.h>
 
+#include <Messages/ClientRpcCalls.h>
+#include <Messages/ServerScriptUpdate.h>
+
 #include <Components.h>
 #include <GameServer.h>
 
@@ -13,7 +16,7 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : ScriptStore(true)
     , m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
-    , m_rpcCallsRequest(aDispatcher.sink< PacketEvent<TiltedMessages::RpcCallsRequest>>().connect<&ScriptService::OnRpcCalls>(this))
+    , m_rpcCallsRequest(aDispatcher.sink< PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
 {
     Initialize();
 }
@@ -49,17 +52,20 @@ void ScriptService::Initialize() noexcept
     LoadFullScripts("scripts");
 }
 
-void ScriptService::Serialize(TiltedMessages::Scripts* apScripts) noexcept
+Scripts ScriptService::SerializeScripts() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
 
     GetNetState()->SerializeDefinitions(writer);
 
-    apScripts->set_data(reinterpret_cast<const char*>(buff.GetData()), writer.GetBytePosition());
+    Scripts scripts;
+    scripts.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
+
+    return scripts;
 }
 
-void ScriptService::Serialize(TiltedMessages::ReplicateNetObjects* apReplicateNetObjects) noexcept
+Objects ScriptService::GenerateDifferential() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
@@ -67,18 +73,26 @@ void ScriptService::Serialize(TiltedMessages::ReplicateNetObjects* apReplicateNe
     const auto ret = GetNetState()->GenerateDifferentialSnapshot(writer);
     if(ret)
     {
-        apReplicateNetObjects->set_data(reinterpret_cast<const char*>(buff.GetData()), writer.GetBytePosition());
+        Objects objects;
+        objects.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
+
+        return objects;
     }
+
+    return {};
 }
 
-void ScriptService::Serialize(TiltedMessages::FullObjects* apReplicateNetObjects) noexcept
+FullObjects ScriptService::GenerateFull() noexcept
 {
     TiltedPhoques::Buffer buff(10000);
     Buffer::Writer writer(&buff);
 
     GetNetState()->GenerateFullSnapshot(writer);
 
-    apReplicateNetObjects->set_data(reinterpret_cast<const char*>(buff.GetData()), writer.GetBytePosition());
+    FullObjects objects;
+    objects.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
+
+    return objects;
 }
 
 std::tuple<bool, String> ScriptService::HandlePlayerConnect(const Script::Player& aPlayer) noexcept
@@ -111,13 +125,12 @@ void ScriptService::RegisterExtensions(ScriptContext& aContext)
 
 void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
-    TiltedMessages::ServerMessage message;
-    auto* pReplicatedNetObjects = message.mutable_replicated_net_objects();
+    ServerScriptUpdate message;
 
-    Serialize(pReplicatedNetObjects);
+    message.Data = GenerateDifferential();
 
     // Only send if the snapshot contains anything changed
-    if(pReplicatedNetObjects->data().size() > 0)
+    if(message.Data.IsEmpty() == false)
     {
         GameServer::Get()->SendToLoaded(message);       
     }
@@ -125,9 +138,9 @@ void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
     CallEvent("onUpdate", acEvent.Delta);
 }
 
-void ScriptService::OnRpcCalls(const PacketEvent<TiltedMessages::RpcCallsRequest>& acRpcCalls) noexcept
+void ScriptService::OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept
 {
-    auto& data = acRpcCalls.Packet.data();
+    auto& data = acRpcCalls.Packet.Data;
 
     Buffer buff(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
     Buffer::Reader reader(&buff);

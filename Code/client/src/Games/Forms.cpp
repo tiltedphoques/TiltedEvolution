@@ -20,7 +20,7 @@ TESForm* TESForm::GetById(const uint32_t aId)
     return getFormById.Get()(aId);
 }
 
-void TESNPC::Serialize(std::string* apSaveBuffer) const noexcept
+void TESNPC::Serialize(String* apSaveBuffer) const noexcept
 {
     ScopedSaveLoadOverride saveLoadOverride;
 
@@ -38,7 +38,7 @@ void TESNPC::Serialize(std::string* apSaveBuffer) const noexcept
     saveBuffer.buffer = nullptr;
 }
 
-void TESNPC::Deserialize(const std::string& acBuffer, uint32_t aChangeFlags) noexcept
+void TESNPC::Deserialize(const String& acBuffer, uint32_t aChangeFlags) noexcept
 {
     ScopedSaveLoadOverride saveLoadOverride;
 
@@ -124,7 +124,7 @@ uint32_t TESForm::GetChangeFlags() const noexcept
 	return changeFlags.flags;
 }
 
-TESNPC* TESNPC::Create(const std::string& acBuffer, const uint32_t aChangeFlags) noexcept
+TESNPC* TESNPC::Create(const String& acBuffer, const uint32_t aChangeFlags) noexcept
 {
     auto pNpc = IFormFactory::Create<TESNPC>();
 

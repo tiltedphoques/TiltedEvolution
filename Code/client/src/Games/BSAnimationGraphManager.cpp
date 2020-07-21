@@ -8,6 +8,8 @@
 #include <Games/Fallout4/Havok/BShkbHkxDB.h>
 #include <Games/Fallout4/Havok/hkbBehaviorGraph.h>
 
+#include <map>
+
 void BSAnimationGraphManager::DumpAnimationVariables()
 {
     if (animationGraphIndex < animationGraphs.size)

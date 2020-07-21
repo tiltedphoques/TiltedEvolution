@@ -1,7 +1,5 @@
 #include <Services/TransportService.h>
 
-#include <client_server.pb.h>
-
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -12,12 +10,25 @@
 #include <World.h>
 
 #include <Packet.hpp>
+#include <Messages/AuthenticationRequest.h>
 #include <ScratchAllocator.hpp>
 #include <Services/ImguiService.h>
 #include <imgui.h>
 
-#define TRANSPORT_HANDLE(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: Handle##packetName(message.functionName()); break;
-#define TRANSPORT_DISPATCH(packetName, functionName) case TiltedMessages::ServerMessage::k##packetName: dispatcher.trigger(message.functionName()); break;
+#include <Messages/AuthenticationResponse.h>
+#include <Messages/ServerMessageFactory.h>
+#include <Messages/AssignCharacterResponse.h>
+#include <Messages/ServerReferencesMoveRequest.h>
+#include <Messages/EnterCellRequest.h>
+#include <Messages/CharacterSpawnRequest.h>
+
+#define TRANSPORT_DISPATCH(packetName) \
+case k##packetName: \
+    { \
+    const auto pRealMessage = TiltedPhoques::CastUnique<packetName>(std::move(pMessage)); \
+    m_dispatcher.trigger(*pRealMessage); \
+    } \
+    break; 
 
 using TiltedPhoques::Packet;
 
@@ -32,7 +43,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
     m_connected = false;
 }
 
-bool TransportService::Send(const TiltedMessages::ClientMessage& acMessage) const noexcept
+bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 {
     static thread_local ScratchAllocator s_allocator(1 << 18);
 
@@ -43,25 +54,18 @@ bool TransportService::Send(const TiltedMessages::ClientMessage& acMessage) cons
 
     if (IsConnected())
     {
-        ScopedAllocator _{s_allocator};
+        ScopedAllocator _{ s_allocator };
 
-        // We first try to allocate using the scratch pool
-        auto pPacket = TiltedPhoques::MakeUnique<Packet>(acMessage.ByteSize());
+        Buffer buffer(1 << 16);
+        Buffer::Writer writer(&buffer);
+        writer.WriteBits(0, 8); // Write first byte as packet needs it
 
-        // If it failed to allocate the packet object or the underlying buffer, fallback to the default allocator (usually malloc/free)
-        if(!pPacket || !pPacket->IsValid())
-            pPacket.reset(Allocator::GetDefault()->New<Packet>(acMessage.ByteSize()));
+        acMessage.Serialize(writer);
+        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
 
-        if (pPacket && pPacket->IsValid() && acMessage.SerializeToArray(pPacket->GetData(), static_cast<int>(pPacket->GetSize())))
-        {
-            Client::Send(pPacket.get());
+        Client::Send(&packet);
 
-            return true;
-        }
-        else
-        {
-            // TODO: Understand wtf is going on here
-        }
+        return true;
     }
 
     return false;
@@ -69,34 +73,39 @@ bool TransportService::Send(const TiltedMessages::ClientMessage& acMessage) cons
 
 void TransportService::OnConsume(const void* apData, uint32_t aSize)
 {
-    TiltedMessages::ServerMessage message;
-    if (!message.ParseFromArray(apData, aSize))
+    ServerMessageFactory factory;
+    TiltedPhoques::ViewBuffer buf((uint8_t*)apData, aSize);
+    Buffer::Reader reader(&buf);
+
+    auto pMessage = factory.Extract(reader);
+    if (!pMessage)
     {
+        spdlog::error("Couldn't parse packet from server");
         return;
     }
 
-    auto& dispatcher = m_dispatcher;
-
-    switch (message.Content_case())
+    switch (pMessage->GetOpcode())
     {
-        TRANSPORT_HANDLE(AuthenticationResponse, authentication_response);
-        TRANSPORT_DISPATCH(StringCacheContent, string_cache_content);
-        TRANSPORT_DISPATCH(CharacterAssignResponse, character_assign_response);
-        TRANSPORT_DISPATCH(CharacterSpawnRequest, character_spawn_request);
-        TRANSPORT_DISPATCH(ReferenceMovementSnapshot, reference_movement_snapshot);
-        TRANSPORT_DISPATCH(ReplicatedNetObjects, replicated_net_objects);
+    case kAuthenticationResponse:
+    {
+        const auto pRealMessage = TiltedPhoques::CastUnique<AuthenticationResponse>(std::move(pMessage));
+        HandleAuthenticationResponse(*pRealMessage);
+    }
+    break;
+
+    TRANSPORT_DISPATCH(AssignCharacterResponse);
+    TRANSPORT_DISPATCH(ServerReferencesMoveRequest);
+    TRANSPORT_DISPATCH(CharacterSpawnRequest);
+
     default:
-        assert(false);
+        spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());
         break;
     }
 }
 
 void TransportService::OnConnected()
 {
-    TiltedMessages::ClientMessage message;
-    const auto cpAuthenticationRequest = message.mutable_authentication_request();
-    cpAuthenticationRequest->set_token("");
-    const auto cpMods = cpAuthenticationRequest->mutable_mods();
+    AuthenticationRequest request;
 
     const auto cpModManager = ModManager::Get();
 
@@ -105,13 +114,13 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        const auto cpEntry = pMod->IsLite() ? cpMods->add_lite_mods() : cpMods->add_standard_mods();
+        auto& entry = pMod->IsLite() ? request.Mods.LiteMods.emplace_back() : request.Mods.StandardMods.emplace_back();
 
-        cpEntry->set_filename(pMod->filename);
-        cpEntry->set_id(pMod->GetId());
+        entry.Id = pMod->GetId();
+        entry.Filename = pMod->filename;
     }
 
-    Send(message);
+    Send(request);
 }
 
 void TransportService::OnDisconnected(EDisconnectReason aReason)
@@ -139,12 +148,8 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
 
     if(m_world.GetModSystem().GetServerModId(acEvent.CellId, modId, baseId))
     {
-        TiltedMessages::ClientMessage message;
-        const auto pCellEnterRequest = message.mutable_cell_enter_request();
-        auto pCellId = pCellEnterRequest->mutable_cell_id();
-
-        pCellId->set_mod(modId);
-        pCellId->set_base(baseId);
+        EnterCellRequest message;
+        message.CellId = GameId(modId, baseId);
 
         Send(message);
     }
@@ -157,28 +162,40 @@ void TransportService::OnDraw() noexcept
         ImGui::Begin("Network");
 
         auto status = GetConnectionStatus();
-        status.m_flOutBytesPerSec /= 1024;
-        status.m_flInBytesPerSec /= 1024;
+        status.m_flOutBytesPerSec /= 1024.f;
+        status.m_flInBytesPerSec /= 1024.f;
 
-        ImGui::InputFloat("Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Net Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Net In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+        auto stats = GetStatistics();
+        float protocolSent = float(stats.SentBytes) / 1024.f;
+        float protocolReceived = float(stats.RecvBytes) / 1024.f;
+        float uncompressedSent = float(stats.UncompressedSentBytes) / 1024.f;
+        float uncompressedReceived = float(stats.UncompressedRecvBytes) / 1024.f;
+
+        ImGui::InputFloat("Protocol Out kBps", (float*)&protocolSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Protocol In kBps", (float*)&protocolReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::InputFloat("User Out kBps", (float*)&uncompressedSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("User In kBps", (float*)&uncompressedReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
         ImGui::End();
     }
 }
 
-void TransportService::HandleAuthenticationResponse(const TiltedMessages::AuthenticationResponse& acMessage) noexcept
+void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
     m_connected = true;
 
     // Dispatch the mods to anyone who needs it
-    m_dispatcher.trigger(acMessage.mods());
+    m_dispatcher.trigger(acMessage.Mods);
 
     // Dispatch the scripts to anyone who needs it
-    m_dispatcher.trigger(acMessage.scripts());
+    m_dispatcher.trigger(acMessage.Scripts);
 
     // Dispatch the replicated objects
-    m_dispatcher.trigger(acMessage.objects());
+    m_dispatcher.trigger(acMessage.ReplicatedObjects);
 
     // Notify we are ready for action
     m_dispatcher.trigger(ConnectedEvent());

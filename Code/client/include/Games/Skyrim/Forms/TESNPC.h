@@ -20,7 +20,7 @@ struct TESNPC : TESActorBase
 {
     static constexpr uint32_t Type = FormType::Npc;
 
-    static TESNPC* Create(const std::string& acBuffer, uint32_t aChangeFlags) noexcept;
+    static TESNPC* Create(const String& acBuffer, uint32_t aChangeFlags) noexcept;
 
     struct FaceMorphs
     {
@@ -82,8 +82,8 @@ struct TESNPC : TESActorBase
     uintptr_t unk160;
 
     BGSHeadPart* GetHeadPart(uint32_t aType);
-    void Serialize(std::string* apSaveBuffer) const noexcept;
-    void Deserialize(const std::string& acBuffer, uint32_t aChangeFlags) noexcept;
+    void Serialize(String* apSaveBuffer) const noexcept;
+    void Deserialize(const String& acBuffer, uint32_t aChangeFlags) noexcept;
     void Initialize() noexcept;
 };
 

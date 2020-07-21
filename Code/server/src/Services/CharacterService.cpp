@@ -8,35 +8,49 @@
 #include <Scripts/Npc.h>
 #include <Scripts/Player.h>
 
+#include <Messages/AssignCharacterRequest.h>
+#include <Messages/AssignCharacterResponse.h>
+#include <Messages/ServerReferencesMoveRequest.h>
+#include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/CharacterSpawnRequest.h>
+
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
-    , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<TiltedMessages::CharacterAssignRequest>>().connect<&CharacterService::OnCharacterAssignRequest>(this))
+    , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
-    , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<TiltedMessages::ReferenceMovementSnapshot>>().connect<&CharacterService::OnReferenceMovementSnapshot>(this))
+    , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
 {
 }
 
-void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, TiltedMessages::CharacterSpawnRequest* apSpawnRequest) noexcept
+void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
 {
     const auto& characterComponent = aRegistry.get<CharacterComponent>(aEntity);
 
-    apSpawnRequest->set_server_id(World::ToInteger(aEntity));
-    apSpawnRequest->mutable_npc_buffer()->assign(characterComponent.SaveBuffer.c_str(), characterComponent.SaveBuffer.size());
-    apSpawnRequest->mutable_inventory_buffer()->assign(characterComponent.InventoryBuffer.c_str(), characterComponent.InventoryBuffer.size());
-    apSpawnRequest->set_change_flags(characterComponent.ChangeFlags);
+    apSpawnRequest->ServerId = World::ToInteger(aEntity);
+    apSpawnRequest->AppearanceBuffer = characterComponent.SaveBuffer;
+    apSpawnRequest->InventoryBuffer = characterComponent.InventoryBuffer;
+    apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
     {
-        apSpawnRequest->mutable_game_id()->set_mod(pFormIdComponent->ModId);
-        apSpawnRequest->mutable_game_id()->set_base(pFormIdComponent->BaseId);
+        apSpawnRequest->FormId.BaseId = pFormIdComponent->BaseId;
+        apSpawnRequest->FormId.ModId = pFormIdComponent->ModId;
     }
 
     if (characterComponent.BaseId)
     {
-        apSpawnRequest->mutable_base_id()->set_mod(characterComponent.BaseId.ModId);
-        apSpawnRequest->mutable_base_id()->set_base(characterComponent.BaseId.BaseId);
+        apSpawnRequest->FormId.BaseId = characterComponent.BaseId.BaseId;
+        apSpawnRequest->FormId.ModId = characterComponent.BaseId.ModId;
+    }
+
+    const auto* pMovementComponent = aRegistry.try_get<MovementComponent>(aEntity);
+    if (pMovementComponent)
+    {
+        apSpawnRequest->Position = pMovementComponent->Position;
+        apSpawnRequest->Rotation.X = pMovementComponent->Rotation.m_x;
+        apSpawnRequest->Rotation.Y = pMovementComponent->Rotation.m_z;
     }
 
     uint8_t scratch[1 << 12];
@@ -45,9 +59,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, T
     Buffer::Writer writer(&buffer);
 
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    animationComponent.CurrentAction.GenerateDifferential(ActionEvent{}, writer);
-
-    apSpawnRequest->mutable_current_action()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
+    apSpawnRequest->LatestAction = animationComponent.CurrentAction;
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
@@ -64,15 +76,14 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
     auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
     const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
 
-    Map<ConnectionId_t, TiltedMessages::ServerMessage> messages;
+    Map<ConnectionId_t, ServerReferencesMoveRequest> messages;
 
     for (auto player : playerView)
     {
         const auto& playerComponent = playerView.get<PlayerComponent>(player);
         auto& message = messages[playerComponent.ConnectionId];
 
-        auto pSnapshot = message.mutable_reference_movement_snapshot();
-        pSnapshot->set_tick(GameServer::Get()->GetTick());
+        message.Tick = GameServer::Get()->GetTick();
     }
 
     characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, const auto& movementComponent, const auto& animationComponent, const auto& ownerComponent)
@@ -90,41 +101,22 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                     continue;
 
                 auto& message = messages[playerComponent.ConnectionId];
-                auto pSnapshot = message.mutable_reference_movement_snapshot()->add_entries();
-                auto& movement = *pSnapshot->mutable_movement();
-                auto& actions = *pSnapshot->mutable_actions();
-
-                pSnapshot->set_server_id(World::ToInteger(entity));
+                auto& update = message.Updates[World::ToInteger(entity)];
+                auto& movement = update.UpdatedMovement;
 
                 float x, y, z;
                 movementComponent.Position.Decompose(x, y, z);
 
-                movement.mutable_position()->set_x(x);
-                movement.mutable_position()->set_y(y);
-                movement.mutable_position()->set_z(z);
+                movement.Position = movementComponent.Position;
 
                 movementComponent.Rotation.Decompose(x, y, z);
 
-                movement.mutable_rotation()->set_x(x);
-                movement.mutable_rotation()->set_z(z);
+                movement.Rotation.X = x;
+                movement.Rotation.Y = z;
 
                 auto lastSerializedAction = animationComponent.LastSerializedAction;
 
-                if (!animationComponent.Actions.empty())
-                {
-                    for (auto& action : animationComponent.Actions)
-                    {
-                        uint8_t scratch[1 << 12];
-
-                        ViewBuffer buffer(scratch, std::size(scratch));
-                        Buffer::Writer writer(&buffer);
-
-                        action.GenerateDifferential(lastSerializedAction, writer);
-                        lastSerializedAction = action;
-
-                        actions.add_actions()->assign(buffer.GetData(), buffer.GetData() + writer.GetBytePosition());
-                    }
-                }
+                update.ActionEvents = animationComponent.Actions;
             }
         });
 
@@ -143,16 +135,17 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 
     for (auto kvp : messages)
     {
-        if (kvp.second.reference_movement_snapshot().entries_size() > 0)
+        if (kvp.second.Updates.size() > 0)
             GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
 
-void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages::CharacterAssignRequest>& acMessage) const noexcept
+void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
-    const auto gameId = acMessage.Packet.id();
+    auto& message = acMessage.Packet;
+    const auto& refId = message.ReferenceId;
 
-    const auto isCustom = (gameId.mod() == 0 && gameId.base() == 0x14) || gameId.mod() == std::numeric_limits<uint32_t>::max();
+    const auto isCustom = (refId.ModId == 0 && refId.BaseId == 0x14) || refId.ModId == std::numeric_limits<uint32_t>::max();
 
     // Check if id is the player
     if (!isCustom)
@@ -160,28 +153,26 @@ void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages
         // Look for the character
         auto view = m_world.view<FormIdComponent>();
 
-        const auto itor = std::find_if(std::begin(view), std::end(view), [view, &gameId](auto entity)
+        const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
                 const auto& formIdComponent = view.get(entity);
 
-                return formIdComponent.BaseId == gameId.base() && formIdComponent.ModId == gameId.mod();
+                return formIdComponent.BaseId == refId.BaseId && formIdComponent.ModId == refId.ModId;
             });
 
         if (itor != std::end(view))
         {
             // This entity already has an owner
-            spdlog::info("FormId: {:x}:{:x} is already managed", gameId.mod(), gameId.base());
+            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             const auto pServer = GameServer::Get();
 
-            TiltedMessages::ServerMessage message;
-            auto pResponse = message.mutable_character_assign_response();
+            AssignCharacterResponse response;
+            response.Cookie = message.Cookie;
+            response.ServerId = World::ToInteger(*itor);
+            response.Owner = false;
 
-            pResponse->set_cookie(acMessage.Packet.cookie());
-            pResponse->set_server_id(World::ToInteger(*itor));
-            pResponse->set_ownership(false);
-
-            pServer->Send(acMessage.ConnectionId, message);
+            pServer->Send(acMessage.ConnectionId, response);
 
             return;
         }
@@ -193,9 +184,8 @@ void CharacterService::OnCharacterAssignRequest(const PacketEvent<TiltedMessages
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept
 {
-    TiltedMessages::ServerMessage message;
-    const auto pRequest = message.mutable_character_spawn_request();
-    Serialize(m_world, acEvent.Entity, pRequest);
+    CharacterSpawnRequest message;
+    Serialize(m_world, acEvent.Entity, &message);
 
     const auto& characterCellIdComponent = m_world.get<CellIdComponent>(acEvent.Entity);
     const auto& characterOwnerComponent = m_world.get<OwnerComponent>(acEvent.Entity);
@@ -213,14 +203,16 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         });
 }
 
-void CharacterService::OnReferenceMovementSnapshot(
-    const PacketEvent<TiltedMessages::ReferenceMovementSnapshot>& acMessage) const noexcept
+void CharacterService::OnReferencesMoveRequest(
+    const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
     auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
 
-    for (auto& entry : acMessage.Packet.entries())
+    auto& message = acMessage.Packet;
+
+    for (auto& entry : message.Updates)
     {
-        auto itor = view.find(entt::entity(entry.server_id()));
+        auto itor = view.find(entt::entity(entry.first));
 
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
@@ -230,14 +222,15 @@ void CharacterService::OnReferenceMovementSnapshot(
         auto& movementComponent = view.get<MovementComponent>(*itor);
         auto& animationComponent = view.get<AnimationComponent>(*itor);
 
-        movementComponent.Tick = acMessage.Packet.tick();
+        movementComponent.Tick = message.Tick;
 
         const auto movementCopy = movementComponent;
 
-        auto& movement = entry.movement();
+        auto& update = entry.second;
+        auto& movement = update.UpdatedMovement;
 
-        movementComponent.Position = Vector3<float>(movement.position().x(), movement.position().y(), movement.position().z());
-        movementComponent.Rotation = Vector3<float>(movement.rotation().x(), 0.f, movement.rotation().z());
+        movementComponent.Position = movement.Position;
+        movementComponent.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -246,14 +239,12 @@ void CharacterService::OnReferenceMovementSnapshot(
             movementComponent = movementCopy;
         }
 
-        for (auto& action : entry.actions().actions())
+        for (auto& action : update.ActionEvents)
         {
             //TODO: HandleAction
             //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
 
-            ViewBuffer buffer((uint8_t*)action.data(), action.size());
-            Buffer::Reader reader(&buffer);
-            animationComponent.CurrentAction.ApplyDifferential(reader);
+            animationComponent.CurrentAction = action;
 
             animationComponent.Actions.push_back(animationComponent.CurrentAction);
         }
@@ -262,54 +253,52 @@ void CharacterService::OnReferenceMovementSnapshot(
     }
 }
 
-void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::CharacterAssignRequest>& acMessage) const noexcept
+void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
-    const auto gameId = acMessage.Packet.id();
-    const auto baseId = acMessage.Packet.base_id();
+    auto& message = acMessage.Packet;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x}  assigned to {:x}", gameId.mod(), gameId.base(), baseId.mod(), baseId.base(), acMessage.ConnectionId);
+    const auto gameId = message.ReferenceId;
+    const auto baseId = message.FormId;
+
+    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x}  assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
     const auto cEntity = m_world.create();
-    const auto isTemporary = gameId.mod() == std::numeric_limits<uint32_t>::max();
-    const auto isPlayer = (gameId.mod() == 0 && gameId.base() == 0x14);
+    const auto isTemporary = gameId.ModId == std::numeric_limits<uint32_t>::max();
+    const auto isPlayer = (gameId.ModId == 0 && gameId.BaseId == 0x14);
     const auto isCustom = isPlayer || isTemporary;
 
     // For player characters and temporary forms
     if (!isCustom)
     {
-        m_world.emplace<FormIdComponent>(cEntity, gameId.base(), gameId.mod());
+        m_world.emplace<FormIdComponent>(cEntity, gameId.BaseId, gameId.ModId);
     }
-    else if (acMessage.Packet.has_base_id() && !isTemporary)
+    else if (baseId != GameId{} && !isTemporary)
     {
         spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.ConnectionId);
         return;
     }
 
-    auto& packet = acMessage.Packet;
     const auto pServer = GameServer::Get();
 
     m_world.emplace<ScriptsComponent>(cEntity);
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
-    m_world.emplace<CellIdComponent>(cEntity, packet.cell_id());
+    m_world.emplace<CellIdComponent>(cEntity, message.CellId);
 
     CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
-    characterComponent.ChangeFlags = packet.change_flags();
-    characterComponent.SaveBuffer.assign(packet.npc_buffer().c_str(), packet.npc_buffer().size());
-    characterComponent.InventoryBuffer.assign(packet.inventory_buffer().c_str(), packet.inventory_buffer().size());
-    characterComponent.BaseId = FormIdComponent(packet.base_id());
+    characterComponent.ChangeFlags = message.ChangeFlags;
+    characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
+    //characterComponent.InventoryBuffer = std::move(message.InventoryBuffer);
+    characterComponent.BaseId = FormIdComponent(message.FormId);
 
     MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
-    movementComponent.Position = Vector3<float>(packet.movement().position().x(), packet.movement().position().y(), packet.movement().position().z());
-    movementComponent.Rotation = Vector3<float>(packet.movement().rotation().x(), 0.f, packet.movement().rotation().z());
+    movementComponent.Position = message.Position;
+    movementComponent.Rotation = Vector3<float>(message.Rotation.X, 0.f, message.Rotation.Y);
     movementComponent.Sent = false;
 
     auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
 
-    ViewBuffer buffer((uint8_t*)packet.current_action().data(), packet.current_action().size());
-    Buffer::Reader reader(&buffer);
-
-    animationComponent.CurrentAction.ApplyDifferential(reader);
+    animationComponent.CurrentAction = message.LatestAction;
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)
@@ -337,13 +326,12 @@ void CharacterService::CreateCharacter(const PacketEvent<TiltedMessages::Charact
         m_world.GetScriptService().HandlePlayerEnterWorld(player);
     }
 
-    TiltedMessages::ServerMessage message;
-    auto pResponse = message.mutable_character_assign_response();
-    pResponse->set_cookie(acMessage.Packet.cookie());
-    pResponse->set_server_id(World::ToInteger(cEntity));
-    pResponse->set_ownership(true);
+    AssignCharacterResponse response;
+    response.Cookie = message.Cookie;
+    response.ServerId = World::ToInteger(cEntity);
+    response.Owner = true;
 
-    pServer->Send(acMessage.ConnectionId, message);
+    pServer->Send(acMessage.ConnectionId, response);
 
     auto& dispatcher = m_world.GetDispatcher();
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));

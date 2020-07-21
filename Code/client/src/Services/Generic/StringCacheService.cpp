@@ -7,7 +7,7 @@ StringCacheService::StringCacheService(entt::dispatcher& aDispatcher) noexcept
 {
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&StringCacheService::HandleConnected>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&StringCacheService::HandleDisconnected>(this);
-    m_stringCacheContentConnection = aDispatcher.sink<TiltedMessages::StringCacheContent>().connect<&StringCacheService::HandleStringCacheContent>(this);
+//    m_stringCacheContentConnection = aDispatcher.sink<TiltedMessages::StringCacheContent>().connect<&StringCacheService::HandleStringCacheContent>(this);
 }
 
 const String& StringCacheService::Get(const uint32_t aIndex) const noexcept
@@ -30,6 +30,7 @@ void StringCacheService::HandleDisconnected(const DisconnectedEvent& acEvent) no
     m_cache.clear();
 }
 
+/*
 void StringCacheService::HandleStringCacheContent(const TiltedMessages::StringCacheContent& acMessage) noexcept
 {
     for (auto& content : acMessage.data())
@@ -37,3 +38,4 @@ void StringCacheService::HandleStringCacheContent(const TiltedMessages::StringCa
         m_cache.emplace(content.first, String(content.second.c_str(), content.second.size()));
     }
 }
+*/

@@ -4,7 +4,12 @@
 #include <ScriptStore.h>
 #include <Events/PacketEvent.h>
 
+#include <Structs/Objects.h>
+#include <Structs/FullObjects.h>
+#include <Structs/Scripts.h>
+
 struct World;
+struct ClientRpcCalls;
 
 namespace Script
 {
@@ -19,9 +24,9 @@ struct ScriptService : ScriptStore
 
     TP_NOCOPYMOVE(ScriptService);
 
-    void Serialize(TiltedMessages::Scripts* apScripts) noexcept;
-    void Serialize(TiltedMessages::ReplicateNetObjects* apReplicateNetObjects) noexcept;
-    void Serialize(TiltedMessages::FullObjects* apReplicateNetObjects) noexcept;
+    Scripts SerializeScripts() noexcept;
+    Objects GenerateDifferential() noexcept;
+    FullObjects GenerateFull() noexcept;
 
     std::tuple<bool, String> HandlePlayerConnect(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandlePlayerEnterWorld(const Script::Player& aPlayer) noexcept;
@@ -34,7 +39,7 @@ protected:
     void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnRpcCalls(const PacketEvent<TiltedMessages::RpcCallsRequest>& acRpcCalls) noexcept;
+    void OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept;
 
     void BindStaticFunctions(ScriptContext& aContext) noexcept;
     void BindTypes(ScriptContext& aContext) noexcept;
@@ -42,48 +47,14 @@ protected:
     void AddEventHandler(std::string acName, sol::function acFunction) noexcept;
     void CancelEvent(std::string aReason) noexcept;
 
-    template<typename... Args>
-    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args)
-    {
-        m_eventCanceled = false;
-
-        auto& callbacks = m_callbacks[acName];
-
-        for (auto& callback : callbacks)
-        {
-            auto result = callback(std::forward<Args>(args)...);
-
-            if (!result.valid())
-            {
-                sol::error err = result;
-                spdlog::error(err.what());
-            }
-
-            if (m_eventCanceled == true)
-                return std::make_tuple(true, m_cancelReason);
-        }
-
-        return std::make_tuple(false, "");
-    }
-
-    template<typename... Args>
-    void CallEvent(const String& acName, Args&&... args)
-    {
-        auto& callbacks = m_callbacks[acName];
-
-        for (auto& callback : callbacks)
-        {
-            auto result = callback(std::forward<Args>(args)...);
-            if (!result.valid())
-            {
-                sol::error err = result;
-                spdlog::error(err.what());
-            }
-        }
-    }
-
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
     [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
+
+    template<typename... Args>
+    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args);
+
+    template<typename... Args>
+    void CallEvent(const String& acName, Args&&... args);
 
 private:
 
@@ -100,3 +71,5 @@ private:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_rpcCallsRequest;
 };
+
+#include "ScriptService.inl"

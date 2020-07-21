@@ -3,6 +3,14 @@
 #include <Messages/ClientMessageFactory.h>
 
 #include <Messages/AuthenticationRequest.h>
+#include <Messages/AssignCharacterRequest.h>
+#include <Messages/CancelAssignmentRequest.h>
+#include <Messages/RemoveCharacterRequest.h>
+#include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/EnterCellRequest.h>
+#include <Messages/ClientRpcCalls.h>
+
+#include <iostream>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -20,6 +28,12 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
     switch(opcode)
     {
         EXTRACT_MESSAGE(AuthenticationRequest);
+        EXTRACT_MESSAGE(AssignCharacterRequest);
+        EXTRACT_MESSAGE(CancelAssignmentRequest);
+        EXTRACT_MESSAGE(RemoveCharacterRequest);
+        EXTRACT_MESSAGE(ClientReferencesMoveRequest);
+        EXTRACT_MESSAGE(EnterCellRequest);
+        EXTRACT_MESSAGE(ClientRpcCalls);
     }
 
     return UniquePtr<ClientMessage>(nullptr, &TiltedPhoques::Delete<ClientMessage>);

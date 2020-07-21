@@ -3,13 +3,16 @@
 #include <Components.h>
 #include <GameServer.h>
 
+#include <Messages/EnterCellRequest.h>
+#include <Messages/CharacterSpawnRequest.h>
+
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
-    , m_cellEnterConnection(aDispatcher.sink<PacketEvent<TiltedMessages::CellEnterRequest>>().connect<&PlayerService::HandleCellEnter>(this))
+    , m_cellEnterConnection(aDispatcher.sink<PacketEvent<EnterCellRequest>>().connect<&PlayerService::HandleCellEnter>(this))
 {
 }
 
-void PlayerService::HandleCellEnter(const PacketEvent<TiltedMessages::CellEnterRequest>& acMessage) noexcept
+void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) noexcept
 {
     auto playerView = m_world.view<PlayerComponent>();
 
@@ -25,7 +28,9 @@ void PlayerService::HandleCellEnter(const PacketEvent<TiltedMessages::CellEnterR
         return;
     }
 
-    m_world.assign_or_replace<CellIdComponent>(*itor, acMessage.Packet.cell_id());
+    auto& message = acMessage.Packet;
+
+    m_world.assign_or_replace<CellIdComponent>(*itor, message.CellId);
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)
@@ -36,9 +41,8 @@ void PlayerService::HandleCellEnter(const PacketEvent<TiltedMessages::CellEnterR
         if (ownedComponent.ConnectionId == acMessage.ConnectionId)
             continue;
 
-        TiltedMessages::ServerMessage message;
-        const auto pRequest = message.mutable_character_spawn_request();
-        CharacterService::Serialize(m_world, character, pRequest);
+        CharacterSpawnRequest message;
+        CharacterService::Serialize(m_world, character, &message);
 
         GameServer::Get()->Send(acMessage.ConnectionId, message);
     }

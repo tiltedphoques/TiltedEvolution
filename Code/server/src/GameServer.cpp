@@ -4,11 +4,23 @@
 
 #include <Events/PacketEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Messages/ClientMessageFactory.h>
+#include <Messages/AuthenticationRequest.h>
+#include <Messages/CancelAssignmentRequest.h>
+#include <Messages/RemoveCharacterRequest.h>
+#include <Messages/AssignCharacterRequest.h>
+#include <Messages/AuthenticationResponse.h>
+#include <Messages/EnterCellRequest.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 
 #include <Scripts/Player.h>
 
 #define SERVER_HANDLE(packetName, functionName) case TiltedMessages::ClientMessage::k##packetName: Handle##packetName(aConnectionId, message.functionName()); break;
-#define SERVER_DISPATCH(packetName, functionName) case TiltedMessages::ClientMessage::k##packetName: dispatcher.trigger(PacketEvent<TiltedMessages::packetName>(message.mutable_##functionName(), aConnectionId)); break;
+#define SERVER_DISPATCH(packetName) case k##packetName: \
+{\
+    const auto pRealMessage = CastUnique<packetName>(std::move(pMessage)); \
+    dispatcher.trigger(PacketEvent<packetName>(pRealMessage.get(), aConnectionId)); break; \
+}
 
 GameServer* GameServer::s_pInstance = nullptr;
 
@@ -17,8 +29,6 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     , m_name(std::move(aName))
     , m_token(std::move(aToken))
 {
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
     assert(s_pInstance == nullptr);
 
     s_pInstance = this;
@@ -54,8 +64,12 @@ void GameServer::OnUpdate()
 
 void GameServer::OnConsume(const void* apData, const uint32_t aSize, const ConnectionId_t aConnectionId)
 {
-    TiltedMessages::ClientMessage message;
-    if(!message.ParseFromArray(apData, aSize))
+    ClientMessageFactory factory;
+    ViewBuffer buf((uint8_t*)apData, aSize);
+    Buffer::Reader reader(&buf);
+
+    auto pMessage = factory.Extract(reader);
+    if(!pMessage)
     {
         spdlog::error("Couldn't parse packet from {:x}", aConnectionId);
         return;
@@ -63,19 +77,21 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
 
     auto& dispatcher = m_world.GetDispatcher();
 
-    switch(message.Content_case())
+    switch(pMessage->GetOpcode())
     {
-        SERVER_HANDLE(AuthenticationRequest, authentication_request);
-        SERVER_DISPATCH(CharacterAssignRequest, character_assign_request);
-        SERVER_DISPATCH(CancelCharacterAssignRequest, cancel_character_assign_request);
-        SERVER_DISPATCH(CellEnterRequest, cell_enter_request);
-        SERVER_DISPATCH(ReferenceMovementSnapshot, reference_movement_snapshot);
-        SERVER_DISPATCH(RpcCallsRequest, rpc_calls_request);
-    case TiltedMessages::ClientMessage::CONTENT_NOT_SET:
-        spdlog::error("Client message from {:x} was empty", aConnectionId);
+    case kAuthenticationRequest:
+    {
+        const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(pMessage));
+        HandleAuthenticationRequest(aConnectionId, pRealMessage);
         break;
+    }
+        SERVER_DISPATCH(RemoveCharacterRequest);
+        SERVER_DISPATCH(AssignCharacterRequest);
+        SERVER_DISPATCH(CancelAssignmentRequest);
+        SERVER_DISPATCH(ClientReferencesMoveRequest);
+        SERVER_DISPATCH(EnterCellRequest);
     default:
-        spdlog::error("Client message opcode {} from {:x} has no handler", message.Content_case(), aConnectionId);
+        spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;
     }
 }
@@ -133,22 +149,25 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId)
     SetTitle();
 }
 
-void GameServer::Send(const ConnectionId_t aConnectionId, const TiltedMessages::ServerMessage& acServerMessage) const
+void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{ 1 << 18 };
 
     TiltedPhoques::ScopedAllocator _(s_allocator);
 
-    TiltedPhoques::Packet packet(acServerMessage.ByteSize());
-    if (acServerMessage.SerializeToArray(packet.GetData(), static_cast<int>(packet.GetSize() & 0x7FFFFFFF)))
-        Server::Send(aConnectionId, &packet);
-    else
-        spdlog::error("Unable to serialize message {}", acServerMessage.Content_case());
+    Buffer buffer(1 << 16);
+    Buffer::Writer writer(&buffer);
+    writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
+
+    acServerMessage.Serialize(writer);
+
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
 }
 
-void GameServer::SendToLoaded(const TiltedMessages::ServerMessage& acServerMessage) const
+void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
     auto playerView = m_world.view<const PlayerComponent, const CellIdComponent>();
 
@@ -164,9 +183,9 @@ GameServer* GameServer::Get() noexcept
 	return s_pInstance;
 }
 
-void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId, const TiltedMessages::AuthenticationRequest& acRequest) noexcept
+void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept
 {
-    if(strcmp(acRequest.token().c_str(), m_token.c_str()) == 0)
+    if(acRequest->Token == m_token)
     {
         auto& scripts = m_world.GetScriptService();
 
@@ -187,38 +206,40 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         playerComponent.Endpoint = remoteAddress;
 
-        TiltedMessages::ServerMessage response;
-        const auto pAuthenticationResponse = response.mutable_authentication_response();
-        const auto pMods = pAuthenticationResponse->mutable_mods();
-        const auto pScripts = pAuthenticationResponse->mutable_scripts();
-        const auto pReplicatedObjects = pAuthenticationResponse->mutable_objects();
+        AuthenticationResponse serverResponse;
+
+        Mods& serverMods = serverResponse.Mods;
 
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null form id anyway
         std::ostringstream oss;
         oss << "New player {:x} connected with mods\n\t Standard: ";
-        for (auto& standardMod : acRequest.mods().standard_mods())
+        for (auto& standardMod : acRequest->Mods.StandardMods)
         {
-            oss << standardMod.filename() << ", ";
+            oss << standardMod.Filename << ", ";
 
-            playerComponent.Mods.push_back(standardMod.filename().c_str());
-            const auto id = mods.AddStandard(standardMod.filename().c_str());
+            playerComponent.Mods.push_back(standardMod.Filename);
+            const auto id = mods.AddStandard(standardMod.Filename);
 
-            auto pMod = pMods->add_standard_mods();
-            pMod->set_filename(standardMod.filename().c_str());
-            pMod->set_id(id);
+            Mods::Entry entry;
+            entry.Filename = standardMod.Filename;
+            entry.Id = id;
+
+            serverMods.StandardMods.push_back(entry);
         }
 
         oss << "\n\t Lite: ";
-        for (auto& liteMod : acRequest.mods().lite_mods())
+        for (auto& liteMod : acRequest->Mods.LiteMods)
         {
-            oss << liteMod.filename() << ", ";
+            oss << liteMod.Filename << ", ";
 
-            playerComponent.Mods.push_back(liteMod.filename().c_str());
-            const auto id = mods.AddLite(liteMod.filename().c_str());
+            playerComponent.Mods.push_back(liteMod.Filename);
+            const auto id = mods.AddLite(liteMod.Filename);
 
-            auto pMod = pMods->add_lite_mods();
-            pMod->set_filename(liteMod.filename().c_str());
-            pMod->set_id(id);
+            Mods::Entry entry;
+            entry.Filename = liteMod.Filename;
+            entry.Id = id;
+
+            serverMods.LiteMods.push_back(entry);
         }
 
         Script::Player player(cEntity, m_world);
@@ -237,10 +258,10 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         spdlog::info(oss.str(), aConnectionId);
 
-        scripts.Serialize(pScripts);
-        scripts.Serialize(pReplicatedObjects);
+        serverResponse.Scripts = std::move(scripts.SerializeScripts());
+        serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
 
-        Send(aConnectionId, response);
+        Send(aConnectionId, serverResponse);
     }
     else
     {

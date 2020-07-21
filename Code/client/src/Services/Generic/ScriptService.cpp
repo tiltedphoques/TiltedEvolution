@@ -15,6 +15,8 @@
 #include <Games/Fallout4/Forms/TESForm.h>
 #include <Games/Fallout4/Actor.h>
 
+#include <Messages/ClientRpcCalls.h>
+
 #include <imgui.h>
 
 
@@ -25,9 +27,9 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher, Imgui
     , m_transport(aTransportService)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this);
-    m_scriptsConnection = m_dispatcher.sink<TiltedMessages::Scripts>().connect<&ScriptService::OnScripts>(this);
-    m_replicatedInitConnection = m_dispatcher.sink<TiltedMessages::FullObjects>().connect < &ScriptService::OnNetObjectsInitalize >(this);
-    m_replicatedUpdateConnection = m_dispatcher.sink<TiltedMessages::ReplicateNetObjects>().connect < &ScriptService::OnNetObjectsUpdate >(this);
+    m_scriptsConnection = m_dispatcher.sink<Scripts>().connect<&ScriptService::OnScripts>(this);
+    m_replicatedInitConnection = m_dispatcher.sink<FullObjects>().connect < &ScriptService::OnNetObjectsInitalize >(this);
+    m_replicatedUpdateConnection = m_dispatcher.sink<Objects>().connect < &ScriptService::OnNetObjectsUpdate >(this);
 
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&ScriptService::OnConnected>(this);
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&ScriptService::OnDisconnected>(this);
@@ -42,8 +44,7 @@ ScriptService::~ScriptService() noexcept
 
 void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    TiltedMessages::ClientMessage message;
-    auto pRemoteRpcCallsRequest = message.mutable_rpc_calls_request();
+    ClientRpcCalls message;
 
     Buffer buff(10000);
     Buffer::Writer writer(&buff);
@@ -51,7 +52,7 @@ void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     const auto result = GetNetState()->GenerateCallRequest(writer);
     if(result)
     {
-        pRemoteRpcCallsRequest->set_data(buff.GetData(), writer.GetBytePosition());
+        message.Data.assign(reinterpret_cast<const char*>(buff.GetData()), writer.Size());
         m_transport.Send(message);
     }
 }
@@ -83,25 +84,25 @@ void ScriptService::OnDraw() noexcept
     ImGui::End();
 }
 
-void ScriptService::OnScripts(const TiltedMessages::Scripts& acScripts) noexcept
+void ScriptService::OnScripts(const Scripts& acScripts) noexcept
 {
-    Buffer buff(reinterpret_cast<const uint8_t*>(acScripts.data().c_str()), acScripts.data().size());
+    Buffer buff(reinterpret_cast<const uint8_t*>(acScripts.Data.data()), acScripts.Data.size());
     Buffer::Reader reader(&buff);
 
     GetNetState()->LoadDefinitions(reader);
 }
 
-void ScriptService::OnNetObjectsInitalize(const TiltedMessages::FullObjects& acNetObjects) noexcept
+void ScriptService::OnNetObjectsInitalize(const FullObjects& acNetObjects) noexcept
 {
-    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.data().c_str()), acNetObjects.data().size());
+    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.Data.data()), acNetObjects.Data.size());
     Buffer::Reader reader(&buff);
 
     GetNetState()->LoadFullSnapshot(reader);
 }
 
-void ScriptService::OnNetObjectsUpdate(const TiltedMessages::ReplicateNetObjects& acNetObjects) noexcept
+void ScriptService::OnNetObjectsUpdate(const Objects& acNetObjects) noexcept
 {
-    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.data().c_str()), acNetObjects.data().size());
+    Buffer buff(reinterpret_cast<const uint8_t*>(acNetObjects.Data.data()), acNetObjects.Data.size());
     Buffer::Reader reader(&buff);
 
     GetNetState()->ApplyDifferentialSnapshot(reader);

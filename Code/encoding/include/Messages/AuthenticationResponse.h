@@ -3,6 +3,8 @@
 #include "Message.h"
 #include <Buffer.hpp>
 #include <Structs/Mods.h>
+#include <Structs/Scripts.h>
+#include <Structs/FullObjects.h>
 
 struct AuthenticationResponse final : ServerMessage
 {
@@ -25,6 +27,6 @@ struct AuthenticationResponse final : ServerMessage
 
     bool Accepted{ false };
     Mods Mods{};
-    Vector<uint8_t> Scripts{};
-    Vector<uint8_t> ReplicatedObjects{};
+    Scripts Scripts{};
+    FullObjects ReplicatedObjects{};
 };

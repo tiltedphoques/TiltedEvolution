@@ -36,6 +36,7 @@
 #include <Entry.hpp>
 #include <Debug.hpp>
 #include <Buffer.hpp>
+#include <ViewBuffer.hpp>
 #include <ThisCall.hpp>
 #include <TaskQueue.hpp>
 #include <Math.hpp>
@@ -66,8 +67,6 @@ extern "C"
 
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol.hpp>
-
-#include "client_server.pb.h"
 
 using TiltedPhoques::AutoPtr;
 using TiltedPhoques::Set;

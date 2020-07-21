@@ -1,6 +1,6 @@
 #include <Components.h>
 
-uint32_t ModsComponent::AddStandard(const char* acpFilename) noexcept
+uint32_t ModsComponent::AddStandard(const String& acpFilename) noexcept
 {
     const auto itor = m_standardMods.find(acpFilename);
     if (itor != std::end(m_standardMods))
@@ -15,7 +15,7 @@ uint32_t ModsComponent::AddStandard(const char* acpFilename) noexcept
     return id;
 }
 
-uint32_t ModsComponent::AddLite(const char* acpFilename) noexcept
+uint32_t ModsComponent::AddLite(const String& acpFilename) noexcept
 {
     const auto itor = m_liteMods.find(acpFilename);
     if (itor != std::end(m_liteMods))

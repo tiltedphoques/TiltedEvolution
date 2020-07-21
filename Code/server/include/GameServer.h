@@ -1,10 +1,14 @@
 #pragma once
 
 #include <World.h>
+#include <Messages/Message.h>
+#include <Messages/AuthenticationRequest.h>
 
 using TiltedPhoques::String;
 using TiltedPhoques::Server;
 using TiltedPhoques::ConnectionId_t;
+
+struct AuthenticationRequest;
 
 struct GameServer final : Server
 {
@@ -18,14 +22,14 @@ struct GameServer final : Server
     void OnConnection(ConnectionId_t aHandle) override;
     void OnDisconnection(ConnectionId_t aConnectionId) override;
 
-    void Send(ConnectionId_t aConnectionId, const TiltedMessages::ServerMessage& acServerMessage) const;
-    void SendToLoaded(const TiltedMessages::ServerMessage& acServerMessage) const;
+    void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
+    void SendToLoaded(const ServerMessage& acServerMessage) const;
 
     static GameServer* Get() noexcept;
 
 protected:
 
-    void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const TiltedMessages::AuthenticationRequest& acRequest) noexcept;
+    void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept;
 
 private:
 
