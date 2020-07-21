@@ -35,7 +35,7 @@ Use `.bat` on Windows and `.sh` on Linux. On Windows, VS2019 is preferred. Futur
 
 ### Compiling the project
 
-Open the solution "Tilted Online Framework.sln" found in (``Mod\Build\projects``).
+Open the solution "Tilted Online Framework.sln" found in (``TiltedOnline\Build\projects``).
 In the project, you can switch the configurations between `Skyrim`/`Fallout4`. 
 Compile via the Menu Option "Build > Build Solution". 
 In the end, all projects should be compiled successfully (maybe).
@@ -44,7 +44,7 @@ In the end, all projects should be compiled successfully (maybe).
 
 ### Configuration file
 
-First it is required to copy over the ``tp_loader.conf`` file located in ``Mod\Build`` to the relevant bin directory (``Mod\Build\bin\x64``). For Fallout, you will need to edit the following parameters to the following values:
+First it is required to copy over the ``tp_loader.conf`` file located in ``TiltedOnline\Build`` to the relevant bin directory (``TiltedOnline\Build\bin\x64``). For Fallout, you will need to edit the following parameters to the following values:
 
 ```
 GameId64=377160
@@ -62,7 +62,7 @@ For convenience, create a shortcut link of the `Loader.exe` and the `GameServer.
 
 ### Setting up CEF
 
-We currently use CEF for the main UI. To get CEF running, you will need to copy over the CEF files located in ``Mod\Libraries\TiltedUI\ThirdParty\CEF\bin\Win64\Release`` to the root directory of the compiled binaries: ``Mod\Build\bin\x64``.
+We currently use CEF for the main UI. To get CEF running, you will need to copy over the CEF files located in ``TiltedOnline\Libraries\TiltedUI\ThirdParty\CEF\bin\Win64\Release`` to the root directory of the compiled binaries: ``TiltedOnline\Build\bin\x64``.
 
 ## Verifying
 
@@ -85,7 +85,7 @@ Eg. SkyrimTogetherServer.exe --name "SkyrimTogether Server" --port "10578" --pre
 
 ## Debugging
 
-In Visual Studio, go to ``Debug -> Attach to process`` and select the game(s) ("TESV.exe", "SkyrimSE.exe" or "Fallout4.exe") and click on ``Attach``.
+In Visual Studio, go to ``Debug -> Attach to process`` and select the game(s) ("SkyrimSE.exe" or "Fallout4.exe") and click on ``Attach``.
 
 If you explicitly require a debugger, you can add the line ``Debug::WaitForDebugger();`` in the ``TiltedOnlineApp::TiltedOnlineApp()`` ctor. This will block the game from running on startup until a debugger has been attached.
 
