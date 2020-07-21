@@ -8,5 +8,5 @@ struct FaceGenComponent
 {
     FaceGenComponent() noexcept {}
 
-    int test;
+    bool Generated{ false };
 };

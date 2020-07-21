@@ -16,7 +16,6 @@
     { \
         auto ptr = TiltedPhoques::MakeUnique<Name>(); \
         ptr->DeserializeRaw(aReader); \
-        std::cout << "Packet received type " << #Name << std::endl; \
         return TiltedPhoques::CastUnique<ClientMessage>(std::move(ptr)); \
     }
 
