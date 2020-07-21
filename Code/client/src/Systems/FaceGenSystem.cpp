@@ -8,6 +8,8 @@
 #include <Components.h>
 #include <World.h>
 
+#include <Structs/Tints.h>
+
 #if TP_SKYRIM
 
 #include <Games/Skyrim/NetImmerse/NiTriBasedGeom.h>
@@ -15,6 +17,7 @@
 #include <Games/Skyrim/NetImmerse/BSShaderProperty.h>
 #include <Games/Skyrim/NetImmerse/BSLightingShaderProperty.h>
 #include <Games/Skyrim/NetImmerse/BSMaskedShaderMaterial.h>
+#include <Games/Memory.h>
 
 __declspec(noinline) NiTriBasedGeom* GetHeadTriBasedGeom(Actor* apActor, uint32_t aPartType)
 {
@@ -50,8 +53,8 @@ __declspec(noinline) NiTriBasedGeom* GetHeadTriBasedGeom(Actor* apActor, uint32_
 struct TextureHolder;
 TP_THIS_FUNCTION(TCreateResourceView, Ni2DBuffer*, TextureHolder, uint32_t, uint32_t);
 
-using TCreateTexture = NiRenderedTexture * (__fastcall)(BSFixedString&);
-using TCreateTints = void(__fastcall)(void* apTints, NiRenderedTexture*);
+using TCreateTexture = NiRenderedTexture * (__fastcall)(BSFixedString& aName);
+using TCreateTints = void(__fastcall)(const GameArray<TintMask*>& acTints, NiRenderedTexture* apTexture);
 
 POINTER_SKYRIMSE(NiRTTI, NiMaskedShaderRTTI, 0x1431D1AF8 - 0x140000000);
 POINTER_SKYRIMSE(TCreateTexture, CreateTexture, 0x140C68D20 - 0x140000000);
@@ -80,11 +83,34 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
     {
         BSMaskedShaderMaterial* pMaterial = static_cast<BSMaskedShaderMaterial*>(pLightingShader->material);
 
-        auto pTexture = CreateTexture(BSFixedString(""));
+        BSFixedString name("");
+        auto pTexture = CreateTexture(name);
         pTexture->buffer = CreateResourceView(s_textureHolder.Get(), 512, 512);
 
-        // TODO: Pass tints
-        // CreateTints(nullptr, pTexture);
+        auto& tintsEntries = aFaceGenComponent.FaceTints.Entries;
+
+        GameArray<TintMask*> tints;
+        tints.capacity = tints.length = aFaceGenComponent.FaceTints.Entries.size() & 0xFFFFFFFF;
+        tints.data = (TintMask**)Memory::Allocate(sizeof(TintMask*) * tints.length);
+
+        for (auto i = 0u; i < tints.length; ++i)
+        {
+            tints[i] = Memory::New<TintMask>();
+
+            tints[i]->alpha = tintsEntries[i].Alpha;
+            tints[i]->color = tintsEntries[i].Color;
+            tints[i]->type = tintsEntries[i].Type;
+
+            auto pNewTexture = Memory::New<TESTexture>();
+            pNewTexture->Construct();
+            pNewTexture->Init();
+
+            pNewTexture->name.Set(tintsEntries[i].Name.c_str());
+
+            tints[i]->texture = pNewTexture;
+        }
+
+        CreateTints(tints, pTexture);
         
         pMaterial->renderedTexture = pTexture;
 
@@ -95,9 +121,13 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
     
 }
 
-void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
+void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints& acTints) noexcept
 {
-    aWorld.emplace<FaceGenComponent>(aEntity);
+    if (acTints.Entries.empty())
+        return;
+
+    auto& component = aWorld.emplace<FaceGenComponent>(aEntity);
+    component.FaceTints = acTints;
 }
 
 #else
@@ -109,10 +139,11 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
     TP_UNUSED(aFaceGenComponent);
 }
 
-void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
+void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints& acTints) noexcept
 {
     TP_UNUSED(aWorld);
     TP_UNUSED(aEntity);
+    TP_UNUSED(acTints);
 }
 
 

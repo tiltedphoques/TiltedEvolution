@@ -31,6 +31,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->AppearanceBuffer = characterComponent.SaveBuffer;
     apSpawnRequest->InventoryBuffer = characterComponent.InventoryBuffer;
     apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
+    apSpawnRequest->FaceTints = characterComponent.FaceTints;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -260,8 +261,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     const auto gameId = message.ReferenceId;
     const auto baseId = message.FormId;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x}  assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
-
     const auto cEntity = m_world.create();
     const auto isTemporary = gameId.ModId == std::numeric_limits<uint32_t>::max();
     const auto isPlayer = (gameId.ModId == 0 && gameId.BaseId == 0x14);
@@ -289,6 +288,9 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
     //characterComponent.InventoryBuffer = std::move(message.InventoryBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
+    characterComponent.FaceTints = std::move(message.FaceTints);
+
+    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} with {:x} tints assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, characterComponent.FaceTints.Entries.size(), acMessage.ConnectionId);
 
     MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();

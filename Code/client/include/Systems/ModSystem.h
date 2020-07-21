@@ -27,7 +27,7 @@ private:
     };
 
     entt::scoped_connection m_modsConnection;
-    Map<uint32_t, uint32_t> m_liteToServer;
+    Map<uint16_t, uint32_t> m_liteToServer;
     Map<uint32_t, GameMod> m_serverToGame;
     uint32_t m_standardToServer[0x100];
 };

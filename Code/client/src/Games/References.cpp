@@ -322,6 +322,16 @@ PlayerCharacter* PlayerCharacter::Get() noexcept
     return *s_character.Get();
 }
 
+#if TP_SKYRIM
+const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
+{
+    if (overlayTints)
+        return *overlayTints;
+
+    return baseTints;
+}
+#endif
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;

@@ -11,6 +11,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     Serialization::WriteString(aWriter, AppearanceBuffer);
     Serialization::WriteString(aWriter, InventoryBuffer);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
+    FaceTints.Serialize(aWriter);
 }
 
 void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -32,4 +33,6 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
 
     LatestAction = ActionEvent{};
     LatestAction.ApplyDifferential(aReader);
+
+    FaceTints.Deserialize(aReader);
 }

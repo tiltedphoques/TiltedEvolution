@@ -11,6 +11,7 @@ struct GameArray
     ~GameArray() = default;
 
     T& operator[] (uint32_t aIndex) { return data[aIndex]; }
+    const T& operator[] (uint32_t aIndex) const { return data[aIndex]; }
 
     // Range for loop compatibility
     struct Iterator
