@@ -87,7 +87,7 @@ struct Mod
         return ((flags >> 9) & 1) != 0;
     }
 
-    [[nodiscard]] uint32_t GetId() const noexcept
+    [[nodiscard]] uint16_t GetId() const noexcept
     {
         return IsLite() ? liteId : standardId;
     }

@@ -11,6 +11,7 @@ struct GameArray
     ~GameArray() = default;
 
     T& operator[] (uint32_t aIndex) { return data[aIndex]; }
+    const T& operator[] (uint32_t aIndex) const { return data[aIndex]; }
 
     // Range for loop compatibility
     struct Iterator
@@ -277,3 +278,9 @@ enum ETiltedFlags : uint8_t
 {
     kRemote = 1 << 0
 };
+
+template <class Target, class Source>
+Target* niptr_cast(const Source& acSrc)
+{
+    return static_cast<Target*>(acSrc.object);
+}

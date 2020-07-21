@@ -4,11 +4,11 @@
 
 struct BaseFormComponent
 {
-    virtual ~BaseFormComponent();
+    virtual ~BaseFormComponent() {};
 
-    virtual void Init();
-    virtual void ReleaseRefs();
-    virtual void CopyFromBase(BaseFormComponent* apBase);
+    virtual void Init() {};
+    virtual void ReleaseRefs() {};
+    virtual void CopyFromBase(BaseFormComponent* apBase) {};
 };
 
 #endif

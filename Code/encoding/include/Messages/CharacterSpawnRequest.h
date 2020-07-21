@@ -3,6 +3,7 @@
 #include "Message.h"
 #include <Structs/GameId.h>
 #include <Structs/ActionEvent.h>
+#include <Structs/Tints.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
 #include <Buffer.hpp>
@@ -31,6 +32,7 @@ struct CharacterSpawnRequest final : ServerMessage
             ChangeFlags == acRhs.ChangeFlags &&
             AppearanceBuffer == acRhs.AppearanceBuffer &&
             InventoryBuffer == acRhs.InventoryBuffer &&
+            FaceTints == acRhs.FaceTints &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -43,4 +45,5 @@ struct CharacterSpawnRequest final : ServerMessage
     String AppearanceBuffer{};
     String InventoryBuffer{};
     ActionEvent LatestAction{};
+    Tints FaceTints{};
 };

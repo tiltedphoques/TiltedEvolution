@@ -8,6 +8,7 @@ struct BSFixedString
     BSFixedString(const char* acpData);
     ~BSFixedString();
 
+    void Set(const char* acpData);
     void Release() noexcept;
 
     operator const char* () const noexcept { return data; }

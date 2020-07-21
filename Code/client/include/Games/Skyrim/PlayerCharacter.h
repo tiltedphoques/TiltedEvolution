@@ -3,6 +3,7 @@
 #if TP_SKYRIM
 
 #include <Games/Skyrim/Actor.h>
+#include <Games/Skyrim/Misc/TintMask.h>
 
 struct PlayerCharacter : Actor
 {
@@ -10,9 +11,19 @@ struct PlayerCharacter : Actor
 
     static PlayerCharacter* Get() noexcept;
 
-    uint8_t padPlayerEnd[0xBE0 - sizeof(Actor)];
+    const GameArray<TintMask*>& GetTints() const noexcept;
+
+    uint8_t pad2B0[0xB10 - sizeof(Actor)];
+
+    GameArray<TintMask*> baseTints;
+    GameArray<TintMask*>* overlayTints;
+
+    uint8_t padPlayerEnd[0xBE0 - 0xB30];
 };
 
 static_assert(sizeof(PlayerCharacter) == 0xBE0);
+static_assert(offsetof(PlayerCharacter, baseTints) == 0xB10);
+static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB28);
+
 
 #endif

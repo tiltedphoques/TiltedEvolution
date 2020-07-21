@@ -167,7 +167,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         else
         {
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
-            FaceGenSystem::Setup(m_world, cEntity);
+            FaceGenSystem::Setup(m_world, cEntity, acMessage.FaceTints);
         }
 
         auto pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
@@ -296,6 +296,25 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
+    }
+
+    if (isPlayer)
+    {
+        auto& entries = message.FaceTints.Entries;
+
+        auto& tints = PlayerCharacter::Get()->GetTints();
+
+        entries.resize(tints.length);
+
+        for (auto i = 0u; i < tints.length; ++i)
+        {
+            entries[i].Alpha = tints[i]->alpha;
+            entries[i].Color = tints[i]->color;
+            entries[i].Type = tints[i]->type;
+
+            if(tints[i]->texture)
+                entries[i].Name = tints[i]->texture->name.AsAscii();
+        }
     }
 
     //pActor->processManager->Serialize(pAssignmentRequest->mutable_inventory_buffer());

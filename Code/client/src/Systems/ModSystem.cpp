@@ -87,7 +87,7 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
             continue;
         }
 
-        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFFF, true });
+        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFFFu, true });
         m_liteToServer.emplace(pMod->GetId(), mod.Id);
     }
 
@@ -100,7 +100,7 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
             continue;
         }
 
-        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFF, false });
+        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFFu, false });
         m_standardToServer[pMod->GetId() & 0xFF] = mod.Id;
     }
 }

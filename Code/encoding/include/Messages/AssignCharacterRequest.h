@@ -5,6 +5,7 @@
 #include <Structs/ActionEvent.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
+#include <Structs/Tints.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>
 
@@ -30,6 +31,7 @@ struct AssignCharacterRequest final : ClientMessage
             Rotation == acRhs.Rotation &&
             ChangeFlags == acRhs.ChangeFlags &&
             AppearanceBuffer == acRhs.AppearanceBuffer &&
+            FaceTints == acRhs.FaceTints &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -42,4 +44,5 @@ struct AssignCharacterRequest final : ClientMessage
     uint32_t ChangeFlags{};
     String AppearanceBuffer{};
     ActionEvent LatestAction{};
+    Tints FaceTints{};
 };
