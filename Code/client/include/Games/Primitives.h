@@ -277,3 +277,9 @@ enum ETiltedFlags : uint8_t
 {
     kRemote = 1 << 0
 };
+
+template <class Target, class Source>
+Target* niptr_cast(const Source& acSrc)
+{
+    return static_cast<Target*>(acSrc.object);
+}
