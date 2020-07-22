@@ -50,10 +50,10 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
         .Decompose(position.x, position.y, position.z);
     
     apActor->ForcePosition(position);
-    apActor->LoadAnimationVariables(first.Variables);
+    apActor->LoadAnimationVariables(second.Variables);
     if (apActor->processManager && apActor->processManager->middleProcess)
     {
-        apActor->processManager->middleProcess->direction = first.Direction;
+        apActor->processManager->middleProcess->direction = second.Direction;
     }
 
     float firstX, firstY, firstZ;
