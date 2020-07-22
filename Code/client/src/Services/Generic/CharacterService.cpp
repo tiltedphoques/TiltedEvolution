@@ -212,6 +212,8 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
         point.Tick = acMessage.Tick;
         point.Position = movement.Position;
         point.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
+        point.Variables = movement.Variables;
+        point.Direction = movement.Direction;
 
         InterpolationSystem::AddPoint(interpolationComponent, point);
 

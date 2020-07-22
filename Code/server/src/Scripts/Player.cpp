@@ -42,7 +42,7 @@ namespace Script
     {
         auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
 
-        return movementComponent.Speed;
+        return movementComponent.Variables.Floats[AnimationData::FloatVariables::kSpeed];
     }
 
     bool Player::AddComponent(sol::object aObject) const

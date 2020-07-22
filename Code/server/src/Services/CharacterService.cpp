@@ -115,6 +115,10 @@ void CharacterService::OnUpdate(const UpdateEvent&) noexcept
                 movement.Rotation.X = x;
                 movement.Rotation.Y = z;
 
+                movement.Direction = movementComponent.Direction;
+
+                movement.Variables = movementComponent.Variables;
+
                 auto lastSerializedAction = animationComponent.LastSerializedAction;
 
                 update.ActionEvents = animationComponent.Actions;
@@ -232,6 +236,8 @@ void CharacterService::OnReferencesMoveRequest(
 
         movementComponent.Position = movement.Position;
         movementComponent.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
+        movementComponent.Variables = movement.Variables;
+        movementComponent.Direction = movement.Direction;
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 

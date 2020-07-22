@@ -6,6 +6,8 @@
 #include <Games/References.h>
 
 #include <Games/Skyrim/Forms/BGSAction.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Fallout4/Forms/BGSAction.h>
 
 #include <Games/Fallout4/Misc/ProcessManager.h>
@@ -89,6 +91,13 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
 
     movement.Rotation.X = pActor->rotation.x;
     movement.Rotation.Y = pActor->rotation.z;
+
+    pActor->SaveAnimationVariables(movement.Variables);
+
+    if (pActor->processManager && pActor->processManager->middleProcess)
+    {
+        movement.Direction = pActor->processManager->middleProcess->direction;
+    }
 
     for (auto& entry : animationComponent.Actions)
     {

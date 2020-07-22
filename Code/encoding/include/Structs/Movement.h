@@ -3,6 +3,7 @@
 #include <Buffer.hpp>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
+#include <Structs/AnimationVariables.h>
 
 using TiltedPhoques::Buffer;
 
@@ -19,4 +20,6 @@ struct Movement
 
     Vector3_NetQuantize Position{};
     Rotator2_NetQuantize Rotation{};
+    AnimationVariables Variables{};
+    float Direction{};
 };
