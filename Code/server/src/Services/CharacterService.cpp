@@ -38,8 +38,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
     {
-        apSpawnRequest->FormId.BaseId = pFormIdComponent->BaseId;
-        apSpawnRequest->FormId.ModId = pFormIdComponent->ModId;
+        apSpawnRequest->FormId = pFormIdComponent->Id;
     }
 
     const auto* pInventoryComponent = aRegistry.try_get<InventoryComponent>(aEntity);
@@ -50,8 +49,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
 
     if (characterComponent.BaseId)
     {
-        apSpawnRequest->FormId.BaseId = characterComponent.BaseId.BaseId;
-        apSpawnRequest->FormId.ModId = characterComponent.BaseId.ModId;
+        apSpawnRequest->FormId = characterComponent.BaseId.Id;
     }
 
     const auto* pMovementComponent = aRegistry.try_get<MovementComponent>(aEntity);
@@ -94,7 +92,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             {
                 const auto& formIdComponent = view.get(entity);
 
-                return formIdComponent.BaseId == refId.BaseId && formIdComponent.ModId == refId.ModId;
+                return formIdComponent.Id == refId;
             });
 
         if (itor != std::end(view))
