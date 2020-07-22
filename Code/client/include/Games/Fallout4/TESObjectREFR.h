@@ -148,6 +148,8 @@ struct TESObjectREFR : TESForm
     void SaveInventory(BGSSaveFormBuffer* apBuffer) noexcept;
     void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
 
+    void RemoveAllItems() noexcept;
+
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
     IAnimationGraphManagerHolder animationGraphHolder;

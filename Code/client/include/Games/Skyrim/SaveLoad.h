@@ -47,6 +47,8 @@ struct BGSSaveFormBuffer
     BGSSaveFormBuffer();
     virtual ~BGSSaveFormBuffer() {}
 
+    void WriteId(uint32_t aId) noexcept;
+
     char* buffer; // 4 - 8
     uint32_t capacity; // 8 - 10
     uint32_t position; // C - 14

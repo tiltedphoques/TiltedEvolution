@@ -143,6 +143,8 @@ struct TESObjectREFR : TESForm
     void SaveInventory(BGSSaveFormBuffer* apBuffer) noexcept;
     void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
 
+    void RemoveAllItems() noexcept;
+
     ExtraContainerChanges::Data* GetContainerChanges() noexcept;
 
     BSHandleRefObject handleRefObject;

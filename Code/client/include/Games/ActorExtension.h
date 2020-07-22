@@ -10,6 +10,7 @@ struct ActorExtension
     };
 
     bool IsRemote() const noexcept;
+    bool IsLocal() const noexcept;
     void SetRemote(bool aSet) noexcept;
 
     ActionEvent LatestAnimation{};

@@ -1,9 +1,16 @@
 #include <Games/SaveLoad.h>
+#include <Games/Overrides.h>
 
 #include <Games/Skyrim/Forms/TESForm.h>
 #include <Games/Fallout4/Forms/TESForm.h>
 
 #include <World.h>
+
+#include <Serialization.hpp>
+#include <Buffer.hpp>
+
+using TiltedPhoques::Serialization;
+using TiltedPhoques::ViewBuffer;
 
 #if TP_FALLOUT4
 BGSSaveLoadManager* BGSSaveLoadManager::Get() noexcept
@@ -25,6 +32,26 @@ BGSSaveFormBuffer::BGSSaveFormBuffer()
 
     position = 0;
 }
+
+
+void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
+{
+    uint32_t modId = 0;
+    uint32_t baseId = 0;
+
+    World::Get().GetModSystem().GetServerModId(aId & 0xFFFFFFFF, modId, baseId);
+
+    auto pWriteLocation = reinterpret_cast<uint8_t*>(buffer + position);
+
+    ViewBuffer buffer(pWriteLocation, capacity - position);
+    Buffer::Writer writer(&buffer);
+
+    Serialization::WriteVarInt(writer, modId);
+    Serialization::WriteVarInt(writer, baseId);
+
+    position += writer.Size();
+}
+
 
 BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 {
@@ -49,67 +76,61 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 #endif
 }
 
-thread_local bool g_overrideFormId = false;
-
-ScopedSaveLoadOverride::ScopedSaveLoadOverride()
-{
-    if(World::Get().GetTransport().IsOnline())
-        g_overrideFormId = true;
-}
-
-ScopedSaveLoadOverride::~ScopedSaveLoadOverride()
-{
-    g_overrideFormId = false;
-}
-
 TP_THIS_FUNCTION(TBGSLoadFormBuffer_ReadFormId, bool, BGSLoadFormBuffer, uint32_t&);
 TP_THIS_FUNCTION(TBGSSaveFormBuffer_WriteFormId, void, BGSSaveFormBuffer, TESForm*);
+TP_THIS_FUNCTION(TBGSSaveFormBuffer_WriteId, void, BGSSaveFormBuffer, uint64_t);
 
 static TBGSSaveFormBuffer_WriteFormId* RealBGSSaveFormBuffer_WriteFormId = nullptr;
 static TBGSLoadFormBuffer_ReadFormId* RealBGSLoadFormBuffer_ReadFormId = nullptr;
+static TBGSSaveFormBuffer_WriteId* RealBGSSaveFormBuffer_WriteId = nullptr;
 
 void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer, TESForm* apForm)
 {
-    if (!g_overrideFormId)
+    if (!ScopedSaveLoadOverride::IsOverriden())
     {
-
         ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm);
         return;
     }
 
-    uint32_t modId = 0;
-    uint32_t baseId = 0;
-
     if (apForm)
     {
-        World::Get().GetModSystem().GetServerModId(apForm->formID, modId, baseId);
+        apThis->WriteId(apForm->formID);
+    }
+}
+
+void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint64_t aId)
+{
+    if (!ScopedSaveLoadOverride::IsOverriden())
+    {
+        ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId);
+        return;
     }
 
-    const auto pWriteLocation = reinterpret_cast<uint32_t*>(apThis->buffer + apThis->position);
-    pWriteLocation[0] = modId;
-    pWriteLocation[1] = baseId;
-
-    apThis->position += 8;
+    apThis->WriteId(aId & 0xFFFFFFFF);
 }
+
 
 bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t& aFormId)
 {
-    if (!g_overrideFormId)
+    if (!ScopedSaveLoadOverride::IsOverriden())
     {
         return ThisCall(RealBGSLoadFormBuffer_ReadFormId, apThis, aFormId);
     }
 
-    const auto pReadLocation = reinterpret_cast<const uint32_t*>(apThis->buffer + apThis->position);
+    uint8_t* pReadLocation = (uint8_t*)(apThis->buffer + apThis->position);
 
-    const uint32_t modId = pReadLocation[0];
-    const uint32_t baseId = pReadLocation[1];
+    ViewBuffer buffer(pReadLocation, apThis->capacity - apThis->position);
+    ViewBuffer::Reader reader(&buffer);
+
+    const uint32_t modId = Serialization::ReadVarInt(reader) & 0xFFFFFFFF;
+    const uint32_t baseId = Serialization::ReadVarInt(reader) & 0xFFFFFFFF;
 
     aFormId = 0;
 
     if(modId != 0 || baseId != 0)
         aFormId = World::Get().GetModSystem().GetGameId(modId, baseId);
 
-    apThis->position += 8;
+    apThis->position += reader.Size();
 
     return true;
 }
@@ -122,9 +143,14 @@ static TiltedPhoques::Initializer s_saveLoadHooks([]()
         POINTER_FALLOUT4(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 0x140D09AA0 - 0x140000000);
         POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 0x1405999B0 - 0x140000000);
 
+        POINTER_FALLOUT4(TBGSSaveFormBuffer_WriteId, s_writeId, 0x140D09A20 - 0x140000000);
+        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteId, s_writeId, 0x140599930 - 0x140000000);
+
         RealBGSLoadFormBuffer_ReadFormId = s_readFormId.Get();
         RealBGSSaveFormBuffer_WriteFormId = s_writeFormId.Get();
+        RealBGSSaveFormBuffer_WriteId = s_writeId.Get();
 
         TP_HOOK(&RealBGSLoadFormBuffer_ReadFormId, BGSLoadFormBuffer_LoadFormId);
         TP_HOOK(&RealBGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer_WriteFormId);
+        TP_HOOK(&RealBGSSaveFormBuffer_WriteId, BGSSaveFormBuffer_WriteId);
     });

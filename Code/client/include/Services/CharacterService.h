@@ -4,6 +4,7 @@ struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
 struct ReferenceSpawnedEvent;
+struct EquipmentChangeEvent;
 struct FormIdComponent;
 struct ActionEvent;
 struct AssignCharacterResponse;
@@ -29,6 +30,8 @@ struct CharacterService
     void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) noexcept;
+    void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
+
 
 private:
 
@@ -46,6 +49,7 @@ private:
     entt::scoped_connection m_formIdRemovedConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_actionConnection;
+    entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_assignCharacterConnection;

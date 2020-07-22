@@ -2,6 +2,8 @@
 
 #include <Games/References.h>
 #include <Games/Memory.h>
+#include <Games/Overrides.h>
+#include <Games/Skyrim/EquipManager.h>
 
 #ifdef SAVE_STUFF
 
@@ -70,5 +72,15 @@ void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
     GetContainerChanges()->Load(apBuffer);
 }
 
+void TESObjectREFR::RemoveAllItems() noexcept
+{
+    using TRemoveAllItems = void(void*, void*, TESObjectREFR*, TESObjectREFR*, bool, bool);
+
+    POINTER_SKYRIMSE(TRemoveAllItems, s_removeAllItems, 0x140996470 - 0x140000000);
+
+    ScopedEquipOverride equipOverride;
+
+    s_removeAllItems(nullptr, nullptr, this, nullptr, false, true);
+}
 
 #endif

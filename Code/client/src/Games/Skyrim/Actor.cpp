@@ -136,6 +136,8 @@ void Actor::UnEquipAll() noexcept
             }
         }
     }
+
+    RemoveAllItems();
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -143,8 +145,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406929C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405CDDA0 - 0x140000000);
-
-    
 
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
