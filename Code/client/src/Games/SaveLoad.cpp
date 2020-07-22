@@ -39,7 +39,7 @@ void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
     uint32_t modId = 0;
     uint32_t baseId = 0;
 
-    World::Get().GetModSystem().GetServerModId(aId & 0xFFFFFFFF, modId, baseId);
+    World::Get().GetModSystem().GetServerModId(aId, modId, baseId);
 
     auto pWriteLocation = reinterpret_cast<uint8_t*>(buffer + position);
 
@@ -92,10 +92,7 @@ void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer, TESForm*
         return;
     }
 
-    if (apForm)
-    {
-        apThis->WriteId(apForm->formID);
-    }
+    apThis->WriteId(apForm ? apForm->formID : 0);
 }
 
 void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint64_t aId)
