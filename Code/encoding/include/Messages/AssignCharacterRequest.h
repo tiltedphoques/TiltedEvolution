@@ -31,6 +31,7 @@ struct AssignCharacterRequest final : ClientMessage
             Rotation == acRhs.Rotation &&
             ChangeFlags == acRhs.ChangeFlags &&
             AppearanceBuffer == acRhs.AppearanceBuffer &&
+            InventoryBuffer == acRhs.InventoryBuffer &&
             FaceTints == acRhs.FaceTints &&
             GetOpcode() == acRhs.GetOpcode();
     }
@@ -43,6 +44,7 @@ struct AssignCharacterRequest final : ClientMessage
     Rotator2_NetQuantize Rotation{};
     uint32_t ChangeFlags{};
     String AppearanceBuffer{};
+    String InventoryBuffer{};
     ActionEvent LatestAction{};
     Tints FaceTints{};
 };

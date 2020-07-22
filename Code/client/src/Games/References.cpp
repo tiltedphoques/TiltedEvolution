@@ -6,6 +6,7 @@
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
 #include <Games/Skyrim/Forms/BGSHeadPart.h>
 #include <Games/Skyrim/Forms/TESNPC.h>
+#include <Games/SaveLoad.h>
 
 #include <Games/Fallout4/Forms/TESWorldSpace.h>
 #include <Games/Fallout4/Forms/TESObjectCELL.h>
@@ -142,6 +143,31 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
         pManager->Release();
     }
+}
+
+String TESObjectREFR::SerializeInventory() const noexcept
+{
+    char buffer[1 << 15];
+    BGSSaveFormBuffer saveBuffer;
+    saveBuffer.buffer = buffer;
+    saveBuffer.capacity = 1 << 15;
+    saveBuffer.changeFlags = 1024;
+
+    SaveInventory(&saveBuffer);
+
+    return String(buffer, saveBuffer.position);
+}
+
+void TESObjectREFR::DeserializeInventory(const String& acData) noexcept
+{
+    BGSLoadFormBuffer loadBuffer(1024);
+    loadBuffer.SetSize(acData.size());
+    loadBuffer.buffer = acData.c_str();
+    loadBuffer.formId = 0;
+    loadBuffer.form = nullptr;
+    
+    LoadInventory(&loadBuffer);
+
 }
 
 uint32_t TESObjectREFR::GetCellId() const noexcept

@@ -8,6 +8,7 @@ struct World;
 struct AssignCharacterRequest;
 struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
+struct RequestInventoryChanges;
 
 struct CharacterService
 {
@@ -24,8 +25,12 @@ protected:
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
+    void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
+
+    void ProcessInventoryChanges() noexcept;
+    void ProcessMovementChanges() noexcept;
 
 private:
 
@@ -35,4 +40,5 @@ private:
     entt::scoped_connection m_characterAssignRequestConnection;
     entt::scoped_connection m_characterSpawnedConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
+    entt::scoped_connection m_inventoryChangesConnection;
 };

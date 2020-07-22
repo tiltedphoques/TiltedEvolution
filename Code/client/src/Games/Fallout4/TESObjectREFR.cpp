@@ -4,7 +4,7 @@
 #include <Games/Memory.h>
 #include <Games/Overrides.h>
 
-void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) noexcept
+void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
 {
     TP_THIS_FUNCTION(TSaveFunc, void, void, BGSSaveFormBuffer*);
 

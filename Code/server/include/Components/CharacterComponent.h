@@ -8,9 +8,10 @@
 
 struct CharacterComponent
 {
-    uint32_t ChangeFlags;
-    String SaveBuffer;
-    FormIdComponent BaseId;
-    String InventoryBuffer;
-    Tints FaceTints;
+    uint32_t ChangeFlags{ 0 };
+    String SaveBuffer{};
+    FormIdComponent BaseId{};
+    String InventoryBuffer{};
+    bool DirtyInventory{false};
+    Tints FaceTints{};
 };

@@ -10,6 +10,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     Rotation.Serialize(aWriter);
     aWriter.WriteBits(ChangeFlags, 32);
     Serialization::WriteString(aWriter, AppearanceBuffer);
+    Serialization::WriteString(aWriter, InventoryBuffer);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
     FaceTints.Serialize(aWriter);
 }
@@ -30,6 +31,7 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     ChangeFlags = dest & 0xFFFFFFFF;
 
     AppearanceBuffer = Serialization::ReadString(aReader);
+    InventoryBuffer = Serialization::ReadString(aReader);
 
     LatestAction = ActionEvent{};
     LatestAction.ApplyDifferential(aReader);

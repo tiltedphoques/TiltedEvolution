@@ -145,8 +145,11 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
 
-    void SaveInventory(BGSSaveFormBuffer* apBuffer) noexcept;
+    void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
+
+    String SerializeInventory() const noexcept;
+    void DeserializeInventory(const String& acData) noexcept;
 
     void RemoveAllItems() noexcept;
 

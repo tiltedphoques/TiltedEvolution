@@ -53,16 +53,16 @@ void TESObjectREFR::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& a
 
 #endif
 
-ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() noexcept
+ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
-    TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, TESObjectREFR);
+    TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
 
     POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 0x1401D8E40 - 0x140000000);
     
     return ThisCall(s_getContainerChangs, this);
 }
 
-void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) noexcept
+void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
 {
     GetContainerChanges()->Save(apBuffer);
 }

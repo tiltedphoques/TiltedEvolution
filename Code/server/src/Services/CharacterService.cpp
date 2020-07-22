@@ -13,6 +13,8 @@
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
+#include <Messages/RequestInventoryChanges.h>
+#include <Messages/NotifyInventoryChanges.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -20,6 +22,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
+    , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
 {
 }
 
@@ -65,84 +68,8 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
 
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 {
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 50;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
-
-    Map<ConnectionId_t, ServerReferencesMoveRequest> messages;
-
-    for (auto player : playerView)
-    {
-        const auto& playerComponent = playerView.get<PlayerComponent>(player);
-        auto& message = messages[playerComponent.ConnectionId];
-
-        message.Tick = GameServer::Get()->GetTick();
-    }
-
-    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, const auto& movementComponent, const auto& animationComponent, const auto& ownerComponent)
-        {
-            // If we have nothing new to send skip this
-            if (movementComponent.Sent == true)
-                return;
-
-            for (auto player : playerView)
-            {
-                const auto& playerComponent = playerView.get<PlayerComponent>(player);
-
-                if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
-                    playerComponent.ConnectionId == ownerComponent.ConnectionId)
-                    continue;
-
-                auto& message = messages[playerComponent.ConnectionId];
-                auto& update = message.Updates[World::ToInteger(entity)];
-                auto& movement = update.UpdatedMovement;
-
-                float x, y, z;
-                movementComponent.Position.Decompose(x, y, z);
-
-                movement.Position = movementComponent.Position;
-
-                movementComponent.Rotation.Decompose(x, y, z);
-
-                movement.Rotation.X = x;
-                movement.Rotation.Y = z;
-
-                movement.Direction = movementComponent.Direction;
-
-                movement.Variables = movementComponent.Variables;
-
-                auto lastSerializedAction = animationComponent.LastSerializedAction;
-
-                update.ActionEvents = animationComponent.Actions;
-            }
-        });
-
-    m_world.view<AnimationComponent>().each([](auto entity, auto& animationComponent)
-        {
-            if (!animationComponent.Actions.empty())
-                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
-
-            animationComponent.Actions.clear();
-        });
-
-    m_world.view<MovementComponent>().each([](auto entity, auto& movementComponent)
-        {
-            movementComponent.Sent = true;
-        });
-
-    for (auto kvp : messages)
-    {
-        if (kvp.second.Updates.size() > 0)
-            GameServer::Get()->Send(kvp.first, kvp.second);
-    }
+    ProcessInventoryChanges();
+    ProcessMovementChanges();
 }
 
 void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
@@ -208,8 +135,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         });
 }
 
-void CharacterService::OnReferencesMoveRequest(
-    const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
+void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
     auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
 
@@ -260,6 +186,25 @@ void CharacterService::OnReferencesMoveRequest(
     }
 }
 
+void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept
+{
+    auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
+
+    auto& message = acMessage.Packet;
+
+    for (auto& change : message.Changes)
+    {
+        auto itor = view.find(entt::entity(change.first));
+
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
+            continue;
+
+        auto& characterComponent = view.get<CharacterComponent>(*itor);
+        characterComponent.InventoryBuffer = change.second;
+        characterComponent.DirtyInventory = true;
+    }
+}
+
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
@@ -292,7 +237,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
-    //characterComponent.InventoryBuffer = std::move(message.InventoryBuffer);
+    characterComponent.InventoryBuffer = std::move(message.InventoryBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = std::move(message.FaceTints);
 
@@ -343,4 +288,137 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
     auto& dispatcher = m_world.GetDispatcher();
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
+}
+
+void CharacterService::ProcessInventoryChanges() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, AnimationComponent, OwnerComponent >();
+
+    Map<ConnectionId_t, NotifyInventoryChanges> messages;
+
+    for (auto player : playerView)
+    {
+        const auto& playerComponent = playerView.get<PlayerComponent>(player);
+        auto& message = messages[playerComponent.ConnectionId];
+
+        TP_UNUSED(message);
+    }
+
+    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, auto& characterComponent, const auto& animationComponent, const auto& ownerComponent)
+        {
+            // If we have nothing new to send skip this
+            if (characterComponent.DirtyInventory == false)
+                return;
+
+            for (auto player : playerView)
+            {
+                const auto& playerComponent = playerView.get<PlayerComponent>(player);
+
+                if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
+                    playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                    continue;
+
+                auto& message = messages[playerComponent.ConnectionId];
+                auto& change = message.Changes[World::ToInteger(entity)];
+                
+                change = characterComponent.InventoryBuffer;
+            }
+
+            characterComponent.DirtyInventory = false;
+        });
+
+    for (auto kvp : messages)
+    {
+        if (kvp.second.Changes.size() > 0)
+            GameServer::Get()->Send(kvp.first, kvp.second);
+    }
+}
+
+void CharacterService::ProcessMovementChanges() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 1000ms / 50;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
+
+    Map<ConnectionId_t, ServerReferencesMoveRequest> messages;
+
+    for (auto player : playerView)
+    {
+        const auto& playerComponent = playerView.get<PlayerComponent>(player);
+        auto& message = messages[playerComponent.ConnectionId];
+
+        message.Tick = GameServer::Get()->GetTick();
+    }
+
+    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, const auto& movementComponent, const auto& animationComponent, const auto& ownerComponent)
+        {
+            // If we have nothing new to send skip this
+            if (movementComponent.Sent == true)
+                return;
+
+            for (auto player : playerView)
+            {
+                const auto& playerComponent = playerView.get<PlayerComponent>(player);
+
+                if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
+                    playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                    continue;
+
+                auto& message = messages[playerComponent.ConnectionId];
+                auto& update = message.Updates[World::ToInteger(entity)];
+                auto& movement = update.UpdatedMovement;
+
+                float x, y, z;
+                movementComponent.Position.Decompose(x, y, z);
+                movement.Position = movementComponent.Position;
+
+                movementComponent.Rotation.Decompose(x, y, z);
+                movement.Rotation.X = x;
+                movement.Rotation.Y = z;
+
+                movement.Direction = movementComponent.Direction;
+                movement.Variables = movementComponent.Variables;
+
+                auto lastSerializedAction = animationComponent.LastSerializedAction;
+
+                update.ActionEvents = animationComponent.Actions;
+            }
+        });
+
+    m_world.view<AnimationComponent>().each([](auto entity, auto& animationComponent)
+        {
+            if (!animationComponent.Actions.empty())
+                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+
+            animationComponent.Actions.clear();
+        });
+
+    m_world.view<MovementComponent>().each([](auto entity, auto& movementComponent)
+        {
+            movementComponent.Sent = true;
+        });
+
+    for (auto kvp : messages)
+    {
+        if (kvp.second.Updates.size() > 0)
+            GameServer::Get()->Send(kvp.first, kvp.second);
+    }
 }
