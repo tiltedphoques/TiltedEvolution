@@ -265,7 +265,8 @@ workspace ("Tilted Online Framework")
                 "Core",
                 "mimalloc",
                 "Lua",
-                "sqlite3"
+                "sqlite3",
+                "protobuf"
             }
             
             filter { "action:gmake*", "language:C++" }
