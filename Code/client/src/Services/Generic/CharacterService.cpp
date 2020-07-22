@@ -405,8 +405,6 @@ void CharacterService::RunLocalUpdates() noexcept
         AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
     });
 
-    spdlog::info("Send snapshot count : {}", message.Updates.size());
-
     m_transport.Send(message);
 }
 
