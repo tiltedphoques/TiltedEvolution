@@ -241,7 +241,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
-    
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = std::move(message.FaceTints);
 
@@ -308,18 +307,10 @@ void CharacterService::ProcessInventoryChanges() noexcept
 
     lastSendTimePoint = now;
 
-    auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
     const auto characterView = m_world.view < CellIdComponent, InventoryComponent, OwnerComponent >();
 
     Map<ConnectionId_t, NotifyInventoryChanges> messages;
-
-    for (auto player : playerView)
-    {
-        const auto& playerComponent = playerView.get<PlayerComponent>(player);
-        auto& message = messages[playerComponent.ConnectionId];
-
-        TP_UNUSED(message);
-    }
 
     for (auto entity : characterView)
     {
@@ -335,8 +326,7 @@ void CharacterService::ProcessInventoryChanges() noexcept
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
-                playerComponent.ConnectionId == ownerComponent.ConnectionId)
+            if (playerView.get<CellIdComponent>(player) != cellIdComponent || playerComponent.ConnectionId == ownerComponent.ConnectionId)
                 continue;
 
             auto& message = messages[playerComponent.ConnectionId];
@@ -394,26 +384,20 @@ void CharacterService::ProcessMovementChanges() noexcept
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
-                playerComponent.ConnectionId == ownerComponent.ConnectionId)
+            if (playerView.get<CellIdComponent>(player) != cellIdComponent || playerComponent.ConnectionId == ownerComponent.ConnectionId)
                 continue;
 
             auto& message = messages[playerComponent.ConnectionId];
             auto& update = message.Updates[World::ToInteger(entity)];
             auto& movement = update.UpdatedMovement;
 
-            float x, y, z;
-            movementComponent.Position.Decompose(x, y, z);
             movement.Position = movementComponent.Position;
 
-            movementComponent.Rotation.Decompose(x, y, z);
-            movement.Rotation.X = x;
-            movement.Rotation.Y = z;
+            movement.Rotation.X = movementComponent.Rotation.m_x;
+            movement.Rotation.Y = movementComponent.Rotation.m_z;
 
             movement.Direction = movementComponent.Direction;
             movement.Variables = movementComponent.Variables;
-
-            auto lastSerializedAction = animationComponent.LastSerializedAction;
 
             update.ActionEvents = animationComponent.Actions;
         }
