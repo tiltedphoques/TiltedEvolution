@@ -125,17 +125,18 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     const auto& characterCellIdComponent = m_world.get<CellIdComponent>(acEvent.Entity);
     const auto& characterOwnerComponent = m_world.get<OwnerComponent>(acEvent.Entity);
 
-    m_world.view<PlayerComponent, CellIdComponent>().each(
-        [&message, &characterCellIdComponent, &characterOwnerComponent](
-            auto entity, const auto& playerComponent, const auto& cellIdComponent)
-        {
-            if (characterOwnerComponent.ConnectionId)
+    const auto view = m_world.view<PlayerComponent, CellIdComponent>(); 
 
-                if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
-                    return;
+    for (auto entity : view)
+    {
+        auto& playerComponent = view.get<PlayerComponent>(entity);
+        auto& cellIdComponent = view.get<CellIdComponent>(entity);
 
-            GameServer::Get()->Send(playerComponent.ConnectionId, message);
-        });
+        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
+            return;
+
+        GameServer::Get()->Send(playerComponent.ConnectionId, message);
+    }
 }
 
 void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
@@ -320,28 +321,32 @@ void CharacterService::ProcessInventoryChanges() noexcept
         TP_UNUSED(message);
     }
 
-    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, auto& inventoryComponent, const auto& ownerComponent)
+    for (auto entity : characterView)
+    {
+        auto& inventoryComponent = characterView.get<InventoryComponent>(entity);
+        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
+        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
+
+        // If we have nothing new to send skip this
+        if (inventoryComponent.DirtyInventory == false)
+            return;
+
+        for (auto player : playerView)
         {
-            // If we have nothing new to send skip this
-            if (inventoryComponent.DirtyInventory == false)
-                return;
+            const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            for (auto player : playerView)
-            {
-                const auto& playerComponent = playerView.get<PlayerComponent>(player);
+            if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
+                playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                continue;
 
-                if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
-                    playerComponent.ConnectionId == ownerComponent.ConnectionId)
-                    continue;
+            auto& message = messages[playerComponent.ConnectionId];
+            auto& change = message.Changes[World::ToInteger(entity)];
 
-                auto& message = messages[playerComponent.ConnectionId];
-                auto& change = message.Changes[World::ToInteger(entity)];
-                
-                change = inventoryComponent.InventoryBuffer;
-            }
+            change = inventoryComponent.InventoryBuffer;
+        }
 
-            inventoryComponent.DirtyInventory = false;
-        });
+        inventoryComponent.DirtyInventory = false;
+    }
 
     for (auto kvp : messages)
     {
@@ -374,42 +379,47 @@ void CharacterService::ProcessMovementChanges() noexcept
         message.Tick = GameServer::Get()->GetTick();
     }
 
-    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, const auto& movementComponent, const auto& animationComponent, const auto& ownerComponent)
+    for (auto entity : characterView)
+    {
+        auto& movementComponent = characterView.get<MovementComponent>(entity);
+        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
+        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
+        auto& animationComponent = characterView.get<AnimationComponent>(entity);
+
+        // If we have nothing new to send skip this
+        if (movementComponent.Sent == true)
+            return;
+
+        for (auto player : playerView)
         {
-            // If we have nothing new to send skip this
-            if (movementComponent.Sent == true)
-                return;
+            const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            for (auto player : playerView)
-            {
-                const auto& playerComponent = playerView.get<PlayerComponent>(player);
+            if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
+                playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                continue;
 
-                if (playerView.get<CellIdComponent>(player) != cellIdComponent ||
-                    playerComponent.ConnectionId == ownerComponent.ConnectionId)
-                    continue;
+            auto& message = messages[playerComponent.ConnectionId];
+            auto& update = message.Updates[World::ToInteger(entity)];
+            auto& movement = update.UpdatedMovement;
 
-                auto& message = messages[playerComponent.ConnectionId];
-                auto& update = message.Updates[World::ToInteger(entity)];
-                auto& movement = update.UpdatedMovement;
+            float x, y, z;
+            movementComponent.Position.Decompose(x, y, z);
+            movement.Position = movementComponent.Position;
 
-                float x, y, z;
-                movementComponent.Position.Decompose(x, y, z);
-                movement.Position = movementComponent.Position;
+            movementComponent.Rotation.Decompose(x, y, z);
+            movement.Rotation.X = x;
+            movement.Rotation.Y = z;
 
-                movementComponent.Rotation.Decompose(x, y, z);
-                movement.Rotation.X = x;
-                movement.Rotation.Y = z;
+            movement.Direction = movementComponent.Direction;
+            movement.Variables = movementComponent.Variables;
 
-                movement.Direction = movementComponent.Direction;
-                movement.Variables = movementComponent.Variables;
+            auto lastSerializedAction = animationComponent.LastSerializedAction;
 
-                auto lastSerializedAction = animationComponent.LastSerializedAction;
+            update.ActionEvents = animationComponent.Actions;
+        }
+    }
 
-                update.ActionEvents = animationComponent.Actions;
-            }
-        });
-
-    m_world.view<AnimationComponent>().each([](auto entity, auto& animationComponent)
+    m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent)
         {
             if (!animationComponent.Actions.empty())
                 animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
@@ -417,7 +427,7 @@ void CharacterService::ProcessMovementChanges() noexcept
             animationComponent.Actions.clear();
         });
 
-    m_world.view<MovementComponent>().each([](auto entity, auto& movementComponent)
+    m_world.view<MovementComponent>().each([](MovementComponent& movementComponent)
         {
             movementComponent.Sent = true;
         });
