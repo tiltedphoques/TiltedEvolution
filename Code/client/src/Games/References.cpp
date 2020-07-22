@@ -161,7 +161,7 @@ String TESObjectREFR::SerializeInventory() const noexcept
 void TESObjectREFR::DeserializeInventory(const String& acData) noexcept
 {
     BGSLoadFormBuffer loadBuffer(1024);
-    loadBuffer.SetSize(acData.size());
+    loadBuffer.SetSize(acData.size() & 0xFFFFFFFF);
     loadBuffer.buffer = acData.c_str();
     loadBuffer.formId = 0;
     loadBuffer.form = nullptr;
@@ -238,30 +238,6 @@ void Actor::QueueUpdate() noexcept
     pSetting->data = originalValue;
 }
 
-void Actor::GenerateFace() noexcept
-{
-#ifdef TP_SKYRIM
-    auto pFaceNode = GetFaceGenNiNode();
-    auto pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
-
-    if (pFaceNode && pNpc)
-    {
-        auto pFacePart = pNpc->GetHeadPart(1);
-        if (pFacePart)
-        {
-            NiAVObject* pHeadNode = pFaceNode->GetByName(pFacePart->name);
-            if (pHeadNode)
-            {
-                NiTriBasedGeom* pGeometry = pHeadNode->CastToNiTriBasedGeom();
-            }
-        }
-    }
-#elif TP_FALLOUT4
-    // Nothing to, fallout 4 is smarter than skyrim
-#endif
-
-}
-
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 {
     auto pActor = New();
@@ -287,6 +263,12 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);
 
     pActor->ForcePosition(position);
+
+#if TP_SKYRIM
+    pActor->CreateMagicCaster(0);
+    pActor->CreateMagicCaster(1);
+    pActor->CreateMagicCaster(2);
+#endif
 
     pActor->flags &= 0xFFDFFFFF;
 

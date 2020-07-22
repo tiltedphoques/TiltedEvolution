@@ -4,7 +4,7 @@
 
 using TiltedPhoques::Serialization;
 
-constexpr float cScalingFactory = float(0xFFFF) / (2.0f * TiltedPhoques::Pi);
+constexpr float cScalingFactory = float(0xFFFF) / (2.0f * float(TiltedPhoques::Pi));
 constexpr float cReverseScalingFactory = 1.0f / cScalingFactory;
 
 bool Rotator2_NetQuantize::operator==(const Rotator2_NetQuantize& acRhs) const noexcept
@@ -45,10 +45,10 @@ uint32_t Rotator2_NetQuantize::Pack() const noexcept
 
     auto WrapAngle = [](float angle)
     {
-        angle = TiltedPhoques::Mod(angle, 2.f * TiltedPhoques::Pi);
+        angle = TiltedPhoques::Mod(angle, 2.f * float(TiltedPhoques::Pi));
         if (angle < 0.f)
         {
-            angle += 2.f * TiltedPhoques::Pi;
+            angle += 2.f * float(TiltedPhoques::Pi);
         }
 
         return angle;

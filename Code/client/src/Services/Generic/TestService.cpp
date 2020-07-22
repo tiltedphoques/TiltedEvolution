@@ -43,7 +43,7 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     loadBuffer.formId = 0;
     loadBuffer.form = nullptr;
 
-    const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
+    //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
 #ifdef TP_SKYRIM
     pActor->UnEquipAll();

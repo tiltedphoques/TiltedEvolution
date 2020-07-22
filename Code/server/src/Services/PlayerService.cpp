@@ -41,9 +41,9 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
         if (ownedComponent.ConnectionId == acMessage.ConnectionId)
             continue;
 
-        CharacterSpawnRequest message;
-        CharacterService::Serialize(m_world, character, &message);
+        CharacterSpawnRequest spawnMessage;
+        CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        GameServer::Get()->Send(acMessage.ConnectionId, message);
+        GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
     }
 }

@@ -11,7 +11,5 @@ struct CharacterComponent
     uint32_t ChangeFlags{ 0 };
     String SaveBuffer{};
     FormIdComponent BaseId{};
-    String InventoryBuffer{};
-    bool DirtyInventory{false};
     Tints FaceTints{};
 };

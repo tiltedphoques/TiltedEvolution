@@ -112,7 +112,7 @@ void hkbBehaviorGraph::ReHandleEvent(hkEventContext& aContext, hkEventType& aTyp
     pContext->symbolIdMap = cpSymbolId;
     pContext->byte20 = cbyte20;
 
-    auto result = 1;
+   // auto result = 1;
     if(!(aContext.byte30 & 1))
     {
         TP_THIS_FUNCTION(Tsub_1409F3EF0, void, hkbBehaviorGraph, hkEventContext&, hkEventType&);
@@ -397,7 +397,7 @@ bool ActorMediator::RePerformComplexAction(TESActionData* apData) noexcept
     apData->someFlag &= 0xFFFFFFFC;
     sub_1401A2220(&apData->eventName);
 
-    result = apData->Perform();
+    result = apData->Perform() & 0xFF;
 
     return result;
 }

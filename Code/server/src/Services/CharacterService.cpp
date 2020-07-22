@@ -32,7 +32,6 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
 
     apSpawnRequest->ServerId = World::ToInteger(aEntity);
     apSpawnRequest->AppearanceBuffer = characterComponent.SaveBuffer;
-    apSpawnRequest->InventoryBuffer = characterComponent.InventoryBuffer;
     apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
 
@@ -41,6 +40,12 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     {
         apSpawnRequest->FormId.BaseId = pFormIdComponent->BaseId;
         apSpawnRequest->FormId.ModId = pFormIdComponent->ModId;
+    }
+
+    const auto* pInventoryComponent = aRegistry.try_get<InventoryComponent>(aEntity);
+    if (pInventoryComponent)
+    {
+        apSpawnRequest->InventoryBuffer = pInventoryComponent->InventoryBuffer;
     }
 
     if (characterComponent.BaseId)
@@ -137,7 +142,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
 
 void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
-    auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
+    auto view = m_world.view<OwnerComponent, AnimationComponent, MovementComponent>();
 
     auto& message = acMessage.Packet;
 
@@ -188,7 +193,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
 void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept
 {
-    auto view = m_world.view<CharacterComponent, OwnerComponent, AnimationComponent, MovementComponent>();
+    auto view = m_world.view<InventoryComponent, OwnerComponent>();
 
     auto& message = acMessage.Packet;
 
@@ -199,9 +204,9 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
 
-        auto& characterComponent = view.get<CharacterComponent>(*itor);
-        characterComponent.InventoryBuffer = change.second;
-        characterComponent.DirtyInventory = true;
+        auto& inventoryComponent = view.get<InventoryComponent>(*itor);
+        inventoryComponent.InventoryBuffer = change.second;
+        inventoryComponent.DirtyInventory = true;
     }
 }
 
@@ -237,11 +242,14 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
-    characterComponent.InventoryBuffer = std::move(message.InventoryBuffer);
+    
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = std::move(message.FaceTints);
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} with {:x} tints assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, characterComponent.FaceTints.Entries.size(), acMessage.ConnectionId);
+    InventoryComponent& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
+    inventoryComponent.InventoryBuffer = std::move(message.InventoryBuffer);
+
+    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
     MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
@@ -302,7 +310,7 @@ void CharacterService::ProcessInventoryChanges() noexcept
     lastSendTimePoint = now;
 
     auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, AnimationComponent, OwnerComponent >();
+    const auto characterView = m_world.view < CellIdComponent, InventoryComponent, OwnerComponent >();
 
     Map<ConnectionId_t, NotifyInventoryChanges> messages;
 
@@ -314,10 +322,10 @@ void CharacterService::ProcessInventoryChanges() noexcept
         TP_UNUSED(message);
     }
 
-    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, auto& characterComponent, const auto& animationComponent, const auto& ownerComponent)
+    characterView.each([this, playerView, &messages](auto entity, const auto& cellIdComponent, auto& inventoryComponent, const auto& ownerComponent)
         {
             // If we have nothing new to send skip this
-            if (characterComponent.DirtyInventory == false)
+            if (inventoryComponent.DirtyInventory == false)
                 return;
 
             for (auto player : playerView)
@@ -331,10 +339,10 @@ void CharacterService::ProcessInventoryChanges() noexcept
                 auto& message = messages[playerComponent.ConnectionId];
                 auto& change = message.Changes[World::ToInteger(entity)];
                 
-                change = characterComponent.InventoryBuffer;
+                change = inventoryComponent.InventoryBuffer;
             }
 
-            characterComponent.DirtyInventory = false;
+            inventoryComponent.DirtyInventory = false;
         });
 
     for (auto kvp : messages)

@@ -168,7 +168,6 @@ struct Actor : TESObjectREFR
     ExPlayerCharacter* AsExPlayerCharacter() noexcept;
 
     void QueueUpdate() noexcept;
-    void GenerateFace() noexcept;
 
     float GetSpeed() noexcept;
     void SetSpeed(float aSpeed) noexcept;
@@ -283,6 +282,8 @@ static_assert(offsetof(Actor, unk9C) == 0x108);
 static_assert(offsetof(Actor, unk84) == 0xE8);
 static_assert(offsetof(Actor, unk17C) == 0x17C);
 static_assert(offsetof(Actor, unkD8) == 0x158);
+static_assert(offsetof(Actor, magicItems) == 0x1C0);
+static_assert(offsetof(Actor, equippedShout) == 0x1E0);
 static_assert(sizeof(Actor) == 0x2B0);
 static_assert(sizeof(Actor::SpellItemEntry) == 0x18);
 
