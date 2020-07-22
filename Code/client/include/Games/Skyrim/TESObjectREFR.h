@@ -67,7 +67,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_59();
     virtual void sub_5A();
     virtual void sub_5B();
-    virtual void sub_5C();
+    virtual struct ActorMagicCaster* CreateMagicCaster(uint32_t aId);
     virtual void sub_5D();
     virtual void sub_5E();
     virtual void sub_5F();
