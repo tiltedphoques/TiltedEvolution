@@ -8,9 +8,13 @@
 
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Games/Skyrim/Forms/TESNPC.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
 #include <Games/Fallout4/Forms/TESNPC.h>
+#include <Games/Fallout4/Misc/ProcessManager.h>
+#include <Games/Fallout4/Misc/MiddleProcess.h>
 
 #include <Components.h>
 #include <World.h>
@@ -99,13 +103,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 PlaceActorInWorld();
             else
             {
-                BSAnimationGraphManager* pManager = nullptr;
-                if(PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager))
-                {
-                    pManager->DumpAnimationVariables();
-
-                    pManager->Release();
-                }
+                
             }
         }
     }
@@ -124,7 +122,7 @@ void TestService::OnDraw() noexcept
     static char s_address[256] = "127.0.0.1:10578";
     ImGui::InputText("Address", s_address, std::size(s_address));
 
-    if(m_transport.IsOnline())
+    if (m_transport.IsOnline())
     {
         if (ImGui::Button("Disconnect"))
             m_transport.Close();
@@ -135,6 +133,33 @@ void TestService::OnDraw() noexcept
         {
             m_transport.Connect(s_address);
         }
+    }
+
+    ImGui::End();
+
+    ImGui::Begin("Player");
+
+    auto pPlayer = PlayerCharacter::Get();
+    if (pPlayer && pPlayer->processManager && pPlayer->processManager->middleProcess)
+    {
+        auto pMiddleProcess = pPlayer->processManager->middleProcess;
+
+        auto pLeftWeapon = pMiddleProcess->leftEquippedObject ? *pMiddleProcess->leftEquippedObject : nullptr;
+        auto pRightWeapon = pMiddleProcess->rightEquippedObject ? *pMiddleProcess->rightEquippedObject : nullptr;
+
+        uint32_t leftId = pLeftWeapon ? pLeftWeapon->formID : 0;
+        uint32_t rightId = pRightWeapon ? pRightWeapon->formID : 0;
+
+        ImGui::InputScalar("Left Item", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Right Item", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+
+        leftId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
+        rightId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
+        uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
+
+        ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
     }
 
     ImGui::End();

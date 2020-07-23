@@ -92,7 +92,7 @@ bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
                 spdlog::info("Var {} changed from {} to {}", i, oldVars[i], newVars[i]);
             }
         }*/
-        spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
+        //spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
     }
 
     const auto res = ThisCall(RealPerformAction, this, apAction);
@@ -100,7 +100,7 @@ bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
 
     if (res && apAction->actor->formID == 0x13482)
     {
-        spdlog::info("Passed !");
+    //    spdlog::info("Passed !");
     }
 
     return res != 0;

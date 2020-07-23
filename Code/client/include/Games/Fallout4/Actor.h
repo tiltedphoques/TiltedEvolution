@@ -34,6 +34,8 @@ struct Actor : TESObjectREFR
     void SetSpeed(float aSpeed) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
+    void UnEquipAll() noexcept;
+
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];
     ActorState actorState;

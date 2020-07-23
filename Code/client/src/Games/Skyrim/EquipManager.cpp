@@ -13,7 +13,7 @@ struct EquipData
     BSExtraDataList* extraDataList; // 0
     int count; // 8
     int padC; // C
-    uint64_t slot; // 10
+    struct BGSEquipSlot* slot; // 10
     void* unk18; // 18
     bool preventEquip;
     bool unkb1;
@@ -27,7 +27,7 @@ struct UnEquipData
     BSExtraDataList* extraDataList; // 0
     int count; // 8
     int padC; // C
-    uint64_t slot; // 10
+    struct BGSEquipSlot* slot; // 10
     void* unk18; // 18
     bool unkb0;
     bool preventEquip;
@@ -126,6 +126,8 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
 {
     if (!apActor)
         return nullptr;
+
+    spdlog::info("Equip to actor : {:X}, form : {:X}, slot : {:X}", apActor->formID, apItem->formID, apData->slot);
 
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())

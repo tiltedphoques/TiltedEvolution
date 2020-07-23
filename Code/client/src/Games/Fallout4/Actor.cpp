@@ -37,6 +37,15 @@ GamePtr<Actor> Actor::New() noexcept
     return pActor;
 }
 
+void Actor::UnEquipAll() noexcept
+{
+    TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
+
+    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E250 - 0x140000000);
+
+    ThisCall(s_unequipAll, this);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]()
     {
         POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
