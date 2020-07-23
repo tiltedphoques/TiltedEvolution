@@ -5,6 +5,7 @@
 #include <Games/Fallout4/TESObjectREFR.h>
 #include <Games/Fallout4/Misc/MagicTarget.h>
 #include <Games/Fallout4/Misc/ActorState.h>
+#include <Games/Fallout4/Forms/TESForm.h>
 
 #include <Games/Events.h>
 #include <Games/Fallout4/Events.h>
@@ -34,6 +35,7 @@ struct Actor : TESObjectREFR
     void SetSpeed(float aSpeed) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
+    TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     void UnEquipAll() noexcept;
 
     MagicTarget magicTarget;
@@ -51,7 +53,9 @@ struct Actor : TESObjectREFR
     uint8_t unk2D8[0x300 - 0x2D8];
     ProcessManager* processManager;
 
-    uint8_t padActorEnd[0x490 - 0x308];
+    uint8_t pad308[0x3E8 - 0x308];
+    TESForm* magicItems[4];
+    uint8_t padActorEnd[0x490 - 0x408];
 
     ActorExtension* GetExtension() noexcept;
     ExActor* AsExActor() noexcept;
@@ -64,5 +68,6 @@ struct Actor : TESObjectREFR
 };
 
 static_assert(sizeof(Actor) == 0x490);
+static_assert(offsetof(Actor, magicItems) == 0x3E8);
 
 #endif

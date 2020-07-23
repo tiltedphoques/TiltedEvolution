@@ -140,12 +140,10 @@ void TestService::OnDraw() noexcept
     ImGui::Begin("Player");
 
     auto pPlayer = PlayerCharacter::Get();
-    if (pPlayer && pPlayer->processManager && pPlayer->processManager->middleProcess)
+    if (pPlayer)
     {
-        auto pMiddleProcess = pPlayer->processManager->middleProcess;
-
-        auto pLeftWeapon = pMiddleProcess->leftEquippedObject ? *pMiddleProcess->leftEquippedObject : nullptr;
-        auto pRightWeapon = pMiddleProcess->rightEquippedObject ? *pMiddleProcess->rightEquippedObject : nullptr;
+        auto pLeftWeapon = pPlayer->GetEquippedWeapon(0);
+        auto pRightWeapon = pPlayer->GetEquippedWeapon(1);
 
         uint32_t leftId = pLeftWeapon ? pLeftWeapon->formID : 0;
         uint32_t rightId = pRightWeapon ? pRightWeapon->formID : 0;
@@ -155,11 +153,15 @@ void TestService::OnDraw() noexcept
 
         leftId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
         rightId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
-        uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
 
         ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
         ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+
+#if TP_SKYRIM
+        uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
+
         ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+#endif  
     }
 
     ImGui::End();

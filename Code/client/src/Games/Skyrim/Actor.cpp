@@ -2,6 +2,8 @@
 
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Memory.h>
 
 #ifdef SAVE_STUFF
@@ -138,6 +140,23 @@ void Actor::UnEquipAll() noexcept
     }
 
     RemoveAllItems();
+}
+
+TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
+{
+    if (processManager && processManager->middleProcess)
+    {
+        auto pMiddleProcess = processManager->middleProcess;
+
+        if (aSlotId == 0 && pMiddleProcess->leftEquippedObject)
+            return *(pMiddleProcess->leftEquippedObject);
+
+        else if (aSlotId == 1 && pMiddleProcess->leftEquippedObject)
+            return *(pMiddleProcess->rightEquippedObject);
+
+    }
+
+    return nullptr;
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()

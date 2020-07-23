@@ -174,6 +174,7 @@ struct Actor : TESObjectREFR
 
     void SetLevelMod(uint32_t aLevel) noexcept;
     void UnEquipAll() noexcept;
+    TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
 
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 

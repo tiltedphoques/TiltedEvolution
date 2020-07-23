@@ -37,6 +37,15 @@ GamePtr<Actor> Actor::New() noexcept
     return pActor;
 }
 
+TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
+{
+    using TGetEquippedWeapon = TESForm* (__fastcall)(void*, void*, const Actor*, uint32_t);
+    
+    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 0x141388AA0 - 0x140000000);
+
+    return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     TP_THIS_FUNCTION(TUnEquipAll, void, Actor);

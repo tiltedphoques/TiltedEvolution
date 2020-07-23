@@ -127,8 +127,6 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     if (!apActor)
         return nullptr;
 
-    spdlog::info("Equip to actor : {:X}, form : {:X}, slot : {:X}", apActor->formID, apItem->formID, apData->slot);
-
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
