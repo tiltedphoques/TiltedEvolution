@@ -55,6 +55,29 @@ void Actor::UnEquipAll() noexcept
     ThisCall(s_unequipAll, this);
 }
 
+
+Inventory Actor::GetInventory() const noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory inventory;
+    inventory.Buffer = SerializeInventory();
+
+    auto pMainHandWeapon = GetEquippedWeapon(0);
+    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+
+    return inventory;
+}
+
+void Actor::SetInventory(const Inventory& acInventory) noexcept
+{
+    UnEquipAll();
+
+    if(!acInventory.Buffer.empty())
+        DeserializeInventory(acInventory.Buffer);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]()
     {
         POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);

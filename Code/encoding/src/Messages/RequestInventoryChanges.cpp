@@ -8,7 +8,7 @@ void RequestInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     for (auto& change : Changes)
     {
         Serialization::WriteVarInt(aWriter, change.first);
-        Serialization::WriteString(aWriter, change.second);
+        change.second.Serialize(aWriter);
     }
 }
 
@@ -21,6 +21,6 @@ void RequestInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     for (auto i = 0u; i < count; ++i)
     {
         auto& change = Changes[Serialization::ReadVarInt(aReader) & 0xFFFFFFFF];
-        change = Serialization::ReadString(aReader);
+        change.Deserialize(aReader);
     }
 }

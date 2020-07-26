@@ -2,9 +2,8 @@
 
 #include "Message.h"
 #include <Buffer.hpp>
-#include <Stl.hpp>
+#include <Structs/Inventory.h>
 
-using TiltedPhoques::String;
 using TiltedPhoques::Map;
 
 struct NotifyInventoryChanges final : ServerMessage
@@ -23,5 +22,5 @@ struct NotifyInventoryChanges final : ServerMessage
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<uint32_t, String> Changes{};
+    Map<uint32_t, Inventory> Changes{};
 };

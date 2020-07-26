@@ -4,10 +4,10 @@
 #error Include Components.h instead
 #endif
 
-#include <Structs/Tints.h>
+#include <Structs/Inventory.h>
 
 struct InventoryComponent
 {
-    String InventoryBuffer{};
+    Inventory Content{};
     bool DirtyInventory{false};
 };

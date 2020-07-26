@@ -28,31 +28,10 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
-    String data;
-
-    pPlayerBaseForm->Serialize(&data);
-
-    char buffer[1 << 15];
-
-    BGSSaveFormBuffer saveBuffer;
-    saveBuffer.buffer = buffer;
-    saveBuffer.capacity = 1 << 15;
-    saveBuffer.changeFlags = 1024;
-
-    PlayerCharacter::Get()->SaveInventory(&saveBuffer);
-
-    BGSLoadFormBuffer loadBuffer(saveBuffer.changeFlags);
-    loadBuffer.SetSize(saveBuffer.position);
-    loadBuffer.buffer = buffer;
-    loadBuffer.formId = 0;
-    loadBuffer.form = nullptr;
-
     //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
-#ifdef TP_SKYRIM
-    pActor->UnEquipAll();
-#endif
-    pActor->LoadInventory(&loadBuffer);
+
+    pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
 
     m_actors.emplace_back(pActor);
 }
@@ -103,7 +82,10 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 PlaceActorInWorld();
             else
             {
-                
+                auto pActor = m_actors[0];
+
+                pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+
             }
         }
     }

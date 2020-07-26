@@ -44,7 +44,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     const auto* pInventoryComponent = aRegistry.try_get<InventoryComponent>(aEntity);
     if (pInventoryComponent)
     {
-        apSpawnRequest->InventoryBuffer = pInventoryComponent->InventoryBuffer;
+        apSpawnRequest->InventoryContent = pInventoryComponent->Content;
     }
 
     if (characterComponent.BaseId)
@@ -204,7 +204,7 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
             continue;
 
         auto& inventoryComponent = view.get<InventoryComponent>(*itor);
-        inventoryComponent.InventoryBuffer = change.second;
+        inventoryComponent.Content = change.second;
         inventoryComponent.DirtyInventory = true;
     }
 }
@@ -245,7 +245,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.FaceTints = std::move(message.FaceTints);
 
     InventoryComponent& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
-    inventoryComponent.InventoryBuffer = std::move(message.InventoryBuffer);
+    inventoryComponent.Content = std::move(message.InventoryContent);
 
     spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
@@ -332,7 +332,7 @@ void CharacterService::ProcessInventoryChanges() noexcept
             auto& message = messages[playerComponent.ConnectionId];
             auto& change = message.Changes[World::ToInteger(entity)];
 
-            change = inventoryComponent.InventoryBuffer;
+            change = inventoryComponent.Content;
         }
 
         inventoryComponent.DirtyInventory = false;

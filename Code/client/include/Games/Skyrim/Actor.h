@@ -11,6 +11,8 @@
 #include <Games/Skyrim/Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Games/Skyrim/Forms/MagicItem.h>
 
+#include <Structs/Inventory.h>
+
 struct TESNPC;
 struct TESRace;
 struct ExActor;
@@ -175,6 +177,9 @@ struct Actor : TESObjectREFR
     void SetLevelMod(uint32_t aLevel) noexcept;
     void UnEquipAll() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
+
+    Inventory GetInventory() const noexcept;
+    void SetInventory(const Inventory& acInventory) noexcept;
 
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 

@@ -78,9 +78,9 @@ void* EquipManager::UnEquipSpell(Actor* apActor, TESForm* apItem, uint32_t aSlot
 }
 
 
-void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apExtraDataList, int aCount, uint64_t aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3)
+void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3)
 {
-    TP_THIS_FUNCTION(TEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, BSExtraDataList * apExtraDataList, int aCount, uint64_t aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3);
+    TP_THIS_FUNCTION(TEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, BSExtraDataList * apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3);
     POINTER_SKYRIMSE(TEquipInternal, s_equipFunc, 0x140637A80 - 0x140000000);
 
     ScopedEquipOverride equipOverride;
@@ -90,9 +90,9 @@ void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apEx
     return result;
 }
 
-void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, BSExtraDataList* apExtraDataList, int aCount, uint64_t aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4)
+void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, BSExtraDataList* apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4)
 {
-    TP_THIS_FUNCTION(TUnEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, BSExtraDataList * apExtraDataList, int aCount, uint64_t aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4);
+    TP_THIS_FUNCTION(TUnEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, BSExtraDataList * apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4);
     POINTER_SKYRIMSE(TUnEquipInternal, s_unequipFunc, 0x140638190 - 0x140000000);
 
     ScopedEquipOverride equipOverride;

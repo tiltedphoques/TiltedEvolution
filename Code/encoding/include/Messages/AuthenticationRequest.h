@@ -11,6 +11,8 @@ struct AuthenticationRequest final : ClientMessage
     {
     }
 
+    virtual ~AuthenticationRequest() = default;
+
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 

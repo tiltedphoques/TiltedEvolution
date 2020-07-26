@@ -181,11 +181,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         pActor->GetExtension()->SetRemote(true);
 
-        if(!acMessage.InventoryBuffer.empty())
-        {
-            pActor->UnEquipAll();
-            pActor->DeserializeInventory(acMessage.InventoryBuffer);
-        }
+        pActor->SetInventory(acMessage.InventoryContent);
 
         auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
         remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -272,8 +268,7 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
             if (!pActor)
                 return;
 
-            pActor->UnEquipAll();
-            pActor->DeserializeInventory(change.second);
+            pActor->SetInventory(change.second);
         }
     }
 }
@@ -358,7 +353,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     }
 #endif
 
-    message.InventoryBuffer = pActor->SerializeInventory();
+    message.InventoryContent = pActor->GetInventory();
 
     if(isTemporary)
     {
@@ -461,7 +456,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         auto pForm = TESForm::GetById(formIdComponent.Id);
         const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
-            return;
+            continue;
 
         InterpolationSystem::Update(pActor, interpolationComponent, tick);
         AnimationSystem::Update(m_world, pActor, animationComponent, tick);
@@ -512,14 +507,14 @@ void CharacterService::RunInventoryUpdates() noexcept
             auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
 
             if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
-                return;
+                continue;
 
             auto pForm = TESForm::GetById(formIdComponent.Id);
             const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
             if (!pActor)
-                return;
+                continue;
 
-            message.Changes[localComponent.Id] = pActor->SerializeInventory();
+            message.Changes[localComponent.Id] = pActor->GetInventory();
         }
 
         m_transport.Send(message);

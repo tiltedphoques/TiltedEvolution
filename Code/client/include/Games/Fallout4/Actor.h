@@ -38,6 +38,9 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     void UnEquipAll() noexcept;
 
+    Inventory GetInventory() const noexcept;
+    void SetInventory(const Inventory& acInventory) noexcept;
+
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];
     ActorState actorState;

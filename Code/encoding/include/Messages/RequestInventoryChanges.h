@@ -3,8 +3,8 @@
 #include "Message.h"
 #include <Buffer.hpp>
 #include <Stl.hpp>
+#include <Structs/Inventory.h>
 
-using TiltedPhoques::String;
 using TiltedPhoques::Map;
 
 struct RequestInventoryChanges final : ClientMessage
@@ -13,6 +13,8 @@ struct RequestInventoryChanges final : ClientMessage
         : ClientMessage(kRequestInventoryChanges)
     {
     }
+
+    virtual ~RequestInventoryChanges() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
@@ -23,5 +25,5 @@ struct RequestInventoryChanges final : ClientMessage
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<uint32_t, String> Changes;
+    Map<uint32_t, Inventory> Changes;
 };
