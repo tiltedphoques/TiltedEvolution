@@ -1,8 +1,8 @@
 # Tilted Online
 
-This framework was created to enable multiplayer in Bethesda games, at the moment two games are supported ; Skyrim Special Edition and Fallout 4.
+This framework was created to enable multiplayer in Bethesda games, at the moment two games are supported ; **Skyrim Special Edition** and **Fallout 4**.
 
-The work effort for Skyrim Special Edition is mostly provided by the Skyrim Together team, while the Fallout 4 effort will now be provided by the F4MP team.
+The work effort for Skyrim Special Edition is mostly provided by the **Skyrim Together** team, while the Fallout 4 effort will now be provided by the **F4MP** team.
 
 *Remember that this is the experimental branch, so there's no guarantee the mod will work or even compile.*
 
