@@ -41,7 +41,7 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
     using TGetEquippedWeapon = TESForm* (__fastcall)(void*, void*, const Actor*, uint32_t);
     
-    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 0x141388AA0 - 0x140000000);
+    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 0x141388BC0 - 0x140000000);
 
     return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
 }
@@ -50,7 +50,7 @@ void Actor::UnEquipAll() noexcept
 {
     TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
 
-    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E250 - 0x140000000);
+    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E370 - 0x140000000);
 
     ThisCall(s_unequipAll, this);
 }
