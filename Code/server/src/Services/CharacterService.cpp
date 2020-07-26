@@ -378,7 +378,7 @@ void CharacterService::ProcessMovementChanges() noexcept
 
         // If we have nothing new to send skip this
         if (movementComponent.Sent == true)
-            return;
+            continue;
 
         for (auto player : playerView)
         {

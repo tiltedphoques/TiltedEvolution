@@ -189,6 +189,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 #else
         pRenderer->SetVisible(!active);
 #endif
+        ShowCursor(!active);
     }
     else if (active)
     {
