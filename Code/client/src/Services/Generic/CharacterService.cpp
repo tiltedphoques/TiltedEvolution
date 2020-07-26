@@ -431,11 +431,16 @@ void CharacterService::RunLocalUpdates() noexcept
     ClientReferencesMoveRequest message;
     message.Tick = m_transport.GetClock().GetCurrentTick();
 
-    m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>()
-        .each([&message, this](LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
+    auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
+
+    for (auto entity : animatedLocalView)
     {
+        auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
+        auto& animationComponent = animatedLocalView.get<LocalAnimationComponent>(entity);
+        auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
+
         AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
-    });
+    }
 
     m_transport.Send(message);
 }
@@ -445,28 +450,37 @@ void CharacterService::RunRemoteUpdates() noexcept
     // Delay by 120ms to let the interpolation system accumulate interpolation points
     auto tick = m_transport.GetClock().GetCurrentTick() - 120;
 
-    m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>().each(
-        [tick, this](auto entity, auto& remoteComponent, auto& interpolationComponent, auto& animationComponent, auto& formIdComponent)
-        {
-            auto pForm = TESForm::GetById(formIdComponent.Id);
-            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                return;
+    auto animatedView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>();
 
-            InterpolationSystem::Update(pActor, interpolationComponent, tick);
-            AnimationSystem::Update(m_world, pActor, animationComponent, tick);
-        });
+    for(auto entity : animatedView)
+    {
+        auto& formIdComponent = animatedView.get<FormIdComponent>(entity);
+        auto& interpolationComponent = animatedView.get<InterpolationComponent>(entity);
+        auto& animationComponent = animatedView.get<RemoteAnimationComponent>(entity);
 
-    m_world.view<FormIdComponent, FaceGenComponent>().each(
-        [this](auto entity, auto& formIdComponent, auto& faceGenComponent)
-        {
-            auto pForm = TESForm::GetById(formIdComponent.Id);
-            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                return;
+        auto pForm = TESForm::GetById(formIdComponent.Id);
+        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        if (!pActor)
+            return;
 
-            FaceGenSystem::Update(m_world, pActor, faceGenComponent);
-        });
+        InterpolationSystem::Update(pActor, interpolationComponent, tick);
+        AnimationSystem::Update(m_world, pActor, animationComponent, tick);
+    }
+
+    auto facegenView = m_world.view<FormIdComponent, FaceGenComponent>();
+
+    for(auto entity : facegenView)
+    {
+        auto& formIdComponent = facegenView.get<FormIdComponent>(entity);
+        auto& faceGenComponent = facegenView.get<FaceGenComponent>(entity);
+
+        auto pForm = TESForm::GetById(formIdComponent.Id);
+        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        if (!pActor)
+            continue;
+
+        FaceGenSystem::Update(m_world, pActor, faceGenComponent);
+    }
 
     m_world.group<RemoteComponent>(entt::exclude<FormIdComponent>).each([](auto entity, auto& remoteComponent)
         {
@@ -491,19 +505,22 @@ void CharacterService::RunInventoryUpdates() noexcept
     {
         RequestInventoryChanges message;
 
-        m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>()
-            .each([&message, this](LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
-                {
-                    if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
-                        return;
+        auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
+        for (auto entity : animatedLocalView)
+        {
+            auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
+            auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
 
-                    auto pForm = TESForm::GetById(formIdComponent.Id);
-                    const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-                    if (!pActor)
-                        return;
+            if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
+                return;
 
-                    message.Changes[localComponent.Id] = pActor->SerializeInventory();
-                });
+            auto pForm = TESForm::GetById(formIdComponent.Id);
+            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+            if (!pActor)
+                return;
+
+            message.Changes[localComponent.Id] = pActor->SerializeInventory();
+        }
 
         m_transport.Send(message);
 
