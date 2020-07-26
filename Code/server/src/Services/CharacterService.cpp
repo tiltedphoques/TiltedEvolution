@@ -133,7 +133,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         auto& cellIdComponent = view.get<CellIdComponent>(entity);
 
         if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
-            return;
+            continue;
 
         GameServer::Get()->Send(playerComponent.ConnectionId, message);
     }
@@ -320,7 +320,7 @@ void CharacterService::ProcessInventoryChanges() noexcept
 
         // If we have nothing new to send skip this
         if (inventoryComponent.DirtyInventory == false)
-            return;
+            continue;
 
         for (auto player : playerView)
         {
