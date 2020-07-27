@@ -49,7 +49,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
 
     if (characterComponent.BaseId)
     {
-        apSpawnRequest->FormId = characterComponent.BaseId.Id;
+        apSpawnRequest->BaseId = characterComponent.BaseId.Id;
     }
 
     const auto* pMovementComponent = aRegistry.try_get<MovementComponent>(aEntity);
