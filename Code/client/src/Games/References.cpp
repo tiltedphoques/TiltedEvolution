@@ -13,6 +13,7 @@
 #include <Games/Fallout4/Forms/TESNPC.h>
 
 #include <Games/Skyrim/BSAnimationGraphManager.h>
+#include <Games/Skyrim/Misc/SkyrimVM.h>
 #include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
 #include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
 #include <Games/Skyrim/Havok/hkbVariableValueSet.h>
@@ -21,6 +22,7 @@
 #include <Structs/AnimationVariables.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
+#include <Games/Fallout4/Misc/GameVM.h>
 #include <Games/Fallout4/Havok/BShkbAnimationGraph.h>
 #include <Games/Fallout4/Havok/hkbBehaviorGraph.h>
 #include <Games/Fallout4/Havok/hkbVariableValueSet.h>
@@ -48,6 +50,16 @@ static TRotate* RealRotateX = nullptr;
 static TRotate* RealRotateY = nullptr;
 static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
+
+void TESObjectREFR::RequestDelete() const noexcept
+{
+    using TPapyrusDelete = bool (__fastcall)(BSScript::IVirtualMachine*, uint32_t, const TESObjectREFR*);
+
+    POINTER_SKYRIMSE(TPapyrusDelete, s_papyrusDelete, 0x140993860 - 0x140000000);
+    POINTER_FALLOUT4(TPapyrusDelete, s_papyrusDelete, 0x141404960 - 0x140000000);
+
+   s_papyrusDelete.Get()(GameVM::Get()->virtualMachine, 0, this);
+}
 
 void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
 {
