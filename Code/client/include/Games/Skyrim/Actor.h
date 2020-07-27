@@ -11,6 +11,8 @@
 #include <Games/Skyrim/Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Games/Skyrim/Forms/MagicItem.h>
 
+#include <Structs/Inventory.h>
+
 struct TESNPC;
 struct TESRace;
 struct ExActor;
@@ -168,13 +170,16 @@ struct Actor : TESObjectREFR
     ExPlayerCharacter* AsExPlayerCharacter() noexcept;
 
     void QueueUpdate() noexcept;
-    void GenerateFace() noexcept;
 
     float GetSpeed() noexcept;
     void SetSpeed(float aSpeed) noexcept;
 
     void SetLevelMod(uint32_t aLevel) noexcept;
     void UnEquipAll() noexcept;
+    TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
+
+    Inventory GetInventory() const noexcept;
+    void SetInventory(const Inventory& acInventory) noexcept;
 
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
@@ -283,6 +288,8 @@ static_assert(offsetof(Actor, unk9C) == 0x108);
 static_assert(offsetof(Actor, unk84) == 0xE8);
 static_assert(offsetof(Actor, unk17C) == 0x17C);
 static_assert(offsetof(Actor, unkD8) == 0x158);
+static_assert(offsetof(Actor, magicItems) == 0x1C0);
+static_assert(offsetof(Actor, equippedShout) == 0x1E0);
 static_assert(sizeof(Actor) == 0x2B0);
 static_assert(sizeof(Actor::SpellItemEntry) == 0x18);
 

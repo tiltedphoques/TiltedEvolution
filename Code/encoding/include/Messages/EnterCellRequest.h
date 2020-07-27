@@ -15,6 +15,8 @@ struct EnterCellRequest final : ClientMessage
     {
     }
 
+    virtual ~EnterCellRequest() = default;
+
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 

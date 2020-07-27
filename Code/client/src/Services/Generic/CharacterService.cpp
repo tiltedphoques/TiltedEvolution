@@ -21,6 +21,7 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ReferenceSpawnedEvent.h>
+#include <Events/EquipmentChangeEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -30,6 +31,8 @@
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
+#include <Messages/RequestInventoryChanges.h>
+#include <Messages/NotifyInventoryChanges.h>
 
 #include <World.h>
 
@@ -51,6 +54,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
     m_characterSpawnConnection = m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
     m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
+    m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
+    m_inventoryConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -83,6 +88,7 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunLocalUpdates();
+    RunInventoryUpdates();
     RunRemoteUpdates();
 }
 
@@ -175,10 +181,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         pActor->GetExtension()->SetRemote(true);
 
-        if(!acMessage.InventoryBuffer.empty())
-        {
-        //    pActor->processManager->Deserialize(acMessage.inventory_buffer(), pActor);
-        }
+        pActor->SetInventory(acMessage.InventoryContent);
 
         auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
         remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -241,6 +244,35 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) noexcept
     }
 }
 
+void CharacterService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
+{
+    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
+}
+
+void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept
+{
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+
+    for (auto& change : acEvent.Changes)
+    {
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = change.first, view](entt::entity entity)
+        {
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+        if (itor != std::end(view))
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(*itor);
+
+            const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            if (!pActor)
+                return;
+
+            pActor->SetInventory(change.second);
+        }
+    }
+}
+
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
@@ -300,6 +332,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
         pNpc->Serialize(&message.AppearanceBuffer);
     }
 
+#if TP_SKYRIM
     if (isPlayer)
     {
         auto& entries = message.FaceTints.Entries;
@@ -318,8 +351,9 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
                 entries[i].Name = tints[i]->texture->name.AsAscii();
         }
     }
+#endif
 
-    //pActor->processManager->Serialize(pAssignmentRequest->mutable_inventory_buffer());
+    message.InventoryContent = pActor->GetInventory();
 
     if(isTemporary)
     {
@@ -392,13 +426,16 @@ void CharacterService::RunLocalUpdates() noexcept
     ClientReferencesMoveRequest message;
     message.Tick = m_transport.GetClock().GetCurrentTick();
 
-    m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>()
-        .each([&message, this](LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
-    {
-        AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
-    });
+    auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
 
-    spdlog::info("Send snapshot count : {}", message.Updates.size());
+    for (auto entity : animatedLocalView)
+    {
+        auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
+        auto& animationComponent = animatedLocalView.get<LocalAnimationComponent>(entity);
+        auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
+
+        AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
+    }
 
     m_transport.Send(message);
 }
@@ -408,28 +445,37 @@ void CharacterService::RunRemoteUpdates() noexcept
     // Delay by 120ms to let the interpolation system accumulate interpolation points
     auto tick = m_transport.GetClock().GetCurrentTick() - 120;
 
-    m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>().each(
-        [tick, this](auto entity, auto& remoteComponent, auto& interpolationComponent, auto& animationComponent, auto& formIdComponent)
-        {
-            auto pForm = TESForm::GetById(formIdComponent.Id);
-            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                return;
+    auto animatedView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>();
 
-            InterpolationSystem::Update(pActor, interpolationComponent, tick);
-            AnimationSystem::Update(m_world, pActor, animationComponent, tick);
-        });
+    for(auto entity : animatedView)
+    {
+        auto& formIdComponent = animatedView.get<FormIdComponent>(entity);
+        auto& interpolationComponent = animatedView.get<InterpolationComponent>(entity);
+        auto& animationComponent = animatedView.get<RemoteAnimationComponent>(entity);
 
-    m_world.view<FormIdComponent, FaceGenComponent>().each(
-        [this](auto entity, auto& formIdComponent, auto& faceGenComponent)
-        {
-            auto pForm = TESForm::GetById(formIdComponent.Id);
-            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                return;
+        auto pForm = TESForm::GetById(formIdComponent.Id);
+        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        if (!pActor)
+            continue;
 
-            FaceGenSystem::Update(m_world, pActor, faceGenComponent);
-        });
+        InterpolationSystem::Update(pActor, interpolationComponent, tick);
+        AnimationSystem::Update(m_world, pActor, animationComponent, tick);
+    }
+
+    auto facegenView = m_world.view<FormIdComponent, FaceGenComponent>();
+
+    for(auto entity : facegenView)
+    {
+        auto& formIdComponent = facegenView.get<FormIdComponent>(entity);
+        auto& faceGenComponent = facegenView.get<FaceGenComponent>(entity);
+
+        auto pForm = TESForm::GetById(formIdComponent.Id);
+        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        if (!pActor)
+            continue;
+
+        FaceGenSystem::Update(m_world, pActor, faceGenComponent);
+    }
 
     m_world.group<RemoteComponent>(entt::exclude<FormIdComponent>).each([](auto entity, auto& remoteComponent)
         {
@@ -437,4 +483,42 @@ void CharacterService::RunRemoteUpdates() noexcept
             TP_UNUSED(entity);
             TP_UNUSED(remoteComponent);
         });
+}
+
+void CharacterService::RunInventoryUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 250ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    if (!m_charactersWithInventoryChanges.empty())
+    {
+        RequestInventoryChanges message;
+
+        auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
+        for (auto entity : animatedLocalView)
+        {
+            auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
+            auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
+
+            if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
+                continue;
+
+            auto pForm = TESForm::GetById(formIdComponent.Id);
+            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+            if (!pActor)
+                continue;
+
+            message.Changes[localComponent.Id] = pActor->GetInventory();
+        }
+
+        m_transport.Send(message);
+
+        m_charactersWithInventoryChanges.clear();
+    }
 }

@@ -2,7 +2,12 @@
 
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Memory.h>
+
+#include <World.h>
 
 #ifdef SAVE_STUFF
 
@@ -124,27 +129,116 @@ void Actor::UnEquipAll() noexcept
                     // Right slot
                     if (pDataList->Contains(ExtraData::Worn))
                     {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, 0, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
                     }
 
                     // Left slot
                     if (pDataList->Contains(ExtraData::WornLeft))
                     {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, 1, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
                     }
                 }
             }
         }
     }
+
+    RemoveAllItems();
+
+    // Taken from skyrim's code shouts can be two form types apparently
+    if (equippedShout && (equippedShout->formType - 41) <= 1)
+    {
+        EquipManager::Get()->UnEquipShout(this, equippedShout);
+        equippedShout = nullptr;
+    }
 }
+
+TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
+{
+    if (processManager && processManager->middleProcess)
+    {
+        auto pMiddleProcess = processManager->middleProcess;
+
+        if (aSlotId == 0 && pMiddleProcess->leftEquippedObject)
+            return *(pMiddleProcess->leftEquippedObject);
+
+        else if (aSlotId == 1 && pMiddleProcess->rightEquippedObject)
+            return *(pMiddleProcess->rightEquippedObject);
+
+    }
+
+    return nullptr;
+}
+
+Inventory Actor::GetInventory() const noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory inventory;
+    inventory.Buffer = SerializeInventory();
+
+    auto pMainHandWeapon = GetEquippedWeapon(0);
+    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+
+    auto pSecondaryHandWeapon = GetEquippedWeapon(1);
+    uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
+    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
+
+    mainId = magicItems[0] ? magicItems[0]->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
+
+    secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
+    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
+
+    uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
+    modSystem.GetServerModId(shoutId, inventory.Shout);
+
+    return inventory;
+}
+
+void Actor::SetInventory(const Inventory& acInventory) noexcept
+{
+    UnEquipAll();
+
+    auto* pEquipManager = EquipManager::Get();
+
+    if (!acInventory.Buffer.empty())
+        DeserializeInventory(acInventory.Buffer);
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandWeapon);
+
+    if (mainHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+
+    uint32_t secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
+
+    if (secondaryHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+
+    mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandSpell);
+
+    if (mainHandWeaponId)
+        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
+
+    secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandSpell);
+
+    if (secondaryHandWeaponId)
+        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+
+    uint32_t shoutId = modSystem.GetGameId(acInventory.Shout);
+
+    if (shoutId)
+        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+}
+
 
 static TiltedPhoques::Initializer s_actorHooks([]()
     {
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406929C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405CDDA0 - 0x140000000);
-
-    
 
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();

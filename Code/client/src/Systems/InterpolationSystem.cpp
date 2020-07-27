@@ -50,10 +50,10 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
         .Decompose(position.x, position.y, position.z);
     
     apActor->ForcePosition(position);
-    apActor->LoadAnimationVariables(first.Variables);
+    apActor->LoadAnimationVariables(second.Variables);
     if (apActor->processManager && apActor->processManager->middleProcess)
     {
-        apActor->processManager->middleProcess->direction = first.Direction;
+        apActor->processManager->middleProcess->direction = second.Direction;
     }
 
     float firstX, firstY, firstZ;
@@ -66,9 +66,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     const auto deltaY = TiltedPhoques::DeltaAngle(firstY, secondY, true) * delta;
     const auto deltaZ = TiltedPhoques::DeltaAngle(firstZ, secondZ, true) * delta;
 
-    const auto finalX = TiltedPhoques::Mod(firstX + deltaX, TiltedPhoques::Pi * 2);
-    const auto finalY = TiltedPhoques::Mod(firstY + deltaY, TiltedPhoques::Pi * 2);
-    const auto finalZ = TiltedPhoques::Mod(firstZ + deltaZ, TiltedPhoques::Pi * 2);
+    const auto finalX = TiltedPhoques::Mod(firstX + deltaX, float(TiltedPhoques::Pi * 2));
+    const auto finalY = TiltedPhoques::Mod(firstY + deltaY, float(TiltedPhoques::Pi * 2));
+    const auto finalZ = TiltedPhoques::Mod(firstZ + deltaZ, float(TiltedPhoques::Pi * 2));
 
     apActor->SetRotation(finalX, finalY, finalZ);
 }

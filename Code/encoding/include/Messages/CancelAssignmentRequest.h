@@ -10,6 +10,8 @@ struct CancelAssignmentRequest final : ClientMessage
     {
     }
 
+    virtual ~CancelAssignmentRequest() = default;
+
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 

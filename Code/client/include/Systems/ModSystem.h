@@ -11,6 +11,7 @@ struct ModSystem
     TP_NOCOPYMOVE(ModSystem);
 
     bool GetServerModId(uint32_t aGameId, uint32_t& aModId, uint32_t& aBaseId) const noexcept;
+    bool GetServerModId(uint32_t aGameId, GameId& aServerId) const noexcept;
     uint32_t GetGameId(uint32_t aServerId, uint32_t aFormId) const noexcept;
     uint32_t GetGameId(const GameId& acGameId) const noexcept;
 

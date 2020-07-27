@@ -6,6 +6,7 @@
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
 #include <Structs/Tints.h>
+#include <Structs/Inventory.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>
 
@@ -17,6 +18,8 @@ struct AssignCharacterRequest final : ClientMessage
         : ClientMessage(kAssignCharacterRequest)
     {
     }
+
+    virtual ~AssignCharacterRequest() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
@@ -31,6 +34,8 @@ struct AssignCharacterRequest final : ClientMessage
             Rotation == acRhs.Rotation &&
             ChangeFlags == acRhs.ChangeFlags &&
             AppearanceBuffer == acRhs.AppearanceBuffer &&
+            InventoryContent == acRhs.InventoryContent &&
+            LatestAction == acRhs.LatestAction &&
             FaceTints == acRhs.FaceTints &&
             GetOpcode() == acRhs.GetOpcode();
     }
@@ -43,6 +48,7 @@ struct AssignCharacterRequest final : ClientMessage
     Rotator2_NetQuantize Rotation{};
     uint32_t ChangeFlags{};
     String AppearanceBuffer{};
+    Inventory InventoryContent{};
     ActionEvent LatestAction{};
     Tints FaceTints{};
 };

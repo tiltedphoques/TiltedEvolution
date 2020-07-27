@@ -13,18 +13,16 @@ struct FormIdComponent
     {}
 
     FormIdComponent(const GameId& acId) noexcept
-        : BaseId(acId.BaseId)
-        , ModId(acId.ModId)
+        : Id(acId)
     {}
 
     FormIdComponent(const uint32_t aBaseId, const uint32_t aModId) noexcept
-        : BaseId(aBaseId)
-        , ModId(aModId)
+        : Id(aModId, aBaseId)
     {}
 
     bool operator==(const FormIdComponent& acRhs) const noexcept
     {
-        return BaseId == acRhs.BaseId && ModId == acRhs.ModId;
+        return Id == acRhs.Id;
     }
 
     bool operator!=(const FormIdComponent& acRhs) const noexcept
@@ -34,9 +32,8 @@ struct FormIdComponent
 
     operator bool() const noexcept
     {
-        return BaseId != 0 || ModId != 0;
+        return Id != GameId{};
     }
 
-    uint32_t BaseId;
-    uint32_t ModId;
+    GameId Id;
 };

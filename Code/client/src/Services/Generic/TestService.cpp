@@ -8,9 +8,13 @@
 
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Games/Skyrim/Forms/TESNPC.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
 #include <Games/Fallout4/Forms/TESNPC.h>
+#include <Games/Fallout4/Misc/ProcessManager.h>
+#include <Games/Fallout4/Misc/MiddleProcess.h>
 
 #include <Components.h>
 #include <World.h>
@@ -24,31 +28,10 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
-    String data;
-
-    pPlayerBaseForm->Serialize(&data);
-
-    char buffer[1 << 15];
-
-    BGSSaveFormBuffer saveBuffer;
-    saveBuffer.buffer = buffer;
-    saveBuffer.capacity = 1 << 15;
-    saveBuffer.changeFlags = 1024;
-
-    PlayerCharacter::Get()->SaveInventory(&saveBuffer);
-
-    BGSLoadFormBuffer loadBuffer(saveBuffer.changeFlags);
-    loadBuffer.SetSize(saveBuffer.position);
-    loadBuffer.buffer = buffer;
-    loadBuffer.formId = 0;
-    loadBuffer.form = nullptr;
-
-    const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
+    //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
-#ifdef TP_SKYRIM
-    pActor->UnEquipAll();
-#endif
-    pActor->LoadInventory(&loadBuffer);
+
+    pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
 
     m_actors.emplace_back(pActor);
 }
@@ -99,13 +82,10 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 PlaceActorInWorld();
             else
             {
-                BSAnimationGraphManager* pManager = nullptr;
-                if(PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager))
-                {
-                    pManager->DumpAnimationVariables();
+                auto pActor = m_actors[0];
 
-                    pManager->Release();
-                }
+                pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+
             }
         }
     }
@@ -124,7 +104,7 @@ void TestService::OnDraw() noexcept
     static char s_address[256] = "127.0.0.1:10578";
     ImGui::InputText("Address", s_address, std::size(s_address));
 
-    if(m_transport.IsOnline())
+    if (m_transport.IsOnline())
     {
         if (ImGui::Button("Disconnect"))
             m_transport.Close();
@@ -135,6 +115,35 @@ void TestService::OnDraw() noexcept
         {
             m_transport.Connect(s_address);
         }
+    }
+
+    ImGui::End();
+
+    ImGui::Begin("Player");
+
+    auto pPlayer = PlayerCharacter::Get();
+    if (pPlayer)
+    {
+        auto pLeftWeapon = pPlayer->GetEquippedWeapon(0);
+        auto pRightWeapon = pPlayer->GetEquippedWeapon(1);
+
+        uint32_t leftId = pLeftWeapon ? pLeftWeapon->formID : 0;
+        uint32_t rightId = pRightWeapon ? pRightWeapon->formID : 0;
+
+        ImGui::InputScalar("Left Item", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Right Item", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+
+        leftId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
+        rightId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
+
+        ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+
+#if TP_SKYRIM
+        uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
+
+        ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+#endif  
     }
 
     ImGui::End();

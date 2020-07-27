@@ -41,6 +41,11 @@ bool ModSystem::GetServerModId(const uint32_t aGameId, uint32_t& aModId, uint32_
     return true;
 }
 
+bool ModSystem::GetServerModId(uint32_t aGameId, GameId& aServerId) const noexcept
+{
+    return GetServerModId(aGameId, aServerId.ModId, aServerId.BaseId);
+}
+
 uint32_t ModSystem::GetGameId(uint32_t aServerId, uint32_t aFormId) const noexcept
 {
     auto itor = m_serverToGame.find(aServerId);

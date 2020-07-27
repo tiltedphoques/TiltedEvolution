@@ -4,11 +4,13 @@ struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
 struct ReferenceSpawnedEvent;
+struct EquipmentChangeEvent;
 struct FormIdComponent;
 struct ActionEvent;
 struct AssignCharacterResponse;
 struct CharacterSpawnRequest;
 struct ServerReferencesMoveRequest;
+struct NotifyInventoryChanges;
 
 struct World;
 struct TransportService;
@@ -29,6 +31,8 @@ struct CharacterService
     void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) noexcept;
+    void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
+    void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
 
 private:
 
@@ -37,15 +41,20 @@ private:
 
     void RunLocalUpdates() noexcept;
     void RunRemoteUpdates() noexcept;
+    void RunInventoryUpdates() noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
+    Set<uint32_t> m_charactersWithInventoryChanges;
+
     entt::scoped_connection m_formIdAddedConnection;
     entt::scoped_connection m_formIdRemovedConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_actionConnection;
+    entt::scoped_connection m_equipmentConnection;
+    entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_assignCharacterConnection;

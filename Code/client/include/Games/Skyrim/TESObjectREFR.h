@@ -67,7 +67,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_59();
     virtual void sub_5A();
     virtual void sub_5B();
-    virtual void sub_5C();
+    virtual struct ActorMagicCaster* CreateMagicCaster(uint32_t aId);
     virtual void sub_5D();
     virtual void sub_5E();
     virtual void sub_5F();
@@ -140,10 +140,15 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;
 
-    void SaveInventory(BGSSaveFormBuffer* apBuffer) noexcept;
+    void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
 
-    ExtraContainerChanges::Data* GetContainerChanges() noexcept;
+    String SerializeInventory() const noexcept;
+    void DeserializeInventory(const String& acData) noexcept;
+
+    void RemoveAllItems() noexcept;
+
+    ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

@@ -12,5 +12,6 @@
 #include <Components/MovementComponent.h>
 #include <Components/AnimationComponent.h>
 #include <Components/ScriptsComponent.h>
+#include <Components/InventoryComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

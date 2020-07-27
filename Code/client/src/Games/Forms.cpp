@@ -5,6 +5,7 @@
 #include <Games/IFormFactory.h>
 
 #include <Games/SaveLoad.h>
+#include <Games/Overrides.h>
 
 #include <Games/Skyrim/Forms/BGSHeadPart.h>
 #include <Games/Skyrim/Forms/TESNPC.h>

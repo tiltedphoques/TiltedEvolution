@@ -9,6 +9,7 @@
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterCellRequest.h>
 #include <Messages/ClientRpcCalls.h>
+#include <Messages/RequestInventoryChanges.h>
 
 #include <iostream>
 
@@ -34,6 +35,7 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(ClientReferencesMoveRequest);
         EXTRACT_MESSAGE(EnterCellRequest);
         EXTRACT_MESSAGE(ClientRpcCalls);
+        EXTRACT_MESSAGE(RequestInventoryChanges);
     }
 
     return UniquePtr<ClientMessage>(nullptr, &TiltedPhoques::Delete<ClientMessage>);
