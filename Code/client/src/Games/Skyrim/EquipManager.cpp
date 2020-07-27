@@ -38,13 +38,17 @@ struct UnEquipData
 
 TP_THIS_FUNCTION(TUnEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, UnEquipData* apData);
 TP_THIS_FUNCTION(TEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData);
-TP_THIS_FUNCTION(TEquipSpell, void*, EquipManager, Actor* apActor, TESForm* apItem, void* apSlot);
-TP_THIS_FUNCTION(TUnEquipSpell, void*, EquipManager, Actor* apActor, TESForm* apItem, void* apSlot);
+TP_THIS_FUNCTION(TEquipSpell, void*, EquipManager, Actor* apActor, TESForm* apSpell, void* apSlot);
+TP_THIS_FUNCTION(TUnEquipSpell, void*, EquipManager, Actor* apActor, TESForm* apSpell, void* apSlot);
+TP_THIS_FUNCTION(TEquipShout, void*, EquipManager, Actor* apActor, TESForm* apShout, void* apReturn);
+TP_THIS_FUNCTION(TUnEquipShout, void*, EquipManager, Actor* apActor, TESForm* apShout, void* apReturn);
 
 TUnEquip* RealUnEquip = nullptr;
 TEquip* RealEquip = nullptr;
 TEquipSpell* RealEquipSpell = nullptr;
 TUnEquipSpell* RealUnEquipSpell = nullptr;
+TEquipShout* RealEquipShout = nullptr;
+TUnEquipShout* RealUnEquipShout = nullptr;
 
 EquipManager* EquipManager::Get() noexcept
 {
@@ -53,26 +57,48 @@ EquipManager* EquipManager::Get() noexcept
     return *s_singleton.Get();
 }
 
-void* EquipManager::EquipSpell(Actor* apActor, TESForm* apItem, uint32_t aSlotId)
+void* EquipManager::EquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
 {
     TP_THIS_FUNCTION(TEquipSpellInternal, void*, EquipManager, Actor*, TESForm*, uint32_t);
     POINTER_SKYRIMSE(TEquipSpellInternal, s_equipFunc, 0x140637C30 - 0x140000000);
 
     ScopedEquipOverride equipOverride;
 
-    const auto result = ThisCall(s_equipFunc, this, apActor, apItem, aSlotId);
+    const auto result = ThisCall(s_equipFunc, this, apActor, apSpell, aSlotId);
 
     return result;
 }
 
-void* EquipManager::UnEquipSpell(Actor* apActor, TESForm* apItem, uint32_t aSlotId)
+void* EquipManager::UnEquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
 {
     TP_THIS_FUNCTION(TUnEquipSpellInternal, void*, EquipManager, Actor*, TESForm*, uint32_t);
     POINTER_SKYRIMSE(TUnEquipSpellInternal, s_unequipFunc, 0x1406383B0 - 0x140000000);
 
     ScopedEquipOverride equipOverride;
 
-    const auto result = ThisCall(s_unequipFunc, this, apActor, apItem, aSlotId);
+    const auto result = ThisCall(s_unequipFunc, this, apActor, apSpell, aSlotId);
+
+    return result;
+}
+
+void* EquipManager::EquipShout(Actor* apActor, TESForm* apShout)
+{
+    uint8_t data[0x100];
+
+    ScopedEquipOverride equipOverride;
+
+    const auto result = ThisCall(RealEquipShout, this, apActor, apShout, data);
+
+    return result;
+}
+
+void* EquipManager::UnEquipShout(Actor* apActor, TESForm* apShout)
+{
+    uint8_t data[0x100];
+
+    ScopedEquipOverride equipOverride;
+
+    const auto result = ThisCall(RealUnEquipShout, this, apActor, apShout, data);
 
     return result;
 }
@@ -142,7 +168,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     return ThisCall(RealEquip, apThis, apActor, apItem, apData);
 }
 
-void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* apItem, void* apSlot)
+void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, void* apSlot)
 {
     if (!apActor)
         return nullptr;
@@ -159,10 +185,10 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealEquipSpell, apThis, apActor, apItem, apSlot);
+    return ThisCall(RealEquipSpell, apThis, apActor, apSpell, apSlot);
 }
 
-void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* apItem, void* apSlot)
+void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, void* apSlot)
 {
     if (!apActor)
         return nullptr;
@@ -179,7 +205,47 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealUnEquipSpell, apThis, apActor, apItem, apSlot);
+    return ThisCall(RealUnEquipSpell, apThis, apActor, apSpell, apSlot);
+}
+
+void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* apShout, void* apReturn)
+{
+    if (!apActor)
+        return nullptr;
+
+    const auto pExtension = apActor->GetExtension();
+    if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
+        return nullptr;
+
+    if (pExtension->IsLocal())
+    {
+        EquipmentChangeEvent evt;
+        evt.ActorId = apActor->formID;
+
+        World::Get().GetRunner().Trigger(evt);
+    }
+
+    return ThisCall(RealEquipShout, apThis, apActor, apShout, apReturn);
+}
+
+void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* apShout, void* apReturn)
+{
+    if (!apActor)
+        return nullptr;
+
+    const auto pExtension = apActor->GetExtension();
+    if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
+        return nullptr;
+
+    if (pExtension->IsLocal())
+    {
+        EquipmentChangeEvent evt;
+        evt.ActorId = apActor->formID;
+
+        World::Get().GetRunner().Trigger(evt);
+    }
+
+    return ThisCall(RealUnEquipShout, apThis, apActor, apShout, apReturn);
 }
 
 
@@ -189,16 +255,22 @@ static TiltedPhoques::Initializer s_equipmentHooks([]()
         POINTER_SKYRIMSE(TUnEquip, s_unequipFunc, 0x14063A6B0 - 0x140000000);
         POINTER_SKYRIMSE(TEquipSpell, s_equipSpellFunc, 0x140639B70 - 0x140000000);
         POINTER_SKYRIMSE(TUnEquipSpell, s_unequipSpellFunc, 0x140638340 - 0x140000000);
+        POINTER_SKYRIMSE(TEquipShout, s_equipShoutFunc, 0x14063A0D0 - 0x140000000);
+        POINTER_SKYRIMSE(TUnEquipShout, s_unequipShoutFunc, 0x14063A900 - 0x140000000);
 
         RealUnEquip = s_unequipFunc.Get();
         RealEquip = s_equipFunc.Get();
         RealEquipSpell = s_equipSpellFunc.Get();
         RealUnEquipSpell = s_unequipSpellFunc.Get();
+        RealEquipShout = s_equipShoutFunc.Get();
+        RealUnEquipShout = s_unequipShoutFunc.Get();
 
         TP_HOOK(&RealUnEquip, UnEquipHook);
         TP_HOOK(&RealEquip, EquipHook);
         TP_HOOK(&RealEquipSpell, EquipSpellHook);
         TP_HOOK(&RealUnEquipSpell, UnEquipSpellHook);
+        TP_HOOK(&RealEquipShout, EquipShoutHook);
+        TP_HOOK(&RealUnEquipShout, UnEquipShoutHook);
     });
 
 #endif

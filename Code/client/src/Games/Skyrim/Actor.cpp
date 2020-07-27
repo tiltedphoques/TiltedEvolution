@@ -143,6 +143,13 @@ void Actor::UnEquipAll() noexcept
     }
 
     RemoveAllItems();
+
+    // Taken from skyrim's code shouts can be two form types apparently
+    if (equippedShout && (equippedShout->formType - 41) <= 1)
+    {
+        EquipManager::Get()->UnEquipShout(this, equippedShout);
+        equippedShout = nullptr;
+    }
 }
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
@@ -193,6 +200,8 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     UnEquipAll();
 
+    auto* pEquipManager = EquipManager::Get();
+
     if (!acInventory.Buffer.empty())
         DeserializeInventory(acInventory.Buffer);
 
@@ -201,22 +210,27 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
     uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandWeapon);
 
     if (mainHandWeaponId)
-        EquipManager::Get()->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
 
     uint32_t secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
 
     if (secondaryHandWeaponId)
-        EquipManager::Get()->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
 
     mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandSpell);
 
     if (mainHandWeaponId)
-        EquipManager::Get()->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
+        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
 
     secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandSpell);
 
     if (secondaryHandWeaponId)
-        EquipManager::Get()->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+
+    uint32_t shoutId = modSystem.GetGameId(acInventory.Shout);
+
+    if (shoutId)
+        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
 }
 
 
