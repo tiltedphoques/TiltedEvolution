@@ -6,6 +6,7 @@
 #include <Games/Fallout4/Misc/MagicTarget.h>
 #include <Games/Fallout4/Misc/ActorState.h>
 #include <Games/Fallout4/Forms/TESForm.h>
+#include <Structs/Inventory.h>
 
 #include <Games/Events.h>
 #include <Games/Fallout4/Events.h>
@@ -31,15 +32,25 @@ struct Actor : TESObjectREFR
     virtual void SetWeaponDrawn(bool aIsDrawn);
     virtual void SetPosition(const NiPoint3& acPosition, bool aSyncHavok = true);
 
+    // Casting
+    ActorExtension* GetExtension() noexcept;
+    ExActor* AsExActor() noexcept;
+    ExPlayerCharacter* AsExPlayerCharacter() noexcept;
+
+    // Getters
     float GetSpeed() noexcept;
+    TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
+    Inventory GetInventory() const noexcept;
+
+    // Setters
     void SetSpeed(float aSpeed) noexcept;
+    void SetLevelMod(uint32_t aLevel) noexcept;
+    void SetInventory(const Inventory& acInventory) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
-    TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
+    // Actions
     void UnEquipAll() noexcept;
-
-    Inventory GetInventory() const noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
+    void QueueUpdate() noexcept;
 
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];
@@ -59,15 +70,6 @@ struct Actor : TESObjectREFR
     uint8_t pad308[0x3E8 - 0x308];
     TESForm* magicItems[4];
     uint8_t padActorEnd[0x490 - 0x408];
-
-    ActorExtension* GetExtension() noexcept;
-    ExActor* AsExActor() noexcept;
-    ExPlayerCharacter* AsExPlayerCharacter() noexcept;
-
-    void SetLevelMod(uint32_t aLevel) noexcept;
-
-    void QueueUpdate() noexcept;
-    void GenerateFace() noexcept;
 };
 
 static_assert(sizeof(Actor) == 0x490);

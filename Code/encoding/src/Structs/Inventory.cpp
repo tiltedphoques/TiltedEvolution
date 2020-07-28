@@ -5,10 +5,10 @@ using TiltedPhoques::Serialization;
 
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
 {
-    return RightHandWeapon == acRhs.RightHandSpell
+    return RightHandWeapon == acRhs.RightHandWeapon
         && Buffer == acRhs.Buffer
 #if TP_SKYRIM
-        && LeftHandWeapon == acRhs.LeftHandSpell
+        && LeftHandWeapon == acRhs.LeftHandWeapon
         && RightHandSpell == acRhs.RightHandSpell
         && LeftHandSpell == acRhs.LeftHandSpell
         && Shout == acRhs.Shout

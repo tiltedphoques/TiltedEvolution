@@ -86,6 +86,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             {
                 auto pActor = PlayerCharacter::Get(); //m_actors[0];
 
+#if TP_SKYRIM
                 auto* pNpc = (TESNPC*)pActor->baseForm;
                 auto& factions = pNpc->actorData.factions;
 
@@ -104,6 +105,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                         spdlog::info("Actor Faction : {:X} {} has rank {}", pFaction->formID, pFaction->fullname.value.AsAscii(), (int32_t)pChanges->entries[i].rank);
                     }
                 }
+#endif
             }
         }
     }

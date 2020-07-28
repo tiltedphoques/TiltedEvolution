@@ -4,6 +4,8 @@
 #include <Games/Memory.h>
 #include <Games/Overrides.h>
 
+#include <World.h>
+
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
 
@@ -60,14 +62,14 @@ Inventory Actor::GetInventory() const noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
 
-    Inventory inventory;
-    inventory.Buffer = SerializeInventory();
+    Inventory InvetorySave;
+    InvetorySave.Buffer = SerializeInventory();
 
     auto pMainHandWeapon = GetEquippedWeapon(0);
     uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+    modSystem.GetServerModId(mainId, InvetorySave.RightHandWeapon);
 
-    return inventory;
+    return InvetorySave;
 }
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept

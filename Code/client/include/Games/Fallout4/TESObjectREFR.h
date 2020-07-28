@@ -137,8 +137,6 @@ struct TESObjectREFR : TESForm
     virtual void sub_C2();
     virtual void sub_C3();
 
-    void RequestDelete() const noexcept;
-
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -154,6 +152,9 @@ struct TESObjectREFR : TESForm
     void DeserializeInventory(const String& acData) noexcept;
 
     void RemoveAllItems() noexcept;
+    void RequestDelete() const noexcept;
+
+public:
 
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
