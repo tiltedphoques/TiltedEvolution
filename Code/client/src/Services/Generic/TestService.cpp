@@ -84,7 +84,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             {
                 auto pActor = m_actors[0];
 
-                pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+                pActor->RequestDelete();
+                m_actors.clear();
 
             }
         }

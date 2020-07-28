@@ -132,6 +132,8 @@ struct TESObjectREFR : TESForm
     virtual void sub_9A();
     virtual void sub_9B();
 
+    void RequestDelete() const noexcept;
+
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
