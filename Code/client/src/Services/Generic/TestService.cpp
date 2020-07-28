@@ -10,6 +10,8 @@
 #include <Games/Skyrim/Forms/TESNPC.h>
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Forms/TESFaction.h>
+#include <Games/Skyrim/ExtraData/ExtraFactionChanges.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
 #include <Games/Fallout4/Forms/TESNPC.h>
@@ -82,11 +84,26 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 PlaceActorInWorld();
             else
             {
-                auto pActor = m_actors[0];
+                auto pActor = PlayerCharacter::Get(); //m_actors[0];
 
-                pActor->RequestDelete();
-                m_actors.clear();
+                auto* pNpc = (TESNPC*)pActor->baseForm;
+                auto& factions = pNpc->actorData.factions;
 
+                for (auto i = 0; i < factions.length; ++i)
+                {
+                    auto pFaction = factions[i].faction;
+                    spdlog::info("NPC Faction : {:X} {} has rank {}", pFaction->formID, pFaction->fullname.value.AsAscii(), (int32_t)factions[i].rank);
+                }
+
+                auto* pChanges = static_cast<ExtraFactionChanges*>(pActor->extraData.GetByType(ExtraData::Faction));
+                if (pChanges)
+                {
+                    for (auto i = 0; i < pChanges->entries.length; ++i)
+                    {
+                        auto pFaction = pChanges->entries[i].faction;
+                        spdlog::info("Actor Faction : {:X} {} has rank {}", pFaction->formID, pFaction->fullname.value.AsAscii(), (int32_t)pChanges->entries[i].rank);
+                    }
+                }
             }
         }
     }

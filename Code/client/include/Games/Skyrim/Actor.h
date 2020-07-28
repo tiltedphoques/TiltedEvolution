@@ -24,6 +24,11 @@ struct Actor : TESObjectREFR
 {
     static constexpr uint32_t Type = FormType::Character;
 
+    // Allocs and calls constructor
+    static GamePtr<Actor> New() noexcept;
+    // Places a brand new actor in the world
+    static GamePtr<Actor> Create(TESNPC* apBaseForm) noexcept;
+
     virtual void sub_9C();
     virtual void sub_9D();
     virtual void sub_9E();
@@ -165,28 +170,27 @@ struct Actor : TESObjectREFR
     virtual void sub_126();
     virtual void sub_127();
 
+    // Casting
     ActorExtension* GetExtension() noexcept;
     ExActor* AsExActor() noexcept;
     ExPlayerCharacter* AsExPlayerCharacter() noexcept;
 
-    void QueueUpdate() noexcept;
-
+    // Getters
     float GetSpeed() noexcept;
-    void SetSpeed(float aSpeed) noexcept;
-
-    void SetLevelMod(uint32_t aLevel) noexcept;
-    void UnEquipAll() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
-
     Inventory GetInventory() const noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
 
+    // Setters
+    void SetSpeed(float aSpeed) noexcept;
+    void SetLevelMod(uint32_t aLevel) noexcept;
+    void SetInventory(const Inventory& acInventory) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
-    // Allocs and calls constructor
-    static GamePtr<Actor> New() noexcept;
-    // Places a brand new actor in the world
-    static GamePtr<Actor> Create(TESNPC* apBaseForm) noexcept;
+    // Actions
+    void UnEquipAll() noexcept;
+    void QueueUpdate() noexcept;
+
+public:
 
     enum ChangeFlags : uint32_t
     {

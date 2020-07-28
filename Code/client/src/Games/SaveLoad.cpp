@@ -43,13 +43,13 @@ void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
 
     auto pWriteLocation = reinterpret_cast<uint8_t*>(buffer + position);
 
-    ViewBuffer buffer(pWriteLocation, capacity - position);
-    Buffer::Writer writer(&buffer);
+    ViewBuffer view(pWriteLocation, capacity - position);
+    Buffer::Writer writer(&view);
 
     Serialization::WriteVarInt(writer, modId);
     Serialization::WriteVarInt(writer, baseId);
 
-    position += writer.Size();
+    position += writer.Size() & 0xFFFFFFFF;
 }
 
 
@@ -127,7 +127,7 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
     if(modId != 0 || baseId != 0)
         aFormId = World::Get().GetModSystem().GetGameId(modId, baseId);
 
-    apThis->position += reader.Size();
+    apThis->position += reader.Size() & 0xFFFFFFFF;
 
     return true;
 }

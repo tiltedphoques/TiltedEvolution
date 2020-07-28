@@ -14,13 +14,14 @@ enum class ExtraData : uint32_t
     ReferenceHandle = 0x1C,
     Teleport = 0x2B,
     CannotWear = 0x3D,
+    Faction = 0x5B,
     AliasInstanceArray = 0x88
 };
 
 struct BSExtraData
 {
     virtual ~BSExtraData();
-    virtual uint32_t GetType();
+    virtual ExtraData GetType() const noexcept;
 
     BSExtraData* next;
 };

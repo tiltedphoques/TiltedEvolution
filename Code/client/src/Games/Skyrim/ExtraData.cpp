@@ -17,4 +17,18 @@ bool BSExtraDataList::Contains(ExtraData aType) const
     return false;
 }
 
+BSExtraData* BSExtraDataList::GetByType(ExtraData aType) const
+{
+    if (!Contains(aType))
+        return nullptr;
+
+    auto pEntry = data;
+    while (pEntry != nullptr && pEntry->GetType() != aType)
+    {
+        pEntry = pEntry->next;
+    }
+
+    return pEntry;
+}
+
 #endif
