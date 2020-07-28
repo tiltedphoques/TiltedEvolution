@@ -9,8 +9,8 @@
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
 
-TActorConstructor* RealActorConstructor;
-TActorConstructor2* RealActorConstructor2;
+static TActorConstructor* RealActorConstructor;
+static TActorConstructor2* RealActorConstructor2;
 
 Actor* TP_MAKE_THISCALL(HookActorContructor, Actor, uint8_t aUnk)
 {
