@@ -12,6 +12,7 @@
 #include <Games/Skyrim/Forms/MagicItem.h>
 
 #include <Structs/Inventory.h>
+#include <Structs/Factions.h>
 
 struct TESNPC;
 struct TESRace;
@@ -179,15 +180,19 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     Inventory GetInventory() const noexcept;
+    Factions GetFactions() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
+    void SetFactions(const Factions& acFactions) noexcept;
+    void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
+    void RemoveFromAllFactions() noexcept;
     void QueueUpdate() noexcept;
 
 public:

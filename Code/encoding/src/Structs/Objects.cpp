@@ -20,13 +20,15 @@ bool Objects::operator!=(const Objects& acRhs) const noexcept
 
 void Objects::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, Data.size());
+    aWriter.WriteBits(Data.size() & 0xFFFF, 16);
     aWriter.WriteBytes(Data.data(), Data.size());
 }
 
 void Objects::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    const auto dataLength = Serialization::ReadVarInt(aReader);
-    Data.resize(dataLength);
-    aReader.ReadBytes(Data.data(), dataLength);
+    uint64_t tmp;
+    aReader.ReadBits(tmp, 16);
+
+    Data.resize(tmp & 0xFFFF);
+    aReader.ReadBytes(Data.data(), Data.size());
 }

@@ -4,8 +4,14 @@
 #include <Games/Skyrim/EquipManager.h>
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Misc/SkyrimVM.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
+#include <Games/Skyrim/Forms/TESNPC.h>
+#include <Games/Skyrim/Forms/TESFaction.h>
+#include <Games/Skyrim/Components/TESActorBaseData.h>
+#include <Games/Skyrim/ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
+#include <Games/RTTI.h>
 
 #include <World.h>
 
@@ -110,47 +116,6 @@ GamePtr<Actor> Actor::New() noexcept
     return pActor;
 }
 
-void Actor::UnEquipAll() noexcept
-{
-    // For each change 
-    const auto pContainerChanges = GetContainerChanges()->entries;
-    for (auto pChange : *pContainerChanges)
-    {
-        if (pChange && pChange->form && pChange->dataList)
-        {
-            // Parse all extra data lists
-            const auto pDataLists = pChange->dataList;
-            for (auto* pDataList : *pDataLists)
-            {
-                if (pDataList)
-                {
-                    BSScopedLock<BSRecursiveLock> _(pDataList->lock);
-
-                    // Right slot
-                    if (pDataList->Contains(ExtraData::Worn))
-                    {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
-                    }
-
-                    // Left slot
-                    if (pDataList->Contains(ExtraData::WornLeft))
-                    {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
-                    }
-                }
-            }
-        }
-    }
-
-    RemoveAllItems();
-
-    // Taken from skyrim's code shouts can be two form types apparently
-    if (equippedShout && (equippedShout->formType - 41) <= 1)
-    {
-        EquipManager::Get()->UnEquipShout(this, equippedShout);
-        equippedShout = nullptr;
-    }
-}
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
@@ -196,6 +161,45 @@ Inventory Actor::GetInventory() const noexcept
     return inventory;
 }
 
+Factions Actor::GetFactions() const noexcept
+{
+    Factions result;
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    if (pNpc)
+    {
+        auto& factions = pNpc->actorData.factions;
+
+        for (auto i = 0; i < factions.length; ++i)
+        {
+            Faction faction;
+
+            modSystem.GetServerModId(factions[i].faction->formID, faction.Id);
+            faction.Rank = factions[i].rank;
+
+            result.NpcFactions.push_back(faction);
+        }
+    }
+
+    auto* pChanges = static_cast<ExtraFactionChanges*>(extraData.GetByType(ExtraData::Faction));
+    if (pChanges)
+    {
+        for (auto i = 0; i < pChanges->entries.length; ++i)
+        {
+            Faction faction;
+
+            modSystem.GetServerModId(pChanges->entries[i].faction->formID, faction.Id);
+            faction.Rank = pChanges->entries[i].rank;
+
+            result.ExtraFactions.push_back(faction);
+        }
+    }
+
+    return result;
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     UnEquipAll();
@@ -231,6 +235,93 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if (shoutId)
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+}
+
+void Actor::SetFactions(const Factions& acFactions) noexcept
+{
+    RemoveFromAllFactions();
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    for (auto& entry : acFactions.NpcFactions)
+    {
+        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        if (pFaction)
+        {
+            SetFactionRank(pFaction, entry.Rank);
+        }
+    }
+
+    for (auto& entry : acFactions.ExtraFactions)
+    {
+        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        if (pFaction)
+        {
+            SetFactionRank(pFaction, entry.Rank);
+        }
+    }
+}
+
+void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
+{
+    TP_THIS_FUNCTION(TSetFactionRankInternal, void, Actor, const TESFaction*, int8_t);
+
+    POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 0x1405F7AB0 - 0x140000000);
+
+    ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
+}
+
+void Actor::UnEquipAll() noexcept
+{
+    // For each change 
+    const auto pContainerChanges = GetContainerChanges()->entries;
+    for (auto pChange : *pContainerChanges)
+    {
+        if (pChange && pChange->form && pChange->dataList)
+        {
+            // Parse all extra data lists
+            const auto pDataLists = pChange->dataList;
+            for (auto* pDataList : *pDataLists)
+            {
+                if (pDataList)
+                {
+                    BSScopedLock<BSRecursiveLock> _(pDataList->lock);
+
+                    // Right slot
+                    if (pDataList->Contains(ExtraData::Worn))
+                    {
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
+                    }
+
+                    // Left slot
+                    if (pDataList->Contains(ExtraData::WornLeft))
+                    {
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
+                    }
+                }
+            }
+        }
+    }
+
+    RemoveAllItems();
+
+    // Taken from skyrim's code shouts can be two form types apparently
+    if (equippedShout && (equippedShout->formType - 41) <= 1)
+    {
+        EquipManager::Get()->UnEquipShout(this, equippedShout);
+        equippedShout = nullptr;
+    }
+}
+
+void Actor::RemoveFromAllFactions() noexcept
+{
+    using TRemoveFromAllFactionsPapyrus = void(BSScript::IVirtualMachine*, uint32_t, Actor*);
+
+    POINTER_SKYRIMSE(TRemoveFromAllFactionsPapyrus, s_removeFromAllFactions, 0x14094BF10 - 0x140000000);
+
+    s_removeFromAllFactions.Get()(GameVM::Get()->virtualMachine, 0, this);
 }
 
 

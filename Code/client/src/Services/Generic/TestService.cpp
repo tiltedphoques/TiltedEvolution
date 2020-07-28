@@ -84,27 +84,12 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 PlaceActorInWorld();
             else
             {
-                auto pActor = PlayerCharacter::Get(); //m_actors[0];
+                auto pActor = m_actors[0];
 
 #if TP_SKYRIM
-                auto* pNpc = (TESNPC*)pActor->baseForm;
-                auto& factions = pNpc->actorData.factions;
+                auto factions = PlayerCharacter::Get()->GetFactions();
 
-                for (auto i = 0; i < factions.length; ++i)
-                {
-                    auto pFaction = factions[i].faction;
-                    spdlog::info("NPC Faction : {:X} {} has rank {}", pFaction->formID, pFaction->fullname.value.AsAscii(), (int32_t)factions[i].rank);
-                }
-
-                auto* pChanges = static_cast<ExtraFactionChanges*>(pActor->extraData.GetByType(ExtraData::Faction));
-                if (pChanges)
-                {
-                    for (auto i = 0; i < pChanges->entries.length; ++i)
-                    {
-                        auto pFaction = pChanges->entries[i].faction;
-                        spdlog::info("Actor Faction : {:X} {} has rank {}", pFaction->formID, pFaction->fullname.value.AsAscii(), (int32_t)pChanges->entries[i].rank);
-                    }
-                }
+                pActor->SetFactions(factions);
 #endif
             }
         }

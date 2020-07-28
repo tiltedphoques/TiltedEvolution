@@ -24,7 +24,7 @@ void Rotator2_NetQuantize::Serialize(TiltedPhoques::Buffer::Writer& aWriter) con
 
 void Rotator2_NetQuantize::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    uint64_t data;
+    uint64_t data = 0;
     aReader.ReadBits(data, 32);
 
     Unpack(data & 0xFFFFFFFF);
