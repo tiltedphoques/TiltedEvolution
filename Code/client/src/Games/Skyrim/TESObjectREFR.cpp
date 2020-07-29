@@ -84,7 +84,7 @@ void TESObjectREFR::RemoveAllItems() noexcept
 
     ScopedEquipOverride equipOverride;
 
-    s_pRemoveAllItems(GameVM::Get()->virtualMachine, 0, this, nullptr, false, true);
+    s_pRemoveAllItems(this, nullptr, false, true);
 }
 
 #endif

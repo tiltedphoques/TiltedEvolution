@@ -320,7 +320,7 @@ void Actor::RemoveFromAllFactions() noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);
 
-    s_pRemoveFromAllFactions(GameVM::Get()->virtualMachine, 0, this);
+    s_pRemoveFromAllFactions(this);
 }
 
 
