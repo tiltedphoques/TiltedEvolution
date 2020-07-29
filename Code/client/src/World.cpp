@@ -10,6 +10,7 @@
 #include <Services/RunnerService.h>
 #include <Services/ImguiService.h>
 #include <Services/ScriptService.h>
+#include <Services/PapyrusService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -27,6 +28,7 @@ World::World()
     set<CharacterService>(*this, m_dispatcher, m_transport);
     set<TestService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
+    set<PapyrusService>(m_dispatcher);
 }
 
 World::~World() = default;

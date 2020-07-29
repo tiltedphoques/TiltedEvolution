@@ -4,6 +4,10 @@
 #include <Games/Memory.h>
 #include <Games/Overrides.h>
 #include <Games/Skyrim/EquipManager.h>
+#include <Games/Skyrim/Misc/SkyrimVM.h>
+
+#include <World.h>
+#include <Services/PapyrusService.h>
 
 #ifdef SAVE_STUFF
 
@@ -74,13 +78,13 @@ void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
 
 void TESObjectREFR::RemoveAllItems() noexcept
 {
-    using TRemoveAllItems = void(void*, void*, TESObjectREFR*, TESObjectREFR*, bool, bool);
+    using ObjectReference = TESObjectREFR;
 
-    POINTER_SKYRIMSE(TRemoveAllItems, s_removeAllItems, 0x140996470 - 0x140000000);
+    PAPYRUS_FUNCTION(void, ObjectReference, RemoveAllItems, TESObjectREFR*, bool, bool);
 
     ScopedEquipOverride equipOverride;
 
-    s_removeAllItems(nullptr, nullptr, this, nullptr, false, true);
+    s_pRemoveAllItems(GameVM::Get()->virtualMachine, 0, this, nullptr, false, true);
 }
 
 #endif

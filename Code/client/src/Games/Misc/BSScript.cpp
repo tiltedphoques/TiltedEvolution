@@ -4,13 +4,20 @@
 #include <Games/Fallout4/Misc/BSScript.h>
 #include <Games/Fallout4/Misc/NativeFunction.h>
 
+#include <World.h>
+#include <Events/PapyrusFunctionRegisterEvent.h>
+
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
 
 TRegisterPapyrusFunction* RealRegisterPapyrusFunction = nullptr;
 
 void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, NativeFunction* apFunction)
 {
-    spdlog::info("Register {}::{} with pointer {}", apFunction->typeName.AsAscii(), apFunction->functionName.AsAscii(), apFunction->functionAddress);
+    auto& runner = World::Get().GetRunner();
+
+    PapyrusFunctionRegisterEvent event(apFunction->functionName.AsAscii(), apFunction->typeName.AsAscii(), apFunction->functionAddress);
+
+    runner.Trigger(std::move(event));
 
     ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
 }

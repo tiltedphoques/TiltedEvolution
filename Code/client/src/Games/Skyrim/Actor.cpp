@@ -14,6 +14,7 @@
 #include <Games/RTTI.h>
 
 #include <World.h>
+#include <Services/PapyrusService.h>
 
 #ifdef SAVE_STUFF
 
@@ -317,11 +318,9 @@ void Actor::UnEquipAll() noexcept
 
 void Actor::RemoveFromAllFactions() noexcept
 {
-    using TRemoveFromAllFactionsPapyrus = void(BSScript::IVirtualMachine*, uint32_t, Actor*);
+    PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);
 
-    POINTER_SKYRIMSE(TRemoveFromAllFactionsPapyrus, s_removeFromAllFactions, 0x14094BF10 - 0x140000000);
-
-    s_removeFromAllFactions.Get()(GameVM::Get()->virtualMachine, 0, this);
+    s_pRemoveFromAllFactions(GameVM::Get()->virtualMachine, 0, this);
 }
 
 
