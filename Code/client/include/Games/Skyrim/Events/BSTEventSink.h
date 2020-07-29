@@ -9,8 +9,8 @@ struct BSTEventSink
 {
     enum Result
     {
-        kAbort = 0,
-        kOk = 1
+        kOk = 0,
+        kAbort = 1
     };
 
     virtual ~BSTEventSink() = 0;
