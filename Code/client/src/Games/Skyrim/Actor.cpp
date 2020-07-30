@@ -184,7 +184,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pChanges = static_cast<ExtraFactionChanges*>(extraData.GetByType(ExtraData::Faction));
+    auto* pChanges = RTTI_CAST(extraData.GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
     if (pChanges)
     {
         for (auto i = 0; i < pChanges->entries.length; ++i)

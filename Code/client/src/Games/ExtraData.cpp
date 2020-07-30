@@ -1,6 +1,4 @@
-#if defined(TP_SKYRIM)
-
-#include <Games/Skyrim/ExtraData.h>
+#include <Games/ExtraData.h>
 
 bool BSExtraDataList::Contains(ExtraData aType) const
 {
@@ -23,12 +21,14 @@ BSExtraData* BSExtraDataList::GetByType(ExtraData aType) const
         return nullptr;
 
     auto pEntry = data;
+#if TP_SKYRIM
     while (pEntry != nullptr && pEntry->GetType() != aType)
+#else
+    while (pEntry != nullptr && pEntry->type != aType)
+#endif
     {
         pEntry = pEntry->next;
     }
 
     return pEntry;
 }
-
-#endif

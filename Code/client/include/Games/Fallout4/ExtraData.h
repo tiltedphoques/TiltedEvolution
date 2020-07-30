@@ -2,13 +2,9 @@
 
 #if TP_FALLOUT4
 
-struct BSExtraData
+enum class ExtraData : uint8_t
 {
-    virtual ~BSExtraData();
-};
-
-struct BSExtraDataList
-{
+    Faction = 0x5B
 };
 
 #endif

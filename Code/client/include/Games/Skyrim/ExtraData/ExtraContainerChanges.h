@@ -2,7 +2,7 @@
 
 #ifdef TP_SKYRIM
 
-#include <Games/Skyrim/ExtraData.h>
+#include <Games/ExtraData.h>
 
 struct BGSLoadFormBuffer;
 struct BGSSaveFormBuffer;

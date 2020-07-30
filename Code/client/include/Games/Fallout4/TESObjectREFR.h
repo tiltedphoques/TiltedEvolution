@@ -2,6 +2,7 @@
 
 #if TP_FALLOUT4
 
+#include <Games/ExtraData.h>
 #include <Games/Fallout4/Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
@@ -171,7 +172,7 @@ public:
     void* unkE8;
     void* loadState;
     void* inventory;
-    struct BSExtraDataList* extraData;
+    BSExtraDataList* extraData;
     uint64_t unk108;
 };
 

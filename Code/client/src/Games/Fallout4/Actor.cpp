@@ -1,6 +1,9 @@
 #if TP_FALLOUT4
 
 #include <Games/Fallout4/PlayerCharacter.h>
+#include <Games/Fallout4/Forms/TESFaction.h>
+#include <Games/Fallout4/Forms/TESNPC.h>
+#include <Games/Fallout4/Extras/ExtraFactionChanges.h>
 #include <Games/Memory.h>
 #include <Games/Overrides.h>
 
@@ -70,6 +73,45 @@ Inventory Actor::GetInventory() const noexcept
     modSystem.GetServerModId(mainId, InvetorySave.RightHandWeapon);
 
     return InvetorySave;
+}
+
+Factions Actor::GetFactions() const noexcept
+{
+    Factions result;
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    if (pNpc)
+    {
+        auto& factions = pNpc->actorBaseData.factions;
+
+        for (auto i = 0; i < factions.length; ++i)
+        {
+            Faction faction;
+
+            modSystem.GetServerModId(factions[i].faction->formID, faction.Id);
+            faction.Rank = factions[i].rank;
+
+            result.NpcFactions.push_back(faction);
+        }
+    }
+
+    auto pFactionExtras = RTTI_CAST(extraData->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    if (pFactionExtras)
+    {
+        for (auto i = 0; i < pFactionExtras->entries.length; ++i)
+        {
+            Faction faction;
+
+            modSystem.GetServerModId(pFactionExtras->entries[i].faction->formID, faction.Id);
+            faction.Rank = pFactionExtras->entries[i].rank;
+
+            result.ExtraFactions.push_back(faction);
+        }
+    }
+
+    return result;
 }
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept
