@@ -8,6 +8,7 @@
 #include <Games/Overrides.h>
 
 #include <World.h>
+#include <Services/PapyrusService.h>
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
@@ -50,16 +51,6 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 
     return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
 }
-
-void Actor::UnEquipAll() noexcept
-{
-    TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
-
-    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E370 - 0x140000000);
-
-    ThisCall(s_unequipAll, this);
-}
-
 
 Inventory Actor::GetInventory() const noexcept
 {
@@ -120,6 +111,56 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if(!acInventory.Buffer.empty())
         DeserializeInventory(acInventory.Buffer);
+}
+
+void Actor::SetFactions(const Factions& acFactions) noexcept
+{
+    RemoveFromAllFactions();
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    for (auto& entry : acFactions.NpcFactions)
+    {
+        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        if (pFaction)
+        {
+            SetFactionRank(pFaction, entry.Rank);
+        }
+    }
+
+    for (auto& entry : acFactions.ExtraFactions)
+    {
+        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        if (pFaction)
+        {
+            SetFactionRank(pFaction, entry.Rank);
+        }
+    }
+}
+
+void Actor::SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, SetFactionRank, const TESFaction*, int8_t);
+
+    s_pSetFactionRank(this, acpFaction, aRank);
+}
+
+void Actor::UnEquipAll() noexcept
+{
+    TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
+
+    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E370 - 0x140000000);
+
+    ThisCall(s_unequipAll, this);
+}
+
+void Actor::RemoveFromAllFactions() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);
+
+    s_pRemoveFromAllFactions(this);
 }
 
 static TiltedPhoques::Initializer s_specificReferencesHooks([]()

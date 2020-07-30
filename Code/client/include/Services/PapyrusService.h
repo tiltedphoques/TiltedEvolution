@@ -32,7 +32,7 @@ struct PapyrusFunction
         : m_pFunction(reinterpret_cast<TFunction>(apAddress))
     {}
 
-    Return operator()(Type* apThis, Args&& ... args) const noexcept
+    Return operator()(Type* apThis, Args... args) const noexcept
     {
         return m_pFunction(GameVM::Get()->virtualMachine, 0, apThis, std::forward<Args>(args) ...);
     }

@@ -86,11 +86,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             {
                 auto pActor = m_actors[0];
 
-#if TP_SKYRIM
                 auto factions = PlayerCharacter::Get()->GetFactions();
 
                 pActor->SetFactions(factions);
-#endif
             }
         }
     }

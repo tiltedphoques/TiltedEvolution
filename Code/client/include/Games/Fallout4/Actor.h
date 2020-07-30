@@ -17,6 +17,7 @@ struct ExPlayerCharacter;
 struct ActorExtension;
 struct TESNPC;
 struct ProcessManager;
+struct TESFaction;
 
 struct Actor : TESObjectREFR
 {
@@ -49,11 +50,13 @@ struct Actor : TESObjectREFR
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
+    void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
     void QueueUpdate() noexcept;
+    void RemoveFromAllFactions() noexcept;
 
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];
