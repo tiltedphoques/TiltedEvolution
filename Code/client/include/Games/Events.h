@@ -1,17 +1,18 @@
 #pragma once
 
+#include <Games/Skyrim/Events/EventDispatcher.h>
+#include <Games/Fallout4/Events/EventDispatcher.h>
+
 template<class T>
 struct BSTEventSink
 {
     enum Result
     {
-        kContinue = 1,
-        KAbort
+        kOk = 0,
+        kAbort = 1
     };
 
-    virtual ~BSTEventSink(){}
-    virtual Result HandleEvent(T* apEvent, void* apDispatcher)
-    {
-        return kContinue;
-    }
+    virtual ~BSTEventSink() {}
+    virtual Result OnEvent(const T* apEvent, const EventDispatcher<T>* apSender) { return kOk; }
 };
+

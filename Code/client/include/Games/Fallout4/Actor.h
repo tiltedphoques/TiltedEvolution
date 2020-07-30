@@ -7,6 +7,7 @@
 #include <Games/Fallout4/Misc/ActorState.h>
 #include <Games/Fallout4/Forms/TESForm.h>
 #include <Structs/Inventory.h>
+#include <Structs/Factions.h>
 
 #include <Games/Events.h>
 #include <Games/Fallout4/Events.h>
@@ -41,11 +42,13 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     Inventory GetInventory() const noexcept;
+    Factions GetFactions() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
+    void SetFactions(const Factions& acFactions) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
     // Actions
