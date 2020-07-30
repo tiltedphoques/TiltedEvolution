@@ -48,5 +48,5 @@ struct BSExtraDataList
 #endif
 
     Bitfield* bitfield;
-    BSRecursiveLock lock;
+    mutable BSRecursiveLock lock;
 };

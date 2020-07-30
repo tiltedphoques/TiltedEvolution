@@ -17,6 +17,8 @@ bool BSExtraDataList::Contains(ExtraData aType) const
 
 BSExtraData* BSExtraDataList::GetByType(ExtraData aType) const
 {
+    BSScopedLock<BSRecursiveLock> _(lock);
+
     if (!Contains(aType))
         return nullptr;
 
