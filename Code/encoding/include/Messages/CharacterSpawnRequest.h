@@ -5,6 +5,7 @@
 #include <Structs/ActionEvent.h>
 #include <Structs/Tints.h>
 #include <Structs/Inventory.h>
+#include <Structs/Factions.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
 #include <Buffer.hpp>
@@ -33,6 +34,7 @@ struct CharacterSpawnRequest final : ServerMessage
             ChangeFlags == acRhs.ChangeFlags &&
             AppearanceBuffer == acRhs.AppearanceBuffer &&
             InventoryContent == acRhs.InventoryContent &&
+            FactionsContent == acRhs.FactionsContent &&
             FaceTints == acRhs.FaceTints &&
             GetOpcode() == acRhs.GetOpcode();
     }
@@ -45,6 +47,7 @@ struct CharacterSpawnRequest final : ServerMessage
     uint32_t ChangeFlags{};
     String AppearanceBuffer{};
     Inventory InventoryContent{};
+    Factions FactionsContent{};
     ActionEvent LatestAction{};
     Tints FaceTints{};
 };

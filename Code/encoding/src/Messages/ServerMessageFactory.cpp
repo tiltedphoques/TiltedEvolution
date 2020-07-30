@@ -8,6 +8,7 @@
 #include <Messages/ServerScriptUpdate.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyFactionsChanges.h>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -30,6 +31,7 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(ServerScriptUpdate);
         EXTRACT_MESSAGE(CharacterSpawnRequest);
         EXTRACT_MESSAGE(NotifyInventoryChanges);
+        EXTRACT_MESSAGE(NotifyFactionsChanges);
     }
 
     return UniquePtr<ServerMessage>(nullptr, &TiltedPhoques::Delete<ServerMessage>);

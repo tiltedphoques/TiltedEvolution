@@ -10,6 +10,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     aWriter.WriteBits(ChangeFlags, 32);
     Serialization::WriteString(aWriter, AppearanceBuffer);
     InventoryContent.Serialize(aWriter);
+    FactionsContent.Serialize(aWriter);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
     FaceTints.Serialize(aWriter);
 }
@@ -31,6 +32,9 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     AppearanceBuffer = Serialization::ReadString(aReader);
     InventoryContent = {};
     InventoryContent.Deserialize(aReader);
+
+    FactionsContent = {};
+    FactionsContent.Deserialize(aReader);
 
     LatestAction = ActionEvent{};
     LatestAction.ApplyDifferential(aReader);

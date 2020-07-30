@@ -22,6 +22,7 @@
 #include <Messages/EnterCellRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyFactionsChanges.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -98,6 +99,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
     TRANSPORT_DISPATCH(ServerReferencesMoveRequest);
     TRANSPORT_DISPATCH(CharacterSpawnRequest);
     TRANSPORT_DISPATCH(NotifyInventoryChanges);
+    TRANSPORT_DISPATCH(NotifyFactionsChanges);
 
     default:
         spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());

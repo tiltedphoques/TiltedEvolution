@@ -11,6 +11,7 @@ struct AssignCharacterResponse;
 struct CharacterSpawnRequest;
 struct ServerReferencesMoveRequest;
 struct NotifyInventoryChanges;
+struct NotifyFactionsChanges;
 
 struct World;
 struct TransportService;
@@ -33,6 +34,7 @@ struct CharacterService
     void OnActionEvent(const ActionEvent& acActionEvent) noexcept;
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
     void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
+    void OnFactionsChanges(const NotifyFactionsChanges& acEvent) noexcept;
 
 private:
 
@@ -42,6 +44,7 @@ private:
     void RunLocalUpdates() noexcept;
     void RunRemoteUpdates() noexcept;
     void RunInventoryUpdates() noexcept;
+    void RunFactionsUpdates() noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -55,6 +58,7 @@ private:
     entt::scoped_connection m_actionConnection;
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryConnection;
+    entt::scoped_connection m_factionsConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_assignCharacterConnection;

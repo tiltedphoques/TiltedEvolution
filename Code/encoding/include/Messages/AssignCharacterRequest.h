@@ -7,6 +7,7 @@
 #include <Structs/Rotator2_NetQuantize.h>
 #include <Structs/Tints.h>
 #include <Structs/Inventory.h>
+#include <Structs/Factions.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>
 
@@ -35,6 +36,7 @@ struct AssignCharacterRequest final : ClientMessage
             ChangeFlags == acRhs.ChangeFlags &&
             AppearanceBuffer == acRhs.AppearanceBuffer &&
             InventoryContent == acRhs.InventoryContent &&
+            FactionsContent == acRhs.FactionsContent &&
             LatestAction == acRhs.LatestAction &&
             FaceTints == acRhs.FaceTints &&
             GetOpcode() == acRhs.GetOpcode();
@@ -49,6 +51,7 @@ struct AssignCharacterRequest final : ClientMessage
     uint32_t ChangeFlags{};
     String AppearanceBuffer{};
     Inventory InventoryContent{};
+    Factions FactionsContent{};
     ActionEvent LatestAction{};
     Tints FaceTints{};
 };
