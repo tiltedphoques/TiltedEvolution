@@ -16,7 +16,7 @@ struct ReferenceUpdate
     bool operator!=(const ReferenceUpdate& acRhs) const noexcept;
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
-    void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
+    void Deserialize(TiltedPhoques::Buffer::Reader& aReader);
 
     Movement UpdatedMovement{};
     Vector<ActionEvent> ActionEvents{};

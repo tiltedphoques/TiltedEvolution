@@ -10,6 +10,8 @@
 #include <Games/Skyrim/Forms/TESNPC.h>
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Forms/TESFaction.h>
+#include <Games/Skyrim/ExtraData/ExtraFactionChanges.h>
 
 #include <Games/Fallout4/BSAnimationGraphManager.h>
 #include <Games/Fallout4/Forms/TESNPC.h>
@@ -84,9 +86,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             {
                 auto pActor = m_actors[0];
 
-                pActor->RequestDelete();
-                m_actors.clear();
+                auto factions = PlayerCharacter::Get()->GetFactions();
 
+                pActor->SetFactions(factions);
             }
         }
     }

@@ -36,7 +36,7 @@ void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
 void Mods::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    uint64_t data;
+    uint64_t data = 0;
     aReader.ReadBits(data, 8);
 
     const size_t standardCount = data & 0xFF;

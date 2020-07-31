@@ -5,7 +5,7 @@
 #include <Games/Primitives.h>
 #include <Games/Skyrim/Forms/TESForm.h>
 #include <Games/Skyrim/NetImmerse/BSFaceGenNiNode.h>
-#include <Games/Skyrim/ExtraData.h>
+#include <Games/ExtraData.h>
 #include <Games/Skyrim/ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 

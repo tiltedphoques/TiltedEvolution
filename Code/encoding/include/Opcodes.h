@@ -9,7 +9,8 @@ enum ClientOpcode : unsigned char
     kClientReferencesMoveRequest,
     kEnterCellRequest,
     kClientRpcCalls,
-    kRequestInventoryChanges
+    kRequestInventoryChanges,
+    kRequestFactionsChanges
 };
 
 enum ServerOpcode : unsigned char
@@ -19,5 +20,6 @@ enum ServerOpcode : unsigned char
     kServerReferencesMoveRequest,
     kServerScriptUpdate,
     kCharacterSpawnRequest,
-    kNotifyInventoryChanges
+    kNotifyInventoryChanges,
+    kNotifyFactionsChanges
 };

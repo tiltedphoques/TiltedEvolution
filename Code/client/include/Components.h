@@ -11,5 +11,6 @@
 #include <Components/LocalComponent.h>
 #include <Components/RemoteComponent.h>
 #include <Components/FaceGenComponent.h>
+#include <Components/CacheComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

@@ -2,6 +2,7 @@
 
 #if TP_FALLOUT4
 
+#include <Games/ExtraData.h>
 #include <Games/Fallout4/Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
@@ -137,8 +138,6 @@ struct TESObjectREFR : TESForm
     virtual void sub_C2();
     virtual void sub_C3();
 
-    void RequestDelete() const noexcept;
-
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -154,6 +153,9 @@ struct TESObjectREFR : TESForm
     void DeserializeInventory(const String& acData) noexcept;
 
     void RemoveAllItems() noexcept;
+    void RequestDelete() const noexcept;
+
+public:
 
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
@@ -170,7 +172,7 @@ struct TESObjectREFR : TESForm
     void* unkE8;
     void* loadState;
     void* inventory;
-    struct BSExtraDataList* extraData;
+    BSExtraDataList* extraData;
     uint64_t unk108;
 };
 

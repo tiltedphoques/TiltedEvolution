@@ -14,11 +14,11 @@ struct RunnerService
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
 
     template<class T>
-    void Trigger(const T& acEvent)
+    void Trigger(T acEvent)
     {
-        m_runner.Add([acEvent, this]()
+        m_runner.Add([event = std::move(acEvent), this]()
         {
-            m_dispatcher.trigger(acEvent);
+            m_dispatcher.trigger(std::move(event));
         });
     }
 

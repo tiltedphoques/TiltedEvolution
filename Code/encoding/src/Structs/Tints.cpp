@@ -1,5 +1,6 @@
 #include <Structs/Tints.h>
 #include <Serialization.hpp>
+#include <stdexcept>
 
 using TiltedPhoques::Serialization;
 
@@ -28,7 +29,7 @@ bool Tints::operator!=(const Tints& acRhs) const noexcept
 
 void Tints::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, Entries.size());
+    aWriter.WriteBits(Entries.size(), 8);
 
     for (auto& entry : Entries)
     {
@@ -41,7 +42,10 @@ void Tints::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
 void Tints::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    const auto cCount = Serialization::ReadVarInt(aReader) & 0xFF;
+    uint64_t tmp = 0;
+    aReader.ReadBits(tmp, 8);
+
+    const auto cCount = tmp & 0xFF;
 
     for (auto i = 0u; i < cCount; ++i)
     {
@@ -55,7 +59,7 @@ void Tints::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
         entry.Name = Serialization::ReadString(aReader);
 
         aReader.ReadBits(buffer, 32);
-        uint32_t tmp = buffer & 0xFFFFFFFF;
+        tmp = buffer & 0xFFFFFFFF;
         entry.Alpha = *reinterpret_cast<float*>(&tmp);
 
         Entries.push_back(entry);

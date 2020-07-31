@@ -1,5 +1,6 @@
 #include <Structs/ReferenceUpdate.h>
 #include <Serialization.hpp>
+#include <stdexcept>
 
 using TiltedPhoques::Serialization;
 
@@ -26,11 +27,13 @@ void ReferenceUpdate::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const no
     }
 }
 
-void ReferenceUpdate::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void ReferenceUpdate::Deserialize(TiltedPhoques::Buffer::Reader& aReader)
 {
     UpdatedMovement.Deserialize(aReader);
 
     const auto count = Serialization::ReadVarInt(aReader);
+    if (count > 0x100)
+        throw std::runtime_error("Too many reference updates received !");
 
     ActionEvents.resize(count);
 

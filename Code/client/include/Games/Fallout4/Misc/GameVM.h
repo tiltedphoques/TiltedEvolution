@@ -14,6 +14,4 @@ struct GameVM
     BSScript::IVirtualMachine* virtualMachine;
 };
 
-using GameVM = SkyrimVM;
-
 #endif

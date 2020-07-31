@@ -15,6 +15,8 @@
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/RequestFactionsChanges.h>
+#include <Messages/NotifyFactionsChanges.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -23,6 +25,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
     , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
+    , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
 {
 }
 
@@ -34,6 +37,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->AppearanceBuffer = characterComponent.SaveBuffer;
     apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
+    apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -72,6 +76,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
 void CharacterService::OnUpdate(const UpdateEvent&) noexcept
 {
     ProcessInventoryChanges();
+    ProcessFactionsChanges();
     ProcessMovementChanges();
 }
 
@@ -209,6 +214,25 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     }
 }
 
+void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept
+{
+    auto view = m_world.view<CharacterComponent, OwnerComponent>();
+
+    auto& message = acMessage.Packet;
+
+    for (auto& change : message.Changes)
+    {
+        auto itor = view.find(entt::entity(change.first));
+
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
+            continue;
+
+        auto& characterComponent = view.get<CharacterComponent>(*itor);
+        characterComponent.FactionsContent = change.second;
+        characterComponent.DirtyFactions = true;
+    }
+}
+
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
@@ -243,6 +267,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = std::move(message.FaceTints);
+    characterComponent.FactionsContent = std::move(message.FactionsContent);
 
     InventoryComponent& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = std::move(message.InventoryContent);
@@ -336,6 +361,55 @@ void CharacterService::ProcessInventoryChanges() noexcept
         }
 
         inventoryComponent.DirtyInventory = false;
+    }
+
+    for (auto kvp : messages)
+    {
+        if (kvp.second.Changes.size() > 0)
+            GameServer::Get()->Send(kvp.first, kvp.second);
+    }
+}
+
+void CharacterService::ProcessFactionsChanges() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 2000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent >();
+
+    Map<ConnectionId_t, NotifyFactionsChanges> messages;
+
+    for (auto entity : characterView)
+    {
+        auto& characterComponent = characterView.get<CharacterComponent>(entity);
+        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
+        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
+
+        // If we have nothing new to send skip this
+        if (characterComponent.DirtyFactions == false)
+            continue;
+
+        for (auto player : playerView)
+        {
+            const auto& playerComponent = playerView.get<PlayerComponent>(player);
+
+            if (playerView.get<CellIdComponent>(player) != cellIdComponent || playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                continue;
+
+            auto& message = messages[playerComponent.ConnectionId];
+            auto& change = message.Changes[World::ToInteger(entity)];
+
+            change = characterComponent.FactionsContent;
+        }
+
+        characterComponent.DirtyFactions = false;
     }
 
     for (auto kvp : messages)

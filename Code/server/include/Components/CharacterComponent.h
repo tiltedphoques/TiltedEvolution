@@ -5,6 +5,7 @@
 #endif
 
 #include <Structs/Tints.h>
+#include <Structs/Factions.h>
 
 struct CharacterComponent
 {
@@ -12,4 +13,6 @@ struct CharacterComponent
     String SaveBuffer{};
     FormIdComponent BaseId{};
     Tints FaceTints{};
+    Factions FactionsContent{};
+    bool DirtyFactions{ false };
 };

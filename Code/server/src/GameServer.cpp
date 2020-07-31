@@ -13,6 +13,7 @@
 #include <Messages/EnterCellRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/RequestInventoryChanges.h>
+#include <Messages/RequestFactionsChanges.h>
 
 #include <Scripts/Player.h>
 
@@ -92,6 +93,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         SERVER_DISPATCH(ClientReferencesMoveRequest);
         SERVER_DISPATCH(EnterCellRequest);
         SERVER_DISPATCH(RequestInventoryChanges);
+        SERVER_DISPATCH(RequestFactionsChanges);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;

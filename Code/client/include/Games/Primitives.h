@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Games/Memory.h>
+
 template <class T>
 struct GameArray
 {
@@ -12,6 +14,8 @@ struct GameArray
 
     T& operator[] (uint32_t aIndex) { return data[aIndex]; }
     const T& operator[] (uint32_t aIndex) const { return data[aIndex]; }
+
+    void Resize(size_t aLength) noexcept;
 
     // Range for loop compatibility
     struct Iterator
@@ -35,12 +39,25 @@ struct GameArray
     }
 };
 
-#if TP_PLATFORM_64
+template <class T>
+void GameArray<T>::Resize(size_t aLength) noexcept
+{
+    if (capacity >= aLength)
+    {
+        length = aLength & 0xFFFFFFFF;
+    }
+    else
+    {
+        T* pNewData = reinterpret_cast<T*>(Memory::Allocate(sizeof(T) * aLength));
+        std::copy(data, data + length, pNewData);
+        Memory::Free(data);
+        data = pNewData;
+        capacity = length = aLength;
+    }
+}
+
 static_assert(offsetof(GameArray<int>, length) == 0x10);
 static_assert(sizeof(GameArray<int>) == 0x18);
-#else
-static_assert(offsetof(GameArray<int>, length) == 0x8);
-#endif
 
 template <class T>
 struct BSTSmallArray

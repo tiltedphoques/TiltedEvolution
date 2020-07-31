@@ -10,6 +10,6 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
 void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     Owner = Serialization::ReadBool(aReader);
-    Cookie = Serialization::ReadVarInt(aReader);
-    ServerId = Serialization::ReadVarInt(aReader);
+    Cookie = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }

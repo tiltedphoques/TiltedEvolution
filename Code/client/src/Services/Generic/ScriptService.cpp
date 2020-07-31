@@ -152,7 +152,7 @@ void ScriptService::DisplayNetObject(NetObject* apObject)
                 break;
             case sol::type::number:
                 {
-                    float floatVal = apProperty->Get().as<double>();
+                    float floatVal = static_cast<float>(apProperty->Get().as<double>());
                     ImGui::InputScalarN(def.Name.c_str(), ImGuiDataType_Float, &floatVal, 1, nullptr, nullptr, "%f", ImGuiInputTextFlags_ReadOnly);
                 }
                 break;

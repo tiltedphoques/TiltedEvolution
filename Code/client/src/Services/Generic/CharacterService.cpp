@@ -16,6 +16,7 @@
 #include <Systems/InterpolationSystem.h>
 #include <Systems/AnimationSystem.h>
 #include <Systems/FaceGenSystem.h>
+#include <Systems/CacheSystem.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
@@ -32,7 +33,9 @@
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/RequestInventoryChanges.h>
+#include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyFactionsChanges.h>
 
 #include <World.h>
 
@@ -56,6 +59,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
     m_inventoryConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
+    m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -70,8 +74,10 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     // Security check
     const auto pForm = TESForm::GetById(formIdComponent.Id);
     const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
-    if(pActor == nullptr)
+    if(!pActor)
         return;
+
+    CacheSystem::Setup(World::Get(), aEntity, pActor);
 
     const auto pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
     if(pNpc)
@@ -89,6 +95,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunLocalUpdates();
     RunInventoryUpdates();
+    RunFactionsUpdates();
     RunRemoteUpdates();
 }
 
@@ -182,6 +189,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         pActor->GetExtension()->SetRemote(true);
 
         pActor->SetInventory(acMessage.InventoryContent);
+        pActor->SetFactions(acMessage.FactionsContent);
 
         auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
         remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -273,6 +281,33 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
     }
 }
 
+void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) noexcept
+{
+    auto view = m_world.view<RemoteComponent, FormIdComponent, CacheComponent>();
+
+    for (auto& change : acEvent.Changes)
+    {
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = change.first, view](entt::entity entity)
+        {
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+        if (itor != std::end(view))
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(*itor);
+            
+            const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            if (!pActor)
+                return;
+
+            auto& cacheComponent = view.get<CacheComponent>(*itor);
+            cacheComponent.FactionsContent = std::move(change.second);
+
+            pActor->SetFactions(cacheComponent.FactionsContent);
+        }
+    }
+}
+
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
@@ -354,6 +389,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 #endif
 
     message.InventoryContent = pActor->GetInventory();
+    message.FactionsContent = pActor->GetFactions();
 
     if(isTemporary)
     {
@@ -521,4 +557,45 @@ void CharacterService::RunInventoryUpdates() noexcept
 
         m_charactersWithInventoryChanges.clear();
     }
+}
+
+void CharacterService::RunFactionsUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 2000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    RequestFactionsChanges message;
+
+    auto factionedActors = m_world.view<LocalComponent, CacheComponent, FormIdComponent>();
+    for (auto entity : factionedActors)
+    {
+        auto& formIdComponent = factionedActors.get<FormIdComponent>(entity);
+        auto& localComponent = factionedActors.get<LocalComponent>(entity);
+        auto& cacheComponent = factionedActors.get<CacheComponent>(entity);
+
+        auto pForm = TESForm::GetById(formIdComponent.Id);
+        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        if (!pActor)
+            continue;
+
+        // Check if cached factions and current factions are identical
+        auto factions = pActor->GetFactions();
+
+        if (cacheComponent.FactionsContent == factions)
+            continue;
+
+        cacheComponent.FactionsContent = factions;
+
+        // If not send the current factions and replace the cached factions
+        message.Changes[localComponent.Id] = std::move(factions);
+    }
+
+    if(!message.Changes.empty())
+        m_transport.Send(message);
 }
