@@ -172,6 +172,8 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
 String TESObjectREFR::SerializeInventory() const noexcept
 {
+    ScopedSaveLoadOverride _;
+
     char buffer[1 << 15];
     BGSSaveFormBuffer saveBuffer;
     saveBuffer.buffer = buffer;
@@ -185,6 +187,8 @@ String TESObjectREFR::SerializeInventory() const noexcept
 
 void TESObjectREFR::DeserializeInventory(const String& acData) noexcept
 {
+    ScopedSaveLoadOverride _;
+
     BGSLoadFormBuffer loadBuffer(1024);
     loadBuffer.SetSize(acData.size() & 0xFFFFFFFF);
     loadBuffer.buffer = acData.c_str();
@@ -192,7 +196,6 @@ void TESObjectREFR::DeserializeInventory(const String& acData) noexcept
     loadBuffer.form = nullptr;
     
     LoadInventory(&loadBuffer);
-
 }
 
 uint32_t TESObjectREFR::GetCellId() const noexcept
