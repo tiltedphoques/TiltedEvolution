@@ -28,18 +28,15 @@
 #include <Games/Fallout4/Havok/hkbVariableValueSet.h>
 
 #include <Games/TES.h>
+#include <Games/Overrides.h>
 
 #include <Serialization.hpp>
 
-static thread_local bool s_recursionBarrier = false;
+#include <Services/PapyrusService.h>
+#include <World.h>
 
-struct ScopedRecursion
-{
-    ScopedRecursion() { s_recursionBarrier = true; }
-    ~ScopedRecursion() { s_recursionBarrier = false; }
-
-    TP_NOCOPYMOVE(ScopedRecursion);
-};
+using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
+thread_local uint32_t ScopedReferencesOverride::s_refCount = 0;
 
 TP_THIS_FUNCTION(TSetPosition, char, Actor, NiPoint3& acPosition);
 TP_THIS_FUNCTION(TRotate, void, TESObjectREFR, float aAngle);
@@ -51,14 +48,30 @@ static TRotate* RealRotateY = nullptr;
 static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
 
+TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
+{
+    TESObjectREFR* pResult = nullptr;
+
+    using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
+
+    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 0x1402130F0 - 0x140000000);
+    POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 0x140023740 - 0x140000000);
+
+    s_getRefrByHandle.Get()(aHandle, pResult);
+
+    if (pResult)
+        pResult->handleRefObject.DecRefHandle();
+
+    return pResult;
+}
+
 void TESObjectREFR::RequestDelete() const noexcept
 {
-    using TPapyrusDelete = bool (__fastcall)(BSScript::IVirtualMachine*, uint32_t, const TESObjectREFR*);
+    using ObjectReference = TESObjectREFR;
 
-    POINTER_SKYRIMSE(TPapyrusDelete, s_papyrusDelete, 0x140993860 - 0x140000000);
-    POINTER_FALLOUT4(TPapyrusDelete, s_papyrusDelete, 0x141404960 - 0x140000000);
+    PAPYRUS_FUNCTION(bool, ObjectReference, Delete);
 
-   s_papyrusDelete.Get()(GameVM::Get()->virtualMachine, 0, this);
+    s_pDelete(this);
 }
 
 void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
@@ -219,7 +232,7 @@ void Actor::SetSpeed(float aSpeed) noexcept
 
 void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {
-    ScopedRecursion recursionGuard;
+    ScopedReferencesOverride recursionGuard;
 
     // It just works TM
     SetPosition(acPosition, true);
@@ -357,14 +370,14 @@ char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
     const auto bIsRemote = pExtension && pExtension->IsRemote();
 
-    if (bIsRemote && !s_recursionBarrier)
+    if (bIsRemote && !ScopedReferencesOverride::IsOverriden())
         return 1;
 
     // Don't interfere with non actor references, or the player, or if we are calling our self
-    if (apThis->formType != Actor::Type || apThis == PlayerCharacter::Get() || s_recursionBarrier)
+    if (apThis->formType != Actor::Type || apThis == PlayerCharacter::Get() || ScopedReferencesOverride::IsOverriden())
         return ThisCall(RealSetPosition, apThis, aPosition);
 
-    ScopedRecursion recursionGuard;
+    ScopedReferencesOverride recursionGuard;
 
     // It just works TM
     apThis->SetPosition(aPosition, false);

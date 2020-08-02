@@ -49,6 +49,25 @@ static_assert(offsetof(TES, cells) == 0x18);
 static_assert(offsetof(TES, interiorCell) == 0x58);
 #endif
 
+struct ActorHolder
+{
+    static ActorHolder* Get() noexcept;
+
+#if TP_SKYRIM
+    uint8_t pad0[0x30];
+#else
+    uint8_t pad0[0x40];
+#endif
+
+    GameArray<uint32_t> actorRefs;
+};
+
+#if TP_SKYRIM64
+static_assert(offsetof(ActorHolder, actorRefs) == 0x30);
+#elif TP_FALLOUT4
+static_assert(offsetof(ActorHolder, actorRefs) == 0x40);
+#endif
+
 struct Mod
 {
 #if TP_FALLOUT4
@@ -104,7 +123,6 @@ static_assert(offsetof(Mod, filename) == 0x70);
 static_assert(offsetof(Mod, standardId) == 0x370);
 static_assert(offsetof(Mod, liteId) == 0x372);
 #endif
-
 
 struct ModManager
 {

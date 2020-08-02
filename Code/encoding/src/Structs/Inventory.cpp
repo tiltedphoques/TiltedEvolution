@@ -34,7 +34,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
     Serialization::WriteString(aWriter, Buffer);
 
     Serialization::WriteBool(aWriter, isRightWeaponSet);
-#if TP_SKYRiM
+#if TP_SKYRIM
     Serialization::WriteBool(aWriter, isLeftWeaponSet);
     Serialization::WriteBool(aWriter, isLeftSpellSet);
     Serialization::WriteBool(aWriter, isRightSpellSet);

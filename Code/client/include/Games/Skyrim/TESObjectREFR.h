@@ -32,6 +32,8 @@ struct TESObjectREFR : TESForm
         CHANGE_REFR_EXTRA_GAME_ONLY = 1u << 31,
     };
 
+    static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
+
     virtual void sub_39();
     virtual void sub_3A();
     virtual void sub_3B();

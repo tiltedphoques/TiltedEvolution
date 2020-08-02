@@ -56,56 +56,22 @@ void DiscoveryService::VisitForms() noexcept
 
     };
 
-    const auto pTES = TES::Get();
-    if (!pTES)
+    const auto pActorHolder = ActorHolder::Get();
+    if (!pActorHolder)
         return;
 
-    const auto pCells = pTES->cells;
-    if (!pCells)
-        return;
-
-    const auto cellCount = pCells->dimension * pCells->dimension;
-    for (uint32_t i = 0; i < cellCount + 1; ++i)
+    for (uint32_t i = 0; i < pActorHolder->actorRefs.length; ++i)
     {
-        const auto pCell = i == cellCount ? pTES->interiorCell : pCells->arr[i];
+        const auto pRefr = TESObjectREFR::GetByHandle(pActorHolder->actorRefs[i]);
 
-        if (!pCell || !pCell->IsValid())
-            continue;
-
-#if TP_SKYRIM64
-        auto pCurrent = pCell->refData.refArray;
-
-        for (auto j = 0; j < pCell->refData.Count();)
+        if (pRefr->GetNiNode())
         {
-            auto pRef = pCurrent->Get();
-            if (pRef)
-            {
-                if (pRef->GetNiNode())
-                {
-                    visitor(pRef);
-                }
-                ++j;
-            }
-
-            ++pCurrent;
+            visitor(pRefr);
         }
-#else
-
-        for (uint32_t j = 0; j < pCell->objects.length; ++j)
-        {
-            auto pObject = pCell->objects[j];
-
-            if (!pObject)
-                continue;
-
-            if (pObject->GetNiNode())
-            {
-                visitor(pObject);
-            }
-        }
-
-#endif
     }
+
+    // Not in actor holder
+    visitor(PlayerCharacter::Get());
 
     // We dispatch removal events first to prevent needless reallocations
     for (auto formId : s_previousForms)
