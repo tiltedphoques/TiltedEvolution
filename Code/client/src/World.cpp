@@ -11,6 +11,7 @@
 #include <Services/ImguiService.h>
 #include <Services/ScriptService.h>
 #include <Services/PapyrusService.h>
+#include <Services/DiscordService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>

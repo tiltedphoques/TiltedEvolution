@@ -10,6 +10,7 @@
 #include <Events/ReferenceRemovedEvent.h>
 #include <Events/PreUpdateEvent.h>
 #include <Events/CellChangeEvent.h>
+#include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
 
 
@@ -31,8 +32,14 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
     if(m_cellId != cellId || aForceTrigger)
     {
         m_dispatcher.trigger(CellChangeEvent(cellId));
-
         m_cellId = cellId;
+    }
+
+    // exactly how the game does it too
+    if (m_pLocation != pPlayer->locationForm)
+    {
+        m_dispatcher.trigger(LocationChangeEvent());
+        m_pLocation = pPlayer->locationForm;
     }
 }
 

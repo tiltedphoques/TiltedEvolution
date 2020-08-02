@@ -70,6 +70,9 @@ TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
 
+using TGetLocation = TESForm *(TESForm *);
+static TGetLocation *FUNC_GetActorLocation;
+
 TCharacterConstructor* RealCharacterConstructor;
 TCharacterConstructor2* RealCharacterConstructor2;
 TCharacterDestructor* RealCharacterDestructor;
@@ -134,6 +137,19 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 
     return nullptr;
 }
+
+
+TESForm *Actor::GetCurrentLocation()
+{
+    // we use the safe function which also
+    // checks the form type
+    return FUNC_GetActorLocation(this);
+}
+
+static TiltedPhoques::Initializer s_XX([]() {
+    POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
+    FUNC_GetActorLocation = s_GetActorLocation.Get();
+});
 
 Inventory Actor::GetInventory() const noexcept
 {
@@ -329,7 +345,9 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406929C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405CDDA0 - 0x140000000);
+        POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
 
+        FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
 

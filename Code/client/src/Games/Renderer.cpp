@@ -1,12 +1,11 @@
 
-#if TP_PLATFORM_64
-
 #include <ProcessMemory.hpp>
 
 #include <Games/Skyrim/Renderer.h>
 #include <Games/Fallout4/Renderer.h>
 
 #include <Systems/RenderSystemD3D11.h>
+#include <Services/DiscordService.h>
 
 #include <World.h>
 #include <D3D11Hook.hpp>
@@ -39,20 +38,25 @@ ID3D11Device* BGSRenderer::GetDevice()
     return *(s_device.Get());
 }
 
-static LRESULT wndProc_Stub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    //ImGui_ImplWin32_Init()
-    return RealWndProc(hwnd, msg, wParam, lParam);
-}
-
 #if TP_SKYRIM64
 static void HookPresent()
 #else
 static void HookPresent(LPCRITICAL_SECTION lock)
 #endif
 {
-    // not so nice..
+    // TODO (Force): refactor this ..
     TiltedPhoques::D3D11Hook::Get().OnPresent(BGSRenderer::Get()->pSwapChain);
+
+#if 0
+    DiscordService::Get().UpdateOverlay();
+
+    static bool test = false;
+    if (!test)
+    {
+        DiscordService::Get().TestSub();
+        test = true;
+    }
+#endif
 
 #if TP_SKYRIM64
     return RealRenderPresent();
@@ -61,26 +65,32 @@ static void HookPresent(LPCRITICAL_SECTION lock)
 #endif
 }
 
-// TODO: handle lost devices
+// TODO (Force): handle lost devices
 
 static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowConfig *pWindowConfig, void *a4)
 {
-    // force windowed mode
-    // TODO: make configurable
-    // TURNS OUT ITS CONFIGURABLE via game ini:o
-    //pWindowConfig->bBorderlessDisplay = false;
-    //pWindowConfig->bFullScreenDisplay = false;
-
 #if TP_SKYRIM64
     pConfig->name = "Skyrim Together";
 #else
     pConfig->name = "Fallout Together";
 #endif
+    pWindowConfig->bBorderlessDisplay = false;
+    pWindowConfig->bFullScreenDisplay = false;
+    const wchar_t *pCmdl = GetCommandLineW();
+    if (std::wcsstr(pCmdl, L"+force_windowed"))
+    {
+        pWindowConfig->bBorderlessDisplay = false;
+        pWindowConfig->bFullScreenDisplay = false;
+    }
 
     const auto result = RealCreateViewport(viewport, pConfig, pWindowConfig, a4);
 
-    auto* pBGSRenderer = BGSRenderer::Get();
-    TiltedPhoques::D3D11Hook::Get().OnCreate(pBGSRenderer->pSwapChain);
+    auto* pSwapchain = BGSRenderer::Get()->pSwapChain;
+
+    TiltedPhoques::D3D11Hook::Get().OnCreate(pSwapchain);
+
+    // maybe this should act on signal of D3D11hook?
+    //DiscordService::Get().InitOverlay(pSwapchain);
 
     return result;
 }
@@ -109,16 +119,3 @@ static TiltedPhoques::Initializer s_viewportHooks([]()
     TiltedPhoques::Write<DWORD>(0x1D17EE7 + 1, WS_OVERLAPPEDWINDOW);
 #endif
 });
-
-#elif (TP_PLATFORM_32)
-
-static TiltedPhoques::Initializer s_viewportHooks([]()
-{
-    //TODO: ask config if we should be started in windowed mode
-
-    // fix style
-    TiltedPhoques::Write<DWORD>(0x69D831 + 1, WS_OVERLAPPEDWINDOW);
-    TiltedPhoques::Write<DWORD>(0x69D876 + 1, WS_OVERLAPPEDWINDOW);
-});
-
-#endif

@@ -17,6 +17,11 @@ struct World : entt::registry
     TransportService& GetTransport() noexcept;
     ModSystem& GetModSystem() noexcept;
 
+    auto &GetDispatcher() noexcept
+    {
+        return m_dispatcher;
+    }
+
     [[nodiscard]] uint64_t GetTick() const noexcept;    
 
     static void Create() noexcept;
