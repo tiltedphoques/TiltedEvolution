@@ -7,6 +7,7 @@ jobs:
     variables:
       platform: x64
       configuration: Fallout4
+      buildPrefix: Fallout
 
     steps:
       - template: .ci/windows-build.yml
@@ -19,6 +20,33 @@ jobs:
     variables:
       platform: x64
       configuration: Skyrim
+      buildPrefix: Skyrim
 
     steps:
       - template: .ci/windows-build.yml
+
+  - job: Fallout4_Linux
+    displayName: Fallout 4 - Linux Server x64
+    pool:
+      vmImage: ubuntu-latest
+  
+    variables:
+      platform: x64
+      configuration: fallout4
+      buildPrefix: Fallout
+  
+    steps:
+      - template: .ci/linux-build.yml
+
+  - job: SkyrimSE_Linux
+    displayName: Skyrim Special Edition - Linux Server x64
+    pool:
+      vmImage: ubuntu-latest
+  
+    variables:
+      platform: x64
+      configuration: skyrim
+      buildPrefix: Skyrim
+  
+    steps:
+      - template: .ci/linux-build.yml
