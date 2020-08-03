@@ -12,7 +12,7 @@ steps:
         cd Build
         ./MakeVS2019Projects.bat
       displayName: Generate
-      - task: VSBuild@1
+    - task: VSBuild@1
       displayName: Build
       inputs:
         solution: Build/projects/*.sln
