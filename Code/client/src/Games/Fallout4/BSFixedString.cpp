@@ -13,16 +13,16 @@ BSFixedString::BSFixedString(const char* acpData)
 
 BSFixedString::BSFixedString(BSFixedString&& aRhs)
 {
-    m_data = aRhs.m_data;
-    aRhs.m_data = nullptr;
+    data = aRhs.data;
+    aRhs.data = nullptr;
 }
 
 BSFixedString& BSFixedString::operator=(BSFixedString&& aRhs)
 {
     Release();
 
-    m_data = aRhs.m_data;
-    aRhs.m_data = nullptr;
+    data = aRhs.data;
+    aRhs.data = nullptr;
 
     return *this;
 }

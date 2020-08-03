@@ -25,7 +25,7 @@ class DiscordService final : public entt::registry
     {
         return m_ActivityState;
     }
-    void UpdatePresence();
+    void UpdatePresence(bool newTimeStamp);
 
   private:
     void InitOverlay(struct IDXGISwapChain *);
@@ -41,4 +41,7 @@ class DiscordService final : public entt::registry
     IDiscordOverlayManager *m_pOverlayMgr = nullptr;
     DiscordUserId m_UserId = 0;
     DiscordActivity m_ActivityState{};
+
+    uint32_t m_lastLocationId = 0;
+    uint32_t m_lastWorldspaceId = 0;
 };

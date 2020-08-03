@@ -28,7 +28,7 @@ void RequestLoadingText(ScaleFormContext* apContext)
     BSFixedString str("TESTTTTT");
 
     if(apContext && apContext->value)
-        apContext->value->data.m_data = str.m_data;
+        apContext->value->data.data = str.data;
 
     RealRequestLoadingText(apContext);
 }

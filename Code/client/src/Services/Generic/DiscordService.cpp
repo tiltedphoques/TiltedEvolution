@@ -7,6 +7,9 @@
 
 #include <Games/Skyrim/PlayerCharacter.h>
 #include <Games/Skyrim/Forms/TESWorldSpace.h>
+#include <Games/Fallout4/PlayerCharacter.h>
+#include <Games/Fallout4/Forms/TESWorldSpace.h>
+
 #include <Events/LocationChangeEvent.h>
 
 // TODO: codestyle
@@ -42,7 +45,8 @@ DiscordService::DiscordService(entt::dispatcher &aDispatcher)
         InitOverlay(pSwapchain);
     });
     d3d11.OnPresent.Connect([&](IDXGISwapChain*) { 
-        m_pOverlayMgr->on_present(m_pOverlayMgr);
+        if (m_pOverlayMgr)
+            m_pOverlayMgr->on_present(m_pOverlayMgr);
     });
 
     // world change event
@@ -70,16 +74,28 @@ void DiscordService::OnLocationChangeEvent() noexcept
     // in case the user requests a custom discord presence
     if (!m_bCustomPresence && pPlayer)
     {
-        auto *pLocation = pPlayer->GetCurrentLocation();
+        //auto *pLocation = pPlayer->GetCurrentLocation();
+        auto *pLocation = pPlayer->locationForm;
         auto *pWorldspace = pPlayer->GetWorldSpace();
+        bool updateTimestamp = false;
 
         if (pLocation)
             std::strncpy(m_ActivityState.details, pLocation->GetName(), sizeof(DiscordActivity::details));
 
-        if (pWorldspace && pWorldspace->fullName.value.data)
-            std::strncpy(m_ActivityState.state, pWorldspace->fullName.value.AsAscii(), sizeof(DiscordActivity::state));
+        if (pWorldspace)
+        {
+            if (pWorldspace->fullName.value.data)
+                std::strncpy(m_ActivityState.state, pWorldspace->fullName.value.AsAscii(),
+                             sizeof(DiscordActivity::state));
 
-        UpdatePresence();
+            if (m_lastWorldspaceId != pWorldspace->formID)
+            {
+                updateTimestamp = true;
+                m_lastWorldspaceId = pWorldspace->formID;
+            }
+        }
+
+        UpdatePresence(updateTimestamp);
     }
 }
 
@@ -90,11 +106,20 @@ bool DiscordService::IsCanaryDiscord()
     return std::strcmp(branch, "master") != 0;
 }
 
-void DiscordService::UpdatePresence() {
-    m_ActivityState.timestamps.start = time(nullptr);
-    m_pActivity->update_activity(m_pActivity, &m_ActivityState, this, [](void *userp, EDiscordResult result) {
-        std::printf("Activity Result %d\n", (int)result);
-    });
+void DiscordService::UpdatePresence(bool newTimeStamp)
+{
+    if (m_pActivity)
+    {
+        if (newTimeStamp)
+            m_ActivityState.timestamps.start = time(nullptr);
+
+        m_pActivity->update_activity(m_pActivity, &m_ActivityState, nullptr, [](void *, EDiscordResult result) {
+            if (result != EDiscordResult::DiscordResult_Ok)
+            {
+                std::printf("Failed to update discord presence %d\n", static_cast<int>(result));
+            }
+        });
+    }
 }
 
 void DiscordService::InitOverlay(IDXGISwapChain *pSwapchain)
@@ -118,7 +143,7 @@ void DiscordService::InitOverlay(IDXGISwapChain *pSwapchain)
 bool DiscordService::Init()
 {
     auto dllPath = TiltedPhoques::GetPath().wstring() + L"\\discord_game_sdk.dll";
-
+    MessageBoxA(0, "Attach", 0, 0);
     // as we make the game sdk optional we need to dynamiclly resolve the export
     HMODULE pHandle = LoadLibraryW(dllPath.c_str());
     if (!pHandle)
@@ -138,7 +163,7 @@ bool DiscordService::Init()
     params.client_id = 739600293087674489; //"Fallout Together"
 #endif
 
-    params.flags = DiscordCreateFlags_Default;
+    params.flags = DiscordCreateFlags_NoRequireDiscord;
     params.event_data = this; // this is our userpointer
     params.user_events = &cUserEvents;
     params.relationship_events = &cRelationShipEvents;
@@ -164,7 +189,7 @@ bool DiscordService::Init()
 
     // set initial presence state
     m_ActivityState.application_id = params.client_id;
-    UpdatePresence();
+    UpdatePresence(true);
 
     //TODO (Force): i want to move this away from its own thread
     //this is done because discord needs to be ticked before world

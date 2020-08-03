@@ -47,17 +47,6 @@ static void HookPresent(LPCRITICAL_SECTION lock)
     // TODO (Force): refactor this ..
     TiltedPhoques::D3D11Hook::Get().OnPresent(BGSRenderer::Get()->pSwapChain);
 
-#if 0
-    DiscordService::Get().UpdateOverlay();
-
-    static bool test = false;
-    if (!test)
-    {
-        DiscordService::Get().TestSub();
-        test = true;
-    }
-#endif
-
 #if TP_SKYRIM64
     return RealRenderPresent();
 #else
@@ -86,11 +75,7 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
     const auto result = RealCreateViewport(viewport, pConfig, pWindowConfig, a4);
 
     auto* pSwapchain = BGSRenderer::Get()->pSwapChain;
-
     TiltedPhoques::D3D11Hook::Get().OnCreate(pSwapchain);
-
-    // maybe this should act on signal of D3D11hook?
-    //DiscordService::Get().InitOverlay(pSwapchain);
 
     return result;
 }
