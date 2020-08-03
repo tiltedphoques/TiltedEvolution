@@ -13,6 +13,7 @@
 
 #include <Services/OverlayService.h>
 #include <Services/ImguiService.h>
+#include <Services/DiscordService.h>
 
 #include <ScriptExtender.h>
 
@@ -48,6 +49,7 @@ bool TiltedOnlineApp::BeginMain()
     InstallHooks();
 
     World::Create();
+    World::Get().ctx<DiscordService>().Init();
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
 
     InjectScriptExtenderDll();

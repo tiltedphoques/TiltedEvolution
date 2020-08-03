@@ -17,6 +17,7 @@
 #include <Games/Fallout4/Forms/TESNPC.h>
 #include <Games/Fallout4/Misc/ProcessManager.h>
 #include <Games/Fallout4/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Forms/TESWorldSpace.h>
 
 #include <Components.h>
 #include <World.h>
@@ -147,6 +148,7 @@ void TestService::OnDraw() noexcept
 
         ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
 #endif  
+ 
     }
 
     ImGui::End();

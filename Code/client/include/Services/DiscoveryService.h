@@ -33,6 +33,7 @@ private:
 
     Set<uint32_t> m_forms;
     uint32_t m_cellId = 0;
+    struct TESForm *m_pLocation = nullptr;
 
     entt::scoped_connection m_preUpdateConnection;
     entt::scoped_connection m_connectedConnection;
