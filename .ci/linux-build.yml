@@ -29,7 +29,7 @@ steps:
 
   - script: |
       cd Build/projects
-      make config=$(configuration)_$(platform)
+      make config=$(configuration)_$(platform) -j`nproc`
     displayName: Build
 
   - script: |
