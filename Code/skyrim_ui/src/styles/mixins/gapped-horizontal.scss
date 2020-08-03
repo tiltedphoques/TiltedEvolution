@@ -1,0 +1,13 @@
+@mixin gapped-horizontal($gap) {
+  > * {
+    margin-right: 0;
+
+    &:first-child {
+      margin-left: 0;
+    }
+
+    &:not(:first-child) {
+      margin-left: $gap;
+    }
+  }
+}

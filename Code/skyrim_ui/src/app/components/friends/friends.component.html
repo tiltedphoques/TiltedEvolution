@@ -1,0 +1,23 @@
+<div class="app-friends">
+  <ul *ngIf="token">
+
+    <app-toggle class="onlineTab" [title]="'ONLINE (' + nbOnline + ')'" [isShow]="true" (toggleChange)="toggleOnline($event)">
+        <input *ngIf="isShowOnline" [formControl]="searchOnline" type="text" placeholder="Search..."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+
+        <li *ngFor="let friend of onlineFriends" [attr.data-child-status]="friend.online">
+          <app-friend [friend]="friend"></app-friend>
+        </li>
+    </app-toggle>
+
+    <app-toggle class="tabs" [title]="'OFFLINE (' + offlineFriends.length + ')'" [isShow]="false">
+      <li *ngFor="let friend of offlineFriends" [attr.data-child-status]="friend.online">
+        <app-friend [friend]="friend"></app-friend>
+      </li>
+    </app-toggle>
+  </ul>
+  <app-popup-buttons>
+    <button class="app-friends-closebutton"(click)="close()" data-style-ornament="simple">Close</button>
+    <button class="app-friends-closebutton" (click)="refresh()" data-style-ornament="simple">Refresh</button>
+  </app-popup-buttons>
+</div>

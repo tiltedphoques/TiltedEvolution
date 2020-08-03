@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "target": "es2017",
+    "strictPropertyInitialization": false,
+    "typeRoots": [ "node_modules/@types" ]
+  }
+}

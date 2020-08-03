@@ -1,0 +1,27 @@
+@import 'env';
+
+@import 'functions/mod';
+@import 'mixins/gapped-vertical';
+
+app-notifications {
+  @include gapped-vertical($-size-gap);
+
+  p {
+    color: mod($-color-background, 1);
+    font-weight: 700;
+    display: flex;
+  }
+}
+
+.app-notifications-icon {
+  flex: 0 0 1rem;
+  margin-right: $-size-gap / 2;
+  background: url(../../../assets/images/arrow/east.svg) center / contain no-repeat;
+}
+
+.app-notifications-content {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

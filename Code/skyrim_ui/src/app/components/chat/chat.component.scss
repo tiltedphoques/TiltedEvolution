@@ -1,0 +1,60 @@
+@import 'env';
+
+@import 'functions/mod';
+@import 'functions/rem';
+
+app-chat {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-chat-messages {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overflow-wrap: break-word;
+  padding-right: rem($-size-font, 2px);
+
+  p {
+    margin: 0;
+    line-height: $-size-line;
+    padding: ($-size-gap / 5) ($-size-gap / 2);
+    text-align: left;
+
+    &[data-odd=true] {
+      background: transparentize(mod($-color-background, 1), 0.97);
+    }
+
+    &[data-system=true] {
+      .app-chat-date,
+      .app-chat-message {
+        color: #99F;
+      }
+    }
+  }
+}
+
+.app-chat-name {
+  color: mod($-color-background, 1);
+}
+
+.app-chat-message {
+  color: mod($-color-background, 0.7);
+}
+
+.app-chat-input {
+  display: flex;
+  flex: 0 0 (1rem + $-size-gap);
+  margin-top: rem($-size-font, 2px);
+  border-top: rem($-size-font, 2px) solid;
+  border-image: url('../../../assets/images/separator/single.svg') 3;
+
+  input {
+    flex: 1 1 auto;
+    border: 0;
+  }
+
+  button {
+    flex: 0 0 auto;
+  }
+}

@@ -1,0 +1,19 @@
+@function sides($sides) {
+  @if type-of($sides) != list {
+    $sides: ( $sides );
+  }
+
+  @if length($sides) == 1 {
+    $sides: append($sides, nth($sides, 1));
+  }
+
+  @if length($sides) == 2 {
+    $sides: append($sides, nth($sides, 1));
+  }
+
+  @if length($sides) == 3 {
+    $sides: append($sides, nth($sides, 2));
+  }
+
+  @return $sides;
+}

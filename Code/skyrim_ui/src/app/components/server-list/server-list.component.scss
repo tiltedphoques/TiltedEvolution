@@ -1,0 +1,74 @@
+app-server-list {
+  position:relative;
+  display: block;
+  overflow: auto;
+  max-height: 60vh;
+
+  .searchListServer {
+    display: inline-block;
+    background-color: rgba($color: #292929, $alpha: 0.60);
+    font-size: 0.85rem;
+    border-radius: 7px;
+    height: 1.5rem;
+    width: 8vw;
+    border: none;
+    margin-bottom: 1%;
+  }
+
+  .updateServerList {
+    float: right;
+    padding: 0.25vw;
+    background-color: #292929;
+    border-radius: 2px;
+    margin-left: 5%;
+  }
+
+  .serverslisttable {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      text-align: left;
+      border-bottom: 1px solid grey;
+      border-collapse: separate;
+    }
+    tr:not(:last-child) {
+      border-bottom: 1px solid grey;
+      padding: 15px;
+    }
+
+    .offline {
+      // PokPok you need to change that !
+      background-color: #FF9494
+    }
+
+    #noserv {
+      margin-top: 3%;
+    }
+
+    .joinbutton {
+    padding: 0.25vw;
+    background-color: #292929;
+    border-radius: 2px;
+    margin-left: 5%;
+    }
+
+    .app-server-list-favorite {
+      text-align: center;
+      color: grey;
+
+      &:hover {
+        color:white;
+      }
+    }
+
+    .app-server-list-notfavorite {
+      text-align: center;
+      color: grey;
+
+      &:hover {
+        color:white;
+      }
+    }
+  }
+}

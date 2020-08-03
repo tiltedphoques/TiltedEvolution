@@ -1,0 +1,141 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "skyrim-together-ui": {
+      "root": "",
+      "sourceRoot": "src",
+      "projectType": "application",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "out",
+            "index": "src/index.html",
+            "main": "src/main.ts",
+            "tsConfig": "src/tsconfig.app.json",
+            "polyfills": "src/polyfills.ts",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src",
+                "src/styles"
+              ]
+            },
+            "assets": [
+              "src/assets/sounds",
+              "src/assets/images/cursor.png",
+              "src/assets/images/cursor.dds",
+              "src/assets/images/cursor.cur",
+              "src/assets/images/logo.svg",
+              "src/assets/images/loading.gif"
+            ],
+            "styles": [
+              "src/index.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
+            },
+            "browser": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.browser.ts"
+                }
+              ]
+            },
+            "nightly": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.nightly.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "skyrim-together-ui:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "skyrim-together-ui:build:production"
+            },
+            "browser": {
+              "browserTarget": "skyrim-together-ui:build:browser"
+            },
+            "nightly": {
+              "browserTarget": "skyrim-together-ui:build:nightly"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "skyrim-together-ui:build"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [],
+            "exclude": []
+          }
+        }
+      }
+    },
+    "skyrim-together-ui-e2e": {
+      "root": "",
+      "sourceRoot": "e2e",
+      "projectType": "application"
+    }
+  },
+  "defaultProject": "skyrim-together-ui",
+  "cli": {
+    "warnings": {
+      "versionMismatch": false,
+      "typescriptMismatch": false
+    }
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "changeDetection": "OnPush",
+      "viewEncapsulation": "None",
+      "spec": false,
+      "prefix": "app",
+      "styleext": "scss"
+    },
+    "@schematics/angular:directive": {
+      "spec": false,
+      "prefix": "app"
+    },
+    "@schematics/angular:guard": {
+      "spec": false
+    },
+    "@schematics/angular:pipe": {
+      "spec": false
+    },
+    "@schematics/angular:service": {
+      "spec": false
+    }
+  }
+}

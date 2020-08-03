@@ -1,0 +1,12 @@
+<span>{{friend.name}}</span>
+<ng-container *ngIf="friend.online">
+  <ng-container *ngIf="!isInGroup(friend); else inGroup">
+    <div class="align-right">
+      <button class="accept" *ngIf="friend.invitation" (click)="accept(friend)">Accept</button>
+      <button *ngIf="!friend.invitationSent; else isInvitationSent" (click)="invite(friend)" [disabled]="!friend.online">Invite</button>
+      <ng-template #isInvitationSent><div>Invitation sent</div></ng-template>
+    </div>
+  </ng-container>
+
+  <ng-template #inGroup class="align-right"><div class="align-right">In your group</div></ng-template>
+</ng-container>

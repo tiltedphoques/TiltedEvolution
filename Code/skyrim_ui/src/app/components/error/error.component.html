@@ -1,0 +1,6 @@
+<app-popup class="app-error" *ngIf="error">
+  <p>{{error}}</p>
+  <app-popup-buttons>
+    <button (click)="removeError()" data-style-ornament="simple">Ok</button>
+  </app-popup-buttons>
+</app-popup>

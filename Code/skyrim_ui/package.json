@@ -1,0 +1,36 @@
+{
+  "scripts": {
+    "ng": "ng",
+    "serve": "ng serve --host 0.0.0.0 --disable-host-check --configuration=browser",
+    "build": "ng build",
+    "deploy:nightly": "ng build --prod --output-hashing none --configuration=nightly",
+    "deploy": "ng build --prod --output-hashing none"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^7.0.1",
+    "@angular/common": "^7.0.1",
+    "@angular/compiler": "^7.0.1",
+    "@angular/core": "^7.0.1",
+    "@angular/forms": "^7.0.1",
+    "@angular/http": "^7.0.1",
+    "@angular/platform-browser": "^7.0.1",
+    "@angular/platform-browser-dynamic": "^7.0.1",
+    "@fortawesome/angular-fontawesome": "^0.3.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.15",
+    "@fortawesome/free-regular-svg-icons": "^5.9.0",
+    "@fortawesome/free-solid-svg-icons": "^5.7.2",
+    "core-js": "^2.6.1",
+    "rxjs": "^6.2.2",
+    "webpack": "^4.28.3",
+    "webpack-dev-server": "^3.1.14",
+    "zone.js": "^0.8.26"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~0.11.4",
+    "@angular/cli": "~7.1.4",
+    "@angular/compiler-cli": "^7.0.1",
+    "@angular/language-service": "^7.0.1",
+    "typescript": "3.1.*"
+  }
+}
