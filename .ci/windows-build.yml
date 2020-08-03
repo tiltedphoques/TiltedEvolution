@@ -12,6 +12,7 @@ steps:
         cd Build
         ./MakeVS2019Projects.bat
       displayName: Generate
+
     - task: VSBuild@1
       displayName: Build
       inputs:
@@ -28,3 +29,31 @@ steps:
         cd Build/bin/%real_platform%
         Tests.exe
       displayName: Test
+
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: '$(configuration)Together.dll'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@3
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'Loader.exe'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@4
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'tp_process.exe'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@5
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: $(configuration)_client
+
+    - task: PublishBuildArtifacts@6
+      inputs:
+        pathToPublish: 'Build/bin/x64/$(configuration)TogetherServer.exe'
+        artifactName: $(configuration)_server_windows
