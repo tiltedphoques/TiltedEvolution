@@ -13,6 +13,8 @@ struct AnimationVariables;
 
 struct TESObjectREFR : TESForm
 {
+    static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
+
     virtual void sub_48();
     virtual void sub_49();
     virtual void sub_4A();

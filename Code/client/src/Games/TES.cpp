@@ -8,3 +8,11 @@ TES* TES::Get() noexcept
     return *tes.Get();
 }
 
+ActorHolder* ActorHolder::Get() noexcept
+{
+    POINTER_SKYRIMSE(ActorHolder*, holder, 0x141EBEAD0 - 0x140000000);
+    POINTER_FALLOUT4(ActorHolder*, holder, 0x1458CEE98 - 0x140000000);
+
+    return *holder.Get();
+}
+

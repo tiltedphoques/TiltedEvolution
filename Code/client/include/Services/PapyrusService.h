@@ -26,13 +26,13 @@ private:
 template<class Return, class Type, class... Args>
 struct PapyrusFunction
 {
-    using TFunction = Return(__fastcall*)(BSScript::IVirtualMachine*, uint32_t, Type*, Args...);
+    using TFunction = Return(__fastcall*)(BSScript::IVirtualMachine*, uint32_t, const Type*, Args...);
 
     PapyrusFunction(const void* apAddress)
         : m_pFunction(reinterpret_cast<TFunction>(apAddress))
     {}
 
-    Return operator()(Type* apThis, Args... args) const noexcept
+    Return operator()(const Type* apThis, Args... args) const noexcept
     {
         return m_pFunction(GameVM::Get()->virtualMachine, 0, apThis, std::forward<Args>(args) ...);
     }
