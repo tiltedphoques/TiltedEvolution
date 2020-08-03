@@ -1,7 +1,13 @@
 steps:
     - checkout: self
       submodules: recursive
-  
+
+    - pwsh: Invoke-WebRequest https://download.skyrim-together.com/DXSDK.zip -OutFile DXSDK.zip
+      displayName: Download DirectX SDK
+
+    - pwsh: Expand-Archive -Path DXSDK.zip -DestinationPath DXSDK
+      displayName: Extract DirectX SDK
+      
     - script: |
         cd Build
         ./MakeVS2019Projects.bat
