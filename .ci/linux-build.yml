@@ -23,6 +23,7 @@ steps:
   - script: |
       cd Build
       chmod +x ./premake5
+      chmod +x ./MakeGMakeProjects.sh
       ./MakeGMakeProjects.sh
     displayName: Generate
 
