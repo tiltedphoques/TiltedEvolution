@@ -12,6 +12,8 @@
 
 #include <Events/LocationChangeEvent.h>
 
+#define DISCORD_OVERLAY_ENABLE 0
+
 // TODO: codestyle
 static IDiscordUserEvents cUserEvents = {
 
@@ -30,28 +32,23 @@ DiscordService::DiscordService(entt::dispatcher &aDispatcher)
     // initialize persistant rich presence data
     m_ActivityState.instance = false;
     m_ActivityState.type = EDiscordActivityType::DiscordActivityType_Playing;
+
     std::strcpy(m_ActivityState.details, "Loading");
-
-#if TP_SKYRIM
-    std::strcpy(m_ActivityState.assets.large_image, "placeholder");
-#else
     std::strcpy(m_ActivityState.assets.large_image, "logo");
-#endif
 
-    // bind render events in order to draw the discord overlay
-    // there is still some work to be done to bind keyboard input
-    auto &d3d11 = TiltedPhoques::D3D11Hook::Get();
-    d3d11.OnCreate.Connect([&](IDXGISwapChain *pSwapchain) { 
-        InitOverlay(pSwapchain);
-    });
-    d3d11.OnPresent.Connect([&](IDXGISwapChain*) { 
-        if (m_pOverlayMgr)
-            m_pOverlayMgr->on_present(m_pOverlayMgr);
-    });
-
-    // world change event
     m_cellChangeConnection =
         aDispatcher.sink<LocationChangeEvent>().connect<&DiscordService::OnLocationChangeEvent>(this);
+
+#if DISCORD_OVERLAY_ENABLE
+    auto &d3d11 = TiltedPhoques::D3D11Hook::Get();
+    d3d11.OnCreate.Connect([&](IDXGISwapChain *pSwapchain) { InitOverlay(pSwapchain); });
+    d3d11.OnPresent.Connect([&](IDXGISwapChain *) { 
+        if (m_bOverlayEnabled)
+        {
+            m_pOverlayMgr->on_present(m_pOverlayMgr);
+        }
+    });
+#endif
 }
 
 DiscordService::~DiscordService() = default;
@@ -124,26 +121,58 @@ void DiscordService::UpdatePresence(bool newTimeStamp)
 
 void DiscordService::InitOverlay(IDXGISwapChain *pSwapchain)
 {
-    if (!m_pOverlayMgr)
+    m_pOverlayMgr->is_enabled(m_pOverlayMgr, &m_bOverlayEnabled);
+    auto result = m_pOverlayMgr->init_drawing_dxgi(m_pOverlayMgr, pSwapchain, true);
+
+    // attempt to unlock it
+    m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, nullptr);
+    std::printf("Enabled discord overlay! %d\n", static_cast<int>(result));
+}
+
+void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    // this is a hack to force the auxiliary discord msg loop thread
+    // to quit in a timely manner
+    if (msg == WM_QUIT)
+    {
+        m_bRequestThreadKillHack = true;
+        m_bOverlayEnabled = false;
+        return;
+    }
+  
+#if DISCORD_OVERLAY_ENABLE
+    if (!m_bOverlayEnabled)
         return;
 
-    bool enabled;
-    m_pOverlayMgr->is_enabled(m_pOverlayMgr, &enabled);
-
-    if (enabled)
+    switch (msg)
     {
-        auto result = m_pOverlayMgr->init_drawing_dxgi(m_pOverlayMgr, pSwapchain, true);
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYDOWN:
+    case WM_SYSKEYUP: {
+        bool down = ((msg == WM_KEYDOWN) || (msg == WM_SYSKEYDOWN));
+        if (down && wParam == VK_F6)
+        {
+            m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, [](void *, EDiscordResult result) { 
+                std::printf("unlocking overlay! %d\n", static_cast<int>(result));
+                });
+        }
 
-        // attempt to unlock it
-        m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, nullptr);
-        std::printf("Enabled discord overlay! %d\n", static_cast<int>(result));
+      /*  if (wParam < 256)
+            m_pOverlayMgr->key_event(m_pOverlayMgr, down, reinterpret_cast<const char *>(wParam),
+                                     EDiscordKeyVariant::DiscordKeyVariant_Normal);*/
+        break;
     }
+    default:
+        return;
+    }
+#endif
 }
 
 bool DiscordService::Init()
 {
     auto dllPath = TiltedPhoques::GetPath().wstring() + L"\\discord_game_sdk.dll";
-    MessageBoxA(0, "Attach", 0, 0);
+
     // as we make the game sdk optional we need to dynamiclly resolve the export
     HMODULE pHandle = LoadLibraryW(dllPath.c_str());
     if (!pHandle)
@@ -169,7 +198,7 @@ bool DiscordService::Init()
     params.relationship_events = &cRelationShipEvents;
     params.activity_events = &cActivityEvents;
     auto result = f_pDiscordCreate(DISCORD_VERSION, &params, &m_pCore);
-    if (result != DiscordResult_Ok)
+    if (result != DiscordResult_Ok || !m_pCore)
     {
         std::printf("Failed to create Discord instance. Error code: (%d)\n", static_cast<int>(result));
         FreeLibrary(pHandle);
@@ -187,6 +216,13 @@ bool DiscordService::Init()
     m_pAppMgr = m_pCore->get_application_manager(m_pCore);
     m_pOverlayMgr = m_pCore->get_overlay_manager(m_pCore);
 
+    if (!m_pUserMgr || !m_pActivity || !m_pAppMgr || !m_pOverlayMgr)
+    {
+        m_pCore->destroy(m_pCore);
+        FreeLibrary(pHandle);
+        return false;
+    }
+
     // set initial presence state
     m_ActivityState.application_id = params.client_id;
     UpdatePresence(true);
@@ -194,7 +230,7 @@ bool DiscordService::Init()
     //TODO (Force): i want to move this away from its own thread
     //this is done because discord needs to be ticked before world
     static std::thread updateThread([&]() { 
-        while (true)
+        while (!m_bRequestThreadKillHack)
         {
             const auto runResult = m_pCore->run_callbacks(m_pCore);
             if (runResult != DiscordResult_Ok)

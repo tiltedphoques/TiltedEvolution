@@ -27,6 +27,7 @@ class DiscordService final : public entt::registry
     }
     void UpdatePresence(bool newTimeStamp);
 
+    void WndProcHandler(HWND, UINT, WPARAM, LPARAM);
   private:
     void InitOverlay(struct IDXGISwapChain *);
     void OnLocationChangeEvent() noexcept;
@@ -34,6 +35,9 @@ class DiscordService final : public entt::registry
     entt::scoped_connection m_cellChangeConnection;
 
     bool m_bCustomPresence = false;
+    bool m_bOverlayEnabled = false;
+    bool m_bRequestThreadKillHack = false;
+
     IDiscordCore *m_pCore = nullptr;
     IDiscordUserManager *m_pUserMgr = nullptr;
     IDiscordActivityManager *m_pActivity = nullptr;
