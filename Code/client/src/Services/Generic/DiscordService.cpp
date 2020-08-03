@@ -53,16 +53,6 @@ DiscordService::DiscordService(entt::dispatcher &aDispatcher)
 
 DiscordService::~DiscordService() = default;
 
-void DiscordService::Create(entt::dispatcher &dispatch) noexcept
-{
-    entt::service_locator<DiscordService>::set(std::make_shared<DiscordService>(dispatch));
-}
-
-DiscordService &DiscordService::Get() noexcept
-{
-    return entt::service_locator<DiscordService>::ref();
-}
-
 void DiscordService::OnLocationChangeEvent() noexcept
 {
     auto *pPlayer = PlayerCharacter::Get();
@@ -113,7 +103,7 @@ void DiscordService::UpdatePresence(bool newTimeStamp)
         m_pActivity->update_activity(m_pActivity, &m_ActivityState, nullptr, [](void *, EDiscordResult result) {
             if (result != EDiscordResult::DiscordResult_Ok)
             {
-                std::printf("Failed to update discord presence %d\n", static_cast<int>(result));
+                spdlog::error("Failed to update discord presence ({})", static_cast<int>(result));
             }
         });
     }
@@ -126,7 +116,7 @@ void DiscordService::InitOverlay(IDXGISwapChain *pSwapchain)
 
     // attempt to unlock it
     m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, nullptr);
-    std::printf("Enabled discord overlay! %d\n", static_cast<int>(result));
+    spdlog::info("Enabled discord overlay! ({})", static_cast<int>(result));
 }
 
 void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -154,7 +144,7 @@ void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
         if (down && wParam == VK_F6)
         {
             m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, [](void *, EDiscordResult result) { 
-                std::printf("unlocking overlay! %d\n", static_cast<int>(result));
+                spdlog::info("unlocking discord overlay ({})", static_cast<int>(result));
                 });
         }
 
@@ -200,7 +190,7 @@ bool DiscordService::Init()
     auto result = f_pDiscordCreate(DISCORD_VERSION, &params, &m_pCore);
     if (result != DiscordResult_Ok || !m_pCore)
     {
-        std::printf("Failed to create Discord instance. Error code: (%d)\n", static_cast<int>(result));
+        spdlog::error("Failed to create Discord instance ({})", static_cast<int>(result));
         FreeLibrary(pHandle);
         return false;
     }

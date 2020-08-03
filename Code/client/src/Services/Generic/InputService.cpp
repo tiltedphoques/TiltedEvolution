@@ -284,7 +284,7 @@ static LRESULT CALLBACK InputServiceWndProc(HWND hwnd, UINT uMsg, WPARAM wParam,
     if (!pRenderer)
         return 0;
 
-    auto &discord = DiscordService::Get();
+    auto &discord = World::Get().ctx<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
     const auto isVisible = pRenderer->IsVisible();

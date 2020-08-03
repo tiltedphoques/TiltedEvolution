@@ -8,10 +8,6 @@ class DiscordService final : public entt::registry
     DiscordService(entt::dispatcher&);
     ~DiscordService();
 
-    // singleton
-    static void Create(entt::dispatcher &dispatch) noexcept;
-    [[nodiscard]] static DiscordService &Get() noexcept;
-
     bool Init();
 
     // noop currently

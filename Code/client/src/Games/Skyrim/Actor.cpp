@@ -146,11 +146,6 @@ TESForm *Actor::GetCurrentLocation()
     return FUNC_GetActorLocation(this);
 }
 
-static TiltedPhoques::Initializer s_XX([]() {
-    POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
-    FUNC_GetActorLocation = s_GetActorLocation.Get();
-});
-
 Inventory Actor::GetInventory() const noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
