@@ -30,30 +30,30 @@ steps:
         Tests.exe
       displayName: Test
 
-    - task: CopyFiles
+    - task: CopyFiles@2
       inputs:
         sourceFolder: 'Build/bin/x64/'
         contents: '$(configuration)Together.dll'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
-    - task: CopyFiles
+    - task: CopyFiles@2
       inputs:
         sourceFolder: 'Build/bin/x64/'
         contents: 'Loader.exe'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
-    - task: CopyFiles
+    - task: CopyFiles@2
       inputs:
         sourceFolder: 'Build/bin/x64/'
         contents: 'tp_process.exe'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
-    - task: PublishBuildArtifacts
+    - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
         artifactName: $(configuration)_client
 
-    - task: PublishBuildArtifacts
+    - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: 'Build/bin/x64/$(configuration)TogetherServer.exe'
         artifactName: $(configuration)_server_windows
