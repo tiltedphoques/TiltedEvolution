@@ -36,3 +36,8 @@ steps:
       cd Build/bin/$(platform)
       ./Tests
     displayName: Test
+
+  - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'Build/bin/x64/$(buildPrefix)TogetherServer'
+        artifactName: $(configuration)_server_linux
