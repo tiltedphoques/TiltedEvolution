@@ -1,12 +1,6 @@
 steps:
     - checkout: self
       submodules: recursive
-
-    - pwsh: Invoke-WebRequest https://download.skyrim-together.com/DXSDK.zip -OutFile DXSDK.zip
-      displayName: Download DirectX SDK
-  
-    - pwsh: Expand-Archive -Path DXSDK.zip -DestinationPath DXSDK
-      displayName: Extract DirectX SDK
   
     - script: |
         cd Build
@@ -31,18 +25,21 @@ steps:
       displayName: Test
 
     - task: CopyFiles@2
+      displayName: Copy dll
       inputs:
         sourceFolder: 'Build/bin/x64/'
         contents: '$(configuration)Together.dll'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
     - task: CopyFiles@2
+      displayName: Copy loader
       inputs:
         sourceFolder: 'Build/bin/x64/'
         contents: 'Loader.exe'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
     - task: CopyFiles@2
+      displayName: Copy cef process
       inputs:
         sourceFolder: 'Build/bin/x64/'
         contents: 'tp_process.exe'
