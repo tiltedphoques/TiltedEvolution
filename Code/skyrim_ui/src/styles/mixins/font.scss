@@ -1,0 +1,74 @@
+@import '../functions/dump';
+@import '../functions/str-replace';
+
+$font: (
+  type: (
+    ttf: truetype,
+    otf: opentype,
+    woff: woff,
+    woff2: woff2
+  ),
+  weight: (
+    thin: 100,
+    extralight: 200,
+    light: 300,
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+    extrabold: 800,
+    black: 900
+  )
+);
+
+@mixin font($root, $family, $variants: ( ( regular, normal ), ), $types: ttf) {
+  $folder: str-replace(to-lower-case($family), ' ', '-');
+
+  @if type-of($types) != list {
+    $types: ( $types );
+  }
+
+  @each $variant in $variants {
+    @if length($variant) != 2 {
+      @error '`#{dump($variant)}` is not a valid variant.';
+    }
+
+    $weights: map-get($font, weight);
+    $weight-key: nth($variant, 1);
+    $weight: map-get($weights, $weight-key);
+
+    @if not($weight) {
+      @error '`#{dump($weight-key)}` is not a valid weight. ' +
+        'Valid weights are: #{dump(map-keys($weights))}.';
+    }
+
+    $style: nth($variant, 2);
+
+    @if not(index(( normal, italic, both ), $style)) {
+      @error '`#{dump($style)}` is not a valid style. Valid styles are: normal, italic, both.';
+    }
+
+    $style-list: if($style == 'both', ( normal, italic ), ( $style ));
+    $type-list: map-get($font, type);
+
+    @each $type in $types {
+      $type-format: map-get($type-list, $type);
+
+      @if not($type-format) {
+        @error '`#{dump($type)}` is not a valid type. ' +
+          'Valid types are: #{dump(map-keys($type-list)))}.';
+      }
+
+      @each $style-value in $style-list {
+        $source: '#{$root}/#{$folder}/#{$weight-key}-#{$style-value}.#{$type}';
+
+        @font-face {
+          font-family: $family;
+          font-style: $style-value;
+          font-weight: $weight;
+          src: url($source) format('#{$type-format}');
+        }
+      }
+    }
+  }
+}

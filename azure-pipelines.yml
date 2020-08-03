@@ -1,0 +1,24 @@
+jobs:
+  - job: Fallout4
+    displayName: Fallout4
+    pool:
+      vmImage: windows-2019
+
+    variables:
+      platform: x64
+      configuration: Fallout4
+
+    steps:
+      - template: .ci/windows-build.yml
+
+  - job: SkyrimSE
+    displayName: Skyrim Special Edition
+    pool:
+      vmImage: windows-2019
+
+    variables:
+      platform: x64
+      configuration: Skyrim
+
+    steps:
+      - template: .ci/windows-build.yml

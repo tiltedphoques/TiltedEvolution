@@ -1,0 +1,51 @@
+$dump: ( indent: '  ' );
+
+@function dump($var, $pretty: false, $level: 1) {
+  $break: if($pretty, '\A', ' ');
+
+  $indent: '';
+  $next-indent: '';
+
+  @if $pretty {
+    @for $i from 1 to $level {
+      $indent: $indent + map-get($dump, indent);
+    }
+
+    $next-indent: $indent + map-get($dump, indent);
+  }
+
+  @if type-of($var) == map {
+    $keys: map-keys($var);
+    $result: '{' + $break;
+
+    @for $i from 1 through length($keys) {
+      $key: nth($keys, $i);
+
+      $result: $result + $next-indent +
+        dump($key, $pretty, $level + 1) + ': ' +
+        dump(map-get($var, $key), $pretty, $level + 1);
+
+      @if $i != length($keys) {
+        $result: $result + ',' + $break;
+      }
+    }
+
+    @return $result + $break + $indent + '}';
+  }
+  @else if type-of($var) == list {
+    $result: '[' + $break;
+
+    @for $i from 1 through length($var) {
+      $result: $result + $next-indent +
+        dump(nth($var, $i), $pretty, $level + 1);
+
+      @if $i != length($var) {
+        $result: $result + ',' + $break;
+      }
+    }
+
+    @return $result + $break + $indent + ']';
+  }
+
+  @return $var;
+}

@@ -1,0 +1,127 @@
+@import 'env';
+
+@import 'functions/mod';
+@import 'mixins/gapped-vertical';
+
+app-friends {
+  display: block;
+  overflow: auto;
+  height: calc(40vh + 2 rem);
+  margin: -0.5rem;
+  padding: 1rem;
+  max-height: 60vh;
+
+  app-window {
+    @include gapped-vertical($-size-gap);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.app-friends {
+  @include gapped-vertical($-size-gap);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .tabs {
+    display: block;
+    margin-top: 1em;
+  }
+
+  .onlineTab {
+    display: block;
+    position: relative;
+    padding-bottom: 0.4em;
+
+    input {
+      position: absolute;
+      background-color: rgba($color: #292929, $alpha: 0.60);
+      font-size: 0.85rem;
+      border-radius: 7px;
+      height: 1.5rem;
+      width: 50%;
+      right: 15%;
+      top: -0.3rem;
+      border: none;
+    }
+  }
+
+  ul {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    padding: $-size-gap;
+    padding-bottom: $-size-gap * 0.8;
+
+    &::before {
+      content: '';
+      flex: 0 0 auto;
+      width: 0.5em;
+      height: 0.5em;
+      background: #933;
+      border-radius: 50%;
+    }
+
+    &[data-child-status=true]::before {
+      background: #393;
+    }
+
+    &:nth-child(2n) {
+      background: transparentize(mod($-color-background, 1), 0.97);
+    }
+
+    span {
+      flex: 1 1 auto;
+      margin: 0 $-size-gap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    button {
+      padding: 0.35rem;
+      background-color: #292929;
+      border-radius: 0.1rem;
+    }
+    button:hover {
+      box-shadow: 0px 0px 5px #646464;
+    }
+    .align-right {
+      position: absolute;
+      right: 0px;
+      top: 50%;
+      transform: translateY(-50%)
+    }
+    .accept {
+      margin-left: 10px;
+    }
+
+    button + button, button + div {
+      margin-left: 10px;
+    }
+  }
+}
+
+app-popup-buttons {
+  position: sticky;
+  bottom: 0;
+}
+
+.app-friends-closebutton {
+  padding: 5px;
+  background-color: #292929;
+  border-radius: 2px;
+}
+.app-friends-closebutton:hover {
+  box-shadow: 0px 0px 5px #646464;
+}

@@ -1,0 +1,7 @@
+<div class="notification-popup" [@popups]="isActive" (click)="clickNotif()">
+  <div *ngIf="notification && notification.message">
+    <div class="friendavatar" [ngStyle]="{ 'background-image': 'url(' + notification.player.avatar + ')' }"></div>
+    <div *ngIf="isConnected" class="friendstatus" [class.online]="notification.player && notification.player!.online"></div>
+    <div class="text-connection-popup">{{notification.message}}</div>
+  </div>
+</div>

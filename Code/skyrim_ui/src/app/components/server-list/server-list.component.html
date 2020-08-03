@@ -1,0 +1,40 @@
+<!-- Please do further testing with a ton of servers in the list and names that are too long/contain symbols -->
+
+<input class="searchListServer" [formControl]="searchServerList" type="text" placeholder="Search..."
+  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+
+  <button class="updateServerList" (click)="updateServerList()">Refresh</button>
+
+<div *ngIf="isLoading; else notLoading">
+  Loading...
+</div>
+<ng-template #notLoading>
+  <div id="noserv" *ngIf="!isLoading && serverList.length === 0; else notEmpty">
+    No public server available
+  </div>
+
+  <ng-template #notEmpty>
+      <table cellspacing="5" cellpadding="5" class="serverslisttable">
+          <thead>
+            <tr>
+              <th>Server Name<app-order [isIncreasingOrder]="isIncreasingNameOrder" (sorted)="sortName($event)"></app-order></th>
+              <th>Players<app-order [isIncreasingOrder]="isIncreasingPlayerOrder" (sorted)="sortPlayers($event)"></app-order></th>
+              <th>Country<app-order [isIncreasingOrder]="isIncreasingCountryOrder" (sorted)="sortCountry($event)"></app-order></th>
+              <th>Favorite<app-order [isIncreasingOrder]="isIncreasingFavoriteOrder" (sorted)="sortFavorite($event)"></app-order></th> <!-- Pls not automatic fav on top, make it sortable like other titles, thanks! -->
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let server of serverList">
+              <td>{{ server.name }}</td>
+              <td>{{ server.playerCount }}</td>
+              <td>{{ server.country }}</td>
+              <td (click)="server.isFavorite = !server.isFavorite" class="app-server-list-notfavorite"><fa-icon [icon]="getFavoriteIcon(server)"></fa-icon></td>
+              <td><button (click)="connect(server)" class="joinbutton">Join</button></td>
+            </tr>
+          </tbody>
+        </table>
+  </ng-template>
+</ng-template>
+
+

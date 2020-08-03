@@ -1,0 +1,7 @@
+@import 'gapped-horizontal';
+@import 'gapped-vertical';
+
+@mixin gapped($horizontal, $vertical: $horizontal) {
+  @include gapped-horizontal($horizontal);
+  @include gapped-vertical($vertical);
+}

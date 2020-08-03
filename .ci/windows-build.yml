@@ -1,0 +1,30 @@
+steps:
+    - checkout: self
+      submodules: recursive
+
+    - pwsh: Invoke-WebRequest https://download.skyrim-together.com/DXSDK.zip -OutFile DXSDK.zip
+      displayName: Download DirectX SDK
+  
+    - pwsh: Expand-Archive -Path DXSDK.zip -DestinationPath DXSDK
+      displayName: Extract DirectX SDK
+  
+    - script: |
+        cd Build
+        ./MakeVS2019Projects.bat
+      displayName: Generate
+    - task: VSBuild@1
+      displayName: Build
+      inputs:
+        solution: Build/projects/*.sln
+        msbuildArgs: -m
+        Configuration: $(configuration)
+        Platform: $(platform)
+      env:
+        DXSDK_DIR: $(Build.SourcesDirectory)\DXSDK
+  
+    - script: |
+        SET real_platform="x64"
+        if "%platform%" == "Win32" SET real_platform="x32"
+        cd Build/bin/%real_platform%
+        Tests.exe
+      displayName: Test

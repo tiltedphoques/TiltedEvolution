@@ -1,0 +1,46 @@
+@import 'env';
+
+@import 'functions/mod';
+@import 'mixins/gapped-vertical';
+
+app-connect {
+  display: block;
+
+  app-window {
+    @include gapped-vertical($-size-gap);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.app-connect {
+  @include gapped-vertical($-size-gap);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  p {
+    line-height: $-size-line;
+    text-align: justify;
+  }
+
+  strong {
+    color: mod($-color-background, 1);
+  }
+
+  input {
+    width: 100%;
+  }
+
+  hr {
+    border: 0;
+    clear:both;
+    display:block;
+    width: 80%;
+    background-color:grey;
+    height: 1px;
+  }
+}

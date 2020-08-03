@@ -1,0 +1,248 @@
+@import 'functions/mod';
+@import 'functions/rem';
+@import 'mixins/font';
+
+@import 'env';
+
+@include font('assets/fonts', 'Roboto Condensed', (
+  ( light, both ),
+  ( regular, both ),
+  ( bold, both )
+));
+
+::selection {
+  color: $-color-background;
+  background: mod($-color-background, 1);
+}
+
+*,
+*::before,
+*::after {
+  outline: 0;
+  user-select: none;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after,
+button,
+input,
+textarea,
+optgroup,
+select {
+  line-height: 1em;
+}
+
+button,
+input:not([type=checkbox]),
+textarea,
+optgroup,
+select {
+  font-family: inherit;
+}
+
+input:not([type=checkbox]),
+textarea,
+select {
+  display: block;
+  padding: $-size-gap / 2;
+  background: transparent;
+  color: mod($-color-background, 1);
+  border: rem($-size-font, 2px) solid;
+  border-image: url('assets/images/separator/single.svg') 3;
+}
+
+input:not([type=checkbox]),
+textarea {
+  user-select: contain;
+}
+
+option {
+  background: $-color-background;
+}
+
+button {
+  border: 0;
+  opacity: 0.5;
+  font-weight: 700;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  background: transparent;
+  padding: $-size-gap / 2;
+  color: mod($-color-background, 1);
+
+  &:hover:not([disabled]),
+  &[data-style-active=true] {
+    opacity: 1;
+  }
+
+  &[data-style-active=true][data-style-ornament=inverted] {
+    &::before,
+    &::after {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  &:hover:not([disabled])[data-style-ornament=simple] {
+    &::before,
+    &::after {
+      opacity: 1 !important;
+    }
+  }
+
+  &[data-style-align=left] {
+    text-align: left;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  &[data-style-align=center] {
+    text-align: center;
+    justify-content: space-between;
+  }
+
+  &[data-style-align=right] {
+    text-align: right;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  &[data-style-ornament] {
+    display: flex;
+    align-items: center;
+
+    &::before,
+    &::after {
+      opacity: 0;
+      width: 1em;
+      height: 1em;
+      content: '';
+      background: center / contain no-repeat;
+    }
+
+    &::before {
+      margin-right: $-size-gap / 2;
+    }
+
+    &::after {
+      margin-left: $-size-gap / 2;
+    }
+  }
+
+  &[data-style-ornament=simple] {
+    &::before {
+      background-image: url(assets/images/arrow/east.svg);
+    }
+
+    &::after {
+      background-image: url(assets/images/arrow/west.svg);
+    }
+  }
+
+  &[data-style-ornament=inverted] {
+    &::before,
+    &::after {
+      opacity: 0;
+      transition: all $-time-transition;
+    }
+
+    &::before {
+      background-image: url(assets/images/arrow/west.svg);
+      transform: translateX(-$-size-gap);
+    }
+
+    &::after {
+      background-image: url(assets/images/arrow/east.svg);
+      transform: translateX($-size-gap);
+    }
+  }
+}
+
+:root {
+  font-size: calc(16 * 100vw / 1920);
+}
+
+$scrollbar: rem($-size-font, 16px);
+
+::-webkit-scrollbar {
+  width: $scrollbar;
+  height: $scrollbar;
+}
+
+::-webkit-scrollbar-button {
+  width: $scrollbar;
+  height: $scrollbar;
+
+  &:vertical {
+    &:start {
+      background-image: url(assets/images/scrollbar/button-north-inactive.svg);
+
+      &:hover {
+        background-image: url(assets/images/scrollbar/button-north-active.svg);
+      }
+    }
+
+    &:end {
+      background-image: url(assets/images/scrollbar/button-south-inactive.svg);
+
+      &:hover {
+        background-image: url(assets/images/scrollbar/button-south-active.svg);
+      }
+    }
+  }
+
+  &:horizontal {
+    &:start {
+      background-image: url(assets/images/scrollbar/button-west-inactive.svg);
+
+      &:hover {
+        background-image: url(assets/images/scrollbar/button-west-active.svg);
+      }
+    }
+
+    &:end {
+      background-image: url(assets/images/scrollbar/button-east-inactive.svg);
+
+      &:hover {
+        background-image: url(assets/images/scrollbar/button-east-active.svg);
+      }
+    }
+  }
+}
+
+::-webkit-scrollbar-track {
+  border: rem($-size-font, 3px) solid;
+  border-image: url('assets/images/scrollbar/track.svg') 4 fill;
+}
+
+::-webkit-scrollbar-thumb {
+  background-image: url(assets/images/scrollbar/thumb-inactive.svg);
+
+  &:hover {
+    background-image: url(assets/images/scrollbar/thumb-active.svg);
+  }
+}
+
+html {
+  font-family: $-font-default;
+  text-shadow: 0.1rem 0.1rem 0.05rem #000;
+}
+
+body {
+  margin: 0;
+  cursor: default;
+  overflow: hidden;
+  color: mod($-color-background);
+  background: transparent;
+}
+
+app-root {
+  height: 100vh;
+}
