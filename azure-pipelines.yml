@@ -31,6 +31,7 @@ jobs:
     variables:
       platform: x64
       configuration: fallout4
+      buildPrefix: Fallout
   
     steps:
       - template: .ci/linux-build.yml
@@ -43,6 +44,7 @@ jobs:
     variables:
       platform: x64
       configuration: skyrim
+      buildPrefix: Skyrim
   
     steps:
       - template: .ci/linux-build.yml

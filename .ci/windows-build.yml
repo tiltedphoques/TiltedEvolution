@@ -7,7 +7,7 @@ steps:
 
     - pwsh: Expand-Archive -Path DXSDK.zip -DestinationPath DXSDK
       displayName: Extract DirectX SDK
-      
+
     - script: |
         cd Build
         ./MakeVS2019Projects.bat
@@ -34,7 +34,7 @@ steps:
       displayName: Copy dll
       inputs:
         sourceFolder: 'Build/bin/x64/'
-        contents: '$(configuration)Together.dll'
+        contents: '$(buildPrefix)Together.dll'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
     - task: CopyFiles@2
@@ -51,6 +51,13 @@ steps:
         contents: 'tp_process.exe'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
+    - task: CopyFiles@2
+      displayName: Copy proxy dll
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'Proxy.dll'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
@@ -58,5 +65,5 @@ steps:
 
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: 'Build/bin/x64/$(configuration)TogetherServer.exe'
+        pathToPublish: 'Build/bin/x64/$(buildPrefix)TogetherServer.exe'
         artifactName: $(configuration)_server_windows
