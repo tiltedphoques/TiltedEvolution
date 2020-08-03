@@ -1,5 +1,7 @@
 # Tilted Online
 
+[![Build Status](https://dev.azure.com/TiltedPhoques/TiltedOnline/_apis/build/status/tiltedphoques.TiltedOnline?branchName=master)](https://dev.azure.com/TiltedPhoques/TiltedOnline/_build/latest?definitionId=1&branchName=master)
+
 This framework was created to enable multiplayer in Bethesda games, at the moment two games are supported ; **Skyrim Special Edition** and **Fallout 4**.
 
 *Remember that this is the experimental branch, so there's no guarantee the mod will work or even compile.*
