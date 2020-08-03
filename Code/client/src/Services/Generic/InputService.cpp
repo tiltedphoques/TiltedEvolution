@@ -7,6 +7,7 @@
 #include <include/internal/cef_types.h>
 #include <DInputHook.hpp>
 #include <Services/ImguiService.h>
+#include <Services/DiscordService.h>
 #include <World.h>
 
 static OverlayService* s_pOverlay = nullptr;
@@ -282,6 +283,9 @@ static LRESULT CALLBACK InputServiceWndProc(HWND hwnd, UINT uMsg, WPARAM wParam,
     const auto pRenderer = pClient->GetOverlayRenderHandler();
     if (!pRenderer)
         return 0;
+
+    auto &discord = World::Get().ctx<DiscordService>();
+    discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
     const auto isVisible = pRenderer->IsVisible();
     if(isVisible)

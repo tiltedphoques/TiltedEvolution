@@ -55,11 +55,22 @@ struct BSFixedString
 
     void Release();
 
-    [[nodiscard]] bool IsAscii() const noexcept { return m_data->IsAscii(); }
-    [[nodiscard]] const char* AsAscii() const { return m_data ? m_data->AsAscii() : nullptr; }
-    [[nodiscard]] const wchar_t* AsWide() const { return m_data ? m_data->AsWide() : nullptr; }
+    [[nodiscard]] bool IsAscii() const noexcept
+    {
+        return data->IsAscii();
+    }
 
-    Data* m_data;
+    [[nodiscard]] const char *AsAscii() const
+    {
+        return data ? data->AsAscii() : nullptr;
+    }
+
+    [[nodiscard]] const wchar_t *AsWide() const
+    {
+        return data ? data->AsWide() : nullptr;
+    }
+
+    Data *data;
 };
 
 #endif

@@ -11,6 +11,7 @@
 #include <Services/ImguiService.h>
 #include <Services/ScriptService.h>
 #include <Services/PapyrusService.h>
+#include <Services/DiscordService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -29,6 +30,7 @@ World::World()
     set<TestService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<PapyrusService>(m_dispatcher);
+    set<DiscordService>(m_dispatcher);
 }
 
 World::~World() = default;

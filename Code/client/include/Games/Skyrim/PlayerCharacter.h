@@ -13,7 +13,9 @@ struct PlayerCharacter : Actor
 
     const GameArray<TintMask*>& GetTints() const noexcept;
 
-    uint8_t pad2B0[0xB10 - sizeof(Actor)];
+    uint8_t pad1[0xAC8 - sizeof(Actor)];
+    TESForm *locationForm;
+    uint8_t padAC8[0x40];
 
     GameArray<TintMask*> baseTints;
     GameArray<TintMask*>* overlayTints;
@@ -22,8 +24,7 @@ struct PlayerCharacter : Actor
 };
 
 static_assert(sizeof(PlayerCharacter) == 0xBE0);
+static_assert(offsetof(PlayerCharacter, locationForm) == 0xAC8);
 static_assert(offsetof(PlayerCharacter, baseTints) == 0xB10);
 static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB28);
-
-
 #endif
