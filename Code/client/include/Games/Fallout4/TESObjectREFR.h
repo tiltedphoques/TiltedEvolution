@@ -144,6 +144,7 @@ struct TESObjectREFR : TESForm
 
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
+    BSExtraDataList* GetExtraDataList() noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;

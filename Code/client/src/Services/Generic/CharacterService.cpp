@@ -6,10 +6,12 @@
 #include <Games/Skyrim/Forms/TESNPC.h>
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/ExtraData/ExtraLeveledCreature.h>
 
 #include <Games/Fallout4/Forms/TESNPC.h>
 #include <Games/Fallout4/Misc/ProcessManager.h>
 #include <Games/Fallout4/Misc/MiddleProcess.h>
+#include <Games/Fallout4/ExtraData/ExtraLeveledCreature.h>
 
 #include <Components.h>
 
@@ -82,6 +84,15 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     CacheSystem::Setup(World::Get(), aEntity, pActor);
 
     const auto pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
+
+    auto pExtra = (ExtraLeveledCreature*)pActor->GetExtraDataList()->GetByType(ExtraData::LeveledCreature);
+
+    auto pOwner = pNpc->actorData.owner;
+    if (pOwner)
+    {
+        spdlog::info("\tOwner: type {}, id {:X}", (uint32_t)pOwner->formType, pOwner->formID);
+    }
+
     if(pNpc)
     {
         RequestServerAssignment(aRegistry, aEntity);
@@ -162,7 +173,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     const auto cEntity = m_world.create();
 
-    // Temporary fix to load only custom forms
+    // Custom forms
     if (acMessage.FormId == GameId{})
     {
         TESNPC* pNpc = nullptr;
@@ -191,13 +202,15 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     else
     {
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
+        auto pForm = TESForm::GetById(cActorId);
 
-        pActor = RTTI_CAST(TESForm::GetById(cActorId), TESForm, Actor);
+        pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (!pActor)
         {
             m_world.destroy(cEntity);
             spdlog::error("Failed to retrieve Actor {:X}, it will not be spawned, possibly missing mod", cActorId);
+            spdlog::error("\tForm : {:X}", pForm ? pForm->formID : 0);
             return;
         }
     }

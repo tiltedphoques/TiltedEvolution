@@ -208,6 +208,15 @@ TESWorldSpace* TESObjectREFR::GetWorldSpace() const noexcept
     return nullptr;
 }
 
+BSExtraDataList* TESObjectREFR::GetExtraDataList() noexcept
+{
+#if TP_FALLOUT4
+    return extraData;
+#else
+    return &extraData;
+#endif
+}
+
 void TESObjectREFR::Delete() const noexcept
 {
     using ObjectReference = TESObjectREFR;

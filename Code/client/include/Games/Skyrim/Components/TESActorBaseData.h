@@ -22,7 +22,7 @@ struct TESActorBaseData : BaseFormComponent
     uint16_t unk1A;
     void* unk1C;
     BGSVoiceType* voiceType;
-    void* unk24;
+    TESForm* owner;
     uint32_t unk28;
 
     struct alignas(sizeof(void*)) FactionInfo
@@ -35,6 +35,7 @@ struct TESActorBaseData : BaseFormComponent
 };
 
 #if TP_PLATFORM_64
+static_assert(offsetof(TESActorBaseData, owner) == 0x30);
 static_assert(offsetof(TESActorBaseData, factions) == 0x40);
 #endif
 

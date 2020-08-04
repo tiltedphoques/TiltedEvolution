@@ -423,7 +423,7 @@ void CharacterService::ProcessFactionsChanges() noexcept
     lastSendTimePoint = now;
 
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent >();
+    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent>();
 
     Map<ConnectionId_t, NotifyFactionsChanges> messages;
 

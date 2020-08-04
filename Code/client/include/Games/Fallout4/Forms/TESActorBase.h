@@ -24,7 +24,7 @@ struct TESActorBase : TESBoundAnimObject
     virtual void sub_67();
     virtual void sub_68();
 
-    TESActorBaseData actorBaseData; // 68
+    TESActorBaseData actorData; // 68
     TESContainer container; // D0
     TESSpellList spellList; // E8
     TESAIForm aiForm; // F8
@@ -38,7 +38,7 @@ struct TESActorBase : TESBoundAnimObject
     BGSPropertySheet propertySheet; // 1A0
 };
 
-static_assert(offsetof(TESActorBase, actorBaseData) == 0x68);
+static_assert(offsetof(TESActorBase, actorData) == 0x68);
 static_assert(offsetof(TESActorBase, container) == 0xD0);
 static_assert(offsetof(TESActorBase, spellList) == 0xE8);
 static_assert(offsetof(TESActorBase, aiForm) == 0xF8);
