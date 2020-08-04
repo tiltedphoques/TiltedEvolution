@@ -344,7 +344,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) n
         spdlog::info("\tformid: {:X}", formIdComponent.Id);
 
         const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-        if (!pActor)
+        if (!pActor || !pActor->GetNiNode())
             return;
 
         pActor->Disable();
