@@ -3,6 +3,7 @@
 #if TP_SKYRIM
 
 #include <Games/Skyrim/Misc/BSFixedString.h>
+#include <tuple>
 
 struct BSScript
 {
@@ -98,6 +99,36 @@ struct BSScript
         virtual void sub_22();
         virtual void sub_23();
         virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName, IFunctionArguments* apArgs) const noexcept;
+    };
+
+    template <class... T> struct EventArguments : IFunctionArguments
+    {
+        using Tuple = std::tuple<EventArguments...>;
+
+        EventArguments(T... args) : args(std::forward<T>(args)...)
+        {
+        }
+
+        virtual ~EventArguments(){};
+
+        virtual void Prepare(IFunctionArguments::Statement* apStatement) noexcept
+        {
+            apStatement->SetSize(std::tuple_size_v<std::remove_reference_t<Tuple>>);
+
+            PrepareImplementation(apStatement,
+                                  std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
+        }
+
+    private:
+
+        template <std::size_t... Is>
+        void PrepareImplementation(IFunctionArguments::Statement* apStatement,
+                                   std::index_sequence<Is...>) noexcept
+        {
+            ((apStatement->values[Is].Set(std::get<Is>(args)), ...);
+        }
+
+        Tuple args;
     };
 };
 
