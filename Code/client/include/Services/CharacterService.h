@@ -12,6 +12,7 @@ struct CharacterSpawnRequest;
 struct ServerReferencesMoveRequest;
 struct NotifyInventoryChanges;
 struct NotifyFactionsChanges;
+struct NotifyRemoveCharacter;
 
 struct World;
 struct TransportService;
@@ -35,6 +36,7 @@ struct CharacterService
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
     void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) noexcept;
+    void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) noexcept;
 
 private:
 
@@ -59,6 +61,7 @@ private:
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_factionsConnection;
+    entt::scoped_connection m_removeCharacterConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_assignCharacterConnection;

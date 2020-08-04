@@ -36,6 +36,7 @@
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
+#include <Messages/NotifyRemoveCharacter.h>
 
 #include <World.h>
 
@@ -60,6 +61,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
     m_inventoryConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
     m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
+    m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -88,6 +90,10 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
 
 void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
+    auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+
+    spdlog::info("FormId removed {:X}", formIdComponent.Id);
+
     CancelServerAssignment(aRegistry, aEntity);
 }
 
@@ -152,16 +158,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
+    Actor* pActor = nullptr;
+
+    const auto cEntity = m_world.create();
+
     // Temporary fix to load only custom forms
     if (acMessage.FormId == GameId{})
     {
-        const auto cEntity = m_world.create();
-
-        m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId);
-
-        InterpolationSystem::Setup(m_world, cEntity);
-        AnimationSystem::Setup(m_world, cEntity);
-
         TESNPC* pNpc = nullptr;
 
         if (acMessage.BaseId != GameId{})
@@ -183,21 +186,37 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             FaceGenSystem::Setup(m_world, cEntity, acMessage.FaceTints);
         }
 
-        auto pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
-        //pActor->ForcePosition();
-
-        pActor->GetExtension()->SetRemote(true);
-
-        pActor->SetInventory(acMessage.InventoryContent);
-        pActor->SetFactions(acMessage.FactionsContent);
-
-        auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
-        remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
-
-        spdlog::info("Actor created {:x}", reinterpret_cast<uintptr_t>(&(pActor->processManager->middleProcess->direction)));
-
-        m_dispatcher.trigger(ReferenceSpawnedEvent(pActor->formID, pActor->formType, cEntity));
+        pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
     }
+    else
+    {
+        const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
+
+        pActor = RTTI_CAST(TESForm::GetById(cActorId), TESForm, Actor);
+
+        if (!pActor)
+        {
+            m_world.destroy(cEntity);
+            spdlog::error("Failed to retrieve Actor {:X}, it will not be spawned, possibly missing mod", cActorId);
+            return;
+        }
+    }
+
+    m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId);
+
+    InterpolationSystem::Setup(m_world, cEntity);
+    AnimationSystem::Setup(m_world, cEntity);
+
+    pActor->GetExtension()->SetRemote(true);
+    pActor->SetInventory(acMessage.InventoryContent);
+    pActor->SetFactions(acMessage.FactionsContent);
+    pActor->Enable();
+    pActor->MoveTo(PlayerCharacter::Get(), Vector3<float>{}, true);
+
+    auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
+    remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
+
+    m_dispatcher.trigger(ReferenceSpawnedEvent(pActor->formID, pActor->formType, cEntity));
 }
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept
@@ -305,6 +324,33 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) n
 
             pActor->SetFactions(cacheComponent.FactionsContent);
         }
+    }
+}
+
+void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) noexcept
+{
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.ServerId, view](entt::entity entity) {
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+    spdlog::info("RemoveCharacter {:X}", acEvent.ServerId);
+
+    if (itor != std::end(view))
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(*itor);
+
+        spdlog::info("\tformid: {:X}", formIdComponent.Id);
+
+        const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        if (!pActor)
+            return;
+
+        pActor->Disable();
+
+        InterpolationSystem::Clean(m_world, *itor);
+        AnimationSystem::Clean(m_world, *itor);
     }
 }
 

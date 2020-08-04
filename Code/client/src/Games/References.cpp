@@ -65,15 +65,6 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     return pResult;
 }
 
-void TESObjectREFR::RequestDelete() const noexcept
-{
-    using ObjectReference = TESObjectREFR;
-
-    PAPYRUS_FUNCTION(bool, ObjectReference, Delete);
-
-    s_pDelete(this);
-}
-
 void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
 {
     ThisCall(RealRotateX, this, aX);
@@ -215,6 +206,42 @@ TESWorldSpace* TESObjectREFR::GetWorldSpace() const noexcept
         return pParentCell->worldspace;
 
     return nullptr;
+}
+
+void TESObjectREFR::Delete() const noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, Delete);
+
+    s_pDelete(this);
+}
+
+void TESObjectREFR::Disable() const noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, Disable, bool);
+
+    s_pDisable(this, true);
+}
+
+void TESObjectREFR::Enable() const noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, Enable, bool);
+
+    s_pEnable(this, true);
+}
+
+void TESObjectREFR::MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation) noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(bool, ObjectReference, MoveTo, TESObjectREFR*, float, float, float, bool);
+
+    s_pMoveTo(this, apTarget, acOffset.m_x, acOffset.m_y, acOffset.m_z, aMatchRotation);
 }
 
 float Actor::GetSpeed() noexcept

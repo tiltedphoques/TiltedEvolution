@@ -98,3 +98,8 @@ void InterpolationSystem::Setup(World& aWorld, const entt::entity aEntity) noexc
 {
     aWorld.emplace<InterpolationComponent>(aEntity);
 }
+
+void InterpolationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
+{
+    aWorld.remove_if_exists<InterpolationComponent>(aEntity);
+}

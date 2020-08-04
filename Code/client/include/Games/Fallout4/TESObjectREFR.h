@@ -142,20 +142,22 @@ struct TESObjectREFR : TESForm
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
-    void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
-    void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
-
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
 
+    void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
-    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
-
     String SerializeInventory() const noexcept;
+
+    void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
+    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
     void DeserializeInventory(const String& acData) noexcept;
 
     void RemoveAllItems() noexcept;
-    void RequestDelete() const noexcept;
+    void Delete() const noexcept;
+    void Disable() const noexcept;
+    void Enable() const noexcept;
+    void MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation = false) noexcept;
 
 public:
 

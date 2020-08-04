@@ -10,6 +10,7 @@ struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
 struct RequestInventoryChanges;
 struct RequestFactionsChanges;
+struct RemoveCharacterRequest;
 
 struct CharacterService
 {
@@ -24,6 +25,7 @@ protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
+    void OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
@@ -41,6 +43,7 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_characterAssignRequestConnection;
+    entt::scoped_connection m_removeChatacterConnection;
     entt::scoped_connection m_characterSpawnedConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_inventoryChangesConnection;
