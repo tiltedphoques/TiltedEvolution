@@ -28,7 +28,7 @@ BSFixedString& BSFixedString::operator=(BSFixedString&& aRhs)
 }
 
 
-void BSFixedString::Release()
+void BSFixedString::Release() noexcept
 {
     TP_THIS_FUNCTION(TConstructor, void, BSFixedString);
 
@@ -36,6 +36,17 @@ void BSFixedString::Release()
 
     ThisCall(s_release, this);
 }
+
+void BSFixedString::Set(const char* acpStr) noexcept
+{
+    TP_THIS_FUNCTION(TSet, void, BSFixedString, const char* acpStr);
+
+    POINTER_FALLOUT4(TSet, s_set, 0x141B41E70 - 0x140000000);
+
+    ThisCall(s_set, this, acpStr);
+}
+
+
 
 BSFixedString::~BSFixedString()
 {

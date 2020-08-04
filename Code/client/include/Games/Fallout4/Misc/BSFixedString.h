@@ -53,7 +53,8 @@ struct BSFixedString
 
     BSFixedString& operator=(BSFixedString&& aRhs);
 
-    void Release();
+    void Release() noexcept;
+    void Set(const char* acpStr) noexcept;
 
     [[nodiscard]] bool IsAscii() const noexcept
     {
