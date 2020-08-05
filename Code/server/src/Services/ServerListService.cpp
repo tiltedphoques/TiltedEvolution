@@ -8,6 +8,12 @@
 
 #include <httplib.h>
 
+#if TP_SKYRIM
+static const char* s_listEndpoint = "https://skyrim-reborn-list.skyrim-together.com";
+#elif TP_FALLOUT4
+static const char* s_listEndpoint = "https://fallout-reborn-list.skyrim-together.com";
+#endif
+
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this)),
       m_nextAnnounce(std::chrono::seconds(0))
@@ -48,7 +54,7 @@ void ServerListService::Announce() const noexcept
         const httplib::Params params{
             {"port", std::to_string(port)}, {"player_count", std::to_string(playerCount)}, {"name", std::string(cName.c_str(), cName.size())}};
 
-        httplib::Client client("https://reborn-list.skyrim-together.com");
+        httplib::Client client(s_listEndpoint);
         const auto response = client.Post("/announce", params);
 
         // If we send a 203 it means we banned this server
