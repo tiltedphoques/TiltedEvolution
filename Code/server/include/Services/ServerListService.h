@@ -22,6 +22,8 @@ private:
 
     void Announce() const noexcept;
 
+    static void DoPost(String acName, uint16_t aPort, uint32_t aPlayerCount) noexcept;
+
     World& m_world;
 
     entt::scoped_connection m_updateConnection;

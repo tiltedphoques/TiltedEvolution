@@ -4,6 +4,8 @@
 #include <Events/PlayerLeaveEvent.h>
 #include <GameServer.h>
 
+#include <future>
+
 #include <Components.h>
 
 #include <httplib.h>
@@ -46,23 +48,25 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    uint32_t playerCount = m_world.view<PlayerComponent>().size();
-    uint32_t port = GameServer::Get()->GetPort();
+    uint32_t playerCount = m_world.view<PlayerComponent>().size() & 0xFFFFFFFF;
+    uint16_t port = GameServer::Get()->GetPort();
     const auto& cName = GameServer::Get()->GetName();
 
-    auto DoPost = [playerCount, port, cName]() {
-        const httplib::Params params{
-            {"port", std::to_string(port)}, {"player_count", std::to_string(playerCount)}, {"name", std::string(cName.c_str(), cName.size())}};
+    auto f = std::async(std::launch::async, DoPost, cName, port, playerCount);
+}
 
-        httplib::Client client(s_listEndpoint);
-        const auto response = client.Post("/announce", params);
+void ServerListService::DoPost(String acName, uint16_t aPort, uint32_t aPlayerCount) noexcept
+{
+    const httplib::Params params{{"port", std::to_string(aPort)},
+                                 {"player_count", std::to_string(aPlayerCount)},
+                                 {"name", std::string(acName.c_str(), acName.size())}};
 
-        // If we send a 203 it means we banned this server
-        if (response && response->status == 203)
-        {
-            GameServer::Get()->Close();
-        }
-    };
+    httplib::Client client(s_listEndpoint);
+    const auto response = client.Post("/announce", params);
 
-    std::thread(DoPost).detach();
+    // If we send a 203 it means we banned this server
+    if (response && response->status == 203)
+    {
+        GameServer::Get()->Close();
+    }
 }
