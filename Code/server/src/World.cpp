@@ -3,6 +3,7 @@
 
 #include <Services/CharacterService.h>
 #include <Services/PlayerService.h>
+#include <Services/ServerListService.h>
 
 World::World()
     : m_scriptService(*this, m_dispatcher)
@@ -10,4 +11,5 @@ World::World()
     set<CharacterService>(*this, m_dispatcher);
     set<PlayerService>(*this, m_dispatcher);
     set<ModsComponent>();
+    set<ServerListService>(*this, m_dispatcher);
 }

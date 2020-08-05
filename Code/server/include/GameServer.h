@@ -25,6 +25,10 @@ struct GameServer final : Server
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;
 
+    const String& GetName() const noexcept;
+
+    void Stop() noexcept;
+
     static GameServer* Get() noexcept;
 
 protected:
@@ -40,5 +44,8 @@ private:
     String m_token;
 
     World m_world;
+
+    bool m_requestStop;
+
     static GameServer* s_pInstance;
 };
