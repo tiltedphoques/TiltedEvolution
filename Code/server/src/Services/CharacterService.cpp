@@ -17,11 +17,14 @@
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
+#include <Messages/RemoveCharacterRequest.h>
+#include <Messages/NotifyRemoveCharacter.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
+    , m_removeChatacterConnection(aDispatcher.sink<PacketEvent<RemoveCharacterRequest>>().connect<&CharacterService::OnRemoveCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
     , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
@@ -120,6 +123,44 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
     // This entity has no owner create it
     CreateCharacter(acMessage);
+}
+
+void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+    auto it = view.find(entt::entity(message.ServerId));
+    if (it == view.end())
+    {
+        spdlog::warn("Client {:X} requested the removal of an entity that doesn't exist !", acMessage.ConnectionId);
+        return;
+    }
+
+    const auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+    if (characterOwnerComponent.ConnectionId != acMessage.ConnectionId)
+    {
+        spdlog::warn("Client {:X} requested the removal of an entity that they do not own !", acMessage.ConnectionId);
+        return;  
+    }
+
+    const auto& characterCellIdComponent = view.get<CellIdComponent>(*it);
+
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+
+    NotifyRemoveCharacter response;
+    response.ServerId = World::ToInteger(*it);
+
+    for (auto entity : playerView)
+    {
+        auto& playerComponent = playerView.get<PlayerComponent>(entity);
+        auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
+
+        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
+            continue;
+
+        GameServer::Get()->Send(playerComponent.ConnectionId, response);
+    }
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept
@@ -382,7 +423,7 @@ void CharacterService::ProcessFactionsChanges() noexcept
     lastSendTimePoint = now;
 
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent >();
+    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent>();
 
     Map<ConnectionId_t, NotifyFactionsChanges> messages;
 

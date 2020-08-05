@@ -3,7 +3,7 @@
 #include <Games/Fallout4/PlayerCharacter.h>
 #include <Games/Fallout4/Forms/TESFaction.h>
 #include <Games/Fallout4/Forms/TESNPC.h>
-#include <Games/Fallout4/Extras/ExtraFactionChanges.h>
+#include <Games/Fallout4/ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
 #include <Games/Overrides.h>
 
@@ -75,7 +75,7 @@ Factions Actor::GetFactions() const noexcept
     auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
     if (pNpc)
     {
-        auto& factions = pNpc->actorBaseData.factions;
+        auto& factions = pNpc->actorData.factions;
 
         for (auto i = 0; i < factions.length; ++i)
         {

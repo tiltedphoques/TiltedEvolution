@@ -4,6 +4,8 @@
 
 #include <Events/PacketEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Events/PlayerJoinEvent.h>
+#include <Events/PlayerLeaveEvent.h>
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -28,8 +30,8 @@ GameServer* GameServer::s_pInstance = nullptr;
 
 GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToken) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now())
-    , m_name(std::move(aName))
-    , m_token(std::move(aToken))
+    , m_name(std::move(aName)), m_token(std::move(aToken)),
+      m_requestStop(false)
 {
     assert(s_pInstance == nullptr);
 
@@ -62,6 +64,9 @@ void GameServer::OnUpdate()
     auto& dispatcher = m_world.GetDispatcher();
 
     dispatcher.trigger(UpdateEvent{cDeltaSeconds});
+
+    if (m_requestStop)
+        Close();
 }
 
 void GameServer::OnConsume(const void* apData, const uint32_t aSize, const ConnectionId_t aConnectionId)
@@ -128,6 +133,8 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId)
         const auto& playerComponent = playerView.get(entity);
         if (playerComponent.ConnectionId == aConnectionId)
         {
+            m_world.GetDispatcher().trigger(PlayerLeaveEvent(entity));
+
             entitiesToDestroy.push_back(entity);
             break;
         }
@@ -180,6 +187,16 @@ void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
         const auto& playerComponent = playerView.get<const PlayerComponent>(player);
         Send(playerComponent.ConnectionId, acServerMessage);
     }
+}
+
+const String& GameServer::GetName() const noexcept
+{
+    return m_name;
+}
+
+void GameServer::Stop() noexcept
+{
+    m_requestStop = true;
 }
 
 GameServer* GameServer::Get() noexcept
@@ -266,6 +283,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
 
         Send(aConnectionId, serverResponse);
+
+        m_world.GetDispatcher().trigger(PlayerJoinEvent(cEntity));
     }
     else
     {

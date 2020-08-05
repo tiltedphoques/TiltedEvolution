@@ -60,6 +60,11 @@ void AnimationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
     aWorld.emplace<RemoteAnimationComponent>(aEntity);
 }
 
+void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
+{
+    aWorld.remove_if_exists<RemoteAnimationComponent>(aEntity);
+}
+
 void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept
 {
     auto itor = std::begin(aAnimationComponent.TimePoints);

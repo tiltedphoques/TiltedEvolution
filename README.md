@@ -1,6 +1,7 @@
 # Tilted Online
 
 [![Build Status](https://dev.azure.com/TiltedPhoques/TiltedOnline/_apis/build/status/tiltedphoques.TiltedOnline?branchName=master)](https://dev.azure.com/TiltedPhoques/TiltedOnline/_build/latest?definitionId=1&branchName=master)
+[![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
 
 This framework was created to enable multiplayer in Bethesda games, at the moment two games are supported ; **Skyrim Special Edition** and **Fallout 4**.
 

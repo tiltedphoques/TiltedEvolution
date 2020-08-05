@@ -28,7 +28,6 @@ int main(int argc, char** argv)
 
     uint16_t port = 10578;
     bool premium = false;
-    bool verbose = false;
     std::string name, token, logLevel;
 
     options.add_options()
@@ -51,6 +50,11 @@ int main(int argc, char** argv)
             return 0;
         }
 
+        if (!token.empty() && !name.empty())
+        {
+            throw std::runtime_error("A named server cannot have a token set !");
+        }
+
         GameServer server(port, premium, name.c_str(), token.c_str());
 
         while(server.IsListening())
@@ -60,6 +64,10 @@ int main(int argc, char** argv)
     {
         std::cout << "Options parse error: " << e.what() << std::endl;
         return -1;
+    }
+    catch (const std::runtime_error& e)
+    {
+        spdlog::error(e.what());
     }
 
     spdlog::shutdown();

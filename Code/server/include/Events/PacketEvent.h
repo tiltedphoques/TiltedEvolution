@@ -10,7 +10,9 @@ struct PacketEvent
         , ConnectionId(aConnectionId)
     {}
 
-    PacketEvent& operator=(const PacketEvent& acRhs)
+    constexpr PacketEvent(const PacketEvent& acRhs) = default;
+
+    constexpr PacketEvent& operator=(const PacketEvent& acRhs)
     {
         Packet = acRhs.Packet;
         ConnectionId = acRhs.ConnectionId;

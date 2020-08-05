@@ -5,6 +5,7 @@
 #include <Games/Fallout4/ExtraData.h>
 
 struct TESObjectREFR;
+struct TESForm;
 
 struct BSExtraData
 {
@@ -16,12 +17,13 @@ struct BSExtraData
 #if TP_FALLOUT4
     uint8_t pad10[2];
     ExtraData type;
-    uint8_t pad13[0x20 - 0x13];
+    TESForm* form;
 #endif
 };
 
 #if TP_FALLOUT4
 static_assert(offsetof(BSExtraData, type) == 0x12);
+static_assert(offsetof(BSExtraData, form) == 0x18);
 static_assert(sizeof(BSExtraData) == 0x20);
 #endif
 

@@ -4,14 +4,15 @@ steps:
 
     - pwsh: Invoke-WebRequest https://download.skyrim-together.com/DXSDK.zip -OutFile DXSDK.zip
       displayName: Download DirectX SDK
-  
+
     - pwsh: Expand-Archive -Path DXSDK.zip -DestinationPath DXSDK
       displayName: Extract DirectX SDK
-  
+
     - script: |
         cd Build
         ./MakeVS2019Projects.bat
       displayName: Generate
+
     - task: VSBuild@1
       displayName: Build
       inputs:
@@ -28,3 +29,41 @@ steps:
         cd Build/bin/%real_platform%
         Tests.exe
       displayName: Test
+
+    - task: CopyFiles@2
+      displayName: Copy dll
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: '$(buildPrefix)Together.dll'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@2
+      displayName: Copy loader
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'Loader.exe'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@2
+      displayName: Copy cef process
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'tp_process.exe'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@2
+      displayName: Copy proxy dll
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'Proxy.dll'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: $(configuration)_client
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'Build/bin/x64/$(buildPrefix)TogetherServer.exe'
+        artifactName: $(configuration)_server_windows
