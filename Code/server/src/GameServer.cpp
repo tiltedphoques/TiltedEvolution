@@ -226,7 +226,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             Mods::Entry entry;
             entry.Filename = standardMod.Filename;
-            entry.Id = id;
+            entry.Id = static_cast<uint16_t>(id);
 
             serverMods.StandardMods.push_back(entry);
         }
@@ -241,7 +241,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             Mods::Entry entry;
             entry.Filename = liteMod.Filename;
-            entry.Id = id;
+            entry.Id = static_cast<uint16_t>(id);
 
             serverMods.LiteMods.push_back(entry);
         }

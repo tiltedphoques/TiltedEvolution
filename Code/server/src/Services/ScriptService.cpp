@@ -1,4 +1,5 @@
 #include <Services/ScriptService.h>
+#include <Services/EnvironmentService.h>
 #include <World.h>
 
 #include <Scripts/Npc.h>
@@ -9,6 +10,7 @@
 #include <Messages/ClientRpcCalls.h>
 #include <Messages/ServerScriptUpdate.h>
 
+#include <Filesystem.hpp>
 #include <Components.h>
 #include <GameServer.h>
 
@@ -49,7 +51,8 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
 
 void ScriptService::Initialize() noexcept
 {
-    LoadFullScripts("scripts");
+    std::filesystem::path fullpath = TiltedPhoques::GetPath().string() + "\\scripts";
+    LoadFullScripts(fullpath);
 }
 
 Scripts ScriptService::SerializeScripts() noexcept
@@ -170,12 +173,23 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     worldType["get"] = [this]() { return &m_world; };
     worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
     worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
+
+    // time api
+    worldType["SetTime"] = [&](int iHour, int iMinute, float fScale) { return m_world.ctx<EnvironmentService>().SetTime(iHour, iMinute, fScale); };
+    worldType["GetTime"] = [&]() { return m_world.ctx<EnvironmentService>().GetTime(); };
+    worldType["GetTimeScale"] = [&]() { return m_world.ctx<EnvironmentService>().GetTimeScale(); };
 }
 
 void ScriptService::BindStaticFunctions(ScriptContext& aContext) noexcept
 {
-    aContext.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) { AddEventHandler(std::move(acName), std::move(aFunction)); });
-    aContext.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
+    aContext.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) 
+    { 
+        AddEventHandler(std::move(acName), std::move(aFunction)); 
+    });
+    aContext.set_function("cancelEvent", [this](std::string acReason)
+    { 
+        CancelEvent(std::move(acReason)); 
+    });
 }
 
 void ScriptService::AddEventHandler(const std::string acName, const sol::function acFunction) noexcept

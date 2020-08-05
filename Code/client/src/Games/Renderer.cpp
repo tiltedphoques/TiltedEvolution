@@ -63,7 +63,8 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
 #else
     pConfig->name = "Fallout Together";
 #endif
-
+    pWindowConfig->bBorderlessDisplay = false;
+    pWindowConfig->bFullScreenDisplay = false;
     const wchar_t *pCmdl = GetCommandLineW();
     if (std::wcsstr(pCmdl, L"+force_windowed"))
     {

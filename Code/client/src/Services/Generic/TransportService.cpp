@@ -23,6 +23,7 @@
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
+#include <Messages/ServerTimeSettings.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -97,6 +98,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 
     TRANSPORT_DISPATCH(AssignCharacterResponse);
     TRANSPORT_DISPATCH(ServerReferencesMoveRequest);
+    TRANSPORT_DISPATCH(ServerTimeSettings);
     TRANSPORT_DISPATCH(CharacterSpawnRequest);
     TRANSPORT_DISPATCH(NotifyInventoryChanges);
     TRANSPORT_DISPATCH(NotifyFactionsChanges);
