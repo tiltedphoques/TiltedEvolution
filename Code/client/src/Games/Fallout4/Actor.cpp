@@ -88,7 +88,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto pFactionExtras = RTTI_CAST(GetExtraDataList()->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto pFactionExtras = RTTI_CAST(extraData->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
     if (pFactionExtras)
     {
         for (auto i = 0; i < pFactionExtras->entries.length; ++i)
