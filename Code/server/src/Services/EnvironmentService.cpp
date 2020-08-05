@@ -3,60 +3,46 @@
 
 #include <Services/EnvironmentService.h>
 #include <Events/UpdateEvent.h>
-#include <Events/CharacterSpawnedEvent.h>
+#include <Events/PlayerJoinEvent.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Components.h>
 
-EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_World(aWorld)
+EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
-    m_joinConnection = aDispatcher.sink<CharacterSpawnedEvent>().connect<&EnvironmentService::OnCharSpawn>(this);
+    m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
 }
 
-void EnvironmentService::OnCharSpawn(const CharacterSpawnedEvent &acEvent) noexcept
+void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     auto *pServer = GameServer::Get();
     ServerTimeSettings timeMsg;
     timeMsg.ServerTick = pServer->GetTickRate();
-    timeMsg.TimeScale = m_fTimeScale;
-    timeMsg.Time = m_fTime;
+    timeMsg.TimeScale = m_timeScale;
+    timeMsg.Time = m_time;
 
-    const auto &characterCellIdComponent = m_World.get<CellIdComponent>(acEvent.Entity);
-    const auto &characterOwnerComponent = m_World.get<OwnerComponent>(acEvent.Entity);
-
-    const auto view = m_World.view<PlayerComponent, CellIdComponent>();
-
-    for (auto entity : view)
-    {
-        auto &playerComponent = view.get<PlayerComponent>(entity);
-        auto &cellIdComponent = view.get<CellIdComponent>(entity);
-
-        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId ||
-            characterCellIdComponent.CellId != cellIdComponent.CellId)
-            continue;
-
-        pServer->Send(playerComponent.ConnectionId, timeMsg);
-    }
+    spdlog::warn("I'm sending the timeprojection : {}:{}:{}", m_time, m_timeScale, pServer->GetTickRate());
+    const auto &Player = m_world.get<PlayerComponent>(acEvent.Entity);
+    pServer->Send(Player.ConnectionId, timeMsg);
 }
 
-bool EnvironmentService::SetTime(int iHour, int iMinute, float fScale)
+bool EnvironmentService::SetTime(int Hour, int Minutes, float Scale)
 {
-    m_fTimeScale = fScale;
+    m_timeScale = Scale;
 
-    if (iHour >= 0 && iHour <= 24 && iMinute >= 0 && iMinute <= 60)
+    if (Hour >= 0 && Hour <= 24 && Minutes >= 0 && Minutes <= 60)
     {
         // encode time as skyrim time
-        // this is technically not 100% accurate, but since
-        // every client gets this applied it should be fine?
-        float fMinute = static_cast<float>(iMinute) * 0.17f;
-        fMinute = floor(fMinute * 100) / 1000;
-        m_fTime = static_cast<float>(iHour) + fMinute;
+        // *i know* this is technically not 100% accurate
+        float Min = static_cast<float>(Minutes) * 0.17f;
+        Min = floor(Min * 100) / 1000;
+        m_time = static_cast<float>(Hour) + Min;
 
         auto *pServer = GameServer::Get();
         ServerTimeSettings timeMsg;
         timeMsg.ServerTick = pServer->GetTickRate();
-        timeMsg.TimeScale = m_fTimeScale;
-        timeMsg.Time = m_fTime;
+        timeMsg.TimeScale = m_timeScale;
+        timeMsg.Time = m_time;
         pServer->SendToLoaded(timeMsg);
         return true;
     }
@@ -66,13 +52,19 @@ bool EnvironmentService::SetTime(int iHour, int iMinute, float fScale)
 
 std::pair<int, int> EnvironmentService::GetTime()
 {
-    float fHour = floor(m_fTime);
-    float fMin = (m_fTime - fHour) / 17.f;
+    float Hour = floor(m_time);
+    float Minutes = (m_time - Hour) / 17.f;
 
-    int iHour = static_cast<int>(fHour);
-    int iMinutes = static_cast<int>(ceil((fMin * 100.f) * 10.f));
+    int iHour = static_cast<int>(Hour);
+    int iMinutes = static_cast<int>(ceil((Minutes * 100.f) * 10.f));
 
     return {iHour, iMinutes};
+}
+
+std::tuple<int, int, int> EnvironmentService::GetDate()
+{
+    // return the Date in a **reasonable** format
+    return {m_day, m_month, m_year};
 }
 
 static const int cDayLengthArray[12] = {
@@ -92,33 +84,29 @@ static int GetNumerOfDaysByMonthIndex(int index)
 void EnvironmentService::OnUpdate(const UpdateEvent &aEvent) noexcept
 {
     // update server time projection
-    m_fTime = (aEvent.Delta * m_fTimeScale) + m_fTime;
-    if (m_fTime > 24.f)
+    m_time = (aEvent.Delta * (m_timeScale * 0.00027777778f)) + m_time;
+    if (m_time > 24.f)
     {
-        int iDayLimit = GetNumerOfDaysByMonthIndex(m_iMonth);
+        int maxDays = GetNumerOfDaysByMonthIndex(m_month);
 
-        while (m_fTime > 24.f)
+        while (m_time > 24.f)
         {
-            m_fTime = m_fTime + -24.f;
-            m_iDay++;
+            m_time = m_time + -24.f;
+            m_day++;
         }
 
-        if (m_iDay > iDayLimit)
+        if (m_day > maxDays)
         {
-            m_iMonth++;
-            m_iDay = m_iDay - iDayLimit;
+            m_month++;
+            m_day = m_day - maxDays;
 
-            if (m_iMonth > 12)
+            if (m_month > 12)
             {
-                m_iMonth = m_iMonth + -12;
-                m_iYear++;
+                m_month = m_month + -12;
+                m_year++;
             }
         }
     }
 
-#if 0
-    int x, y;
-    GetTime(x, y);
-    std::printf("Current time projection %f the current time is %d:%d\n", m_fTime, x , y);
-#endif
+    std::printf("Time %f\n", m_time);
 }

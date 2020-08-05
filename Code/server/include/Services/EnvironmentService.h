@@ -4,7 +4,7 @@
 
 struct World;
 struct UpdateEvent;
-struct CharacterSpawnedEvent;
+struct PlayerJoinEvent;
 
 class EnvironmentService
 {
@@ -13,20 +13,21 @@ public:
 
     bool SetTime(int, int, float);
     std::pair<int, int> GetTime();
-    float GetTimeScale() const { return m_fTimeScale; }
+    std::tuple<int, int, int> GetDate();
+    float GetTimeScale() const { return m_timeScale; }
 
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 
-    void OnCharSpawn(const CharacterSpawnedEvent &) noexcept;
+    void OnPlayerJoin(const PlayerJoinEvent&) noexcept;
 
-    // default skyrim values
-    float m_fTimeScale = 20.f;
-    float m_fTime = 0.f;
-    int m_iYear = 0;
-    int m_iDay = 0;
-    int m_iMonth = 0;
+    // Default time: 01/01/01 at 12:00
+    float m_timeScale = 20.f;
+    float m_time = 12.f;
+    int m_year = 1;
+    int m_month = 1;
+    int m_day = 1;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
-    World &m_World;
+    World &m_world;
 };

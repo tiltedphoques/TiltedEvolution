@@ -56,6 +56,8 @@ int main(int argc, char** argv)
         }
 
         GameServer server(port, premium, name.c_str(), token.c_str());
+        if (!server.Initialize())
+            return -1;
 
         while(server.IsListening())
             server.Update();

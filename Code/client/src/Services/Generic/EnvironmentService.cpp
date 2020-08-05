@@ -9,27 +9,22 @@
 
 EnvironmentService::EnvironmentService(entt::dispatcher &aDispatcher)
 {
-    m_TimeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
+    m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
-    m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&EnvironmentService::OnConnected>(this);
-    m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
 }
 
 void EnvironmentService::OnTimeUpdate(const ServerTimeSettings &acMessage)
 {
-    std::printf("i got the time!!!!");
-    m_fTimeScale = acMessage.TimeScale;
-    m_fTime = acMessage.Time;
-}
-
-void EnvironmentService::OnConnected(const ConnectedEvent &acConnectedEvent) const noexcept
-{
-    // TBD
+    // TODO: think about caching previous time and reapplying it on disconnect?
+    m_timeScale = acMessage.TimeScale;
+    m_time = acMessage.Time;
+    m_enableMPtime = true;
 }
 
 void EnvironmentService::OnDisconnected(const DisconnectedEvent &acDisconnectedEvent) noexcept
 {
-    m_fTime = -1.f;
+    // clear time override
+    m_enableMPtime = false;
 }
 
 static const int cDayLengthArray[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -46,41 +41,43 @@ static int GetNumerOfDaysByMonthIndex(int index)
 
 void EnvironmentService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 {
-    if (m_fTime != -1.f)
+    // we apply the time here so we can apply it at a fixed rate
+    //(the game does not do this)
+    if (m_enableMPtime)
     {
         // update server time projection
-        m_fTime = (acEvent.Delta * (m_fTimeScale * 0.00027777778f)) + m_fTime;
-        if (m_fTime > 24.f)
+        m_time = (acEvent.Delta * (m_timeScale * 0.00027777778f)) + m_time;
+        if (m_time > 24.f)
         {
-            int iDayLimit = GetNumerOfDaysByMonthIndex(m_iMonth);
+            int iDayLimit = GetNumerOfDaysByMonthIndex(m_month);
 
-            while (m_fTime > 24.f)
+            while (m_time > 24.f)
             {
-                m_fTime = m_fTime + -24.f;
-                m_iDay++;
+                m_time = m_time + -24.f;
+                m_day++;
             }
 
-            if (m_iDay > iDayLimit)
+            if (m_day > iDayLimit)
             {
-                m_iMonth++;
-                m_iDay = m_iDay - iDayLimit;
+                m_month++;
+                m_day = m_day - iDayLimit;
 
-                if (m_iMonth > 12)
+                if (m_month > 12)
                 {
-                    m_iMonth = m_iMonth + -12;
-                    m_iYear++;
+                    m_month = m_month + -12;
+                    m_year++;
                 }
             }
         }
 
         // apply the time to the game
         auto *pGameTime = TimeData::Get();
-        pGameTime->GameHour->f = m_fTime;
-        pGameTime->GameDay->i = m_iDay;
-        pGameTime->GameMonth->i = m_iMonth;
-        pGameTime->GameYear->i = m_iYear;
-        pGameTime->GameDaysPassed->f = (m_fTime * 0.041666668f) + m_iDay;
+        pGameTime->GameHour->f = m_time;
+        pGameTime->GameDay->i = m_day;
+        pGameTime->GameMonth->i = m_month;
+        pGameTime->GameYear->i = m_year;
+        pGameTime->GameDaysPassed->f = (m_time * 0.041666668f) + m_day;
 
-        std::printf("time %f\n", m_fTime);
+        std::printf("time %f\n", m_time);
     }
 }

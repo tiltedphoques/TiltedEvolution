@@ -24,6 +24,7 @@ struct ScriptService : ScriptStore
 
     TP_NOCOPYMOVE(ScriptService);
 
+    void Initialize() noexcept;
     Scripts SerializeScripts() noexcept;
     Objects GenerateDifferential() noexcept;
     FullObjects GenerateFull() noexcept;
@@ -58,7 +59,6 @@ protected:
 
 private:
 
-    void Initialize() noexcept;
 
     using TCallbacks = Vector<sol::function>;
 

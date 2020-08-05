@@ -17,6 +17,8 @@ struct GameServer final : Server
 
     TP_NOCOPYMOVE(GameServer);
 
+    bool Initialize();
+
     void OnUpdate() override;
     void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
     void OnConnection(ConnectionId_t aHandle) override;
@@ -43,7 +45,7 @@ private:
     String m_name;
     String m_token;
 
-    World m_world;
+    std::unique_ptr<World> m_pWorld;
 
     bool m_requestStop;
 

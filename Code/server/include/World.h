@@ -3,6 +3,7 @@
 #include <Services/ScriptService.h>
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
+#include <Services/EnvironmentService.h>
 
 struct World : entt::registry
 {
@@ -17,13 +18,15 @@ struct World : entt::registry
     const CharacterService& GetCharacterService() const noexcept { return ctx<CharacterService>(); }
     PlayerService& GetPlayerService() noexcept { return ctx<PlayerService>(); }
     const PlayerService& GetPlayerService() const noexcept { return ctx<PlayerService>(); }
-    ScriptService& GetScriptService() noexcept { return m_scriptService; }
-    const ScriptService& GetScriptService() const noexcept { return m_scriptService; }
+    ScriptService& GetScriptService() noexcept { return *m_scriptService; }
+    const ScriptService& GetScriptService() const noexcept { return *m_scriptService; }
+    EnvironmentService& GetEnvironmentService() noexcept { return ctx<EnvironmentService>(); }
+    const EnvironmentService& GetEnvironmentService() const noexcept { return ctx<EnvironmentService>(); }
 
     [[nodiscard]] static uint32_t ToInteger(entt::entity aEntity) { return to_integral(aEntity); }
 
 private:
     entt::dispatcher m_dispatcher;
 
-    ScriptService m_scriptService;
+    std::unique_ptr<ScriptService> m_scriptService;
 };

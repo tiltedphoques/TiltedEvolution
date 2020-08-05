@@ -18,9 +18,8 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : ScriptStore(true)
     , m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
-    , m_rpcCallsRequest(aDispatcher.sink< PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
+    , m_rpcCallsRequest(aDispatcher.sink<PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
 {
-    Initialize();
 }
 
 Vector<Script::Player> ScriptService::GetPlayers() const
@@ -174,10 +173,18 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
     worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
 
-    // time api
-    worldType["SetTime"] = [&](int iHour, int iMinute, float fScale) { return m_world.ctx<EnvironmentService>().SetTime(iHour, iMinute, fScale); };
-    worldType["GetTime"] = [&]() { return m_world.ctx<EnvironmentService>().GetTime(); };
-    worldType["GetTimeScale"] = [&]() { return m_world.ctx<EnvironmentService>().GetTimeScale(); };
+    auto clockType = aContext.new_usertype<EnvironmentService>("Clock", sol::no_constructor);
+    clockType["get"] = [this]() { return &m_world.GetEnvironmentService(); };
+    clockType["SetTime"] = &EnvironmentService::SetTime;
+    clockType["GetTime"] = &EnvironmentService::GetTime;
+    clockType["GetDate"] = &EnvironmentService::GetDate;
+    clockType["GetTimeScale"] = &EnvironmentService::GetTimeScale;
+    clockType["GetRealTime"] = []() { 
+        auto t = std::time(nullptr);
+        int h = (t / 3600) % 24;
+        int m = (t / 60) % 60;
+        return std::pair{h, m};
+    };
 }
 
 void ScriptService::BindStaticFunctions(ScriptContext& aContext) noexcept

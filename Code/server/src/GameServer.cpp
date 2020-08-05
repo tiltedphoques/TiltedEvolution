@@ -44,13 +44,21 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     }
 
     spdlog::info("Server started on port {}", GetPort());
-
     SetTitle();
+
+    m_pWorld = std::make_unique<World>();
 }
 
 GameServer::~GameServer()
 {
     s_pInstance = nullptr;
+}
+
+bool GameServer::Initialize()
+{
+    // this is a hack
+    m_pWorld->GetScriptService().Initialize();
+    return true;
 }
 
 void GameServer::OnUpdate()
@@ -61,7 +69,7 @@ void GameServer::OnUpdate()
 
     const auto cDeltaSeconds = std::chrono::duration_cast<std::chrono::duration<float>>(cDelta).count();
 
-    auto& dispatcher = m_world.GetDispatcher();
+    auto& dispatcher = m_pWorld->GetDispatcher();
 
     dispatcher.trigger(UpdateEvent{cDeltaSeconds});
 
@@ -82,7 +90,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         return;
     }
 
-    auto& dispatcher = m_world.GetDispatcher();
+    auto& dispatcher = m_pWorld->GetDispatcher();
 
     switch(pMessage->GetOpcode())
     {
@@ -119,21 +127,19 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId)
 
     spdlog::info("Connection ended {:x}", aConnectionId);
 
-    m_world.GetScriptService().HandlePlayerQuit(aConnectionId);
-
-    auto& registry = m_world;
+    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId);
 
     Vector<entt::entity> entitiesToDestroy;
     entitiesToDestroy.reserve(500);
 
     // Find if a player is associated with this connection and delete it
-    auto playerView = registry.view<PlayerComponent>();
+    auto playerView = m_pWorld->view<PlayerComponent>();
     for (auto entity : playerView)
     {
         const auto& playerComponent = playerView.get(entity);
         if (playerComponent.ConnectionId == aConnectionId)
         {
-            m_world.GetDispatcher().trigger(PlayerLeaveEvent(entity));
+            m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(entity));
 
             entitiesToDestroy.push_back(entity);
             break;
@@ -141,7 +147,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId)
     }
 
     // Cleanup all entities that we own
-    auto ownerView = registry.view<OwnerComponent>();
+    auto ownerView = m_pWorld->view<OwnerComponent>();
     for (auto entity : ownerView)
     {
         const auto& ownerComponent = ownerView.get(entity);
@@ -153,8 +159,8 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId)
 
     for(auto entity : entitiesToDestroy)
     {
-        registry.remove_if_exists<ScriptsComponent>(entity);
-        registry.destroy(entity);
+        m_pWorld->remove_if_exists<ScriptsComponent>(entity);
+        m_pWorld->destroy(entity);
     }
 
     SetTitle();
@@ -180,7 +186,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    auto playerView = m_world.view<const PlayerComponent, const CellIdComponent>();
+    auto playerView = m_pWorld->view<const PlayerComponent, const CellIdComponent>();
 
     for (auto player : playerView)
     {
@@ -208,7 +214,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 {
     if(acRequest->Token == m_token)
     {
-        auto& scripts = m_world.GetScriptService();
+        auto& scripts = m_pWorld->GetScriptService();
 
         const auto info = GetConnectionInfo(aConnectionId);
 
@@ -218,7 +224,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         // TODO: Abort if a mod didn't accept the player
 
-        auto& registry = m_world;
+        auto& registry = *m_pWorld;
         auto& mods = registry.ctx<ModsComponent>();
 
         const auto cEntity = registry.create();
@@ -263,7 +269,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             serverMods.LiteMods.push_back(entry);
         }
 
-        Script::Player player(cEntity, m_world);
+        Script::Player player(cEntity, *m_pWorld);
         auto [canceled, reason] = scripts.HandlePlayerConnect(player);
 
         if (canceled)
@@ -272,7 +278,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             Kick(aConnectionId);
 
-            m_world.destroy(cEntity);
+            m_pWorld->destroy(cEntity);
 
             return;
         }
@@ -284,7 +290,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         Send(aConnectionId, serverResponse);
 
-        m_world.GetDispatcher().trigger(PlayerJoinEvent(cEntity));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(cEntity));
     }
     else
     {
