@@ -10,7 +10,7 @@
 
 #if TP_SKYRIM
 static const char* s_listEndpoint = "https://skyrim-reborn-list.skyrim-together.com";
-#elif TP_FALLOUT4
+#elif TP_FALLOUT
 static const char* s_listEndpoint = "https://fallout-reborn-list.skyrim-together.com";
 #endif
 
