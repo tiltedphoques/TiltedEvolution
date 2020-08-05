@@ -134,25 +134,27 @@ struct TESObjectREFR : TESForm
     virtual void sub_9A();
     virtual void sub_9B();
 
-    void RequestDelete() const noexcept;
-
     void SetRotation(float aX, float aY, float aZ) noexcept;
-
-    void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
-    void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
 
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;
+    ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
+    BSExtraDataList* GetExtraDataList() noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
-    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
-
+    void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     String SerializeInventory() const noexcept;
+
+    void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
+    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
     void DeserializeInventory(const String& acData) noexcept;
-
+    
     void RemoveAllItems() noexcept;
+    void Delete() const noexcept;
+    void Disable() const noexcept;
+    void Enable() const noexcept;
+    void MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation = false) noexcept;
 
-    ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

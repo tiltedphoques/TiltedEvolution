@@ -21,5 +21,6 @@ enum ServerOpcode : unsigned char
     kServerScriptUpdate,
     kCharacterSpawnRequest,
     kNotifyInventoryChanges,
-    kNotifyFactionsChanges
+    kNotifyFactionsChanges,
+    kNotifyRemoveCharacter
 };
