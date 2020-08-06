@@ -7,6 +7,7 @@
 #include <Messages/ServerTimeSettings.h>
 
 #include <Games/Skyrim/TimeManager.h>
+#include <Games/Fallout4/TimeManager.h>
 
 constexpr float kTransitionSpeed = 5.f;
 
