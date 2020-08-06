@@ -6,16 +6,16 @@ steps:
   - script: |
       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       sudo apt-get update
-      sudo apt-get install g++-9 g++-9-multilib
+      sudo apt-get install g++-10 g++-10-multilib
 
       sudo update-alternatives --remove-all gcc
       sudo update-alternatives --remove-all g++
 
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
       sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 100
       sudo update-alternatives --set cc /usr/bin/gcc
 
-      sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
+      sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
       sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 100
       sudo update-alternatives --set c++ /usr/bin/g++
     displayName: Install

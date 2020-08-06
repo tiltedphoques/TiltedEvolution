@@ -10,7 +10,7 @@
 // dequeue_for(..) - will block until the queue is not empty or timeout have
 // passed.
 
-#include "spdlog/details/circular_q.h"
+#include <spdlog/details/circular_q.h>
 
 #include <condition_variable>
 #include <mutex>
@@ -59,7 +59,8 @@ public:
             {
                 return false;
             }
-            q_.pop_front(popped_item);
+            popped_item = std::move(q_.front());
+            q_.pop_front();
         }
         pop_cv_.notify_one();
         return true;
@@ -95,7 +96,8 @@ public:
         {
             return false;
         }
-        q_.pop_front(popped_item);
+        popped_item = std::move(q_.front());
+        q_.pop_front();
         pop_cv_.notify_one();
         return true;
     }

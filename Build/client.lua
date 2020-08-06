@@ -43,7 +43,7 @@ project ("Client")
     {
         "../Code/client/include/**.h",
         "../Code/client/src/**.cpp",
-        "../Libraries/spdlog/spdlog.cpp"
+        "../Libraries/spdlog/*.cpp"
     }
     
     pchheader ("stdafx.h")

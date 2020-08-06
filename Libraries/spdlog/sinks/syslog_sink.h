@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "spdlog/sinks/base_sink.h"
-#include "spdlog/details/null_mutex.h"
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/details/null_mutex.h>
+#include <spdlog/details/synchronous_factory.h>
 
 #include <array>
 #include <string>
@@ -22,13 +23,13 @@ class syslog_sink : public base_sink<Mutex>
 public:
     syslog_sink(std::string ident, int syslog_option, int syslog_facility, bool enable_formatting)
         : enable_formatting_{enable_formatting}
-        , syslog_levels_{/* spdlog::level::trace      */ LOG_DEBUG,
+        , syslog_levels_{{/* spdlog::level::trace      */ LOG_DEBUG,
               /* spdlog::level::debug      */ LOG_DEBUG,
               /* spdlog::level::info       */ LOG_INFO,
               /* spdlog::level::warn       */ LOG_WARNING,
               /* spdlog::level::err        */ LOG_ERR,
               /* spdlog::level::critical   */ LOG_CRIT,
-              /* spdlog::level::off        */ LOG_INFO}
+              /* spdlog::level::off        */ LOG_INFO}}
         , ident_{std::move(ident)}
     {
         // set ident to be program name if empty
@@ -47,10 +48,9 @@ protected:
     void sink_it_(const details::log_msg &msg) override
     {
         string_view_t payload;
-
+        memory_buf_t formatted;
         if (enable_formatting_)
         {
-            memory_buf_t formatted;
             base_sink<Mutex>::formatter_->format(msg, formatted);
             payload = string_view_t(formatted.data(), formatted.size());
         }
@@ -93,14 +93,14 @@ using syslog_sink_st = syslog_sink<details::null_mutex>;
 } // namespace sinks
 
 // Create and register a syslog logger
-template<typename Factory = default_factory>
+template<typename Factory = spdlog::synchronous_factory>
 inline std::shared_ptr<logger> syslog_logger_mt(const std::string &logger_name, const std::string &syslog_ident = "", int syslog_option = 0,
     int syslog_facility = LOG_USER, bool enable_formatting = false)
 {
     return Factory::template create<sinks::syslog_sink_mt>(logger_name, syslog_ident, syslog_option, syslog_facility, enable_formatting);
 }
 
-template<typename Factory = default_factory>
+template<typename Factory = spdlog::synchronous_factory>
 inline std::shared_ptr<logger> syslog_logger_st(const std::string &logger_name, const std::string &syslog_ident = "", int syslog_option = 0,
     int syslog_facility = LOG_USER, bool enable_formatting = false)
 {
