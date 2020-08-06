@@ -32,7 +32,7 @@ workspace ("Tilted Online Framework")
     
     flags { "MultiProcessorCompile" }
     
-    cppdialect "C++17"
+    cppdialect "C++20"
 
 	platforms { "x64" }
 

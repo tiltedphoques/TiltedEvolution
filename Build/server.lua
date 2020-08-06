@@ -35,7 +35,7 @@ project ("Server")
     {
         "../Code/server/include/**.h",
         "../Code/server/src/**.cpp",
-        "../Libraries/spdlog/spdlog.cpp"
+        "../Libraries/spdlog/*.cpp"
     }
     
     pchheader ("stdafx.h")

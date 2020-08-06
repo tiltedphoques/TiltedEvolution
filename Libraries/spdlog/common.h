@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "spdlog/tweakme.h"
+#include <spdlog/tweakme.h>
+#include <spdlog/details/null_mutex.h>
 
 #include <atomic>
 #include <chrono>
@@ -14,31 +15,29 @@
 #include <type_traits>
 #include <functional>
 
-#ifdef _WIN32
-#ifndef NOMINMAX
-#define NOMINMAX // prevent windows redefining min/max
-#endif
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-
-#include <windows.h>
-#endif //_WIN32
-
 #ifdef SPDLOG_COMPILED_LIB
 #undef SPDLOG_HEADER_ONLY
-#define SPDLOG_INLINE
+#if defined(_WIN32) && defined(SPDLOG_SHARED_LIB)
+#ifdef spdlog_EXPORTS
+#define SPDLOG_API __declspec(dllexport)
 #else
+#define SPDLOG_API __declspec(dllimport)
+#endif
+#else // !defined(_WIN32) || !defined(SPDLOG_SHARED_LIB)
+#define SPDLOG_API
+#endif
+#define SPDLOG_INLINE
+#else // !defined(SPDLOG_COMPILED_LIB)
+#define SPDLOG_API
 #define SPDLOG_HEADER_ONLY
 #define SPDLOG_INLINE inline
-#endif
+#endif // #ifdef SPDLOG_COMPILED_LIB
 
-#include "spdlog/fmt/fmt.h"
+#include <spdlog/fmt/fmt.h>
 
 // visual studio upto 2013 does not support noexcept nor constexpr
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define SPDLOG_NOEXCEPT throw()
+#define SPDLOG_NOEXCEPT _NOEXCEPT
 #define SPDLOG_CONSTEXPR
 #else
 #define SPDLOG_NOEXCEPT noexcept
@@ -61,7 +60,7 @@
 #endif
 
 #ifndef SPDLOG_FUNCTION
-#define SPDLOG_FUNCTION __FUNCTION__
+#define SPDLOG_FUNCTION static_cast<const char *>(__FUNCTION__)
 #endif
 
 #ifdef SPDLOG_NO_EXCEPTIONS
@@ -99,20 +98,14 @@ using log_clock = std::chrono::system_clock;
 using sink_ptr = std::shared_ptr<sinks::sink>;
 using sinks_init_list = std::initializer_list<sink_ptr>;
 using err_handler = std::function<void(const std::string &err_msg)>;
-
-template<typename T>
-using basic_string_view_t = fmt::basic_string_view<T>;
-
-using string_view_t = basic_string_view_t<char>;
-
+using string_view_t = fmt::basic_string_view<char>;
+using wstring_view_t = fmt::basic_string_view<wchar_t>;
 using memory_buf_t = fmt::basic_memory_buffer<char, 250>;
 
 #ifdef SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #ifndef _WIN32
 #error SPDLOG_WCHAR_TO_UTF8_SUPPORT only supported on windows
 #else
-using wstring_view_t = basic_string_view_t<wchar_t>;
-
 template<typename T>
 struct is_convertible_to_wstring_view : std::is_convertible<T, wstring_view_t>
 {};
@@ -152,6 +145,7 @@ enum level_enum
     err = SPDLOG_LEVEL_ERROR,
     critical = SPDLOG_LEVEL_CRITICAL,
     off = SPDLOG_LEVEL_OFF,
+    n_levels
 };
 
 #if !defined(SPDLOG_LEVEL_NAMES)
@@ -169,9 +163,9 @@ enum level_enum
     }
 #endif
 
-string_view_t &to_string_view(spdlog::level::level_enum l) SPDLOG_NOEXCEPT;
-const char *to_short_c_str(spdlog::level::level_enum l) SPDLOG_NOEXCEPT;
-spdlog::level::level_enum from_str(const std::string &name) SPDLOG_NOEXCEPT;
+SPDLOG_API string_view_t &to_string_view(spdlog::level::level_enum l) SPDLOG_NOEXCEPT;
+SPDLOG_API const char *to_short_c_str(spdlog::level::level_enum l) SPDLOG_NOEXCEPT;
+SPDLOG_API spdlog::level::level_enum from_str(const std::string &name) SPDLOG_NOEXCEPT;
 
 using level_hasher = std::hash<int>;
 } // namespace level
@@ -199,7 +193,7 @@ enum class pattern_time_type
 //
 // Log exception
 //
-class spdlog_ex : public std::exception
+class SPDLOG_API spdlog_ex : public std::exception
 {
 public:
     explicit spdlog_ex(std::string msg);
@@ -209,6 +203,9 @@ public:
 private:
     std::string msg_;
 };
+
+SPDLOG_API void throw_spdlog_ex(const std::string &msg, int last_errno);
+SPDLOG_API void throw_spdlog_ex(std::string msg);
 
 struct source_loc
 {
@@ -242,7 +239,6 @@ std::unique_ptr<T> make_unique(Args &&... args)
 }
 #endif
 } // namespace details
-
 } // namespace spdlog
 
 #ifdef SPDLOG_HEADER_ONLY

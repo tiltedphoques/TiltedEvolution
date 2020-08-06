@@ -19,6 +19,10 @@
 
 #include <Scripts/Player.h>
 
+#if TP_PLATFORM_WINDOWS
+#include <windows.h>
+#endif
+
 #define SERVER_HANDLE(packetName, functionName) case TiltedMessages::ClientMessage::k##packetName: Handle##packetName(aConnectionId, message.functionName()); break;
 #define SERVER_DISPATCH(packetName) case k##packetName: \
 {\
