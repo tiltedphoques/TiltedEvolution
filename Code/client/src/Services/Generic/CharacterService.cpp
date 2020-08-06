@@ -199,7 +199,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
     }
-    else
+   /* else
     {
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
         auto pForm = TESForm::GetById(cActorId);
@@ -213,7 +213,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             spdlog::error("\tForm : {:X}", pForm ? pForm->formID : 0);
             return;
         }
-    }
+    }*/
+
+    if (!pActor)
+        return;
 
     m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId);
 
@@ -342,7 +345,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) n
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) noexcept
 {
-    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+    /*auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.ServerId, view](entt::entity entity) {
             return view.get<RemoteComponent>(entity).Id == id;
@@ -364,7 +367,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) n
 
         InterpolationSystem::Clean(m_world, *itor);
         AnimationSystem::Clean(m_world, *itor);
-    }
+    }*/
 }
 
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
