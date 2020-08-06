@@ -19,7 +19,7 @@ struct ServerTimeSettings final : ServerMessage
                GetOpcode() == achRhs.GetOpcode();
     }
 
-    uint32_t ServerTick;
+    uint64_t ServerTick;
     float Time;
     float TimeScale;
 };

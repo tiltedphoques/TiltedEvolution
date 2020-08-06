@@ -17,7 +17,7 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     auto *pServer = GameServer::Get();
     ServerTimeSettings timeMsg;
-    timeMsg.ServerTick = pServer->GetTickRate();
+    timeMsg.ServerTick = pServer->GetTick();
     timeMsg.TimeScale = m_timeScale;
     timeMsg.Time = m_time;
 
@@ -73,7 +73,7 @@ static const int cDayLengthArray[12] = {
 
 static int GetNumerOfDaysByMonthIndex(int index)
 {
-    if (index <= 12)
+    if (index < 12)
     {
         return cDayLengthArray[index];
     }
@@ -83,8 +83,21 @@ static int GetNumerOfDaysByMonthIndex(int index)
 
 void EnvironmentService::OnUpdate(const UpdateEvent &aEvent) noexcept
 {
-    // update server time projection
-    m_time = (aEvent.Delta * (m_timeScale * 0.00027777778f)) + m_time;
+    if (!m_lastTick)
+        m_lastTick = GameServer::Get()->GetTick();
+
+    auto now = GameServer::Get()->GetTick();
+    // client got ahead, we wait
+    if (now < m_lastTick)
+        return;
+
+    auto xDelta = now - m_lastTick;
+    m_lastTick = now;
+
+    // update server side projection
+    float deltaSeconds = static_cast<float>(xDelta) / 1000.f;
+    m_time += (deltaSeconds * (m_timeScale * 0.00027777778f));
+
     if (m_time > 24.f)
     {
         int maxDays = GetNumerOfDaysByMonthIndex(m_month);
@@ -108,5 +121,5 @@ void EnvironmentService::OnUpdate(const UpdateEvent &aEvent) noexcept
         }
     }
 
-    std::printf("Time %f\n", m_time);
+    std::printf("%f|%lld|%f|%f\n", m_time, m_lastTick, deltaSeconds, m_timeScale);
 }

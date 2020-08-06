@@ -1,4 +1,5 @@
 
+#include <World.h>
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -7,7 +8,7 @@
 
 #include <Games/Skyrim/TimeManager.h>
 
-EnvironmentService::EnvironmentService(entt::dispatcher &aDispatcher)
+EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
 {
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
@@ -18,20 +19,21 @@ void EnvironmentService::OnTimeUpdate(const ServerTimeSettings &acMessage)
     // TODO: think about caching previous time and reapplying it on disconnect?
     m_timeScale = acMessage.TimeScale;
     m_time = acMessage.Time;
-    m_enableMPtime = true;
+    m_remoteTick = acMessage.ServerTick;
+    m_enableRemoteTimeModel = true;
 }
 
 void EnvironmentService::OnDisconnected(const DisconnectedEvent &acDisconnectedEvent) noexcept
 {
     // clear time override
-    m_enableMPtime = false;
+    m_enableRemoteTimeModel = false;
 }
 
 static const int cDayLengthArray[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 static int GetNumerOfDaysByMonthIndex(int index)
 {
-    if (index <= 12)
+    if (index < 12)
     {
         return cDayLengthArray[index];
     }
@@ -39,14 +41,26 @@ static int GetNumerOfDaysByMonthIndex(int index)
     return 0;
 }
 
-void EnvironmentService::HandleUpdate(const UpdateEvent& acEvent) noexcept
+void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 {
-    // we apply the time here so we can apply it at a fixed rate
+    // we apply the time here so we can do it at a *proper* fixed rate 
     //(the game does not do this)
-    if (m_enableMPtime)
+    if (m_enableRemoteTimeModel)
     {
-        // update server time projection
-        m_time = (acEvent.Delta * (m_timeScale * 0.00027777778f)) + m_time;
+        if (!m_lastTick)
+            m_lastTick = m_world.GetTick();
+
+        auto now = m_world.GetTick();
+
+        // client got ahead, we wait
+        if (now < m_lastTick) return;
+
+        auto xDelta = now - m_lastTick;
+        m_lastTick = now;
+
+        float deltaSeconds = static_cast<float>(xDelta) / 1000.f;
+        m_time += (deltaSeconds  * (m_timeScale * 0.00027777778f));
+
         if (m_time > 24.f)
         {
             int iDayLimit = GetNumerOfDaysByMonthIndex(m_month);
@@ -77,7 +91,5 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& acEvent) noexcept
         pGameTime->GameMonth->i = m_month;
         pGameTime->GameYear->i = m_year;
         pGameTime->GameDaysPassed->f = (m_time * 0.041666668f) + m_day;
-
-        std::printf("time %f\n", m_time);
     }
 }

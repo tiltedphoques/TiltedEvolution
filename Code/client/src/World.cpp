@@ -32,7 +32,7 @@ World::World()
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<PapyrusService>(m_dispatcher);
     set<DiscordService>(m_dispatcher);
-    set<EnvironmentService>(m_dispatcher);
+    set<EnvironmentService>(*this, m_dispatcher);
 }
 
 World::~World() = default;

@@ -27,6 +27,8 @@ private:
     int m_month = 1;
     int m_day = 1;
 
+    uint64_t m_lastTick = 0;
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
     World &m_world;

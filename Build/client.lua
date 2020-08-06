@@ -20,6 +20,7 @@ project ("Client")
         "../Code/client/include/",
         "../Code/script/include/",
         "../Code/encoding/include/",
+        "../Code/common/include",
         "../Libraries/entt/src/",
         "../Libraries/",
         coreBasePath .. "/Code/core/include/",
@@ -55,6 +56,7 @@ project ("Client")
     links
     {
         "Encoding",
+        "Common",
         "Core",
         "Reverse",
         "Hooks",
