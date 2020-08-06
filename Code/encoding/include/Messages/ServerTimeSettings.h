@@ -15,11 +15,10 @@ struct ServerTimeSettings final : ServerMessage
 
     bool operator==(const ServerTimeSettings &achRhs) const noexcept
     {
-        return ServerTick == achRhs.ServerTick && TimeScale == achRhs.TimeScale &&
+        return Time == achRhs.Time && TimeScale == achRhs.TimeScale &&
                GetOpcode() == achRhs.GetOpcode();
     }
 
-    uint64_t ServerTick;
     float Time;
     float TimeScale;
 };

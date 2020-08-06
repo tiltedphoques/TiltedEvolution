@@ -1,6 +1,7 @@
 
 #include <World.h>
 #include <Services/TransportService.h>
+#include <Services/EnvironmentService.h>
 
 #include <Games/Skyrim/TimeManager.h>
 #include <Games/Fallout4/TimeManager.h>
@@ -18,7 +19,7 @@ static TSimulateTime *RealSimulateTime;
 // in SP mode we let the client handle its own time calc
 void TimeData_SimulateTime(TimeData *data, float multiplier)
 {
-    if (!World::Get().GetTransport().IsOnline())
+    if (EnvironmentService::AllowGameTick())
     {
         RealSimulateTime(data, multiplier);
     }

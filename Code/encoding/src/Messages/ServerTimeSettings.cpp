@@ -3,8 +3,6 @@
 
 void ServerTimeSettings::SerializeRaw(TiltedPhoques::Buffer::Writer &aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, ServerTick);
-
     // poor man's std::bitcast
     aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&TimeScale), 32);
     aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&Time), 32);
@@ -12,8 +10,6 @@ void ServerTimeSettings::SerializeRaw(TiltedPhoques::Buffer::Writer &aWriter) co
 
 void ServerTimeSettings::DeserializeRaw(TiltedPhoques::Buffer::Reader &aReader) noexcept
 {
-    ServerTick = Serialization::ReadVarInt(aReader);
-
     uint64_t tmp = 0;
     uint32_t cVal = 0;
 

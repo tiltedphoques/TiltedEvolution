@@ -1,31 +1,35 @@
 #pragma once
 
+#include <Structs/TimeModel.h>
+
 struct ServerTimeSettings;
-struct TimeData;
+struct DisconnectedEvent;
 
 class EnvironmentService final 
 {
 public:
     EnvironmentService(World &, entt::dispatcher &);
 
+    static bool AllowGameTick();
 private:
     void OnTimeUpdate(const ServerTimeSettings &);
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
+
+    void ToggleGameClock(bool);
+    float TimeInterpolate(const TimeModel& from, TimeModel& to);
 
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_weatherUpdateConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;
 
-    bool m_enableRemoteTimeModel = false;
-    float m_timeScale = 20.f;
-    float m_time = 0.f;
-    int m_year = 1;
-    int m_day = 1;
-    int m_month = 1;
+    TimeModel m_onlineTime;
+    TimeModel m_offlineTime;
+    float m_fadeTimer = 0.f;
+    bool m_switchToOffline = false;
+    static bool s_gameClockLocked;
 
-    uint64_t m_remoteTick = 0;
     uint64_t m_lastTick = 0;
     World& m_world;
 };

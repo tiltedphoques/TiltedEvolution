@@ -16,33 +16,31 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     auto *pServer = GameServer::Get();
-    ServerTimeSettings timeMsg;
-    timeMsg.ServerTick = pServer->GetTick();
-    timeMsg.TimeScale = m_timeScale;
-    timeMsg.Time = m_time;
 
-    spdlog::warn("I'm sending the timeprojection : {}:{}:{}", m_time, m_timeScale, pServer->GetTickRate());
-    const auto &Player = m_world.get<PlayerComponent>(acEvent.Entity);
-    pServer->Send(Player.ConnectionId, timeMsg);
+    ServerTimeSettings timeMsg;
+    timeMsg.TimeScale = m_timeModel.TimeScale;
+    timeMsg.Time = m_timeModel.Time;
+
+    const auto &playerComponent = m_world.get<PlayerComponent>(acEvent.Entity);
+    pServer->Send(playerComponent.ConnectionId, timeMsg);
 }
 
 bool EnvironmentService::SetTime(int Hour, int Minutes, float Scale)
 {
-    m_timeScale = Scale;
+    m_timeModel.TimeScale = Scale;
 
     if (Hour >= 0 && Hour <= 24 && Minutes >= 0 && Minutes <= 60)
     {
         // encode time as skyrim time
-        // *i know* this is technically not 100% accurate
         float Min = static_cast<float>(Minutes) * 0.17f;
         Min = floor(Min * 100) / 1000;
-        m_time = static_cast<float>(Hour) + Min;
+        m_timeModel.Time = static_cast<float>(Hour) + Min;
 
         auto *pServer = GameServer::Get();
+
         ServerTimeSettings timeMsg;
-        timeMsg.ServerTick = pServer->GetTickRate();
-        timeMsg.TimeScale = m_timeScale;
-        timeMsg.Time = m_time;
+        timeMsg.TimeScale = m_timeModel.TimeScale;
+        timeMsg.Time = m_timeModel.Time;
         pServer->SendToLoaded(timeMsg);
         return true;
     }
@@ -52,8 +50,8 @@ bool EnvironmentService::SetTime(int Hour, int Minutes, float Scale)
 
 std::pair<int, int> EnvironmentService::GetTime()
 {
-    float Hour = floor(m_time);
-    float Minutes = (m_time - Hour) / 17.f;
+    float Hour = floor(m_timeModel.Time);
+    float Minutes = (m_timeModel.Time - Hour) / 17.f;
 
     int iHour = static_cast<int>(Hour);
     int iMinutes = static_cast<int>(ceil((Minutes * 100.f) * 10.f));
@@ -64,62 +62,21 @@ std::pair<int, int> EnvironmentService::GetTime()
 std::tuple<int, int, int> EnvironmentService::GetDate()
 {
     // return the Date in a **reasonable** format
-    return {m_day, m_month, m_year};
+    return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
 }
 
-static const int cDayLengthArray[12] = {
-    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-};
-
-static int GetNumerOfDaysByMonthIndex(int index)
-{
-    if (index < 12)
-    {
-        return cDayLengthArray[index];
-    }
-
-    return 0;
-}
-
-void EnvironmentService::OnUpdate(const UpdateEvent &aEvent) noexcept
+void EnvironmentService::OnUpdate(const UpdateEvent &) noexcept
 {
     if (!m_lastTick)
         m_lastTick = GameServer::Get()->GetTick();
 
     auto now = GameServer::Get()->GetTick();
+
     // client got ahead, we wait
     if (now < m_lastTick)
         return;
 
-    auto xDelta = now - m_lastTick;
+    auto delta = now - m_lastTick;
     m_lastTick = now;
-
-    // update server side projection
-    float deltaSeconds = static_cast<float>(xDelta) / 1000.f;
-    m_time += (deltaSeconds * (m_timeScale * 0.00027777778f));
-
-    if (m_time > 24.f)
-    {
-        int maxDays = GetNumerOfDaysByMonthIndex(m_month);
-
-        while (m_time > 24.f)
-        {
-            m_time = m_time + -24.f;
-            m_day++;
-        }
-
-        if (m_day > maxDays)
-        {
-            m_month++;
-            m_day = m_day - maxDays;
-
-            if (m_month > 12)
-            {
-                m_month = m_month + -12;
-                m_year++;
-            }
-        }
-    }
-
-    std::printf("%f|%lld|%f|%f\n", m_time, m_lastTick, deltaSeconds, m_timeScale);
+    m_timeModel.Update(delta);
 }
