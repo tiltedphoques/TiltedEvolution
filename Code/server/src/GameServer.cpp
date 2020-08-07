@@ -58,11 +58,9 @@ GameServer::~GameServer()
     s_pInstance = nullptr;
 }
 
-bool GameServer::Initialize()
+void GameServer::Initialize()
 {
-    // this is a hack
     m_pWorld->GetScriptService().Initialize();
-    return true;
 }
 
 void GameServer::OnUpdate()

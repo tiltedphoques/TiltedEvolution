@@ -64,7 +64,7 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
     pConfig->name = "Fallout Together | " GIT_BRANCH "@" GIT_COMMIT;
 #endif
 
-#if 0
+#if 1
     pWindowConfig->bBorderlessDisplay = false;
     pWindowConfig->bFullScreenDisplay = false;
 #endif

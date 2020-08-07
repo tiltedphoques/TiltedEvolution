@@ -6,9 +6,9 @@
 
 struct TimeData
 {
-    static TimeData *Get() noexcept;
+    static TimeData* Get() noexcept;
 
-    char pad_0x0000[0x8];       // 0x0000
+    char pad0[0x8];             // 0x0000
     TESGlobal *GameYear;        // 0x0008
     TESGlobal *GameMonth;       // 0x0010
     TESGlobal *GameDay;         // 0x0018
@@ -17,7 +17,7 @@ struct TimeData
     TESGlobal *TimeScale;       // 0x0030
     float unk1;                 // 0x0038
     float timeTick;             // 0x003C
-    char pad_0x0040[0x88];      // 0x0040
+    char pad40[0x88];           // 0x0040
 };
 
 #endif

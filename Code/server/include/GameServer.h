@@ -17,7 +17,7 @@ struct GameServer final : Server
 
     TP_NOCOPYMOVE(GameServer);
 
-    bool Initialize();
+    void Initialize();
 
     void OnUpdate() override;
     void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;

@@ -12,10 +12,23 @@ class EnvironmentService
 public:
     EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher);
 
-    bool SetTime(int, int, float);
-    std::pair<int, int> GetTime();
-    std::tuple<int, int, int> GetDate();
-    float GetTimeScale() const { return m_timeModel.TimeScale; }
+    struct Time
+    {
+        int Minutes;
+        int Hours;
+    };
+
+    struct Date
+    {
+        int Day;
+        int Month;
+        int Year;
+    };
+
+    bool SetTime(int aHour, int aMinutes, float aScale) noexcept;
+    Time GetTime() const noexcept;
+    Date GetDate() const noexcept;
+    float GetTimeScale() const noexcept { return m_timeModel.TimeScale; }
 
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 

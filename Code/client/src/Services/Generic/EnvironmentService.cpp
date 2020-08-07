@@ -13,7 +13,7 @@ constexpr float kTransitionSpeed = 5.f;
 
 bool EnvironmentService::s_gameClockLocked = false;
 
-bool EnvironmentService::AllowGameTick()
+bool EnvironmentService::AllowGameTick() noexcept
 {
     return !s_gameClockLocked;
 }
@@ -25,7 +25,7 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
 }
 
-void EnvironmentService::OnTimeUpdate(const ServerTimeSettings &acMessage)
+void EnvironmentService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
     // disable the game clock
     m_onlineTime.TimeScale = acMessage.TimeScale;
@@ -33,39 +33,39 @@ void EnvironmentService::OnTimeUpdate(const ServerTimeSettings &acMessage)
     ToggleGameClock(false);
 }
 
-void EnvironmentService::OnDisconnected(const DisconnectedEvent &) noexcept
+void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // signal a time transition
     m_fadeTimer = 0.f;
     m_switchToOffline = true;
 }
 
-float EnvironmentService::TimeInterpolate(const TimeModel& from, TimeModel& to)
+float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo)
 {
-    float t = to.Time - from.Time;
+    float t = aTo.Time - aFrom.Time;
     if (t < 0.f)
     {
         float v = t + 24.f;
         // interpolate on the time difference, not the time
-        float x = TiltedPhoques::Lerp(0.f, v, m_fadeTimer / kTransitionSpeed) + from.Time;
+        float x = TiltedPhoques::Lerp(0.f, v, m_fadeTimer / kTransitionSpeed) + aFrom.Time;
         if (x > 24.f)
             x = x - 24.f;
         return x;
     }
-    else
-        return TiltedPhoques::Lerp(from.Time, to.Time, m_fadeTimer / kTransitionSpeed);
+    
+    return TiltedPhoques::Lerp(aFrom.Time, aTo.Time, m_fadeTimer / kTransitionSpeed);
 }
 
-void EnvironmentService::ToggleGameClock(bool enable)
+void EnvironmentService::ToggleGameClock(bool aEnable)
 {
     auto* pGameTime = TimeData::Get();
-    if (enable)
+    if (aEnable)
     {
         pGameTime->GameDay->i = m_offlineTime.Day;
         pGameTime->GameMonth->i = m_offlineTime.Month;
         pGameTime->GameYear->i = m_offlineTime.Year;
         pGameTime->TimeScale->f = m_offlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_offlineTime.Time * 0.041666668f) + m_offlineTime.Day;
+        pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
         pGameTime->GameHour->f = m_offlineTime.Time;
         m_switchToOffline = false;
     }
@@ -78,7 +78,7 @@ void EnvironmentService::ToggleGameClock(bool enable)
         m_offlineTime.TimeScale = pGameTime->TimeScale->f;
     }
 
-    s_gameClockLocked = !enable;
+    s_gameClockLocked = !aEnable;
 }
 
 void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
@@ -122,7 +122,7 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         pGameTime->GameMonth->i = m_onlineTime.Month;
         pGameTime->GameYear->i = m_onlineTime.Year;
         pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * 0.041666668f) + m_onlineTime.Day;
+        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
 
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)

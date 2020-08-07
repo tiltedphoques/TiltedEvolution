@@ -7,7 +7,7 @@
 
 struct TESGlobal : TESForm
 {
-    BSFixedString unk14;
+    BSFixedString name;
     uint8_t unk1C;
     uint8_t pad[3 + 4];
     union

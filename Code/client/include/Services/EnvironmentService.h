@@ -8,16 +8,16 @@ struct DisconnectedEvent;
 class EnvironmentService final 
 {
 public:
-    EnvironmentService(World &, entt::dispatcher &);
+    EnvironmentService(World&, entt::dispatcher&);
 
-    static bool AllowGameTick();
-private:
-    void OnTimeUpdate(const ServerTimeSettings &);
+    static bool AllowGameTick() noexcept;
+  private:
+    void OnTimeUpdate(const ServerTimeSettings &) noexcept;
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
 
-    void ToggleGameClock(bool);
-    float TimeInterpolate(const TimeModel& from, TimeModel& to);
+    void ToggleGameClock(bool aEnable);
+    float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo);
 
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_weatherUpdateConnection;

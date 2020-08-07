@@ -4,22 +4,22 @@
 #include <Games/Skyrim/TimeManager.h>
 #include <Games/Fallout4/TimeManager.h>
 
-TimeData *TimeData::Get() noexcept
+TimeData* TimeData::Get() noexcept
 {
-    POINTER_SKYRIMSE(TimeData *, s_instance, 0x141EC0A80 - 0x140000000);
-    POINTER_FALLOUT4(TimeData *, s_instance, 0x1458D0AC0 - 0x140000000);
+    POINTER_SKYRIMSE(TimeData*, s_instance, 0x141EC0A80 - 0x140000000);
+    POINTER_FALLOUT4(TimeData*, s_instance, 0x1458D0AC0 - 0x140000000);
     return *(s_instance.Get());
 }
 
 using TSimulateTime = void(TimeData *, float);
 static TSimulateTime *RealSimulateTime;
 
-// in SP mode we let the client handle its own time calc
-void TimeData_SimulateTime(TimeData *data, float multiplier)
+// in SP mode we let the client handle its own time simulation
+void HookSimulateTime(TimeData *apData, float aMultiplier)
 {
     if (EnvironmentService::AllowGameTick())
     {
-        RealSimulateTime(data, multiplier);
+        RealSimulateTime(apData, aMultiplier);
     }
 }
 
@@ -29,5 +29,5 @@ static TiltedPhoques::Initializer s_loadingScreenHooks([]() {
     POINTER_FALLOUT4(TSimulateTime, s_SimulateTime, 0x140D1D850 - 0x140000000);
 
     RealSimulateTime = s_SimulateTime.Get();
-    TP_HOOK(&RealSimulateTime, TimeData_SimulateTime);
+    TP_HOOK(&RealSimulateTime, HookSimulateTime);
 });

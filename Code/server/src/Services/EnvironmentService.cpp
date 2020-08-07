@@ -25,16 +25,16 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
     pServer->Send(playerComponent.ConnectionId, timeMsg);
 }
 
-bool EnvironmentService::SetTime(int Hour, int Minutes, float Scale)
+bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcept
 {
-    m_timeModel.TimeScale = Scale;
+    m_timeModel.TimeScale = aScale;
 
-    if (Hour >= 0 && Hour <= 24 && Minutes >= 0 && Minutes <= 60)
+    if (aHours >= 0 && aHours <= 24 && aMinutes >= 0 && aMinutes <= 60)
     {
         // encode time as skyrim time
-        float Min = static_cast<float>(Minutes) * 0.17f;
+        float Min = static_cast<float>(aMinutes) * 0.17f;
         Min = floor(Min * 100) / 1000;
-        m_timeModel.Time = static_cast<float>(Hour) + Min;
+        m_timeModel.Time = static_cast<float>(aHours) + Min;
 
         auto *pServer = GameServer::Get();
 
@@ -48,18 +48,16 @@ bool EnvironmentService::SetTime(int Hour, int Minutes, float Scale)
     return false;
 }
 
-std::pair<int, int> EnvironmentService::GetTime()
+EnvironmentService::Time EnvironmentService::GetTime() const noexcept
 {
-    float Hour = floor(m_timeModel.Time);
-    float Minutes = (m_timeModel.Time - Hour) / 17.f;
+    float hour = floor(m_timeModel.Time);
+    float minutes = (m_timeModel.Time - hour) / 17.f;
 
-    int iHour = static_cast<int>(Hour);
-    int iMinutes = static_cast<int>(ceil((Minutes * 100.f) * 10.f));
-
-    return {iHour, iMinutes};
+    int flatMinutes = static_cast<int>(ceil((minutes * 100.f) * 10.f));
+    return {static_cast<int>(hour), flatMinutes};
 }
 
-std::tuple<int, int, int> EnvironmentService::GetDate()
+EnvironmentService::Date EnvironmentService::GetDate() const noexcept
 {
     // return the Date in a **reasonable** format
     return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
