@@ -68,24 +68,12 @@ void TestService::RunDiff()
 
 TestService::~TestService() noexcept = default;
 
-    static char s_address[256] = "127.0.0.1:10578";
-
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
 
     //RunDiff();
-
-    if (GetAsyncKeyState(VK_F7))
-    {
-        static bool xbuttonpress = false;
-        if (!xbuttonpress)
-        {
-            m_transport.Connect(s_address);
-            xbuttonpress = true;
-        }
-    }
 
     if (GetAsyncKeyState(VK_F8))
     {
@@ -117,6 +105,7 @@ void TestService::OnDraw() noexcept
 
     ImGui::Begin("Server");
 
+    static char s_address[256] = "127.0.0.1:10578";
     ImGui::InputText("Address", s_address, std::size(s_address));
 
     if (m_transport.IsOnline())
