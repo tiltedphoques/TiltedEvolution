@@ -48,7 +48,7 @@ bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcep
     return false;
 }
 
-EnvironmentService::Time EnvironmentService::GetTime() const noexcept
+EnvironmentService::TTime EnvironmentService::GetTime() const noexcept
 {
     float hour = floor(m_timeModel.Time);
     float minutes = (m_timeModel.Time - hour) / 17.f;
@@ -57,7 +57,7 @@ EnvironmentService::Time EnvironmentService::GetTime() const noexcept
     return {static_cast<int>(hour), flatMinutes};
 }
 
-EnvironmentService::Date EnvironmentService::GetDate() const noexcept
+EnvironmentService::TDate EnvironmentService::GetDate() const noexcept
 {
     // return the Date in a **reasonable** format
     return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};

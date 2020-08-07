@@ -12,22 +12,20 @@ class EnvironmentService
 public:
     EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher);
 
-    struct Time
-    {
-        int Minutes;
-        int Hours;
-    };
-
-    struct Date
-    {
-        int Day;
-        int Month;
-        int Year;
-    };
+    // we use these types for SOL
+    // this is done this way because SOL
+    // provides direct support for these
+    using TTime = std::pair<int, int>;
+    using TDate = std::tuple<int, int, int>;
 
     bool SetTime(int aHour, int aMinutes, float aScale) noexcept;
-    Time GetTime() const noexcept;
-    Date GetDate() const noexcept;
+
+    // returns hours, minutes
+    TTime GetTime() const noexcept;
+
+    // returns dd/mm/yy
+    TDate GetDate() const noexcept;
+
     float GetTimeScale() const noexcept { return m_timeModel.TimeScale; }
 
 private:
