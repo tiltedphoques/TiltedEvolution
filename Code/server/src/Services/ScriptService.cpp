@@ -50,8 +50,8 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
 
 void ScriptService::Initialize() noexcept
 {
-    std::filesystem::path fullpath = TiltedPhoques::GetPath().string() + "\\scripts";
-    LoadFullScripts(fullpath);
+    auto path = TiltedPhoques::GetPath() / "scripts"; 
+    LoadFullScripts(path);
 }
 
 Scripts ScriptService::SerializeScripts() noexcept
