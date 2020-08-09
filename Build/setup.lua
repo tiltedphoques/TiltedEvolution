@@ -19,3 +19,18 @@ if os.isdir(dsdkDir) == false and os.istarget("Windows") == true then
     zip.extract("DSDK.zip", dsdkDir)
     os.remove("DSDK.zip")
 end
+
+local f = io.popen('git symbolic-ref --short -q HEAD', 'r')
+local temp = f:read("*a")
+f:close()
+local git_branch = string.gsub(temp, '\n$', '')
+
+f = io.popen('git rev-parse --short HEAD', 'r')
+temp = f:read("*a")
+f:close()
+local git_commit = string.gsub(temp, '\n$', '')
+
+defines({
+    ('GIT_BRANCH="' .. git_branch .. '"'),
+    ('GIT_COMMIT="' .. git_commit .. '"'),
+})

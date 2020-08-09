@@ -59,9 +59,14 @@ static void HookPresent(LPCRITICAL_SECTION lock)
 static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowConfig *pWindowConfig, void *a4)
 {
 #if TP_SKYRIM64
-    pConfig->name = "Skyrim Together";
+    pConfig->name = "Skyrim Together | " GIT_BRANCH "@" GIT_COMMIT;
 #else
-    pConfig->name = "Fallout Together";
+    pConfig->name = "Fallout Together | " GIT_BRANCH "@" GIT_COMMIT;
+#endif
+
+#if 0
+    pWindowConfig->bBorderlessDisplay = false;
+    pWindowConfig->bFullScreenDisplay = false;
 #endif
 
     const wchar_t *pCmdl = GetCommandLineW();

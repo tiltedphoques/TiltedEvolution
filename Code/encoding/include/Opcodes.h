@@ -19,6 +19,7 @@ enum ServerOpcode : unsigned char
     kAssignCharacterResponse,
     kServerReferencesMoveRequest,
     kServerScriptUpdate,
+    kServerTimeSettings,
     kCharacterSpawnRequest,
     kNotifyInventoryChanges,
     kNotifyFactionsChanges,

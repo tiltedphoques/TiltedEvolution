@@ -3,7 +3,7 @@
 #if TP_SKYRIM
 
 #include <Games/Skyrim/Forms/TESForm.h>
-#include <Games/Skyrim/Common.h>
+#include <Games/Skyrim/Misc/BSString.h>
 
 struct TESGlobal : TESForm
 {

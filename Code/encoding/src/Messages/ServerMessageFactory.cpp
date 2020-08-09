@@ -6,6 +6,7 @@
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ServerScriptUpdate.h>
+#include <Messages/ServerTimeSettings.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
@@ -30,6 +31,7 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(AssignCharacterResponse);
         EXTRACT_MESSAGE(ServerReferencesMoveRequest);
         EXTRACT_MESSAGE(ServerScriptUpdate);
+        EXTRACT_MESSAGE(ServerTimeSettings);
         EXTRACT_MESSAGE(CharacterSpawnRequest);
         EXTRACT_MESSAGE(NotifyInventoryChanges);
         EXTRACT_MESSAGE(NotifyFactionsChanges);

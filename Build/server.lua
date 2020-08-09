@@ -19,6 +19,7 @@ project ("Server")
         "../Code/server/include/",
         "../Code/script/include/",
         "../Code/encoding/include/",
+        "../Code/common/include",
         "../Libraries/entt/src/",
         "../Libraries/",
         "../Libraries/cpp-httplib",
@@ -48,6 +49,7 @@ project ("Server")
     links
     {
         "Encoding",
+        "Common",
         "Connect",
         "snappy",
         "SteamNet",

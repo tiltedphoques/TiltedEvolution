@@ -1,4 +1,5 @@
 #include <Services/ScriptService.h>
+#include <Services/EnvironmentService.h>
 #include <World.h>
 
 #include <Scripts/Npc.h>
@@ -9,6 +10,7 @@
 #include <Messages/ClientRpcCalls.h>
 #include <Messages/ServerScriptUpdate.h>
 
+#include <Filesystem.hpp>
 #include <Components.h>
 #include <GameServer.h>
 
@@ -16,9 +18,8 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : ScriptStore(true)
     , m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
-    , m_rpcCallsRequest(aDispatcher.sink< PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
+    , m_rpcCallsRequest(aDispatcher.sink<PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
 {
-    Initialize();
 }
 
 Vector<Script::Player> ScriptService::GetPlayers() const
@@ -49,7 +50,8 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
 
 void ScriptService::Initialize() noexcept
 {
-    LoadFullScripts("scripts");
+    auto path = TiltedPhoques::GetPath() / "scripts"; 
+    LoadFullScripts(path);
 }
 
 Scripts ScriptService::SerializeScripts() noexcept
@@ -170,12 +172,31 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     worldType["get"] = [this]() { return &m_world; };
     worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
     worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
+
+    auto clockType = aContext.new_usertype<EnvironmentService>("Clock", sol::no_constructor);
+    clockType["get"] = [this]() { return &m_world.GetEnvironmentService(); };
+    clockType["SetTime"] = &EnvironmentService::SetTime;
+    clockType["GetTime"] = &EnvironmentService::GetTime;
+    clockType["GetDate"] = &EnvironmentService::GetDate;
+    clockType["GetTimeScale"] = &EnvironmentService::GetTimeScale;
+    clockType["GetRealTime"] = []() { 
+        auto t = std::time(nullptr);
+        int h = (t / 3600) % 24;
+        int m = (t / 60) % 60;
+        return std::pair{h, m};
+    };
 }
 
 void ScriptService::BindStaticFunctions(ScriptContext& aContext) noexcept
 {
-    aContext.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) { AddEventHandler(std::move(acName), std::move(aFunction)); });
-    aContext.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
+    aContext.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) 
+    { 
+        AddEventHandler(std::move(acName), std::move(aFunction)); 
+    });
+    aContext.set_function("cancelEvent", [this](std::string acReason)
+    { 
+        CancelEvent(std::move(acReason)); 
+    });
 }
 
 void ScriptService::AddEventHandler(const std::string acName, const sol::function acFunction) noexcept

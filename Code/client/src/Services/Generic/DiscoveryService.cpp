@@ -70,10 +70,12 @@ void DiscoveryService::VisitForms() noexcept
     for (uint32_t i = 0; i < pActorHolder->actorRefs.length; ++i)
     {
         const auto pRefr = TESObjectREFR::GetByHandle(pActorHolder->actorRefs[i]);
-
-        if (pRefr && pRefr->GetNiNode())
+        if (pRefr)
         {
-            visitor(pRefr);
+            if (pRefr->GetNiNode())
+            {
+                visitor(pRefr);
+            }
         }
     }
 
