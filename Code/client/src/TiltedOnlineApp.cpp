@@ -83,11 +83,13 @@ void TiltedOnlineApp::Update()
 
 bool TiltedOnlineApp::Attach()
 {
+    TiltedPhoques::Debug::OnAttach();
     return true;
 }
 
 bool TiltedOnlineApp::Detach()
 {
+    TiltedPhoques::Debug::OnDetach();
     return true;
 }
 
