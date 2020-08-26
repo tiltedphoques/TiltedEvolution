@@ -114,9 +114,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
-
             pServer->Send(acMessage.ConnectionId, response);
-
             return;
         }
     }
@@ -145,7 +143,6 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
     }
 
     const auto& characterCellIdComponent = view.get<CellIdComponent>(*it);
-
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
     NotifyRemoveCharacter response;
@@ -303,26 +300,25 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
     m_world.emplace<CellIdComponent>(cEntity, message.CellId);
 
-    CharacterComponent& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
+    auto& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = std::move(message.FaceTints);
     characterComponent.FactionsContent = std::move(message.FactionsContent);
 
-    InventoryComponent& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
+    auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = std::move(message.InventoryContent);
 
     spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
-    MovementComponent& movementComponent = m_world.emplace<MovementComponent>(cEntity);
+    auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
     movementComponent.Position = message.Position;
     movementComponent.Rotation = Vector3<float>(message.Rotation.X, 0.f, message.Rotation.Y);
     movementComponent.Sent = false;
 
     auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
-
     animationComponent.CurrentAction = message.LatestAction;
 
     // If this is a player character store a ref and trigger an event
@@ -346,6 +342,10 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
         auto& playerComponent = playerView.get<PlayerComponent>(cPlayer);
         playerComponent.Character = cEntity;
+        playerComponent.PlayerHandle = cPlayer;
+
+        auto& questLogComponent = m_world.emplace<QuestLogComponent>(cPlayer);
+        questLogComponent.QuestContent = std::move(message.QuestContent);
 
         const Script::Player player(cPlayer, m_world);
         m_world.GetScriptService().HandlePlayerEnterWorld(player);

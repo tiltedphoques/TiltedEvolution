@@ -4,6 +4,7 @@
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
 #include <Services/EnvironmentService.h>
+#include <Services/QuestService.h>
 
 struct World : entt::registry
 {
@@ -22,6 +23,8 @@ struct World : entt::registry
     const ScriptService& GetScriptService() const noexcept { return *m_scriptService; }
     EnvironmentService& GetEnvironmentService() noexcept { return ctx<EnvironmentService>(); }
     const EnvironmentService& GetEnvironmentService() const noexcept { return ctx<EnvironmentService>(); }
+    QuestService& GetQuestService() noexcept { return ctx<QuestService>(); }
+    const QuestService& GetQuestService() const noexcept { return ctx<QuestService>(); }
 
     [[nodiscard]] static uint32_t ToInteger(entt::entity aEntity) { return to_integral(aEntity); }
 

@@ -53,7 +53,6 @@ bool TiltedOnlineApp::BeginMain()
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
 
     InjectScriptExtenderDll();
-
     return true;
 }
 

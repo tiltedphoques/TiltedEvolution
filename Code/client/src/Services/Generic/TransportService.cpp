@@ -12,8 +12,12 @@
 #include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
 #include <ScratchAllocator.hpp>
+
 #include <Services/ImguiService.h>
+#include <Services/DiscordService.h>
+
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ServerMessageFactory.h>
@@ -25,6 +29,7 @@
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/NotifyRemoveCharacter.h>
+#include <Messages/NotifyQuestUpdate.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -104,6 +109,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
     TRANSPORT_DISPATCH(NotifyInventoryChanges);
     TRANSPORT_DISPATCH(NotifyFactionsChanges);
     TRANSPORT_DISPATCH(NotifyRemoveCharacter);
+    TRANSPORT_DISPATCH(NotifyQuestUpdate);
 
     default:
         spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());
@@ -114,6 +120,10 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 void TransportService::OnConnected()
 {
     AuthenticationRequest request;
+
+    // null if discord is not active
+    // TODO: think about user opt out
+    request.DiscordId = m_world.ctx<DiscordService>().GetUser().id;
 
     const auto cpModManager = ModManager::Get();
 
@@ -165,10 +175,9 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
 
 void TransportService::OnDraw() noexcept
 {
-    if(IsOnline())
+    if (m_connected)
     {
         ImGui::Begin("Network");
-
         auto status = GetConnectionStatus();
         status.m_flOutBytesPerSec /= 1024.f;
         status.m_flInBytesPerSec /= 1024.f;
@@ -187,9 +196,13 @@ void TransportService::OnDraw() noexcept
 
         ImGui::InputFloat("User Out kBps", (float*)&uncompressedSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
         ImGui::InputFloat("User In kBps", (float*)&uncompressedReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-
         ImGui::End();
     }
+
+    // online indicator
+    ImGui::GetBackgroundDrawList()->AddRectFilled(
+        ImVec2(23.f, 23.f), 
+        ImVec2(50.f, 50.f), m_connected ? ImColor(0, 230, 64) : ImColor(240, 52, 52));
 }
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept

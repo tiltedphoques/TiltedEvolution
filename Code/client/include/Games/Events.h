@@ -3,16 +3,19 @@
 #include <Games/Skyrim/Events/EventDispatcher.h>
 #include <Games/Fallout4/Events/EventDispatcher.h>
 
+enum class BSTEventResult
+{
+    kOk,
+    kAbort
+};
+
 template<class T>
 struct BSTEventSink
 {
-    enum Result
-    {
-        kOk = 0,
-        kAbort = 1
-    };
-
     virtual ~BSTEventSink() {}
-    virtual Result OnEvent(const T* apEvent, const EventDispatcher<T>* apSender) { return kOk; }
+    virtual BSTEventResult OnEvent(const T* apEvent, const EventDispatcher<T>* apSender)
+    {
+        return BSTEventResult::kOk;
+    }
 };
 

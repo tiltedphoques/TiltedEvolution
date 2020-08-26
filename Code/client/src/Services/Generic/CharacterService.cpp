@@ -1,14 +1,17 @@
 #include <Services/CharacterService.h>
 #include <Services/TransportService.h>
+#include <Services/QuestService.h>
 
 #include <Games/References.h>
 
 #include <Games/Skyrim/Forms/TESNPC.h>
+#include <Games/Skyrim/Forms/TESQuest.h>
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Skyrim/ExtraData/ExtraLeveledCreature.h>
 
 #include <Games/Fallout4/Forms/TESNPC.h>
+#include <Games/Fallout4/Forms/TESQuest.h>
 #include <Games/Fallout4/Misc/ProcessManager.h>
 #include <Games/Fallout4/Misc/MiddleProcess.h>
 #include <Games/Fallout4/ExtraData/ExtraLeveledCreature.h>
@@ -389,12 +392,12 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     uint32_t baseId = 0;
     uint32_t modId = 0;
-    if (!World::Get().GetModSystem().GetServerModId(formIdComponent.Id, modId, baseId))
+    if (!m_world.GetModSystem().GetServerModId(formIdComponent.Id, modId, baseId))
         return;
 
     uint32_t cellBaseId = 0;
     uint32_t cellModId = 0;
-    if (!World::Get().GetModSystem().GetServerModId(pActor->GetCellId(), cellModId, cellBaseId))
+    if (!m_world.GetModSystem().GetServerModId(pActor->GetCellId(), cellModId, cellBaseId))
         return;
 
     AssignCharacterRequest message;
@@ -449,6 +452,34 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
         }
     }
 #endif
+
+    if (isPlayer)
+    {
+        auto& questLog = message.QuestContent.Entries;
+        auto& modSystem = m_world.GetModSystem();
+
+        for (auto& objective : PlayerCharacter::Get()->objectives)
+        {
+            auto* pQuest = objective.instance->quest;
+            if (!pQuest)
+                continue;
+
+            GameId Id;
+            if (!QuestService::IsNonSyncableQuest(pQuest))
+            {
+                if (modSystem.GetServerModId(pQuest->formID, Id))
+                {
+                    auto& entry = questLog.emplace_back();
+                    entry.Stage = pQuest->currentStage;
+                    entry.Id = Id;
+                }
+            }
+        }
+
+        // remove duplicates
+        auto ip = std::unique(questLog.begin(), questLog.end());
+        questLog.resize(std::distance(questLog.begin(), ip));
+    }
 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();

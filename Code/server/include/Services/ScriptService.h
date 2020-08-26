@@ -15,6 +15,7 @@ namespace Script
 {
     struct Npc;
     struct Player;
+    struct Quest;
 }
 
 struct ScriptService : ScriptStore
@@ -29,11 +30,15 @@ struct ScriptService : ScriptStore
     Objects GenerateDifferential() noexcept;
     FullObjects GenerateFull() noexcept;
 
-    std::tuple<bool, String> HandlePlayerConnect(const Script::Player& aPlayer) noexcept;
+    std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandlePlayerEnterWorld(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
 
-    void HandlePlayerQuit(ConnectionId_t aConnectionId) noexcept;
+    void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;
+
+    void HandleQuestStart(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
+    void HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
+    void HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept;
 
 protected:
 

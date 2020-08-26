@@ -13,5 +13,6 @@
 #include <Components/AnimationComponent.h>
 #include <Components/ScriptsComponent.h>
 #include <Components/InventoryComponent.h>
+#include <Components/QuestLogComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

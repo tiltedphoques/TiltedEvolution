@@ -22,7 +22,7 @@ struct GameServer final : Server
     void OnUpdate() override;
     void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
     void OnConnection(ConnectionId_t aHandle) override;
-    void OnDisconnection(ConnectionId_t aConnectionId) override;
+    void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
 
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;

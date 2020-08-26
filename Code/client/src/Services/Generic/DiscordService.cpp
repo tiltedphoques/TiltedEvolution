@@ -14,17 +14,8 @@
 
 #define DISCORD_OVERLAY_ENABLE 0
 
-// TODO: codestyle
-static IDiscordUserEvents cUserEvents = {
-
-};
-
-static IDiscordActivityEvents cActivityEvents = {
-
-};
-
-static IDiscordRelationshipEvents cRelationShipEvents = {
-
+IDiscordUserEvents DiscordService::s_mUserEvents = {
+    DiscordService::OnUserUpdate
 };
 
 DiscordService::DiscordService(entt::dispatcher &aDispatcher)
@@ -52,6 +43,12 @@ DiscordService::DiscordService(entt::dispatcher &aDispatcher)
 }
 
 DiscordService::~DiscordService() = default;
+
+void DiscordService::OnUserUpdate(void* userp)
+{
+    auto* pDiscord = reinterpret_cast<DiscordService*>(userp);
+    pDiscord->m_pUserMgr->get_current_user(pDiscord->m_pUserMgr, &pDiscord->m_userData);
+}
 
 void DiscordService::OnLocationChangeEvent() noexcept
 {
@@ -84,13 +81,6 @@ void DiscordService::OnLocationChangeEvent() noexcept
 
         UpdatePresence(updateTimestamp);
     }
-}
-
-bool DiscordService::IsCanaryDiscord()
-{
-    DiscordBranch branch{};
-    m_pAppMgr->get_current_branch(m_pAppMgr, &branch);
-    return std::strcmp(branch, "master") != 0;
 }
 
 void DiscordService::UpdatePresence(bool newTimeStamp)
@@ -184,10 +174,9 @@ bool DiscordService::Init()
 
     params.flags = DiscordCreateFlags_NoRequireDiscord;
     params.event_data = this; // this is our userpointer
-    params.user_events = &cUserEvents;
-    params.relationship_events = &cRelationShipEvents;
-    params.activity_events = &cActivityEvents;
+    params.user_events = &s_mUserEvents;
     auto result = f_pDiscordCreate(DISCORD_VERSION, &params, &m_pCore);
+
     if (result != DiscordResult_Ok || !m_pCore)
     {
         spdlog::error("Failed to create Discord instance ({})", static_cast<int>(result));

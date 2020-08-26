@@ -13,7 +13,10 @@ class DiscordService final : public entt::registry
     // noop currently
     void Update();
 
-    bool IsCanaryDiscord();
+    inline auto& GetUser() const noexcept
+    {
+        return m_userData;
+    }
 
     // update the presence state
     // then request an update
@@ -22,6 +25,7 @@ class DiscordService final : public entt::registry
         return m_ActivityState;
     }
     void UpdatePresence(bool newTimeStamp);
+
 
     void WndProcHandler(HWND, UINT, WPARAM, LPARAM);
   private:
@@ -39,9 +43,14 @@ class DiscordService final : public entt::registry
     IDiscordActivityManager *m_pActivity = nullptr;
     IDiscordApplicationManager *m_pAppMgr = nullptr;
     IDiscordOverlayManager *m_pOverlayMgr = nullptr;
-    DiscordUserId m_UserId = 0;
+
+    DiscordUser m_userData{};
     DiscordActivity m_ActivityState{};
 
     uint32_t m_lastLocationId = 0;
     uint32_t m_lastWorldspaceId = 0;
+
+    static void OnUserUpdate(void* userp);
+
+    static IDiscordUserEvents s_mUserEvents;
 };

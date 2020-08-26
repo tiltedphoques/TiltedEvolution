@@ -15,9 +15,10 @@ struct ModsComponent
     uint32_t AddStandard(const String& acpFilename) noexcept;
     uint32_t AddLite(const String& acpFilename) noexcept;
 
-    const Map<String, Entry>& GetStandardMods() const noexcept { return m_standardMods; }
-    const Map<String, Entry>& GetLiteMods() const noexcept { return m_liteMods; }
+    const auto& GetStandardMods() const noexcept { return m_standardMods; }
+    const auto& GetLiteMods() const noexcept { return m_liteMods; }
 
+    using TModList = Map<String, Entry>; 
 private:
 
     uint32_t m_seed = 0;

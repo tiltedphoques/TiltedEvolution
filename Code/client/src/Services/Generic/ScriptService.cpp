@@ -15,10 +15,10 @@
 #include <Games/Fallout4/Forms/TESForm.h>
 #include <Games/Fallout4/Actor.h>
 
+#include <Games/Skyrim/Events/EventDispatcher.h>
 #include <Messages/ClientRpcCalls.h>
 
 #include <imgui.h>
-
 
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService, TransportService& aTransportService) noexcept
     : ScriptStore(false)
@@ -44,6 +44,7 @@ ScriptService::~ScriptService() noexcept
 
 void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+
     ClientRpcCalls message;
 
     Buffer buff(10000);

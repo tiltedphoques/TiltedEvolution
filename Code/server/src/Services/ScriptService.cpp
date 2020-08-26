@@ -4,6 +4,7 @@
 
 #include <Scripts/Npc.h>
 #include <Scripts/Player.h>
+#include <Scripts/Quest.h>
 
 #include <Events/UpdateEvent.h>
 
@@ -97,11 +98,6 @@ FullObjects ScriptService::GenerateFull() noexcept
     return objects;
 }
 
-std::tuple<bool, String> ScriptService::HandlePlayerConnect(const Script::Player& aPlayer) noexcept
-{
-    return CallCancelableEvent("onPlayerConnect", aPlayer);
-}
-
 std::tuple<bool, String> ScriptService::HandlePlayerEnterWorld(const Script::Player& aPlayer) noexcept
 {
     return CallCancelableEvent("onPlayerEnterWorld", aPlayer);
@@ -112,9 +108,54 @@ std::tuple<bool, String> ScriptService::HandleMove(const Script::Npc& aNpc) noex
     return CallCancelableEvent("onCharacterMove", aNpc);
 }
 
-void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId) noexcept
+std::tuple<bool, String> ScriptService::HandlePlayerJoin(const Script::Player& aPlayer) noexcept
 {
-    CallEvent("onPlayerQuit", aConnectionId);
+    return CallCancelableEvent("onPlayerJoin", aPlayer);
+}
+
+void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept
+{
+    std::string reason;
+
+    switch (aReason)
+    {
+    case Server::EDisconnectReason::Quit:
+        reason = "Quit";
+        break;
+    case Server::EDisconnectReason::Kicked:
+        reason = "Kicked";
+        break;
+    case Server::EDisconnectReason::Banned:
+        reason = "Banned";
+        break;
+    case Server::EDisconnectReason::BadConnection:
+        reason = "Connection lost";
+        break;
+    case Server::EDisconnectReason::TimedOut:
+        reason = "Timed out";
+        break;
+    case Server::EDisconnectReason::Unknown:
+    default:
+        reason = "Unknown";
+        break;
+    }
+
+    CallEvent("onPlayerQuit", aConnectionId, reason);
+}
+
+void ScriptService::HandleQuestStart(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept
+{
+    CallEvent("onQuestStart", aPlayer, aQuest);
+}
+
+void ScriptService::HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept
+{
+    CallEvent("onQuestStage", aPlayer, aQuest);
+}
+
+void ScriptService::HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept
+{
+    CallEvent("onQuestStop", aPlayer, aformId);
 }
 
 void ScriptService::RegisterExtensions(ScriptContext& aContext)
@@ -154,6 +195,7 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
 {
     using Script::Npc;
     using Script::Player;
+    using Script::Quest;
 
     auto npcType = aContext.new_usertype<Npc>("Npc", sol::no_constructor);
     npcType["id"] = sol::readonly_property(&Npc::GetId);
@@ -166,7 +208,16 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     playerType["id"] = sol::readonly_property(&Player::GetId);
     playerType["mods"] = sol::readonly_property(&Player::GetMods);
     playerType["ip"] = sol::readonly_property(&Player::GetIp);
+    playerType["discordid"] = sol::readonly_property(&Player::GetDiscordId);
     playerType["AddComponent"] = &Player::AddComponent;
+    playerType["AddQuest"] = &Player::AddQuest;
+    playerType["GetQuests"] = &Player::GetQuests;
+    playerType["RemoveQuest"] = &Player::RemoveQuest; 
+
+    auto questType = aContext.new_usertype<Quest>("Quest", sol::no_constructor);
+    questType["id"] = sol::readonly_property(&Quest::GetId);
+    questType["GetStage"] = &Quest::GetStage;
+    //questType["SetStage"] = &Quest::SetStage;
 
     auto worldType = aContext.new_usertype<World>("World", sol::no_constructor);
     worldType["get"] = [this]() { return &m_world; };
@@ -179,12 +230,7 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     clockType["GetTime"] = &EnvironmentService::GetTime;
     clockType["GetDate"] = &EnvironmentService::GetDate;
     clockType["GetTimeScale"] = &EnvironmentService::GetTimeScale;
-    clockType["GetRealTime"] = []() { 
-        auto t = std::time(nullptr);
-        int h = (t / 3600) % 24;
-        int m = (t / 60) % 60;
-        return std::pair{h, m};
-    };
+    clockType["GetRealTime"] = &EnvironmentService::GetRealTime;
 }
 
 void ScriptService::BindStaticFunctions(ScriptContext& aContext) noexcept

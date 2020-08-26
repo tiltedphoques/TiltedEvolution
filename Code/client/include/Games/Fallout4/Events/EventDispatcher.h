@@ -35,4 +35,36 @@ struct EventDispatcher
 
 // Sadly fallout4 doesn't have a clean manager like skyrim
 
+struct TESQuestStartStopEvent
+{
+    uint32_t formId;
+};
+
+struct TESQuestStageItemDoneEvent
+{
+    uint32_t formId;
+    uint16_t stageId;
+    bool unk;
+};
+
+struct TESQuestStageEvent
+{
+    void* callback;
+    uint32_t formId;
+    uint16_t stageId;
+    bool bUnk;
+};
+
+#define DECLARE_DISPATCHER(name, address) \
+inline EventDispatcher<name>* GetEventDispatcher_##name() \
+    { \
+    using TGetDispatcher = EventDispatcher<name>*(); \
+    POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, address - 0x140000000); \
+    return s_getEventDispatcher.Get()(); \
+}; \
+
+DECLARE_DISPATCHER(TESQuestStartStopEvent, 0x1404438B0);
+DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 0x140443810);
+DECLARE_DISPATCHER(TESQuestStageEvent, 0x140443770);
+
 #endif

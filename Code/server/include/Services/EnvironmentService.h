@@ -22,6 +22,7 @@ public:
 
     // returns hours, minutes
     TTime GetTime() const noexcept;
+    static TTime GetRealTime() noexcept;
 
     // returns dd/mm/yy
     TDate GetDate() const noexcept;

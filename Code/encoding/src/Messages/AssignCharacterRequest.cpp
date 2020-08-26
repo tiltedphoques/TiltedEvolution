@@ -13,6 +13,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     InventoryContent.Serialize(aWriter);
     FactionsContent.Serialize(aWriter);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
+    QuestContent.Serialize(aWriter);
     FaceTints.Serialize(aWriter);
 }
 
@@ -41,5 +42,6 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     LatestAction = ActionEvent{};
     LatestAction.ApplyDifferential(aReader);
 
+    QuestContent.Deserialize(aReader);
     FaceTints.Deserialize(aReader);
 }

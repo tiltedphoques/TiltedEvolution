@@ -11,6 +11,7 @@
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
+#include <Messages/NotifyQuestUpdate.h>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -36,6 +37,7 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(NotifyInventoryChanges);
         EXTRACT_MESSAGE(NotifyFactionsChanges);
         EXTRACT_MESSAGE(NotifyRemoveCharacter);
+        EXTRACT_MESSAGE(NotifyQuestUpdate);
     }
 
     return UniquePtr<ServerMessage>(nullptr, &TiltedPhoques::Delete<ServerMessage>);

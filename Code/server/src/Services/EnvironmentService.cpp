@@ -15,14 +15,12 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
-    auto *pServer = GameServer::Get();
-
     ServerTimeSettings timeMsg;
     timeMsg.TimeScale = m_timeModel.TimeScale;
     timeMsg.Time = m_timeModel.Time;
 
     const auto &playerComponent = m_world.get<PlayerComponent>(acEvent.Entity);
-    pServer->Send(playerComponent.ConnectionId, timeMsg);
+    GameServer::Get()->Send(playerComponent.ConnectionId, timeMsg);
 }
 
 bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcept
@@ -36,12 +34,10 @@ bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcep
         Min = floor(Min * 100) / 1000;
         m_timeModel.Time = static_cast<float>(aHours) + Min;
 
-        auto *pServer = GameServer::Get();
-
         ServerTimeSettings timeMsg;
         timeMsg.TimeScale = m_timeModel.TimeScale;
         timeMsg.Time = m_timeModel.Time;
-        pServer->SendToLoaded(timeMsg);
+        GameServer::Get()->SendToLoaded(timeMsg);
         return true;
     }
 
@@ -57,9 +53,16 @@ EnvironmentService::TTime EnvironmentService::GetTime() const noexcept
     return {static_cast<int>(hour), flatMinutes};
 }
 
+EnvironmentService::TTime EnvironmentService::GetRealTime() noexcept
+{
+    auto t = std::time(nullptr);
+    int h = (t / 3600) % 24;
+    int m = (t / 60) % 60;
+    return {h, m};
+}
+
 EnvironmentService::TDate EnvironmentService::GetDate() const noexcept
 {
-    // return the Date in a **reasonable** format
     return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
 }
 
