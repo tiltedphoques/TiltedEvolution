@@ -20,6 +20,7 @@ steps:
         msbuildArgs: -m
         Configuration: $(configuration)
         Platform: $(platform)
+        vsVersion: 16.8
       env:
         DXSDK_DIR: $(Build.SourcesDirectory)\DXSDK
   
