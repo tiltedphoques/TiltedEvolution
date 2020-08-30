@@ -1,9 +1,12 @@
 #include <Scripts/Player.h>
 #include <Scripts/Npc.h>
 #include <Scripts/Quest.h>
+#include <Scripts/Party.h>
 
 #include <World.h>
 #include <Components.h>
+
+#include <Services/PartyService.h>
 
 namespace Script
 {
@@ -21,6 +24,12 @@ namespace Script
     {
         auto& playerComponent = m_pWorld->get<PlayerComponent>(m_entity);
         return playerComponent.Endpoint;
+    }
+
+    const String& Player::GetName() const
+    {
+        auto& playerComponent = m_pWorld->get<PlayerComponent>(m_entity);
+        return playerComponent.Username;
     }
 
     const uint64_t Player::GetDiscordId() const
@@ -169,6 +178,19 @@ namespace Script
             }
 
             return std::move(scriptQuests);
+        }
+
+        return sol::nullopt;
+    }
+
+    sol::optional<Party> Player::GetParty() const noexcept
+    {
+        if (auto* pPartyComponent = m_pWorld->try_get<PartyComponent>(m_entity))
+        {
+            if (pPartyComponent->JoinedPartyId)
+            {
+                return Party(*pPartyComponent->JoinedPartyId, *m_pWorld);
+            }
         }
 
         return sol::nullopt;

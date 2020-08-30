@@ -26,6 +26,7 @@ struct GameServer final : Server
 
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;
+    void SendToPlayers(const ServerMessage& acServerMessage) const;
 
     const String& GetName() const noexcept;
 

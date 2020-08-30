@@ -10,6 +10,7 @@
 
 struct World;
 struct ClientRpcCalls;
+struct PlayerEnterWorldEvent;
 
 namespace Script
 {
@@ -31,7 +32,6 @@ struct ScriptService : ScriptStore
     FullObjects GenerateFull() noexcept;
 
     std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
-    std::tuple<bool, String> HandlePlayerEnterWorld(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
 
     void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;
@@ -45,6 +45,7 @@ protected:
     void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noexcept;
     void OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept;
 
     void BindStaticFunctions(ScriptContext& aContext) noexcept;
@@ -57,10 +58,9 @@ protected:
     [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
 
     template<typename... Args>
-    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args);
+    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
 
-    template<typename... Args>
-    void CallEvent(const String& acName, Args&&... args);
+    template<typename... Args> void CallEvent(const String& acName, Args&&... args) noexcept;
 
 private:
 
@@ -75,6 +75,7 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_rpcCallsRequest;
+    entt::scoped_connection m_playerEnterWorldConnection;
 };
 
 #include "ScriptService.inl"

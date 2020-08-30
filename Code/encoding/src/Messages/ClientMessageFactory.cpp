@@ -12,6 +12,9 @@
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
+#include <Messages/PartyInviteRequest.h>
+#include <Messages/PartyAcceptInviteRequest.h>
+#include <Messages/PartyLeaveRequest.h>
 
 #include <iostream>
 
@@ -40,6 +43,9 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(RequestInventoryChanges);
         EXTRACT_MESSAGE(RequestFactionsChanges);
         EXTRACT_MESSAGE(RequestQuestUpdate);
+        EXTRACT_MESSAGE(PartyInviteRequest);
+        EXTRACT_MESSAGE(PartyAcceptInviteRequest);
+        EXTRACT_MESSAGE(PartyLeaveRequest);
     }
 
     return UniquePtr<ClientMessage>(nullptr, &TiltedPhoques::Delete<ClientMessage>);

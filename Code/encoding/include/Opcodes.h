@@ -12,6 +12,9 @@ enum ClientOpcode : unsigned char
     kRequestInventoryChanges,
     kRequestFactionsChanges,
     kRequestQuestUpdate,
+    kPartyInviteRequest,
+    kPartyAcceptInviteRequest,
+    kPartyLeaveRequest,
 };
 
 enum ServerOpcode : unsigned char
@@ -25,5 +28,8 @@ enum ServerOpcode : unsigned char
     kNotifyInventoryChanges,
     kNotifyFactionsChanges,
     kNotifyRemoveCharacter,
-    kNotifyQuestUpdate
+    kNotifyQuestUpdate,
+    kNotifyPlayerList,
+    kNotifyPartyInfo,
+    kNotifyPartyInvite,
 };

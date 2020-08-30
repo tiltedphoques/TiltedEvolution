@@ -6,6 +6,10 @@
 #include <Events/CellChangeEvent.h>
 
 #include <Games/TES.h>
+#include <Games/References.h>
+
+#include <Games/Skyrim/Forms/TESNPC.h>
+#include <Games/Fallout4/Forms/TESNPC.h>
 
 #include <World.h>
 
@@ -30,6 +34,9 @@
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/NotifyQuestUpdate.h>
+#include <Messages/NotifyPlayerList.h>
+#include <Messages/NotifyPartyInfo.h>
+#include <Messages/NotifyPartyInvite.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -110,6 +117,9 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
     TRANSPORT_DISPATCH(NotifyFactionsChanges);
     TRANSPORT_DISPATCH(NotifyRemoveCharacter);
     TRANSPORT_DISPATCH(NotifyQuestUpdate);
+    TRANSPORT_DISPATCH(NotifyPlayerList);
+    TRANSPORT_DISPATCH(NotifyPartyInfo);
+    TRANSPORT_DISPATCH(NotifyPartyInvite);
 
     default:
         spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());
@@ -124,6 +134,15 @@ void TransportService::OnConnected()
     // null if discord is not active
     // TODO: think about user opt out
     request.DiscordId = m_world.ctx<DiscordService>().GetUser().id;
+    auto* pNpc = RTTI_CAST(PlayerCharacter::Get()->baseForm, TESForm, TESNPC);
+    if (pNpc)
+    {
+        request.Username = pNpc->fullName.value.AsAscii();
+    }
+    else
+    {
+        request.Username = "Some dragon boi";
+    }
 
     const auto cpModManager = ModManager::Get();
 

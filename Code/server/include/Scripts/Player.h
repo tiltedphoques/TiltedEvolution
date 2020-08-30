@@ -7,6 +7,7 @@ struct QuestLogComponent;
 namespace Script
 {
     struct Quest;
+    struct Party;
 
     struct Player : EntityHandle
     {
@@ -14,6 +15,7 @@ namespace Script
 
         const Vector<String>& GetMods() const;
         const String& GetIp() const;
+        const String& GetName() const;
         const uint64_t GetDiscordId() const;
 
         [[nodiscard]] const Vector3<float>& GetPosition() const;
@@ -33,6 +35,7 @@ namespace Script
         bool RemoveQuest(uint32_t aformId);
         sol::optional<Quest> AddQuest(const std::string aModName, uint32_t aformId);
         sol::optional<Vector<Quest>> GetQuests() const noexcept;
+        sol::optional<Party> GetParty() const noexcept;
 
         inline entt::entity GetEntityHandle() const { return m_entity; }
     };
