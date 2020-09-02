@@ -12,7 +12,7 @@ This framework was created to enable multiplayer in Bethesda games, at the momen
 
 ### Windows
 
-You will need [Visual Studio 2019](https://www.visualstudio.com/downloads/) (the community edition is freely available for download) and [Directx SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) to build the project, aswell [Node.js](https://nodejs.org/en/) for the scripts to run properly.
+You will need [Visual Studio 2019 Version 16.8 Preview 2](https://devblogs.microsoft.com/visualstudio/visual-studio-2019-v16-8-preview-2/) (the community edition is freely available). **Earlier versions of Visual Studio will not work**. You will also need [Directx SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) to build the project, aswell [Node.js](https://nodejs.org/en/) for the scripts to run properly.
 
 Check GETTINGSTARTED.md for the detailed steps.
 
