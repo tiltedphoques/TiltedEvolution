@@ -4,6 +4,7 @@
 #include <World.h>
 
 #include <Events/CharacterSpawnedEvent.h>
+#include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Scripts/Npc.h>
 #include <Scripts/Player.h>
@@ -142,7 +143,6 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
         return;  
     }
 
-    const auto& characterCellIdComponent = view.get<CellIdComponent>(*it);
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
     NotifyRemoveCharacter response;
@@ -151,7 +151,6 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
     for (auto entity : playerView)
     {
         auto& playerComponent = playerView.get<PlayerComponent>(entity);
-        auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
 
         if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
             continue;
@@ -342,13 +341,12 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
         auto& playerComponent = playerView.get<PlayerComponent>(cPlayer);
         playerComponent.Character = cEntity;
-        playerComponent.PlayerHandle = cPlayer;
 
         auto& questLogComponent = m_world.emplace<QuestLogComponent>(cPlayer);
         questLogComponent.QuestContent = std::move(message.QuestContent);
 
-        const Script::Player player(cPlayer, m_world);
-        m_world.GetScriptService().HandlePlayerEnterWorld(player);
+        auto& dispatcher = m_world.GetDispatcher();
+        dispatcher.trigger(PlayerEnterWorldEvent(cPlayer));
     }
 
     AssignCharacterResponse response;

@@ -162,7 +162,7 @@ TEST_CASE("Static structures", "[encoding.static]")
     {
         Rotator2_NetQuantize sendObjects, recvObjects;
         sendObjects.X = 1.89f;
-        sendObjects.Y = TiltedPhoques::Pi * 2.0;
+        sendObjects.Y = TiltedPhoques::Pi * 2.0f;
 
         {
             Buffer buff(1000);
@@ -182,7 +182,7 @@ TEST_CASE("Static structures", "[encoding.static]")
         // This test is a bit dangerous as floating errors can lead to sendObjects != recvObjects but the difference is minuscule so we don't care abut such cases
         Rotator2_NetQuantize sendObjects, recvObjects;
         sendObjects.X = -1.87f;
-        sendObjects.Y = TiltedPhoques::Pi * 18.0 + 3.6f;
+        sendObjects.Y = TiltedPhoques::Pi * 18.0f + 3.6f;
 
         {
             Buffer buff(1000);

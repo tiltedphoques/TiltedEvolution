@@ -5,8 +5,10 @@
 #include <Scripts/Npc.h>
 #include <Scripts/Player.h>
 #include <Scripts/Quest.h>
+#include <Scripts/Party.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/PlayerEnterWorldEvent.h>
 
 #include <Messages/ClientRpcCalls.h>
 #include <Messages/ServerScriptUpdate.h>
@@ -20,6 +22,7 @@ ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
     , m_rpcCallsRequest(aDispatcher.sink<PacketEvent<ClientRpcCalls>>().connect<&ScriptService::OnRpcCalls>(this))
+    , m_playerEnterWorldConnection(aDispatcher.sink<PlayerEnterWorldEvent>().connect<&ScriptService::OnPlayerEnterWorld>(this))
 {
 }
 
@@ -96,11 +99,6 @@ FullObjects ScriptService::GenerateFull() noexcept
     objects.Data.assign(buff.GetData(), buff.GetData() + writer.Size());
 
     return objects;
-}
-
-std::tuple<bool, String> ScriptService::HandlePlayerEnterWorld(const Script::Player& aPlayer) noexcept
-{
-    return CallCancelableEvent("onPlayerEnterWorld", aPlayer);
 }
 
 std::tuple<bool, String> ScriptService::HandleMove(const Script::Npc& aNpc) noexcept
@@ -181,6 +179,13 @@ void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
     CallEvent("onUpdate", acEvent.Delta);
 }
 
+void ScriptService::OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noexcept
+{
+    const Script::Player cPlayer(acEvent.Entity, m_world);
+
+    CallEvent("onPlayerEnterWorld", cPlayer);
+}
+
 void ScriptService::OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept
 {
     auto& data = acRpcCalls.Packet.Data;
@@ -196,6 +201,7 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     using Script::Npc;
     using Script::Player;
     using Script::Quest;
+    using Script::Party;
 
     auto npcType = aContext.new_usertype<Npc>("Npc", sol::no_constructor);
     npcType["id"] = sol::readonly_property(&Npc::GetId);
@@ -208,6 +214,7 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     playerType["id"] = sol::readonly_property(&Player::GetId);
     playerType["mods"] = sol::readonly_property(&Player::GetMods);
     playerType["ip"] = sol::readonly_property(&Player::GetIp);
+    playerType["party"] = sol::readonly_property(&Player::GetParty);
     playerType["discordid"] = sol::readonly_property(&Player::GetDiscordId);
     playerType["AddComponent"] = &Player::AddComponent;
     playerType["AddQuest"] = &Player::AddQuest;
@@ -217,7 +224,11 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     auto questType = aContext.new_usertype<Quest>("Quest", sol::no_constructor);
     questType["id"] = sol::readonly_property(&Quest::GetId);
     questType["GetStage"] = &Quest::GetStage;
-    //questType["SetStage"] = &Quest::SetStage;
+    // questType["SetStage"] = &Quest::SetStage;    
+
+    auto partyType = aContext.new_usertype<Party>("Party", sol::no_constructor);
+    partyType["id"] = sol::readonly_property(&Party::GetId);
+    partyType["members"] = sol::readonly_property(&Party::GetPlayers);
 
     auto worldType = aContext.new_usertype<World>("World", sol::no_constructor);
     worldType["get"] = [this]() { return &m_world; };

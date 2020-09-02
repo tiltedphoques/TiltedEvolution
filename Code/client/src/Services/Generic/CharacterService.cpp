@@ -230,7 +230,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
     pActor->Enable();
-    pActor->MoveTo(PlayerCharacter::Get(), Vector3<float>{}, true);
+    //pActor->MoveTo(PlayerCharacter::Get(), Vector3<float>{}, true);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -464,9 +464,10 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
             if (!pQuest)
                 continue;
 
-            GameId Id;
             if (!QuestService::IsNonSyncableQuest(pQuest))
             {
+                GameId Id;
+
                 if (modSystem.GetServerModId(pQuest->formID, Id))
                 {
                     auto& entry = questLog.emplace_back();
@@ -486,13 +487,8 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     if(isTemporary)
     {
-        uint32_t baseNpcId = 0;
-        uint32_t modNpcId = 0;
-        if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, modNpcId, baseNpcId))
+        if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, message.FormId))
             return;
-
-        message.FormId.BaseId = baseNpcId;
-        message.FormId.ModId = modNpcId;
     }
 
     // Serialize actions

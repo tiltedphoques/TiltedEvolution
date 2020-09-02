@@ -12,6 +12,9 @@
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/NotifyQuestUpdate.h>
+#include <Messages/NotifyPlayerList.h>
+#include <Messages/NotifyPartyInfo.h>
+#include <Messages/NotifyPartyInvite.h>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -38,6 +41,9 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(NotifyFactionsChanges);
         EXTRACT_MESSAGE(NotifyRemoveCharacter);
         EXTRACT_MESSAGE(NotifyQuestUpdate);
+        EXTRACT_MESSAGE(NotifyPlayerList);
+        EXTRACT_MESSAGE(NotifyPartyInfo);
+        EXTRACT_MESSAGE(NotifyPartyInvite);
     }
 
     return UniquePtr<ServerMessage>(nullptr, &TiltedPhoques::Delete<ServerMessage>);

@@ -18,6 +18,9 @@
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
+#include <Messages/PartyInviteRequest.h>
+#include <Messages/PartyAcceptInviteRequest.h> 
+#include <Messages/PartyLeaveRequest.h> 
 
 #include <Scripts/Player.h>
 
@@ -112,6 +115,9 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         SERVER_DISPATCH(RequestInventoryChanges);
         SERVER_DISPATCH(RequestFactionsChanges);
         SERVER_DISPATCH(RequestQuestUpdate);
+        SERVER_DISPATCH(PartyInviteRequest);
+        SERVER_DISPATCH(PartyAcceptInviteRequest);
+        SERVER_DISPATCH(PartyLeaveRequest);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;
@@ -200,6 +206,17 @@ void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
     }
 }
 
+void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
+{
+    auto playerView = m_pWorld->view<const PlayerComponent>();
+
+    for (auto player : playerView)
+    {
+        const auto& playerComponent = playerView.get<const PlayerComponent>(player);
+        Send(playerComponent.ConnectionId, acServerMessage);
+    }
+}
+
 const String& GameServer::GetName() const noexcept
 {
     return m_name;
@@ -238,6 +255,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         playerComponent.Endpoint = remoteAddress;
         playerComponent.DiscordId = acRequest->DiscordId;
+        playerComponent.Username = std::move(acRequest->Username);
 
         AuthenticationResponse serverResponse;
 

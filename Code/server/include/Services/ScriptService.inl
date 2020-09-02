@@ -1,5 +1,5 @@
 template<typename... Args>
-std::tuple<bool, String> ScriptService::CallCancelableEvent(const String& acName, Args&&... args)
+std::tuple<bool, String> ScriptService::CallCancelableEvent(const String& acName, Args&&... args) noexcept
 {
     m_eventCanceled = false;
 
@@ -23,7 +23,7 @@ std::tuple<bool, String> ScriptService::CallCancelableEvent(const String& acName
 }
 
 template<typename... Args>
-void ScriptService::CallEvent(const String& acName, Args&&... args)
+void ScriptService::CallEvent(const String& acName, Args&&... args) noexcept
 {
     auto& callbacks = m_callbacks[acName];
 

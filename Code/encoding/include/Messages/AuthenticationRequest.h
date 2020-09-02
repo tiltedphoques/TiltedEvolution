@@ -18,12 +18,15 @@ struct AuthenticationRequest final : ClientMessage
 
     bool operator==(const AuthenticationRequest& achRhs) const noexcept
     {
-        return Token == achRhs.Token &&
-            Mods == achRhs.Mods &&
+        return DiscordId == achRhs.DiscordId &&
+            Token == achRhs.Token && 
+            Mods == achRhs.Mods && 
+            Username == achRhs.Username &&
             GetOpcode() == achRhs.GetOpcode();
     }
 
     uint64_t DiscordId;
     String Token;
     Mods Mods;
+    String Username;
 };
