@@ -93,10 +93,12 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
         auto& selfPartyComponent = view.get<PartyComponent>(*selfItor);
 
         // Expire in 60 seconds
-        otherPartyComponent.Invitations[*selfPartyComponent.JoinedPartyId] = GameServer::Get()->GetTick() + 60000;
+        auto cExpiryTick = GameServer::Get()->GetTick() + 60000;
+        otherPartyComponent.Invitations[*selfItor] = cExpiryTick;
 
         NotifyPartyInvite notification;
         notification.InviterId = World::ToInteger(*selfItor);
+        notification.ExpiryTick = cExpiryTick;
 
         auto& playerComponent = view.get<PlayerComponent>(*otherItor);
 
@@ -128,6 +130,10 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
         auto& selfPartyComponent = view.get<PartyComponent>(*selfItor);
 
         auto partyId = 0;
+
+        // Check if we have this invitation so people don't invite themselves
+        if (selfPartyComponent.Invitations.count(*inviterItor) == 0)
+            return;
 
         // If the inviter isn't in a party, create it
         if (!inviterPartyComponent.JoinedPartyId)

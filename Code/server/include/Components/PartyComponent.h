@@ -9,5 +9,5 @@ struct PartyComponent
     PartyComponent() {}
 
     std::optional<uint32_t> JoinedPartyId;
-    Map<uint32_t, uint64_t> Invitations;
+    Map<entt::entity, uint64_t> Invitations;
 };

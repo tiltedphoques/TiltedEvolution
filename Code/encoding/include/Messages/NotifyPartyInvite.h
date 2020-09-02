@@ -21,4 +21,5 @@ struct NotifyPartyInvite final : ServerMessage
     }
 
     uint32_t InviterId{};
+    uint64_t ExpiryTick{};
 };

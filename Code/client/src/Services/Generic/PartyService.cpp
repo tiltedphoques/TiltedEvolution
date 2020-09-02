@@ -59,7 +59,7 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPlayerList) noexcept
 
 void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcept
 {
-    m_invitations[acPartyInvite.InviterId] = m_transportService.GetClock().GetCurrentTick() + 60000;
+    m_invitations[acPartyInvite.InviterId] = acPartyInvite.ExpiryTick;
 }
 
 void PartyService::OnDraw() noexcept
