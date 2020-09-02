@@ -17,6 +17,7 @@ struct NotifyPartyInvite final : ServerMessage
     bool operator==(const NotifyPartyInvite& acRhs) const noexcept
     {
         return InviterId == acRhs.InviterId &&
+            ExpiryTick == acRhs.ExpiryTick &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
