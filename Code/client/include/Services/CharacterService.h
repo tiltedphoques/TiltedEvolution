@@ -29,24 +29,24 @@ struct CharacterService
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
-    void OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept;
+    void OnAssignCharacter(const AssignCharacterResponse& acMessage) const noexcept;
     void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
-    void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) noexcept;
-    void OnActionEvent(const ActionEvent& acActionEvent) noexcept;
+    void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept;
+    void OnActionEvent(const ActionEvent& acActionEvent) const noexcept;
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
-    void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
-    void OnFactionsChanges(const NotifyFactionsChanges& acEvent) noexcept;
-    void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) noexcept;
+    void OnInventoryChanges(const NotifyInventoryChanges& acEvent) const noexcept;
+    void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
+    void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept;
 
 private:
 
     void RequestServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
 
-    void RunLocalUpdates() noexcept;
-    void RunRemoteUpdates() noexcept;
+    void RunLocalUpdates() const noexcept;
+    void RunRemoteUpdates() const noexcept;
     void RunInventoryUpdates() noexcept;
-    void RunFactionsUpdates() noexcept;
+    void RunFactionsUpdates() const noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;

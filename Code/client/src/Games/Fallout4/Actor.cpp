@@ -121,7 +121,7 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.NpcFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
         auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
         if (pFaction)
         {
@@ -131,7 +131,7 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.ExtraFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
         auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
         if (pFaction)
         {
