@@ -202,7 +202,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
     }
-    else
+    /*else
     {
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
         auto* const pForm = TESForm::GetById(cActorId);
@@ -216,7 +216,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             spdlog::error("\tForm : {:X}", pForm ? pForm->formID : 0);
             return;
         }
-    }
+    }*/
 
     if (!pActor)
         return;
