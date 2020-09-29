@@ -202,7 +202,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
     }
-    /*else
+    else
     {
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
         auto* const pForm = TESForm::GetById(cActorId);
@@ -216,7 +216,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             spdlog::error("\tForm : {:X}", pForm ? pForm->formID : 0);
             return;
         }
-    }*/
+    }
 
     if (!pActor)
         return;
@@ -229,8 +229,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->GetExtension()->SetRemote(true);
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
-    pActor->Enable();
-    //pActor->MoveTo(PlayerCharacter::Get(), Vector3<float>{}, true);
+    //pActor->Enable();
+    pActor->MoveTo(PlayerCharacter::Get(), Vector3<float>{}, true);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);

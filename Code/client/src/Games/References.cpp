@@ -244,13 +244,21 @@ void TESObjectREFR::Enable() const noexcept
     s_pEnable(this, true);
 }
 
-void TESObjectREFR::MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation) noexcept
+void TESObjectREFR::MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation) const noexcept
 {
     using ObjectReference = TESObjectREFR;
 
+#if TP_FALLOUT4
+    LATENT_PAPYRUS_FUNCTION(bool, ObjectReference, MoveTo, RefrOrInventoryObj&, float, float, float, bool);
+
+    RefrOrInventoryObj target{apTarget, nullptr, 0};
+
+    s_pMoveTo(this, target, acOffset.m_x, acOffset.m_y, acOffset.m_z, aMatchRotation);
+#else
     PAPYRUS_FUNCTION(bool, ObjectReference, MoveTo, TESObjectREFR*, float, float, float, bool);
 
     s_pMoveTo(this, apTarget, acOffset.m_x, acOffset.m_y, acOffset.m_z, aMatchRotation);
+#endif
 }
 
 float Actor::GetSpeed() noexcept

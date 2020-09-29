@@ -158,7 +158,7 @@ struct TESObjectREFR : TESForm
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
-    void MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation = false) noexcept;
+    void MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation = false) const noexcept;
 
 public:
 
