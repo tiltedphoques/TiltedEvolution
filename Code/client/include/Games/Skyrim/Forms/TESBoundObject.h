@@ -17,4 +17,6 @@ struct TESBoundObject : TESObject
     Bound lower;
 };
 
+static_assert(sizeof(TESBoundObject) == 0x30);
+
 #endif
