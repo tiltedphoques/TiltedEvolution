@@ -1,7 +1,6 @@
 
 #include <World.h>
 #include <Events/UpdateEvent.h>
-#include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Services/EnvironmentService.h>
 #include <Messages/ServerTimeSettings.h>
@@ -40,17 +39,16 @@ void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
     m_switchToOffline = true;
 }
 
-float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo)
+float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
 {
-    float t = aTo.Time - aFrom.Time;
+    const auto t = aTo.Time - aFrom.Time;
     if (t < 0.f)
     {
-        float v = t + 24.f;
+        const auto v = t + 24.f;
         // interpolate on the time difference, not the time
-        float x = TiltedPhoques::Lerp(0.f, v, m_fadeTimer / kTransitionSpeed) + aFrom.Time;
-        if (x > 24.f)
-            x = x - 24.f;
-        return x;
+        const auto x = TiltedPhoques::Lerp(0.f, v, m_fadeTimer / kTransitionSpeed) + aFrom.Time;
+
+        return TiltedPhoques::Mod(x, 24.f);
     }
     
     return TiltedPhoques::Lerp(aFrom.Time, aTo.Time, m_fadeTimer / kTransitionSpeed);
@@ -85,13 +83,13 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 {
     if (s_gameClockLocked)
     {
-        float updateDelta = static_cast<float>(aEvent.Delta);
+        const auto updateDelta = static_cast<float>(aEvent.Delta);
         auto* pGameTime = TimeData::Get();
 
         if (!m_lastTick)
             m_lastTick = m_world.GetTick();
 
-        auto now = m_world.GetTick();
+        const auto now = m_world.GetTick();
 
         if (m_switchToOffline)
         {
@@ -113,8 +111,8 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         // we got disconnected or the client got ahead of us
         if (now < m_lastTick)
             return;
-    
-        auto delta = now - m_lastTick;
+
+        const auto delta = now - m_lastTick;
         m_lastTick = now;
 
         m_onlineTime.Update(delta);

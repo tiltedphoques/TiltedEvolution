@@ -17,7 +17,7 @@ public:
     void OnDisconnected(const DisconnectedEvent &) noexcept;
 
     void ToggleGameClock(bool aEnable);
-    float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo);
+    float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
 
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_weatherUpdateConnection;

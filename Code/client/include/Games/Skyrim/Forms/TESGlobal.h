@@ -17,4 +17,6 @@ struct TESGlobal : TESForm
     };
 };
 
+static_assert(offsetof(TESGlobal, f) == 0x34);
+
 #endif

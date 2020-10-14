@@ -58,7 +58,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     uint16_t flags;                // 0x00DC default init: 256
     uint8_t priority;              // 0x00DE
     uint8_t type;                  // 0x00DF
-    uint32_t scopedStatus;         // 0x00E0 default init: -1, if not -1 outside of story manager scope
+    int32_t scopedStatus;          // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
     GameList<Stage> stages;            // 0x00E8
     GameList<Objective> objectives;    // 0x00F8

@@ -107,7 +107,7 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
         pQuest->flags |= TESQuest::Enabled | TESQuest::Started;
         pQuest->scopedStatus = -1;
 
-        bool bNeedsRegistration = false;
+        auto bNeedsRegistration = false;
         if (pQuest->UnkSetRunning(bNeedsRegistration, false))
         {
             auto* pCallbackMgr = QuestCallbackManager::Get();
