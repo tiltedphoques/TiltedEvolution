@@ -19,7 +19,7 @@ struct BSFixedString
 
         [[nodiscard]] const Data* GetExternData() const noexcept
         {
-            auto* pIterator = this;
+            const auto* pIterator = this;
 
             while (pIterator->flags & 0x4000)
                 pIterator = pIterator->derived;
@@ -61,17 +61,17 @@ struct BSFixedString
         return data->IsAscii();
     }
 
-    [[nodiscard]] const char *AsAscii() const
+    [[nodiscard]] const char* AsAscii() const
     {
         return data ? data->AsAscii() : nullptr;
     }
 
-    [[nodiscard]] const wchar_t *AsWide() const
+    [[nodiscard]] const wchar_t* AsWide() const
     {
         return data ? data->AsWide() : nullptr;
     }
 
-    Data *data;
+    Data* data;
 };
 
 #endif
