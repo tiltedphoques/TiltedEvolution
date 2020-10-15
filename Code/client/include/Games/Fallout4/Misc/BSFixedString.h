@@ -47,11 +47,11 @@ struct BSFixedString
     static_assert(offsetof(Data, data) == 0x18);
 
     // Be careful using this, the destructor does NOT release the memory, call Release manually if you wish to delete it
-    BSFixedString(const char* acpData);
-    BSFixedString(BSFixedString&& aRhs);
+    explicit BSFixedString(const char* acpData);
+    BSFixedString(BSFixedString&& aRhs) noexcept;
     ~BSFixedString();
 
-    BSFixedString& operator=(BSFixedString&& aRhs);
+    BSFixedString& operator=(BSFixedString&& aRhs) noexcept;
 
     void Release() noexcept;
     void Set(const char* acpStr) noexcept;

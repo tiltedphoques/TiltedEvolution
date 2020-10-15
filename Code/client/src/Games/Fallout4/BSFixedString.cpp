@@ -11,13 +11,13 @@ BSFixedString::BSFixedString(const char* acpData)
     ThisCall(s_constructor, this, acpData);
 }
 
-BSFixedString::BSFixedString(BSFixedString&& aRhs)
+BSFixedString::BSFixedString(BSFixedString&& aRhs) noexcept
 {
     data = aRhs.data;
     aRhs.data = nullptr;
 }
 
-BSFixedString& BSFixedString::operator=(BSFixedString&& aRhs)
+BSFixedString& BSFixedString::operator=(BSFixedString&& aRhs) noexcept
 {
     Release();
 
