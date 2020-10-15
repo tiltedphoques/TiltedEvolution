@@ -8,7 +8,7 @@ static TSetLeveledNpc* RealSetLeveledNpc = nullptr;
 
 TESNPC* TP_MAKE_THISCALL(HookSetLeveledNpc, TESNPC, TESNPC* apSelectedNpc)
 {
-    spdlog::info("For TESNPC: {}, spawning: {}", apThis->fullName.value, apSelectedNpc->fullName.value);
+    spdlog::info("For TESNPC: {}, spawning: {}", apThis->fullName.value.AsAscii(), apSelectedNpc->fullName.value.AsAscii());
 
     return ThisCall(RealSetLeveledNpc, apThis, RTTI_CAST(TESForm::GetById(0x3B547), TESForm, TESNPC));
 }
