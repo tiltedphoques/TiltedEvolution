@@ -230,7 +230,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
     //pActor->Enable();
-    pActor->MoveTo(PlayerCharacter::Get(), Vector3<float>{}, true);
+    pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -408,12 +408,9 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.CellId.BaseId = cellBaseId;
     message.CellId.ModId = cellModId;
 
-    message.Position.m_x = pActor->position.x;
-    message.Position.m_y = pActor->position.y;
-    message.Position.m_z = pActor->position.z;
-
-    message.Rotation.X = pActor->rotation.x;
-    message.Rotation.Y = pActor->rotation.z;
+    message.Position = pActor->position;
+    message.Rotation.X= pActor->rotation.m_x;
+    message.Rotation.Y = pActor->rotation.m_z;
 
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);

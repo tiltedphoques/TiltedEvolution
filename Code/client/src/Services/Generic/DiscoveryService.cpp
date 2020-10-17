@@ -63,7 +63,7 @@ void DiscoveryService::VisitForms() noexcept
 
     };
 
-    const auto pActorHolder = ActorHolder::Get();
+    auto* const pActorHolder = ActorHolder::Get();
     if (!pActorHolder)
         return;
 

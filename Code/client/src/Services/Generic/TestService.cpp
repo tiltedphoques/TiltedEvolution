@@ -94,16 +94,12 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            if(m_actors.empty())
-                PlaceActorInWorld();
-            else
+            auto* pActor = RTTI_CAST(TESForm::GetById(0x0001F306), TESForm, Actor); // Adara (Female) (Child)
+            if (pActor)
             {
-                auto pActor = m_actors[0];
-
-                auto factions = PlayerCharacter::Get()->GetFactions();
-
-                pActor->SetFactions(factions);
+                pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
             }
+
         }
     }
     else

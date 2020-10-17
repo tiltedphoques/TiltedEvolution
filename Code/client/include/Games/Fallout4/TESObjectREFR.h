@@ -158,7 +158,7 @@ struct TESObjectREFR : TESForm
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
-    void MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation = false) const noexcept;
+    void MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPosition) const noexcept;
 
 public:
 
@@ -180,6 +180,8 @@ public:
     BSExtraDataList* extraData;
     uint64_t unk108;
 };
+
+POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
 
 static_assert(offsetof(TESObjectREFR, animationGraphHolder) == 0x48);
 static_assert(offsetof(TESObjectREFR, baseForm) == 0xE0);

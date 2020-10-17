@@ -334,6 +334,38 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+TP_THIS_FUNCTION(TForceState, void, Actor, Vector3<float>*, float, float, TESObjectCELL*, TESWorldSpace*, bool);
+static TForceState* RealForceState = nullptr;
+
+void TP_MAKE_THISCALL(HookForceState, Actor, Vector3<float>* apPosition, float aX, float aZ,
+                      TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
+{
+    /*const auto pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    if (pNpc)
+    {
+        spdlog::info("For TESNPC: {}, spawn at {} {} {}", pNpc->fullName.value, apPosition->m_x, apPosition->m_y,
+                     apPosition->m_z);
+    }*/
+
+   // if (apThis != PlayerCharacter::Get())
+   //     return;
+
+    return ThisCall(RealForceState, apThis, apPosition, aX, aZ, apCell, apWorldSpace, aUnkBool);
+}
+
+TP_THIS_FUNCTION(TSpawnActorInWorld, bool, Actor);
+static TSpawnActorInWorld* RealSpawnActorInWorld = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
+{
+    const auto* pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    if (pNpc)
+    {
+        spdlog::info("Spawn Actor: {:X}, and NPC {}", apThis->formID, pNpc->fullName.value);
+    }
+
+    return ThisCall(RealSpawnActorInWorld, apThis);
+}
 
 static TiltedPhoques::Initializer s_actorHooks([]()
     {
@@ -341,13 +373,20 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406929C0 - 0x140000000);
         POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405CDDA0 - 0x140000000);
         POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
+        POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
+        POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
+        RealForceState = s_ForceState.Get();
+        RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
+        TP_HOOK(&RealForceState, HookForceState);
+        TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
+
     });
 
 #endif

@@ -162,15 +162,14 @@ struct BSHandleRefObject : NiRefObject
     }
 };
 
-struct NiPoint3
+struct NiPoint3 : TiltedPhoques::Vector3<float>
 {
-    float x;
-    float y;
-    float z;
+    NiPoint3() : Vector3() {}
+    NiPoint3(Vector3<float> acRhs) : Vector3(acRhs) {}
 
     float* AsArray()
     {
-        return &x;
+        return &m_x;
     }
 };
 

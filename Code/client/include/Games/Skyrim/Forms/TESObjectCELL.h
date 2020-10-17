@@ -42,7 +42,8 @@ struct TESObjectCELL : TESForm
     };
 
     ReferenceData refData;
-    uint8_t unkB0[0x120 - 0xB0];
+    uint8_t unkB0[0x118 - 0xB0];
+    BSRecursiveLock lock;
     TESWorldSpace* worldspace;
 
 #else

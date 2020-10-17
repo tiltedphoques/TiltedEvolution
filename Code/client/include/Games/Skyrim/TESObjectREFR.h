@@ -153,8 +153,7 @@ struct TESObjectREFR : TESForm
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
-    void MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation = false) const noexcept;
-
+    void MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPosition) const noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
@@ -165,14 +164,12 @@ struct TESObjectREFR : TESForm
     TESObjectCELL* parentCell;
     void* loadedState;
     BSExtraDataList extraData;
-
-#if TP_PLATFORM_64
     BSRecursiveLock refLock;
-#endif
-
     uint16_t scale;
     uint16_t referenceFlags;
 };
+
+POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141EBEABC - 0x140000000);
 
 #if TP_PLATFORM_64
 static_assert(sizeof(TESObjectREFR) == 0x98);

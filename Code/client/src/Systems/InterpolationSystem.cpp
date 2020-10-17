@@ -25,7 +25,7 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     if (movements.size() < 2)
     {
-        auto pName = apActor->GetName();
+        auto* pName = apActor->GetName();
         pName = pName != nullptr ? pName : "UNKNOWN";
 
         //spdlog::warn("Actor {s} is missing interpolation points, skipping frame.", pName);
@@ -37,18 +37,16 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     // Calculate delta movement since last update
     auto delta = 0.0001f;
-    const auto tickDelta = float(second.Tick - first.Tick);
+    const auto tickDelta = static_cast<float>(second.Tick - first.Tick);
     if (tickDelta > 0.f)
     {
-        delta = 1.f / tickDelta * float(aTick - first.Tick);
+        delta = 1.f / tickDelta * static_cast<float>(aTick - first.Tick);
     }
 
     delta = TiltedPhoques::Min(delta, 1.0f);
 
-    NiPoint3 position{};
-    TiltedPhoques::Lerp(first.Position, second.Position, delta)
-        .Decompose(position.x, position.y, position.z);
-    
+    const NiPoint3 position{Lerp(first.Position, second.Position, delta)};
+        
     apActor->ForcePosition(position);
     apActor->LoadAnimationVariables(second.Variables);
     if (apActor->processManager && apActor->processManager->middleProcess)

@@ -194,7 +194,7 @@ uint32_t TESObjectREFR::GetCellId() const noexcept
     if (!parentCell)
         return 0;
 
-    const auto pWorldSpace = parentCell->worldspace;
+    const auto* pWorldSpace = parentCell->worldspace;
 
     return pWorldSpace != nullptr ? pWorldSpace->formID : parentCell->formID;
 }
@@ -244,21 +244,15 @@ void TESObjectREFR::Enable() const noexcept
     s_pEnable(this, true);
 }
 
-void TESObjectREFR::MoveTo(TESObjectREFR* apTarget, const Vector3<float>& acOffset, bool aMatchRotation) const noexcept
+void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPosition) const noexcept
 {
-    using ObjectReference = TESObjectREFR;
+    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*, const Vector3<float>&,
+                     const Vector3<float>&);
 
-#if TP_FALLOUT4
-    LATENT_PAPYRUS_FUNCTION(bool, ObjectReference, MoveTo, RefrOrInventoryObj&, float, float, float, bool);
+    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409AE5C0 - 0x140000000);
+    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x141400900 - 0x140000000);
 
-    RefrOrInventoryObj target{apTarget, nullptr, 0};
-
-    s_pMoveTo(this, target, acOffset.m_x, acOffset.m_y, acOffset.m_z, aMatchRotation);
-#else
-    PAPYRUS_FUNCTION(bool, ObjectReference, MoveTo, TESObjectREFR*, float, float, float, bool);
-
-    s_pMoveTo(this, apTarget, acOffset.m_x, acOffset.m_y, acOffset.m_z, aMatchRotation);
-#endif
+    ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
 float Actor::GetSpeed() noexcept

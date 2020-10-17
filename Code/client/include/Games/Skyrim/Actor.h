@@ -115,10 +115,10 @@ struct Actor : TESObjectREFR
     virtual void sub_EE();
     virtual void sub_EF();
     virtual void sub_F0();
-    virtual void sub_F1();
-    virtual void sub_F2();
-    virtual void sub_F3();
-    virtual void sub_F4();
+    virtual void MoveToMainProcess();
+    virtual void MoveToFourthProcess();
+    virtual void MoveToThirdProcess();
+    virtual bool MoveToSecondaryProcess();
     virtual void sub_F5();
     virtual void sub_F6();
     virtual void sub_F7();
@@ -286,7 +286,9 @@ public:
     uint8_t unk196;
     uint8_t flag197;
 
-    uint8_t padActorEnd[0x2B0 - 0x274];
+    uint8_t pad198[8];
+    BSRecursiveLock actorLock;
+    uint8_t padActorEnd[0x2B0 - 0x284];
 
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
@@ -302,6 +304,7 @@ static_assert(offsetof(Actor, unk17C) == 0x17C);
 static_assert(offsetof(Actor, unkD8) == 0x158);
 static_assert(offsetof(Actor, magicItems) == 0x1C0);
 static_assert(offsetof(Actor, equippedShout) == 0x1E0);
+static_assert(offsetof(Actor, actorLock) == 0x27C);
 static_assert(sizeof(Actor) == 0x2B0);
 static_assert(sizeof(Actor::SpellItemEntry) == 0x18);
 

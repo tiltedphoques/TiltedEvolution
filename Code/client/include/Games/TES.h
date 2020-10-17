@@ -10,23 +10,28 @@ struct GridCellArray
 {
     virtual ~GridCellArray();
 
+    virtual void UnloadAll();
+    virtual void sub_02();
+    virtual void SetCenter(int aX, int aY);
+    virtual void ProcessDeltaChange(int aOffsetX, int aOffsetY);
+    virtual void UnloadOffset(int aOffsetX, int aOffsetY);
+    virtual void LoadOffset(int aOffsetX, int aOffsetY);
+    virtual void MoveCell(int aFromX, int aFromY, int aToX, int aToY);
+    virtual void SwapCells(int aFirstX, int aFirstY, int aSecondX, int aSecondY);
+
     uint32_t unk8;
     uint32_t unkC;
     uint32_t dimension;
     TESObjectCELL** arr;
 };
 
-#if TP_PLATFORM_64
 static_assert(offsetof(GridCellArray, arr) == 0x18);
-#else
-static_assert(offsetof(GridCellArray, arr) == 0x10);
-#endif
 
 struct TES
 {
     static TES* Get() noexcept;
 
-#if TP_SKYRIM64
+#if TP_SKYRIM
     uint8_t pad[0x78];
 #elif TP_FALLOUT4
     uint8_t pad[0x18];
@@ -35,13 +40,13 @@ struct TES
 
 #if TP_FALLOUT4
     uint8_t pad20[0x58 - 0x20];
-#elif TP_SKYRIM64
+#elif TP_SKYRIM
     uint8_t pad80[0xC0 - 0x80];
 #endif
     TESObjectCELL* interiorCell;
 };
 
-#if TP_SKYRIM64
+#if TP_SKYRIM
 static_assert(offsetof(TES, cells) == 0x78);
 static_assert(offsetof(TES, interiorCell) == 0xC0);
 #elif TP_FALLOUT4
@@ -60,10 +65,19 @@ struct ActorHolder
 #endif
 
     GameArray<uint32_t> actorRefs;
+
+#if TP_SKYRIM
+    uint8_t pad48[0x90 - 0x48];
+#else
+
+#endif
+
+    GameArray<uint32_t>* actorBuckets[4]; // 0 is actorRefs, others are not investigated
 };
 
-#if TP_SKYRIM64
+#if TP_SKYRIM
 static_assert(offsetof(ActorHolder, actorRefs) == 0x30);
+static_assert(offsetof(ActorHolder, actorBuckets) == 0x90);
 #elif TP_FALLOUT4
 static_assert(offsetof(ActorHolder, actorRefs) == 0x40);
 #endif
@@ -72,7 +86,7 @@ struct Mod
 {
 #if TP_FALLOUT4
     uint8_t pad0[0x70];
-#elif TP_SKYRIM64
+#elif TP_SKYRIM
     uint8_t pad0[0x58];
 #endif
 
@@ -80,7 +94,7 @@ struct Mod
 
 #if TP_FALLOUT4
     uint8_t pad78[0x334 - 0xD8];
-#elif TP_SKYRIM64
+#elif TP_SKYRIM
     uint8_t pad60[0x438 - 0xC0];
 #endif
 
@@ -88,7 +102,7 @@ struct Mod
 
 #if TP_FALLOUT4
     uint8_t pad338[0x370 - 0x338];
-#elif TP_SKYRIM64
+#elif TP_SKYRIM
     uint8_t pad43C[0x478 - 0x43C];
 #endif
 
@@ -114,7 +128,7 @@ struct Mod
     [[nodiscard]] uint32_t GetFormId(uint32_t aBaseId) const noexcept;
 };
 
-#if TP_SKYRIM64
+#if TP_SKYRIM
 static_assert(offsetof(Mod, filename) == 0x58);
 static_assert(offsetof(Mod, standardId) == 0x478);
 static_assert(offsetof(Mod, liteId) == 0x47A);
@@ -133,14 +147,14 @@ struct ModManager
 
 #if TP_FALLOUT4
     uint8_t pad0[0xFB0];
-#elif TP_SKYRIM64
+#elif TP_SKYRIM
     uint8_t pad0[0xD60];
 #endif
 
     GameList<Mod> mods;
 };
 
-#if TP_SKYRIM64
+#if TP_SKYRIM
 static_assert(offsetof(ModManager, mods) == 0xD60);
 #elif TP_FALLOUT4
 static_assert(offsetof(ModManager, mods) == 0xFB0);
@@ -165,11 +179,7 @@ struct INISettingCollection
 
     Setting* GetSetting(const char* acpName) noexcept;
 
-#if TP_PLATFORM_32
-    uint8_t unk0[0x10C];
-#else
     uint8_t unk0[0x118];
-#endif
     Entry head;
 };
 
