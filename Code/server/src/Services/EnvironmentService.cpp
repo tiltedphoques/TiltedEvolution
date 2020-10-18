@@ -13,7 +13,7 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
 }
 
-void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
+void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 {
     ServerTimeSettings timeMsg;
     timeMsg.TimeScale = m_timeModel.TimeScale;
@@ -30,9 +30,9 @@ bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcep
     if (aHours >= 0 && aHours <= 24 && aMinutes >= 0 && aMinutes <= 60)
     {
         // encode time as skyrim time
-        float Min = static_cast<float>(aMinutes) * 0.17f;
-        Min = floor(Min * 100) / 1000;
-        m_timeModel.Time = static_cast<float>(aHours) + Min;
+        auto minutes = static_cast<float>(aMinutes) * 0.17f;
+        minutes = floor(minutes * 100) / 1000;
+        m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         ServerTimeSettings timeMsg;
         timeMsg.TimeScale = m_timeModel.TimeScale;
@@ -46,16 +46,16 @@ bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcep
 
 EnvironmentService::TTime EnvironmentService::GetTime() const noexcept
 {
-    float hour = floor(m_timeModel.Time);
-    float minutes = (m_timeModel.Time - hour) / 17.f;
+    const auto hour = floor(m_timeModel.Time);
+    const auto minutes = (m_timeModel.Time - hour) / 17.f;
 
-    int flatMinutes = static_cast<int>(ceil((minutes * 100.f) * 10.f));
+    const auto flatMinutes = static_cast<int>(ceil((minutes * 100.f) * 10.f));
     return {static_cast<int>(hour), flatMinutes};
 }
 
 EnvironmentService::TTime EnvironmentService::GetRealTime() noexcept
 {
-    auto t = std::time(nullptr);
+    const auto t = std::time(nullptr);
     int h = (t / 3600) % 24;
     int m = (t / 60) % 60;
     return {h, m};

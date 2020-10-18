@@ -61,7 +61,7 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
     }
 }
 
-void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
+void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 {
     // When a player joins give it a party component for later
     m_world.emplace<PartyComponent>(acEvent.Entity);
@@ -69,11 +69,11 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
     BroadcastPlayerList();
 }
 
-void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept
+void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) const noexcept
 {
     auto& message = acPacket.Packet;
 
-    entt::entity entity{message.PlayerId};
+    const entt::entity entity{message.PlayerId};
 
     auto view = m_world.view<PlayerComponent, PartyComponent>();
 
@@ -90,10 +90,9 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
     if (otherItor != view.end() && selfItor != view.end() && *otherItor != *selfItor)
     {
         auto& otherPartyComponent = view.get<PartyComponent>(*otherItor);
-        auto& selfPartyComponent = view.get<PartyComponent>(*selfItor);
 
         // Expire in 60 seconds
-        auto cExpiryTick = GameServer::Get()->GetTick() + 60000;
+        const auto cExpiryTick = GameServer::Get()->GetTick() + 60000;
         otherPartyComponent.Invitations[*selfItor] = cExpiryTick;
 
         NotifyPartyInvite notification;

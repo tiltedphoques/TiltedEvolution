@@ -27,9 +27,9 @@ struct PartyService
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept;
+    void OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept;
     void OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept;
-    void OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept;
+    void OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) const noexcept;
     void OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteRequest>& acPacket) noexcept;
     void OnPartyLeave(const PacketEvent<PartyLeaveRequest>& acPacket) noexcept;
 

@@ -7,7 +7,6 @@
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Scripts/Npc.h>
-#include <Scripts/Player.h>
 
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
@@ -72,7 +71,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->LatestAction = animationComponent.CurrentAction;
 }
 
-void CharacterService::OnUpdate(const UpdateEvent&) noexcept
+void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
 {
     ProcessInventoryChanges();
     ProcessFactionsChanges();
@@ -154,7 +153,7 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
     }
 }
 
-void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept
+void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
 {
     CharacterSpawnRequest message;
     Serialize(m_world, acEvent.Entity, &message);
@@ -397,10 +396,10 @@ void CharacterService::ProcessInventoryChanges() const noexcept
         inventoryComponent.DirtyInventory = false;
     }
 
-    for (auto kvp : messages)
+    for (auto [connectionId, message] : messages)
     {
-        if (!kvp.second.Changes.empty())
-            GameServer::Get()->Send(kvp.first, kvp.second);
+        if (!message.Changes.empty())
+            GameServer::Get()->Send(connectionId, message);
     }
 }
 
@@ -446,14 +445,14 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         characterComponent.DirtyFactions = false;
     }
 
-    for (auto kvp : messages)
+    for (auto [connectionId, message] : messages)
     {
-        if (kvp.second.Changes.size() > 0)
-            GameServer::Get()->Send(kvp.first, kvp.second);
+        if (!message.Changes.empty())
+            GameServer::Get()->Send(connectionId, message);
     }
 }
 
-void CharacterService::ProcessMovementChanges() noexcept
+void CharacterService::ProcessMovementChanges() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenSnapshots = 1000ms / 50;
@@ -524,9 +523,9 @@ void CharacterService::ProcessMovementChanges() noexcept
             movementComponent.Sent = true;
         });
 
-    for (auto kvp : messages)
+    for (auto [connectionId, message] : messages)
     {
-        if (kvp.second.Updates.size() > 0)
-            GameServer::Get()->Send(kvp.first, kvp.second);
+        if (!message.Updates.empty())
+            GameServer::Get()->Send(connectionId, message);
     }
 }

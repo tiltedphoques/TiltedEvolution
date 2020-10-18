@@ -177,7 +177,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 {
     Actor* pActor = nullptr;
 
-    const auto cEntity = m_world.create();
+    std::optional<entt::entity> entity;
 
     // Custom forms
     if (acMessage.FormId == GameId{})
@@ -189,18 +189,21 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
             if(cNpcId == 0)
             {
-                m_world.destroy(cEntity);
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
                 return;
             }
+
+            entity = m_world.create();
 
             pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
         {
+            entity = m_world.create();
+
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
-            FaceGenSystem::Setup(m_world, cEntity, acMessage.FaceTints);
+            FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
         pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
@@ -208,26 +211,35 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     else
     {
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
-        auto* const pForm = TESForm::GetById(cActorId);
 
+        auto* const pForm = TESForm::GetById(cActorId);
         pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (!pActor)
         {
-            m_world.destroy(cEntity);
             spdlog::error("Failed to retrieve Actor {:X}, it will not be spawned, possibly missing mod", cActorId);
             spdlog::error("\tForm : {:X}", pForm ? pForm->formID : 0);
             return;
         }
+
+        const auto view = m_world.view<FormIdComponent>();
+        const auto itor = std::find_if(std::begin(view), std::end(view), [cActorId, view](entt::entity entity) {
+            return view.get<FormIdComponent>(entity).Id == cActorId;
+        });
+
+        if (itor != std::end(view))
+            entity = *itor;
+        else
+            entity = m_world.create();
     }
 
     if (!pActor)
         return;
 
-    m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId, pActor->formID);
+    m_world.emplace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
-    InterpolationSystem::Setup(m_world, cEntity);
-    AnimationSystem::Setup(m_world, cEntity);
+    InterpolationSystem::Setup(m_world, *entity);
+    AnimationSystem::Setup(m_world, *entity);
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.m_x = acMessage.Rotation.X;
@@ -236,10 +248,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
 
-    auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
+    spdlog::info("Inventory content : {:X}", acMessage.InventoryContent.Buffer.size());
+
+    auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
 
-    m_dispatcher.trigger(ReferenceSpawnedEvent(pActor->formID, pActor->formType, cEntity));
+    m_dispatcher.trigger(ReferenceSpawnedEvent(pActor->formID, pActor->formType, *entity));
 }
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept
@@ -362,18 +376,21 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
 
     if (itor != std::end(view))
     {
-        auto& formIdComponent = view.get<FormIdComponent>(*itor);
+        if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
+        {
+            spdlog::info("\tformid: {:X}", pFormIdComponent->Id);
+            /*
+            const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            if (!pActor || !pActor->GetNiNode())
+                return;
 
-        spdlog::info("\tformid: {:X}", formIdComponent.Id);
-        /*
-        const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-        if (!pActor || !pActor->GetNiNode())
-            return;
+            pActor->Disable();
 
-        pActor->Disable();
+            InterpolationSystem::Clean(m_world, *itor);
+            AnimationSystem::Clean(m_world, *itor);*/
+        }
 
-        InterpolationSystem::Clean(m_world, *itor);
-        AnimationSystem::Clean(m_world, *itor);*/
+        m_world.remove_if_exists<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
 
 

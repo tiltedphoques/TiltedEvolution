@@ -23,19 +23,19 @@ struct CharacterService
 
 protected:
 
-    void OnUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnUpdate(const UpdateEvent& acEvent) const noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept;
-    void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) noexcept;
+    void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
-    void ProcessInventoryChanges() noexcept;
-    void ProcessFactionsChanges() noexcept;
-    void ProcessMovementChanges() noexcept;
+    void ProcessInventoryChanges() const noexcept;
+    void ProcessFactionsChanges() const noexcept;
+    void ProcessMovementChanges() const noexcept;
 
 private:
 

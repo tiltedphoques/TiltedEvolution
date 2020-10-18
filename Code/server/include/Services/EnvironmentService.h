@@ -31,7 +31,7 @@ public:
 
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 
-    void OnPlayerJoin(const PlayerJoinEvent&) noexcept;
+    void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
