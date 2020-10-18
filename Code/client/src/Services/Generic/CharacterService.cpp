@@ -152,14 +152,17 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     }
     else
     {
-        m_world.emplace<RemoteComponent>(*itor, acMessage.ServerId);
-
         const auto& formIdComponent = m_world.get<FormIdComponent>(*itor);
 
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
+        {
+            m_world.destroy(*itor);
             return;
+        }
+
+        m_world.emplace<RemoteComponent>(*itor, acMessage.ServerId, formIdComponent.Id);
 
         pActor->GetExtension()->SetRemote(true);
 
@@ -221,16 +224,17 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
-    m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId);
+    m_world.emplace<RemoteComponent>(cEntity, acMessage.ServerId, pActor->formID);
 
     InterpolationSystem::Setup(m_world, cEntity);
     AnimationSystem::Setup(m_world, cEntity);
 
     pActor->GetExtension()->SetRemote(true);
+    pActor->rotation.m_x = acMessage.Rotation.X;
+    pActor->rotation.m_z = acMessage.Rotation.Y;
+    pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
-    //pActor->Enable();
-    pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(cEntity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -266,7 +270,7 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 
         InterpolationSystem::AddPoint(interpolationComponent, point);
 
-        for (auto& action : update.ActionEvents)
+        for (const auto& action : update.ActionEvents)
         {
             animationComponent.TimePoints.push_back(action);
         }
@@ -299,9 +303,9 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
-    for (const auto& change : acEvent.Changes)
+    for (const auto& [id, inventory] : acEvent.Changes)
     {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = change.first, view](entt::entity entity)
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity)
         {
             return view.get<RemoteComponent>(entity).Id == id;
         });
@@ -314,7 +318,7 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
             if (!pActor)
                 return;
 
-            pActor->SetInventory(change.second);
+            pActor->SetInventory(inventory);
         }
     }
 }
@@ -323,9 +327,9 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent, CacheComponent>();
 
-    for (const auto& change : acEvent.Changes)
+    for (const auto& [id, factions] : acEvent.Changes)
     {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = change.first, view](entt::entity entity)
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity)
         {
             return view.get<RemoteComponent>(entity).Id == id;
         });
@@ -339,7 +343,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
                 return;
 
             auto& cacheComponent = view.get<CacheComponent>(*itor);
-            cacheComponent.FactionsContent = std::move(change.second);
+            cacheComponent.FactionsContent = std::move(factions);
 
             pActor->SetFactions(cacheComponent.FactionsContent);
         }
@@ -348,7 +352,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept
 {
-    /*auto view = m_world.view<RemoteComponent, FormIdComponent>();
+    auto view = m_world.view<RemoteComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.ServerId, view](entt::entity entity) {
             return view.get<RemoteComponent>(entity).Id == id;
@@ -361,7 +365,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
         spdlog::info("\tformid: {:X}", formIdComponent.Id);
-
+        /*
         const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         if (!pActor || !pActor->GetNiNode())
             return;
@@ -369,8 +373,10 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
         pActor->Disable();
 
         InterpolationSystem::Clean(m_world, *itor);
-        AnimationSystem::Clean(m_world, *itor);
-    }*/
+        AnimationSystem::Clean(m_world, *itor);*/
+    }
+
+
 }
 
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -565,7 +571,18 @@ void CharacterService::RunLocalUpdates() const noexcept
 void CharacterService::RunRemoteUpdates() const noexcept
 {
     // Delay by 120ms to let the interpolation system accumulate interpolation points
-    auto tick = m_transport.GetClock().GetCurrentTick() - 120;
+    const auto tick = m_transport.GetClock().GetCurrentTick() - 120;
+
+    auto invisibleView =
+        m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+
+    for (auto entity : invisibleView)
+    {
+        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
+
+        spdlog::info("Remote entity {:X} with cached id {:X} is invisible", remoteComponent.Id,
+                     remoteComponent.CachedRefId);
+    }
 
     auto animatedView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>();
 
@@ -575,10 +592,13 @@ void CharacterService::RunRemoteUpdates() const noexcept
         auto& interpolationComponent = animatedView.get<InterpolationComponent>(entity);
         auto& animationComponent = animatedView.get<RemoteAnimationComponent>(entity);
 
-        const auto pForm = TESForm::GetById(formIdComponent.Id);
-        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pForm = TESForm::GetById(formIdComponent.Id);
+        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
+        {
+            spdlog::info("Missing actor {:X}", formIdComponent.Id);
             continue;
+        }
 
         InterpolationSystem::Update(pActor, interpolationComponent, tick);
         AnimationSystem::Update(m_world, pActor, animationComponent, tick);
@@ -591,20 +611,13 @@ void CharacterService::RunRemoteUpdates() const noexcept
         auto& formIdComponent = facegenView.get<FormIdComponent>(entity);
         auto& faceGenComponent = facegenView.get<FaceGenComponent>(entity);
 
-        const auto pForm = TESForm::GetById(formIdComponent.Id);
-        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        const auto* pForm = TESForm::GetById(formIdComponent.Id);
+        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
             continue;
 
         FaceGenSystem::Update(m_world, pActor, faceGenComponent);
     }
-
-    m_world.group<RemoteComponent>(entt::exclude<FormIdComponent>).each([](auto entity, auto& remoteComponent)
-        {
-            // The entity has a remote component but no form id so we need to spawn it
-            TP_UNUSED(entity);
-            TP_UNUSED(remoteComponent);
-        });
 }
 
 void CharacterService::RunInventoryUpdates() noexcept
@@ -631,8 +644,8 @@ void CharacterService::RunInventoryUpdates() noexcept
             if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
                 continue;
 
-            const auto pForm = TESForm::GetById(formIdComponent.Id);
-            const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+            const auto* pForm = TESForm::GetById(formIdComponent.Id);
+            const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
             if (!pActor)
                 continue;
 
@@ -665,8 +678,8 @@ void CharacterService::RunFactionsUpdates() const noexcept
         auto& localComponent = factionedActors.get<LocalComponent>(entity);
         auto& cacheComponent = factionedActors.get<CacheComponent>(entity);
 
-        const auto pForm = TESForm::GetById(formIdComponent.Id);
-        const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+        const auto* pForm = TESForm::GetById(formIdComponent.Id);
+        const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
             continue;
 

@@ -68,11 +68,6 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
         apSpawnRequest->Rotation.Y = pMovementComponent->Rotation.m_z;
     }
 
-    uint8_t scratch[1 << 12];
-
-    ViewBuffer buffer(scratch, std::size(scratch));
-    Buffer::Writer writer(&buffer);
-
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
     apSpawnRequest->LatestAction = animationComponent.CurrentAction;
 }
@@ -109,7 +104,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             // This entity already has an owner
             spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
-            const auto pServer = GameServer::Get();
+            const auto* pServer = GameServer::Get();
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
@@ -128,8 +123,8 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
 {
     auto& message = acMessage.Packet;
 
-    auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
-    auto it = view.find(entt::entity(message.ServerId));
+    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
         spdlog::warn("Client {:X} requested the removal of an entity that doesn't exist !", acMessage.ConnectionId);
@@ -189,7 +184,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
     for (auto& entry : message.Updates)
     {
-        auto itor = view.find(entt::entity(entry.first));
+        auto itor = view.find(static_cast<entt::entity>(entry.first));
 
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
@@ -238,15 +233,15 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
     auto& message = acMessage.Packet;
 
-    for (auto& change : message.Changes)
+    for (auto& [id, inventory] : message.Changes)
     {
-        auto itor = view.find(entt::entity(change.first));
+        auto itor = view.find(static_cast<entt::entity>(id));
 
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
 
         auto& inventoryComponent = view.get<InventoryComponent>(*itor);
-        inventoryComponent.Content = change.second;
+        inventoryComponent.Content = inventory;
         inventoryComponent.DirtyInventory = true;
     }
 }
@@ -257,15 +252,15 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
     auto& message = acMessage.Packet;
 
-    for (auto& change : message.Changes)
+    for (auto& [id, factions] : message.Changes)
     {
-        auto itor = view.find(entt::entity(change.first));
+        auto itor = view.find(static_cast<entt::entity>(id));
 
         if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
             continue;
 
         auto& characterComponent = view.get<CharacterComponent>(*itor);
-        characterComponent.FactionsContent = change.second;
+        characterComponent.FactionsContent = factions;
         characterComponent.DirtyFactions = true;
     }
 }
@@ -293,7 +288,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
         return;
     }
 
-    const auto pServer = GameServer::Get();
+    auto* const pServer = GameServer::Get();
 
     m_world.emplace<ScriptsComponent>(cEntity);
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
@@ -303,11 +298,11 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
-    characterComponent.FaceTints = std::move(message.FaceTints);
-    characterComponent.FactionsContent = std::move(message.FactionsContent);
+    characterComponent.FaceTints = message.FaceTints;
+    characterComponent.FactionsContent = message.FactionsContent;
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
-    inventoryComponent.Content = std::move(message.InventoryContent);
+    inventoryComponent.Content = message.InventoryContent;
 
     spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
@@ -343,7 +338,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
         playerComponent.Character = cEntity;
 
         auto& questLogComponent = m_world.emplace<QuestLogComponent>(cPlayer);
-        questLogComponent.QuestContent = std::move(message.QuestContent);
+        questLogComponent.QuestContent = message.QuestContent;
 
         auto& dispatcher = m_world.GetDispatcher();
         dispatcher.trigger(PlayerEnterWorldEvent(cPlayer));
@@ -360,7 +355,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
 }
 
-void CharacterService::ProcessInventoryChanges() noexcept
+void CharacterService::ProcessInventoryChanges() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
@@ -404,12 +399,12 @@ void CharacterService::ProcessInventoryChanges() noexcept
 
     for (auto kvp : messages)
     {
-        if (kvp.second.Changes.size() > 0)
+        if (!kvp.second.Changes.empty())
             GameServer::Get()->Send(kvp.first, kvp.second);
     }
 }
 
-void CharacterService::ProcessFactionsChanges() noexcept
+void CharacterService::ProcessFactionsChanges() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenSnapshots = 2000ms;

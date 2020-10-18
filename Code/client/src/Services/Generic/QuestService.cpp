@@ -100,7 +100,7 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
 
 TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
 {
-    TESQuest* pQuest = RTTI_CAST(TESForm::GetById(aFormId), TESForm, TESQuest);
+    auto* pQuest = RTTI_CAST(TESForm::GetById(aFormId), TESForm, TESQuest);
     if (pQuest)
     {
         // force quest update
