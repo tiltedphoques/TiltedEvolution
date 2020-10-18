@@ -357,7 +357,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
                 return;
 
             auto& cacheComponent = view.get<CacheComponent>(*itor);
-            cacheComponent.FactionsContent = std::move(factions);
+            cacheComponent.FactionsContent = factions;
 
             pActor->SetFactions(cacheComponent.FactionsContent);
         }
@@ -457,7 +457,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     {
         auto& entries = message.FaceTints.Entries;
 
-        auto& tints = PlayerCharacter::Get()->GetTints();
+        const auto& tints = PlayerCharacter::Get()->GetTints();
 
         entries.resize(tints.length);
 
@@ -486,13 +486,13 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
             if (!QuestService::IsNonSyncableQuest(pQuest))
             {
-                GameId Id{};
+                GameId id{};
 
-                if (modSystem.GetServerModId(pQuest->formID, Id))
+                if (modSystem.GetServerModId(pQuest->formID, id))
                 {
                     auto& entry = questLog.emplace_back();
                     entry.Stage = pQuest->currentStage;
-                    entry.Id = Id;
+                    entry.Id = id;
                 }
             }
         }
@@ -709,7 +709,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
         cacheComponent.FactionsContent = factions;
 
         // If not send the current factions and replace the cached factions
-        message.Changes[localComponent.Id] = std::move(factions);
+        message.Changes[localComponent.Id] = factions;
     }
 
     if(!message.Changes.empty())
