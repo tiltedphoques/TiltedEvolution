@@ -22,4 +22,5 @@ struct InterpolationComponent
     };
 
     List<TimePoint> TimePoints;
+    Vector3<float> Position;
 };

@@ -2,7 +2,6 @@
 
 #include <Events/ReferenceAddedEvent.h>
 #include <Events/ReferenceRemovedEvent.h>
-#include <Events/ReferenceSpawnedEvent.h>
 
 #include <World.h>
 
@@ -19,7 +18,6 @@ EntityService::EntityService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 {
     m_referenceAddedConnection = m_dispatcher.sink<ReferenceAddedEvent>().connect<&EntityService::OnReferenceAdded>(this);
     m_referenceRemovedConnection = m_dispatcher.sink<ReferenceRemovedEvent>().connect<&EntityService::OnReferenceRemoved>(this);
-    m_referenceSpawnedConnection = m_dispatcher.sink<ReferenceSpawnedEvent>().connect<&EntityService::OnReferenceSpawned>(this);
 }
 
 void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcept
@@ -28,14 +26,18 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
     {
         entt::entity entity;
 
-        const auto itor = m_spawnedEntities.find(acEvent.FormId);
-        if (itor != std::end(m_spawnedEntities))
-        {
-            auto pForm = static_cast<Actor*>(TESForm::GetById(acEvent.FormId));
-            pForm->GetExtension()->SetRemote(true);
+        const auto view = m_world.view<RemoteComponent>();
+        const auto itor = std::find_if(std::begin(view), std::end(view), [&acEvent, view](entt::entity entity) {
+            auto& remoteComponent = view.get<RemoteComponent>(entity);
+            return remoteComponent.CachedRefId == acEvent.FormId;
+        });
 
-            entity = itor->second;
-            m_spawnedEntities.erase(itor);
+        if (itor != std::end(view))
+        {
+            auto* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
+            pActor->GetExtension()->SetRemote(true);
+
+            entity = *itor;
         }
         else
             entity = m_world.create();
@@ -54,20 +56,12 @@ void EntityService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noe
     {
         const auto entity = cIterator->second;
 
-        m_world.remove<FormIdComponent>(entity);
+        m_world.remove_if_exists<FormIdComponent>(entity);
 
         if (m_world.orphan(entity))
             m_world.destroy(entity);
 
         m_refIdToEntity.erase(cIterator);
-    }
-}
-
-void EntityService::OnReferenceSpawned(const ReferenceSpawnedEvent& acEvent) noexcept
-{
-    if (acEvent.FormType == Character)
-    {
-        m_spawnedEntities.emplace(acEvent.FormId, acEvent.Entity);
     }
 }
 

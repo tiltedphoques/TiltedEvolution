@@ -2,7 +2,6 @@
 
 struct ReferenceAddedEvent;
 struct ReferenceRemovedEvent;
-struct ReferenceSpawnedEvent;
 
 struct Actor;
 struct World;
@@ -16,7 +15,6 @@ struct EntityService
 
     void OnReferenceAdded(const ReferenceAddedEvent&) noexcept;
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
-    void OnReferenceSpawned(const ReferenceSpawnedEvent&) noexcept;
 
     [[nodiscard]] Outcome<entt::entity, bool> GetCharacter(uint32_t acFormId) const noexcept;
 
@@ -26,7 +24,6 @@ private:
     entt::dispatcher& m_dispatcher;
 
     Map<uint32_t, entt::entity> m_refIdToEntity;
-    Map<uint32_t, entt::entity> m_spawnedEntities;
 
     entt::scoped_connection m_referenceAddedConnection;
     entt::scoped_connection m_referenceRemovedConnection;

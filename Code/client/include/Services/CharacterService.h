@@ -3,7 +3,6 @@
 struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
-struct ReferenceSpawnedEvent;
 struct EquipmentChangeEvent;
 struct FormIdComponent;
 struct ActionEvent;
@@ -14,6 +13,7 @@ struct NotifyInventoryChanges;
 struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
 
+struct Actor;
 struct World;
 struct TransportService;
 
@@ -43,10 +43,13 @@ private:
     void RequestServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
 
+    Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
+
     void RunLocalUpdates() const noexcept;
     void RunRemoteUpdates() const noexcept;
     void RunInventoryUpdates() noexcept;
     void RunFactionsUpdates() const noexcept;
+    void RunSpawnUpdates() const noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;

@@ -21,7 +21,7 @@ bool ModSystem::GetServerModId(const uint32_t aGameId, uint32_t& aModId, uint32_
     // If it's a lite mod
     if (hiByte == 0xFE)
     {
-        const uint16_t liteId = (aGameId & 0x00FFF000) >> 12;
+        const uint16_t liteId = ((aGameId & 0x00FFF000) >> 12) & 0xFFFF;
 
         const auto itor = m_liteToServer.find(liteId);
         if (itor != std::end(m_liteToServer))

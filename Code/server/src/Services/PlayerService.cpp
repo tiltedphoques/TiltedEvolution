@@ -12,7 +12,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 {
 }
 
-void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) noexcept
+void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept
 {
     auto playerView = m_world.view<PlayerComponent>();
 
@@ -30,7 +30,7 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
 
     auto& message = acMessage.Packet;
 
-    m_world.assign_or_replace<CellIdComponent>(*itor, message.CellId);
+    m_world.emplace_or_replace<CellIdComponent>(*itor, message.CellId);
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)

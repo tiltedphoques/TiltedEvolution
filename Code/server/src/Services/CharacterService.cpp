@@ -151,6 +151,9 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
 
         GameServer::Get()->Send(playerComponent.ConnectionId, response);
     }
+
+    // For now just destroy the entity, in the future we might want to request a new host
+    m_world.destroy(*it);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept

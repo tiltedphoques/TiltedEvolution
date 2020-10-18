@@ -113,11 +113,11 @@ Actor* TP_MAKE_THISCALL(HookCharacterDestructor, Actor)
 
 GamePtr<Actor> Actor::New() noexcept
 {
-    const auto pActor = Memory::Allocate<Actor>();
+    auto* const pActor = Memory::Allocate<Actor>();
 
     ThisCall(RealCharacterConstructor, pActor);
 
-    return pActor;
+    return {pActor};
 }
 
 

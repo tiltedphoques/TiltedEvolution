@@ -6,8 +6,6 @@
 
 #include <Games/Skyrim/Forms/TESNPC.h>
 #include <Games/Skyrim/Forms/TESQuest.h>
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Skyrim/ExtraData/ExtraLeveledCreature.h>
 
 #include <Games/Fallout4/Forms/TESNPC.h>
@@ -26,7 +24,6 @@
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/ReferenceSpawnedEvent.h>
 #include <Events/EquipmentChangeEvent.h>
 
 #include <Structs/ActionEvent.h>
@@ -71,17 +68,25 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
+    if (!m_transport.IsOnline())
+        return;
+
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
 
-    spdlog::info("FormId added {:X}", formIdComponent.Id);
-
-    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
-        return;
+    //spdlog::info("FormId added {:X} {:X}", formIdComponent.Id, aEntity);
 
     // Security check
     auto* const pForm = TESForm::GetById(formIdComponent.Id);
     auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
-    if(!pActor)
+    if (!pActor)
+        return;
+
+    if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
+    {
+        pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
+    }
+
+    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
         return;
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
@@ -93,7 +98,7 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     auto* const pOwner = pNpc->actorData.owner;
     if (pOwner)
     {
-        spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
+    //    spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
     }
 
     if(pNpc)
@@ -113,6 +118,7 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+    RunSpawnUpdates();
     RunLocalUpdates();
     RunInventoryUpdates();
     RunFactionsUpdates();
@@ -121,6 +127,8 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
 {
+    //m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
+
     // Go through all the forms that were previously detected
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
@@ -131,11 +139,13 @@ void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const
 
 void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept
 {
-    m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
+    //m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
 }
 
 void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) const noexcept
 {
+    spdlog::info("Received for cookie {:X}", acMessage.Cookie);
+
     auto view = m_world.view<WaitingForAssignmentComponent>();
     const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.Cookie](auto entity)
     {
@@ -143,34 +153,42 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     });
 
     if (itor == std::end(view))
+    {
+        spdlog::warn("Never found requested cookie: {}", acMessage.Cookie);
+        return;
+    }
+
+    const auto cEntity = *itor;
+
+    const auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
+
+    m_world.remove<WaitingForAssignmentComponent>(cEntity);
+
+    if (m_world.has<LocalComponent>(cEntity) || m_world.has<RemoteComponent>(cEntity))
         return;
 
     if (acMessage.Owner)
     {
-        m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
-        m_world.emplace<LocalAnimationComponent>(*itor);
+        m_world.emplace<LocalComponent>(cEntity, acMessage.ServerId);
+        m_world.emplace<LocalAnimationComponent>(cEntity);
     }
     else
     {
-        const auto& formIdComponent = m_world.get<FormIdComponent>(*itor);
-
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
         {
-            m_world.destroy(*itor);
+            m_world.destroy(cEntity);
             return;
         }
 
-        m_world.emplace<RemoteComponent>(*itor, acMessage.ServerId, formIdComponent.Id);
+        m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent.Id);
 
         pActor->GetExtension()->SetRemote(true);
 
-        InterpolationSystem::Setup(m_world, *itor);
-        AnimationSystem::Setup(m_world, *itor);
+        InterpolationSystem::Setup(m_world, cEntity);
+        AnimationSystem::Setup(m_world, cEntity);
     }
-    
-    m_world.remove<WaitingForAssignmentComponent>(*itor);
 }
 
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
@@ -184,6 +202,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     {
         TESNPC* pNpc = nullptr;
 
+        entity = m_world.create();
+
         if (acMessage.BaseId != GameId{})
         {
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
@@ -193,20 +213,16 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
                 return;
             }
 
-            entity = m_world.create();
-
             pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
         {
-            entity = m_world.create();
-
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
-        pActor = Actor::Create(RTTI_CAST(pNpc, TESForm, TESNPC));
+        pActor = Actor::Create(pNpc);
     }
     else
     {
@@ -236,9 +252,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
-    m_world.emplace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
+    auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
+    remoteComponent.SpawnRequest = acMessage;
 
-    InterpolationSystem::Setup(m_world, *entity);
+    auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
+    interpolationComponent.Position = acMessage.Position;
+
     AnimationSystem::Setup(m_world, *entity);
 
     pActor->GetExtension()->SetRemote(true);
@@ -252,8 +271,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
-
-    m_dispatcher.trigger(ReferenceSpawnedEvent(pActor->formID, pActor->formType, *entity));
 }
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept
@@ -327,11 +344,13 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
         if (itor != std::end(view))
         {
             auto& formIdComponent = view.get<FormIdComponent>(*itor);
+            auto& remoteComponent = view.get<RemoteComponent>(*itor);
 
             auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
             if (!pActor)
                 return;
 
+            remoteComponent.SpawnRequest.InventoryContent = inventory;
             pActor->SetInventory(inventory);
         }
     }
@@ -392,8 +411,6 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
 
         m_world.remove_if_exists<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
-
-
 }
 
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -516,11 +533,13 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     message.LatestAction = pExtension->LatestAnimation;
 
+    spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, aEntity);
+
     if (m_transport.Send(message))
     {
         aRegistry.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
 
-        ++sCookieSeed;
+        sCookieSeed++;
     }
 }
 
@@ -557,6 +576,57 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
     }
 }
 
+Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
+{
+    auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
+    auto* pInterpolationComponent = m_world.try_get<InterpolationComponent>(aEntity);
+
+    if (!pRemoteComponent || !pInterpolationComponent)
+        return nullptr;
+
+    auto& acMessage = pRemoteComponent->SpawnRequest;
+
+    Actor* pActor = nullptr;
+
+    // Custom forms
+    if (acMessage.FormId == GameId{})
+    {
+        TESNPC* pNpc = nullptr;
+
+        if (acMessage.BaseId != GameId{})
+        {
+            const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
+            if (cNpcId == 0)
+            {
+                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
+                return nullptr;
+            }
+
+            pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
+            pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+        }
+        else
+        {
+            pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+            FaceGenSystem::Setup(m_world, aEntity, acMessage.FaceTints);
+        }
+
+        pActor = Actor::Create(pNpc);
+    }
+
+    if (!pActor)
+        return nullptr;
+
+    pActor->GetExtension()->SetRemote(true);
+    pActor->rotation.m_x = acMessage.Rotation.X;
+    pActor->rotation.m_z = acMessage.Rotation.Y;
+    pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
+    pActor->SetInventory(acMessage.InventoryContent);
+    pActor->SetFactions(acMessage.FactionsContent);
+
+    return pActor;
+}
+
 void CharacterService::RunLocalUpdates() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -590,34 +660,37 @@ void CharacterService::RunRemoteUpdates() const noexcept
     // Delay by 120ms to let the interpolation system accumulate interpolation points
     const auto tick = m_transport.GetClock().GetCurrentTick() - 120;
 
-    auto invisibleView =
-        m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to spawn it
+    auto interpolatedEntities =
+        m_world.view<RemoteComponent, InterpolationComponent>();
 
-    for (auto entity : invisibleView)
+    for (auto entity : interpolatedEntities)
     {
-        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
+        auto* pFormIdComponent = m_world.try_get<FormIdComponent>(entity);
+        auto& interpolationComponent = interpolatedEntities.get<InterpolationComponent>(entity);
 
-        spdlog::info("Remote entity {:X} with cached id {:X} is invisible", remoteComponent.Id,
-                     remoteComponent.CachedRefId);
+        Actor* pActor = nullptr;
+        if (pFormIdComponent)
+        {
+            auto* pForm = TESForm::GetById(pFormIdComponent->Id);
+            pActor = RTTI_CAST(pForm, TESForm, Actor);
+        }
+       
+        InterpolationSystem::Update(pActor, interpolationComponent, tick);
     }
 
-    auto animatedView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>();
+    auto animatedView = m_world.view<RemoteComponent, RemoteAnimationComponent, FormIdComponent>();
 
-    for(auto entity : animatedView)
+    for (auto entity : animatedView)
     {
-        auto& formIdComponent = animatedView.get<FormIdComponent>(entity);
-        auto& interpolationComponent = animatedView.get<InterpolationComponent>(entity);
         auto& animationComponent = animatedView.get<RemoteAnimationComponent>(entity);
+        auto& formIdComponent = animatedView.get<FormIdComponent>(entity);
 
         auto* pForm = TESForm::GetById(formIdComponent.Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
-        {
-            spdlog::info("Missing actor {:X}", formIdComponent.Id);
             continue;
-        }
 
-        InterpolationSystem::Update(pActor, interpolationComponent, tick);
         AnimationSystem::Update(m_world, pActor, animationComponent, tick);
     }
 
@@ -714,4 +787,37 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
     if(!message.Changes.empty())
         m_transport.Send(message);
+}
+
+void CharacterService::RunSpawnUpdates() const noexcept
+{
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+
+    for (auto entity : invisibleView)
+    {
+        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
+        auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+
+        auto delta = PlayerCharacter::Get()->position - interpolationComponent.Position;
+
+        if (delta.LengthSquared() < (12000.f * 12000.f))
+        {
+            auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
+            if (!pActor)
+            {
+                pActor = CreateCharacterForEntity(entity);
+                if (!pActor)
+                {
+                    continue;
+                }
+
+                remoteComponent.CachedRefId = pActor->formID;
+            }
+
+            pActor->MoveTo(PlayerCharacter::Get()->parentCell, interpolationComponent.Position);
+        }
+
+        /*spdlog::info("Remote entity {:X} with cached id {:X} is invisible", remoteComponent.Id,
+                     remoteComponent.CachedRefId);*/
+    }
 }

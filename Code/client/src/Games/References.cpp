@@ -246,6 +246,8 @@ void TESObjectREFR::Enable() const noexcept
 
 void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPosition) const noexcept
 {
+    ScopedReferencesOverride recursionGuard;
+
     TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*, const Vector3<float>&,
                      const Vector3<float>&);
 

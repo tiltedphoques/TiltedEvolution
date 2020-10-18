@@ -14,6 +14,10 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 {
     auto& movements = aInterpolationComponent.TimePoints;
 
+
+    if (movements.size() < 2)
+        return;
+
     while (movements.size() > 2)
     {
         const auto second = *(++movements.begin());
@@ -21,15 +25,6 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
             movements.pop_front();
         else
             break;
-    }
-
-    if (movements.size() < 2)
-    {
-        auto* pName = apActor->GetName();
-        pName = pName != nullptr ? pName : "UNKNOWN";
-
-        //spdlog::warn("Actor {s} is missing interpolation points, skipping frame.", pName);
-        return;
     }
 
     const auto& first = *(movements.begin());
@@ -46,7 +41,13 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     delta = TiltedPhoques::Min(delta, 1.0f);
 
     const NiPoint3 position{Lerp(first.Position, second.Position, delta)};
-        
+
+    aInterpolationComponent.Position = position;
+
+    // Don't try to move a null actor
+    if (!apActor)
+        return;
+
     apActor->ForcePosition(position);
     apActor->LoadAnimationVariables(second.Variables);
     if (apActor->processManager && apActor->processManager->middleProcess)
@@ -92,9 +93,9 @@ void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationCompone
     aInterpolationComponent.TimePoints.push_back(acPoint);
 }
 
-void InterpolationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
+InterpolationComponent& InterpolationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
 {
-    aWorld.emplace<InterpolationComponent>(aEntity);
+    return aWorld.emplace_or_replace<InterpolationComponent>(aEntity);
 }
 
 void InterpolationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept

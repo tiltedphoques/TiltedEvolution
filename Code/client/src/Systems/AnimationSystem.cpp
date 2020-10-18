@@ -57,7 +57,7 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
 
 void AnimationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
 {
-    aWorld.emplace<RemoteAnimationComponent>(aEntity);
+    aWorld.emplace_or_replace<RemoteAnimationComponent>(aEntity);
 }
 
 void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
