@@ -1,8 +1,7 @@
 
 #include <ProcessMemory.hpp>
 
-#include <Games/Skyrim/Renderer.h>
-#include <Games/Fallout4/Renderer.h>
+#include <Renderer.h>
 
 #include <Systems/RenderSystemD3D11.h>
 #include <Services/DiscordService.h>

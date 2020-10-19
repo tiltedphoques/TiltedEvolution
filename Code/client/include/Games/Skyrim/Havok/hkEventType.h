@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM64
-
 struct hkbBehaviorGraph;
 
 struct hkEventType
@@ -14,5 +12,3 @@ struct hkEventType
     hkbBehaviorGraph* behaviorGraph;
     void* pointer10;
 };
-
-#endif

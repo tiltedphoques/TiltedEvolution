@@ -2,8 +2,8 @@
 
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/BGSHeadPart.h>
-#include <Games/Skyrim/Forms/TESNPC.h>
+#include <Forms/BGSHeadPart.h>
+#include <Forms/TESNPC.h>
 
 #include <Components.h>
 #include <World.h>

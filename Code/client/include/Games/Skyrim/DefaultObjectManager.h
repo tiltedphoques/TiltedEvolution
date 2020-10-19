@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM64
-
 struct BGSAction;
 
 struct DefaultObjectManager
@@ -21,5 +19,3 @@ static_assert(offsetof(DefaultObjectManager, leftEquipSlot) == 0xB8);
 static_assert(offsetof(DefaultObjectManager, rightEquipSlot) == 0xC0);
 static_assert(offsetof(DefaultObjectManager, someAction) == 0x220);
 static_assert(offsetof(DefaultObjectManager, isSomeActionReady) == 0xBC0);
-
-#endif

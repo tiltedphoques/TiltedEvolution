@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM64
-
-#include <Games/Skyrim/Havok/hkHashTable.h>
+#include <Havok/hkHashTable.h>
 
 struct BShkbHkxDB
 {
@@ -18,5 +16,3 @@ struct BShkbHkxDB
 
 static_assert(offsetof(BShkbHkxDB, animationVariables) == 0x7C);
 static_assert(offsetof(BShkbHkxDB, hashTable) == 0xAC);
-
-#endif

@@ -1,10 +1,8 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/NetImmerse/NiPointer.h>
-#include <Games/Skyrim/NetImmerse/NiAVObject.h>
-#include <Games/Skyrim/NetImmerse/NiProperty.h>
+#include <NetImmerse/NiPointer.h>
+#include <NetImmerse/NiAVObject.h>
+#include <NetImmerse/NiProperty.h>
 
 struct NiGeometry : NiAVObject
 {
@@ -16,5 +14,3 @@ struct NiGeometry : NiAVObject
     NiPointer<NiProperty> effect;
     uintptr_t unkB8;
 };
-
-#endif

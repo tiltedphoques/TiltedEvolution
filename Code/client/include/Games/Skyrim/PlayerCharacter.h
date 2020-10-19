@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Actor.h>
-#include <Games/Skyrim/Misc/TintMask.h>
+#include <Actor.h>
+#include <Misc/TintMask.h>
 
 struct TESQuest;
 
@@ -45,4 +43,3 @@ static_assert(offsetof(PlayerCharacter, baseTints) == 0xB10);
 static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB28);
 static_assert(sizeof(PlayerCharacter) == 0xBE0);
 
-#endif

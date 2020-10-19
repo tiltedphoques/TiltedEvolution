@@ -1,8 +1,6 @@
 
-#include <World.h>
 #include <Services/EnvironmentService.h>
-#include <Games/Skyrim/TimeManager.h>
-#include <Games/Fallout4/TimeManager.h>
+#include <TimeManager.h>
 
 TimeData* TimeData::Get() noexcept
 {

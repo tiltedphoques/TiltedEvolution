@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESGlobal.h>
+#include <Forms/TESGlobal.h>
 
 struct TimeData
 {
@@ -19,5 +17,3 @@ struct TimeData
     float timeTick;             // 0x003C
     char pad40[0x88];           // 0x0040
 };
-
-#endif

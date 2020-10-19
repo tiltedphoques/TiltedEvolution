@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 struct BSScript
 {
@@ -106,5 +104,3 @@ template <> void BSScript::Variable::Set(int32_t aValue) noexcept;
 template <> void BSScript::Variable::Set(float aValue) noexcept;
 template <> void BSScript::Variable::Set(bool aValue) noexcept;
 template <> void BSScript::Variable::Set(const char* acpValue) noexcept;
-
-#endif

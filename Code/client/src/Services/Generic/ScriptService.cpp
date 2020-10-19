@@ -9,13 +9,10 @@
 #include <World.h>
 #include <Components.h>
 
-#include <Games/Skyrim/Actor.h>
-#include <Games/Skyrim/Forms/TESForm.h>
+#include <Actor.h>
+#include <Forms/TESForm.h>
 
-#include <Games/Fallout4/Forms/TESForm.h>
-#include <Games/Fallout4/Actor.h>
-
-#include <Games/Skyrim/Events/EventDispatcher.h>
+#include <Events/EventDispatcher.h>
 #include <Messages/ClientRpcCalls.h>
 
 #include <imgui.h>

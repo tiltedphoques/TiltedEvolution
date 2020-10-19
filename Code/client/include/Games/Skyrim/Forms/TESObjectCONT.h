@@ -1,11 +1,9 @@
 #pragma once
 
-#if TP_SKYRIM
+#include <Forms/TESBoundAnimObject.h>
 
-#include <Games/Skyrim/Forms/TESBoundAnimObject.h>
-
-#include <Games/Skyrim/Components/TESContainer.h>
-#include <Games/Skyrim/Components/TESFullName.h>
+#include <Components/TESContainer.h>
+#include <Components/TESFullName.h>
 
 struct TESObjectCONT : TESBoundAnimObject
 {
@@ -13,5 +11,3 @@ struct TESObjectCONT : TESBoundAnimObject
     TESFullName    fullName;
     // more stuff
 };
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM
-
 #include <Games/Primitives.h>
 
 struct NiRTTI;
@@ -49,5 +47,3 @@ struct NiObject : NiRefObject
     virtual void sub_24();
     virtual void sub_25();
 };
-
-#endif

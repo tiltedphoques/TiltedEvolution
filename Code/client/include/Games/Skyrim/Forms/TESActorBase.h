@@ -1,19 +1,17 @@
 #pragma once
 
-#if TP_SKYRIM
+#include <Forms/TESBoundAnimObject.h>
 
-#include <Games/Skyrim/Forms/TESBoundAnimObject.h>
-
-#include <Games/Skyrim/Components/BGSDestructibleObjectForm.h>
-#include <Games/Skyrim/Components/BGSSkinForm.h>
-#include <Games/Skyrim/Components/BGSKeywordForm.h>
-#include <Games/Skyrim/Components/BGSAttackDataForm.h>
-#include <Games/Skyrim/Components/BGSPerkRankArray.h>
-#include <Games/Skyrim/Components/TESActorBaseData.h>
-#include <Games/Skyrim/Components/TESContainer.h>
-#include <Games/Skyrim/Components/TESSpellList.h>
-#include <Games/Skyrim/Components/TESAIForm.h>
-#include <Games/Skyrim/Components/TESFullName.h>
+#include <Components/BGSDestructibleObjectForm.h>
+#include <Components/BGSSkinForm.h>
+#include <Components/BGSKeywordForm.h>
+#include <Components/BGSAttackDataForm.h>
+#include <Components/BGSPerkRankArray.h>
+#include <Components/TESActorBaseData.h>
+#include <Components/TESContainer.h>
+#include <Components/TESSpellList.h>
+#include <Components/TESAIForm.h>
+#include <Components/TESFullName.h>
 
 
 struct ActorValueOwner
@@ -45,4 +43,3 @@ struct TESActorBase : TESBoundAnimObject
     BGSPerkRankArray perkRanks;
 };
 
-#endif

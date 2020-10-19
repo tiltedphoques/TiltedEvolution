@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Forms/TESForm.h>
-#include <Games/Skyrim/Misc/BSString.h>
+#include <Forms/TESForm.h>
+#include <Misc/BSString.h>
 
 struct TESGlobal : TESForm
 {
@@ -18,5 +16,3 @@ struct TESGlobal : TESForm
 };
 
 static_assert(offsetof(TESGlobal, f) == 0x34);
-
-#endif

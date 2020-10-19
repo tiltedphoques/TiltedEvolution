@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct BGSVoiceType;
 struct TESFaction;
@@ -34,9 +32,5 @@ struct TESActorBaseData : BaseFormComponent
     GameArray<FactionInfo> factions;
 };
 
-#if TP_PLATFORM_64
 static_assert(offsetof(TESActorBaseData, owner) == 0x30);
 static_assert(offsetof(TESActorBaseData, factions) == 0x40);
-#endif
-
-#endif

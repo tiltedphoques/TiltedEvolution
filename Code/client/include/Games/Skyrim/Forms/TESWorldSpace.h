@@ -1,14 +1,10 @@
 #pragma once
 
-#ifdef TP_SKYRIM
+#include <Forms/TESForm.h>
 
-#include <Games/Skyrim/Forms/TESForm.h>
-
-#include <Games/Skyrim/Components/TESFullName.h>
+#include <Components/TESFullName.h>
 
 struct TESWorldSpace : TESForm
 {
     TESFullName fullName;
 };
-
-#endif

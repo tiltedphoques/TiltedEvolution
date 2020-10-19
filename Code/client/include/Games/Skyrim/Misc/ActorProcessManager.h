@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM
-
 struct TESForm;
 struct MiddleProcess;
 
@@ -23,5 +21,3 @@ struct ActorProcessManager
 };
 
 static_assert(offsetof(ActorProcessManager, movementType) == 0x137);
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 #include <Games/Primitives.h>
 
 struct BSFixedString;
@@ -34,6 +32,4 @@ struct BSAnimationGraphManager
 static_assert(offsetof(BSAnimationGraphManager, animationGraphs) == 0x40);
 static_assert(offsetof(BSAnimationGraphManager, lock) == 0xC8);
 static_assert(offsetof(BSAnimationGraphManager, animationGraphIndex) == 0xD8);
-
-#endif
 

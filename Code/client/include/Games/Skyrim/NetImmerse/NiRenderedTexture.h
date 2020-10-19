@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/NetImmerse/NiTexture.h>
-#include <Games/Skyrim/NetImmerse/Ni2DBuffer.h>
+#include <NetImmerse/NiTexture.h>
+#include <NetImmerse/Ni2DBuffer.h>
 
 struct NiRenderedTexture : NiTexture
 {
@@ -11,5 +9,3 @@ struct NiRenderedTexture : NiTexture
 
     Ni2DBuffer* buffer;
 };
-
-#endif

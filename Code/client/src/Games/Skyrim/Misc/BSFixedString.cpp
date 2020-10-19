@@ -1,6 +1,4 @@
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 BSFixedString::BSFixedString()
     : data{nullptr}
@@ -39,5 +37,3 @@ void BSFixedString::Release() noexcept
 
     ThisCall(s_release, this);
 }
-
-#endif

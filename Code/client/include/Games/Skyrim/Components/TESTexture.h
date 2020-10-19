@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
-#include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Components/BaseFormComponent.h>
+#include <Misc/BSFixedString.h>
 
 struct TESTexture : BaseFormComponent
 {
@@ -15,5 +13,3 @@ struct TESTexture : BaseFormComponent
 };
 
 static_assert(offsetof(TESTexture, name) == 8);
-
-#endif

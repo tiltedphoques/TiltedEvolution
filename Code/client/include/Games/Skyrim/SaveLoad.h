@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(TP_SKYRIM)
-
 #pragma pack(push, 1)
 
 struct BGSSaveLoadManager
@@ -36,11 +34,7 @@ struct BGSSaveLoadManager
     Struct330* struct330; // 330
 };
 
-#if TP_PLATFORM_32
-static_assert(offsetof(BGSSaveLoadManager::SaveData, someFunction) == 0x10);
-#else
 static_assert(offsetof(BGSSaveLoadManager::SaveData, someFunction) == 0x18);
-#endif
 
 struct BGSSaveFormBuffer
 {
@@ -58,44 +52,9 @@ struct BGSSaveFormBuffer
     uint8_t pad[0x100]; // Ensure we have enough space as we don't know the exact size
 };
 
-#if TP_PLATFORM_32
-static_assert(offsetof(BGSSaveFormBuffer, formId) == 0x10);
-static_assert(offsetof(BGSSaveFormBuffer, changeFlags) == 0x13);
-#else
 static_assert(offsetof(BGSSaveFormBuffer, formId) == 0x18);
 static_assert(offsetof(BGSSaveFormBuffer, changeFlags) == 0x1B);
-#endif
 
-#if TP_PLATFORM_32
-struct BGSLoadFormBuffer
-{
-    BGSLoadFormBuffer(uint32_t aChangeFlags);
-    virtual ~BGSLoadFormBuffer() {}
-
-    void SetSize(const uint32_t aSize) noexcept
-    {
-        capacity = size1 = size2 = aSize;
-    }
-
-    const char* buffer; // 4
-    void* unk8; // 8
-    uint32_t capacity; // C
-    uint32_t size1; // 10
-    uint32_t position; // 14
-    uint32_t formId; // 18 
-    uint32_t size2; // 1C - same as size
-    void* unkPtr; // 20
-    struct TESForm* form; // 24
-    uint32_t changeFlags; // 28
-    uint32_t maybeMoreFlags; // 2C ??????
-    uint8_t unk30;
-    uint8_t unk31;
-    uint8_t unk32;
-    uint8_t loadFlag;
-
-    uint8_t pad[0x100]; // Ensure we have enough space as we don't know the exact size
-};
-#else
 struct BGSLoadFormBuffer
 {
     BGSLoadFormBuffer(uint32_t aChangeFlags);
@@ -124,16 +83,8 @@ struct BGSLoadFormBuffer
     uint8_t unk4A;
     uint8_t loadFlag;
 };
-#endif
 
-#if TP_PLATFORM_32
-static_assert(offsetof(BGSLoadFormBuffer, changeFlags) == 0x28);
-static_assert(offsetof(BGSLoadFormBuffer, loadFlag) == 0x33);
-#else
 static_assert(offsetof(BGSLoadFormBuffer, changeFlags) == 0x40);
 static_assert(offsetof(BGSLoadFormBuffer, loadFlag) == 0x4B);
-#endif
 
 #pragma pack(pop)
-
-#endif

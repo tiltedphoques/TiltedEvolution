@@ -1,11 +1,8 @@
 #include <Systems/InterpolationSystem.h>
 #include <Components.h>
 
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-
-#include <Games/Fallout4/Misc/ProcessManager.h>
-#include <Games/Fallout4/Misc/MiddleProcess.h>
+#include <Misc/ActorProcessManager.h>
+#include <Misc/MiddleProcess.h>
 
 #include <Games/References.h>
 #include <World.h>

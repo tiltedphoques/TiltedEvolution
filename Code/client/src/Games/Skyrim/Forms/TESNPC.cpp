@@ -1,7 +1,4 @@
-
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Forms/TESNPC.h>
+#include <Forms/TESNPC.h>
 
 TP_THIS_FUNCTION(TSetLeveledNpc, TESNPC*, TESNPC, TESNPC*);
 static TSetLeveledNpc* RealSetLeveledNpc = nullptr;
@@ -21,6 +18,3 @@ static TiltedPhoques::Initializer s_npcInitHooks([]() {
 
     //TP_HOOK(&RealSetLeveledNpc, HookSetLeveledNpc);
 });
-
-
-#endif

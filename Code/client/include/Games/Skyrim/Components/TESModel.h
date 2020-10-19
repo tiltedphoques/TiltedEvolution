@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
-#include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Components/BaseFormComponent.h>
+#include <Misc/BSFixedString.h>
 
 struct TESModel : BaseFormComponent
 {
@@ -11,5 +9,3 @@ struct TESModel : BaseFormComponent
     void* unk8[2];
     uint8_t unk10[4];
 };
-
-#endif

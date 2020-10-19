@@ -1,7 +1,5 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/LoadingScreen.h>
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <LoadingScreen.h>
+#include <Misc/BSFixedString.h>
 
 struct ScaleFormValue
 {
@@ -42,4 +40,3 @@ static TiltedPhoques::Initializer s_loadingScreenHooks([]()
         TP_HOOK(&RealRequestLoadingText, RequestLoadingText);
     });
 
-#endif

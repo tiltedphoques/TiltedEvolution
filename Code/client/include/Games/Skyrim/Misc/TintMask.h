@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/TESTexture.h>
+#include <Components/TESTexture.h>
 
 struct TintMask
 {
@@ -24,4 +22,3 @@ struct TintMask
     uint32_t type;
 };
 
-#endif

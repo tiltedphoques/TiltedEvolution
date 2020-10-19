@@ -1,11 +1,9 @@
 #pragma once
 
-#if TP_SKYRIM
-
 #include <Games/Primitives.h>
-#include <Games/Skyrim/Misc/BSString.h>
-#include <Games/Skyrim/Components/TESFullName.h>
-#include <Games/Skyrim/Forms/BGSStoryManagerTree.h>
+#include <Misc/BSString.h>
+#include <Components/TESFullName.h>
+#include <Forms/BGSStoryManagerTree.h>
 
 struct TESQuest : BGSStoryManagerTreeForm
 {
@@ -99,5 +97,3 @@ static_assert(offsetof(TESQuest, objectives) == 0xF8);
 static_assert(offsetof(TESQuest, currentStage) == 0x228);
 static_assert(offsetof(TESQuest, unkFlags) == 0x248);
 static_assert(offsetof(TESQuest, flags) == 0xDC);
-
-#endif

@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 
 struct BGSStoryManagerTreeForm : TESForm
 {
@@ -13,5 +11,3 @@ struct BGSStoryManagerTreeForm : TESForm
 
     uint32_t unk20;
 };
-
-#endif

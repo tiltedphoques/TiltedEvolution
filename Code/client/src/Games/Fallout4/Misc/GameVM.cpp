@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/GameVM.h>
+#include <Misc/GameVM.h>
 
 GameVM* GameVM::Get()
 {
@@ -9,4 +7,3 @@ GameVM* GameVM::Get()
     return *s_instance.Get();
 }
 
-#endif

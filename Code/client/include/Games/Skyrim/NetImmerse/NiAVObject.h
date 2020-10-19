@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/NetImmerse/NiObjectNET.h>
+#include <NetImmerse/NiObjectNET.h>
 
 struct BSFixedString;
 
@@ -20,5 +18,3 @@ struct NiAVObject : NiObjectNET
 };
 
 static_assert(sizeof(NiAVObject) == 0x110);
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM64
-
 struct hkbSymbolIdMap
 {
     virtual ~hkbSymbolIdMap();
@@ -11,5 +9,3 @@ struct hkbSymbolIdMap
 };
 
 static_assert(offsetof(hkbSymbolIdMap, pointer20) == 0x20);
-
-#endif

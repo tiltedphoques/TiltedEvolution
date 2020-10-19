@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 BSFixedString::BSFixedString(const char* acpData)
 {
@@ -46,11 +44,7 @@ void BSFixedString::Set(const char* acpStr) noexcept
     ThisCall(s_set, this, acpStr);
 }
 
-
-
 BSFixedString::~BSFixedString()
 {
     // Release();
 }
-
-#endif

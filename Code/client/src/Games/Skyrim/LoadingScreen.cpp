@@ -1,7 +1,3 @@
-#if defined(TP_SKYRIM)
-
-#include <Games/Skyrim/LoadingScreen.h>
-
 struct ScaleFormValue
 {
     void* ptrs[5];
@@ -54,5 +50,3 @@ static TiltedPhoques::Initializer s_loadingScreenHooks([]()
 
         //TP_HOOK(&RealRequestLoadingText, RequestLoadingText);
     });
-
-#endif

@@ -1,31 +1,21 @@
 #include <Games/References.h>
 
-#include <Games/Skyrim/RTTI.h>
+#include <RTTI.h>
 
-#include <Games/Skyrim/Forms/TESWorldSpace.h>
-#include <Games/Skyrim/Forms/TESObjectCELL.h>
-#include <Games/Skyrim/Forms/BGSHeadPart.h>
-#include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/SaveLoad.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
+#include <Forms/BGSHeadPart.h>
+#include <Forms/TESNPC.h>
+#include <SaveLoad.h>
 
-#include <Games/Fallout4/Forms/TESWorldSpace.h>
-#include <Games/Fallout4/Forms/TESObjectCELL.h>
-#include <Games/Fallout4/Forms/TESNPC.h>
-
-#include <Games/Skyrim/BSAnimationGraphManager.h>
-#include <Games/Skyrim/Misc/SkyrimVM.h>
-#include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
-#include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
-#include <Games/Skyrim/Havok/hkbVariableValueSet.h>
+#include <BSAnimationGraphManager.h>
+#include <Misc/GameVM.h>
+#include <Havok/BShkbAnimationGraph.h>
+#include <Havok/hkbBehaviorGraph.h>
+#include <Havok/hkbVariableValueSet.h>
 
 #include <Structs/AnimationData.h>
 #include <Structs/AnimationVariables.h>
-
-#include <Games/Fallout4/BSAnimationGraphManager.h>
-#include <Games/Fallout4/Misc/GameVM.h>
-#include <Games/Fallout4/Havok/BShkbAnimationGraph.h>
-#include <Games/Fallout4/Havok/hkbBehaviorGraph.h>
-#include <Games/Fallout4/Havok/hkbVariableValueSet.h>
 
 #include <Games/TES.h>
 #include <Games/Overrides.h>

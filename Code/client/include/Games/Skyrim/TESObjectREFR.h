@@ -1,12 +1,10 @@
 #pragma once
 
-#if TP_SKYRIM
-
 #include <Games/Primitives.h>
-#include <Games/Skyrim/Forms/TESForm.h>
-#include <Games/Skyrim/NetImmerse/BSFaceGenNiNode.h>
+#include <Forms/TESForm.h>
+#include <NetImmerse/BSFaceGenNiNode.h>
 #include <Games/ExtraData.h>
-#include <Games/Skyrim/ExtraData/ExtraContainerChanges.h>
+#include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
 struct AnimationVariables;
@@ -171,11 +169,5 @@ struct TESObjectREFR : TESForm
 
 POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141EBEABC - 0x140000000);
 
-#if TP_PLATFORM_64
 static_assert(sizeof(TESObjectREFR) == 0x98);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);
-#else
-static_assert(sizeof(TESObjectREFR) == 0x54);
-#endif
-
-#endif

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <World.h>
-#include <Games/Skyrim/Events/EventDispatcher.h>
+#include <Events/EventDispatcher.h>
 #include <Games/Events.h>
 
 struct ImguiService;

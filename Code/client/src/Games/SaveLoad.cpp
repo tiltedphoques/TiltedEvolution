@@ -1,8 +1,7 @@
-#include <Games/SaveLoad.h>
+#include <SaveLoad.h>
 #include <Games/Overrides.h>
 
-#include <Games/Skyrim/Forms/TESForm.h>
-#include <Games/Fallout4/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 
 #include <World.h>
 

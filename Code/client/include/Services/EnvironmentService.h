@@ -4,6 +4,8 @@
 
 struct ServerTimeSettings;
 struct DisconnectedEvent;
+struct World;
+struct UpdateEvent;
 
 class EnvironmentService final 
 {

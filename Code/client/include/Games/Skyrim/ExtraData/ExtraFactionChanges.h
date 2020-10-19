@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef TP_SKYRIM
-
-#include <Games/Skyrim/ExtraData.h>
+#include <ExtraData.h>
 
 struct TESFaction;
 
@@ -21,5 +19,3 @@ struct ExtraFactionChanges : BSExtraData
 
 static_assert(sizeof(ExtraFactionChanges::Entry) == 0x10);
 static_assert(offsetof(ExtraFactionChanges, entries) == 0x10);
-
-#endif

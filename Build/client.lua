@@ -42,6 +42,30 @@ function generate_client(target, macro)
             "../Code/encoding/include/**.h",
             "../Code/encoding/src/**.cpp",
         }
+
+        if target == "FalloutTogether" then
+            excludes 
+            { 
+                "../Code/client/src/Games/Skyrim/**.cpp",
+                "../Code/client/include/Games/Skyrim/**.h",
+            }
+
+            includedirs
+            {
+                "../Code/client/include/Games/Fallout4/"
+            }
+        else
+            excludes 
+            { 
+                "../Code/client/src/Games/Fallout4/**.cpp",
+                "../Code/client/include/Games/Fallout4/**.h",
+            }
+
+            includedirs
+            {
+                "../Code/client/include/Games/Skyrim/"
+            }
+        end
         
         pchheader ("stdafx.h")
         pchsource ("../Code/client/src/stdafx.cpp")

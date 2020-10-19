@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM64
-
-#include <Games/Skyrim/Havok/hkbCharacter.h>
+#include <Havok/hkbCharacter.h>
 
 struct BSFixedString;
 struct BShkbHkxDB;
@@ -24,6 +22,3 @@ struct BShkbAnimationGraph
     // Re do not use
     bool ReSendEvent(BSFixedString* apEventName);
 };
-
-
-#endif

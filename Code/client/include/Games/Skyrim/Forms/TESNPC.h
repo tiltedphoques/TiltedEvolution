@@ -1,11 +1,9 @@
 #pragma once
 
-#if TP_SKYRIM
+#include <Forms/TESActorBase.h>
 
-#include <Games/Skyrim/Forms/TESActorBase.h>
-
-#include <Games/Skyrim/Components/TESRaceForm.h>
-#include <Games/Skyrim/Components/BGSOverridePackCollection.h>
+#include <Components/TESRaceForm.h>
+#include <Components/BGSOverridePackCollection.h>
 
 struct BGSColorForm;
 struct BGSTextureSet;
@@ -87,14 +85,6 @@ struct TESNPC : TESActorBase
     void Initialize() noexcept;
 };
 
-#ifdef _WIN64
 static_assert(offsetof(TESNPC, npcClass) == 0x1C0);
 static_assert(offsetof(TESNPC, color) == 0x246);
 static_assert(offsetof(TESNPC, relationships) == 0x250);
-#else
-static_assert(offsetof(TESNPC, color) == 0x154);
-static_assert(offsetof(TESNPC, npcClass) == 0x10C);
-static_assert(offsetof(TESNPC, relationships) == 0x158);
-#endif
-
-#endif

@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/BSScript.h>
+#include <Misc/BSScript.h>
 
 BSScript::Variable::Variable()
 {
@@ -56,7 +54,7 @@ template <> void BSScript::Variable::Set(const char* acpValue) noexcept
     Reset();
 
     type = kString;
-    auto pStr = (BSFixedString*)&data.s;
+    auto pStr = reinterpret_cast<BSFixedString*>(&data.s);
     pStr->Set(acpValue);
 }
 
@@ -69,4 +67,3 @@ void BSScript::Statement::SetSize(uint32_t aCount) noexcept
     ThisCall(s_setSize, this, aCount);
 }
 
-#endif

@@ -1,7 +1,6 @@
 #include <Games/IFormFactory.h>
 
-#include <Games/Fallout4/Forms/TESForm.h>
-#include <Games/Skyrim/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 
 IFormFactory* IFormFactory::GetForType(const uint32_t aId) noexcept
 {

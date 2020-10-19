@@ -5,10 +5,8 @@
 #include <Filesystem.hpp>
 #include <D3D11Hook.hpp>
 
-#include <Games/Skyrim/PlayerCharacter.h>
-#include <Games/Skyrim/Forms/TESWorldSpace.h>
-#include <Games/Fallout4/PlayerCharacter.h>
-#include <Games/Fallout4/Forms/TESWorldSpace.h>
+#include <PlayerCharacter.h>
+#include <Forms/TESWorldSpace.h>
 
 #include <Events/LocationChangeEvent.h>
 

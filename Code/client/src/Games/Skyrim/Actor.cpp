@@ -1,17 +1,14 @@
-#ifdef TP_SKYRIM
-
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Misc/SkyrimVM.h>
-#include <Games/Skyrim/DefaultObjectManager.h>
-#include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/Skyrim/Forms/TESFaction.h>
-#include <Games/Skyrim/Components/TESActorBaseData.h>
-#include <Games/Skyrim/ExtraData/ExtraFactionChanges.h>
+#include <Misc/ActorProcessManager.h>
+#include <Misc/MiddleProcess.h>
+#include <Misc/GameVM.h>
+#include <DefaultObjectManager.h>
+#include <Forms/TESNPC.h>
+#include <Forms/TESFaction.h>
+#include <Components/TESActorBaseData.h>
+#include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
-#include <Games/RTTI.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -388,5 +385,3 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
 
     });
-
-#endif

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Games/Skyrim/Actor.h>
-#include <Games/Fallout4/Actor.h>
+#include <Actor.h>
 
 struct BGSAction;
 

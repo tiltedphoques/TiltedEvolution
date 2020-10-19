@@ -1,9 +1,10 @@
 #include <Games/TES.h>
 
-#include <Games/Fallout4/Actor.h>
-#include <Games/Fallout4/Misc/NEW_REFR_DATA.h>
+#include <Actor.h>
 
-#include <Games/Skyrim/Actor.h>
+#if TP_FALLOUT
+#include <Misc/NEW_REFR_DATA.h>
+#endif
 
 ModManager* ModManager::Get() noexcept
 {

@@ -1,6 +1,4 @@
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Misc/BSScript.h>
+#include <Misc/BSScript.h>
 
 BSScript::Variable::Variable()
 {
@@ -68,5 +66,3 @@ void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 
     ThisCall(s_setSize, this, aCount);
 }
-
-#endif

@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/WeatherManager.h>
+#include <Misc/WeatherManager.h>
 
 WeatherManager* WeatherManager::Get()
 {
@@ -8,5 +6,3 @@ WeatherManager* WeatherManager::Get()
 
     return *s_instance.Get();
 }
-
-#endif

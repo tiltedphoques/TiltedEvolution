@@ -1,7 +1,4 @@
 #pragma once
-
-#if TP_SKYRIM64
-
 struct hkbCharacter;
 struct ahkpWorld;
 struct CharacterContext;
@@ -28,6 +25,3 @@ static_assert(offsetof(hkEventContext, hkpWorld) == 0x38);
 static_assert(offsetof(hkEventContext, byte30) == 0x30);
 static_assert(offsetof(hkEventContext, unk48) == 0x48);
 static_assert(sizeof(hkEventContext) == 0x50);
-
-
-#endif

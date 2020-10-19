@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/NEW_REFR_DATA.h>
+#include <Misc/NEW_REFR_DATA.h>
 
 NEW_REFR_DATA::NEW_REFR_DATA()
 {
@@ -15,6 +13,3 @@ NEW_REFR_DATA::NEW_REFR_DATA()
     unk68 = 0x1000000;
     randomFlag = 1;
 }
-
-
-#endif

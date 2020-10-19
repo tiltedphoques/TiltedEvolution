@@ -1,11 +1,8 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/PlayerCharacter.h>
-#include <Games/Fallout4/Forms/TESFaction.h>
-#include <Games/Fallout4/Forms/TESNPC.h>
-#include <Games/Fallout4/ExtraData/ExtraFactionChanges.h>
+#include <PlayerCharacter.h>
+#include <Forms/TESFaction.h>
+#include <Forms/TESNPC.h>
+#include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
-#include <Games/Overrides.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -175,4 +172,3 @@ static TiltedPhoques::Initializer s_specificReferencesHooks([]()
         TP_HOOK(&RealActorConstructor2, HookActorContructor2);
     });
 
-#endif

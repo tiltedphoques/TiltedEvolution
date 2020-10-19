@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct SpellItem;
 struct TESForm;
@@ -25,8 +23,5 @@ struct TESSpellList : BaseFormComponent
     void Initialize();
 };
 
-#if TP_PLATFORM_64
 static_assert(sizeof(TESSpellList::Lists) == 0x28);
-#endif
 
-#endif

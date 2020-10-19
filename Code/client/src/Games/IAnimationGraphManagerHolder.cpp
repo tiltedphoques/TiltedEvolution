@@ -1,7 +1,6 @@
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
-#include <Games/Skyrim/BSAnimationGraphManager.h>
-#include <Games/Fallout4/BSAnimationGraphManager.h>
+#include <BSAnimationGraphManager.h>
 
 bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, float aValue)
 {

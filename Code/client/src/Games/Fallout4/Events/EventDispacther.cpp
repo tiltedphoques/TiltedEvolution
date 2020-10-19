@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Skyrim/Events/EventDispatcher.h>
+#include <Events/EventDispatcher.h>
 
 namespace details
 {
@@ -35,4 +33,3 @@ namespace details
     }
 }
 
-#endif

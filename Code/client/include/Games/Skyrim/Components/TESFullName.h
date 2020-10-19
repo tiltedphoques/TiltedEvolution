@@ -1,10 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
-#include <Games/Skyrim/Misc/BSFixedString.h>
-
+#include <Components/BaseFormComponent.h>
+#include <Misc/BSFixedString.h>
 
 struct TESFullName : BaseFormComponent
 {
@@ -12,5 +9,3 @@ struct TESFullName : BaseFormComponent
 
     BSFixedString value;
 };
-
-#endif

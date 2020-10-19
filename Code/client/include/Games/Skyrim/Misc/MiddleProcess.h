@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM
-
 struct MiddleProcess
 {
     // 0xB0 - pitch
@@ -19,5 +17,3 @@ struct MiddleProcess
 static_assert(offsetof(MiddleProcess, direction) == 0xB8);
 static_assert(offsetof(MiddleProcess, leftEquippedObject) == 0x220);
 static_assert(offsetof(MiddleProcess, rightEquippedObject) == 0x260);
-
-#endif

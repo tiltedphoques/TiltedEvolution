@@ -5,13 +5,9 @@
 
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/BGSAction.h>
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Fallout4/Forms/BGSAction.h>
-
-#include <Games/Fallout4/Misc/ProcessManager.h>
-#include <Games/Fallout4/Misc/MiddleProcess.h>
+#include <Forms/BGSAction.h>
+#include <Misc/ActorProcessManager.h>
+#include <Misc/MiddleProcess.h>
 
 #include <Messages/ClientReferencesMoveRequest.h>
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Games/Fallout4/Misc/BSFixedString.h>
-#include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 struct TESIdleForm;
 

@@ -7,13 +7,11 @@
 #include <Services/ImguiService.h>
 
 #include <Games/Misc/QuestCallbackManager.h>
-#include <Games/Skyrim/PlayerCharacter.h>
-#include <Games/Skyrim/Forms/TESQuest.h>
-#include <Games/Skyrim/FormManager.h>
-#include <Games/Fallout4/PlayerCharacter.h>
-#include <Games/Fallout4/Forms/TESQuest.h>
-#include <Games/Fallout4/FormManager.h>
-#include <Games/Fallout4/Events/EventDispatcher.h>
+#include <PlayerCharacter.h>
+#include <Forms/TESQuest.h>
+#include <FormManager.h>
+
+#include <Events/EventDispatcher.h>
 
 #include <imgui.h>
 

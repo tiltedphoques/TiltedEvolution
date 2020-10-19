@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 enum FormType : uint8_t
 {
@@ -97,10 +95,4 @@ struct TESForm : BaseFormComponent
     uint8_t padForm;
 };
 
-#if TP_PLATFORM_64
 static_assert(sizeof(TESForm) == 0x20);
-#else
-static_assert(sizeof(TESForm) == 0x14);
-#endif
-
-#endif

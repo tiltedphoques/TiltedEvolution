@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 enum FormType : uint8_t
 {
@@ -112,6 +110,3 @@ struct TESForm : BaseFormComponent
 };
 
 static_assert(sizeof(TESForm) == 0x20);
-
-
-#endif

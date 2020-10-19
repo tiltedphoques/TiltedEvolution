@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM
-
 template <class T>
 struct NiPointer
 {
@@ -33,5 +31,3 @@ struct NiPointer
 
     T* object;
 };
-
-#endif

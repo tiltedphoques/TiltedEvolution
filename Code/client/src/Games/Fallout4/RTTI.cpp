@@ -1,6 +1,4 @@
-#include <Games/Fallout4/RTTI.h>
-
-#if defined(TP_FALLOUT)
+#include <RTTI.h>
 
 const AutoPtr<TDynamicCast> DynamicCast(0x2936C62);
 
@@ -3240,5 +3238,3 @@ AutoPtr<const void> RTTI_BSSocketServer(0x38CC848);
 AutoPtr<const void> RTTI_BSLines(0x38CC890);
 AutoPtr<const void> RTTI_BSDynamicLines(0x38CC8B8);
 AutoPtr<const void> RTTI_BSParabolicCullingProcess(0x38CC8E0);
-
-#endif

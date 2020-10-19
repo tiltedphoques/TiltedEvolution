@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM
-
 struct BSFixedString
 {
     BSFixedString();
@@ -19,5 +17,3 @@ struct BSFixedString
 
     const char* data;
 };
-
-#endif

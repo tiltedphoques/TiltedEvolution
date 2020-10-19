@@ -1,6 +1,4 @@
-#if TP_SKYRIM64
-
-#include <Games/Skyrim/DefaultStringManager.h>
+#include <DefaultStringManager.h>
 
 DefaultStringManager& DefaultStringManager::Get()
 {
@@ -10,5 +8,3 @@ DefaultStringManager& DefaultStringManager::Get()
 
     return GetDefaultStringManager();
 }
-
-#endif

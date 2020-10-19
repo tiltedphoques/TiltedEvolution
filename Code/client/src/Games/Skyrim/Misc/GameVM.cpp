@@ -1,6 +1,4 @@
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Misc/SkyrimVM.h>
+#include <Misc/GameVM.h>
 
 SkyrimVM* SkyrimVM::Get()
 {
@@ -8,5 +6,3 @@ SkyrimVM* SkyrimVM::Get()
 
     return *s_instance.Get();
 }
-
-#endif

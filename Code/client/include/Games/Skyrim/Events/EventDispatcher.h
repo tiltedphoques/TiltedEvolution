@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM
-
 template <class T> struct BSTEventSink;
 
 // Very nasty work around to avoid template code duplication
@@ -373,5 +371,3 @@ static_assert(offsetof(EventDispatcherManager, fastTravelEndEvent) == 4664);
 static_assert(offsetof(EventDispatcherManager, questInitEvent) == 0x9F8);
 static_assert(offsetof(EventDispatcherManager, questStageEvent) == 0xA50);
 static_assert(offsetof(EventDispatcherManager, questStartStopEvent) == 0xB00);
-
-#endif

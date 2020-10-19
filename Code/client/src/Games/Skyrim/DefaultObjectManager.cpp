@@ -1,6 +1,4 @@
-#if TP_SKYRIM64
-
-#include <Games/Skyrim/DefaultObjectManager.h>
+#include <DefaultObjectManager.h>
 
 DefaultObjectManager& DefaultObjectManager::Get()
 {
@@ -10,5 +8,3 @@ DefaultObjectManager& DefaultObjectManager::Get()
 
     return GetDefaultObjectManager();
 }
-
-#endif

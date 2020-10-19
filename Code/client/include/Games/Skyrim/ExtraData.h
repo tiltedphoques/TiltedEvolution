@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef TP_SKYRIM
-
 enum class ExtraData : uint32_t
 {
     ContainerChanges = 0x15,
@@ -14,5 +12,3 @@ enum class ExtraData : uint32_t
     Faction = 0x5B,
     AliasInstanceArray = 0x88
 };
-
-#endif

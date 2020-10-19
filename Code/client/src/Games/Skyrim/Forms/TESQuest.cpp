@@ -1,7 +1,4 @@
-
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Forms/TESQuest.h>
+#include <Forms/TESQuest.h>
 
 TESQuest::State TESQuest::getState()
 {
@@ -97,6 +94,3 @@ static TiltedPhoques::Initializer s_questInitHooks([]() {
     // kill quest init in cold blood
     //TiltedPhoques::Write<uint8_t>(0x140370910 - 0x140000000, 0xC3);
 });
-
-
-#endif

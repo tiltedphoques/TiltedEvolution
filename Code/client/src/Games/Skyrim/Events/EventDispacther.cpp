@@ -1,6 +1,4 @@
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Events/EventDispatcher.h>
+#include <Events/EventDispatcher.h>
 
 namespace details
 {
@@ -43,5 +41,3 @@ EventDispatcherManager* EventDispatcherManager::Get() noexcept
 
     return s_getEventDispatcherManager.Get()();
 }
-
-#endif

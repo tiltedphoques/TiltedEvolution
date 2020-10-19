@@ -7,8 +7,7 @@
 
 #include <Components.h>
 
-#include <Games/Fallout4/Forms/TESForm.h>
-#include <Games/Skyrim/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 
 #include <Games/References.h>
 

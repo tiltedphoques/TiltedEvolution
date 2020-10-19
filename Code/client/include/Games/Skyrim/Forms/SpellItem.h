@@ -1,13 +1,10 @@
 #pragma once
 
+#include <Forms/MagicItem.h>
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Forms/MagicItem.h>
-
-#include <Games/Skyrim/Components/BGSEquipType.h>
-#include <Games/Skyrim/Components/BGSMenuDisplayObject.h>
-#include <Games/Skyrim/Components/TESDescription.h>
+#include <Components/BGSEquipType.h>
+#include <Components/BGSMenuDisplayObject.h>
+#include <Components/TESDescription.h>
 
 struct SpellItem : MagicItem
 {
@@ -19,5 +16,3 @@ struct SpellItem : MagicItem
     uint32_t castType;
     // more stuff
 };
-
-#endif

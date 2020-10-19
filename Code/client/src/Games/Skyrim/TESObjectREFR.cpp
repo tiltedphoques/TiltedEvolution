@@ -1,10 +1,8 @@
-#ifdef TP_SKYRIM
-
 #include <Games/References.h>
 #include <Games/Memory.h>
 #include <Games/Overrides.h>
 #include <Games/Skyrim/EquipManager.h>
-#include <Games/Skyrim/Misc/SkyrimVM.h>
+#include <Misc/GameVM.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -86,5 +84,3 @@ void TESObjectREFR::RemoveAllItems() noexcept
 
     s_pRemoveAllItems(this, nullptr, false, true);
 }
-
-#endif

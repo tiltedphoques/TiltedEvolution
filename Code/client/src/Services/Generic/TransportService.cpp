@@ -8,8 +8,7 @@
 #include <Games/TES.h>
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/Fallout4/Forms/TESNPC.h>
+#include <Forms/TESNPC.h>
 
 #include <World.h>
 

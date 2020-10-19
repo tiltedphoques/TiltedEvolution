@@ -3,8 +3,7 @@
 
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/TESObjectCELL.h>
-#include <Games/Fallout4/Forms/TESObjectCELL.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <Events/ReferenceAddedEvent.h>
 #include <Events/ReferenceRemovedEvent.h>

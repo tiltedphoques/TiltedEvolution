@@ -1,8 +1,6 @@
 #pragma once
 #pragma pack(push, 1)
 
-#if TP_SKYRIM64
-
 struct IDXGISwapChain;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -56,5 +54,3 @@ static_assert(offsetof(BGSRenderer, pD3dDevice) == 56);
 static_assert(offsetof(BGSRenderer, pSwapChain) == 96);
 
 #pragma pack(pop)
-
-#endif

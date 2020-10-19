@@ -1,8 +1,7 @@
 #pragma once
 
 #include <Games/Primitives.h>
-#include <Games/Skyrim/ExtraData.h>
-#include <Games/Fallout4/ExtraData.h>
+#include <ExtraData.h>
 
 struct TESObjectREFR;
 struct TESForm;

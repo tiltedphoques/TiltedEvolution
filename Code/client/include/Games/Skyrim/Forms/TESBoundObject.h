@@ -1,8 +1,7 @@
 #pragma once
 
-#if TP_SKYRIM
 
-#include <Games/Skyrim/Forms/TESObject.h>
+#include <Forms/TESObject.h>
 
 struct TESBoundObject : TESObject
 {
@@ -18,5 +17,3 @@ struct TESBoundObject : TESObject
 };
 
 static_assert(sizeof(TESBoundObject) == 0x30);
-
-#endif

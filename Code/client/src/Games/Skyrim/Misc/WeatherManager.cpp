@@ -1,6 +1,4 @@
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Misc/WeatherManager.h>
+#include <Misc/WeatherManager.h>
 
 WeatherManager* WeatherManager::Get()
 {
@@ -8,5 +6,3 @@ WeatherManager* WeatherManager::Get()
 
     return *s_instance.Get();
 }
-
-#endif

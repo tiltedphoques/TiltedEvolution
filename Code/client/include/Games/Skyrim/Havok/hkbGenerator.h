@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM64
-
 struct hkEventContext;
 
 struct hkbGenerator
@@ -15,6 +13,3 @@ struct hkbGenerator
     virtual void sub_05();
     virtual void SendEvent(hkEventContext& aContext, hkEventType& aType);
 };
-
-
-#endif

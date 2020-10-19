@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef TP_SKYRIM
-
 #include <Games/ExtraData.h>
 
 struct BGSLoadFormBuffer;
@@ -33,5 +31,3 @@ struct ExtraContainerChanges : BSExtraData
 
     Data* data;
 };
-
-#endif

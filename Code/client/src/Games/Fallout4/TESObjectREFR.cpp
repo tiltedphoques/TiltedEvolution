@@ -1,8 +1,4 @@
-#if TP_FALLOUT4
-
 #include <Games/References.h>
-#include <Games/Memory.h>
-#include <Games/Overrides.h>
 
 void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
 {
@@ -30,6 +26,3 @@ void TESObjectREFR::RemoveAllItems() noexcept
 
     s_removeAllItems(nullptr, nullptr, this, nullptr, false);
 }
-
-
-#endif

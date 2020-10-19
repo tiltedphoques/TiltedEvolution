@@ -1,6 +1,4 @@
-#ifdef TP_SKYRIM
-
-#include <Games/Skyrim/EquipManager.h>
+#include <EquipManager.h>
 #include <Games/References.h>
 #include <Games/Overrides.h>
 
@@ -272,5 +270,3 @@ static TiltedPhoques::Initializer s_equipmentHooks([]()
         TP_HOOK(&RealEquipShout, EquipShoutHook);
         TP_HOOK(&RealUnEquipShout, UnEquipShoutHook);
     });
-
-#endif

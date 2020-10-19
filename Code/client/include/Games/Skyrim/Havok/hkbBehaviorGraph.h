@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM64
-
-#include <Games/Skyrim/Havok/hkbVariableValueSet.h>
+#include <Havok/hkbVariableValueSet.h>
 
 struct hkEventContext;
 struct hkEventType;
@@ -62,4 +60,3 @@ static_assert(offsetof(hkbBehaviorGraph, symbolIdMap) == 0xB8);
 static_assert(offsetof(hkbBehaviorGraph, animationVariables) == 0xD8);
 static_assert(offsetof(hkbBehaviorGraph, byte12C) == 0x12C);
 
-#endif

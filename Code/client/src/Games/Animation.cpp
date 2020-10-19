@@ -1,18 +1,14 @@
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/BGSAction.h>
-#include <Games/Skyrim/Forms/TESIdleForm.h>
-
-#include <Games/Fallout4/Forms/BGSAction.h>
-#include <Games/Fallout4/Forms/TESIdleForm.h>
+#include <Forms/BGSAction.h>
+#include <Forms/TESIdleForm.h>
 
 #include <Structs/ActionEvent.h>
 
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>
 
-#include <Games/Skyrim/Misc/BSFixedString.h>
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 #include <World.h>
 

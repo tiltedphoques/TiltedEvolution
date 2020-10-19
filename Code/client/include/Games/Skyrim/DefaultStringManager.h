@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM64
-
-#include <Games/Skyrim/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 struct DefaultStringManager
 {
@@ -14,4 +12,3 @@ struct DefaultStringManager
 
 static_assert(offsetof(DefaultStringManager, fIdleTimer) == 0x3B8);
 
-#endif

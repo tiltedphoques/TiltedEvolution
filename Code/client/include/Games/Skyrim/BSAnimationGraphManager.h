@@ -1,10 +1,8 @@
 #pragma once
 
-#if TP_SKYRIM
-
 #include <Games/Primitives.h>
 
-#include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
+#include <Havok/BShkbAnimationGraph.h>
 
 struct BSFixedString;
 
@@ -45,6 +43,4 @@ static_assert(offsetof(BSAnimationGraphManager, animationGraphIndex) == 0xA8);
 static_assert(offsetof(BSAnimationGraphManager, animationGraphs) == 0x20);
 static_assert(offsetof(BSAnimationGraphManager, lock) == 0x4C);
 static_assert(offsetof(BSAnimationGraphManager, animationGraphIndex) == 0x5C);
-#endif
-
 #endif

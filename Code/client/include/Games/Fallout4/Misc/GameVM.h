@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 #include <Games/Fallout4/Misc/BSScript.h>
 
 struct GameVM
@@ -14,4 +12,3 @@ struct GameVM
     BSScript::IVirtualMachine* virtualMachine;
 };
 
-#endif

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Games/Fallout4/Common.h>
-#include <Games/Skyrim/Common.h>
+#include <Misc/BSFixedString.h>
 
 struct Actor;
 
@@ -36,11 +35,5 @@ namespace internal
 }
 
 
-#if TP_PLATFORM_64
 static_assert(offsetof(internal::_TestChannel, data) == 0x18);
 static_assert(offsetof(internal::_TestChannel, reference) == 0x28);
-#else
-static_assert(offsetof(internal::_TestChannel, data) == 0xC);
-static_assert(offsetof(internal::_TestChannel, reference) == 0x14);
-#endif
-

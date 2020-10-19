@@ -1,7 +1,4 @@
 #pragma once
-
-#if TP_FALLOUT4
-
 struct MiddleProcess;
 
 struct ProcessManager
@@ -11,6 +8,3 @@ struct ProcessManager
 };
 
 static_assert(offsetof(ProcessManager, middleProcess) == 0x8);
-
-
-#endif

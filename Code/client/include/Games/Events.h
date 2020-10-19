@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Games/Skyrim/Events/EventDispatcher.h>
-#include <Games/Fallout4/Events/EventDispatcher.h>
+#include <Events/EventDispatcher.h>
 
 enum class BSTEventResult
 {

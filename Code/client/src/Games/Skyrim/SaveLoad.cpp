@@ -1,6 +1,4 @@
-#if defined(TP_SKYRIM)
-
-#include <Games/Skyrim/SaveLoad.h>
+#include <SaveLoad.h>
 
 void BGSSaveLoadManager::Save(SaveData* apData)
 {
@@ -9,8 +7,4 @@ void BGSSaveLoadManager::Save(SaveData* apData)
     const char* cSaveName = "";
     if (apData->saveName)
         cSaveName = apData->saveName;
-
-
 }
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef TP_SKYRIM
-
 struct CharacterContext;
 
 struct hkbCharacter
@@ -12,5 +10,3 @@ struct hkbCharacter
     CharacterContext* characterContext;
     uint8_t pad88[0xA0 - 0x88];
 };
-
-#endif

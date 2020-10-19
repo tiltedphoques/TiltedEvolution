@@ -1,6 +1,4 @@
-#ifdef TP_SKYRIM
-
-#include <Games/Skyrim/ExtraData/ExtraContainerChanges.h>
+#include <ExtraData/ExtraContainerChanges.h>
 
 void ExtraContainerChanges::Data::Save(BGSSaveFormBuffer* apBuffer)
 {
@@ -19,6 +17,3 @@ void ExtraContainerChanges::Data::Load(BGSLoadFormBuffer* apBuffer)
 
     ThisCall(s_load, this, apBuffer);
 }
-
-
-#endif

@@ -1,28 +1,26 @@
 thread_local const char* g_animErrorCode = "";
 
-#if TP_SKYRIM64
-
 #include <Games/Animation/TESActionData.h>
 #include <Games/References.h>
 
-#include <Games/Skyrim/Misc/BSFixedString.h>
-#include <Games/Skyrim/DefaultObjectManager.h>
-#include <Games/Skyrim/BSAnimationGraphManager.h>
-#include <Games/Skyrim/DefaultStringManager.h>
+#include <Misc/BSFixedString.h>
+#include <DefaultObjectManager.h>
+#include <BSAnimationGraphManager.h>
+#include <DefaultStringManager.h>
 #include <Games/Animation/ActorMediator.h>
 
 #include <World.h>
 
-#include <Games/Skyrim/Havok/hkbCharacter.h>
-#include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
-#include <Games/Skyrim/Havok/bhkWorldM.h>
-#include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
-#include <Games/Skyrim/Havok/CharacterContext.h>
-#include <Games/Skyrim/Havok/hkbSymbolIdMap.h>
-#include <Games/Skyrim/Havok/hkEventContext.h>
-#include <Games/Skyrim/Havok/hkEventType.h>
-#include <Games/Skyrim/Havok/hkbGenerator.h>
-#include <Games/Skyrim/Havok/BShkbHkxDB.h>
+#include <Havok/hkbCharacter.h>
+#include <Havok/hkbBehaviorGraph.h>
+#include <Havok/bhkWorldM.h>
+#include <Havok/BShkbAnimationGraph.h>
+#include <Havok/CharacterContext.h>
+#include <Havok/hkbSymbolIdMap.h>
+#include <Havok/hkEventContext.h>
+#include <Havok/hkEventType.h>
+#include <Havok/hkbGenerator.h>
+#include <Havok/BShkbHkxDB.h>
 
 #pragma optimize( "", off )
 
@@ -429,5 +427,3 @@ bool TESActionData::ComputeResult()
 }
 
 #pragma optimize( "", on )
-
-#endif

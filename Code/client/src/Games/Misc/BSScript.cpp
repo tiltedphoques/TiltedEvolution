@@ -1,8 +1,5 @@
-#include <Games/Skyrim/Misc/BSScript.h>
-#include <Games/Skyrim/Misc/NativeFunction.h>
-
-#include <Games/Fallout4/Misc/BSScript.h>
-#include <Games/Fallout4/Misc/NativeFunction.h>
+#include <Misc/BSScript.h>
+#include <Misc/NativeFunction.h>
 
 #include <World.h>
 #include <Events/PapyrusFunctionRegisterEvent.h>

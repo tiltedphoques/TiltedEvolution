@@ -1,15 +1,13 @@
 #pragma once
 
-#if TP_SKYRIM
-
 #include <Games/Events.h>
-#include <Games/Skyrim/TESObjectREFR.h>
+#include <TESObjectREFR.h>
 
-#include <Games/Skyrim/Misc/MagicTarget.h>
-#include <Games/Skyrim/Forms/TESActorBase.h>
-#include <Games/Skyrim/Misc/ActorState.h>
-#include <Games/Skyrim/Misc/IPostAnimationChannelUpdateFunctor.h>
-#include <Games/Skyrim/Forms/MagicItem.h>
+#include <Misc/MagicTarget.h>
+#include <Forms/TESActorBase.h>
+#include <Misc/ActorState.h>
+#include <Misc/IPostAnimationChannelUpdateFunctor.h>
+#include <Forms/MagicItem.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
@@ -307,5 +305,3 @@ static_assert(offsetof(Actor, equippedShout) == 0x1E0);
 static_assert(offsetof(Actor, actorLock) == 0x27C);
 static_assert(sizeof(Actor) == 0x2B0);
 static_assert(sizeof(Actor::SpellItemEntry) == 0x18);
-
-#endif

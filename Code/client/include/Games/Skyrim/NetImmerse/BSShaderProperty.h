@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/NetImmerse/NiShadeProperty.h>
+#include <NetImmerse/NiShadeProperty.h>
 
 struct BSShaderProperty : NiShadeProperty
 {
@@ -14,5 +12,3 @@ struct BSShaderProperty : NiShadeProperty
 };
 
 static_assert(offsetof(BSShaderProperty, material) == 0x78);
-
-#endif

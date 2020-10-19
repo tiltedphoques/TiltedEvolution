@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Games/Skyrim/Misc/SkyrimVM.h>
-#include <Games/Fallout4/Misc/GameVM.h>
+#include <Misc/GameVM.h>
 
 struct TESForm;
 struct TESObjectREFR;

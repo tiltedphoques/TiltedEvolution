@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Misc/BSScript.h>
+#include <Misc/BSScript.h>
 
 struct SkyrimVM
 {
@@ -15,5 +13,3 @@ struct SkyrimVM
 };
 
 using GameVM = SkyrimVM;
-
-#endif

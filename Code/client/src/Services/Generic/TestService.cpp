@@ -6,27 +6,16 @@
 
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/TESQuest.h>
-#include <Games/Skyrim/FormManager.h>
-#include <Games/Skyrim/BSAnimationGraphManager.h>
-#include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/Skyrim/Forms/TESQuest.h>
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Forms/TESFaction.h>
-#include <Games/Skyrim/ExtraData/ExtraFactionChanges.h>
+#include <Forms/TESQuest.h>
+#include <BSAnimationGraphManager.h>
+#include <Forms/TESFaction.h>
 
-#include <Games/Fallout4/BSAnimationGraphManager.h>
-#include <Games/Fallout4/Forms/TESNPC.h>
-#include <Games/Fallout4/Misc/ProcessManager.h>
-#include <Games/Fallout4/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Forms/TESWorldSpace.h>
+#include <Forms/TESNPC.h>
 
 #include <Components.h>
 #include <World.h>
 
 #include <imgui.h>
-#include <Games/SaveLoad.h>
 
 extern thread_local bool g_overrideFormId;
 

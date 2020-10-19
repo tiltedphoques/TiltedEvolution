@@ -1,15 +1,12 @@
-#include <Games/Fallout4/PlayerCharacter.h>
-#include <Games/Fallout4/Forms/BGSHeadPart.h>
-#include <Games/Fallout4/Forms/TESNPC.h>
+#include <PlayerCharacter.h>
+#include <Forms/BGSHeadPart.h>
+#include <Forms/TESNPC.h>
 
 #include <Games/IFormFactory.h>
 
-#include <Games/SaveLoad.h>
+#include <SaveLoad.h>
 #include <Games/Overrides.h>
 
-#include <Games/Skyrim/Forms/BGSHeadPart.h>
-#include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/Skyrim/PlayerCharacter.h>
 
 TESForm* TESForm::GetById(const uint32_t aId)
 {

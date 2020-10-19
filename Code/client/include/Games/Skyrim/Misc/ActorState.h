@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Misc/IMovementState.h>
+#include <Misc/IMovementState.h>
 
 struct ActorState : IMovementState
 {
@@ -16,5 +14,3 @@ struct ActorState : IMovementState
         return (flags2 >> 5 & 7) >= 3;
     }
 };
-
-#endif

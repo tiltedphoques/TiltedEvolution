@@ -1,6 +1,4 @@
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/TESSpellList.h>
+#include <Components/TESSpellList.h>
 #include <Games/Memory.h>
 
 void TESSpellList::Initialize()
@@ -10,6 +8,3 @@ void TESSpellList::Initialize()
 
     lists = Memory::New<Lists>();
 }
-
-
-#endif

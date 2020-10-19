@@ -1,12 +1,7 @@
-#include <Games/Skyrim/BSAnimationGraphManager.h>
-#include <Games/Skyrim/Havok/BShkbAnimationGraph.h>
-#include <Games/Skyrim/Havok/BShkbHkxDB.h>
-#include <Games/Skyrim/Havok/hkbBehaviorGraph.h>
-
-#include <Games/Fallout4/BSAnimationGraphManager.h>
-#include <Games/Fallout4/Havok/BShkbAnimationGraph.h>
-#include <Games/Fallout4/Havok/BShkbHkxDB.h>
-#include <Games/Fallout4/Havok/hkbBehaviorGraph.h>
+#include <BSAnimationGraphManager.h>
+#include <Havok/BShkbAnimationGraph.h>
+#include <Havok/BShkbHkxDB.h>
+#include <Havok/hkbBehaviorGraph.h>
 
 #include <map>
 

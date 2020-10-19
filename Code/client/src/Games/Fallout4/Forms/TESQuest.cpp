@@ -1,7 +1,4 @@
-
-#if TP_FALLOUT
-
-#include <Games/Fallout4/Forms/TESQuest.h>
+#include <Forms/TESQuest.h>
 
 void TESQuest::SetActive(bool toggle)
 {
@@ -35,5 +32,3 @@ bool TESQuest::SetStage(uint16_t stage)
 
     return SetStage(this, stage);
 }
-
-#endif

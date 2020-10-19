@@ -1,7 +1,4 @@
-
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESNPC.h>
+#include <Forms/TESNPC.h>
 
 TP_THIS_FUNCTION(TSetLeveledNpc, TESNPC*, TESNPC, TESNPC*);
 static TSetLeveledNpc* RealSetLeveledNpc = nullptr;
@@ -21,6 +18,3 @@ static TiltedPhoques::Initializer s_npcInitHooks([]() {
 
     //TP_HOOK(&RealSetLeveledNpc, HookSetLeveledNpc);
 });
-
-
-#endif

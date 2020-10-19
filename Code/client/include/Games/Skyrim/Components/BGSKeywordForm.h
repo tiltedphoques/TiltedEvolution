@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_SKYRIM
-
-#include <Games/Skyrim/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct BGSKeyword;
 
@@ -14,5 +12,3 @@ struct BGSKeywordForm : BaseFormComponent
     BGSKeyword** keywords;
     uint32_t count;
 };
-
-#endif

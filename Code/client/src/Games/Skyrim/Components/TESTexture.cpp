@@ -1,6 +1,4 @@
-#include <Games/Skyrim/Components/TESTexture.h>
-
-#if TP_SKYRIM
+#include <Components/TESTexture.h>
 
 void TESTexture::Construct()
 {
@@ -10,5 +8,3 @@ void TESTexture::Construct()
 
     ThisCall(s_constructor, this);
 }
-
-#endif

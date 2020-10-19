@@ -4,15 +4,9 @@
 
 #include <Games/References.h>
 
-#include <Games/Skyrim/Forms/TESNPC.h>
-#include <Games/Skyrim/Forms/TESQuest.h>
-#include <Games/Skyrim/ExtraData/ExtraLeveledCreature.h>
-
-#include <Games/Fallout4/Forms/TESNPC.h>
-#include <Games/Fallout4/Forms/TESQuest.h>
-#include <Games/Fallout4/Misc/ProcessManager.h>
-#include <Games/Fallout4/Misc/MiddleProcess.h>
-#include <Games/Fallout4/ExtraData/ExtraLeveledCreature.h>
+#include <Forms/TESNPC.h>
+#include <Forms/TESQuest.h>
+#include <ExtraData/ExtraLeveledCreature.h>
 
 #include <Components.h>
 

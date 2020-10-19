@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_SKYRIM64
-
 struct ahkpWorld;
 
 struct bhkWorldM
@@ -52,5 +50,3 @@ struct bhkWorldM
     uint8_t pad8[0x10 - 0x8];
     ahkpWorld* hkpWorld; // 10
 };
-
-#endif
