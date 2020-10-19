@@ -86,3 +86,4 @@ end
 
 generate_server("SkyrimTogetherServer", "TP_SKYRIM=1")
 generate_server("FalloutTogetherServer", "TP_FALLOUT=1")
+
