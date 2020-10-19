@@ -1,5 +1,5 @@
 jobs:
-  - job: Windows Debug
+  - job: Windows_Debug
     displayName: Windows - Debug x64
     pool:
       vmImage: windows-2019
@@ -11,7 +11,7 @@ jobs:
     steps:
       - template: .ci/windows-build.yml
 
-  - job: Windows Release
+  - job: Windows_Release
     displayName: Windows - Release x64
     pool:
       vmImage: windows-2019
@@ -23,7 +23,7 @@ jobs:
     steps:
       - template: .ci/windows-build.yml
 
-  - job: Linux Debug
+  - job: Linux_Debug
     displayName: Linux - Debug x64
     pool:
       vmImage: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
     steps:
       - template: .ci/linux-build.yml
 
-  - job: Linux Release
+  - job: Linux_Release
     displayName: Linux - Release x64
     pool:
       vmImage: ubuntu-latest
