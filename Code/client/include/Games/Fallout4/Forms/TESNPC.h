@@ -1,16 +1,13 @@
 #pragma once
 
+#include <Forms/TESActorBase.h>
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESActorBase.h>
-
-#include <Games/Fallout4/Components/TESRaceForm.h>
-#include <Games/Fallout4/Components/BGSOverridePackCollection.h>
-#include <Games/Fallout4/Components/BGSNativeTerminalForm.h>
-#include <Games/Fallout4/Components/BGSAttachParentArray.h>
-#include <Games/Fallout4/Components/BGSCharacterTint.h>
-#include <Games/Fallout4/Components/BGSForcedLocRefType.h>
+#include <Components/TESRaceForm.h>
+#include <Components/BGSOverridePackCollection.h>
+#include <Components/BGSNativeTerminalForm.h>
+#include <Components/BGSAttachParentArray.h>
+#include <Components/BGSCharacterTint.h>
+#include <Components/BGSForcedLocRefType.h>
 
 struct BGSTextureSet;
 struct BGSColorForm;
@@ -88,5 +85,3 @@ static_assert(offsetof(TESNPC, headPartCount) == 0x2E8);
 static_assert(offsetof(TESNPC, unk2F8) == 0x2F8);
 static_assert(offsetof(TESNPC, tints) == 0x300);
 static_assert(sizeof(TESNPC) == 0x308);
-
-#endif

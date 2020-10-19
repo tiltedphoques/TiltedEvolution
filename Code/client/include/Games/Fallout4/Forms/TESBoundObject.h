@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESObject.h>
+#include <Forms/TESObject.h>
 
 struct TESBoundObject : TESObject
 {
@@ -28,6 +26,3 @@ struct TESBoundObject : TESObject
 };
 
 static_assert(sizeof(TESBoundObject) == 0x68);
-
-
-#endif

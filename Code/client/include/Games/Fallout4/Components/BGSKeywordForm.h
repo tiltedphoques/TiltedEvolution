@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct BGSKeyword;
 
@@ -15,7 +13,3 @@ struct BGSKeywordForm : BaseFormComponent
     uint32_t count; // 18
     uint32_t pad;
 };
-
-
-
-#endif

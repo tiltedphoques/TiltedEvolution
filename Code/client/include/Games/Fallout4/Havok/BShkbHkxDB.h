@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Havok/hkHashTable.h>
+#include <Havok/hkHashTable.h>
 
 struct BShkbHkxDB
 {
@@ -13,5 +11,3 @@ struct BShkbHkxDB
 };
 
 static_assert(offsetof(BShkbHkxDB, animationVariables) == 0x84);
-
-#endif

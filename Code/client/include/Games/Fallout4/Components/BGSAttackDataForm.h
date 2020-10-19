@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct BGSAttackDataMap : NiRefObject
 {
@@ -15,5 +13,3 @@ struct BGSAttackDataForm : BaseFormComponent
 
     BGSAttackDataMap* attackDataMap;
 };
-
-#endif

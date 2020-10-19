@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Actor.h>
+#include <Actor.h>
 
 struct TESQuest;
 
@@ -32,5 +30,3 @@ struct PlayerCharacter : Actor
 static_assert(sizeof(PlayerCharacter) == 0xE10);
 static_assert(offsetof(PlayerCharacter, objectives) == 0x7D8);
 static_assert(offsetof(PlayerCharacter, locationForm) == 0xCC8);
-
-#endif

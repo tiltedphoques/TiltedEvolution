@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 
 struct TESObject : TESForm
 {
@@ -19,5 +17,3 @@ struct TESObject : TESForm
     virtual void sub_52();
     virtual void sub_53();
 };
-
-#endif

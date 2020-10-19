@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 template <class T> struct BSTEventSink;
 
 // Very nasty work around to avoid template code duplication
@@ -66,5 +64,3 @@ inline EventDispatcher<name>* GetEventDispatcher_##name() \
 DECLARE_DISPATCHER(TESQuestStartStopEvent, 0x1404438B0);
 DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 0x140443810);
 DECLARE_DISPATCHER(TESQuestStageEvent, 0x140443770);
-
-#endif

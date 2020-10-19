@@ -1,21 +1,19 @@
 #pragma once
 
-#if TP_FALLOUT4
+#include <Components/BGSPropertySheet.h>
+#include <Components/BGSPerkRankArray.h>
+#include <Components/BGSAttackDataForm.h>
+#include <Components/TESAIForm.h>
+#include <Components/TESSpellList.h>
+#include <Components/TESContainer.h>
+#include <Components/BGSDestructibleObjectForm.h>
+#include <Components/TESActorBaseData.h>
+#include <Components/BGSSkinForm.h>
+#include <Components/BGSKeywordForm.h>
+#include <Components/TESFullName.h>
 
-#include <Games/Fallout4/Components/BGSPropertySheet.h>
-#include <Games/Fallout4/Components/BGSPerkRankArray.h>
-#include <Games/Fallout4/Components/BGSAttackDataForm.h>
-#include <Games/Fallout4/Components/TESAIForm.h>
-#include <Games/Fallout4/Components/TESSpellList.h>
-#include <Games/Fallout4/Components/TESContainer.h>
-#include <Games/Fallout4/Components/BGSDestructibleObjectForm.h>
-#include <Games/Fallout4/Components/TESActorBaseData.h>
-#include <Games/Fallout4/Components/BGSSkinForm.h>
-#include <Games/Fallout4/Components/BGSKeywordForm.h>
-#include <Games/Fallout4/Components/TESFullName.h>
-
-#include <Games/Fallout4/Forms/ActorValueOwner.h>
-#include <Games/Fallout4/Forms/TESBoundAnimObject.h>
+#include <Forms/ActorValueOwner.h>
+#include <Forms/TESBoundAnimObject.h>
 
 struct TESActorBase : TESBoundAnimObject
 {
@@ -49,4 +47,3 @@ static_assert(offsetof(TESActorBase, skinForm) == 0x148);
 static_assert(offsetof(TESActorBase, propertySheet) == 0x1A0);
 static_assert(sizeof(TESActorBase) == 0x1B0);
 
-#endif

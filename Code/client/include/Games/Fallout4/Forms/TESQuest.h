@@ -1,11 +1,9 @@
 #pragma once
 
-#if TP_FALLOUT
-
 #include <Games/Primitives.h>
-#include <Games/Fallout4/Forms/BGSStoryManagerTree.h>
-#include <Games/Fallout4/Misc/BSString.h>
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Forms/BGSStoryManagerTree.h>
+#include <Misc/BSString.h>
+#include <Misc/BSFixedString.h>
 
 struct TESQuest : BGSStoryManagerTreeForm
 {
@@ -78,5 +76,3 @@ static_assert(offsetof(TESQuest, objectives) == 0x118);
 static_assert(offsetof(TESQuest, currentStage) == 0x2B4);
 static_assert(offsetof(TESQuest, flags) == 0xF4);
 static_assert(offsetof(TESQuest, idName) == 0x2B8);
-
-#endif

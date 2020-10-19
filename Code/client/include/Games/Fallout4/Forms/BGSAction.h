@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/Fallout4/Forms/BGSKeyword.h>
+#include <Forms/BGSKeyword.h>
 
 struct BGSAction : BGSKeyword
 {

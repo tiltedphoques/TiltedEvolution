@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESForm.h>
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Forms/TESForm.h>
+#include <Misc/BSFixedString.h>
 
 struct BGSKeyword : TESForm
 {
@@ -12,4 +10,3 @@ struct BGSKeyword : TESForm
     BSFixedString keyword;
 };
 
-#endif

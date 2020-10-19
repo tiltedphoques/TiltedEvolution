@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct BGSVoiceType;
 
@@ -30,5 +28,3 @@ struct TESActorBaseData : BaseFormComponent
 static_assert(sizeof(TESActorBaseData) == 0x68);
 static_assert(offsetof(TESActorBaseData, owner) == 0x30);
 static_assert(offsetof(TESActorBaseData, factions) == 0x50);
-
-#endif

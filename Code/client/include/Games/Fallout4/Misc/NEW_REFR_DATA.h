@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 struct TESObjectCELL;
 struct TESWorldSpace;
 struct TESObjectREFR;
@@ -28,5 +26,3 @@ struct NEW_REFR_DATA
 static_assert(sizeof(NEW_REFR_DATA) == 0x70);
 static_assert(offsetof(NEW_REFR_DATA, rotation) == 0x14);
 static_assert(offsetof(NEW_REFR_DATA, randomFlag) == 0x6C);
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(TP_FALLOUT)
-
 using TDynamicCast = void* (void* apThis, uint32_t a1, const void* acpBaseRTTI, const void* acpTargetRTTI, uint32_t a4);
 extern const AutoPtr<TDynamicCast> DynamicCast;
 
@@ -3244,5 +3242,3 @@ extern AutoPtr<const void> RTTI_BSSocketServer;
 extern AutoPtr<const void> RTTI_BSLines;
 extern AutoPtr<const void> RTTI_BSDynamicLines;
 extern AutoPtr<const void> RTTI_BSParabolicCullingProcess;
-
-#endif

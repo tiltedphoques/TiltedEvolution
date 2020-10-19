@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT
-
 struct BSString
 {
     BSString() : data{ nullptr }, length{ 0 }, capacity{ 0 } { }
@@ -14,5 +12,3 @@ private:
     uint16_t length;
     uint16_t capacity;
 };
-
-#endif

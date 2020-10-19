@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 #include <Games/Primitives.h>
 
 struct TESObjectREFR;
@@ -28,6 +26,3 @@ struct TESObjectCELL : TESForm
 static_assert(offsetof(TESObjectCELL, cellFlags) == 0x40);
 static_assert(offsetof(TESObjectCELL, objects) == 0x70);
 static_assert(offsetof(TESObjectCELL, worldspace) == 0xC8);
-
-
-#endif

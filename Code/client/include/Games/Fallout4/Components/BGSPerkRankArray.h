@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct TESForm;
 
@@ -14,5 +12,3 @@ struct BGSPerkRankArray : BaseFormComponent
     uint32_t count; // 10
     uint32_t pad;
 };
-
-#endif

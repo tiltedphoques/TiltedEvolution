@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 struct BGSCharacterTint
 {
     struct Entry
@@ -19,5 +17,3 @@ struct BGSCharacterTint
         uint8_t unk12; // 12 - set to 0 in ctor
     };
 };
-
-#endif

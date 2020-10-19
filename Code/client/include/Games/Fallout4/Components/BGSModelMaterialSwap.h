@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/TESModel.h>
+#include <Components/TESModel.h>
 
 struct BGSModelMaterialSwap : TESModel
 {
@@ -13,5 +11,3 @@ struct BGSModelMaterialSwap : TESModel
 
 static_assert(sizeof(BGSModelMaterialSwap) == 0x20);
 
-
-#endif

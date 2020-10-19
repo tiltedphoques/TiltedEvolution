@@ -1,10 +1,8 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESBoundAnimObject.h>
-#include <Games/Fallout4/Components/BGSModelMaterialSwap.h>
-#include <Games/Fallout4/Components/TESLeveledList.h>
+#include <Forms/TESBoundAnimObject.h>
+#include <Components/BGSModelMaterialSwap.h>
+#include <Components/TESLeveledList.h>
 
 struct TESLevCharacter : TESBoundAnimObject
 {
@@ -16,5 +14,3 @@ struct TESLevCharacter : TESBoundAnimObject
 static_assert(offsetof(TESLevCharacter, leveledList) == 0x68);
 static_assert(offsetof(TESLevCharacter, modelTextureSwap) == 0x98);
 static_assert(sizeof(TESLevCharacter) == 0xD8);
-
-#endif

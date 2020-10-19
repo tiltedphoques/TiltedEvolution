@@ -1,16 +1,14 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/TESObjectREFR.h>
-#include <Games/Fallout4/Misc/MagicTarget.h>
-#include <Games/Fallout4/Misc/ActorState.h>
-#include <Games/Fallout4/Forms/TESForm.h>
+#include <TESObjectREFR.h>
+#include <Misc/MagicTarget.h>
+#include <Misc/ActorState.h>
+#include <Forms/TESForm.h>
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
 
 #include <Games/Events.h>
-#include <Games/Fallout4/Events.h>
+#include <Events.h>
 
 struct ExActor;
 struct ExPlayerCharacter;
@@ -80,5 +78,3 @@ struct Actor : TESObjectREFR
 
 static_assert(sizeof(Actor) == 0x490);
 static_assert(offsetof(Actor, magicItems) == 0x3E8);
-
-#endif

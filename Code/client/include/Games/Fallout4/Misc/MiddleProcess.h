@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 struct bhkCharRigidBodyController;
 
 struct MiddleProcess
@@ -14,5 +12,3 @@ struct MiddleProcess
 
 static_assert(offsetof(MiddleProcess, direction) == 0xC0);
 static_assert(offsetof(MiddleProcess, rigidBodyController) == 0x3D0);
-
-#endif

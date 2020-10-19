@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 #include <Games/Primitives.h>
 
 struct BSFixedString
@@ -73,5 +71,3 @@ struct BSFixedString
 
     Data* data;
 };
-
-#endif

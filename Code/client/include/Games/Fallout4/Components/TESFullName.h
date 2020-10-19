@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Components/BaseFormComponent.h>
+#include <Misc/BSFixedString.h>
 
 struct TESFullName : BaseFormComponent
 {
@@ -14,5 +12,3 @@ struct TESFullName : BaseFormComponent
 
     BSFixedString value;
 };
-
-#endif

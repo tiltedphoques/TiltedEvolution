@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 #include <Games/ExtraData.h>
-#include <Games/Fallout4/Forms/TESForm.h>
+#include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
 struct NiNode;
@@ -190,5 +188,3 @@ static_assert(offsetof(TESObjectREFR, rotation) == 0xC0);
 static_assert(offsetof(TESObjectREFR, parentCell) == 0xB8);
 static_assert(offsetof(TESObjectREFR, extraData) == 0x100);
 static_assert(sizeof(TESObjectREFR) == 0x110);
-
-#endif

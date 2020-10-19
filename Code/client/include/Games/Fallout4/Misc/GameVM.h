@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/Fallout4/Misc/BSScript.h>
+#include <Misc/BSScript.h>
 
 struct GameVM
 {

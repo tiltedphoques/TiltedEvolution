@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 #pragma pack(push, 1)
 
 struct BGSSaveLoadManager
@@ -67,5 +65,3 @@ struct BGSLoadFormBuffer
 static_assert(offsetof(BGSLoadFormBuffer, changeFlags) == 0x40);
 
 #pragma pack(pop)
-
-#endif

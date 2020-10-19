@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 struct BSMovementDataChangedEvent
 {
 
@@ -31,5 +29,3 @@ struct bhkCharacterStateChangeEvent
 {
 
 };
-
-#endif

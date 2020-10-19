@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct TESRace;
 
@@ -13,4 +11,3 @@ struct TESRaceForm : BaseFormComponent
     TESRace* race;
 };
 
-#endif

@@ -1,9 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Skyrim/Havok/hkbCharacter.h>
-
 struct BShkbHkxDB;
 struct hkbBehaviorGraph;
 
@@ -16,6 +12,3 @@ struct BShkbAnimationGraph
     BShkbHkxDB* hkxDB; // 370
     hkbBehaviorGraph* behaviorGraph; // 378
 };
-
-
-#endif

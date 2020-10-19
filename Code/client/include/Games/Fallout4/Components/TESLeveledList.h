@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct TESForm;
 
@@ -38,5 +36,3 @@ static_assert(offsetof(TESLeveledList, content) == 0x18);
 static_assert(offsetof(TESLeveledList, count) == 0x29);
 static_assert(offsetof(TESLeveledList, hasData) == 0x28);
 static_assert(sizeof(TESLeveledList) == 0x30);
-
-#endif

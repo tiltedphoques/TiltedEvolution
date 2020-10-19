@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct TESForm;
 
@@ -20,5 +18,3 @@ struct TESContainer : BaseFormComponent
 };
 
 static_assert(sizeof(TESContainer) == 0x18);
-
-#endif

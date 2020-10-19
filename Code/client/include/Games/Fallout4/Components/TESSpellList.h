@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct TESForm;
 struct TESSpellList : BaseFormComponent
@@ -23,5 +21,3 @@ struct TESSpellList : BaseFormComponent
 };
 
 static_assert(sizeof(TESSpellList) == 0x10);
-
-#endif

@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 #pragma pack(push, 1) // This structure is packed in havok 
 
@@ -27,5 +25,3 @@ static_assert(offsetof(hkHashTable, end) == 0xC);
 static_assert(offsetof(hkHashTable, buckets) == 0x1C);
 
 #pragma pack(pop)
-
-#endif

@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct BGSOverridePackCollection : BaseFormComponent
 {
@@ -11,4 +9,3 @@ struct BGSOverridePackCollection : BaseFormComponent
     void* packs[5];
 };
 
-#endif

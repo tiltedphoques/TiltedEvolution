@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Components/BaseFormComponent.h>
+#include <Components/BaseFormComponent.h>
 
 struct TESModel : BaseFormComponent
 {
@@ -11,5 +9,3 @@ struct TESModel : BaseFormComponent
     // unkown size
 };
 
-
-#endif

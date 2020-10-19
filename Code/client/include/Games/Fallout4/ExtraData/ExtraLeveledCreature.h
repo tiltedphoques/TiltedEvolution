@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 #include <Games/ExtraData.h>
 
 struct TESNPC;
@@ -15,5 +13,3 @@ struct ExtraLeveledCreature : BSExtraData
 
 static_assert(sizeof(ExtraLeveledCreature) == 0x88);
 static_assert(offsetof(ExtraLeveledCreature, unk20) == 0x20);
-
-#endif

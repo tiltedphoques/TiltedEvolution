@@ -1,8 +1,6 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Misc/BSFixedString.h>
+#include <Misc/BSFixedString.h>
 
 struct NativeFunction
 {
@@ -18,5 +16,3 @@ struct NativeFunction
 static_assert(offsetof(NativeFunction, functionName) == 0x10);
 static_assert(offsetof(NativeFunction, typeName) == 0x18);
 static_assert(offsetof(NativeFunction, functionAddress) == 0x50);
-
-#endif

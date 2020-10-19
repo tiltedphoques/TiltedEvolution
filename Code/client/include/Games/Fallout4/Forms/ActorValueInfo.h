@@ -1,9 +1,7 @@
 #pragma once
 
-#if TP_FALLOUT4
-
-#include <Games/Fallout4/Forms/TESForm.h>
-#include <Games/Fallout4/Components/TESFullName.h>
+#include <Forms/TESForm.h>
+#include <Components/TESFullName.h>
 
 struct ActorValueInfo : TESForm
 {
@@ -12,5 +10,3 @@ struct ActorValueInfo : TESForm
     TESFullName name;
     // TESDescription
 };
-
-#endif

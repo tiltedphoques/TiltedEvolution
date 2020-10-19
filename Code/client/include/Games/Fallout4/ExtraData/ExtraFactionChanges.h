@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef TP_FALLOUT4
-
 #include <Games/ExtraData.h>
 
 struct TESFaction;
@@ -21,5 +19,3 @@ struct ExtraFactionChanges : BSExtraData
 
 static_assert(sizeof(ExtraFactionChanges::Entry) == 0x10);
 static_assert(offsetof(ExtraFactionChanges, entries) == 0x20);
-
-#endif

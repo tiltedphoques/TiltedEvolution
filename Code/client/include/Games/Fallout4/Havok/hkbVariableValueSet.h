@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT4
-
 template<class T>
 struct hkbVariableValueSet
 {
@@ -14,5 +12,3 @@ struct hkbVariableValueSet
 
 static_assert(offsetof(hkbVariableValueSet<int>, data) == 0x10);
 static_assert(offsetof(hkbVariableValueSet<int>, size) == 0x18);
-
-#endif

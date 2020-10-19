@@ -1,7 +1,5 @@
 #pragma once
 
-#if TP_FALLOUT
-
 struct BaseFormComponent
 {
     virtual ~BaseFormComponent();
@@ -13,5 +11,3 @@ struct BaseFormComponent
     virtual void sub_5();
     virtual void sub_6();
 };
-
-#endif
