@@ -31,10 +31,17 @@ steps:
       displayName: Test
 
     - task: CopyFiles@2
-      displayName: Copy dll
+      displayName: Copy skyrim dll
       inputs:
         sourceFolder: 'Build/bin/x64/'
-        contents: '$(buildPrefix)Together.dll'
+        contents: 'SkyrimTogether.dll'
+        targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@2
+      displayName: Copy fallout dll
+      inputs:
+        sourceFolder: 'Build/bin/x64/'
+        contents: 'FalloutTogether.dll'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
 
     - task: CopyFiles@2
@@ -61,9 +68,14 @@ steps:
     - task: PublishBuildArtifacts@1
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: $(configuration)_client
+        artifactName: $(configuration)_$(platform)_client
 
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: 'Build/bin/x64/$(buildPrefix)TogetherServer.exe'
-        artifactName: $(configuration)_server_windows
+        pathToPublish: 'Build/bin/x64/SkyrimTogetherServer.exe'
+        artifactName: skyrim_server_windows_$(configuration)_$(platform)
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'Build/bin/x64/FalloutTogetherServer.exe'
+        artifactName: fallout_server_windows_$(configuration)_$(platform)

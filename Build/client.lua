@@ -3,82 +3,78 @@ local coreBasePath = premake.extensions.core.path
 local connectBasePath = premake.extensions.connect.path
 local scriptBasePath = premake.extensions.script.path
 
-project ("Client")
-    kind ("SharedLib")
-    language ("C++")
-    
-    filter { "configurations:Skyrim" }
-        targetname ("SkyrimTogether")
+function generate_client(target, macro)
+    project (target)
+        kind ("SharedLib")
+        language ("C++")
 
-    filter { "configurations:Fallout4" }
-        targetname ("FalloutTogether")
+        defines { macro }
         
-    filter {}
-    
-    includedirs
-    {
-        "../Code/client/include/",
-        "../Code/script/include/",
-        "../Code/encoding/include/",
-        "../Code/common/include",
-        "../Libraries/entt/src/",
-        "../Libraries/",
-        coreBasePath .. "/Code/core/include/",
-        coreBasePath .. "/ThirdParty/mimalloc/include/",
-        "../Libraries/TiltedReverse/Code/reverse/include/",
-        "../Libraries/TiltedUI/Code/ui/include/",
-        "../Libraries/TiltedUI/ThirdParty/CEF/",
-        "../Libraries/TiltedHooks/Code/hooks/include/",
-        "../Libraries/TiltedReverse/ThirdParty/",
-        connectBasePath .. "/Code/connect/include/",
-        connectBasePath .. "/ThirdParty/GameNetworkingSockets/include/",
-        connectBasePath .. "/ThirdParty/protobuf/src/",
-        uiBasePath .. "/ThirdParty/imgui/",
-        scriptBasePath .. "/ThirdParty/lua/",
-        scriptBasePath .. "/Code/script/include/",
-        dsdkDir .. "/c"
-    }
+        includedirs
+        {
+            "../Code/client/include/",
+            "../Code/script/include/",
+            "../Code/encoding/include/",
+            "../Code/common/include",
+            "../Libraries/entt/src/",
+            "../Libraries/",
+            coreBasePath .. "/Code/core/include/",
+            coreBasePath .. "/ThirdParty/mimalloc/include/",
+            "../Libraries/TiltedReverse/Code/reverse/include/",
+            "../Libraries/TiltedUI/Code/ui/include/",
+            "../Libraries/TiltedUI/ThirdParty/CEF/",
+            "../Libraries/TiltedHooks/Code/hooks/include/",
+            "../Libraries/TiltedReverse/ThirdParty/",
+            connectBasePath .. "/Code/connect/include/",
+            connectBasePath .. "/ThirdParty/GameNetworkingSockets/include/",
+            connectBasePath .. "/ThirdParty/protobuf/src/",
+            uiBasePath .. "/ThirdParty/imgui/",
+            scriptBasePath .. "/ThirdParty/lua/",
+            scriptBasePath .. "/Code/script/include/",
+            dsdkDir .. "/c"
+        }
 
-    files
-    {
-        "../Code/client/include/**.h",
-        "../Code/client/src/**.cpp",
-        "../Libraries/spdlog/*.cpp"
-    }
-    
-    pchheader ("stdafx.h")
-    pchsource ("../Code/client/src/stdafx.cpp")
-    forceincludes
-    {
-        "stdafx.h"
-    }
-    
-    links
-    {
-        "Encoding",
-        "Common",
-        "Core",
-        "Reverse",
-        "Hooks",
-        "mhook",
-        "UI",
-        "disasm",
-        "Connect",
-        "SteamNet",
-        "Lua",
-        "mimalloc",
-        "Script",
-        "sqlite3",
-        "imgui",
-        "Version",
-        "snappy"
-    }
-
+        files
+        {
+            "../Code/client/include/**.h",
+            "../Code/client/src/**.cpp",
+            "../Libraries/spdlog/*.cpp",
+            "../Code/encoding/include/**.h",
+            "../Code/encoding/src/**.cpp",
+        }
+        
+        pchheader ("stdafx.h")
+        pchsource ("../Code/client/src/stdafx.cpp")
+        forceincludes
+        {
+            "stdafx.h"
+        }
+        
+        links
+        {
+            "Common",
+            "Core",
+            "Reverse",
+            "Hooks",
+            "mhook",
+            "UI",
+            "disasm",
+            "Connect",
+            "SteamNet",
+            "Lua",
+            "mimalloc",
+            "Script",
+            "sqlite3",
+            "imgui",
+            "Version",
+            "snappy"
+        }
+end
 
 project ("tp_process")
     kind ("WindowedApp")
     language ("C++")
-    
+
     includedirs
     {
         "../Code/tests/include/",
@@ -93,9 +89,12 @@ project ("tp_process")
         "../Code/tp_process/include/**.h",
         "../Code/tp_process/src/**.cpp",
     }
-    
+
     links
     {
         "Core",
         "UIProcess"
     }
+
+generate_client("FalloutTogether", "TP_FALLOUT=1")
+generate_client("SkyrimTogether", "TP_SKYRIM=1")

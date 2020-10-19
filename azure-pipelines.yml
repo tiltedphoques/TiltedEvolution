@@ -1,52 +1,48 @@
 jobs:
-  - job: Fallout4
-    displayName: Fallout4
+  - job: Windows Debug
+    displayName: Windows - Debug x64
     pool:
       vmImage: windows-2019
 
     variables:
       platform: x64
-      configuration: Fallout4
-      buildPrefix: Fallout
+      configuration: Debug
 
     steps:
       - template: .ci/windows-build.yml
 
-  - job: SkyrimSE
-    displayName: Skyrim Special Edition
+  - job: Windows Release
+    displayName: Windows - Release x64
     pool:
       vmImage: windows-2019
-
+  
     variables:
       platform: x64
-      configuration: Skyrim
-      buildPrefix: Skyrim
-
+      configuration: Release
+  
     steps:
       - template: .ci/windows-build.yml
 
-  - job: Fallout4_Linux
-    displayName: Fallout 4 - Linux Server x64
+  - job: Linux Debug
+    displayName: Linux - Debug x64
     pool:
       vmImage: ubuntu-latest
   
     variables:
       platform: x64
-      configuration: fallout4
-      buildPrefix: Fallout
+      configuration: debug
   
     steps:
       - template: .ci/linux-build.yml
 
-  - job: SkyrimSE_Linux
-    displayName: Skyrim Special Edition - Linux Server x64
+ - job: Linux Debug
+    displayName: Linux - Release x64
     pool:
       vmImage: ubuntu-latest
-  
+    
     variables:
       platform: x64
-      configuration: skyrim
-      buildPrefix: Skyrim
-  
+      configuration: release
+    
     steps:
       - template: .ci/linux-build.yml

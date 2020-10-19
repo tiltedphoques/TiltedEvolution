@@ -21,7 +21,7 @@ workspace ("Tilted Online Framework")
     ------------------------------------------------------------------
     -- setup common settings
     ------------------------------------------------------------------
-    configurations { "Skyrim", "Fallout4" }
+    configurations { "Debug", "Release" }
 
     location ("projects")
     startproject ("Tests")
@@ -53,12 +53,12 @@ workspace ("Tilted Online Framework")
         buildoptions { "-g -fpermissive" }
         linkoptions ("-lm -lpthread -pthread -Wl,--no-as-needed -lrt -g -fPIC")
 
-    filter { "configurations:Skyrim" }
-        defines { "NDEBUG", "PUBLIC_BUILD", "TP_SKYRIM" }
-        optimize ("On")
+    filter { "configurations:Debug" }
+        defines { "DEBUG" }
+        symbols ("On")
         
-    filter { "configurations:Fallout4" }
-        defines { "NDEBUG", "PUBLIC_BUILD", "TP_FALLOUT" }
+    filter { "configurations:Release" }
+        defines { "NDEBUG", "PUBLIC_BUILD" }
         optimize ("On")
 
     filter { "architecture:*64" }

@@ -39,5 +39,10 @@ steps:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: 'Build/bin/x64/$(buildPrefix)TogetherServer'
-      artifactName: $(configuration)_server_linux
+      pathToPublish: 'Build/bin/x64/SkyrimTogetherServer'
+      artifactName: skyrim_server_linux
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: 'Build/bin/x64/FalloutTogetherServer'
+      artifactName: fallout_server_linux_$(configuration)_$(platform)
