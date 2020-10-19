@@ -84,5 +84,5 @@ function generate_server(target, macro)
         filter ""
 end
 
-generate_server("SkyrimTogetherServer", "TP_SKYRIM")
-generate_server("FalloutTogetherServer", "TP_FALLOUT4")
+generate_server("SkyrimTogetherServer", "TP_SKYRIM=1")
+generate_server("FalloutTogetherServer", "TP_FALLOUT=1")
