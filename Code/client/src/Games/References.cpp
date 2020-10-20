@@ -242,7 +242,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPositi
                      const Vector3<float>&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409AE5C0 - 0x140000000);
-    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x141400900 - 0x140000000);
+    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
 
     ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
 }

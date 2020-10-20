@@ -22,7 +22,7 @@ void ServerReferencesMoveRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& 
 
     for (auto i = 0u; i < count; ++i)
     {
-        auto serverId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-        Updates[serverId].Deserialize(aReader);
+        const uint32_t cServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+        Updates[cServerId].Deserialize(aReader);
     }
 }
