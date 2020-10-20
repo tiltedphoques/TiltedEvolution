@@ -45,6 +45,7 @@ Code/protocol/cpp/*.cc
 Code/skyrimtogether/include/buildver.h
 
 Libraries/discord_game_sdk
+Libraries/DXSDK
 
 *__pycache__*
 Artifacts/Server

@@ -31,7 +31,7 @@ function generate_client(target, macro)
             uiBasePath .. "/ThirdParty/imgui/",
             scriptBasePath .. "/ThirdParty/lua/",
             scriptBasePath .. "/Code/script/include/",
-            dsdkDir .. "/c"
+            premake.extensions.discord_dir .. "/c"
         }
 
         files
