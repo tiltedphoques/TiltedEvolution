@@ -108,7 +108,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_A4();
     virtual void sub_A5();
     virtual void sub_A6();
-    virtual void sub_A7();
+    virtual void sub_A7(void*);
     virtual void sub_A8();
     virtual void sub_A9();
     virtual void SetBaseForm(TESForm* apBaseForm);
@@ -186,5 +186,6 @@ static_assert(offsetof(TESObjectREFR, baseForm) == 0xE0);
 static_assert(offsetof(TESObjectREFR, position) == 0xD0);
 static_assert(offsetof(TESObjectREFR, rotation) == 0xC0);
 static_assert(offsetof(TESObjectREFR, parentCell) == 0xB8);
+static_assert(offsetof(TESObjectREFR, inventory) == 0xF8);
 static_assert(offsetof(TESObjectREFR, extraData) == 0x100);
 static_assert(sizeof(TESObjectREFR) == 0x110);

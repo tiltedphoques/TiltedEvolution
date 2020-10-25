@@ -191,7 +191,7 @@ uint32_t TESObjectREFR::GetCellId() const noexcept
 
 TESWorldSpace* TESObjectREFR::GetWorldSpace() const noexcept
 {
-    auto pParentCell = parentCell ? parentCell : GetParentCell();
+    auto* pParentCell = parentCell ? parentCell : GetParentCell();
     if (pParentCell && !(pParentCell->cellFlags[0] & 1))
         return pParentCell->worldspace;
 
@@ -461,8 +461,8 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
 {
     // Don't process AI if we own the actor
 
-    if (apThis->GetExtension()->IsRemote())
-        return 0;
+    //if (apThis->GetExtension()->IsRemote())
+    //    return 0;
 
     return ThisCall(RealActorProcess, apThis, a2);
 }

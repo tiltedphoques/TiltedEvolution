@@ -53,14 +53,14 @@ Inventory Actor::GetInventory() const noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
 
-    Inventory InvetorySave;
-    InvetorySave.Buffer = SerializeInventory();
+    Inventory InventorySave;
+    InventorySave.Buffer = SerializeInventory();
 
-    auto pMainHandWeapon = GetEquippedWeapon(0);
-    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, InvetorySave.RightHandWeapon);
+    auto* pMainHandWeapon = GetEquippedWeapon(0);
+    const uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
+    modSystem.GetServerModId(mainId, InventorySave.RightHandWeapon);
 
-    return InvetorySave;
+    return InventorySave;
 }
 
 Factions Actor::GetFactions() const noexcept
@@ -85,7 +85,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto pFactionExtras = RTTI_CAST(extraData->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto* pFactionExtras = RTTI_CAST(extraData->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
     if (pFactionExtras)
     {
         for (auto i = 0; i < pFactionExtras->entries.length; ++i)
@@ -104,6 +104,8 @@ Factions Actor::GetFactions() const noexcept
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
+    spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
+
     UnEquipAll();
 
     if(!acInventory.Buffer.empty())
@@ -116,20 +118,20 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     auto& modSystem = World::Get().GetModSystem();
 
-    for (auto& entry : acFactions.NpcFactions)
+    for (const auto& entry : acFactions.NpcFactions)
     {
-        auto pForm = GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto* pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto* pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
         }
     }
 
-    for (auto& entry : acFactions.ExtraFactions)
+    for (const auto& entry : acFactions.ExtraFactions)
     {
-        auto pForm = GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto* pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto* pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);

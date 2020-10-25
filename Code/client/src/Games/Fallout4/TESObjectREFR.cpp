@@ -15,6 +15,9 @@ void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
 
     POINTER_FALLOUT4(TLoadFunc, s_load, 0x1401ACC00 - 0x140000000);
 
+    sub_A8();
+    sub_A7(nullptr);
+
     ThisCall(s_load, inventory, apBuffer);
 }
 
