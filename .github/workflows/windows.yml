@@ -1,0 +1,161 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-release:
+    name: Build Windows Release
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+  
+    - name: Generate solution
+      run: |
+        cd Build
+        ./MakeVS2019Projects.bat
+
+    - name: Build Solution (windows)
+      run: |
+        cd Build/projects
+        MSBuild.exe "Tilted Online Framework.sln" -m -property:Configuration=Release
+        
+    - name: Upload Skyrim Artifacts
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: skyrim-artifacts
+        path: |
+          Build/bin/x64/tp_process.exe
+          Build/bin/x64/Loader.exe
+          Build/bin/x64/Proxy.dll
+          Build/bin/x64/SkyrimTogether.dll
+          Build/bin/x64/SkyrimTogetherServer.exe
+
+    - name: Upload Fallout4 Artifacts
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: fallout4-artifacts
+        path: |
+          Build/bin/x64/tp_process.exe
+          Build/bin/x64/Loader.exe
+          Build/bin/x64/Proxy.dll
+          Build/bin/x64/FalloutTogether.dll
+          Build/bin/x64/FalloutTogetherServer.exe
+  
+  build-debug:
+    name: Build Windows Debug
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+  
+    - name: Generate solution
+      run: |
+        cd Build
+        ./MakeVS2019Projects.bat
+
+    - name: Build Solution (windows)
+      run: |
+        cd Build/projects
+        MSBuild.exe "Tilted Online Framework.sln" -m -property:Configuration=Debug
+        
+  build-linux-release:
+    name: Build Linux Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Install
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install g++-10 g++-10-multilib
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 100
+        sudo update-alternatives --set cc /usr/bin/gcc
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 100
+        sudo update-alternatives --set c++ /usr/bin/g++
+
+    - name: Generate solution
+      run: |
+        cd Build
+        chmod +x ./premake5
+        chmod +x ./MakeGMakeProjects.sh
+        ./MakeGMakeProjects.sh
+        
+    - name: Build Solution
+      run: |
+        cd Build/projects
+        make config=release_x64 -j`nproc`
+    
+    - name: Test
+      run: |
+        cd Build/bin/x64
+        ./Tests
+        
+    - name: Upload Skyrim Server Artifacts
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: skyrim-server-artifacts
+        path: |
+          Build/bin/x64/SkyrimTogetherServer
+          
+    - name: Upload Skyrim Server Artifacts
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: fallout-server-artifacts
+        path: |
+          Build/bin/x64/FalloutTogetherServer
+  
+  build-linux-debug:
+    name: Build Linux Debug
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Install
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install g++-10 g++-10-multilib
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 100
+        sudo update-alternatives --set cc /usr/bin/gcc
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 100
+        sudo update-alternatives --set c++ /usr/bin/g++
+
+    - name: Generate solution
+      run: |
+        cd Build
+        chmod +x ./premake5
+        chmod +x ./MakeGMakeProjects.sh
+        ./MakeGMakeProjects.sh
+        
+    - name: Build Solution
+      run: |
+        cd Build/projects
+        make config=debug_x64 -j`nproc`
+    
+    - name: Test
+      run: |
+        cd Build/bin/x64
+        ./Tests
+
