@@ -526,6 +526,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     auto* const pExtension = pActor->GetExtension();
 
     message.LatestAction = pExtension->LatestAnimation;
+    //pActor->SaveAnimationVariables(message.LatestAction.Variables);
 
     spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, aEntity);
 

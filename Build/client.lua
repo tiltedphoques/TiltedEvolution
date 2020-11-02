@@ -48,6 +48,8 @@ function generate_client(target, macro)
             { 
                 "../Code/client/src/Games/Skyrim/**.cpp",
                 "../Code/client/include/Games/Skyrim/**.h",
+                "../Code/encoding/include/Structs/Skyrim/**.h",
+                "../Code/encoding/src/Structs/Skyrim/**.cpp",
             }
 
             includedirs
@@ -59,6 +61,8 @@ function generate_client(target, macro)
             { 
                 "../Code/client/src/Games/Fallout4/**.cpp",
                 "../Code/client/include/Games/Fallout4/**.h",
+                "../Code/encoding/include/Structs/Fallout4/**.h",
+                "../Code/encoding/src/Structs/Fallout4/**.cpp",
             }
 
             includedirs

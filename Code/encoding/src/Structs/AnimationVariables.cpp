@@ -28,9 +28,7 @@ void AnimationVariables::Save(std::ostream& aOutput) const
     aOutput.write(reinterpret_cast<const char*>(Floats.data()), Floats.size() * sizeof(float));
 }
 
-static constexpr uint32_t s_diffBitCount = 1 + AnimationData::kIntegerCount + AnimationData::kFloatCount;
-
-void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const
 {
     uint32_t changes = 0;
     uint32_t idx = 0;
@@ -41,30 +39,43 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     }
     ++idx;
 
+    auto integers = aPrevious.Integers;
+    if (integers.empty())
+        integers.assign(Integers.size(), 0);
+
     for (auto i = 0u; i < Integers.size(); ++i)
     {
-        if (Integers[i] != aPrevious.Integers[i])
+        if (Integers[i] != integers[i])
         {
             changes |= (1ull << idx);
         }
         ++idx;
     }
+
+    auto floats = aPrevious.Floats;
+    if (floats.empty())
+        floats.assign(Floats.size(), 0.f);
 
     for (auto i = 0u; i < Floats.size(); ++i)
     {
-        if (Floats[i] != aPrevious.Floats[i])
+        if (Floats[i] != floats[i])
         {
             changes |= (1ull << idx);
         }
         ++idx;
     }
 
-    aWriter.WriteBits(changes, s_diffBitCount);
+    TiltedPhoques::Serialization::WriteVarInt(aWriter, Integers.size());
+    TiltedPhoques::Serialization::WriteVarInt(aWriter, Floats.size());
+
+    const auto cDiffBitCount = 1 + Integers.size() + Floats.size();
+
+    aWriter.WriteBits(changes, cDiffBitCount);
 
     idx = 0;
     if (changes & (1ull << idx))
     {
-        aWriter.WriteBits(Booleans, AnimationData::kBooleanCount);
+        aWriter.WriteBits(Booleans, 64);
     }
     ++idx;
 
@@ -77,6 +88,7 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
         ++idx;
     }
 
+    
     for (const auto value : Floats)
     {
         if (changes & (1ull << idx))
@@ -87,16 +99,36 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     }
 }
 
-void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader)
 {
+    const auto cIntegersSize = TiltedPhoques::Serialization::ReadVarInt(aReader);
+    if (cIntegersSize > 0xFF)
+        throw std::runtime_error("Too many integers received !");
+
+    if (Integers.size() != cIntegersSize)
+    {
+        Integers.assign(cIntegersSize, 0);
+    }
+
+    const auto cFloatsSize = TiltedPhoques::Serialization::ReadVarInt(aReader);
+    if (cFloatsSize > 0xFF)
+        throw std::runtime_error("Too many floats received !");
+
+    if (Floats.size() != cFloatsSize)
+    {
+        Floats.assign(cFloatsSize, 0.f);
+    }
+
+    const auto cDiffBitCount = 1 + Integers.size() + Floats.size();
+
     uint64_t changes = 0;
     uint32_t idx = 0;
 
-    aReader.ReadBits(changes, s_diffBitCount);
+    aReader.ReadBits(changes, cDiffBitCount);
 
     if (changes & (1ull << idx))
     {
-        aReader.ReadBits(Booleans, AnimationData::kBooleanCount);
+        aReader.ReadBits(Booleans, 64);
     }
     ++idx;
 
@@ -110,7 +142,7 @@ void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader) noexc
         }
         ++idx;
     }
-
+   
     for (auto& value : Floats)
     {
         if (changes & (1ull << idx))

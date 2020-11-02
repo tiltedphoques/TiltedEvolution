@@ -47,6 +47,7 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     apActor->ForcePosition(position);
     apActor->LoadAnimationVariables(second.Variables);
+
     if (apActor->processManager && apActor->processManager->middleProcess)
     {
         apActor->processManager->middleProcess->direction = second.Direction;

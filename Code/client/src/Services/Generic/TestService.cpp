@@ -42,19 +42,12 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
 
 void TestService::RunDiff()
 {
-    if (m_actors.empty())
-        return;
-
-    auto pActor = m_actors[0];
-    if(pActor)
+    BSAnimationGraphManager* pManager = nullptr;
+    if (PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager))
     {
-        BSAnimationGraphManager* pManager = nullptr;
-        if (pActor->animationGraphHolder.GetBSAnimationGraph(&pManager))
-        {
-            pManager->DumpAnimationVariables();
+        pManager->DumpAnimationVariables();
 
-            pManager->Release();
-        }
+        pManager->Release();
     }
 }
 
@@ -83,11 +76,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            auto* pActor = RTTI_CAST(TESForm::GetById(0x0001F306), TESForm, Actor); // Adara (Female) (Child)
-            if (pActor)
-            {
-                pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
-            }
+            RunDiff();
 
         }
     }
