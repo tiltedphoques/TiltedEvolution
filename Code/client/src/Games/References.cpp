@@ -495,8 +495,8 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
 {
     // Don't process AI if we own the actor
 
-    //if (apThis->GetExtension()->IsRemote())
-    //    return 0;
+    if (apThis->GetExtension()->IsRemote())
+        return 0;
 
     return ThisCall(RealActorProcess, apThis, a2);
 }
