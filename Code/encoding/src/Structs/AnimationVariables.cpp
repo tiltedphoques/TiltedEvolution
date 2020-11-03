@@ -30,7 +30,7 @@ void AnimationVariables::Save(std::ostream& aOutput) const
 
 void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const
 {
-    uint32_t changes = 0;
+    uint64_t changes = 0;
     uint32_t idx = 0;
 
     if(Booleans != aPrevious.Booleans)
@@ -88,7 +88,6 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
         ++idx;
     }
 
-    
     for (const auto value : Floats)
     {
         if (changes & (1ull << idx))
@@ -140,7 +139,8 @@ void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader)
         }
         ++idx;
     }
-   
+
+
     for (auto& value : Floats)
     {
         if (changes & (1ull << idx))

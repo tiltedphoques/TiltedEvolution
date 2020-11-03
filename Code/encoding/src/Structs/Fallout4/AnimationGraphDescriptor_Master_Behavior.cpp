@@ -306,7 +306,7 @@ enum Variables
 static AnimationGraphDescriptorManager::Builder s_builder("RootBehavior", AnimationGraphDescriptor(
     {km_bEnablePitchTwistModifier, kIsSprinting, kisFiring, kisReloading, kIsAttackReady, kisAttackNotReady,
     kiIsInSneak, kisJumping, kbEquipOk, kbInJumpState, kIsStaggering, kIsSneaking, kisMirrored, kbNotHeadTrack,
-    kbCCSupport, kbCCOnStairs, /*kbGraphDriven, kbGraphDrivenTranslation, kbGraphDrivenRotation,*/
+    kbCCSupport, kbCCOnStairs, kbGraphDriven, kbGraphDrivenTranslation, kbGraphDrivenRotation,
     kbGraphWantsFootIK, kbIsFemale, kbIsThrowing, kEnable_bEquipOK, kIsBlocking, kbUseRifleReadyDirectAt,
     kbEquipOkIsActiveEnabled, kbIsSneaking, kbAimEnabled, kbForceIdleStop, kbActorMobilityNotFullyCrippled, kbSyncDirection,
     kbDisableAttackReady,kbAllowHeadTracking,kbInLandingState, kbIsInFlavor, kbAimActive, kbAllowRotation, kbUseLeftHandIKDefaults,

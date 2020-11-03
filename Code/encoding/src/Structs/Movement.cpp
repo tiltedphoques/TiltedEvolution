@@ -6,7 +6,9 @@ using TiltedPhoques::Serialization;
 bool Movement::operator==(const Movement& acRhs) const noexcept
 {
     return Position == acRhs.Position &&
-        Rotation == acRhs.Rotation;
+        Rotation == acRhs.Rotation &&
+        Variables == acRhs.Variables &&
+        Direction == acRhs.Direction;
 }
 
 bool Movement::operator!=(const Movement& acRhs) const noexcept

@@ -133,7 +133,17 @@ void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const
 
 void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept
 {
-    //m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
+    auto remoteView = m_world.view<FormIdComponent, RemoteComponent>();
+    for (auto entity : remoteView)
+    {
+        auto& formIdComponent = remoteView.get<FormIdComponent>(entity);
+
+        auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        if (pActor)
+            pActor->GetExtension()->SetRemote(false);
+    }
+
+    m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
 }
 
 void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) const noexcept
@@ -260,6 +270,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
+    pActor->LoadAnimationVariables(acMessage.LatestAction.Variables);
 
     spdlog::info("Inventory content : {:X}", acMessage.InventoryContent.Buffer.size());
 

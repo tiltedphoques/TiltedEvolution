@@ -11,7 +11,6 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 {
     auto& movements = aInterpolationComponent.TimePoints;
 
-
     if (movements.size() < 2)
         return;
 

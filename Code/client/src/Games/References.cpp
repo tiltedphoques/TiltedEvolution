@@ -167,7 +167,6 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 }
             }
 
-
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
