@@ -1,16 +1,16 @@
 #pragma once
 
 #include <cstdint>
-#include <istream>
-#include <ostream>
 #include "Buffer.hpp"
-#include "AnimationData.h"
+#include "Stl.hpp"
+
+using TiltedPhoques::Vector;
 
 struct AnimationVariables
 {
     uint64_t Booleans{ 0 };
-    std::array<uint32_t, AnimationData::kIntegerCount> Integers{};
-    std::array<float, AnimationData::kFloatCount> Floats{};
+    Vector<uint32_t> Integers{};
+    Vector<float> Floats{};
 
     bool operator==(const AnimationVariables& acRhs) const noexcept;
     bool operator!=(const AnimationVariables& acRhs) const noexcept;
@@ -18,6 +18,6 @@ struct AnimationVariables
     void Load(std::istream&);
     void Save(std::ostream&) const;
 
-    void GenerateDiff(const AnimationVariables& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
-    void ApplyDiff(TiltedPhoques::Buffer::Reader& aReader) noexcept;
+    void GenerateDiff(const AnimationVariables& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const;
+    void ApplyDiff(TiltedPhoques::Buffer::Reader& aReader);
 };

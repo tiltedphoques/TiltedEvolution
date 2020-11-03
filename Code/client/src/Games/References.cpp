@@ -13,8 +13,9 @@
 #include <Havok/BShkbAnimationGraph.h>
 #include <Havok/hkbBehaviorGraph.h>
 #include <Havok/hkbVariableValueSet.h>
+#include <Havok/hkbStateMachine.h>
 
-#include <Structs/AnimationData.h>
+#include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/AnimationVariables.h>
 
 #include <Games/TES.h>
@@ -69,37 +70,53 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
     BSAnimationGraphManager* pManager = nullptr;
     if (animationGraphHolder.GetBSAnimationGraph(&pManager))
     {
+        BSScopedLock<BSRecursiveLock> _{pManager->lock};
+
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
-            const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-            if (pGraph)
+            const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+
+            if (!pGraph)
+                return;
+        
+            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine ||
+                !pGraph->behaviorGraph->stateMachine->name)
+                return;
+
+            const auto* pDescriptor =
+                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+
+            if (!pDescriptor)
+                return;
+
+            const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
+
+            if (!pVariableSet)
+                return;
+            
+            aVariables.Booleans = 0;
+
+            aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
+            aVariables.Integers.resize(pDescriptor->IntegerLookupTable.size());
+
+            for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
-                const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
+                const auto idx = pDescriptor->BooleanLookUpTable[i];
 
-                if (pVariableSet && pVariableSet->size > 255)
-                {
-                    aVariables.Booleans = 0;
+                if (pVariableSet->data[idx] != 0)
+                    aVariables.Booleans |= (1ull << i);
+            }
 
-                    for (size_t i = 0; i < AnimationData::s_booleanLookUpTable.size(); ++i)
-                    {
-                        const auto idx = AnimationData::s_booleanLookUpTable[i];
+            for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
+            {
+                const auto idx = pDescriptor->FloatLookupTable[i];
+                aVariables.Floats[i] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
+            }
 
-                        if (pVariableSet->size > idx && pVariableSet->data[idx] != 0)
-                            aVariables.Booleans |= (1ull << i);
-                    }
-
-                    for (size_t i = 0; i < AnimationData::kFloatCount; ++i)
-                    {
-                        const auto idx = AnimationData::s_floatLookupTable[i];
-                        aVariables.Floats[i] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
-                    }
-
-                    for (size_t i = 0; i < AnimationData::kIntegerCount; ++i)
-                    {
-                        const auto idx = AnimationData::s_integerLookupTable[i];
-                        aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
-                    }
-                }
+            for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
+            {
+                const auto idx = pDescriptor->IntegerLookupTable[i];
+                aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
             }
         }
 
@@ -109,41 +126,57 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
 void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables) const noexcept
 {
-
     BSAnimationGraphManager* pManager = nullptr;
     if (animationGraphHolder.GetBSAnimationGraph(&pManager))
     {
+        BSScopedLock<BSRecursiveLock> _{pManager->lock};
+
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
-            const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-            if (pGraph)
+            const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+
+            if (!pGraph)
+                return;
+            
+            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine ||
+                !pGraph->behaviorGraph->stateMachine->name)
+                return;
+
+            const auto* pDescriptor =
+                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+
+            if (!pDescriptor)
             {
-                const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
+                if ((formID & 0xFF000000) == 0xFF000000)
+                    spdlog::info("Form id {} has {}", formID, pGraph->behaviorGraph->stateMachine->name);
+                return;
+            }
 
-                if (pVariableSet && pVariableSet->size >= 298)
+            const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
+            
+            if (!pVariableSet)
+                return;
+            
+            for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
+            {
+                const auto idx = pDescriptor->BooleanLookUpTable[i];
+
+                if (pVariableSet->size > idx)
                 {
-                    for (size_t i = 0; i < AnimationData::s_booleanLookUpTable.size(); ++i)
-                    {
-                        const auto idx = AnimationData::s_booleanLookUpTable[i];
-
-                        if (pVariableSet->size > idx)
-                        {
-                            pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
-                        }
-                    }
-
-                    for (size_t i = 0; i < AnimationData::kFloatCount; ++i)
-                    {
-                        const auto idx = AnimationData::s_floatLookupTable[i];
-                        *reinterpret_cast<float*>(&pVariableSet->data[idx]) = aVariables.Floats[i];
-                    }
-
-                    for (size_t i = 0; i < AnimationData::kIntegerCount; ++i)
-                    {
-                        const auto idx = AnimationData::s_integerLookupTable[i];
-                        *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers[i];
-                    }
+                    pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
                 }
+            }
+
+            for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
+            {
+                const auto idx = pDescriptor->FloatLookupTable[i];
+                *reinterpret_cast<float*>(&pVariableSet->data[idx]) = aVariables.Floats.size() > i ? aVariables.Floats[i] : 0.f;
+            }
+
+            for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
+            {
+                const auto idx = pDescriptor->IntegerLookupTable[i];
+                *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers.size() > i ? aVariables.Integers[i] : 0;
             }
         }
 
@@ -461,8 +494,8 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
 {
     // Don't process AI if we own the actor
 
-    //if (apThis->GetExtension()->IsRemote())
-    //    return 0;
+    if (apThis->GetExtension()->IsRemote())
+        return 0;
 
     return ThisCall(RealActorProcess, apThis, a2);
 }

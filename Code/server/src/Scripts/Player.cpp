@@ -54,11 +54,7 @@ namespace Script
     {
         auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
 
-#if TP_SKYRIM
-        return movementComponent.Variables.Floats[AnimationData::FloatVariables::kSpeed];
-#else
         return 0.f;
-#endif
     }
 
     bool Player::AddComponent(sol::object aObject) const

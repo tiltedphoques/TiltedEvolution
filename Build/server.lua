@@ -35,6 +35,20 @@ function generate_server(target, macro)
             "../Code/encoding/include/**.h",
             "../Code/encoding/src/**.cpp",
         }
+
+        if target == "FalloutTogetherServer" then
+            excludes 
+            { 
+                "../Code/encoding/include/Structs/Skyrim/**.h",
+                "../Code/encoding/src/Structs/Skyrim/**.cpp",
+            }
+        else
+            excludes 
+            { 
+                "../Code/encoding/include/Structs/Fallout4/**.h",
+                "../Code/encoding/src/Structs/Fallout4/**.cpp",
+            }
+        end
         
         pchheader ("stdafx.h")
         pchsource ("../Code/server/src/stdafx.cpp")

@@ -6,6 +6,7 @@ struct hkEventContext;
 struct hkEventType;
 struct hkbGenerator;
 struct hkbSymbolIdMap;
+struct hkbStateMachine;
 
 struct SomeData
 {
@@ -43,7 +44,9 @@ struct hkbBehaviorGraph
         int count;
     };
 
-    uint8_t pad8[0x98 - 0x8];
+    uint8_t pad8[0x80 - 0x8];
+    hkbStateMachine* stateMachine;
+    uint8_t pad88[0x98 - 0x88];
     Struct98* struct98;          // 98
     uint8_t padA0[0xB8 - 0xA0];
     hkbSymbolIdMap* symbolIdMap; // B8

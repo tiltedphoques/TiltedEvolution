@@ -11,7 +11,6 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 {
     auto& movements = aInterpolationComponent.TimePoints;
 
-
     if (movements.size() < 2)
         return;
 
@@ -47,6 +46,7 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     apActor->ForcePosition(position);
     apActor->LoadAnimationVariables(second.Variables);
+
     if (apActor->processManager && apActor->processManager->middleProcess)
     {
         apActor->processManager->middleProcess->direction = second.Direction;

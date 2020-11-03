@@ -1,4 +1,6 @@
 #include "catch.hpp"
+#include "Messages/ClientReferencesMoveRequest.h"
+
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/AuthenticationResponse.h>
@@ -261,6 +263,57 @@ TEST_CASE("Differential structures", "[encoding.differential]")
 
         REQUIRE(sendMods == recvMods);
     }
+
+    GIVEN("AnimationVariables")
+    {
+        AnimationVariables vars, recvVars;
+        vars.Booleans = 0x12345678ull;
+        vars.Floats.push_back(1.f);
+        vars.Floats.push_back(7.f);
+        vars.Floats.push_back(12.f);
+        vars.Floats.push_back(0.f);
+        vars.Floats.push_back(145.f);
+        vars.Floats.push_back(100.f);
+        vars.Floats.push_back(-1.f);
+
+        vars.Integers.push_back(0);
+        vars.Integers.push_back(12000);
+        vars.Integers.push_back(06);
+        vars.Integers.push_back(7778);
+        vars.Integers.push_back(41104539);
+
+        Buffer buff(1000);
+        {
+            Buffer::Writer writer(&buff);
+
+            vars.GenerateDiff(recvVars, writer);
+
+            Buffer::Reader reader(&buff);
+            recvVars.ApplyDiff(reader);
+
+            REQUIRE(vars.Booleans == recvVars.Booleans);
+            REQUIRE(vars.Floats == recvVars.Floats);
+            REQUIRE(vars.Integers == recvVars.Integers);
+        }
+
+        vars.Booleans = 0x9456123ull;
+        vars.Floats[3] = 42.f;
+        vars.Integers[0] = 18;
+        vars.Integers[3] = 0;
+
+        {
+            Buffer::Writer writer(&buff);
+
+            vars.GenerateDiff(recvVars, writer);
+
+            Buffer::Reader reader(&buff);
+            recvVars.ApplyDiff(reader);
+
+            REQUIRE(vars.Booleans == recvVars.Booleans);
+            REQUIRE(vars.Floats == recvVars.Floats);
+            REQUIRE(vars.Integers == recvVars.Integers);
+        }
+    }
 }
 
 TEST_CASE("Packets", "[encoding.packets]")
@@ -396,5 +449,44 @@ TEST_CASE("Packets", "[encoding.packets]")
         recvMessage.DeserializeRaw(reader);
 
         REQUIRE(sendMessage == recvMessage);
+    }
+
+    GIVEN("ClientReferencesMoveRequest")
+    {
+        ClientReferencesMoveRequest sendMessage, recvMessage;
+        auto& update = sendMessage.Updates[1];
+        auto& move = update.UpdatedMovement;
+
+        AnimationVariables vars;
+        vars.Booleans = 0x12345678ull;
+        vars.Floats.push_back(1.f);
+        vars.Floats.push_back(7.f);
+        vars.Floats.push_back(12.f);
+        vars.Floats.push_back(0.f);
+        vars.Floats.push_back(145.f);
+        vars.Floats.push_back(100.f);
+        vars.Floats.push_back(-1.f);
+
+        vars.Integers.push_back(0);
+        vars.Integers.push_back(12000);
+        vars.Integers.push_back(06);
+        vars.Integers.push_back(7778);
+        vars.Integers.push_back(41104539);
+
+        move.Variables = vars;
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(recvMessage.Updates[1].UpdatedMovement == sendMessage.Updates[1].UpdatedMovement);
+        
     }
 }
