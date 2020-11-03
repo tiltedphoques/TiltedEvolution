@@ -1,3 +1,10 @@
+#include <Havok/hkbStateMachine.h>
+#include <Structs/AnimationGraphDescriptorManager.h>
+
+#include <Havok/BShkbHkxDB.h>
+#include <Havok/hkbBehaviorGraph.h>
+#include <Havok/BShkbAnimationGraph.h>
+
 #include <Services/TestService.h>
 #include <Services/ImguiService.h>
 #include <Services/TransportService.h>
@@ -43,9 +50,67 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
 void TestService::RunDiff()
 {
     BSAnimationGraphManager* pManager = nullptr;
-    if (PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager))
+    BSAnimationGraphManager* pActorManager = nullptr;
+
+    static Map<uint32_t, uint32_t> s_values;
+
+    if (m_actors.empty())
+        return;
+
+    auto pActor = m_actors[0];
+
+    AnimationVariables vars;
+
+    PlayerCharacter::Get()->SaveAnimationVariables(vars);
+    pActor->LoadAnimationVariables(vars);
+
+    if (PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager) && pActor->animationGraphHolder.GetBSAnimationGraph(&pActorManager))
     {
-        pManager->DumpAnimationVariables();
+        if (pManager->animationGraphIndex < pManager->animationGraphs.size)
+        {
+            const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+            const auto pActorGraph = pActorManager->animationGraphs.Get(pActorManager->animationGraphIndex);
+            if (pGraph && pActorGraph)
+            {
+                const auto pDb = pGraph->hkxDB;
+                const auto pBuckets = pDb->animationVariables.buckets;
+                const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
+                const auto pActorVariableSet = pActorGraph->behaviorGraph->animationVariables;
+
+                auto pDescriptor =
+                    AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+
+                if (pBuckets && pVariableSet && pActorVariableSet)
+                {
+                    for (auto i = 0u; i < pVariableSet->size; ++i)
+                    {
+                        if (pVariableSet->data[i] != pActorVariableSet->data[i])
+                            spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i], pActorVariableSet->data[i]);
+
+                        /*auto itor = s_values.find(i);
+                        if (itor == std::end(s_values))
+                        {
+                            s_values[i] = pVariableSet->data[i];
+
+                            if (!pDescriptor->IsSynced(i))
+                            {
+                                spdlog::info("Variable {} initialized to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
+                                             *(int32_t*)&pVariableSet->data[i]);
+                            }
+                        }
+                        else if (itor->second != pVariableSet->data[i] && !pDescriptor->IsSynced(i))
+                        {
+                            spdlog::info("Variable {} changed to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
+                                         *(int32_t*)&pVariableSet->data[i]);
+
+                            itor->second = pVariableSet->data[i];
+                        }*/
+
+
+                    }
+                }
+            }
+        }
 
         pManager->Release();
     }
@@ -58,7 +123,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
 
-    //RunDiff();
+    RunDiff();
+
     if (GetAsyncKeyState(VK_F7))
     {
         if (!s_f7Pressed)
@@ -76,8 +142,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            RunDiff();
-
+            PlaceActorInWorld();
         }
     }
     else

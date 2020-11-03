@@ -83,7 +83,7 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     {
         if (changes & (1ull << idx))
         {
-            aWriter.WriteBits(value, 32);
+            TiltedPhoques::Serialization::WriteVarInt(aWriter, value & 0xFFFFFFFF);
         }
         ++idx;
     }
@@ -136,9 +136,7 @@ void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader)
     {
         if (changes & (1ull << idx))
         {
-            uint64_t tmp = 0;
-            aReader.ReadBits(tmp, 32);
-            value = tmp & 0xFFFFFFFF;
+            value = TiltedPhoques::Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
         }
         ++idx;
     }

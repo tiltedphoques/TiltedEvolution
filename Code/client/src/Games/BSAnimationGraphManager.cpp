@@ -18,7 +18,7 @@ void BSAnimationGraphManager::DumpAnimationVariables()
 
             if(pBuckets && pVariableSet)
             {
-                std::map<uint32_t, const char*> variables;
+                std::map<uint32_t, std::tuple<const char*, uint32_t> > variables;
 
                 for(auto i = 0; i < pDb->animationVariables.bucketCount; ++i)
                 {
@@ -33,7 +33,7 @@ void BSAnimationGraphManager::DumpAnimationVariables()
                         {
                             const auto value = pVariableSet->data[variableIndex];
 
-                            variables[variableIndex] = pBucket->key.AsAscii();
+                            variables[variableIndex] = std::make_tuple(pBucket->key.AsAscii(), value);
                         }
 
                         pBucket = pBucket->next;
@@ -42,7 +42,10 @@ void BSAnimationGraphManager::DumpAnimationVariables()
 
                 for(auto& var : variables)
                 {
-                    spdlog::info("{} {}", var.first, var.second);
+                    auto val = std::get<1>(var.second);
+                    std::cout << "k" << std::get<0>(var.second) << " = " << var.first << "," << std::endl;
+
+                    //spdlog::info("{} {} f: {}, i: {}", var.first, std::get<0>(var.second), *(float*)&val, *(int32_t*)&val);
                 }
             }
         }
