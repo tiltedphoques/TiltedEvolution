@@ -401,22 +401,17 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
             return view.get<RemoteComponent>(entity).Id == id;
         });
 
-    spdlog::info("RemoveCharacter {:X}", acEvent.ServerId);
-
     if (itor != std::end(view))
     {
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
         {
             spdlog::info("\tformid: {:X}", pFormIdComponent->Id);
-            /*
-            const auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-            if (!pActor || !pActor->GetNiNode())
+            
+            const auto pActor = RTTI_CAST(TESForm::GetById(pFormIdComponent->Id), TESForm, Actor);
+            if (!pActor)
                 return;
 
-            pActor->Disable();
-
-            InterpolationSystem::Clean(m_world, *itor);
-            AnimationSystem::Clean(m_world, *itor);*/
+            pActor->Delete();
         }
 
         m_world.remove_if_exists<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
