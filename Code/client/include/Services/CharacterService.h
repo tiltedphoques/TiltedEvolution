@@ -26,7 +26,7 @@ struct CharacterService
     TP_NOCOPYMOVE(CharacterService);
 
     void OnFormIdComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void OnFormIdComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
+    void OnFormIdComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) noexcept;
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
@@ -43,7 +43,7 @@ struct CharacterService
 private:
 
     void RequestServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity, uint32_t aFormId) const noexcept;
+    void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity, uint32_t aFormId) noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 
@@ -58,6 +58,7 @@ private:
     TransportService& m_transport;
 
     Set<uint32_t> m_charactersWithInventoryChanges;
+    Set<entt::entity> m_entitiesToDestroy;
 
     entt::scoped_connection m_formIdAddedConnection;
     entt::scoped_connection m_formIdRemovedConnection;

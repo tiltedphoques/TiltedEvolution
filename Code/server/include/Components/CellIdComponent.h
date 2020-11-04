@@ -7,12 +7,12 @@
 struct CellIdComponent
 {
     CellIdComponent(FormIdComponent aCellId)
-        : CellId(aCellId)
+        : Cell(aCellId)
     {}
 
     bool operator==(const CellIdComponent& acRhs) const noexcept
     {
-        return CellId == acRhs.CellId ;
+        return Cell == acRhs.Cell ;
     }
 
     bool operator!=(const CellIdComponent& acRhs) const noexcept
@@ -20,5 +20,5 @@ struct CellIdComponent
         return !operator==(acRhs);
     }
 
-    FormIdComponent CellId;
+    FormIdComponent Cell;
 };

@@ -15,6 +15,7 @@
 #include <Messages/PartyInviteRequest.h>
 #include <Messages/PartyAcceptInviteRequest.h>
 #include <Messages/PartyLeaveRequest.h>
+#include <Messages/CharacterTravelRequest.h>
 
 #include <iostream>
 
@@ -46,6 +47,7 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(PartyInviteRequest);
         EXTRACT_MESSAGE(PartyAcceptInviteRequest);
         EXTRACT_MESSAGE(PartyLeaveRequest);
+        EXTRACT_MESSAGE(CharacterTravelRequest);
     }
 
     return UniquePtr<ClientMessage>(nullptr, &TiltedPhoques::Delete<ClientMessage>);

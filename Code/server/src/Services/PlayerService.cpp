@@ -32,6 +32,13 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
 
     m_world.emplace_or_replace<CellIdComponent>(*itor, message.CellId);
 
+    auto& playerComponent = playerView.get(*itor);
+
+    if (playerComponent.Character)
+    {
+        m_world.emplace_or_replace<CellIdComponent>(*playerComponent.Character, message.CellId);
+    }
+
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)
     {
@@ -39,6 +46,9 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
 
         // Don't send self managed
         if (ownedComponent.ConnectionId == acMessage.ConnectionId)
+            continue;
+
+        if (message.CellId != characterView.get<CellIdComponent>(character).Cell.Id)
             continue;
 
         CharacterSpawnRequest spawnMessage;

@@ -1,5 +1,6 @@
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
+#include "Messages/CharacterTravelRequest.h"
 
 
 #include <Services/CharacterService.h>
@@ -80,6 +81,11 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     if (!pActor)
         return;
 
+    if (pActor->GetExtension()->IsRemote())
+    {
+        spdlog::info("New entity remotely managed? {:X}", pActor->formID);
+    }
+
     if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
     {
         pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
@@ -106,7 +112,7 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     }
 }
 
-void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
 
@@ -117,6 +123,14 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+    for (auto entity : m_entitiesToDestroy)
+    {
+        if (m_world.valid(entity))
+            m_world.destroy(entity);
+    }
+        
+    m_entitiesToDestroy.clear();
+
     RunSpawnUpdates();
     RunLocalUpdates();
     RunInventoryUpdates();
@@ -277,7 +291,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->SetFactions(acMessage.FactionsContent);
     pActor->LoadAnimationVariables(acMessage.LatestAction.Variables);
 
-    spdlog::info("Inventory content : {:X}", acMessage.InventoryContent.Buffer.size());
+    //spdlog::info("Inventory content : {:X}", acMessage.InventoryContent.Buffer.size());
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -581,8 +595,32 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     }
 }
 
-void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
+void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) noexcept
 {
+    if (aRegistry.has<RemoteComponent>(aEntity))
+    {
+        // Do nothing, a system will detect a remote component missing a form id component later on and try to spawn it
+        auto* const pForm = TESForm::GetById(aFormId);
+        auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+        if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
+        {
+            const auto pWorldSpace = pActor->GetWorldSpace();
+            const auto pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+
+            if (pWorldSpace != pPlayerWorldSpace)
+            {
+                spdlog::info("Remote Deleted {:X}", aFormId);
+
+                pActor->Delete();
+
+                m_entitiesToDestroy.insert(aEntity);
+            }
+        }
+
+        return;
+    }
+
     // In the event we were waiting for assignment, drop it
     if (aRegistry.has<WaitingForAssignmentComponent>(aEntity))
     {
@@ -592,12 +630,12 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         message.Cookie = waitingComponent.Cookie;
 
         m_transport.Send(message);
-
-        aRegistry.remove<WaitingForAssignmentComponent>(aEntity);
     }
 
     if (aRegistry.has<LocalComponent>(aEntity))
     {
+        auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+
         auto* const pForm = TESForm::GetById(aFormId);
         auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
@@ -608,29 +646,31 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             const auto pWorldSpace = pActor->GetWorldSpace();
             const auto pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
 
-            if (pWorldSpace != pPlayerWorldSpace)
+            if (pWorldSpace != pPlayerWorldSpace && pActor->parentCell)
             {
                 actorWasMoved = true;
+
+                CharacterTravelRequest message;
+                message.ServerId = localComponent.Id;
+                message.Position = pActor->position;
+                m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId);
+
+                m_transport.Send(message);
             }
         }
         
         if (!actorWasMoved)
         {
-            auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
-
             RemoveCharacterRequest message;
             message.ServerId = localComponent.Id;
 
             m_transport.Send(message);
         }
-
-        aRegistry.remove<LocalComponent>(aEntity);
     }
 
-    if (aRegistry.has<RemoteComponent>(aEntity))
-    {
-        // Do nothing, a system will detect a remote component missing a form id component later on and try to spawn it
-    }
+    //spdlog::info("Remove entity {}", aEntity);
+
+    m_entitiesToDestroy.insert(aEntity);
 }
 
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept

@@ -174,7 +174,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         auto& playerComponent = view.get<PlayerComponent>(entity);
         auto& cellIdComponent = view.get<CellIdComponent>(entity);
 
-        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.CellId != cellIdComponent.CellId)
+        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.Cell != cellIdComponent.Cell)
             continue;
 
         GameServer::Get()->Send(playerComponent.ConnectionId, message);
