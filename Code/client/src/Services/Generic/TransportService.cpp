@@ -36,6 +36,7 @@
 #include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPartyInfo.h>
 #include <Messages/NotifyPartyInvite.h>
+#include <Messages/NotifyCharacterTravel.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -119,6 +120,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
     TRANSPORT_DISPATCH(NotifyPlayerList);
     TRANSPORT_DISPATCH(NotifyPartyInfo);
     TRANSPORT_DISPATCH(NotifyPartyInvite);
+    TRANSPORT_DISPATCH(NotifyCharacterTravel);
 
     default:
         spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());

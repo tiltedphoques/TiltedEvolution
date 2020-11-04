@@ -12,6 +12,7 @@ struct ServerReferencesMoveRequest;
 struct NotifyInventoryChanges;
 struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
+struct NotifyCharacterTravel;
 
 struct Actor;
 struct World;
@@ -37,11 +38,12 @@ struct CharacterService
     void OnInventoryChanges(const NotifyInventoryChanges& acEvent) const noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept;
+    void OnCharacterTravel(const NotifyCharacterTravel& acEvent) const noexcept;
 
 private:
 
     void RequestServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
+    void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity, uint32_t aFormId) const noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 

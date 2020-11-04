@@ -1,3 +1,7 @@
+#include "Forms/TESObjectCELL.h"
+#include "Forms/TESWorldSpace.h"
+
+
 #include <Services/CharacterService.h>
 #include <Services/TransportService.h>
 #include <Services/QuestService.h>
@@ -33,6 +37,7 @@
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
+#include <Messages/NotifyCharacterTravel.h>
 
 #include <World.h>
 
@@ -107,7 +112,7 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
 
     spdlog::info("FormId removed {:X}", formIdComponent.Id);
 
-    CancelServerAssignment(aRegistry, aEntity);
+    CancelServerAssignment(aRegistry, aEntity, formIdComponent.Id);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -418,6 +423,38 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
     }
 }
 
+void CharacterService::OnCharacterTravel(const NotifyCharacterTravel& acEvent) const noexcept
+{
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+
+    auto itor = std::find_if(std::begin(view), std::end(view), [&acEvent, &view](auto entity) {
+        return view.get<RemoteComponent>(entity).Id == acEvent.ServerId;
+    });
+
+    if (itor != std::end(view))
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(*itor);
+
+        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        if (pActor)
+        {
+            pActor->GetExtension()->SetRemote(false);
+
+            const auto cCellId = World::Get().GetModSystem().GetGameId(acEvent.CellId);
+            if (cCellId != 0)
+            {
+                auto* const pCell = RTTI_CAST(TESForm::GetById(cCellId), TESForm, TESObjectCELL);
+                if (pCell)
+                {
+                    pActor->MoveTo(pCell, acEvent.Position);
+                }
+            }
+        }
+
+        m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(*itor);
+    }
+}
+
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
@@ -549,7 +586,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     }
 }
 
-void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
     // In the event we were waiting for assignment, drop it
     if (aRegistry.has<WaitingForAssignmentComponent>(aEntity))
@@ -566,12 +603,31 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 
     if (aRegistry.has<LocalComponent>(aEntity))
     {
-        auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+        auto* const pForm = TESForm::GetById(aFormId);
+        auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
-        RemoveCharacterRequest message;
-        message.ServerId = localComponent.Id;
+        bool actorWasMoved = false;
 
-        m_transport.Send(message);
+        if (pActor)
+        {
+            const auto pWorldSpace = pActor->GetWorldSpace();
+            const auto pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+
+            if (pWorldSpace != pPlayerWorldSpace)
+            {
+                actorWasMoved = true;
+            }
+        }
+        
+        if (!actorWasMoved)
+        {
+            auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+
+            RemoveCharacterRequest message;
+            message.ServerId = localComponent.Id;
+
+            m_transport.Send(message);
+        }
 
         aRegistry.remove<LocalComponent>(aEntity);
     }
