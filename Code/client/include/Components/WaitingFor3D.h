@@ -4,7 +4,7 @@
 #error Include Components.h instead
 #endif
 
-struct AnimationVariablesComponent
+struct WaitingFor3D
 {
-    Vector<uint32_t> Variables;
+    WaitingFor3D() = default;
 };

@@ -4,6 +4,7 @@
 #include <World.h>
 
 #include <Events/CharacterSpawnedEvent.h>
+#include <Events/CharacterCellChangeEvent.h>
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Scripts/Npc.h>
@@ -25,6 +26,7 @@
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
+    , m_characterCellChangeEventConnection(aDispatcher.sink<CharacterCellChangeEvent>().connect<&CharacterService::OnCharacterCellChange>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_removeChatacterConnection(aDispatcher.sink<PacketEvent<RemoveCharacterRequest>>().connect<&CharacterService::OnRemoveCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
@@ -79,6 +81,31 @@ void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
     ProcessInventoryChanges();
     ProcessFactionsChanges();
     ProcessMovementChanges();
+}
+
+void CharacterService::OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept
+{
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+
+    CharacterSpawnRequest spawnMessage;
+    Serialize(m_world, acEvent.Entity, &spawnMessage);
+
+    NotifyRemoveCharacter removeMessage;
+    removeMessage.ServerId = World::ToInteger(acEvent.Entity);
+
+    for (auto entity : playerView)
+    {
+        auto& playerComponent = playerView.get<PlayerComponent>(entity);
+        auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
+
+        if (acEvent.Owner == entity)
+            continue;
+
+        if (acEvent.OldCell == cellIdComponent.Cell)
+            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
+        else if (acEvent.NewCell == cellIdComponent.Cell)
+            GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
+    }
 }
 
 void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept

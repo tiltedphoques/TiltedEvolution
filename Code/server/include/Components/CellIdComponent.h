@@ -6,7 +6,7 @@
 
 struct CellIdComponent
 {
-    CellIdComponent(FormIdComponent aCellId)
+    CellIdComponent(GameId aCellId)
         : Cell(aCellId)
     {}
 
@@ -20,5 +20,5 @@ struct CellIdComponent
         return !operator==(acRhs);
     }
 
-    FormIdComponent Cell;
+    GameId Cell;
 };

@@ -399,7 +399,7 @@ ActorExtension* Actor::GetExtension() noexcept
 
 ExActor* Actor::AsExActor() noexcept
 {
-    if (formType == Actor::Type && this != PlayerCharacter::Get())
+    if (formType == Type && this != PlayerCharacter::Get())
         return static_cast<ExActor*>(this);
 
     return nullptr;

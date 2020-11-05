@@ -1,3 +1,5 @@
+#include "Events/CharacterCellChangeEvent.h"
+
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
 #include <Components.h>
@@ -36,7 +38,14 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
 
     if (playerComponent.Character)
     {
-        m_world.emplace_or_replace<CellIdComponent>(*playerComponent.Character, message.CellId);
+        if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
+        {
+            m_world.GetDispatcher().trigger(CharacterCellChangeEvent{*itor, *playerComponent.Character, pCellIdComponent->Cell, message.CellId});
+
+            pCellIdComponent->Cell = message.CellId;
+        }
+        else
+            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.CellId);
     }
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
@@ -48,7 +57,7 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
         if (ownedComponent.ConnectionId == acMessage.ConnectionId)
             continue;
 
-        if (message.CellId != characterView.get<CellIdComponent>(character).Cell.Id)
+        if (message.CellId != characterView.get<CellIdComponent>(character).Cell)
             continue;
 
         CharacterSpawnRequest spawnMessage;

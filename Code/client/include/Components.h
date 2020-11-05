@@ -12,5 +12,6 @@
 #include <Components/RemoteComponent.h>
 #include <Components/FaceGenComponent.h>
 #include <Components/CacheComponent.h>
+#include <Components/WaitingFor3D.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

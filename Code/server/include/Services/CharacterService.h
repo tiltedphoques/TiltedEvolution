@@ -3,6 +3,7 @@
 #include <Events/PacketEvent.h>
 
 struct UpdateEvent;
+struct CharacterCellChangeEvent;
 struct CharacterSpawnedEvent;
 struct World;
 struct AssignCharacterRequest;
@@ -25,6 +26,7 @@ struct CharacterService
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
+    void OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
@@ -44,6 +46,7 @@ private:
     World& m_world;
 
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_characterCellChangeEventConnection;
     entt::scoped_connection m_characterAssignRequestConnection;
     entt::scoped_connection m_removeChatacterConnection;
     entt::scoped_connection m_characterSpawnedConnection;

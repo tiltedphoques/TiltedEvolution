@@ -73,8 +73,6 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
 
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
 
-    //spdlog::info("FormId added {:X} {:X}", formIdComponent.Id, aEntity);
-
     // Security check
     auto* const pForm = TESForm::GetById(formIdComponent.Id);
     auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
@@ -112,25 +110,15 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     }
 }
 
-void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) noexcept
+void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-
-    spdlog::info("FormId removed {:X}", formIdComponent.Id);
 
     CancelServerAssignment(aRegistry, aEntity, formIdComponent.Id);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    for (auto entity : m_entitiesToDestroy)
-    {
-        if (m_world.valid(entity))
-            m_world.destroy(entity);
-    }
-        
-    m_entitiesToDestroy.clear();
-
     RunSpawnUpdates();
     RunLocalUpdates();
     RunInventoryUpdates();
@@ -287,11 +275,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->rotation.m_x = acMessage.Rotation.X;
     pActor->rotation.m_z = acMessage.Rotation.Y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
-    pActor->SetInventory(acMessage.InventoryContent);
-    pActor->SetFactions(acMessage.FactionsContent);
-    pActor->LoadAnimationVariables(acMessage.LatestAction.Variables);
 
-    //spdlog::info("Inventory content : {:X}", acMessage.InventoryContent.Buffer.size());
+    m_world.emplace<WaitingFor3D>(*entity);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -301,9 +286,9 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 {
     auto view = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>();
 
-    for (const auto& entry : acMessage.Updates)
+    for (const auto& [serverId, update] : acMessage.Updates)
     {
-        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = entry.first, view](entt::entity entity)
+        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = serverId, view](entt::entity entity)
         {
             return view.get<RemoteComponent>(entity).Id == serverId;
         });
@@ -313,7 +298,6 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 
         auto& interpolationComponent = view.get<InterpolationComponent>(*itor);
         auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
-        const auto& update = entry.second;
         const auto& movement = update.UpdatedMovement;
 
         InterpolationComponent::TimePoint point;
@@ -436,7 +420,7 @@ void CharacterService::OnCharacterTravel(const NotifyCharacterTravel& acEvent) c
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
-    auto itor = std::find_if(std::begin(view), std::end(view), [&acEvent, &view](auto entity) {
+    const auto itor = std::find_if(std::begin(view), std::end(view), [&acEvent, &view](auto entity) {
         return view.get<RemoteComponent>(entity).Id == acEvent.ServerId;
     });
 
@@ -583,7 +567,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     auto* const pExtension = pActor->GetExtension();
 
     message.LatestAction = pExtension->LatestAnimation;
-    //pActor->SaveAnimationVariables(message.LatestAction.Variables);
+    pActor->SaveAnimationVariables(message.LatestAction.Variables);
 
     spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, aEntity);
 
@@ -595,7 +579,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     }
 }
 
-void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) noexcept
+void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
     if (aRegistry.has<RemoteComponent>(aEntity))
     {
@@ -614,7 +598,8 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 
                 pActor->Delete();
 
-                m_entitiesToDestroy.insert(aEntity);
+                aRegistry.remove_if_exists<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
+                                         RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
             }
         }
 
@@ -630,6 +615,8 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         message.Cookie = waitingComponent.Cookie;
 
         m_transport.Send(message);
+
+        aRegistry.remove_if_exists<WaitingForAssignmentComponent>(aEntity);
     }
 
     if (aRegistry.has<LocalComponent>(aEntity))
@@ -666,11 +653,9 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 
             m_transport.Send(message);
         }
+
+        aRegistry.remove_if_exists<LocalAnimationComponent, LocalComponent>(aEntity);
     }
-
-    //spdlog::info("Remove entity {}", aEntity);
-
-    m_entitiesToDestroy.insert(aEntity);
 }
 
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
@@ -805,6 +790,32 @@ void CharacterService::RunRemoteUpdates() const noexcept
 
         FaceGenSystem::Update(m_world, pActor, faceGenComponent);
     }
+
+    auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
+
+    StackAllocator<1 << 13> allocator;
+    ScopedAllocator _{allocator};
+
+    Vector<entt::entity> toRemove;
+    for (auto entity : waitingView)
+    {
+        auto& formIdComponent = waitingView.get<FormIdComponent>(entity);
+        auto& remoteComponent = waitingView.get<RemoteComponent>(entity);
+
+        const auto* pForm = TESForm::GetById(formIdComponent.Id);
+        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        if (!pActor || !pActor->GetNiNode())
+            continue;
+
+        pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
+        pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
+        pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
+
+        toRemove.push_back(entity);  
+    }
+
+    for (auto entity : toRemove)
+        m_world.remove<WaitingFor3D>(entity);
 }
 
 void CharacterService::RunInventoryUpdates() noexcept

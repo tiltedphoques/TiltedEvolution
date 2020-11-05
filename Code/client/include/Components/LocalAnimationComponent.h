@@ -5,7 +5,6 @@
 #endif
 
 #include <Structs/ActionEvent.h>
-#include <Components/AnimationVariablesComponent.h>
 
 struct LocalAnimationComponent
 {
