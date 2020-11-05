@@ -71,5 +71,6 @@ private:
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_assignCharacterConnection;
     entt::scoped_connection m_characterSpawnConnection;
+    entt::scoped_connection m_characterTravelConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
 };
