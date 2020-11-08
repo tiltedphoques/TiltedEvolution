@@ -100,7 +100,7 @@ struct TESForm : BaseFormComponent
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
 
-    uintptr_t unk4;
+    uintptr_t unk8;
     uint32_t flags;
     uint32_t formID;
     uint16_t unk10;

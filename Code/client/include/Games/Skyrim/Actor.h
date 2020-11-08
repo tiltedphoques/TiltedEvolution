@@ -293,6 +293,7 @@ public:
 
 static_assert(offsetof(Actor, processManager) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);
+static_assert(offsetof(Actor, actorValueOwner) == 0xB0);
 static_assert(offsetof(Actor, actorState) == 0xB8);
 static_assert(offsetof(Actor, flags2) == 0x1FC);
 static_assert(offsetof(Actor, unk194) == 0x270);
