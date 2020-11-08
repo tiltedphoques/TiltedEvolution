@@ -138,6 +138,8 @@ struct ActorValueInfo : TESForm
         kIgnorePlayerWhileFrenzied = 131,
     };
 
+    static ActorValueInfo* Resolve(uint32_t aId) noexcept;
+
     virtual ~ActorValueInfo();
 
     TESFullName name;

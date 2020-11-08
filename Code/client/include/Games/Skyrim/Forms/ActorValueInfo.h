@@ -173,6 +173,8 @@ struct ActorValueInfo : TESForm
         kReflectDamage = 163,
     };
 
+    static uint32_t Resolve(uint32_t aId) noexcept;
+
     virtual ~ActorValueInfo();
 
     TESFullName name;
