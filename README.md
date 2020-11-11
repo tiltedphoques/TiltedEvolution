@@ -21,5 +21,4 @@ Check GETTINGSTARTED.md for the detailed steps.
 - Check the issues, it's a good place to start when you don't know what to do.
 - Fork the repository and create pull requests to this repository.
 - Try to keep your code clean.
-- A bot will ask you to sign a CLA when making a PR.
 
