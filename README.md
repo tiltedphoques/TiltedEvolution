@@ -8,8 +8,6 @@ This framework was created to enable multiplayer in Bethesda games, at the momen
 
 *Remember that this is the experimental branch, so there's no guarantee the mod will work or even compile.*
 
-You can find a copy of the license [here](https://skyrim-together.com/files/file/1-tilted-phoques-agreement/)
-
 ## Building
 
 ### Windows
