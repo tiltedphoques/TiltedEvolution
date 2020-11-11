@@ -4,6 +4,7 @@
 #include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 
+struct ActorValueOwner;
 struct NiNode;
 struct BSFaceGenNiNode;
 struct TESObjectCELL;
@@ -163,7 +164,8 @@ public:
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
     IAnimationGraphManagerHolder animationGraphHolder;
-    uint8_t unk50[0x60 - 0x50];
+    uint8_t unk50[0x58 - 0x50];
+    ActorValueOwner* actorValueOwner; // used when (flags >> 11) & 1 == 0 other wise uses the baseform's in TESActorBase
     void* unk60; 
     uint8_t unk68[0xB8 - 0x68];
     TESObjectCELL* parentCell;

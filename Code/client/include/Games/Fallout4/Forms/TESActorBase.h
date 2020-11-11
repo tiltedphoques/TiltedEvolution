@@ -12,7 +12,7 @@
 #include <Components/BGSKeywordForm.h>
 #include <Components/TESFullName.h>
 
-#include <Forms/ActorValueOwner.h>
+#include <Misc/ActorValueOwner.h>
 #include <Forms/TESBoundAnimObject.h>
 
 struct TESActorBase : TESBoundAnimObject
