@@ -21,25 +21,18 @@ ActorService::~ActorService() noexcept
 
 BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDispatcher<TESHitEvent>* dispatcher)
 {
-    std::cout << "Damaged!" << std::endl;
+    auto* pActor = RTTI_CAST(hitEvent->hit, TESObjectREFR, Actor);
 
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-    for (auto entity : view)
+    if (pActor != NULL)
     {
-        auto& formIdComponent = view.get<FormIdComponent>(entity);
-        auto* pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-        if (pActor != NULL)
-        {
-            RequestActorValueChanges requestChanges;
-            requestChanges.m_formId = formIdComponent.Id;
-            requestChanges.m_health = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth);
-            m_transport.Send(requestChanges);
-        }
+        RequestActorValueChanges requestChanges;
+        requestChanges.m_formId = hitEvent->hit->formID;
+        std::cout << "Actor " << hitEvent->hit->formID << " has " << pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth) << " health" << std::endl;
+        requestChanges.m_health = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth);
+        m_transport.Send(requestChanges);
     }
 
-    return BSTEventResult::kAbort;
+    return BSTEventResult::kOk;
 }
 
 void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) const noexcept
