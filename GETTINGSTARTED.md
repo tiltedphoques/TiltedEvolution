@@ -2,11 +2,11 @@
 
 ## Cloning the repository
 
-Create a folder for the repository to get cloned into. This is the folder we'll be working out of, so pick somewhere convenient.
+Choose or create a directory for the repository to get cloned into, such as your Desktop. This is the directory we'll be working out of, so pick somewhere convenient.
 
-Using a CLI, run the following command in the directory you just made: `git clone --recursive https://github.com/tiltedphoques/TiltedOnline.git`
+Using a CLI, run the following command in the directory from the previous step: `git clone --recursive https://github.com/tiltedphoques/TiltedOnline.git`
 
-Once the command has finished executing, you should have a copy of this repository named `TiltedOnline` inside your project folder.
+Once the command has finished executing, you should have a copy of this repository named `TiltedOnline` inside your project directory.
 
 ## Setting up the environment
 
@@ -32,9 +32,7 @@ VS2019 is preferred for Windows as future versions of this project could cause i
 ### Compiling the project
 
 Open the solution `Tilted Online Framework.sln` found in (`TiltedOnline\Build\projects`).
-Once it has opened, make sure the solution configuration is set to `Release` for `x64` as shown below:
-
-![](https://cdn.discordapp.com/attachments/717070423254368286/776201731414556692/unknown.png)
+Once it has opened, make sure the solution configuration is set to `Release` instead of `Debug`.
 
 Next, compile the project via the Menu Option `Build` -> `Build Solution`. 
 
@@ -82,13 +80,13 @@ Eg. `SkyrimTogetherServer.exe --name "SkyrimTogether Server" --port "10578" --pr
 
 ## Verifying
 
-Launch `Loader.exe` to start up the mod, either directly or via a shortcut. If everything worked as intended, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of your game. Once loaded into a save, run the corresponding server executable (or script, if you created one). You should now be able to connect in-game by using the UI in the top left corner; pressing RCTRL thrice should free your mouse so that you're able to interact with the UI.
+Launch `Loader.exe` to start up the mod, either directly or via a shortcut. If everything worked as intended, a Tilted Reverse Console will pop up and the Imgui UI will be displayed on top of your game. Once loaded into a save, run the corresponding server executable (or script, if you created one). You should now be able to connect in-game by using the UI in the top left corner; pressing RCTRL thrice should free your mouse so that you're able to interact with the UI. The UI is layered on top of one another by default, so you'll need to move the UI windows first to be able to connect.
 
 ## Debugging
 
 In Visual Studio, go to `Debug` -> `Attach to process` and select the game(s) (`SkyrimSE.exe` or `Fallout4.exe`) then click `Attach`.
 
-If you explicitly require a debugger, you can add the line `Debug::WaitForDebugger();` in the `TiltedOnlineApp::TiltedOnlineApp()` ctor. This will block the game from running on startup until a debugger has been attached.
+If you explicitly require a debugger, you can add the line `Debug::WaitForDebugger();` in the `TiltedOnlineApp::TiltedOnlineApp()` constructor. This will block the game from running on startup until a debugger has been attached.
 
 ## Working in this repository
 
