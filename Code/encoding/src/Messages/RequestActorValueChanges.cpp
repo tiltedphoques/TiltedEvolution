@@ -1,20 +1,29 @@
 #include <Messages/RequestActorValueChanges.h>
 #include <Serialization.hpp>
-#include <iostream>
 
 void RequestActorValueChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, m_formId);
-    Serialization::WriteVarInt(aWriter, m_health);
+    Serialization::WriteVarInt(aWriter, m_Id);
+
+    Serialization::WriteVarInt(aWriter, m_values.size());
+    for (auto& value : m_values)
+    {
+        Serialization::WriteVarInt(aWriter, value.first);
+        Serialization::WriteFloat(aWriter, value.second);
+    }
 }
 
 void RequestActorValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ClientMessage::DeserializeRaw(aReader);
 
-    auto formId = Serialization::ReadVarInt(aReader);
-    auto health = Serialization::ReadVarInt(aReader);
-    //Cookie = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    m_formId = formId;
-    m_health = health;
+    m_Id = Serialization::ReadVarInt(aReader);
+
+    auto count = Serialization::ReadVarInt(aReader);
+    for (int i = 0; i < count; i += 2)
+    {
+        auto key = Serialization::ReadVarInt(aReader);
+        auto value = Serialization::ReadFloat(aReader);
+        m_values.insert({key, value});
+    }
 }

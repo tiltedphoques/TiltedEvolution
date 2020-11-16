@@ -19,13 +19,14 @@ ActorService::~ActorService() noexcept
 void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept
 {
     NotifyActorValueChanges notifyChanges;
-    notifyChanges.m_formId = acMessage.Packet.m_formId;
-    notifyChanges.m_health = acMessage.Packet.m_health;
+    notifyChanges.m_Id = acMessage.Packet.m_Id;
+    notifyChanges.m_values = acMessage.Packet.m_values;
 
     auto view = m_world.view<PlayerComponent>();
     for (auto entity : view)
     {
         auto& player = view.get<PlayerComponent>(entity);
+
         if (player.ConnectionId != acMessage.ConnectionId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyChanges);

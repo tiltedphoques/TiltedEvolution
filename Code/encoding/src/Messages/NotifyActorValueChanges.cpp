@@ -3,20 +3,27 @@
 
 void NotifyActorValueChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, m_formId);
-    Serialization::WriteVarInt(aWriter, m_health);
+    Serialization::WriteVarInt(aWriter, m_Id);
+
+    Serialization::WriteVarInt(aWriter, m_values.size());
+    for (auto& value : m_values)
+    {
+        Serialization::WriteVarInt(aWriter, value.first);
+        Serialization::WriteFloat(aWriter, value.second);
+    }
 }
 
 void NotifyActorValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    auto formId = Serialization::ReadVarInt(aReader);
-    auto health = Serialization::ReadVarInt(aReader);
+    m_Id = Serialization::ReadVarInt(aReader);
 
-    m_formId = formId;
-    m_health = health;
-
-    //std::cout << "Form ID: " << formId << " Health: " << formId << std::endl;
-    //std::cout << "Form ID 2: " << m_formId << " Health 2: " << m_health << std::endl;
+    auto count = Serialization::ReadVarInt(aReader);
+    for (int i = 0; i < count; i += 2)
+    {
+        auto key = Serialization::ReadVarInt(aReader);
+        auto value = Serialization::ReadFloat(aReader);
+        m_values.insert({key, value});
+    }
 }

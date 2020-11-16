@@ -13,11 +13,10 @@ struct NotifyActorValueChanges final : ServerMessage
 
     bool operator==(const NotifyActorValueChanges& acRhs) const noexcept
     {
-        return m_formId == acRhs.m_formId && 
-            m_health == acRhs.m_health &&
-            GetOpcode() == acRhs.GetOpcode();
+        return m_Id == acRhs.m_Id && 
+               GetOpcode() == acRhs.GetOpcode();
     }
 
-    uint32_t m_formId;
-    uint32_t m_health;
+    uint32_t m_Id;
+    Map<uint32_t, float> m_values;
 };
