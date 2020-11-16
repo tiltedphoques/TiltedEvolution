@@ -162,7 +162,7 @@ BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDis
     return BSTEventResult::kOk;
 }
 
-void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) const noexcept
+void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
@@ -181,9 +181,27 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) c
                 {
                     std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
                     std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
-                    pActor->actorValueOwner.SetValue(value.first, value.second);
+
+                    if (value.first == ActorValueInfo::kHealth || value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
+                    {
+                        ForceActorValue(pActor, value.first, value.second);
+                    }
+                    else
+                    {
+                        pActor->actorValueOwner.SetValue(value.first, value.second);
+                    }                    
                 }
             }
         }
     }
+}
+
+void ActorService::ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept
+{
+    float current = aActor->actorValueOwner.GetValue(aId);
+    float max = aActor->actorValueOwner.GetMaxValue(aId);
+
+    aActor->actorValueOwner.ForceCurrent(2, aId, max - current);
+
+    aActor->actorValueOwner.ForceCurrent(2, aId, aValue - max);
 }
