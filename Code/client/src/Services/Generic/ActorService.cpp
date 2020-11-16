@@ -9,6 +9,7 @@
 #include <Events/ReferenceRemovedEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/HitEvent.h>
 
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
@@ -23,6 +24,8 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
+    aDispatcher.sink<HitEvent>().connect<&ActorService::OnHit>(this);
+
     EventDispatcherManager::Get()->hitEvent.RegisterSink(this);
 }
 
@@ -133,9 +136,9 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
     }    
 }
 
-BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDispatcher<TESHitEvent>* dispatcher)
+void ActorService::OnHit(const HitEvent& acEvent) noexcept
 {
-    auto* pActor = RTTI_CAST(hitEvent->hit, TESObjectREFR, Actor);
+    auto* pActor = RTTI_CAST(acEvent.Hit, TESObjectREFR, Actor);
 
     if (pActor != NULL)
     {
@@ -146,7 +149,7 @@ BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDis
         for (auto entity : view)
         {
             auto& formIdComponent = view.get<FormIdComponent>(entity);
-            if (formIdComponent.Id == hitEvent->hit->formID)
+            if (formIdComponent.Id == acEvent.Hit->formID)
             {
                 auto& localComponent = view.get<LocalComponent>(entity);
 
@@ -158,7 +161,12 @@ BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDis
             }
         }
     }
+}
 
+BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDispatcher<TESHitEvent>* dispatcher)
+{
+    m_world.GetRunner().Trigger(HitEvent(hitEvent->hit, hitEvent->hitter));
+    
     return BSTEventResult::kOk;
 }
 
@@ -199,9 +207,5 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
 void ActorService::ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept
 {
     float current = aActor->actorValueOwner.GetValue(aId);
-    float max = aActor->actorValueOwner.GetMaxValue(aId);
-
-    aActor->actorValueOwner.ForceCurrent(2, aId, max - current);
-
-    aActor->actorValueOwner.ForceCurrent(2, aId, aValue - max);
+    aActor->actorValueOwner.ForceCurrent(2, aId, aValue - current);
 }

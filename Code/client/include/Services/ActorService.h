@@ -10,6 +10,7 @@ struct DisconnectedEvent;
 struct ReferenceSpawnedEvent;
 struct ReferenceRemovedEvent;
 struct UpdateEvent;
+struct HitEvent;
 
 struct TransportService;
 struct NotifyActorValueChanges;
@@ -38,6 +39,8 @@ private:
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
+    void OnHit(const HitEvent&) noexcept;
+
     BSTEventResult OnEvent(const TESHitEvent*, const EventDispatcher<TESHitEvent>*) override;
 
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
