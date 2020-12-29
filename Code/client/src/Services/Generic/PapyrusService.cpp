@@ -20,13 +20,3 @@ void PapyrusService::HandlePapyrusFunctionEvent(const PapyrusFunctionRegisterEve
 {
     m_functions[acEvent.Namespace + "::" + acEvent.Name] = acEvent.Function;
 }
-
-List<String> PapyrusService::RegisteredFunctionNames() const noexcept
-{
-    List<String> functionNames;
-    for (const auto& [name, ptr] : m_functions)
-    {
-        functionNames.push_back(name);
-    }
-    return functionNames;
-}

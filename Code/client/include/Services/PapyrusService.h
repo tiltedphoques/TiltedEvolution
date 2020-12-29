@@ -17,12 +17,11 @@ struct PapyrusService
 
     void HandlePapyrusFunctionEvent(const PapyrusFunctionRegisterEvent&) noexcept;
 
-    List<String> RegisteredFunctionNames() const noexcept;
+private:
 
-  private:
     Map<String, void*> m_functions;
 
-    entt::scoped_connection m_papyrusFunctionRegisterConnection;
+    entt::scoped_connection m_papyrusFunctionRegisterConnection;  
 };
 
 template <class Return, class Type, class... Args> struct PapyrusFunction
@@ -85,14 +84,6 @@ template <class Return, class Type, class... Args> struct LatentPapyrusFunction
     TFunction m_pFunction;
 };
 
-#define PAPYRUS_FUNCTION(returnType, scope, name, ...)                                                                 \
-    static PapyrusFunction<returnType, scope, __VA_ARGS__> s_p##name(                                                  \
-        World::Get().ctx<PapyrusService>().Get(#scope, #name));
-
-#define GLOBAL_PAPYRUS_FUNCTION(returnType, scope, name, ...)                                                          \
-    static GlobalPapyrusFunction<returnType, __VA_ARGS__> s_p##name(                                                  \
-        World::Get().ctx<PapyrusService>().Get(#scope, #name));
-
-#define LATENT_PAPYRUS_FUNCTION(returnType, scope, name, ...)                                                          \
-    static LatentPapyrusFunction<returnType, scope, __VA_ARGS__> s_p##name(                                            \
-        World::Get().ctx<PapyrusService>().Get(#scope, #name));
+#define PAPYRUS_FUNCTION(returnType, scope, name, ...) static PapyrusFunction<returnType, scope, __VA_ARGS__> s_p##name(World::Get().ctx<PapyrusService>().Get(#scope, #name));
+#define GLOBAL_PAPYRUS_FUNCTION(returnType, scope, name, ...) static GlobalPapyrusFunction<returnType, __VA_ARGS__> s_p##name(World::Get().ctx<PapyrusService>().Get(#scope, #name));
+#define LATENT_PAPYRUS_FUNCTION(returnType, scope, name, ...) static LatentPapyrusFunction<returnType, scope, __VA_ARGS__> s_p##name(World::Get().ctx<PapyrusService>().Get(#scope, #name));

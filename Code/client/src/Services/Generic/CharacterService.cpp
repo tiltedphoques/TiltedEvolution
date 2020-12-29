@@ -338,7 +338,6 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 
 void CharacterService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    spdlog::info("equip_event by {:X}", acEvent.ActorId);
     m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
@@ -353,11 +352,12 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
         cachedInventoryChanges[id] = inventory;
     }
 
-    /* GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
-    char* rawString = new char[18];
-    strncpy(rawString, "InventoryMenu", 18);*/
+    GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
 
-    for (const auto& [id, inventory] : acEvent.Changes)
+    if (s_pIsMenuOpen("InventoryMenu"))
+        return;
+
+    for (const auto& [id, inventory] : cachedInventoryChanges)
     {
         const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity)
         {
@@ -377,6 +377,7 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
             pActor->SetInventory(inventory);
         }
     }
+    cachedInventoryChanges.clear();
 }
 
 void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept
