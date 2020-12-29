@@ -150,7 +150,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             strncpy(rawString, "InventoryMenu", 18);
             std::cout << "strlen: " << strlen(rawString) << std::endl;
             BSFixedString selfMadeString(rawString);
-            bool is_open = s_pIsMenuOpen(selfMadeString);
+            bool is_open = s_pIsMenuOpen("InventoryMenu");
             std::cout << "is_open: " << is_open << std::endl;
 
             // PAPYRUS_FUNCTION(bool, StringUtil, GetLength, BSFixedString);
@@ -166,7 +166,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             GLOBAL_PAPYRUS_FUNCTION(uint64_t, StringUtil, GetLength, BSFixedString);
 
-            std::cout << "length: " << s_pGetLength(selfMadeString) << std::endl;
+            std::cout << "length: " << s_pGetLength(BSFixedString("InventoryMenu")) << std::endl;
 
             using Game = GameVM;
             PAPYRUS_FUNCTION(void, Game, ForceThirdPerson);

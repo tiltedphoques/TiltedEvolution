@@ -1,6 +1,8 @@
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Messages/CharacterTravelRequest.h"
+#include "Services/PapyrusService.h"
+
 
 
 #include <Services/CharacterService.h>
@@ -343,6 +345,17 @@ void CharacterService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) const noexcept
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
+
+    static Map<uint32_t, Inventory> cachedInventoryChanges;
+
+    for (const auto& [id, inventory] : acEvent.Changes)
+    {
+        cachedInventoryChanges[id] = inventory;
+    }
+
+    /* GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
+    char* rawString = new char[18];
+    strncpy(rawString, "InventoryMenu", 18);*/
 
     for (const auto& [id, inventory] : acEvent.Changes)
     {
