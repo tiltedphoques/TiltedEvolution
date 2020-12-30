@@ -354,7 +354,7 @@ void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent)
 
     GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
 
-    if (s_pIsMenuOpen("InventoryMenu"))
+    if (s_pIsMenuOpen(BSFixedString("InventoryMenu")))
         return;
 
     for (const auto& [id, inventory] : cachedInventoryChanges)
