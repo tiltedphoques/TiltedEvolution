@@ -3,55 +3,52 @@
 #include "Messages/CharacterTravelRequest.h"
 #include "Services/PapyrusService.h"
 
-
-
 #include <Services/CharacterService.h>
-#include <Services/TransportService.h>
 #include <Services/QuestService.h>
+#include <Services/TransportService.h>
 
 #include <Games/References.h>
 
+#include <ExtraData/ExtraLeveledCreature.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
-#include <ExtraData/ExtraLeveledCreature.h>
 
 #include <Components.h>
 
-#include <Systems/InterpolationSystem.h>
 #include <Systems/AnimationSystem.h>
-#include <Systems/FaceGenSystem.h>
 #include <Systems/CacheSystem.h>
+#include <Systems/FaceGenSystem.h>
+#include <Systems/InterpolationSystem.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/EquipmentChangeEvent.h>
+#include <Events/UpdateEvent.h>
 
-#include <Structs/ActionEvent.h>
-#include <Messages/CancelAssignmentRequest.h>
-#include <Messages/RemoveCharacterRequest.h>
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
-#include <Messages/ServerReferencesMoveRequest.h>
-#include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/CancelAssignmentRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
-#include <Messages/RequestInventoryChanges.h>
-#include <Messages/RequestFactionsChanges.h>
-#include <Messages/NotifyInventoryChanges.h>
-#include <Messages/NotifyFactionsChanges.h>
-#include <Messages/NotifyRemoveCharacter.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/NotifyCharacterTravel.h>
+#include <Messages/NotifyFactionsChanges.h>
+#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyRemoveCharacter.h>
+#include <Messages/RemoveCharacterRequest.h>
+#include <Messages/RequestFactionsChanges.h>
+#include <Messages/RequestInventoryChanges.h>
+#include <Messages/ServerReferencesMoveRequest.h>
+#include <Structs/ActionEvent.h>
 
 #include <World.h>
 
-
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
-    : m_world(aWorld)
-    , m_dispatcher(aDispatcher)
-    , m_transport(aTransport)
+    : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
-    m_formIdAddedConnection = m_world.on_construct<FormIdComponent>().connect<&CharacterService::OnFormIdComponentAdded>(this);
-    m_formIdRemovedConnection = m_world.on_destroy<FormIdComponent>().connect<&CharacterService::OnFormIdComponentRemoved>(this);
+    m_formIdAddedConnection =
+        m_world.on_construct<FormIdComponent>().connect<&CharacterService::OnFormIdComponentAdded>(this);
+    m_formIdRemovedConnection =
+        m_world.on_destroy<FormIdComponent>().connect<&CharacterService::OnFormIdComponentRemoved>(this);
 
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this);
     m_actionConnection = m_dispatcher.sink<ActionEvent>().connect<&CharacterService::OnActionEvent>(this);
@@ -59,14 +56,22 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&CharacterService::OnConnected>(this);
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&CharacterService::OnDisconnected>(this);
 
-    m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
-    m_characterSpawnConnection = m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
-    m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
-    m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
-    m_inventoryConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
-    m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
-    m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
-    m_characterTravelConnection = m_dispatcher.sink<NotifyCharacterTravel>().connect<&CharacterService::OnCharacterTravel>(this);
+    m_assignCharacterConnection =
+        m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
+    m_characterSpawnConnection =
+        m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
+    m_referenceMovementSnapshotConnection =
+        m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
+    m_equipmentConnection =
+        m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
+    m_inventoryConnection =
+        m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
+    m_factionsConnection =
+        m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
+    m_removeCharacterConnection =
+        m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
+    m_characterTravelConnection =
+        m_dispatcher.sink<NotifyCharacterTravel>().connect<&CharacterService::OnCharacterTravel>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -92,22 +97,24 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
         pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
     }
 
-    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
+    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) ||
+        aRegistry.has<WaitingForAssignmentComponent>(aEntity))
         return;
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
 
     auto* const pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
 
-    auto* pExtra = static_cast<ExtraLeveledCreature*>(pActor->GetExtraDataList()->GetByType(ExtraData::LeveledCreature));
+    auto* pExtra =
+        static_cast<ExtraLeveledCreature*>(pActor->GetExtraDataList()->GetByType(ExtraData::LeveledCreature));
 
     auto* const pOwner = pNpc->actorData.owner;
     if (pOwner)
     {
-    //    spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
+        //    spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
     }
 
-    if(pNpc)
+    if (pNpc)
     {
         RequestServerAssignment(aRegistry, aEntity);
     }
@@ -131,7 +138,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
 {
-    //m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
+    // m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
 
     // Go through all the forms that were previously detected
     auto view = m_world.view<FormIdComponent>();
@@ -161,8 +168,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     spdlog::info("Received for cookie {:X}", acMessage.Cookie);
 
     auto view = m_world.view<WaitingForAssignmentComponent>();
-    const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.Cookie](auto entity)
-    {
+    const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.Cookie](auto entity) {
         return view.get(entity).Cookie == cookie;
     });
 
@@ -221,7 +227,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         if (acMessage.BaseId != GameId{})
         {
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
-            if(cNpcId == 0)
+            if (cNpcId == 0)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
                 return;
@@ -291,8 +297,7 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 
     for (const auto& [serverId, update] : acMessage.Updates)
     {
-        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = serverId, view](entt::entity entity)
-        {
+        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = serverId, view](entt::entity entity) {
             return view.get<RemoteComponent>(entity).Id == serverId;
         });
 
@@ -323,12 +328,12 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 {
     auto view = m_world.view<LocalAnimationComponent, FormIdComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acActionEvent.ActorId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
+    const auto itor =
+        std::find_if(std::begin(view), std::end(view), [id = acActionEvent.ActorId, view](entt::entity entity) {
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
 
-    if(itor != std::end(view))
+    if (itor != std::end(view))
     {
         auto& localComponent = view.get<LocalAnimationComponent>(*itor);
 
@@ -341,43 +346,14 @@ void CharacterService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
-void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) const noexcept
+void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept
 {
-    auto view = m_world.view<RemoteComponent, FormIdComponent>();
-
-    static Map<uint32_t, Inventory> cachedInventoryChanges;
-
     for (const auto& [id, inventory] : acEvent.Changes)
     {
-        cachedInventoryChanges[id] = inventory;
+        m_cachedInventoryChanges[id] = inventory;
     }
 
-    GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
-
-    if (s_pIsMenuOpen(BSFixedString("InventoryMenu")))
-        return;
-
-    for (const auto& [id, inventory] : cachedInventoryChanges)
-    {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity)
-        {
-            return view.get<RemoteComponent>(entity).Id == id;
-        });
-
-        if (itor != std::end(view))
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(*itor);
-            auto& remoteComponent = view.get<RemoteComponent>(*itor);
-
-            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-            if (!pActor)
-                return;
-
-            remoteComponent.SpawnRequest.InventoryContent = inventory;
-            pActor->SetInventory(inventory);
-        }
-    }
-    cachedInventoryChanges.clear();
+    ApplyCachedInventoryChanges();
 }
 
 void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept
@@ -386,8 +362,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
 
     for (const auto& [id, factions] : acEvent.Changes)
     {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity)
-        {
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) {
             return view.get<RemoteComponent>(entity).Id == id;
         });
 
@@ -411,7 +386,8 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
 {
     auto view = m_world.view<RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.ServerId, view](entt::entity entity) {
+    const auto itor =
+        std::find_if(std::begin(view), std::end(view), [id = acEvent.ServerId, view](entt::entity entity) {
             return view.get<RemoteComponent>(entity).Id == id;
         });
 
@@ -420,7 +396,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) c
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
         {
             spdlog::info("\tformid: {:X}", pFormIdComponent->Id);
-            
+
             const auto pActor = RTTI_CAST(TESForm::GetById(pFormIdComponent->Id), TESForm, Actor);
             if (!pActor)
                 return;
@@ -500,21 +476,21 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.CellId.ModId = cellModId;
 
     message.Position = pActor->position;
-    message.Rotation.X= pActor->rotation.m_x;
+    message.Rotation.X = pActor->rotation.m_x;
     message.Rotation.Y = pActor->rotation.m_z;
 
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
 
-    if(isPlayer)
+    if (isPlayer)
     {
         pNpc->MarkChanged(0x2000800);
     }
 
     const auto changeFlags = pNpc->GetChangeFlags();
 
-    if(isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
+    if (isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
@@ -535,7 +511,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
             entries[i].Color = tints[i]->color;
             entries[i].Type = tints[i]->type;
 
-            if(tints[i]->texture)
+            if (tints[i]->texture)
                 entries[i].Name = tints[i]->texture->name.AsAscii();
         }
     }
@@ -573,7 +549,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
 
-    if(isTemporary)
+    if (isTemporary)
     {
         if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, message.FormId))
             return;
@@ -595,7 +571,8 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     }
 }
 
-void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
+void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity,
+                                              const uint32_t aFormId) const noexcept
 {
     if (aRegistry.has<RemoteComponent>(aEntity))
     {
@@ -615,7 +592,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
                 pActor->Delete();
 
                 aRegistry.remove_if_exists<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
-                                         RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
+                                           RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
             }
         }
 
@@ -661,7 +638,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
                 m_transport.Send(message);
             }
         }
-        
+
         if (!actorWasMoved)
         {
             RemoveCharacterRequest message;
@@ -758,9 +735,9 @@ void CharacterService::RunRemoteUpdates() const noexcept
     // Delay by 120ms to let the interpolation system accumulate interpolation points
     const auto tick = m_transport.GetClock().GetCurrentTick() - 120;
 
-    // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to spawn it
-    auto interpolatedEntities =
-        m_world.view<RemoteComponent, InterpolationComponent>();
+    // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to
+    // spawn it
+    auto interpolatedEntities = m_world.view<RemoteComponent, InterpolationComponent>();
 
     for (auto entity : interpolatedEntities)
     {
@@ -773,7 +750,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
             auto* pForm = TESForm::GetById(pFormIdComponent->Id);
             pActor = RTTI_CAST(pForm, TESForm, Actor);
         }
-       
+
         InterpolationSystem::Update(pActor, interpolationComponent, tick);
     }
 
@@ -794,7 +771,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
 
     auto facegenView = m_world.view<FormIdComponent, FaceGenComponent>();
 
-    for(auto entity : facegenView)
+    for (auto entity : facegenView)
     {
         auto& formIdComponent = facegenView.get<FormIdComponent>(entity);
         auto& faceGenComponent = facegenView.get<FaceGenComponent>(entity);
@@ -827,7 +804,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
         pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
 
-        toRemove.push_back(entity);  
+        toRemove.push_back(entity);
     }
 
     for (auto entity : toRemove)
@@ -871,6 +848,8 @@ void CharacterService::RunInventoryUpdates() noexcept
 
         m_charactersWithInventoryChanges.clear();
     }
+
+    ApplyCachedInventoryChanges();
 }
 
 void CharacterService::RunFactionsUpdates() const noexcept
@@ -910,13 +889,14 @@ void CharacterService::RunFactionsUpdates() const noexcept
         message.Changes[localComponent.Id] = factions;
     }
 
-    if(!message.Changes.empty())
+    if (!message.Changes.empty())
         m_transport.Send(message);
 }
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
-    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    auto invisibleView =
+        m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
 
     for (auto entity : invisibleView)
     {
@@ -945,4 +925,34 @@ void CharacterService::RunSpawnUpdates() const noexcept
         /*spdlog::info("Remote entity {:X} with cached id {:X} is invisible", remoteComponent.Id,
                      remoteComponent.CachedRefId);*/
     }
+}
+
+void CharacterService::ApplyCachedInventoryChanges() noexcept
+{
+    GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
+
+    if (s_pIsMenuOpen(BSFixedString("InventoryMenu")))
+        return;
+
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+    for (const auto& [id, inventory] : m_cachedInventoryChanges)
+    {
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) {
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+        if (itor != std::end(view))
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(*itor);
+            auto& remoteComponent = view.get<RemoteComponent>(*itor);
+
+            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            if (!pActor)
+                return;
+
+            remoteComponent.SpawnRequest.InventoryContent = inventory;
+            pActor->SetInventory(inventory);
+        }
+    }
+    m_cachedInventoryChanges.clear();
 }

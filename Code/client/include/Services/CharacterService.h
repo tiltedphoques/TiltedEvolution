@@ -1,4 +1,5 @@
 #pragma once
+#include "Structs/Inventory.h"
 
 struct UpdateEvent;
 struct ConnectedEvent;
@@ -35,7 +36,7 @@ struct CharacterService
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) const noexcept;
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
-    void OnInventoryChanges(const NotifyInventoryChanges& acEvent) const noexcept;
+    void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept;
     void OnCharacterTravel(const NotifyCharacterTravel& acEvent) const noexcept;
@@ -53,11 +54,15 @@ private:
     void RunFactionsUpdates() const noexcept;
     void RunSpawnUpdates() const noexcept;
 
+    void ApplyCachedInventoryChanges() noexcept;
+
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
     Set<uint32_t> m_charactersWithInventoryChanges;
+
+	 Map<uint32_t, Inventory> m_cachedInventoryChanges;
 
     entt::scoped_connection m_formIdAddedConnection;
     entt::scoped_connection m_formIdRemovedConnection;
