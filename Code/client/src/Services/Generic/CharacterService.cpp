@@ -931,7 +931,7 @@ void CharacterService::ApplyCachedInventoryChanges() noexcept
 {
     GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
 
-    if (s_pIsMenuOpen(BSFixedString("InventoryMenu")))
+    if (s_pIsMenuOpen(BSFixedString("ContainerMenu")))
         return;
 
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
