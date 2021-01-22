@@ -10,6 +10,8 @@
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
 
+#include <Events/HitEvent.h>
+
 #include <World.h>
 #include <Services/PapyrusService.h>
 
@@ -364,6 +366,26 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
     return ThisCall(RealSpawnActorInWorld, apThis);
 }
 
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float damage, Actor* hitter);
+static TDamageActor* RealDamageActor = nullptr;
+
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
+{
+    spdlog::info("Hook activated");
+    spdlog::info(damage);
+    const auto pExtension = apThis->GetExtension();
+
+    if (pExtension->IsRemote())
+    {
+        spdlog::info("Is remote");
+        World::Get().GetRunner().Trigger(HitEvent(apThis, damage, hitter));
+        return 0;
+    }
+    spdlog::info("Is not remote");
+
+    return ThisCall(RealDamageActor, apThis, damage, hitter);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
     {
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
@@ -372,16 +394,19 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
         POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
         POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
+        POINTER_SKYRIMSE(TDamageActor, s_DamageActor, 0x1405D6300 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
         RealForceState = s_ForceState.Get();
         RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
+        RealDamageActor = s_DamageActor.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
         TP_HOOK(&RealForceState, HookForceState);
         TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
+        TP_HOOK(&RealDamageActor, HookDamageActor);
 
     });

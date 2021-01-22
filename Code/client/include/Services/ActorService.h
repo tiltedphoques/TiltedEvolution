@@ -41,8 +41,6 @@ private:
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
     void OnHit(const HitEvent&) noexcept;
 
-    BSTEventResult OnEvent(const TESHitEvent*, const EventDispatcher<TESHitEvent>*) override;
-
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
     void ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
 };

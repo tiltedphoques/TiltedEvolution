@@ -84,8 +84,8 @@ void TestService::RunDiff()
                 {
                     for (auto i = 0u; i < pVariableSet->size; ++i)
                     {
-                        if (pVariableSet->data[i] != pActorVariableSet->data[i])
-                            spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i], pActorVariableSet->data[i]);
+                        //if (pVariableSet->data[i] != pActorVariableSet->data[i])
+                            //spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i], pActorVariableSet->data[i]);
 
                         /*auto itor = s_values.find(i);
                         if (itor == std::end(s_values))

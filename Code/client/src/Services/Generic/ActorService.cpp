@@ -25,8 +25,6 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
     aDispatcher.sink<HitEvent>().connect<&ActorService::OnHit>(this);
-
-    EventDispatcherManager::Get()->hitEvent.RegisterSink(this);
 }
 
 ActorService::~ActorService() noexcept
@@ -143,6 +141,7 @@ void ActorService::OnHit(const HitEvent& acEvent) noexcept
     if (pActor != NULL)
     {
         float health = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth);
+        health -= acEvent.Damage;
 
         auto view = m_world.view<FormIdComponent, LocalComponent>();
 
@@ -161,13 +160,6 @@ void ActorService::OnHit(const HitEvent& acEvent) noexcept
             }
         }
     }
-}
-
-BSTEventResult ActorService::OnEvent(const TESHitEvent* hitEvent, const EventDispatcher<TESHitEvent>* dispatcher)
-{
-    m_world.GetRunner().Trigger(HitEvent(hitEvent->hit, hitEvent->hitter));
-    
-    return BSTEventResult::kOk;
 }
 
 void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) noexcept
