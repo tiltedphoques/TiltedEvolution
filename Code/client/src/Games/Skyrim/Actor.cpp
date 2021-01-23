@@ -378,11 +378,11 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     if (pExtension->IsRemote())
     {
         spdlog::info("Is remote");
-        World::Get().GetRunner().Trigger(HitEvent(apThis, damage, hitter));
         return 0;
     }
     spdlog::info("Is not remote");
 
+    World::Get().GetRunner().Trigger(HitEvent(apThis, damage, hitter));
     return ThisCall(RealDamageActor, apThis, damage, hitter);
 }
 
