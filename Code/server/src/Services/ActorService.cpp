@@ -1,18 +1,18 @@
 #include <Components.h>
 #include <Events/UpdateEvent.h>
 #include <Messages/RequestActorValueChanges.h>
-#include <Messages/RequestDamageEvent.h>
+#include <Messages/RequestHealthChangeBroadcast.h>
 #include <Services/ActorService.h>
 #include <World.h>
 #include <GameServer.h>
 #include <Messages/NotifyActorValueChanges.h>
-#include <Messages/NotifyDamageEvent.h>
+#include <Messages/NotifyHealthChangeBroadcast.h>
 
 ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld) noexcept
     : m_world(aWorld)
 {
     m_updateHealthConnection = aDispatcher.sink<PacketEvent<RequestActorValueChanges>>().connect<&ActorService::OnActorValueChanges>(this);
-    m_updateDamageConnection = aDispatcher.sink<PacketEvent<RequestDamageEvent>>().connect<&ActorService::OnDamageEvent>(this);
+    m_updateDeltaHealthConnection = aDispatcher.sink<PacketEvent<RequestHealthChangeBroadcast>>().connect<&ActorService::OnHealthChangeBroadcast>(this);
 }
 
 ActorService::~ActorService() noexcept
@@ -37,11 +37,11 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     }
 }
 
-void ActorService::OnDamageEvent(const PacketEvent<RequestDamageEvent>& acMessage) const noexcept
+void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
 {
-    NotifyDamageEvent notifyDamageEvent;
+    NotifyHealthChangeBroadcast notifyDamageEvent;
     notifyDamageEvent.m_Id = acMessage.Packet.m_Id;
-    notifyDamageEvent.m_Damage = acMessage.Packet.m_Damage;
+    notifyDamageEvent.m_DeltaHealth = acMessage.Packet.m_DeltaHealth;
 
     auto view = m_world.view<PlayerComponent>();
     for (auto entity : view)

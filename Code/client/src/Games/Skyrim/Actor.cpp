@@ -10,7 +10,7 @@
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
 
-#include <Events/HitEvent.h>
+#include <Events/HealthChangeEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -378,12 +378,32 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     if (pExHitter->IsLocal())
     {
         spdlog::info("Hitter is local. Executing hook.");
-        World::Get().GetRunner().Trigger(HitEvent(apThis, damage, hitter));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage, hitter));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
 
     spdlog::info("Hitter is remote. Cancelling hook.");
     return 0;
+}
+
+TP_THIS_FUNCTION(THealActor, void, Actor, float heal, Actor* healer);
+static THealActor* RealHealActor = nullptr;
+
+void TP_MAKE_THISCALL(HookHealActor, Actor, float heal, Actor* healer)
+{
+    spdlog::info("Heal hook activated");
+    spdlog::info(heal);
+    const auto pExHealer = healer->GetExtension();
+
+    if (pExHealer->IsLocal())
+    {
+        spdlog::info("Healer is local. Executing hook.");
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, heal, healer));
+        ThisCall(RealHealActor, apThis, heal, healer);
+    }
+
+    spdlog::info("Healer is remote. Cancelling hook.");
+    return;
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -395,6 +415,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
         POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
         POINTER_SKYRIMSE(TDamageActor, s_DamageActor, 0x1405D6300 - 0x140000000);
+        POINTER_SKYRIMSE(THealActor, s_HealActor, 0x140567A80 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
@@ -402,11 +423,13 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         RealForceState = s_ForceState.Get();
         RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
         RealDamageActor = s_DamageActor.Get();
+        RealHealActor = s_HealActor.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
         TP_HOOK(&RealForceState, HookForceState);
         TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
         TP_HOOK(&RealDamageActor, HookDamageActor);
+        TP_HOOK(&RealHealActor, HookHealActor);
 
     });

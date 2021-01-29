@@ -17,7 +17,7 @@
 #include <Messages/PartyLeaveRequest.h>
 #include <Messages/CharacterTravelRequest.h>
 #include <Messages/RequestActorValueChanges.h>
-#include <Messages/RequestDamageEvent.h>
+#include <Messages/RequestHealthChangeBroadcast.h>
 
 #include <iostream>
 
@@ -51,7 +51,7 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(PartyLeaveRequest);
         EXTRACT_MESSAGE(CharacterTravelRequest);
         EXTRACT_MESSAGE(RequestActorValueChanges);
-        EXTRACT_MESSAGE(RequestDamageEvent);
+        EXTRACT_MESSAGE(RequestHealthChangeBroadcast);
     }
 
     return UniquePtr<ClientMessage>(nullptr, &TiltedPhoques::Delete<ClientMessage>);

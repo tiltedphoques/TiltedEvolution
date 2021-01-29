@@ -10,11 +10,11 @@ struct DisconnectedEvent;
 struct ReferenceSpawnedEvent;
 struct ReferenceRemovedEvent;
 struct UpdateEvent;
-struct HitEvent;
+struct HealthChangeEvent;
 
 struct TransportService;
 struct NotifyActorValueChanges;
-struct NotifyDamageEvent;
+struct NotifyHealthChangeBroadcast;
 
 struct Actor;
 
@@ -40,8 +40,8 @@ private:
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
-    void OnHit(const HitEvent&) noexcept;
-    void OnDamageEvent(const NotifyDamageEvent& acMessage) noexcept;
+    void OnHealthChange(const HealthChangeEvent&) noexcept;
+    void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
 
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
     void ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;

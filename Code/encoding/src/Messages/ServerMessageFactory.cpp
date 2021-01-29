@@ -17,7 +17,7 @@
 #include <Messages/NotifyPartyInvite.h>
 #include <Messages/NotifyCharacterTravel.h>
 #include <Messages/NotifyActorValueChanges.h>
-#include <Messages/NotifyDamageEvent.h>
+#include <Messages/NotifyHealthChangeBroadcast.h>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -49,7 +49,7 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(NotifyPartyInvite);
         EXTRACT_MESSAGE(NotifyCharacterTravel);
         EXTRACT_MESSAGE(NotifyActorValueChanges);
-        EXTRACT_MESSAGE(NotifyDamageEvent);
+        EXTRACT_MESSAGE(NotifyHealthChangeBroadcast);
     }
 
     return UniquePtr<ServerMessage>(nullptr, &TiltedPhoques::Delete<ServerMessage>);

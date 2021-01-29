@@ -17,7 +17,7 @@ enum ClientOpcode : unsigned char
     kPartyLeaveRequest,
     kCharacterTravelRequest,
     kRequestActorValueChanges,
-    kRequestDamageEvent
+    kRequestHealthChangeBroadcast
 };
 
 enum ServerOpcode : unsigned char
@@ -37,5 +37,5 @@ enum ServerOpcode : unsigned char
     kNotifyPartyInvite,
     kNotifyCharacterTravel,
     kNotifyActorValueChanges,
-    kNotifyDamageEvent
+    kNotifyHealthChangeBroadcast
 };

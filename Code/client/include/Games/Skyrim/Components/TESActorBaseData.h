@@ -32,6 +32,5 @@ struct TESActorBaseData : BaseFormComponent
     GameArray<FactionInfo> factions;
 };
 
-constexpr size_t t = offsetof(TESActorBaseData, unk1C);
 static_assert(offsetof(TESActorBaseData, owner) == 0x30);
 static_assert(offsetof(TESActorBaseData, factions) == 0x40);

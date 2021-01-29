@@ -9,12 +9,12 @@
 #include <Events/ReferenceRemovedEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/HitEvent.h>
+#include <Events/HealthChangeEvent.h>
 
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
-#include <Messages/NotifyDamageEvent.h>
-#include <Messages/RequestDamageEvent.h>
+#include <Messages/NotifyHealthChangeBroadcast.h>
+#include <Messages/RequestHealthChangeBroadcast.h>
 
 ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -26,8 +26,8 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
-    aDispatcher.sink<NotifyDamageEvent>().connect<&ActorService::OnDamageEvent>(this);
-    aDispatcher.sink<HitEvent>().connect<&ActorService::OnHit>(this);
+    aDispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
+    aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
 }
 
 ActorService::~ActorService() noexcept
@@ -137,40 +137,43 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
     }    
 }
 
-void ActorService::OnHit(const HitEvent& acEvent) noexcept
+void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
 {
-    auto view = m_world.view<FormIdComponent>();
-
-    for (auto entity : view)
+    if (m_transport.IsConnected())
     {
-        auto& formIdComponent = view.get(entity);
-        if (formIdComponent.Id == acEvent.Hittee->formID)
+        auto view = m_world.view<FormIdComponent>();
+
+        for (auto entity : view)
         {
-            const auto localComponent = m_world.try_get<LocalComponent>(entity);
-
-            if (localComponent)
+            auto& formIdComponent = view.get(entity);
+            if (formIdComponent.Id == acEvent.Hittee->formID)
             {
-                RequestDamageEvent requestDamageEvent;
-                requestDamageEvent.m_Id = localComponent->Id;
-                requestDamageEvent.m_Damage = acEvent.Damage;
+                const auto localComponent = m_world.try_get<LocalComponent>(entity);
 
-                m_transport.Send(requestDamageEvent);
-            }
-            else
-            {
-                const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
+                if (localComponent)
+                {
+                    RequestHealthChangeBroadcast requestHealthChange;
+                    requestHealthChange.m_Id = localComponent->Id;
+                    requestHealthChange.m_DeltaHealth = acEvent.DeltaHealth;
 
-                RequestDamageEvent requestDamageEvent;
-                requestDamageEvent.m_Id = remoteComponent->Id;
-                requestDamageEvent.m_Damage = acEvent.Damage;
+                    m_transport.Send(requestHealthChange);
+                }
+                else
+                {
+                    const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
 
-                m_transport.Send(requestDamageEvent);
+                    RequestHealthChangeBroadcast requestHealthChange;
+                    requestHealthChange.m_Id = remoteComponent->Id;
+                    requestHealthChange.m_DeltaHealth = acEvent.DeltaHealth;
+
+                    m_transport.Send(requestHealthChange);
+                }
             }
         }
     }
 }
 
-void ActorService::OnDamageEvent(const NotifyDamageEvent& acEvent) noexcept
+void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acEvent) noexcept
 {
     auto view = m_world.view<FormIdComponent>();
 
@@ -192,7 +195,7 @@ void ActorService::OnDamageEvent(const NotifyDamageEvent& acEvent) noexcept
 
             if (pActor != NULL)
             {
-                float newHealth = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth) - acEvent.m_Damage;
+                float newHealth = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth) + acEvent.m_DeltaHealth;
                 ForceActorValue(pActor, ActorValueInfo::kHealth, newHealth);
             }
         }
@@ -219,9 +222,9 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
                     std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
                     std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
 
-                    //if (value.first == ActorValueInfo::kHealth)
-                        //continue;
-                    if (value.first == ActorValueInfo::kHealth || value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
+                    if (value.first == ActorValueInfo::kHealth)
+                        continue;
+                    if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
                     {
                         ForceActorValue(pActor, value.first, value.second);
                     }
