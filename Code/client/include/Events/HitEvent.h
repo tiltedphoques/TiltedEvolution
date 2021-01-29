@@ -4,12 +4,11 @@ struct TESObjectREFR;
 
 struct HitEvent
 {
-    HitEvent(Actor* aHit, float damage, Actor* aHitter) 
-        : Hit(aHit), Damage(damage)
-        , Hitter(aHitter)
+    HitEvent(Actor* aHittee, float damage, Actor* aHitter) 
+        : Hittee(aHittee), Damage(damage), Hitter(aHitter)
     {}
 
-    Actor* Hit;
+    Actor* Hittee;
     float Damage;
     Actor* Hitter;
 };

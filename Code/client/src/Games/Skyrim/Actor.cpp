@@ -369,21 +369,21 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float damage, Actor* hitter);
 static TDamageActor* RealDamageActor = nullptr;
 
-bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
+void TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
-    spdlog::info("Hook activated");
+    spdlog::info("Damage hook activated");
     spdlog::info(damage);
-    const auto pExtension = apThis->GetExtension();
+    const auto pExHitter = hitter->GetExtension();
 
-    if (pExtension->IsRemote())
+    if (pExHitter->IsLocal())
     {
-        spdlog::info("Is remote");
-        return 0;
+        spdlog::info("Hitter is local. Executing hook.");
+        World::Get().GetRunner().Trigger(HitEvent(apThis, damage, hitter));
+        ThisCall(RealDamageActor, apThis, damage, hitter);
     }
-    spdlog::info("Is not remote");
 
-    World::Get().GetRunner().Trigger(HitEvent(apThis, damage, hitter));
-    return ThisCall(RealDamageActor, apThis, damage, hitter);
+    spdlog::info("Hitter is remote. Cancelling hook.");
+    return;
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()

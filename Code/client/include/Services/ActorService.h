@@ -14,6 +14,7 @@ struct HitEvent;
 
 struct TransportService;
 struct NotifyActorValueChanges;
+struct NotifyDamageEvent;
 
 struct Actor;
 
@@ -40,6 +41,7 @@ private:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
     void OnHit(const HitEvent&) noexcept;
+    void OnDamageEvent(const NotifyDamageEvent& acMessage) noexcept;
 
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
     void ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;

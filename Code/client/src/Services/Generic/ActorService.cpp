@@ -13,6 +13,8 @@
 
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
+#include <Messages/NotifyDamageEvent.h>
+#include <Messages/RequestDamageEvent.h>
 
 ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -24,6 +26,7 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
+    aDispatcher.sink<NotifyDamageEvent>().connect<&ActorService::OnDamageEvent>(this);
     aDispatcher.sink<HitEvent>().connect<&ActorService::OnHit>(this);
 }
 
@@ -136,27 +139,61 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void ActorService::OnHit(const HitEvent& acEvent) noexcept
 {
-    auto* pActor = RTTI_CAST(acEvent.Hit, TESObjectREFR, Actor);
+    auto view = m_world.view<FormIdComponent>();
 
-    if (pActor != NULL)
+    for (auto entity : view)
     {
-        float health = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth);
-        health -= acEvent.Damage;
-
-        auto view = m_world.view<FormIdComponent, LocalComponent>();
-
-        for (auto entity : view)
+        auto& formIdComponent = view.get(entity);
+        if (formIdComponent.Id == acEvent.Hittee->formID)
         {
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            if (formIdComponent.Id == acEvent.Hit->formID)
+            const auto localComponent = m_world.try_get<LocalComponent>(entity);
+
+            if (localComponent)
             {
-                auto& localComponent = view.get<LocalComponent>(entity);
+                RequestDamageEvent requestDamageEvent;
+                requestDamageEvent.m_Id = localComponent->Id;
+                requestDamageEvent.m_Damage = acEvent.Damage;
 
-                RequestActorValueChanges requestChanges;
-                requestChanges.m_Id = localComponent.Id;
-                requestChanges.m_values.insert({ActorValueInfo::kHealth, health});
+                m_transport.Send(requestDamageEvent);
+            }
+            else
+            {
+                const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
 
-                m_transport.Send(requestChanges);
+                RequestDamageEvent requestDamageEvent;
+                requestDamageEvent.m_Id = remoteComponent->Id;
+                requestDamageEvent.m_Damage = acEvent.Damage;
+
+                m_transport.Send(requestDamageEvent);
+            }
+        }
+    }
+}
+
+void ActorService::OnDamageEvent(const NotifyDamageEvent& acEvent) noexcept
+{
+    auto view = m_world.view<FormIdComponent>();
+
+    for (auto entity : view)
+    {
+        uint32_t componentId;
+        const auto localComponent = m_world.try_get<LocalComponent>(entity);
+        const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
+        if (localComponent)
+            componentId = localComponent->Id;
+        else
+            componentId = remoteComponent->Id;
+
+        if (componentId == acEvent.m_Id)
+        {
+            auto& formIdComponent = view.get(entity);
+            auto* pForm = TESForm::GetById(formIdComponent.Id);
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+            if (pActor != NULL)
+            {
+                float newHealth = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth) - acEvent.m_Damage;
+                ForceActorValue(pActor, ActorValueInfo::kHealth, newHealth);
             }
         }
     }
@@ -182,7 +219,9 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
                     std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
                     std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
 
-                    if (value.first == ActorValueInfo::kHealth || value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
+                    if (value.first == ActorValueInfo::kHealth)
+                        continue;
+                    if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
                     {
                         ForceActorValue(pActor, value.first, value.second);
                     }

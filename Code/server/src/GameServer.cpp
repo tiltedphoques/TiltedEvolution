@@ -23,6 +23,7 @@
 #include <Messages/PartyLeaveRequest.h> 
 #include <Messages/CharacterTravelRequest.h> 
 #include <Messages/RequestActorValueChanges.h>
+#include <Messages/RequestDamageEvent.h>
 
 #include <Scripts/Player.h>
 
@@ -122,6 +123,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         SERVER_DISPATCH(PartyLeaveRequest);
         SERVER_DISPATCH(CharacterTravelRequest);
         SERVER_DISPATCH(RequestActorValueChanges);
+        SERVER_DISPATCH(RequestDamageEvent);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;
