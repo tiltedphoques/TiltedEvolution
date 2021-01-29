@@ -219,9 +219,9 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
                     std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
                     std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
 
-                    if (value.first == ActorValueInfo::kHealth)
-                        continue;
-                    if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
+                    //if (value.first == ActorValueInfo::kHealth)
+                        //continue;
+                    if (value.first == ActorValueInfo::kHealth || value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
                     {
                         ForceActorValue(pActor, value.first, value.second);
                     }
