@@ -15,6 +15,9 @@
 #include <World.h>
 #include <Services/PapyrusService.h>
 
+#include <Effects/ValueModifierEffect.h>
+#include <Forms/ActorValueInfo.h>
+
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
@@ -373,12 +376,18 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
     spdlog::info("Damage hook activated");
     spdlog::info(damage);
+    if (!hitter)
+    {
+        spdlog::info("Hitter is local. Executing hook.");
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
+        return ThisCall(RealDamageActor, apThis, damage, hitter);
+    }
     const auto pExHitter = hitter->GetExtension();
 
     if (pExHitter->IsLocal())
     {
         spdlog::info("Hitter is local. Executing hook.");
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage, hitter));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
 
@@ -386,23 +395,31 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     return 0;
 }
 
-TP_THIS_FUNCTION(THealActor, void, Actor, float heal, Actor* healer);
-static THealActor* RealHealActor = nullptr;
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* target, float effectValue, unsigned int unk1);
+static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
-void TP_MAKE_THISCALL(HookHealActor, Actor, float heal, Actor* healer)
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, unsigned int unk1)
 {
-    spdlog::info("Heal hook activated");
-    spdlog::info(heal);
-    const auto pExHealer = healer->GetExtension();
+    spdlog::info("Apply actor effect hook activated");
+    spdlog::info(effectValue);
+    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
-    if (pExHealer->IsLocal())
+    if (pValueModEffect)
     {
-        spdlog::info("Healer is local. Executing hook.");
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, heal, healer));
-        ThisCall(RealHealActor, apThis, heal, healer);
+        if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && effectValue > 0.0f)
+        {
+            spdlog::info("Actor effect is healing.");
+            const auto pExTarget = target->GetExtension();
+            if (pExTarget->IsLocal())
+            {
+                spdlog::info("Heal target is local. Executing hook.");
+                World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
+                ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
+            }
+        }
     }
 
-    spdlog::info("Healer is remote. Cancelling hook.");
+    spdlog::info("Cancelling actor effect hook.");
     return;
 }
 
@@ -415,7 +432,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
         POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
         POINTER_SKYRIMSE(TDamageActor, s_DamageActor, 0x1405D6300 - 0x140000000);
-        POINTER_SKYRIMSE(THealActor, s_HealActor, 0x140567A80 - 0x140000000);
+        POINTER_SKYRIMSE(TApplyActorEffect, s_ApplyActorEffect, 0x140567A80 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
@@ -423,13 +440,13 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         RealForceState = s_ForceState.Get();
         RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
         RealDamageActor = s_DamageActor.Get();
-        RealHealActor = s_HealActor.Get();
+        RealApplyActorEffect = s_ApplyActorEffect.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
         TP_HOOK(&RealForceState, HookForceState);
         TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
         TP_HOOK(&RealDamageActor, HookDamageActor);
-        TP_HOOK(&RealHealActor, HookHealActor);
+        TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
 
     });
