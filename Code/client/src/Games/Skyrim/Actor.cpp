@@ -432,7 +432,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
         POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
         POINTER_SKYRIMSE(TDamageActor, s_DamageActor, 0x1405D6300 - 0x140000000);
-        POINTER_SKYRIMSE(TApplyActorEffect, s_ApplyActorEffect, 0x140567A80 - 0x140000000);
+        POINTER_SKYRIMSE(TApplyActorEffect, s_ApplyActorEffect, 0x140567A89 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
