@@ -414,7 +414,7 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
             {
                 spdlog::info("Heal target is local. Executing hook.");
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
-                ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
+                return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
             }
         }
     }
