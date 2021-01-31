@@ -240,6 +240,15 @@ BSExtraDataList* TESObjectREFR::GetExtraDataList() noexcept
 #endif
 }
 
+ActorValueOwner* Actor::GetActorValueOwner() noexcept
+{
+#if TP_FALLOUT4
+    return actorValueOwner;
+#else
+    return &actorValueOwner;
+#endif
+}
+
 void TESObjectREFR::Delete() const noexcept
 {
     using ObjectReference = TESObjectREFR;

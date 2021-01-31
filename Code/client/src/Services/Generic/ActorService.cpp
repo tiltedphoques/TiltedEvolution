@@ -17,6 +17,7 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
+#include <misc/ActorValueOwner.h>
 
 ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -42,13 +43,13 @@ void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
     Map<uint32_t, float> values;
     for (int i = 0; i < 164; i++)
     {
-        float value = aActor->actorValueOwner.GetValue(i);
+        float value = aActor->GetActorValueOwner()->GetValue(i);
         values.insert({i, value});
     }
 
     Map<uint32_t, float> maxValues;
     // Should be a for loop here to store all values.
-    float maxValue = aActor->actorValueOwner.GetMaxValue(ActorValueInfo::kHealth);
+    float maxValue = aActor->GetActorValueOwner()->GetMaxValue(ActorValueInfo::kHealth);
     maxValues.insert({ActorValueInfo::kHealth, maxValue});
 
     m_actorMaxValues.insert({aId, maxValues});
@@ -128,7 +129,7 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                         for (int i = 0; i < 164; i++)
                         {
                             float oldValue = value.second[i];
-                            float newValue = pActor->actorValueOwner.GetValue(i);
+                            float newValue = pActor->GetActorValueOwner()->GetValue(i);
                             if (newValue != oldValue)
                             {
                                 requestChanges.m_values.insert({i, newValue});
@@ -165,7 +166,7 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
                         // Again, there should probably be a loop here
                         float oldValue = maxValue.second[ActorValueInfo::kHealth];
-                        float newValue = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth);
+                        float newValue = pActor->GetActorValueOwner()->GetValue(ActorValueInfo::kHealth);
                         if (newValue != oldValue)
                         {
                             requestChanges.m_values.insert({ActorValueInfo::kHealth, newValue});
@@ -241,7 +242,7 @@ void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& ac
 
             if (pActor != NULL)
             {
-                float newHealth = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth) + acEvent.m_DeltaHealth;
+                float newHealth = pActor->GetActorValueOwner()->GetValue(ActorValueInfo::kHealth) + acEvent.m_DeltaHealth;
                 ForceActorValue(pActor, ActorValueInfo::kHealth, newHealth);
             }
         }
@@ -276,7 +277,7 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
                     }
                     else
                     {
-                        pActor->actorValueOwner.SetValue(value.first, value.second);
+                        pActor->GetActorValueOwner()->SetValue(value.first, value.second);
                     }                    
                 }
             }
@@ -307,8 +308,8 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
 
                     if (value.first == ActorValueInfo::kHealth)
                     {
-                        float current = pActor->actorValueOwner.GetValue(value.first);
-                        pActor->actorValueOwner.ForceCurrent(0, value.first, value.second - current);
+                        float current = pActor->GetActorValueOwner()->GetValue(value.first);
+                        pActor->GetActorValueOwner()->ForceCurrent(0, value.first, value.second - current);
                     }
                 }
             }
@@ -318,6 +319,6 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
 
 void ActorService::ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept
 {
-    float current = aActor->actorValueOwner.GetValue(aId);
-    aActor->actorValueOwner.ForceCurrent(2, aId, aValue - current);
+    float current = aActor->GetActorValueOwner()->GetValue(aId);
+    aActor->GetActorValueOwner()->ForceCurrent(2, aId, aValue - current);
 }
