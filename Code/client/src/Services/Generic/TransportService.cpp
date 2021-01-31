@@ -38,6 +38,7 @@
 #include <Messages/NotifyPartyInvite.h>
 #include <Messages/NotifyCharacterTravel.h>
 #include <Messages/NotifyActorValueChanges.h>
+#include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
@@ -124,6 +125,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
     TRANSPORT_DISPATCH(NotifyPartyInvite);
     TRANSPORT_DISPATCH(NotifyCharacterTravel);
     TRANSPORT_DISPATCH(NotifyActorValueChanges);
+    TRANSPORT_DISPATCH(NotifyActorMaxValueChanges);
     TRANSPORT_DISPATCH(NotifyHealthChangeBroadcast);
 
     default:

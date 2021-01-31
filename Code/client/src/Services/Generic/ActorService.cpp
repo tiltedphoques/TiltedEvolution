@@ -13,6 +13,8 @@
 
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
+#include <Messages/NotifyActorMaxValueChanges.h>
+#include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
 
@@ -26,6 +28,7 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
+    aDispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
     aDispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
     aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
 }
@@ -42,6 +45,13 @@ void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
         float value = aActor->actorValueOwner.GetValue(i);
         values.insert({i, value});
     }
+
+    Map<uint32_t, float> maxValues;
+    // Should be a for loop here to store all values.
+    float maxValue = aActor->actorValueOwner.GetMaxValue(ActorValueInfo::kHealth);
+    maxValues.insert({ActorValueInfo::kHealth, maxValue});
+
+    m_actorMaxValues.insert({aId, maxValues});
     m_actorValues.insert({aId, values});
 }
 
@@ -124,6 +134,42 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                                 requestChanges.m_values.insert({i, newValue});
                                 value.second[i] = newValue;
                             }
+                        }
+
+                        if (requestChanges.m_values.size() > 0)
+                        {
+                            m_transport.Send(requestChanges);
+                        }
+                    }
+                }
+            }
+        }        
+
+        auto view2 = m_world.view<FormIdComponent, LocalComponent>();
+
+        for (auto& maxValue : m_actorMaxValues)
+        {
+            for (auto entity : view2)
+            {
+                auto& localComponent = view2.get<LocalComponent>(entity);
+                if (localComponent.Id == maxValue.first)
+                {
+                    auto& formIdComponent = view2.get<FormIdComponent>(entity);
+                    auto* pForm = TESForm::GetById(formIdComponent.Id);
+                    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+                    if (pActor != NULL)
+                    {
+                        RequestActorMaxValueChanges requestChanges;
+                        requestChanges.m_Id = maxValue.first;
+
+                        // Again, there should probably be a loop here
+                        float oldValue = maxValue.second[ActorValueInfo::kHealth];
+                        float newValue = pActor->actorValueOwner.GetValue(ActorValueInfo::kHealth);
+                        if (newValue != oldValue)
+                        {
+                            requestChanges.m_values.insert({ActorValueInfo::kHealth, newValue});
+                            maxValue.second[ActorValueInfo::kHealth] = newValue;
                         }
 
                         if (requestChanges.m_values.size() > 0)
@@ -232,6 +278,38 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
                     {
                         pActor->actorValueOwner.SetValue(value.first, value.second);
                     }                    
+                }
+            }
+        }
+    }
+}
+
+void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) noexcept
+{
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+
+    for (auto entity : view)
+    {
+        auto& remoteComponent = view.get<RemoteComponent>(entity);
+        if (remoteComponent.Id == acEvent.m_Id)
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(entity);
+            auto* pForm = TESForm::GetById(formIdComponent.Id);
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+            if (pActor != NULL)
+            {
+                for (auto& value : acEvent.m_values)
+                {
+                    std::cout << "Max values update." << std::endl;
+                    std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
+                    std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
+
+                    if (value.first == ActorValueInfo::kHealth)
+                    {
+                        float current = pActor->actorValueOwner.GetValue(value.first);
+                        pActor->actorValueOwner.ForceCurrent(0, value.first, value.second - current);
+                    }
                 }
             }
         }

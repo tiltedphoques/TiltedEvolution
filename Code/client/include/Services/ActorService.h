@@ -14,6 +14,7 @@ struct HealthChangeEvent;
 
 struct TransportService;
 struct NotifyActorValueChanges;
+struct NotifyActorMaxValueChanges;
 struct NotifyHealthChangeBroadcast;
 
 struct Actor;
@@ -32,6 +33,7 @@ private:
     TransportService& m_transport;
 
     Map<uint32_t, Map<uint32_t, float>> m_actorValues;
+    Map<uint32_t, Map<uint32_t, float>> m_actorMaxValues;
     double m_timeSinceDiff = 1;
     
     void OnLocalComponentAdded(entt::registry& aRegistry, entt::entity aEntity) noexcept;
@@ -40,6 +42,7 @@ private:
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
+    void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) noexcept;
     void OnHealthChange(const HealthChangeEvent&) noexcept;
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
 
