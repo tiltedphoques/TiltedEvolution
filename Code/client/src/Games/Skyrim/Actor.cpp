@@ -416,11 +416,13 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
             }
+            spdlog::info("Cancelling actor effect hook.");
+            return;
         }
     }
 
-    spdlog::info("Cancelling actor effect hook.");
-    return;
+    spdlog::info("Executing actor effect hook (not healing).");
+    return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
