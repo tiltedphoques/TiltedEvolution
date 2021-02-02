@@ -43,7 +43,7 @@ void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
     Map<uint32_t, float> values;
     for (int i = 0; i < 164; i++)
     {
-        float value = aActor->GetActorValueOwner()->GetValue(i);
+        float value = GetActorValue(aActor, i);
         values.insert({i, value});
     }
 
@@ -129,7 +129,7 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                         for (int i = 0; i < 164; i++)
                         {
                             float oldValue = value.second[i];
-                            float newValue = pActor->GetActorValueOwner()->GetValue(i);
+                            float newValue = GetActorValue(pActor, i);
                             if (newValue != oldValue)
                             {
                                 requestChanges.m_values.insert({i, newValue});
@@ -166,7 +166,7 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
                         // Again, there should probably be a loop here
                         float oldValue = maxValue.second[ActorValueInfo::kHealth];
-                        float newValue = pActor->GetActorValueOwner()->GetValue(ActorValueInfo::kHealth);
+                        float newValue = GetActorValue(pActor, ActorValueInfo::kHealth);
                         if (newValue != oldValue)
                         {
                             requestChanges.m_values.insert({ActorValueInfo::kHealth, newValue});
@@ -242,7 +242,7 @@ void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& ac
 
             if (pActor != NULL)
             {
-                float newHealth = pActor->GetActorValueOwner()->GetValue(ActorValueInfo::kHealth) + acEvent.m_DeltaHealth;
+                float newHealth = GetActorValue(pActor, ActorValueInfo::kHealth) + acEvent.m_DeltaHealth;
                 ForceActorValue(pActor, ActorValueInfo::kHealth, newHealth);
             }
         }
@@ -271,13 +271,15 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
 
                     if (value.first == ActorValueInfo::kHealth)
                         continue;
+#if TP_SKYRIM64
                     if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
                     {
                         ForceActorValue(pActor, value.first, value.second);
                     }
+#endif
                     else
                     {
-                        pActor->GetActorValueOwner()->SetValue(value.first, value.second);
+                        SetActorValue(pActor, value.first, value.second);
                     }                    
                 }
             }
@@ -317,8 +319,32 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
     }
 }
 
-void ActorService::ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept
+void ActorService::ForceActorValue(Actor* apActor, uint32_t aId, float aValue) noexcept
 {
-    float current = aActor->GetActorValueOwner()->GetValue(aId);
-    aActor->GetActorValueOwner()->ForceCurrent(2, aId, aValue - current);
+    float current = GetActorValue(apActor, aId);
+#if TP_FALLOUT4
+    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
+#elif TP_SKYRIM64
+    apActor->GetActorValueOwner()->ForceCurrent(2, aId, aValue - current);
+#endif
+}
+
+void ActorService::SetActorValue(Actor* apActor, uint32_t aId, float aValue) noexcept
+{
+#if TP_FALLOUT4
+    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
+    apActor->GetActorValueOwner()->SetValue(pActorValueInfo, aValue);
+#elif TP_SKYRIM64
+    apActor->GetActorValueOwner()->SetValue(aId, aValue);
+#endif
+}
+
+float ActorService::GetActorValue(Actor* apActor, uint32_t aId) noexcept
+{
+#if TP_FALLOUT4
+    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
+    return apActor->GetActorValueOwner()->GetValue(pActorValueInfo);
+#elif TP_SKYRIM64
+    return apActor->GetActorValueOwner()->GetValue(aId);
+#endif
 }

@@ -3,6 +3,7 @@
 #include <Games/ExtraData.h>
 #include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
+#include <Forms/ActorValueInfo.h>
 
 struct ActorValueOwner;
 struct NiNode;
@@ -144,6 +145,7 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
+    ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;

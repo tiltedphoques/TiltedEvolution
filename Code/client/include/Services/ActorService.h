@@ -19,7 +19,7 @@ struct NotifyHealthChangeBroadcast;
 
 struct Actor;
 
-struct ActorService : BSTEventSink<TESHitEvent>
+struct ActorService
 {
   public:
     ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept;
@@ -48,4 +48,6 @@ private:
 
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
     void ForceActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
+    void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
+    float GetActorValue(Actor* aActor, uint32_t aId) noexcept;
 };
