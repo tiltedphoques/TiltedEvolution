@@ -382,8 +382,8 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
-    const auto pExHitter = hitter->GetExtension();
 
+    const auto pExHitter = hitter->GetExtension();
     if (pExHitter->IsLocal())
     {
         spdlog::info("Hitter is local. Executing hook.");

@@ -1,3 +1,4 @@
+#include <Games/References.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESFaction.h>
 #include <Forms/TESNPC.h>
@@ -6,6 +7,8 @@
 
 #include <World.h>
 #include <Services/PapyrusService.h>
+
+#include <Events/HealthChangeEvent.h>
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
@@ -162,15 +165,44 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float damage, Actor* hitter);
+static TDamageActor* RealDamageActor = nullptr;
+
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
+{
+    spdlog::info("Damage hook activated");
+    spdlog::info(damage);
+    if (!hitter)
+    {
+        spdlog::info("Hitter is local. Executing hook.");
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
+        return ThisCall(RealDamageActor, apThis, damage, hitter);
+    }
+
+    const auto pExHitter = hitter->GetExtension();
+    if (pExHitter->IsLocal())
+    {
+        spdlog::info("Hitter is local. Executing hook.");
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
+        return ThisCall(RealDamageActor, apThis, damage, hitter);
+    }
+
+    spdlog::info("Hitter is remote. Cancelling hook.");
+    return 0;
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]()
     {
         POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
         POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
+        POINTER_FALLOUT4(TDamageActor, s_DamageActor, 0x140D79EB0 - 0x140000000);
 
         RealActorConstructor = s_actorCtor.Get();
         RealActorConstructor2 = s_actorCtor2.Get();
+        RealDamageActor = s_DamageActor.Get();
 
         TP_HOOK(&RealActorConstructor, HookActorContructor);
         TP_HOOK(&RealActorConstructor2, HookActorContructor2);
+        TP_HOOK(&RealDamageActor, HookDamageActor);
     });
 
