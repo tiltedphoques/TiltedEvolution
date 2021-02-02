@@ -17,6 +17,7 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
+
 #include <misc/ActorValueOwner.h>
 
 ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept
@@ -41,15 +42,27 @@ ActorService::~ActorService() noexcept
 void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
 {
     Map<uint32_t, float> values;
-    for (int i = 0; i < 164; i++)
+    int amountOfValues;
+
+#if TP_SKYRIM64
+    amountOfValues = 164;
+#elif TP_FALLOUT4
+    amountOfValues = 132;
+#endif
+
+    for (int i = 0; i < amountOfValues; i++)
     {
+#if TP_FALLOUT4
+        if (i == 23 || i == 48 || i == 70)
+            continue;
+#endif
         float value = GetActorValue(aActor, i);
         values.insert({i, value});
     }
 
     Map<uint32_t, float> maxValues;
     // Should be a for loop here to store all values.
-    float maxValue = aActor->GetActorValueOwner()->GetMaxValue(ActorValueInfo::kHealth);
+    float maxValue = GetActorMaxValue(aActor, ActorValueInfo::kHealth);
     maxValues.insert({ActorValueInfo::kHealth, maxValue});
 
     m_actorMaxValues.insert({aId, maxValues});
@@ -126,8 +139,19 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                         RequestActorValueChanges requestChanges;
                         requestChanges.m_Id = value.first;
 
-                        for (int i = 0; i < 164; i++)
+                        int amountOfValues;
+#if TP_SKYRIM64
+                        amountOfValues = 164;
+#elif TP_FALLOUT4
+                        amountOfValues = 132;
+#endif
+
+                        for (int i = 0; i < amountOfValues; i++)
                         {
+#if TP_FALLOUT4
+                            if (i == 23 || i == 48 || i == 70)
+                                continue;
+#endif
                             float oldValue = value.second[i];
                             float newValue = GetActorValue(pActor, i);
                             if (newValue != oldValue)
@@ -243,7 +267,7 @@ void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& ac
             if (pActor != NULL)
             {
                 float newHealth = GetActorValue(pActor, ActorValueInfo::kHealth) + acEvent.m_DeltaHealth;
-                ForceActorValue(pActor, ActorValueInfo::kHealth, newHealth);
+                ForceActorValue(pActor, 2, ActorValueInfo::kHealth, newHealth);
             }
         }
     }
@@ -274,7 +298,7 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
 #if TP_SKYRIM64
                     if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
                     {
-                        ForceActorValue(pActor, value.first, value.second);
+                        ForceActorValue(pActor, 2, value.first, value.second);
                     }
 #endif
                     else
@@ -310,8 +334,7 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
 
                     if (value.first == ActorValueInfo::kHealth)
                     {
-                        float current = pActor->GetActorValueOwner()->GetValue(value.first);
-                        pActor->GetActorValueOwner()->ForceCurrent(0, value.first, value.second - current);
+                        ForceActorValue(pActor, 0, value.first, value.second);
                     }
                 }
             }
@@ -319,13 +342,14 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
     }
 }
 
-void ActorService::ForceActorValue(Actor* apActor, uint32_t aId, float aValue) noexcept
+void ActorService::ForceActorValue(Actor* apActor, uint32_t aMode, uint32_t aId, float aValue) noexcept
 {
     float current = GetActorValue(apActor, aId);
 #if TP_FALLOUT4
     ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
+    apActor->actorValueOwner.ForceCurrent(aMode, pActorValueInfo, aValue - current);
 #elif TP_SKYRIM64
-    apActor->GetActorValueOwner()->ForceCurrent(2, aId, aValue - current);
+    apActor->actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
 #endif
 }
 
@@ -333,9 +357,9 @@ void ActorService::SetActorValue(Actor* apActor, uint32_t aId, float aValue) noe
 {
 #if TP_FALLOUT4
     ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
-    apActor->GetActorValueOwner()->SetValue(pActorValueInfo, aValue);
+    apActor->actorValueOwner.SetValue(pActorValueInfo, aValue);
 #elif TP_SKYRIM64
-    apActor->GetActorValueOwner()->SetValue(aId, aValue);
+    apActor->actorValueOwner.SetValue(aId, aValue);
 #endif
 }
 
@@ -343,8 +367,18 @@ float ActorService::GetActorValue(Actor* apActor, uint32_t aId) noexcept
 {
 #if TP_FALLOUT4
     ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
-    return apActor->GetActorValueOwner()->GetValue(pActorValueInfo);
+    return apActor->actorValueOwner.GetValue(pActorValueInfo);
 #elif TP_SKYRIM64
-    return apActor->GetActorValueOwner()->GetValue(aId);
+    return apActor->actorValueOwner.GetValue(aId);
+#endif
+}
+
+float ActorService::GetActorMaxValue(Actor* apActor, uint32_t aId) noexcept
+{
+#if TP_FALLOUT4
+    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
+    return apActor->actorValueOwner.GetMaxValue(pActorValueInfo);
+#elif TP_SKYRIM64
+    return apActor->actorValueOwner.GetMaxValue(aId);
 #endif
 }
