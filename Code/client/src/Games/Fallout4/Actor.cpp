@@ -9,6 +9,7 @@
 #include <Services/PapyrusService.h>
 
 #include <Events/HealthChangeEvent.h>
+#include <Effects/ValueModifierEffect.h>
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
@@ -191,18 +192,51 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     return 0;
 }
 
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* target, float effectValue, ActorValueInfo* actorValueInfo);
+static TApplyActorEffect* RealApplyActorEffect = nullptr;
+
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, ActorValueInfo* actorValueInfo)
+{
+    spdlog::info("Apply actor effect hook activated");
+    spdlog::info(effectValue);
+    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+
+    if (pValueModEffect)
+    {
+        if (pValueModEffect->actorValueIndex == 3 && effectValue > 0.0f)
+        {
+            spdlog::info("Actor effect is healing.");
+            const auto pExTarget = target->GetExtension();
+            if (pExTarget->IsLocal())
+            {
+                spdlog::info("Heal target is local. Executing hook.");
+                World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
+                return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
+            }
+            spdlog::info("Cancelling actor effect hook.");
+            return;
+        }
+    }
+
+    spdlog::info("Executing actor effect hook (not healing).");
+    return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]()
     {
         POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
         POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
         POINTER_FALLOUT4(TDamageActor, s_DamageActor, 0x140D79EB0 - 0x140000000);
+        POINTER_FALLOUT4(TApplyActorEffect, s_ApplyActorEffect, 0x140C8B189 - 0x140000000);
 
         RealActorConstructor = s_actorCtor.Get();
         RealActorConstructor2 = s_actorCtor2.Get();
         RealDamageActor = s_DamageActor.Get();
+        RealApplyActorEffect = s_ApplyActorEffect.Get();
 
         TP_HOOK(&RealActorConstructor, HookActorContructor);
         TP_HOOK(&RealActorConstructor2, HookActorContructor2);
         TP_HOOK(&RealDamageActor, HookDamageActor);
+        TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
     });
 
