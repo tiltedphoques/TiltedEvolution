@@ -10,14 +10,14 @@ Tilted Online is a framework created to enable multiplayer in Bethesda games, cu
 ## Getting started
 To play Tilted Online, grab the latest released binaries from the [releases page](https://github.com/tiltedphoques/TiltedOnline/releases).
 
-Check out the [build guide](docs/BuildGuide.md) for setup and developing the project. When writing code, check the [code guidelines](docs/CodeGuidelines.md)
+Check out the [build guide](https://wiki.tiltedphoques.com/tilted-online/coding/build-guide) for setup and development info on the project. When writing code, check the [code guidelines](https://wiki.tiltedphoques.com/tilted-online/coding/code-guidelines)
  and make sure to run clang-format!
 
 ## Contributing
 Have some experience in C++, and want to help advance the project faster? Contribute!
 - Check the issues, it's a good place to start when you don't know what to do.
 - Fork the repository and create pull requests to this repository.
-- Try to keep your code clean, following the [code guidelines](docs/CodeGuidelines.md).
+- Try to keep your code clean, following the [code guidelines](https://wiki.tiltedphoques.com/tilted-online/coding/code-guidelines).
 
 ## License
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)

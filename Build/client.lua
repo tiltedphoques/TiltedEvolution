@@ -36,43 +36,43 @@ function generate_client(target, macro)
 
         files
         {
-            "../Code/client/include/**.h",
-            "../Code/client/src/**.cpp",
+            "../Code/client/**.h",
+            "../Code/client/**.cpp",
             "../Libraries/spdlog/*.cpp",
-            "../Code/encoding/include/**.h",
-            "../Code/encoding/src/**.cpp",
+            "../Code/encoding/**.h",
+            "../Code/encoding/**.cpp",
         }
 
         if target == "FalloutTogether" then
             excludes 
             { 
-                "../Code/client/src/Games/Skyrim/**.cpp",
-                "../Code/client/include/Games/Skyrim/**.h",
-                "../Code/encoding/include/Structs/Skyrim/**.h",
-                "../Code/encoding/src/Structs/Skyrim/**.cpp",
+                "../Code/client/Games/Skyrim/**.cpp",
+                "../Code/client/Games/Skyrim/**.h",
+                "../Code/encoding/Structs/Skyrim/**.h",
+                "../Code/encoding/Structs/Skyrim/**.cpp",
             }
 
             includedirs
             {
-                "../Code/client/include/Games/Fallout4/"
+                "../Code/client/Games/Fallout4/"
             }
         else
             excludes 
             { 
-                "../Code/client/src/Games/Fallout4/**.cpp",
-                "../Code/client/include/Games/Fallout4/**.h",
-                "../Code/encoding/include/Structs/Fallout4/**.h",
-                "../Code/encoding/src/Structs/Fallout4/**.cpp",
+                "../Code/client/Games/Fallout4/**.cpp",
+                "../Code/client/Games/Fallout4/**.h",
+                "../Code/encoding/Structs/Fallout4/**.h",
+                "../Code/encoding/Structs/Fallout4/**.cpp",
             }
 
             includedirs
             {
-                "../Code/client/include/Games/Skyrim/"
+                "../Code/client/Games/Skyrim/"
             }
         end
         
         pchheader ("stdafx.h")
-        pchsource ("../Code/client/src/stdafx.cpp")
+        pchsource ("../Code/client/stdafx.cpp")
         forceincludes
         {
             "stdafx.h"
@@ -114,8 +114,8 @@ project ("tp_process")
 
     files
     {
-        "../Code/tp_process/include/**.h",
-        "../Code/tp_process/src/**.cpp",
+        "../Code/tp_process/**.h",
+        "../Code/tp_process/**.cpp",
     }
 
     links

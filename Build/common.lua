@@ -8,15 +8,15 @@ project ("Common")
 
     includedirs
     {
-        "../Code/common/include/",
+        "../Code/common/",
         "../Libraries/",
         coreBasePath .. "/Code/core/include/",
     }
 
     files 
     {
-        "../Code/common/include/**.h",
-        "../Code/common/src/**.cpp"
+        "../Code/common/**.h",
+        "../Code/common/**.cpp"
     }
 
     links

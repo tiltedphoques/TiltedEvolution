@@ -11,47 +11,47 @@ function generate_server(target, macro)
         
         includedirs
         {
-            "../Code/server/include/",
-            "../Code/script/include/",
-            "../Code/encoding/include/",
+            "../Code/server/",
+            "../Code/script/",
+            "../Code/encoding/",
             "../Code/common/include",
-            "../Libraries/entt/src/",
+            "../Libraries/entt/",
             "../Libraries/",
             "../Libraries/cpp-httplib",
-            coreBasePath .. "/Code/core/include/",
-            connectBasePath .. "/Code/connect/include/",
-            connectBasePath .. "/ThirdParty/GameNetworkingSockets/include/",
-            connectBasePath .. "/ThirdParty/protobuf/src/",
+            coreBasePath .. "/Code/core/",
+            connectBasePath .. "/Code/connect/",
+            connectBasePath .. "/ThirdParty/GameNetworkingSockets/",
+            connectBasePath .. "/ThirdParty/protobuf/",
             connectBasePath .. "/ThirdParty/openssl/include",
             scriptBasePath .. "/ThirdParty/lua/",
-            scriptBasePath .. "/Code/script/include/",
+            scriptBasePath .. "/Code/script/",
         }
 
         files
         {
-            "../Code/server/include/**.h",
-            "../Code/server/src/**.cpp",
+            "../Code/server/**.h",
+            "../Code/server/**.cpp",
             "../Libraries/spdlog/*.cpp",
-            "../Code/encoding/include/**.h",
-            "../Code/encoding/src/**.cpp",
+            "../Code/encoding/**.h",
+            "../Code/encoding/**.cpp",
         }
 
         if target == "FalloutTogetherServer" then
             excludes 
             { 
-                "../Code/encoding/include/Structs/Skyrim/**.h",
-                "../Code/encoding/src/Structs/Skyrim/**.cpp",
+                "../Code/encoding/Structs/Skyrim/**.h",
+                "../Code/encoding/Structs/Skyrim/**.cpp",
             }
         else
             excludes 
             { 
-                "../Code/encoding/include/Structs/Fallout4/**.h",
-                "../Code/encoding/src/Structs/Fallout4/**.cpp",
+                "../Code/encoding/Structs/Fallout4/**.h",
+                "../Code/encoding/Structs/Fallout4/**.cpp",
             }
         end
         
         pchheader ("stdafx.h")
-        pchsource ("../Code/server/src/stdafx.cpp")
+        pchsource ("../Code/server/stdafx.cpp")
         forceincludes
         {
             "stdafx.h"
