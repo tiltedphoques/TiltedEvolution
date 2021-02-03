@@ -1,4 +1,8 @@
-# Getting started
+# Build Guide
+
+You will need Visual Studio 2019 (the community edition is fine too). 
+
+For building the UI you'll also need [Node.js](https://nodejs.org/en/).
 
 ## Cloning the repository
 
