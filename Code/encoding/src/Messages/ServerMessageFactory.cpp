@@ -16,6 +16,7 @@
 #include <Messages/NotifyPartyInfo.h>
 #include <Messages/NotifyPartyInvite.h>
 #include <Messages/NotifyCharacterTravel.h>
+#include <Messages/NotifyActorValuesState.h>
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
@@ -49,6 +50,7 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(NotifyPartyInfo);
         EXTRACT_MESSAGE(NotifyPartyInvite);
         EXTRACT_MESSAGE(NotifyCharacterTravel);
+        EXTRACT_MESSAGE(NotifyActorValuesState);
         EXTRACT_MESSAGE(NotifyActorValueChanges);
         EXTRACT_MESSAGE(NotifyActorMaxValueChanges);
         EXTRACT_MESSAGE(NotifyHealthChangeBroadcast);

@@ -16,6 +16,7 @@
 #include <Messages/PartyAcceptInviteRequest.h>
 #include <Messages/PartyLeaveRequest.h>
 #include <Messages/CharacterTravelRequest.h>
+#include <Messages/RequestActorValuesState.h>
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
@@ -51,6 +52,7 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(PartyAcceptInviteRequest);
         EXTRACT_MESSAGE(PartyLeaveRequest);
         EXTRACT_MESSAGE(CharacterTravelRequest);
+        EXTRACT_MESSAGE(RequestActorValuesState);
         EXTRACT_MESSAGE(RequestActorValueChanges);
         EXTRACT_MESSAGE(RequestActorMaxValueChanges);
         EXTRACT_MESSAGE(RequestHealthChangeBroadcast);

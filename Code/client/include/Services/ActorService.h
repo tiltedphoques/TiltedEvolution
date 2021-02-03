@@ -13,6 +13,7 @@ struct UpdateEvent;
 struct HealthChangeEvent;
 
 struct TransportService;
+struct NotifyActorValuesState;
 struct NotifyActorValueChanges;
 struct NotifyActorMaxValueChanges;
 struct NotifyHealthChangeBroadcast;
@@ -28,6 +29,11 @@ struct ActorService
     TP_NOCOPYMOVE(ActorService);
 
 private:
+    enum ValueType : uint8_t
+    {
+        kValue,
+        kMaxValue
+    };
 
     World& m_world;
     TransportService& m_transport;
@@ -35,11 +41,15 @@ private:
     Map<uint32_t, Map<uint32_t, float>> m_actorValues;
     Map<uint32_t, Map<uint32_t, float>> m_actorMaxValues;
     double m_timeSinceDiff = 1;
+    double m_timeSinceDiff2 = 0;
+    bool m_askedForSync = false;
     
     void OnLocalComponentAdded(entt::registry& aRegistry, entt::entity aEntity) noexcept;
+    void OnConnected(const ConnectedEvent&) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
     void OnReferenceSpawned(const ReferenceSpawnedEvent&) noexcept;
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
+    void OnActorValuesState(const NotifyActorValuesState&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
     void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) noexcept;
@@ -47,8 +57,11 @@ private:
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
 
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
+    void BroadcastActorValues(bool aUseCache, Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept;
     void ForceActorValue(Actor* aActor, uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
     float GetActorValue(Actor* aActor, uint32_t aId) noexcept;
     float GetActorMaxValue(Actor* aActor, uint32_t aId) noexcept;
+
+    entt::scoped_connection m_connectedConnection;
 };

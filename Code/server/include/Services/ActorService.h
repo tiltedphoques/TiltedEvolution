@@ -5,6 +5,7 @@
 struct World;
 struct UpdateEvent;
 struct TransportService;
+struct RequestActorValuesState;
 struct RequestActorValueChanges;
 struct RequestActorMaxValueChanges;
 struct RequestHealthChangeBroadcast;
@@ -19,6 +20,7 @@ struct ActorService
   private:
     World& m_world;
 
+    void OnActorValuesState(const PacketEvent<RequestActorValuesState>& acMessage) const noexcept;
     void OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept;
     void OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept;
     void OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept;

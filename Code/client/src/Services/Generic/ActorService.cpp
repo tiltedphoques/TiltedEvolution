@@ -11,6 +11,8 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/HealthChangeEvent.h>
 
+#include <Messages/NotifyActorValuesState.h>
+#include <Messages/RequestActorValuesState.h>
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/NotifyActorMaxValueChanges.h>
@@ -25,9 +27,11 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     , m_transport(aTransport)
 {
     m_world.on_construct<LocalComponent>().connect<&ActorService::OnLocalComponentAdded>(this);
+    m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&ActorService::OnConnected>(this);
     aDispatcher.sink<DisconnectedEvent>().connect<&ActorService::OnDisconnected>(this);
     aDispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorService::OnReferenceSpawned>(this);
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
+    aDispatcher.sink<NotifyActorValuesState>().connect<&ActorService::OnActorValuesState>(this);
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
     aDispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
@@ -81,6 +85,16 @@ void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::
     }
 }
 
+void ActorService::OnConnected(const ConnectedEvent&) noexcept
+{
+    // This does not update the values locally. Maybe the local entt registry does not have the remote components yet?
+    /*
+    RequestActorValuesState requestState;
+    requestState.m_Id = 1;
+    m_transport.Send(requestState);
+    */
+}
+
 void ActorService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     m_actorValues.clear();
@@ -112,6 +126,12 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
     }    
 }
 
+void ActorService::OnActorValuesState(const NotifyActorValuesState& acEvent) noexcept
+{
+    BroadcastActorValues(false, &m_actorValues, 0);
+    BroadcastActorValues(false, &m_actorMaxValues, 1);
+}
+
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     m_timeSinceDiff += acEvent.Delta;
@@ -119,20 +139,42 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
     {
         m_timeSinceDiff = 0;
 
-        auto view = m_world.view<FormIdComponent, LocalComponent>();
-
-        for (auto& value : m_actorValues)
+        BroadcastActorValues(true, &m_actorValues, 0);
+        BroadcastActorValues(true, &m_actorMaxValues, 1);
+    }
+    if (m_transport.IsConnected())
+    {
+        m_timeSinceDiff2 += acEvent.Delta;
+        if (m_timeSinceDiff2 >= 5 && !m_askedForSync)
         {
-            for (auto entity : view)
-            {
-                auto& localComponent = view.get<LocalComponent>(entity);
-                if (localComponent.Id == value.first)
-                {
-                    auto& formIdComponent = view.get<FormIdComponent>(entity);
-                    auto* pForm = TESForm::GetById(formIdComponent.Id);
-                    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            m_askedForSync = true;
+            RequestActorValuesState requestState;
+            requestState.m_Id = 1;
+            m_transport.Send(requestState);
+            BroadcastActorValues(false, &m_actorValues, 0);
+            BroadcastActorValues(false, &m_actorMaxValues, 1);
+        }
+    }
+}
 
-                    if (pActor != NULL)
+void ActorService::BroadcastActorValues(bool aUseCache, Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept
+{
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+
+    for (auto& value : *aActorValues)
+    {
+        for (auto entity : view)
+        {
+            auto& localComponent = view.get<LocalComponent>(entity);
+            if (localComponent.Id == value.first)
+            {
+                auto& formIdComponent = view.get<FormIdComponent>(entity);
+                auto* pForm = TESForm::GetById(formIdComponent.Id);
+                auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+                if (pActor != NULL)
+                {
+                    if (aValueType == ValueType::kValue)
                     {
                         RequestActorValueChanges requestChanges;
                         requestChanges.m_Id = value.first;
@@ -150,9 +192,17 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                             if (i == 23 || i == 48 || i == 70)
                                 continue;
 #endif
-                            float oldValue = value.second[i];
                             float newValue = GetActorValue(pActor, i);
-                            if (newValue != oldValue)
+                            if (aUseCache)
+                            {
+                                float oldValue = value.second[i];
+                                if (newValue != oldValue)
+                                {
+                                    requestChanges.m_values.insert({i, newValue});
+                                    value.second[i] = newValue;
+                                }
+                            }
+                            else
                             {
                                 requestChanges.m_values.insert({i, newValue});
                                 value.second[i] = newValue;
@@ -164,27 +214,10 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                             m_transport.Send(requestChanges);
                         }
                     }
-                }
-            }
-        }        
-
-        auto viewMax = m_world.view<FormIdComponent, LocalComponent>();
-
-        for (auto& maxValue : m_actorMaxValues)
-        {
-            for (auto entity : viewMax)
-            {
-                auto& localComponent = viewMax.get<LocalComponent>(entity);
-                if (localComponent.Id == maxValue.first)
-                {
-                    auto& formIdComponent = viewMax.get<FormIdComponent>(entity);
-                    auto* pForm = TESForm::GetById(formIdComponent.Id);
-                    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-                    if (pActor != NULL)
+                    else if (aValueType == ValueType::kMaxValue)
                     {
                         RequestActorMaxValueChanges requestChanges;
-                        requestChanges.m_Id = maxValue.first;
+                        requestChanges.m_Id = value.first;
 
                         int amountOfValues;
 #if TP_SKYRIM64
@@ -199,12 +232,20 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                             if (i == 23 || i == 48 || i == 70)
                                 continue;
 #endif
-                            float oldValue = maxValue.second[i];
                             float newValue = GetActorValue(pActor, i);
-                            if (newValue != oldValue)
+                            if (aUseCache)
+                            {
+                                float oldValue = value.second[i];
+                                if (newValue != oldValue)
+                                {
+                                    requestChanges.m_values.insert({i, newValue});
+                                    value.second[i] = newValue;
+                                }
+                            }
+                            else
                             {
                                 requestChanges.m_values.insert({i, newValue});
-                                maxValue.second[i] = newValue;
+                                value.second[i] = newValue;
                             }
                         }
 
@@ -215,8 +256,8 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                     }
                 }
             }
-        }        
-    }    
+        }
+    }        
 }
 
 void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
