@@ -42,8 +42,9 @@ ActorService::~ActorService() noexcept
 void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
 {
     Map<uint32_t, float> values;
-    int amountOfValues;
+    Map<uint32_t, float> maxValues;
 
+    int amountOfValues;
 #if TP_SKYRIM64
     amountOfValues = 164;
 #elif TP_FALLOUT4
@@ -58,12 +59,9 @@ void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
 #endif
         float value = GetActorValue(aActor, i);
         values.insert({i, value});
+        float maxValue = GetActorMaxValue(aActor, i);
+        maxValues.insert({i, maxValue});
     }
-
-    Map<uint32_t, float> maxValues;
-    // Should be a for loop here to store all values.
-    float maxValue = GetActorMaxValue(aActor, ActorValueInfo::kHealth);
-    maxValues.insert({ActorValueInfo::kHealth, maxValue});
 
     m_actorMaxValues.insert({aId, maxValues});
     m_actorValues.insert({aId, values});
@@ -170,16 +168,16 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
             }
         }        
 
-        auto view2 = m_world.view<FormIdComponent, LocalComponent>();
+        auto viewMax = m_world.view<FormIdComponent, LocalComponent>();
 
         for (auto& maxValue : m_actorMaxValues)
         {
-            for (auto entity : view2)
+            for (auto entity : viewMax)
             {
-                auto& localComponent = view2.get<LocalComponent>(entity);
+                auto& localComponent = viewMax.get<LocalComponent>(entity);
                 if (localComponent.Id == maxValue.first)
                 {
-                    auto& formIdComponent = view2.get<FormIdComponent>(entity);
+                    auto& formIdComponent = viewMax.get<FormIdComponent>(entity);
                     auto* pForm = TESForm::GetById(formIdComponent.Id);
                     auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
@@ -188,13 +186,26 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
                         RequestActorMaxValueChanges requestChanges;
                         requestChanges.m_Id = maxValue.first;
 
-                        // Again, there should probably be a loop here
-                        float oldValue = maxValue.second[ActorValueInfo::kHealth];
-                        float newValue = GetActorValue(pActor, ActorValueInfo::kHealth);
-                        if (newValue != oldValue)
+                        int amountOfValues;
+#if TP_SKYRIM64
+                        amountOfValues = 164;
+#elif TP_FALLOUT4
+                        amountOfValues = 132;
+#endif
+
+                        for (int i = 0; i < amountOfValues; i++)
                         {
-                            requestChanges.m_values.insert({ActorValueInfo::kHealth, newValue});
-                            maxValue.second[ActorValueInfo::kHealth] = newValue;
+#if TP_FALLOUT4
+                            if (i == 23 || i == 48 || i == 70)
+                                continue;
+#endif
+                            float oldValue = maxValue.second[i];
+                            float newValue = GetActorValue(pActor, i);
+                            if (newValue != oldValue)
+                            {
+                                requestChanges.m_values.insert({i, newValue});
+                                maxValue.second[i] = newValue;
+                            }
                         }
 
                         if (requestChanges.m_values.size() > 0)
@@ -332,10 +343,7 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
                     std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
                     std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
 
-                    if (value.first == ActorValueInfo::kHealth)
-                    {
-                        ForceActorValue(pActor, 0, value.first, value.second);
-                    }
+                    ForceActorValue(pActor, 0, value.first, value.second);
                 }
             }
         }
