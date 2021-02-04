@@ -28,7 +28,6 @@ struct ActiveEffect
     virtual void Function23();
     virtual void Function24();
 
-    // Not sure if these values are correct for Fallout 4
     char pad_0008[112];
     float effectValue;
     char pad_007C[4];
