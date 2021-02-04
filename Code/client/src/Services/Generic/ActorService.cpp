@@ -27,7 +27,6 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     , m_transport(aTransport)
 {
     m_world.on_construct<LocalComponent>().connect<&ActorService::OnLocalComponentAdded>(this);
-    m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&ActorService::OnConnected>(this);
     aDispatcher.sink<DisconnectedEvent>().connect<&ActorService::OnDisconnected>(this);
     aDispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorService::OnReferenceSpawned>(this);
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
@@ -85,16 +84,6 @@ void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::
     }
 }
 
-void ActorService::OnConnected(const ConnectedEvent&) noexcept
-{
-    // This does not update the values locally. Maybe the local entt registry does not have the remote components yet?
-    /*
-    RequestActorValuesState requestState;
-    requestState.m_Id = 1;
-    m_transport.Send(requestState);
-    */
-}
-
 void ActorService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     m_actorValues.clear();
@@ -128,8 +117,7 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
 
 void ActorService::OnActorValuesState(const NotifyActorValuesState& acEvent) noexcept
 {
-    BroadcastActorValues(false, &m_actorValues, 0);
-    BroadcastActorValues(false, &m_actorMaxValues, 1);
+    BroadcastAllActorValues(false);
 }
 
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -139,22 +127,26 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
     {
         m_timeSinceDiff = 0;
 
-        BroadcastActorValues(true, &m_actorValues, 0);
-        BroadcastActorValues(true, &m_actorMaxValues, 1);
+        BroadcastAllActorValues(true);
     }
     if (m_transport.IsConnected())
     {
-        m_timeSinceDiff2 += acEvent.Delta;
-        if (m_timeSinceDiff2 >= 5 && !m_askedForSync)
+        m_initialSyncTimer += acEvent.Delta;
+        if (m_initialSyncTimer >= 3 && !m_askedForSync)
         {
             m_askedForSync = true;
             RequestActorValuesState requestState;
             requestState.m_Id = 1;
             m_transport.Send(requestState);
-            BroadcastActorValues(false, &m_actorValues, 0);
-            BroadcastActorValues(false, &m_actorMaxValues, 1);
+            BroadcastAllActorValues(false);
         }
     }
+}
+
+void ActorService::BroadcastAllActorValues(bool aUseCache) noexcept
+{
+    BroadcastActorValues(aUseCache, &m_actorValues, 0);
+    BroadcastActorValues(aUseCache, &m_actorMaxValues, 1);
 }
 
 void ActorService::BroadcastActorValues(bool aUseCache, Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept
