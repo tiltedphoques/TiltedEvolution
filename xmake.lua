@@ -11,6 +11,14 @@ set_warnings("all")
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
 
+if is_mode("debug") then
+    add_defines("DEBUG")
+end
+
+if is_plat("windows") then
+    add_defines("NOMINMAX")
+end
+
 -- add projects
-includes("./code")
 includes("./libraries")
+includes("./code")

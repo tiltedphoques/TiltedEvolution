@@ -1,7 +1,7 @@
 
-target("Tests")
+target("TPTests")
     set_kind("binary")
-    set_group("tests")
+    set_group("Tests")
     add_defines("TP_SKYRIM=1")
     add_includedirs(".", "../")
     add_headerfiles("**.h")
