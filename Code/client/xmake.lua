@@ -3,13 +3,15 @@ local function build_client(name, def)
 target("client_" .. name)
     set_kind("shared")
     set_group("Client")
+    set_basename(name .. "RebornClient")
     add_defines(def)
     add_includedirs(
         ".",
         "../../Libraries/",
         "../../Libraries/entt")
     set_pcxxheader("stdafx.h")
-    add_cxxflags("-include $(projectdir)/code/client/stdafx.h")
+    --forceincludes("$(projectdir)\\code\\client\\stdafx.h")
+    add_cxxflags("-include $(projectdir)\\code\\client\\stdafx.h", { force=true })
     add_headerfiles("**.h|Games/Fallout4/**|Games/Skyrim/**")
     add_files("**.cpp|Games/Fallout4/**|Games/Skyrim/**")
     -- only include selected files
@@ -28,6 +30,7 @@ target("client_" .. name)
     add_deps(
         "UiProcess", 
         "Common",
+        "mhook",
         "Encoding",
         "TiltedConnect",
         "TiltedReverse",
@@ -42,6 +45,9 @@ target("client_" .. name)
         "discord",
         "imgui",
         "cef")
+    add_syslinks(
+        "version")
 end
 
 build_client("ST", "TP_SKYRIM=1")
+build_client("FT", "TP_FALLOUT=1")

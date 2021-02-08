@@ -3,15 +3,17 @@ local function build_server(name, def)
 target("server_" .. name)
     set_kind("binary")
     set_group("Server")
+    set_basename(name .. "RebornServer")
     set_languages("cxx17")
     add_defines(def)
     add_includedirs(
         ".",
         "../../Libraries/",
         "../../Libraries/entt",
+        "../../Libraries/cpp-httplib",
         "../encoding/")
     set_pcxxheader("stdafx.h")
-    add_cxxflags("-include $(projectdir)/code/server/stdafx.h")
+    add_cxxflags("-include $(projectdir)\\code\\server\\stdafx.h", { force=true })
     add_headerfiles(
         "**.h",
         "../encoding/**.h")
@@ -28,6 +30,8 @@ target("server_" .. name)
 
     add_deps(
         "Common",
+        "lua",
+        "sqlite3",
         "TiltedScript",
         "TiltedConnect")
     add_packages(
@@ -38,3 +42,4 @@ target("server_" .. name)
 end
 
 build_server("ST", "TP_SKYRIM=1")
+build_server("FT", "TP_FALLOUT=1")

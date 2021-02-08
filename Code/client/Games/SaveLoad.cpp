@@ -5,8 +5,8 @@
 
 #include <World.h>
 
-#include <Serialization.hpp>
-#include <Buffer.hpp>
+#include <TiltedCore/Serialization.hpp>
+#include <TiltedCore/Buffer.hpp>
 
 using TiltedPhoques::Serialization;
 using TiltedPhoques::ViewBuffer;

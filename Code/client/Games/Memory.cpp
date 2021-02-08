@@ -1,7 +1,7 @@
 #include <Games/Memory.h>
 #include <Games/References.h>
 
-#include <MimallocAllocator.hpp>
+#include <TiltedCore/MimallocAllocator.hpp>
 #include <mimalloc.h>
 
 #pragma optimize( "", off )

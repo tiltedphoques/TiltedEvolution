@@ -1,8 +1,7 @@
 #include <TiltedOnlineApp.h>
 
-#include <DInputHook.hpp>
-#include <WindowsHook.hpp>
-#include <D3D11Hook.hpp>
+#include <TiltedHooks/Code/hooks/include/DInputHook.hpp>
+#include <TiltedHooks/Code/hooks/include/WindowsHook.hpp>
 
 #include <World.h>
 

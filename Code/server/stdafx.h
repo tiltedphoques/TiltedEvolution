@@ -41,6 +41,7 @@ extern "C"
 }
 
 #define SOL_ALL_SAFETIES_ON 1
+//#define SOL_USE_CXX_LUA_I_
 #include <sol.hpp>
 
 using namespace TiltedPhoques;

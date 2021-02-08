@@ -170,7 +170,7 @@ void ScriptService::DisplayNetObject(NetObject* apObject)
         for (auto& kvp : definition.GetRemoteProcedures())
         {
             auto& name = kvp.second.Name;
-            ImGui::InputText("", name.data(), kvp.first.size(), ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputText("", const_cast<char*>(name.data()), kvp.first.size(), ImGuiInputTextFlags_ReadOnly);
         }
 
         ImGui::TreePop();

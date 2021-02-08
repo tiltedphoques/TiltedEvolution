@@ -336,7 +336,7 @@ void GameServer::SetTitle() const
     title += std::to_string(GetClientCount());
     title += GetClientCount() <= 1 ? " player - " : " players - ";
     title += std::to_string(GetTickRate());
-    title += " FPS - " GIT_BRANCH "@" GIT_COMMIT;
+//    title += " FPS - " GIT_BRANCH "@" GIT_COMMIT;
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

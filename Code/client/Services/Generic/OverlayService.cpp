@@ -2,7 +2,7 @@
 
 #include <OverlayApp.hpp>
 
-#include <D3D11Hook.hpp>
+#include <TiltedHooks/Code/hooks/include/D3D11Hook.hpp>
 
 #include <OverlayRenderHandlerD3D11.hpp>
 

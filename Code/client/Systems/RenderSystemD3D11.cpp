@@ -3,13 +3,14 @@
 #include <Services/OverlayService.h>
 #include <Services/ImguiService.h>
 
-#include <D3D11Hook.hpp>
+
+#include <TiltedHooks/Code/hooks/include/D3D11Hook.hpp>
 #include <d3d11.h>
 
 #include <imgui.h>
 
-#include <examples/imgui_impl_dx11.h>
-#include <examples/imgui_impl_win32.h>
+#include "services/Generic/imgui_impl_dx11.h"
+#include "services/Generic/imgui_impl_win32.h"
 
 RenderSystemD3D11::RenderSystemD3D11(OverlayService& aOverlay, ImguiService& aImguiService)
     : m_pSwapChain(nullptr)

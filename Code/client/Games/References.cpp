@@ -21,7 +21,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 
-#include <Serialization.hpp>
+#include <TiltedCore/Serialization.hpp>
 
 #include <Services/PapyrusService.h>
 #include <World.h>

@@ -7,7 +7,8 @@
 #include <Services/DiscordService.h>
 
 #include <World.h>
-#include <D3D11Hook.hpp>
+#include <TiltedHooks/Code/hooks/include/D3D11Hook.hpp>
+//#include <D3D11Hook.hpp>
 
 using TCreateViewport = bool(void*, ViewportConfig*, WindowConfig*, void*);
 
@@ -58,9 +59,9 @@ static void HookPresent(LPCRITICAL_SECTION lock)
 static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowConfig *pWindowConfig, void *a4)
 {
 #if TP_SKYRIM64
-    pConfig->name = "Skyrim Together | " GIT_BRANCH "@" GIT_COMMIT;
+    //pConfig->name = "Skyrim Together | " GIT_BRANCH "@" GIT_COMMIT;
 #else
-    pConfig->name = "Fallout Together | " GIT_BRANCH "@" GIT_COMMIT;
+    //pConfig->name = "Fallout Together | " GIT_BRANCH "@" GIT_COMMIT;
 #endif
 
 #if 0

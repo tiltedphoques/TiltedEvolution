@@ -5,8 +5,8 @@
 #include <d3d11.h>
 
 #include <imgui.h>
-#include <examples/imgui_impl_dx11.h>
-#include <examples/imgui_impl_win32.h>
+#include "services/Generic/imgui_impl_dx11.h"
+#include "services/Generic/imgui_impl_win32.h"
 
 ImguiService::ImguiService()
     : OnDraw(m_drawSignal)

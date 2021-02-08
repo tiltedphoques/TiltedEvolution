@@ -5,7 +5,7 @@ uint32_t ModsComponent::AddStandard(const String& acpFilename) noexcept
     const auto itor = m_standardMods.find(acpFilename);
     if (itor != std::end(m_standardMods))
     {
-        itor->second.refCount++;
+        itor.value().refCount++;
         return itor->second.id;
     }
 
@@ -20,7 +20,7 @@ uint32_t ModsComponent::AddLite(const String& acpFilename) noexcept
     const auto itor = m_liteMods.find(acpFilename);
     if (itor != std::end(m_liteMods))
     {
-        itor->second.refCount++;
+        itor.value().refCount++;
         return itor->second.id;
     }
 

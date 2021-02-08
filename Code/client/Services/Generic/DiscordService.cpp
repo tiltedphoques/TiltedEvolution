@@ -2,9 +2,7 @@
 #include "Services/DiscordService.h"
 #include "Events/UpdateEvent.h"
 
-#include <Filesystem.hpp>
-#include <D3D11Hook.hpp>
-
+#include <TiltedCore/Filesystem.hpp>
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
 
@@ -100,11 +98,10 @@ void DiscordService::UpdatePresence(bool newTimeStamp)
 void DiscordService::InitOverlay(IDXGISwapChain *pSwapchain)
 {
     m_pOverlayMgr->is_enabled(m_pOverlayMgr, &m_bOverlayEnabled);
-    auto result = m_pOverlayMgr->init_drawing_dxgi(m_pOverlayMgr, pSwapchain, true);
 
     // attempt to unlock it
     m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, nullptr);
-    spdlog::info("Enabled discord overlay! ({})", static_cast<int>(result));
+   // spdlog::info("Enabled discord overlay! ({})", static_cast<int>(result));
 }
 
 void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

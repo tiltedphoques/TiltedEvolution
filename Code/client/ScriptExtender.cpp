@@ -92,7 +92,7 @@ void InjectScriptExtenderDll()
     // Inject the latest ScriptExtender DLL
     if (hasApplicableScriptExtenderDll)
     {
-        const auto handle = LoadLibrary(latestScriptExtenderDllVersionPath.c_str());
+        const auto handle = LoadLibraryW(latestScriptExtenderDllVersionPath.c_str());
         if (!handle)
         {
             spdlog::error("Failed to inject {}! Check your privileges or re-download the Script Extender files.", latestScriptExtenderDllVersionPath.filename().string());

@@ -14,13 +14,13 @@
 
 #include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
-#include <ScratchAllocator.hpp>
+#include <TiltedCore/ScratchAllocator.hpp>
 
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 
 #include <imgui.h>
-#include <imgui_internal.h>
+//#include <imgui_internal.h>
 
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ServerMessageFactory.h>

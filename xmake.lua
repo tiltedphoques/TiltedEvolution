@@ -1,10 +1,13 @@
 
 set_xmakever("2.5.1")
-set_languages("cxx17")
+
+-- c code will use c99,
+-- cxx code will use cxx17 currently, cxx20 soon
+set_languages("c99", "cxx17")
 
 -- 64 bit only, as SkyrimLE support is history
 set_arch("x64")
-add_vectorexts("sse2")
+add_vectorexts("ssse3")
 set_warnings("all")
 
 -- build configurations

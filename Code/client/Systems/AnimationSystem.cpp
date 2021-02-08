@@ -13,7 +13,7 @@
 
 #include <Components.h>
 #include <World.h>
-#include "ViewBuffer.hpp"
+#include "TiltedCore/ViewBuffer.hpp"
 
 extern thread_local const char* g_animErrorCode;
 

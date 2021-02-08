@@ -8,7 +8,11 @@
 
 #include <Components.h>
 
+#define DISABLE_LIST
+
+#ifndef DISABLE_LIST
 #include <httplib.h>
+#endif
 
 #if TP_SKYRIM
 static const char* s_listEndpoint = "https://skyrim-reborn-list.skyrim-together.com";
@@ -57,6 +61,7 @@ void ServerListService::Announce() const noexcept
 
 void ServerListService::DoPost(String acName, uint16_t aPort, uint32_t aPlayerCount) noexcept
 {
+#ifndef DISABLE_LIST
     const httplib::Params params{{"port", std::to_string(aPort)},
                                  {"player_count", std::to_string(aPlayerCount)},
                                  {"name", std::string(acName.c_str(), acName.size())}};
@@ -69,4 +74,5 @@ void ServerListService::DoPost(String acName, uint16_t aPort, uint32_t aPlayerCo
     {
         GameServer::Get()->Close();
     }
+#endif
 }

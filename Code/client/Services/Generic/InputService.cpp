@@ -2,10 +2,11 @@
 #include <Services/OverlayService.h>
 
 #include <OverlayApp.hpp>
-#include <WindowsHook.hpp>
+
+#include <TiltedHooks/Code/hooks/include/DInputHook.hpp>
+#include <TiltedHooks/Code/hooks/include/WindowsHook.hpp>
 
 #include <include/internal/cef_types.h>
-#include <DInputHook.hpp>
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 #include <World.h>
