@@ -5,7 +5,10 @@ lib_dir = os.curdir()
 directx_dir = lib_dir .. "/DXSDK"
 
 -- direct library deps
-add_requires("tiltedcore")
+add_requires(
+    "tiltedcore",
+    "discord",
+    "cef")
 
 -- install third party dependencies
 

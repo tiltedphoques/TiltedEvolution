@@ -1,5 +1,6 @@
 includes("./common")
---includes("./client")
+includes("./client")
+includes("./server")
 includes("./tp_process")
 includes("./encoding")
 --includes("./tests")

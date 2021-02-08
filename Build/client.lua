@@ -8,12 +8,9 @@ function generate_client(target, macro)
         kind ("SharedLib")
         language ("C++")
 
-        defines { macro }
-        
         includedirs
         {
             "../Code/client/include/",
-            "../Code/script/include/",
             "../Code/encoding/include/",
             "../Code/common/include",
             "../Libraries/entt/src/",
@@ -80,10 +77,6 @@ function generate_client(target, macro)
         
         links
         {
-            "Common",
-            "Core",
-            "Reverse",
-            "Hooks",
             "mhook",
             "UI",
             "disasm",
@@ -98,31 +91,6 @@ function generate_client(target, macro)
             "snappy"
         }
 end
-
-project ("tp_process")
-    kind ("WindowedApp")
-    language ("C++")
-
-    includedirs
-    {
-        "../Code/tests/include/",
-        coreBasePath .. "/Code/core/include/",
-        "../Code/tp_process/include/",
-        "../Libraries/TiltedUI/Code/ui_process/include/",
-        "../Libraries/TiltedUI/ThirdParty/CEF/",
-    }
-
-    files
-    {
-        "../Code/tp_process/**.h",
-        "../Code/tp_process/**.cpp",
-    }
-
-    links
-    {
-        "Core",
-        "UIProcess"
-    }
 
 generate_client("FalloutTogether", "TP_FALLOUT=1")
 generate_client("SkyrimTogether", "TP_SKYRIM=1")

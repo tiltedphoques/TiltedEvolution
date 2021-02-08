@@ -2,7 +2,7 @@
 
 #define NOMINMAX
 
-#include <Platform.hpp>
+#include <TiltedCore/Platform.hpp>
 
 #if defined(TP_SKYRIM) && TP_PLATFORM_64
 #define TP_SKYRIM64 1
@@ -23,29 +23,30 @@
 
 #include <windows.h>
 #include <intrin.h>
-
 #include <cstdint>
 
-#include <StackAllocator.hpp>
-#include <ScratchAllocator.hpp>
-#include <Stl.hpp>
-#include <Outcome.hpp>
+// TiltedCore
+#include <TiltedCore/StackAllocator.hpp>
+#include <TiltedCore/ScratchAllocator.hpp>
+#include <TiltedCore/Filesystem.hpp>
+#include <TiltedCore/Stl.hpp>
+#include <TiltedCore/Outcome.hpp>
+#include <TiltedCore/ViewBuffer.hpp>
+#include <TiltedCore/Math.hpp>
+#include <TiltedCore/TaskQueue.hpp>
+#include <TiltedCore/Buffer.hpp>
+#include <TiltedCore/Initializer.hpp>
+#include <TiltedCore/Vector3.hpp>
+
+// TiltedReverse
 #include <AutoPtr.hpp>
 #include <App.hpp>
 #include <FunctionHook.hpp>
 #include <Entry.hpp>
 #include <Debug.hpp>
-#include <Buffer.hpp>
-#include <ViewBuffer.hpp>
 #include <ThisCall.hpp>
-#include <TaskQueue.hpp>
-#include <Math.hpp>
-#include <Vector3.hpp>
-#include <Initializer.hpp>
-#include <Filesystem.hpp>
 
-#include <entt/entt.hpp>
-
+#include <single_include/entt/entt.hpp>
 #include <spdlog/spdlog.h>
 
 #include <any>
