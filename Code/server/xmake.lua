@@ -11,7 +11,7 @@ target("server_" .. name)
         "../../Libraries/entt",
         "../encoding/")
     set_pcxxheader("stdafx.h")
-    add_cflags("-include $(projectdir)/code/server/stdafx.h")
+    add_cxxflags("-include $(projectdir)/code/server/stdafx.h")
     add_headerfiles(
         "**.h",
         "../encoding/**.h")

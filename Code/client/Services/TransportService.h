@@ -1,8 +1,7 @@
 #pragma once
 
 #include <atomic>
-#include "Client.hpp"
-
+#include <Client.hpp>
 
 struct ImguiService;
 struct CellChangeEvent;

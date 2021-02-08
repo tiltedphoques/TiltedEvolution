@@ -9,6 +9,7 @@ add_requires(
     "tiltedcore",
     "spdlog",
     "discord",
+    "imgui",
     "cef")
 
 -- install third party dependencies
