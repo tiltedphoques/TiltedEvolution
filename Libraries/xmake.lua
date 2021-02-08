@@ -7,6 +7,7 @@ directx_dir = lib_dir .. "/DXSDK"
 -- direct library deps
 add_requires(
     "tiltedcore",
+    "spdlog",
     "discord",
     "cef")
 

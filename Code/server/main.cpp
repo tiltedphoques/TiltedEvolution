@@ -1,8 +1,11 @@
-#include <GameServer.h>
 
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog-inl.h>
+
+#include <cxxopts.hpp>
 #include <filesystem>
+#include <GameServer.h>
 
 int main(int argc, char** argv)
 {

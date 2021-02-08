@@ -8,18 +8,17 @@ target("client_" .. name)
         ".",
         "../../Libraries/",
         "../../Libraries/entt")
-    add_headerfiles("**.h")
-
-    if name == "FT" then
-        add_files("**.cpp|Games/Skyrim/**.cpp")
-    end
-
+    set_pcxxheader("stdafx.h")
+    add_files("**.cpp")
+    -- hacky way!
     if name == "ST" then
         add_files("**.cpp|Games/Fallout4/**.cpp")
+        add_headerfiles("**.h|Games/Fallout4/**.h")
     end
-
-    add_files("**.cpp")
-    set_pcxxheader("stdafx.h")
+    if name == "FT" then
+        add_files("**.cpp|Games/Skyrim/**.cpp")
+        add_headerfiles("**.h|Games/Skyrim/**.h")
+    end
     add_deps(
         "UiProcess", 
         "Common",
@@ -29,7 +28,8 @@ target("client_" .. name)
         "TiltedScript",
         "TiltedUi")
     add_packages(
-        "tiltedcore", 
+        "tiltedcore",
+        "spdlog", 
         "hopscotch-map",
         "discord",
         "cef")

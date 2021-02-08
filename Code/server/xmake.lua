@@ -9,24 +9,23 @@ target("server_" .. name)
         ".",
         "../../Libraries/",
         "../../Libraries/entt",
-        "../encoding/**.h|../encoding/Structs/Skyrim/**.h|../encoding/Structs/Fallout/**.h")
-    add_headerfiles("**.h")
+        "../encoding/")
+    set_pcxxheader("stdafx.h")
+    add_cflags("-include $(projectdir)/code/server/stdafx.h")
+    add_headerfiles(
+        "**.h",
+        "../encoding/**.h")
     add_files(
         "**.cpp",
-        "../../Libraries/spdlog/*.cpp",
-        "../encoding/**.cpp|../encoding/Structs/Skyrim/**.cpp|../encoding/Structs/Fallout/**.cpp")
-
+        "../encoding/**.cpp")
+        
     if name == "ST" then
-        add_headerfiles("../encoding/Structs/Skyrim/**.h")
-        add_files("../encoding/Structs/Skyrim/**.cpp")
+        del_files("../encoding/Structs/Fallout4/**.cpp")
     end
-
     if name == "FT" then
-        add_headerfiles("../encoding/Structs/Fallout4/**.h")
-        add_files("../encoding/Structs/Fallout4/**.cpp")
+        del_files("../encoding/Structs/Skyrim/**.cpp")
     end
 
-    set_pcxxheader("stdafx.h")
     add_deps(
         "Common",
         "TiltedScript",
@@ -34,6 +33,7 @@ target("server_" .. name)
     add_packages(
         "tiltedcore",
         "gamenetworkingsockets",
+        "spdlog",
         "hopscotch-map")
 end
 
