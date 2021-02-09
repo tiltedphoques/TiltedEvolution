@@ -88,10 +88,24 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
     {
         pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
+        pActor->SetActorValues(pRemoteComponent->SpawnRequest.InitialActorValues);
     }
 
-    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
+    if (aRegistry.has<RemoteComponent>(aEntity))
+    {
+        spdlog::warn("Remote");
         return;
+    }
+    if (aRegistry.has<LocalComponent>(aEntity))
+    {
+        spdlog::warn("Local");
+        return;
+    }
+    if (aRegistry.has<WaitingForAssignmentComponent>(aEntity))
+    {
+        spdlog::warn("Waiting");
+        return;
+    }
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
 
@@ -177,7 +191,12 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     m_world.remove<WaitingForAssignmentComponent>(cEntity);
 
     if (m_world.has<LocalComponent>(cEntity) || m_world.has<RemoteComponent>(cEntity))
+    {
+        auto* const pForm = TESForm::GetById(formIdComponent.Id);
+        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        pActor->SetActorValues(acMessage.AllActorValues);
         return;
+    }
 
     if (acMessage.Owner)
     {
@@ -200,6 +219,8 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
+
+        pActor->SetActorValues(acMessage.AllActorValues);
     }
 }
 
@@ -557,6 +578,8 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
+    message.AllActorValues = pActor->GetActorValues();
+    spdlog::info("modid: {:X} values: {:X}", modId, message.AllActorValues.ActorMaxValuesList.size());
 
     if(isTemporary)
     {
@@ -705,6 +728,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->rotation.m_z = acMessage.Rotation.Y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetInventory(acMessage.InventoryContent);
+    pActor->SetActorValues(acMessage.InitialActorValues);
     pActor->SetFactions(acMessage.FactionsContent);
 
     return pActor;

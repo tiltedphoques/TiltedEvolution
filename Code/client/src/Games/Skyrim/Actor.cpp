@@ -214,6 +214,22 @@ Factions Actor::GetFactions() const noexcept
     return result;
 }
 
+ActorValues Actor::GetActorValues() const noexcept
+{
+    ActorValues actorValues;
+
+    int essentialValues[] = {ActorValueInfo::kHealth, ActorValueInfo::kStamina, ActorValueInfo::kMagicka};
+    for (auto i : essentialValues)
+    {
+        float value = actorValueOwner.GetValue(i);
+        actorValues.ActorValuesList.insert({i, value});
+        float maxValue = actorValueOwner.GetMaxValue(i);
+        actorValues.ActorMaxValuesList.insert({i, maxValue});
+    }
+
+    return actorValues;
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     UnEquipAll();
@@ -249,6 +265,21 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if (shoutId)
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+}
+
+void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
+{
+    for (auto& value : acActorValues.ActorValuesList)
+    {
+        float current = actorValueOwner.GetValue(value.first);
+        actorValueOwner.ForceCurrent(0, value.first, value.second - current);
+    }
+
+    for (auto& value : acActorValues.ActorMaxValuesList)
+    {
+        float current = actorValueOwner.GetValue(value.first);
+        actorValueOwner.ForceCurrent(2, value.first, value.second - current);
+    }
 }
 
 void Actor::SetFactions(const Factions& acFactions) noexcept
@@ -376,9 +407,10 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
     spdlog::info("Damage hook activated");
     spdlog::info(damage);
-    if (!hitter)
+    const auto pExHittee = apThis->GetExtension();
+    if (!hitter && pExHittee->IsLocal())
     {
-        spdlog::info("Hitter is local. Executing hook.");
+        spdlog::info("Hitter is environment and hittee is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }

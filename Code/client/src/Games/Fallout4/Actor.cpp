@@ -106,6 +106,19 @@ Factions Actor::GetFactions() const noexcept
     return result;
 }
 
+ActorValues Actor::GetActorValues() noexcept
+{
+    ActorValues actorValues;
+
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(ActorValueInfo::kHealth);
+    float value = actorValueOwner.GetValue(pActorValueInfo);
+    actorValues.ActorValuesList.insert({ActorValueInfo::kHealth, value});
+    float maxValue = actorValueOwner.GetMaxValue(pActorValueInfo);
+    actorValues.ActorMaxValuesList.insert({ActorValueInfo::kHealth, maxValue});
+
+    return actorValues;
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
@@ -114,6 +127,23 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if(!acInventory.Buffer.empty())
         DeserializeInventory(acInventory.Buffer);
+}
+
+void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
+{
+    for (auto& value : acActorValues.ActorValuesList)
+    {
+        ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
+        float current = actorValueOwner.GetValue(pActorValueInfo);
+        actorValueOwner.ForceCurrent(0, pActorValueInfo, value.second - current);
+    }
+
+    for (auto& value : acActorValues.ActorMaxValuesList)
+    {
+        ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
+        float current = actorValueOwner.GetValue(pActorValueInfo);
+        actorValueOwner.ForceCurrent(2, pActorValueInfo, value.second - current);
+    }
 }
 
 void Actor::SetFactions(const Factions& acFactions) noexcept

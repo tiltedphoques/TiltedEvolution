@@ -15,5 +15,6 @@
 #include <Components/InventoryComponent.h>
 #include <Components/QuestLogComponent.h>
 #include <Components/PartyComponent.h>
+#include <Components/ActorValuesComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

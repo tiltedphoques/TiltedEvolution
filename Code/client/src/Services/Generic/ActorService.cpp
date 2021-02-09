@@ -11,8 +11,6 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/HealthChangeEvent.h>
 
-#include <Messages/NotifyActorValuesState.h>
-#include <Messages/RequestActorValuesState.h>
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/NotifyActorMaxValueChanges.h>
@@ -30,7 +28,6 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<DisconnectedEvent>().connect<&ActorService::OnDisconnected>(this);
     aDispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorService::OnReferenceSpawned>(this);
     aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
-    aDispatcher.sink<NotifyActorValuesState>().connect<&ActorService::OnActorValuesState>(this);
     aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
     aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
     aDispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
@@ -115,11 +112,6 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
     }    
 }
 
-void ActorService::OnActorValuesState(const NotifyActorValuesState& acEvent) noexcept
-{
-    BroadcastAllActorValues(false);
-}
-
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     m_timeSinceDiff += acEvent.Delta;
@@ -127,29 +119,17 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
     {
         m_timeSinceDiff = 0;
 
-        BroadcastAllActorValues(true);
-    }
-    if (m_transport.IsConnected())
-    {
-        m_initialSyncTimer += acEvent.Delta;
-        if (m_initialSyncTimer >= 3 && !m_askedForSync)
-        {
-            m_askedForSync = true;
-            RequestActorValuesState requestState;
-            requestState.m_Id = 1;
-            m_transport.Send(requestState);
-            BroadcastAllActorValues(false);
-        }
+        BroadcastAllActorValues();
     }
 }
 
-void ActorService::BroadcastAllActorValues(bool aUseCache) noexcept
+void ActorService::BroadcastAllActorValues() noexcept
 {
-    BroadcastActorValues(aUseCache, &m_actorValues, 0);
-    BroadcastActorValues(aUseCache, &m_actorMaxValues, 1);
+    BroadcastActorValues(&m_actorValues, ValueType::kValue);
+    BroadcastActorValues(&m_actorMaxValues, ValueType::kMaxValue);
 }
 
-void ActorService::BroadcastActorValues(bool aUseCache, Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept
+void ActorService::BroadcastActorValues(Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept
 {
     auto view = m_world.view<FormIdComponent, LocalComponent>();
 
@@ -185,16 +165,8 @@ void ActorService::BroadcastActorValues(bool aUseCache, Map<uint32_t, Map<uint32
                                 continue;
 #endif
                             float newValue = GetActorValue(pActor, i);
-                            if (aUseCache)
-                            {
-                                float oldValue = value.second[i];
-                                if (newValue != oldValue)
-                                {
-                                    requestChanges.m_values.insert({i, newValue});
-                                    value.second[i] = newValue;
-                                }
-                            }
-                            else
+                            float oldValue = value.second[i];
+                            if (newValue != oldValue)
                             {
                                 requestChanges.m_values.insert({i, newValue});
                                 value.second[i] = newValue;
@@ -225,16 +197,8 @@ void ActorService::BroadcastActorValues(bool aUseCache, Map<uint32_t, Map<uint32
                                 continue;
 #endif
                             float newValue = GetActorValue(pActor, i);
-                            if (aUseCache)
-                            {
-                                float oldValue = value.second[i];
-                                if (newValue != oldValue)
-                                {
-                                    requestChanges.m_values.insert({i, newValue});
-                                    value.second[i] = newValue;
-                                }
-                            }
-                            else
+                            float oldValue = value.second[i];
+                            if (newValue != oldValue)
                             {
                                 requestChanges.m_values.insert({i, newValue});
                                 value.second[i] = newValue;

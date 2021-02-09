@@ -6,6 +6,7 @@
 #include <Forms/TESForm.h>
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
+#include <Structs/ActorValues.h>
 
 #include <Games/Events.h>
 #include <Events.h>
@@ -42,11 +43,13 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
+    ActorValues GetActorValues() noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
+    void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;

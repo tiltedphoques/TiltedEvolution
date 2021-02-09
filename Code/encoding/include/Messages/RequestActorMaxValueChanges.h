@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Structs/GameId.h>
+
 #include "Message.h"
 
 struct RequestActorMaxValueChanges final : ClientMessage

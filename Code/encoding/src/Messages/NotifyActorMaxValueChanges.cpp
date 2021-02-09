@@ -20,7 +20,7 @@ void NotifyActorMaxValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& a
     m_Id = Serialization::ReadVarInt(aReader);
 
     auto count = Serialization::ReadVarInt(aReader);
-    for (int i = 0; i < count; i += 2)
+    for (int i = 0; i < count; i += 1)
     {
         auto key = Serialization::ReadVarInt(aReader);
         auto value = Serialization::ReadFloat(aReader);

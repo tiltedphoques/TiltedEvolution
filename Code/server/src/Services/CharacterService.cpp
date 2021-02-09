@@ -59,6 +59,12 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
         apSpawnRequest->InventoryContent = pInventoryComponent->Content;
     }
 
+    const auto* pActorValuesComponent = aRegistry.try_get<ActorValuesComponent>(aEntity);
+    if (pActorValuesComponent)
+    {
+        apSpawnRequest->InitialActorValues = pActorValuesComponent->CurrentActorValues;
+    }
+
     if (characterComponent.BaseId)
     {
         apSpawnRequest->BaseId = characterComponent.BaseId.Id;
@@ -119,11 +125,11 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
-                const auto& formIdComponent = view.get(entity);
+                const auto& formIdComponent = view.get<FormIdComponent>(entity);
 
                 return formIdComponent.Id == refId;
             });
@@ -131,14 +137,17 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
         if (itor != std::end(view))
         {
             // This entity already has an owner
-            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
-
             const auto* pServer = GameServer::Get();
+
+            auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
+            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
+            response.AllActorValues = actorValuesComponent.CurrentActorValues;
+
             pServer->Send(acMessage.ConnectionId, response);
             return;
         }
@@ -376,6 +385,9 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
 
+    auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
+    actorValuesComponent.CurrentActorValues = message.AllActorValues;
+
     spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
@@ -420,6 +432,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
+    response.AllActorValues = message.AllActorValues;
 
     pServer->Send(acMessage.ConnectionId, response);
 
