@@ -414,6 +414,21 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
+    auto factions = apThis->GetFactions();
+    for (const auto& faction : factions.NpcFactions)
+    {
+        if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
+        {
+            spdlog::info("Hittee is remote player. Cancelling hook.");
+            return 0;
+        }
+        else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
+        {
+            spdlog::info("Hittee is local player. Executing hook.");
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
+            return ThisCall(RealDamageActor, apThis, damage, hitter);
+        }
+    }
 
     const auto pExHitter = hitter->GetExtension();
     if (pExHitter->IsLocal())
