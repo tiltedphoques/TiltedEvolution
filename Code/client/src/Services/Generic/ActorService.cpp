@@ -196,7 +196,7 @@ void ActorService::BroadcastActorValues(Map<uint32_t, Map<uint32_t, float>>* aAc
                             if (i == 23 || i == 48 || i == 70)
                                 continue;
 #endif
-                            float newValue = GetActorValue(pActor, i);
+                            float newValue = GetActorMaxValue(pActor, i);
                             float oldValue = value.second[i];
                             if (newValue != oldValue)
                             {
