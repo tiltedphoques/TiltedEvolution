@@ -43,7 +43,7 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
-    ActorValues GetActorValues() noexcept;
+    ActorValues GetEssentialActorValues() noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;

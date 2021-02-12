@@ -214,7 +214,7 @@ Factions Actor::GetFactions() const noexcept
     return result;
 }
 
-ActorValues Actor::GetActorValues() const noexcept
+ActorValues Actor::GetEssentialActorValues() const noexcept
 {
     ActorValues actorValues;
 

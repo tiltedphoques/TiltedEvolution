@@ -137,10 +137,11 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
         if (itor != std::end(view))
         {
             // This entity already has an owner
+            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
+
             const auto* pServer = GameServer::Get();
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
-            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;

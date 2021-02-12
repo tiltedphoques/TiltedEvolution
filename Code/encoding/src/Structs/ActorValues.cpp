@@ -33,7 +33,7 @@ void ActorValues::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexce
 void ActorValues::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     auto count = Serialization::ReadVarInt(aReader);
-    for (int i = 0; i < count; i += 1)
+    for (int i = 0; i < count; i++)
     {
         auto key = Serialization::ReadVarInt(aReader);
         auto value = Serialization::ReadFloat(aReader);
@@ -41,7 +41,7 @@ void ActorValues::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     }
 
     auto maxCount = Serialization::ReadVarInt(aReader);
-    for (int i = 0; i < maxCount; i += 1)
+    for (int i = 0; i < maxCount; i++)
     {
         auto key = Serialization::ReadVarInt(aReader);
         auto value = Serialization::ReadFloat(aReader);

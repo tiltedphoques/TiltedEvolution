@@ -51,8 +51,8 @@ private:
     void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) noexcept;
     void OnHealthChange(const HealthChangeEvent&) noexcept;
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
-    void RunSmallHealthUpdates() noexcept;
 
+    void RunSmallHealthUpdates() noexcept;
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
     void BroadcastAllActorValues() noexcept;
     void BroadcastActorValues(Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept;

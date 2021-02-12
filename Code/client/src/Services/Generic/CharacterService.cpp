@@ -91,21 +91,8 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
         pActor->SetActorValues(pRemoteComponent->SpawnRequest.InitialActorValues);
     }
 
-    if (aRegistry.has<RemoteComponent>(aEntity))
-    {
-        spdlog::warn("Remote");
+    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
         return;
-    }
-    if (aRegistry.has<LocalComponent>(aEntity))
-    {
-        spdlog::warn("Local");
-        return;
-    }
-    if (aRegistry.has<WaitingForAssignmentComponent>(aEntity))
-    {
-        spdlog::warn("Waiting");
-        return;
-    }
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
 
@@ -578,7 +565,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
-    message.AllActorValues = pActor->GetActorValues();
+    message.AllActorValues = pActor->GetEssentialActorValues();
 
     if(isTemporary)
     {

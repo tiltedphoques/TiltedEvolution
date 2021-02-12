@@ -183,7 +183,7 @@ struct Actor : TESObjectREFR
 
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
-    ActorValues GetActorValues() const noexcept;
+    ActorValues GetEssentialActorValues() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
