@@ -215,9 +215,11 @@ public:
         CHANGE_ACTOR_PERMANENT_MODIFIERS = 1 << 23,
     };
 
-    struct SmallArray
+    struct ActorValueModifiers
     {
-        uint32_t content[3];
+        float permanentModifier;
+        float temporaryModifier;
+        float damageModifier;
     };
 
     struct SpellItemEntry
@@ -273,10 +275,10 @@ public:
     uint32_t flags2;
     void* unk200[4];
     struct BGSDialogueBranch* dialogueBranch;
-    SmallArray unkSmallArray1;
-    SmallArray unkSmallArray2;
-    SmallArray unkSmallArray3;
-    SmallArray unkSmallArray4;
+    ActorValueModifiers healthValues;
+    ActorValueModifiers staminaValues;
+    ActorValueModifiers magickaValues;
+    ActorValueModifiers unkSmallArray4;
     float unk180;
     uint32_t unk184;
     void* actorWeightData;

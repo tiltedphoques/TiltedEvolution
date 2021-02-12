@@ -39,6 +39,7 @@ private:
 
     Map<uint32_t, Map<uint32_t, float>> m_actorValues;
     Map<uint32_t, Map<uint32_t, float>> m_actorMaxValues;
+    Map<uint32_t, float> m_smallHealthChanges;
     double m_timeSinceDiff = 1;
     
     void OnLocalComponentAdded(entt::registry& aRegistry, entt::entity aEntity) noexcept;
@@ -50,6 +51,7 @@ private:
     void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) noexcept;
     void OnHealthChange(const HealthChangeEvent&) noexcept;
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
+    void RunSmallHealthUpdates() noexcept;
 
     void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
     void BroadcastAllActorValues() noexcept;

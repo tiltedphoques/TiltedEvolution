@@ -96,7 +96,6 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
 
 void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
 {
-    // AV: The current health will not be updated server side, since there is no fallout 4/skyrim check macro in the server
     NotifyHealthChangeBroadcast notifyDamageEvent;
     notifyDamageEvent.m_Id = acMessage.Packet.m_Id;
     notifyDamageEvent.m_DeltaHealth = acMessage.Packet.m_DeltaHealth;

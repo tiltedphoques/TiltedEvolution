@@ -414,6 +414,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
+
     auto factions = apThis->GetFactions();
     for (const auto& faction : factions.NpcFactions)
     {
@@ -447,15 +448,15 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, unsigned int unk1)
 {
-    spdlog::info("Apply actor effect hook activated");
-    spdlog::info(effectValue);
+    //spdlog::info("Apply actor effect hook activated");
+    //spdlog::info(effectValue);
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)
     {
         if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && effectValue > 0.0f)
         {
-            spdlog::info("Actor effect is healing.");
+            //spdlog::info("Actor effect is healing.");
             const auto pExTarget = target->GetExtension();
             if (pExTarget->IsLocal())
             {
@@ -463,13 +464,33 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
             }
-            spdlog::info("Cancelling actor effect hook.");
+            //spdlog::info("Cancelling actor effect hook.");
             return;
         }
     }
 
-    spdlog::info("Executing actor effect hook (not healing).");
+    //spdlog::info("Executing actor effect hook (not healing).");
     return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
+}
+
+TP_THIS_FUNCTION(TRegenAttributes, void*, Actor, int aId, float regenValue);
+static TRegenAttributes* RealRegenAttributes = nullptr;
+
+void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float regenValue)
+{
+    if (aId != ActorValueInfo::kHealth)
+    {
+        return ThisCall(RealRegenAttributes, apThis, aId, regenValue);
+    }
+
+    const auto* pExTarget = apThis->GetExtension();
+    if (pExTarget->IsRemote())
+    {
+        return 0;
+    }
+
+    World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, regenValue));
+    return ThisCall(RealRegenAttributes, apThis, aId, regenValue);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -482,6 +503,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
         POINTER_SKYRIMSE(TDamageActor, s_DamageActor, 0x1405D6300 - 0x140000000);
         POINTER_SKYRIMSE(TApplyActorEffect, s_ApplyActorEffect, 0x140567A89 - 0x140000000);
+        POINTER_SKYRIMSE(TRegenAttributes, s_RegenAttributes, 0x140620900 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
@@ -490,6 +512,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
         RealDamageActor = s_DamageActor.Get();
         RealApplyActorEffect = s_ApplyActorEffect.Get();
+        RealRegenAttributes = s_RegenAttributes.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -497,5 +520,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
         TP_HOOK(&RealDamageActor, HookDamageActor);
         TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+        TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
 
     });

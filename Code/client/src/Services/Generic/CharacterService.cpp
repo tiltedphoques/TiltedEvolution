@@ -579,7 +579,6 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetActorValues();
-    spdlog::info("modid: {:X} values: {:X}", modId, message.AllActorValues.ActorMaxValuesList.size());
 
     if(isTemporary)
     {

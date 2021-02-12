@@ -114,6 +114,7 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
 
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
+    RunSmallHealthUpdates();
     m_timeSinceDiff += acEvent.Delta;
     if (m_timeSinceDiff >= 1)
     {
@@ -231,14 +232,28 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
 
                 if (localComponent)
                 {
+                    if (acEvent.DeltaHealth > -1.0f && acEvent.DeltaHealth < 1.0f)
+                    {
+                        m_smallHealthChanges[localComponent->Id] += acEvent.DeltaHealth;
+                        return;
+                    }
+
                     RequestHealthChangeBroadcast requestHealthChange;
                     requestHealthChange.m_Id = localComponent->Id;
                     requestHealthChange.m_DeltaHealth = acEvent.DeltaHealth;
 
                     m_transport.Send(requestHealthChange);
+
+                    spdlog::info("Sent out delta health through collection: {:x}:{:f}", localComponent->Id, acEvent.DeltaHealth);
                 }
                 else
                 {
+                    if (-1.0f < acEvent.DeltaHealth < 1.0f)
+                    {
+                        m_smallHealthChanges[localComponent->Id] += acEvent.DeltaHealth;
+                        return;
+                    }
+
                     const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
 
                     RequestHealthChangeBroadcast requestHealthChange;
@@ -246,9 +261,39 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
                     requestHealthChange.m_DeltaHealth = acEvent.DeltaHealth;
 
                     m_transport.Send(requestHealthChange);
+
+                    spdlog::info("Sent out delta health through collection: {:x}:{:f}", remoteComponent->Id, acEvent.DeltaHealth);
                 }
             }
         }
+    }
+}
+
+void ActorService::RunSmallHealthUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 250ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    if (!m_smallHealthChanges.empty())
+    {
+        for (auto& value : m_smallHealthChanges)
+        {
+            RequestHealthChangeBroadcast requestHealthChange;
+            requestHealthChange.m_Id = value.first;
+            requestHealthChange.m_DeltaHealth = value.second;
+
+            m_transport.Send(requestHealthChange);
+
+            spdlog::info("Sent out delta health through timer. {:x}:{:f}", value.first, value.second);
+        }
+
+        m_smallHealthChanges.clear();
     }
 }
 
@@ -312,7 +357,7 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
                     else
                     {
                         SetActorValue(pActor, value.first, value.second);
-                    }                    
+                    }
                 }
             }
         }
