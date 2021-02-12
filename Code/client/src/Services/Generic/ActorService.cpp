@@ -234,7 +234,10 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
                 {
                     if (acEvent.DeltaHealth > -1.0f && acEvent.DeltaHealth < 1.0f)
                     {
-                        m_smallHealthChanges[localComponent->Id] += acEvent.DeltaHealth;
+                        if (m_smallHealthChanges.find(localComponent->Id) == m_smallHealthChanges.end())
+                            m_smallHealthChanges[localComponent->Id] = acEvent.DeltaHealth;
+                        else
+                            m_smallHealthChanges[localComponent->Id] += acEvent.DeltaHealth;
                         return;
                     }
 
@@ -248,13 +251,16 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
                 }
                 else
                 {
+                    const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
+
                     if (-1.0f < acEvent.DeltaHealth < 1.0f)
                     {
-                        m_smallHealthChanges[localComponent->Id] += acEvent.DeltaHealth;
+                        if (m_smallHealthChanges.find(remoteComponent->Id) == m_smallHealthChanges.end())
+                            m_smallHealthChanges[remoteComponent->Id] = acEvent.DeltaHealth;
+                        else
+                            m_smallHealthChanges[remoteComponent->Id] += acEvent.DeltaHealth;
                         return;
                     }
-
-                    const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
 
                     RequestHealthChangeBroadcast requestHealthChange;
                     requestHealthChange.m_Id = remoteComponent->Id;
@@ -308,8 +314,10 @@ void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& ac
         const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
         if (localComponent)
             componentId = localComponent->Id;
-        else
+        else if (remoteComponent)
             componentId = remoteComponent->Id;
+        else
+            continue;
 
         if (componentId == acEvent.m_Id)
         {

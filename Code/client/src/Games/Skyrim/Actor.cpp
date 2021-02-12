@@ -405,12 +405,12 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
-    spdlog::info("Damage hook activated");
-    spdlog::info(damage);
+    //spdlog::info("Damage hook activated");
+    //spdlog::info(damage);
     const auto pExHittee = apThis->GetExtension();
     if (!hitter && pExHittee->IsLocal())
     {
-        spdlog::info("Hitter is environment and hittee is local. Executing hook.");
+        //spdlog::info("Hitter is environment and hittee is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
@@ -420,12 +420,12 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     {
         if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
         {
-            spdlog::info("Hittee is remote player. Cancelling hook.");
+            //spdlog::info("Hittee is remote player. Cancelling hook.");
             return 0;
         }
         else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
         {
-            spdlog::info("Hittee is local player. Executing hook.");
+            //spdlog::info("Hittee is local player. Executing hook.");
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
             return ThisCall(RealDamageActor, apThis, damage, hitter);
         }
@@ -434,12 +434,12 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     const auto pExHitter = hitter->GetExtension();
     if (pExHitter->IsLocal())
     {
-        spdlog::info("Hitter is local. Executing hook.");
+        //spdlog::info("Hitter is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
 
-    spdlog::info("Hitter is remote. Cancelling hook.");
+    //spdlog::info("Hitter is remote. Cancelling hook.");
     return 0;
 }
 
@@ -460,7 +460,7 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
             const auto pExTarget = target->GetExtension();
             if (pExTarget->IsLocal())
             {
-                spdlog::info("Heal target is local. Executing hook.");
+                //spdlog::info("Heal target is local. Executing hook.");
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
             }
