@@ -3,6 +3,7 @@
 #include <Effects/ActiveEffect.h>
 
 struct Actor;
+struct ActorValueInfo;
 
 struct ValueModifierEffect : public ActiveEffect
 {
@@ -18,5 +19,7 @@ struct ValueModifierEffect : public ActiveEffect
     char pad_0080[16];
     uint32_t actorValueIndex;
     char pad_0094[4];
+    ActorValueInfo* actorValueInfo;
+    
 };
-static_assert(sizeof(ValueModifierEffect) == 0x98);
+static_assert(sizeof(ValueModifierEffect) == 0xA0);

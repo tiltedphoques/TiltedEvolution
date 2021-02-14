@@ -110,7 +110,7 @@ ActorValues Actor::GetEssentialActorValues() noexcept
 {
     ActorValues actorValues;
 
-    int essentialValues[] = {ActorValueInfo::kHealth, ActorValueInfo::kRads};
+    int essentialValues[] = {ActorValueInfo::kHealth};
 
     for (auto i : essentialValues)
     {
@@ -120,6 +120,13 @@ ActorValues Actor::GetEssentialActorValues() noexcept
         float maxValue = actorValueOwner.GetMaxValue(pActorValueInfo);
         actorValues.ActorMaxValuesList.insert({i, maxValue});
     }
+
+    ActorValueInfo* pActorValueInfoRads = GetActorValueInfo(ActorValueInfo::kRads);
+    float valueRads = actorValueOwner.GetValue(pActorValueInfoRads);
+    actorValues.ActorValuesList.insert({ActorValueInfo::kRads, valueRads});
+    ActorValueInfo* pActorValueInfoRadsMax = GetActorValueInfo(ActorValueInfo::kRadHealthMax);
+    float valueRadsMax = actorValueOwner.GetValue(pActorValueInfoRadsMax);
+    actorValues.ActorValuesList.insert({ActorValueInfo::kRadHealthMax, valueRadsMax});
 
     return actorValues;
 }
@@ -146,6 +153,8 @@ void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
     for (auto& value : acActorValues.ActorValuesList)
     {
         ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
+        if (value.first == ActorValueInfo::kRads || value.first == ActorValueInfo::kRadHealthMax)
+            actorValueOwner.SetValue(pActorValueInfo, value.second);
         float current = actorValueOwner.GetValue(pActorValueInfo);
         actorValueOwner.ForceCurrent(2, pActorValueInfo, value.second - current);
     }
@@ -206,11 +215,11 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
-    spdlog::info("Damage hook activated");
-    spdlog::info(damage);
+    //spdlog::info("Damage hook activated");
+    //spdlog::info(damage);
     if (!hitter)
     {
-        spdlog::info("Hitter is local. Executing hook.");
+        //spdlog::info("Hitter is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
@@ -218,12 +227,12 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     const auto pExHitter = hitter->GetExtension();
     if (pExHitter->IsLocal())
     {
-        spdlog::info("Hitter is local. Executing hook.");
+        //spdlog::info("Hitter is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
 
-    spdlog::info("Hitter is remote. Cancelling hook.");
+    //spdlog::info("Hitter is remote. Cancelling hook.");
     return 0;
 }
 
@@ -232,15 +241,16 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, ActorValueInfo* actorValueInfo)
 {
-    spdlog::info("Apply actor effect hook activated");
-    spdlog::info(effectValue);
+    //spdlog::info("Apply actor effect hook activated");
+    //spdlog::info(effectValue);
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)
     {
-        if (pValueModEffect->actorValueIndex == 3 && effectValue > 0.0f)
+        ActorValueInfo* pHealthActorValueInfo = target->GetActorValueInfo(ActorValueInfo::kHealth);
+        if (pValueModEffect->actorValueInfo == pHealthActorValueInfo && effectValue > 0.0f)
         {
-            spdlog::info("Actor effect is healing.");
+            //spdlog::info("Actor effect is healing.");
             const auto pExTarget = target->GetExtension();
             if (pExTarget->IsLocal())
             {
@@ -248,12 +258,12 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
             }
-            spdlog::info("Cancelling actor effect hook.");
+            //spdlog::info("Cancelling actor effect hook.");
             return;
         }
     }
 
-    spdlog::info("Executing actor effect hook (not healing).");
+    //spdlog::info("Executing actor effect hook (not healing).");
     return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
 }
 
