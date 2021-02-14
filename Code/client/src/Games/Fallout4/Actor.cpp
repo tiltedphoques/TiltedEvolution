@@ -110,11 +110,16 @@ ActorValues Actor::GetEssentialActorValues() noexcept
 {
     ActorValues actorValues;
 
-    ActorValueInfo* pActorValueInfo = GetActorValueInfo(ActorValueInfo::kHealth);
-    float value = actorValueOwner.GetValue(pActorValueInfo);
-    actorValues.ActorValuesList.insert({ActorValueInfo::kHealth, value});
-    float maxValue = actorValueOwner.GetMaxValue(pActorValueInfo);
-    actorValues.ActorMaxValuesList.insert({ActorValueInfo::kHealth, maxValue});
+    int essentialValues[] = {ActorValueInfo::kHealth, ActorValueInfo::kRads};
+
+    for (auto i : essentialValues)
+    {
+        ActorValueInfo* pActorValueInfo = GetActorValueInfo(i);
+        float value = actorValueOwner.GetValue(pActorValueInfo);
+        actorValues.ActorValuesList.insert({i, value});
+        float maxValue = actorValueOwner.GetMaxValue(pActorValueInfo);
+        actorValues.ActorMaxValuesList.insert({i, maxValue});
+    }
 
     return actorValues;
 }
@@ -131,14 +136,14 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
-    for (auto& value : acActorValues.ActorValuesList)
+    for (auto& value : acActorValues.ActorMaxValuesList)
     {
         ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
         float current = actorValueOwner.GetValue(pActorValueInfo);
         actorValueOwner.ForceCurrent(0, pActorValueInfo, value.second - current);
     }
 
-    for (auto& value : acActorValues.ActorMaxValuesList)
+    for (auto& value : acActorValues.ActorValuesList)
     {
         ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
         float current = actorValueOwner.GetValue(pActorValueInfo);

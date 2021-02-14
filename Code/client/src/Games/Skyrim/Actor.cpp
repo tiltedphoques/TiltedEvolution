@@ -225,6 +225,7 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
         actorValues.ActorValuesList.insert({i, value});
         float maxValue = actorValueOwner.GetMaxValue(i);
         actorValues.ActorMaxValuesList.insert({i, maxValue});
+        spdlog::info("Max {:x}:{:f} from {:x}", i, maxValue, this->formID);
     }
 
     return actorValues;
@@ -269,13 +270,13 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
-    for (auto& value : acActorValues.ActorValuesList)
+    for (auto& value : acActorValues.ActorMaxValuesList)
     {
         float current = actorValueOwner.GetValue(value.first);
         actorValueOwner.ForceCurrent(0, value.first, value.second - current);
     }
 
-    for (auto& value : acActorValues.ActorMaxValuesList)
+    for (auto& value : acActorValues.ActorValuesList)
     {
         float current = actorValueOwner.GetValue(value.first);
         actorValueOwner.ForceCurrent(2, value.first, value.second - current);
