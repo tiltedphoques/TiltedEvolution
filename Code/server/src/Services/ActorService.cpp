@@ -38,7 +38,7 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
         {
             actorValuesComponent.CurrentActorValues.ActorValuesList[id] = value;
             auto val = actorValuesComponent.CurrentActorValues.ActorValuesList[id];
-            spdlog::info("Updating value {:x}:{:f} by {:x}", id, val, message.m_Id);
+            spdlog::info("Updating value {:x}:{:f} of {:x}", id, val, message.m_Id);
         }
     }
 
@@ -74,7 +74,7 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
         {
             actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id] = value;
             auto val = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id];
-            spdlog::info("Updating max value {:x}:{:f} by {:x}", id, val, message.m_Id);
+            spdlog::info("Updating max value {:x}:{:f} of {:x}", id, val, message.m_Id);
         }
     }
 

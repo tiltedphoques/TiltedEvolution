@@ -225,7 +225,6 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
         actorValues.ActorValuesList.insert({i, value});
         float maxValue = actorValueOwner.GetMaxValue(i);
         actorValues.ActorMaxValuesList.insert({i, maxValue});
-        spdlog::info("Max {:x}:{:f} from {:x}", i, maxValue, this->formID);
     }
 
     return actorValues;
@@ -406,12 +405,9 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
-    //spdlog::info("Damage hook activated");
-    //spdlog::info(damage);
     const auto pExHittee = apThis->GetExtension();
     if (!hitter && pExHittee->IsLocal())
     {
-        //spdlog::info("Hitter is environment and hittee is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
@@ -421,12 +417,10 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     {
         if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
         {
-            //spdlog::info("Hittee is remote player. Cancelling hook.");
             return 0;
         }
         else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
         {
-            //spdlog::info("Hittee is local player. Executing hook.");
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
             return ThisCall(RealDamageActor, apThis, damage, hitter);
         }
@@ -435,12 +429,10 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
     const auto pExHitter = hitter->GetExtension();
     if (pExHitter->IsLocal())
     {
-        //spdlog::info("Hitter is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
 
-    //spdlog::info("Hitter is remote. Cancelling hook.");
     return 0;
 }
 
@@ -449,28 +441,22 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, unsigned int unk1)
 {
-    //spdlog::info("Apply actor effect hook activated");
-    //spdlog::info(effectValue);
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)
     {
         if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && effectValue > 0.0f)
         {
-            //spdlog::info("Actor effect is healing.");
             const auto pExTarget = target->GetExtension();
             if (pExTarget->IsLocal())
             {
-                //spdlog::info("Heal target is local. Executing hook.");
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
             }
-            //spdlog::info("Cancelling actor effect hook.");
             return;
         }
     }
 
-    //spdlog::info("Executing actor effect hook (not healing).");
     return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
 }
 

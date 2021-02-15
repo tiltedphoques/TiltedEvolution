@@ -215,24 +215,34 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
 {
-    //spdlog::info("Damage hook activated");
-    //spdlog::info(damage);
-    if (!hitter)
+    const auto pExHittee = apThis->GetExtension();
+    if (!hitter && pExHittee->IsLocal())
     {
-        //spdlog::info("Hitter is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
+    }
+
+    auto factions = apThis->GetFactions();
+    for (const auto& faction : factions.NpcFactions)
+    {
+        if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsRemote())
+        {
+            return 0;
+        }
+        else if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsLocal())
+        {
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
+            return ThisCall(RealDamageActor, apThis, damage, hitter);
+        }
     }
 
     const auto pExHitter = hitter->GetExtension();
     if (pExHitter->IsLocal())
     {
-        //spdlog::info("Hitter is local. Executing hook.");
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
         return ThisCall(RealDamageActor, apThis, damage, hitter);
     }
 
-    //spdlog::info("Hitter is remote. Cancelling hook.");
     return 0;
 }
 
@@ -241,8 +251,6 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, ActorValueInfo* actorValueInfo)
 {
-    //spdlog::info("Apply actor effect hook activated");
-    //spdlog::info(effectValue);
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)
@@ -250,7 +258,6 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
         ActorValueInfo* pHealthActorValueInfo = target->GetActorValueInfo(ActorValueInfo::kHealth);
         if (pValueModEffect->actorValueInfo == pHealthActorValueInfo && effectValue > 0.0f)
         {
-            //spdlog::info("Actor effect is healing.");
             const auto pExTarget = target->GetExtension();
             if (pExTarget->IsLocal())
             {
@@ -258,12 +265,10 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
             }
-            //spdlog::info("Cancelling actor effect hook.");
             return;
         }
     }
 
-    //spdlog::info("Executing actor effect hook (not healing).");
     return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
 }
 
