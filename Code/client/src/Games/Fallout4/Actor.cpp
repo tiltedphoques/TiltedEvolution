@@ -261,7 +261,6 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float e
             const auto pExTarget = target->GetExtension();
             if (pExTarget->IsLocal())
             {
-                spdlog::info("Heal target is local. Executing hook.");
                 World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
                 return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
             }
