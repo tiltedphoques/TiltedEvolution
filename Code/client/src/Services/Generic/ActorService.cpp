@@ -229,6 +229,7 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
             if (formIdComponent.Id == acEvent.Hittee->formID)
             {
                 const auto localComponent = m_world.try_get<LocalComponent>(entity);
+                const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
 
                 if (localComponent)
                 {
@@ -249,10 +250,8 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
 
                     spdlog::info("Sent out delta health through collection: {:x}:{:f}", localComponent->Id, acEvent.DeltaHealth);
                 }
-                else
+                else if (remoteComponent)
                 {
-                    const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
-
                     if (-1.0f < acEvent.DeltaHealth < 1.0f)
                     {
                         if (m_smallHealthChanges.find(remoteComponent->Id) == m_smallHealthChanges.end())
@@ -338,6 +337,42 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.m_Id, view](entt::entity entity) 
+    {
+        return view.get<RemoteComponent>(entity).Id == id;
+    });
+
+    if (itor == std::end(view))
+        return;
+
+    auto& formIdComponent = view.get<FormIdComponent>(*itor);
+    auto& remoteComponent = view.get<RemoteComponent>(*itor);
+    auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+
+    if (!pActor)
+        return;
+
+    for (auto& value : acEvent.m_values)
+    {
+        std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
+        std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
+
+        if (value.first == ActorValueInfo::kHealth)
+            continue;
+
+#if TP_SKYRIM64
+        if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
+        {
+            ForceActorValue(pActor, 2, value.first, value.second);
+        }
+#endif
+        else
+        {
+            SetActorValue(pActor, value.first, value.second);
+        }
+    }
+
+    /*
     for (auto entity : view)
     {
         auto& remoteComponent = view.get<RemoteComponent>(entity);
@@ -370,6 +405,7 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
             }
         }
     }
+    */
 }
 
 void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) noexcept

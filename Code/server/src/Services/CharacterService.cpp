@@ -22,6 +22,8 @@
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/CharacterTravelRequest.h>
 #include <Messages/NotifyCharacterTravel.h>
+#include <Messages/RequestSpawnData.h>
+#include <Messages/NotifySpawnData.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -34,6 +36,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_characterTravelConnection(aDispatcher.sink<PacketEvent<CharacterTravelRequest>>().connect<&CharacterService::OnCharacterTravel>(this))
+    , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
 {
 }
 
@@ -266,6 +269,35 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         }
 
         movementComponent.Sent = false;
+    }
+}
+
+void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
+    
+    auto itor = view.find(static_cast<entt::entity>(message.Id));
+
+    if (itor != std::end(view))
+    {
+        NotifySpawnData notifySpawnData;
+        notifySpawnData.Id = message.Id;
+
+        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*itor);
+        if (pActorValuesComponent)
+        {
+            notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
+        }
+
+        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*itor);
+        if (pInventoryComponent)
+        {
+            notifySpawnData.InitialInventory = pInventoryComponent->Content;
+        }
+
+        GameServer::Get()->Send(acMessage.ConnectionId, notifySpawnData);
     }
 }
 

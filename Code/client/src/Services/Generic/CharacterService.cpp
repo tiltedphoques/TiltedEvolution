@@ -39,6 +39,8 @@
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/NotifyCharacterTravel.h>
+#include <Messages/RequestSpawnData.h>
+#include <Messages/NotifySpawnData.h>
 
 #include <World.h>
 
@@ -65,6 +67,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_characterTravelConnection = m_dispatcher.sink<NotifyCharacterTravel>().connect<&CharacterService::OnCharacterTravel>(this);
+    m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -87,8 +90,11 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
 
     if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
     {
-        pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
-        pActor->SetActorValues(pRemoteComponent->SpawnRequest.InitialActorValues);
+        //pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
+        //pActor->SetActorValues(pRemoteComponent->SpawnRequest.InitialActorValues);
+        RequestSpawnData requestSpawnData;
+        requestSpawnData.Id = pRemoteComponent->Id;
+        m_transport.Send(requestSpawnData);
     }
 
     if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
@@ -267,6 +273,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             entity = *itor;
         else
             entity = m_world.create();
+
     }
 
     if (!pActor)
@@ -289,6 +296,36 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
+}
+
+void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept
+{
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+
+    const auto id = acEvent.Id;
+
+    const auto itor = std::find_if(std::begin(view), std::end(view), [view, id](auto entity) {
+        const auto& remoteComponent = view.get<RemoteComponent>(entity);
+
+        return remoteComponent.Id == id;
+    });
+
+    if (itor != std::end(view))
+    {
+        auto& remoteComponent = view.get<RemoteComponent>(*itor);
+        remoteComponent.SpawnRequest.InitialActorValues = acEvent.InitialActorValues;
+        remoteComponent.SpawnRequest.InventoryContent = acEvent.InitialInventory;
+
+        auto& formIdComponent = view.get<FormIdComponent>(*itor);
+        auto* const pForm = TESForm::GetById(formIdComponent.Id);
+        auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+        if (!pActor)
+            return;
+
+        pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
+        pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
+    }
 }
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept
