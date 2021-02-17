@@ -90,8 +90,6 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
 
     if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
     {
-        //pActor->SetInventory(pRemoteComponent->SpawnRequest.InventoryContent);
-        //pActor->SetActorValues(pRemoteComponent->SpawnRequest.InitialActorValues);
         RequestSpawnData requestSpawnData;
         requestSpawnData.Id = pRemoteComponent->Id;
         m_transport.Send(requestSpawnData);
@@ -187,6 +185,10 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     {
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+        if (!pActor)
+            return;
+
         pActor->SetActorValues(acMessage.AllActorValues);
         return;
     }

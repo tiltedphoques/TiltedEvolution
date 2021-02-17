@@ -54,6 +54,7 @@ void ActorService::AddToActorMap(uint32_t aId, Actor* aActor) noexcept
     for (int i = 0; i < amountOfValues; i++)
     {
 #if TP_FALLOUT4
+        // These indices in the ActorValueInfo list are null
         if (i == 23 || i == 48 || i == 70)
             continue;
 #endif
@@ -162,6 +163,7 @@ void ActorService::BroadcastActorValues(Map<uint32_t, Map<uint32_t, float>>* aAc
                         for (int i = 0; i < amountOfValues; i++)
                         {
 #if TP_FALLOUT4
+                            // These indices in the ActorValueInfo list are null
                             if (i == 23 || i == 48 || i == 70)
                                 continue;
 #endif
@@ -194,6 +196,7 @@ void ActorService::BroadcastActorValues(Map<uint32_t, Map<uint32_t, float>>* aAc
                         for (int i = 0; i < amountOfValues; i++)
                         {
 #if TP_FALLOUT4
+                            // These indices in the ActorValueInfo list are null
                             if (i == 23 || i == 48 || i == 70)
                                 continue;
 #endif
@@ -228,46 +231,43 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
             auto& formIdComponent = view.get(entity);
             if (formIdComponent.Id == acEvent.Hittee->formID)
             {
-                const auto localComponent = m_world.try_get<LocalComponent>(entity);
-                const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
-
-                if (localComponent)
+                if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(entity); pLocalComponent)
                 {
                     if (acEvent.DeltaHealth > -1.0f && acEvent.DeltaHealth < 1.0f)
                     {
-                        if (m_smallHealthChanges.find(localComponent->Id) == m_smallHealthChanges.end())
-                            m_smallHealthChanges[localComponent->Id] = acEvent.DeltaHealth;
+                        if (m_smallHealthChanges.find(pLocalComponent->Id) == m_smallHealthChanges.end())
+                            m_smallHealthChanges[pLocalComponent->Id] = acEvent.DeltaHealth;
                         else
-                            m_smallHealthChanges[localComponent->Id] += acEvent.DeltaHealth;
+                            m_smallHealthChanges[pLocalComponent->Id] += acEvent.DeltaHealth;
                         return;
                     }
 
                     RequestHealthChangeBroadcast requestHealthChange;
-                    requestHealthChange.m_Id = localComponent->Id;
+                    requestHealthChange.m_Id = pLocalComponent->Id;
                     requestHealthChange.m_DeltaHealth = acEvent.DeltaHealth;
 
                     m_transport.Send(requestHealthChange);
 
-                    spdlog::info("Sent out delta health through collection: {:x}:{:f}", localComponent->Id, acEvent.DeltaHealth);
+                    spdlog::info("Sent out delta health through collection: {:x}:{:f}", pLocalComponent->Id, acEvent.DeltaHealth);
                 }
-                else if (remoteComponent)
+                else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(entity); pRemoteComponent)
                 {
                     if (-1.0f < acEvent.DeltaHealth < 1.0f)
                     {
-                        if (m_smallHealthChanges.find(remoteComponent->Id) == m_smallHealthChanges.end())
-                            m_smallHealthChanges[remoteComponent->Id] = acEvent.DeltaHealth;
+                        if (m_smallHealthChanges.find(pRemoteComponent->Id) == m_smallHealthChanges.end())
+                            m_smallHealthChanges[pRemoteComponent->Id] = acEvent.DeltaHealth;
                         else
-                            m_smallHealthChanges[remoteComponent->Id] += acEvent.DeltaHealth;
+                            m_smallHealthChanges[pRemoteComponent->Id] += acEvent.DeltaHealth;
                         return;
                     }
 
                     RequestHealthChangeBroadcast requestHealthChange;
-                    requestHealthChange.m_Id = remoteComponent->Id;
+                    requestHealthChange.m_Id = pRemoteComponent->Id;
                     requestHealthChange.m_DeltaHealth = acEvent.DeltaHealth;
 
                     m_transport.Send(requestHealthChange);
 
-                    spdlog::info("Sent out delta health through collection: {:x}:{:f}", remoteComponent->Id, acEvent.DeltaHealth);
+                    spdlog::info("Sent out delta health through collection: {:x}:{:f}", pRemoteComponent->Id, acEvent.DeltaHealth);
                 }
             }
         }
@@ -346,7 +346,6 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    auto& remoteComponent = view.get<RemoteComponent>(*itor);
     auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
@@ -371,68 +370,33 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
             SetActorValue(pActor, value.first, value.second);
         }
     }
-
-    /*
-    for (auto entity : view)
-    {
-        auto& remoteComponent = view.get<RemoteComponent>(entity);
-        if (remoteComponent.Id == acEvent.m_Id)
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            auto* pForm = TESForm::GetById(formIdComponent.Id);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-            if (pActor != NULL)
-            {
-                for (auto& value : acEvent.m_values)
-                {
-                    std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
-                    std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
-
-                    if (value.first == ActorValueInfo::kHealth)
-                        continue;
-#if TP_SKYRIM64
-                    if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
-                    {
-                        ForceActorValue(pActor, 2, value.first, value.second);
-                    }
-#endif
-                    else
-                    {
-                        SetActorValue(pActor, value.first, value.second);
-                    }
-                }
-            }
-        }
-    }
-    */
 }
 
 void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    for (auto entity : view)
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.m_Id, view](entt::entity entity)
     {
-        auto& remoteComponent = view.get<RemoteComponent>(entity);
-        if (remoteComponent.Id == acEvent.m_Id)
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            auto* pForm = TESForm::GetById(formIdComponent.Id);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        return view.get<RemoteComponent>(entity).Id == id;
+    });
 
-            if (pActor != NULL)
-            {
-                for (auto& value : acEvent.m_values)
-                {
-                    std::cout << "Max values update." << std::endl;
-                    std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
-                    std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
+    if (itor == std::end(view))
+        return;
 
-                    ForceActorValue(pActor, 0, value.first, value.second);
-                }
-            }
-        }
+    auto& formIdComponent = view.get<FormIdComponent>(*itor);
+    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+
+    if (!pActor)
+        return;
+
+    for (auto& value : acEvent.m_values)
+    {
+        std::cout << "Max values update." << std::endl;
+        std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.m_Id << std::endl;
+        std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
+
+        ForceActorValue(pActor, 0, value.first, value.second);
     }
 }
 
