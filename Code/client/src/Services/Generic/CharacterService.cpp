@@ -1,14 +1,17 @@
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Messages/CharacterTravelRequest.h"
+#include "Services/PapyrusService.h"
 
 
 #include <Services/CharacterService.h>
+#include <Services/QuestService.h>
 #include <Services/TransportService.h>
 #include <Services/QuestService.h>
 
 #include <Games/References.h>
 
+#include <ExtraData/ExtraLeveledCreature.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
 #include <ExtraData/ExtraLeveledCreature.h>
@@ -17,6 +20,7 @@
 
 #include <Systems/InterpolationSystem.h>
 #include <Systems/AnimationSystem.h>
+#include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
 #include <Systems/CacheSystem.h>
 
@@ -24,6 +28,7 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/EquipmentChangeEvent.h>
+#include <Events/UpdateEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -52,6 +57,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 {
     m_formIdAddedConnection = m_world.on_construct<FormIdComponent>().connect<&CharacterService::OnFormIdComponentAdded>(this);
     m_formIdRemovedConnection = m_world.on_destroy<FormIdComponent>().connect<&CharacterService::OnFormIdComponentRemoved>(this);
+    m_formIdRemovedConnection =
+        m_world.on_destroy<FormIdComponent>().connect<&CharacterService::OnFormIdComponentRemoved>(this);
 
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this);
     m_actionConnection = m_dispatcher.sink<ActionEvent>().connect<&CharacterService::OnActionEvent>(this);
@@ -107,7 +114,7 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
     auto* const pOwner = pNpc->actorData.owner;
     if (pOwner)
     {
-    //    spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
+        //    spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
     }
 
     if(pNpc)
@@ -370,8 +377,8 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acActionEvent.ActorId, view](entt::entity entity)
     {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
 
     if(itor != std::end(view))
     {
@@ -386,30 +393,14 @@ void CharacterService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
-void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) const noexcept
+void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept
 {
-    auto view = m_world.view<RemoteComponent, FormIdComponent>();
-
     for (const auto& [id, inventory] : acEvent.Changes)
     {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity)
-        {
-            return view.get<RemoteComponent>(entity).Id == id;
-        });
-
-        if (itor != std::end(view))
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(*itor);
-            auto& remoteComponent = view.get<RemoteComponent>(*itor);
-
-            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-            if (!pActor)
-                return;
-
-            remoteComponent.SpawnRequest.InventoryContent = inventory;
-            pActor->SetInventory(inventory);
-        }
+        m_cachedInventoryChanges[id] = inventory;
     }
+
+    ApplyCachedInventoryChanges();
 }
 
 void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept
@@ -648,7 +639,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
                 pActor->Delete();
 
                 aRegistry.remove_if_exists<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
-                                         RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
+                                           RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
             }
         }
 
@@ -904,6 +895,8 @@ void CharacterService::RunInventoryUpdates() noexcept
 
         m_charactersWithInventoryChanges.clear();
     }
+
+    ApplyCachedInventoryChanges();
 }
 
 void CharacterService::RunFactionsUpdates() const noexcept
@@ -978,4 +971,34 @@ void CharacterService::RunSpawnUpdates() const noexcept
         /*spdlog::info("Remote entity {:X} with cached id {:X} is invisible", remoteComponent.Id,
                      remoteComponent.CachedRefId);*/
     }
+}
+
+void CharacterService::ApplyCachedInventoryChanges() noexcept
+{
+    GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
+
+    if (s_pIsMenuOpen(BSFixedString("ContainerMenu")))
+        return;
+
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+    for (const auto& [id, inventory] : m_cachedInventoryChanges)
+    {
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) {
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+        if (itor != std::end(view))
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(*itor);
+            auto& remoteComponent = view.get<RemoteComponent>(*itor);
+
+            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            if (!pActor)
+                return;
+
+            remoteComponent.SpawnRequest.InventoryContent = inventory;
+            pActor->SetInventory(inventory);
+        }
+    }
+    m_cachedInventoryChanges.clear();
 }
