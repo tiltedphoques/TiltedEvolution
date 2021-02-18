@@ -12,7 +12,7 @@ Once the command has finished executing, you should have a copy of this reposito
 
 ### Requirements
 
-As mentioned in the [Readme](https://github.com/tiltedphoques/TiltedOnline#windows), you will need [Visual Studio 2019](https://www.visualstudio.com/downloads/) (the community edition is freely available for download) and [Directx SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812) to build the project, aswell as [Node.js](https://nodejs.org/en/) for the scripts to run properly.
+As mentioned in the [Readme](https://github.com/tiltedphoques/TiltedOnline#windows), you will need [Visual Studio 2019 Version 16.8.4](https://visualstudio.microsoft.com/downloads/) (the community edition is freely available). **Earlier versions of Visual Studio will not work**. You will also need [Node.js](https://nodejs.org/en/) if you want to build the UI.
 
 ### Generating the project files
 
