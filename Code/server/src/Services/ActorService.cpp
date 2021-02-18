@@ -28,23 +28,23 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
 
     auto actorValuesView = m_world.view<ActorValuesComponent, OwnerComponent>();
 
-    auto itor = actorValuesView.find(static_cast<entt::entity>(message.m_Id));
+    auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) ||
         actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
-        for (auto& [id, value] : message.m_values)
+        for (auto& [id, value] : message.Values)
         {
             actorValuesComponent.CurrentActorValues.ActorValuesList[id] = value;
             auto val = actorValuesComponent.CurrentActorValues.ActorValuesList[id];
-            spdlog::info("Updating value {:x}:{:f} of {:x}", id, val, message.m_Id);
+            spdlog::debug("Updating value {:x}:{:f} of {:x}", id, val, message.Id);
         }
     }
 
     NotifyActorValueChanges notifyChanges;
-    notifyChanges.m_Id = acMessage.Packet.m_Id;
-    notifyChanges.m_values = acMessage.Packet.m_values;
+    notifyChanges.Id = acMessage.Packet.Id;
+    notifyChanges.Values = acMessage.Packet.Values;
 
     auto view = m_world.view<PlayerComponent>();
     for (auto entity : view)
@@ -64,23 +64,23 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
 
     auto actorValuesView = m_world.view<ActorValuesComponent, OwnerComponent>();
 
-    auto itor = actorValuesView.find(static_cast<entt::entity>(message.m_Id));
+    auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) ||
         actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
-        for (auto& [id, value] : message.m_values)
+        for (auto& [id, value] : message.Values)
         {
             actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id] = value;
             auto val = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id];
-            spdlog::info("Updating max value {:x}:{:f} of {:x}", id, val, message.m_Id);
+            spdlog::debug("Updating max value {:x}:{:f} of {:x}", id, val, message.Id);
         }
     }
 
     NotifyActorMaxValueChanges notifyChanges;
-    notifyChanges.m_Id = message.m_Id;
-    notifyChanges.m_values = message.m_values;
+    notifyChanges.Id = message.Id;
+    notifyChanges.Values = message.Values;
 
     auto view = m_world.view<PlayerComponent>();
     for (auto entity : view)
@@ -97,8 +97,8 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
 void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
 {
     NotifyHealthChangeBroadcast notifyDamageEvent;
-    notifyDamageEvent.m_Id = acMessage.Packet.m_Id;
-    notifyDamageEvent.m_DeltaHealth = acMessage.Packet.m_DeltaHealth;
+    notifyDamageEvent.Id = acMessage.Packet.Id;
+    notifyDamageEvent.DeltaHealth = acMessage.Packet.DeltaHealth;
 
     auto view = m_world.view<PlayerComponent>();
     for (auto entity : view)

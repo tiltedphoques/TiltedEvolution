@@ -6,13 +6,13 @@ struct Actor;
 
 struct ValueModifierEffect : public ActiveEffect
 {
-    virtual void Function25();
-    virtual void Function26();
-    virtual void Function27();
-    virtual void Function28();
-    virtual void Function29();
-    virtual void Function30();
-    virtual void Function31();
+    virtual void sub_19();
+    virtual void sub_1A();
+    virtual void sub_1B();
+    virtual void sub_1C();
+    virtual void sub_1D();
+    virtual void sub_1E();
+    virtual void sub_1F();
     virtual void ApplyActorEffect(Actor* actor, float effectValue, unsigned int unk1);
 
     char pad_0080[16];

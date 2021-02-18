@@ -400,16 +400,16 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
     return ThisCall(RealSpawnActorInWorld, apThis);
 }
 
-TP_THIS_FUNCTION(TDamageActor, bool, Actor, float damage, Actor* hitter);
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
 static TDamageActor* RealDamageActor = nullptr;
 
-bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
     const auto pExHittee = apThis->GetExtension();
-    if (!hitter && pExHittee->IsLocal())
+    if (!apHitter && pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
-        return ThisCall(RealDamageActor, apThis, damage, hitter);
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
 
     auto factions = apThis->GetFactions();
@@ -421,53 +421,53 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
         }
         else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
-            return ThisCall(RealDamageActor, apThis, damage, hitter);
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
     }
 
-    const auto pExHitter = hitter->GetExtension();
+    const auto pExHitter = apHitter->GetExtension();
     if (pExHitter->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
-        return ThisCall(RealDamageActor, apThis, damage, hitter);
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
 
     return 0;
 }
 
-TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* target, float effectValue, unsigned int unk1);
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1);
 static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
-void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, unsigned int unk1)
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1)
 {
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)
     {
-        if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && effectValue > 0.0f)
+        if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && aEffectValue > 0.0f)
         {
-            const auto pExTarget = target->GetExtension();
+            const auto pExTarget = apTarget->GetExtension();
             if (pExTarget->IsLocal())
             {
-                World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
-                return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
+                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget, aEffectValue));
+                return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
             }
             return;
         }
     }
 
-    return ThisCall(RealApplyActorEffect, apThis, target, effectValue, unk1);
+    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
 }
 
 TP_THIS_FUNCTION(TRegenAttributes, void*, Actor, int aId, float regenValue);
 static TRegenAttributes* RealRegenAttributes = nullptr;
 
-void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float regenValue)
+void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
 {
     if (aId != ActorValueInfo::kHealth)
     {
-        return ThisCall(RealRegenAttributes, apThis, aId, regenValue);
+        return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
     }
 
     const auto* pExTarget = apThis->GetExtension();
@@ -476,8 +476,8 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float regenValue)
         return 0;
     }
 
-    World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, regenValue));
-    return ThisCall(RealRegenAttributes, apThis, aId, regenValue);
+    World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, aRegenValue));
+    return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -488,18 +488,18 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
         POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
         POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
-        POINTER_SKYRIMSE(TDamageActor, s_DamageActor, 0x1405D6300 - 0x140000000);
-        POINTER_SKYRIMSE(TApplyActorEffect, s_ApplyActorEffect, 0x140567A89 - 0x140000000);
-        POINTER_SKYRIMSE(TRegenAttributes, s_RegenAttributes, 0x140620900 - 0x140000000);
+        POINTER_SKYRIMSE(TDamageActor, s_damageActor, 0x1405D6300 - 0x140000000);
+        POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 0x140567A89 - 0x140000000);
+        POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140620900 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
         RealForceState = s_ForceState.Get();
         RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
-        RealDamageActor = s_DamageActor.Get();
-        RealApplyActorEffect = s_ApplyActorEffect.Get();
-        RealRegenAttributes = s_RegenAttributes.Get();
+        RealDamageActor = s_damageActor.Get();
+        RealApplyActorEffect = s_applyActorEffect.Get();
+        RealRegenAttributes = s_regenAttributes.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);

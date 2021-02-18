@@ -37,8 +37,6 @@ private:
     World& m_world;
     TransportService& m_transport;
 
-    Map<uint32_t, Map<uint32_t, float>> m_actorValues;
-    Map<uint32_t, Map<uint32_t, float>> m_actorMaxValues;
     Map<uint32_t, float> m_smallHealthChanges;
     double m_timeSinceDiff = 1;
     
@@ -53,9 +51,8 @@ private:
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
 
     void RunSmallHealthUpdates() noexcept;
-    void AddToActorMap(uint32_t aId, Actor* aActor) noexcept;
-    void BroadcastAllActorValues() noexcept;
-    void BroadcastActorValues(Map<uint32_t, Map<uint32_t, float>>* aActorValues, uint8_t aValueType) noexcept;
+    void CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept;
+    void BroadcastActorValues() noexcept;
     void ForceActorValue(Actor* aActor, uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
     float GetActorValue(Actor* aActor, uint32_t aId) noexcept;

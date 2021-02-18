@@ -210,16 +210,16 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
-TP_THIS_FUNCTION(TDamageActor, bool, Actor, float damage, Actor* hitter);
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
 static TDamageActor* RealDamageActor = nullptr;
 
-bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
     const auto pExHittee = apThis->GetExtension();
-    if (!hitter && pExHittee->IsLocal())
+    if (!apHitter && pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
-        return ThisCall(RealDamageActor, apThis, damage, hitter);
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
 
     auto factions = apThis->GetFactions();
@@ -231,57 +231,57 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float damage, Actor* hitter)
         }
         else if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsLocal())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
-            return ThisCall(RealDamageActor, apThis, damage, hitter);
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
     }
 
-    const auto pExHitter = hitter->GetExtension();
+    const auto pExHitter = apHitter->GetExtension();
     if (pExHitter->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -damage));
-        return ThisCall(RealDamageActor, apThis, damage, hitter);
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
 
     return 0;
 }
 
-TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* target, float effectValue, ActorValueInfo* actorValueInfo);
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, ActorValueInfo* apActorValueInfo);
 static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
-void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* target, float effectValue, ActorValueInfo* actorValueInfo)
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, ActorValueInfo* apActorValueInfo)
 {
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)
     {
-        ActorValueInfo* pHealthActorValueInfo = target->GetActorValueInfo(ActorValueInfo::kHealth);
-        if (pValueModEffect->actorValueInfo == pHealthActorValueInfo && effectValue > 0.0f)
+        ActorValueInfo* pHealthActorValueInfo = apTarget->GetActorValueInfo(ActorValueInfo::kHealth);
+        if (pValueModEffect->actorValueInfo == pHealthActorValueInfo && aEffectValue > 0.0f)
         {
-            const auto pExTarget = target->GetExtension();
+            const auto pExTarget = apTarget->GetExtension();
             if (pExTarget->IsLocal())
             {
-                World::Get().GetRunner().Trigger(HealthChangeEvent(target, effectValue));
-                return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
+                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget, aEffectValue));
+                return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
             }
             return;
         }
     }
 
-    return ThisCall(RealApplyActorEffect, apThis, target, effectValue, actorValueInfo);
+    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
 }
 
 static TiltedPhoques::Initializer s_specificReferencesHooks([]()
     {
         POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
         POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
-        POINTER_FALLOUT4(TDamageActor, s_DamageActor, 0x140D79EB0 - 0x140000000);
-        POINTER_FALLOUT4(TApplyActorEffect, s_ApplyActorEffect, 0x140C8B189 - 0x140000000);
+        POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
+        POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
 
         RealActorConstructor = s_actorCtor.Get();
         RealActorConstructor2 = s_actorCtor2.Get();
-        RealDamageActor = s_DamageActor.Get();
-        RealApplyActorEffect = s_ApplyActorEffect.Get();
+        RealDamageActor = s_damageActor.Get();
+        RealApplyActorEffect = s_applyActorEffect.Get();
 
         TP_HOOK(&RealActorConstructor, HookActorContructor);
         TP_HOOK(&RealActorConstructor2, HookActorContructor2);

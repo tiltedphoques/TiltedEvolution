@@ -17,6 +17,7 @@ struct NotifySpawnData final : ServerMessage
     {
         return Id == acRhs.Id &&
                InitialActorValues == acRhs.InitialActorValues && 
+               InitialInventory == acRhs.InitialInventory &&
                GetOpcode() == acRhs.GetOpcode();
     }
 

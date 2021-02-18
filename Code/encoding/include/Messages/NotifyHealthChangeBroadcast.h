@@ -13,10 +13,11 @@ struct NotifyHealthChangeBroadcast final : ServerMessage
 
     bool operator==(const NotifyHealthChangeBroadcast& acRhs) const noexcept
     {
-        return m_Id == acRhs.m_Id && 
+        return Id == acRhs.Id && 
+               DeltaHealth == acRhs.DeltaHealth &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
-    uint32_t m_Id;
-    float m_DeltaHealth;
+    uint32_t Id;
+    float DeltaHealth;
 };

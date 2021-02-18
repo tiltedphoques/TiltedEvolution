@@ -13,10 +13,11 @@ struct NotifyActorMaxValueChanges final : ServerMessage
 
     bool operator==(const NotifyActorMaxValueChanges& acRhs) const noexcept
     {
-        return m_Id == acRhs.m_Id && 
+        return Id == acRhs.Id && 
+               Values == acRhs.Values &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
-    uint32_t m_Id;
-    Map<uint32_t, float> m_values;
+    uint32_t Id;
+    Map<uint32_t, float> Values;
 };
