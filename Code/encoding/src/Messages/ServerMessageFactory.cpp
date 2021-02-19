@@ -16,10 +16,6 @@
 #include <Messages/NotifyPartyInfo.h>
 #include <Messages/NotifyPartyInvite.h>
 #include <Messages/NotifyCharacterTravel.h>
-#include <Messages/NotifyActorValueChanges.h>
-#include <Messages/NotifyActorMaxValueChanges.h>
-#include <Messages/NotifyHealthChangeBroadcast.h>
-#include <Messages/NotifySpawnData.h>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -50,10 +46,6 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(NotifyPartyInfo);
         EXTRACT_MESSAGE(NotifyPartyInvite);
         EXTRACT_MESSAGE(NotifyCharacterTravel);
-        EXTRACT_MESSAGE(NotifyActorValueChanges);
-        EXTRACT_MESSAGE(NotifyActorMaxValueChanges);
-        EXTRACT_MESSAGE(NotifyHealthChangeBroadcast);
-        EXTRACT_MESSAGE(NotifySpawnData);
     }
 
     return UniquePtr<ServerMessage>(nullptr, &TiltedPhoques::Delete<ServerMessage>);

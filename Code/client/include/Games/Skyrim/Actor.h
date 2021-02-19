@@ -11,7 +11,6 @@
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
-#include <Structs/ActorValues.h>
 
 struct TESNPC;
 struct TESRace;
@@ -183,13 +182,11 @@ struct Actor : TESObjectREFR
 
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
-    ActorValues GetEssentialActorValues() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
-    void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
@@ -215,11 +212,9 @@ public:
         CHANGE_ACTOR_PERMANENT_MODIFIERS = 1 << 23,
     };
 
-    struct ActorValueModifiers
+    struct SmallArray
     {
-        float permanentModifier;
-        float temporaryModifier;
-        float damageModifier;
+        uint32_t content[3];
     };
 
     struct SpellItemEntry
@@ -275,10 +270,10 @@ public:
     uint32_t flags2;
     void* unk200[4];
     struct BGSDialogueBranch* dialogueBranch;
-    ActorValueModifiers healthValues;
-    ActorValueModifiers staminaValues;
-    ActorValueModifiers magickaValues;
-    ActorValueModifiers unkSmallArray4;
+    SmallArray unkSmallArray1;
+    SmallArray unkSmallArray2;
+    SmallArray unkSmallArray3;
+    SmallArray unkSmallArray4;
     float unk180;
     uint32_t unk184;
     void* actorWeightData;

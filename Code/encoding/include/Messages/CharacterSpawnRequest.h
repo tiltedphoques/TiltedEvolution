@@ -8,7 +8,6 @@
 #include <Structs/Factions.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
-#include <Structs/ActorValues.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>
 
@@ -51,5 +50,4 @@ struct CharacterSpawnRequest final : ServerMessage
     Factions FactionsContent{};
     ActionEvent LatestAction{};
     Tints FaceTints{};
-    ActorValues InitialActorValues{};
 };
