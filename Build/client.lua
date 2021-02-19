@@ -8,12 +8,9 @@ function generate_client(target, macro)
         kind ("SharedLib")
         language ("C++")
 
-        defines { macro }
-        
         includedirs
         {
             "../Code/client/include/",
-            "../Code/script/include/",
             "../Code/encoding/include/",
             "../Code/common/include",
             "../Libraries/entt/src/",
@@ -36,43 +33,43 @@ function generate_client(target, macro)
 
         files
         {
-            "../Code/client/include/**.h",
-            "../Code/client/src/**.cpp",
+            "../Code/client/**.h",
+            "../Code/client/**.cpp",
             "../Libraries/spdlog/*.cpp",
-            "../Code/encoding/include/**.h",
-            "../Code/encoding/src/**.cpp",
+            "../Code/encoding/**.h",
+            "../Code/encoding/**.cpp",
         }
 
         if target == "FalloutTogether" then
             excludes 
             { 
-                "../Code/client/src/Games/Skyrim/**.cpp",
-                "../Code/client/include/Games/Skyrim/**.h",
-                "../Code/encoding/include/Structs/Skyrim/**.h",
-                "../Code/encoding/src/Structs/Skyrim/**.cpp",
+                "../Code/client/Games/Skyrim/**.cpp",
+                "../Code/client/Games/Skyrim/**.h",
+                "../Code/encoding/Structs/Skyrim/**.h",
+                "../Code/encoding/Structs/Skyrim/**.cpp",
             }
 
             includedirs
             {
-                "../Code/client/include/Games/Fallout4/"
+                "../Code/client/Games/Fallout4/"
             }
         else
             excludes 
             { 
-                "../Code/client/src/Games/Fallout4/**.cpp",
-                "../Code/client/include/Games/Fallout4/**.h",
-                "../Code/encoding/include/Structs/Fallout4/**.h",
-                "../Code/encoding/src/Structs/Fallout4/**.cpp",
+                "../Code/client/Games/Fallout4/**.cpp",
+                "../Code/client/Games/Fallout4/**.h",
+                "../Code/encoding/Structs/Fallout4/**.h",
+                "../Code/encoding/Structs/Fallout4/**.cpp",
             }
 
             includedirs
             {
-                "../Code/client/include/Games/Skyrim/"
+                "../Code/client/Games/Skyrim/"
             }
         end
         
         pchheader ("stdafx.h")
-        pchsource ("../Code/client/src/stdafx.cpp")
+        pchsource ("../Code/client/stdafx.cpp")
         forceincludes
         {
             "stdafx.h"
@@ -80,10 +77,6 @@ function generate_client(target, macro)
         
         links
         {
-            "Common",
-            "Core",
-            "Reverse",
-            "Hooks",
             "mhook",
             "UI",
             "disasm",
@@ -98,31 +91,6 @@ function generate_client(target, macro)
             "snappy"
         }
 end
-
-project ("tp_process")
-    kind ("WindowedApp")
-    language ("C++")
-
-    includedirs
-    {
-        "../Code/tests/include/",
-        coreBasePath .. "/Code/core/include/",
-        "../Code/tp_process/include/",
-        "../Libraries/TiltedUI/Code/ui_process/include/",
-        "../Libraries/TiltedUI/ThirdParty/CEF/",
-    }
-
-    files
-    {
-        "../Code/tp_process/include/**.h",
-        "../Code/tp_process/src/**.cpp",
-    }
-
-    links
-    {
-        "Core",
-        "UIProcess"
-    }
 
 generate_client("FalloutTogether", "TP_FALLOUT=1")
 generate_client("SkyrimTogether", "TP_SKYRIM=1")

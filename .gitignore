@@ -2,9 +2,16 @@
 *.ilk
 *.sym
 
+vsxmake2019
+.xmake
+
+Build
 Build/*.log
 Build/*.torrent
 
+Build/.deps
+Build/.objs
+Build/.vs
 Build/obj
 Build/projects
 

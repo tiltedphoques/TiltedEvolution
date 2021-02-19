@@ -8,19 +8,19 @@ project ("Tests")
     
     includedirs
     {
-        "../Code/tests/include/",
-        "../Code/encoding/include/",
-        "../Libraries/entt/src/",
-        coreBasePath .. "/Code/core/include/",
+        "../Code/tests/",
+        "../Code/encoding/",
+        "../Libraries/entt/",
+        coreBasePath .. "/Code/core/",
         coreBasePath .. "/ThirdParty"
     }
 
     files
     {
-        "../Code/tests/include/**.h",
-        "../Code/tests/src/**.cpp",
-        "../Code/encoding/include/**.h",
-        "../Code/encoding/src/**.cpp",
+        "../Code/tests/**.h",
+        "../Code/tests/**.cpp",
+        "../Code/encoding/**.h",
+        "../Code/encoding/**.cpp",
     }
     
     links

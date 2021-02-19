@@ -1,6 +1,3 @@
-[submodule "Libraries/TiltedCore"]
-	path = Libraries/TiltedCore
-	url = https://github.com/TiltedPhoques/TiltedCore
 [submodule "Libraries/TiltedReverse"]
 	path = Libraries/TiltedReverse
 	url = https://github.com/TiltedPhoques/TiltedReverse
