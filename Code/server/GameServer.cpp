@@ -24,6 +24,7 @@
 #include <Messages/CharacterTravelRequest.h> 
 
 #include <Scripts/Player.h>
+#include <common/BuildInfo.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
@@ -336,7 +337,7 @@ void GameServer::SetTitle() const
     title += std::to_string(GetClientCount());
     title += GetClientCount() <= 1 ? " player - " : " players - ";
     title += std::to_string(GetTickRate());
-//    title += " FPS - " GIT_BRANCH "@" GIT_COMMIT;
+    title += " FPS - " BUILD_BRANCH "@" BUILD_COMMIT;
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

@@ -1,9 +1,9 @@
 
 local function build_server(name, def)
-target("server_" .. name)
+target(name)
     set_kind("binary")
     set_group("Server")
-    set_basename(name .. "RebornServer")
+    --set_basename(name .. "RebornServer")
     set_languages("cxx17")
     add_defines(def)
     add_includedirs(
@@ -21,10 +21,10 @@ target("server_" .. name)
         "**.cpp",
         "../encoding/**.cpp")
         
-    if name == "ST" then
+    if name == "SkyrimTogetherServer" then
         del_files("../encoding/Structs/Fallout4/**.cpp")
     end
-    if name == "FT" then
+    if name == "FalloutTogetherServer" then
         del_files("../encoding/Structs/Skyrim/**.cpp")
     end
 
@@ -41,5 +41,5 @@ target("server_" .. name)
         "hopscotch-map")
 end
 
-build_server("ST", "TP_SKYRIM=1")
-build_server("FT", "TP_FALLOUT=1")
+build_server("SkyrimTogetherServer", "TP_SKYRIM=1")
+build_server("FalloutTogetherServer", "TP_FALLOUT=1")

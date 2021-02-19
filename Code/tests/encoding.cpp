@@ -1,4 +1,5 @@
-#include "catch.hpp"
+
+#include <catch2/catch.hpp>
 #include "Messages/ClientReferencesMoveRequest.h"
 
 #include <Messages/ClientMessageFactory.h>
@@ -17,7 +18,7 @@
 #include <Structs/Vector2_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
   
-#include <Math.hpp>
+#include <TiltedCore/Math.hpp>
 
 using namespace TiltedPhoques;
 

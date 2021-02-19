@@ -29,6 +29,7 @@ Build/Bin/server/logs/
 Code/launcher/build
 Code/launcher/dist
 Code/launcher/package-lock.json
+Code/common/BuildInfo.h
 
 !Code/launcher/.vscode/extensions.json
 !Code/launcher/.vscode/settings.json
