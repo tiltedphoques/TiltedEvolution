@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Havok/hkbStateMachine.h>
 #include <Structs/AnimationGraphDescriptorManager.h>
 

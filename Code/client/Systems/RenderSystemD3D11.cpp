@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Systems/RenderSystemD3D11.h>
 
 #include <Services/OverlayService.h>

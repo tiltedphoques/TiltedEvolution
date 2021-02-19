@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <LoadingScreen.h>
 #include <Misc/BSFixedString.h>
 

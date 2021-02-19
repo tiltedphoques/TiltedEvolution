@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Scripts/Npc.h>
 
 #include <World.h>

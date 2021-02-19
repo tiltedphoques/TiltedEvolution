@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Games/Primitives.h>
 
 void NiRefObject::IncRef()

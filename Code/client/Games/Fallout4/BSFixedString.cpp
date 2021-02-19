@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Misc/BSFixedString.h>
 
 BSFixedString::BSFixedString(const char* acpData)

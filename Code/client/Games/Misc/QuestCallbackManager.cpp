@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 
 #include <Games/Misc/QuestCallbackManager.h>
 

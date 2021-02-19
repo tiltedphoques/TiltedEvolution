@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/DiscoveryService.h>
 #include <Games/TES.h>
 

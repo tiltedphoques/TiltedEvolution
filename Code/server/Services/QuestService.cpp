@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 
 #include <GameServer.h>
 #include <Components.h>

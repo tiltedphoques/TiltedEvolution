@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <GameServer.h>
 #include <Components.h>
 #include <Packet.hpp>
@@ -24,7 +26,6 @@
 #include <Messages/CharacterTravelRequest.h> 
 
 #include <Scripts/Player.h>
-#include <common/BuildInfo.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>

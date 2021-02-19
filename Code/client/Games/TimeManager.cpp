@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 
 #include <Services/EnvironmentService.h>
 #include <TimeManager.h>

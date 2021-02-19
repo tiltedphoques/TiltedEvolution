@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 
 #include <World.h>
 #include <Scripts/Quest.h>

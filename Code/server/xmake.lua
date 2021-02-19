@@ -13,7 +13,6 @@ target(name)
         "../../Libraries/cpp-httplib",
         "../encoding/")
     set_pcxxheader("stdafx.h")
-    add_cxxflags("-include $(projectdir)\\code\\server\\stdafx.h", { force=true })
     add_headerfiles(
         "**.h",
         "../encoding/**.h")

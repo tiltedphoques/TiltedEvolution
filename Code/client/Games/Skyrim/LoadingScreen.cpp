@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 struct ScaleFormValue
 {
     void* ptrs[5];

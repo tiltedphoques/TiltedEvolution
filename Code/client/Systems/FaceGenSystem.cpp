@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Systems/FaceGenSystem.h>
 
 #include <Games/References.h>

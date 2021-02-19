@@ -10,7 +10,6 @@ target(name)
         "../../Libraries/",
         "../../Libraries/entt")
     set_pcxxheader("stdafx.h")
-    add_cxxflags("-include $(projectdir)\\code\\client\\stdafx.h", { force=true })
 
     -- exclude game specifc stuff
     add_headerfiles("**.h|Games/Fallout4/**|Games/Skyrim/**")

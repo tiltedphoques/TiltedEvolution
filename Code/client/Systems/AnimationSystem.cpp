@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Systems/AnimationSystem.h>
 
 #include <Games/Animation/TESActionData.h>

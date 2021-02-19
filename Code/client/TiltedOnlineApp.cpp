@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <TiltedOnlineApp.h>
 
 #include <TiltedHooks/Code/hooks/include/DInputHook.hpp>

@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Misc/GameVM.h>
 
 GameVM* GameVM::Get()

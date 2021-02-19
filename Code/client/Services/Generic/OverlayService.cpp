@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/OverlayService.h>
 
 #include <OverlayApp.hpp>

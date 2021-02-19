@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Games/References.h>
 
 #include <RTTI.h>

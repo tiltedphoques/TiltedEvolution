@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <RTTI.h>
 
 const AutoPtr<TDynamicCast> DynamicCast(0x2936C62);

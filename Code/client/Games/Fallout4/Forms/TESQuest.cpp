@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Forms/TESQuest.h>
 
 void TESQuest::SetActive(bool toggle)

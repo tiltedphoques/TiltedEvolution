@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <DefaultStringManager.h>
 
 DefaultStringManager& DefaultStringManager::Get()

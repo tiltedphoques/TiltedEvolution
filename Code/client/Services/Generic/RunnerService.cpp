@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/RunnerService.h>
 
 #include <Events/UpdateEvent.h>

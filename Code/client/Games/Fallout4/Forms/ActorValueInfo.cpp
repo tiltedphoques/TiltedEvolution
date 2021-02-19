@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Forms/ActorValueInfo.h>
 
 ActorValueInfo* ActorValueInfo::Resolve(uint32_t aId) noexcept

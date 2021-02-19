@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Games/ActorExtension.h>
 
 bool ActorExtension::IsRemote() const noexcept

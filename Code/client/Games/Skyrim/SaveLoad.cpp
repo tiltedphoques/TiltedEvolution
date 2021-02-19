@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <SaveLoad.h>
 
 void BGSSaveLoadManager::Save(SaveData* apData)

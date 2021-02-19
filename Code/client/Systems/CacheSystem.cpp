@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Systems/CacheSystem.h>
 #include <World.h>
 

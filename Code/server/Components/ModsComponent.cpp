@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Components.h>
 
 uint32_t ModsComponent::AddStandard(const String& acpFilename) noexcept

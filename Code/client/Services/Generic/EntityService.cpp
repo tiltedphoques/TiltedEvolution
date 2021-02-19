@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/EntityService.h>
 
 #include <Events/ReferenceAddedEvent.h>

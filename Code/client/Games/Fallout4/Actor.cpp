@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <PlayerCharacter.h>
 #include <Forms/TESFaction.h>
 #include <Forms/TESNPC.h>

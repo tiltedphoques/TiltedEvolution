@@ -82,7 +82,7 @@ static_assert(offsetof(ActorHolder, actorBuckets) == 0x90);
 static_assert(offsetof(ActorHolder, actorRefs) == 0x40);
 #endif
 
-struct Mod
+struct Mod_Game
 {
 #if TP_FALLOUT4
     uint8_t pad0[0x70];
@@ -129,13 +129,13 @@ struct Mod
 };
 
 #if TP_SKYRIM
-static_assert(offsetof(Mod, filename) == 0x58);
-static_assert(offsetof(Mod, standardId) == 0x478);
-static_assert(offsetof(Mod, liteId) == 0x47A);
+static_assert(offsetof(Mod_Game, filename) == 0x58);
+static_assert(offsetof(Mod_Game, standardId) == 0x478);
+static_assert(offsetof(Mod_Game, liteId) == 0x47A);
 #elif TP_FALLOUT4
-static_assert(offsetof(Mod, filename) == 0x70);
-static_assert(offsetof(Mod, standardId) == 0x370);
-static_assert(offsetof(Mod, liteId) == 0x372);
+static_assert(offsetof(Mod_Game, filename) == 0x70);
+static_assert(offsetof(Mod_Game, standardId) == 0x370);
+static_assert(offsetof(Mod_Game, liteId) == 0x372);
 #endif
 
 struct ModManager
@@ -143,7 +143,7 @@ struct ModManager
     static ModManager* Get() noexcept;
 
     uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept;
-    Mod* GetByName(const char* acpName) const noexcept;
+    Mod_Game* GetByName(const char* acpName) const noexcept;
 
 #if TP_FALLOUT4
     uint8_t pad0[0xFB0];
@@ -151,7 +151,7 @@ struct ModManager
     uint8_t pad0[0xD60];
 #endif
 
-    GameList<Mod> mods;
+    GameList<Mod_Game> mods;
 };
 
 #if TP_SKYRIM

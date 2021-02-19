@@ -59,7 +59,7 @@
 #include <fstream>
 
 #include <Utils.h>
-
+#include <common/BuildInfo.h>
 #include <Games/Primitives.h>
 
 extern "C"

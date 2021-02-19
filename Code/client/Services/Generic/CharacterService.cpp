@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Messages/CharacterTravelRequest.h"

@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <ExtraData/ExtraContainerChanges.h>
 
 void ExtraContainerChanges::Data::Save(BGSSaveFormBuffer* apBuffer)

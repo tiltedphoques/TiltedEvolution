@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Scripts/Base.h>
 
 void LuaPrint(sol::this_state aState)

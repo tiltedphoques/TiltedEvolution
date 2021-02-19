@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Scripts/Player.h>
 #include <Scripts/Npc.h>
 #include <Scripts/Quest.h>

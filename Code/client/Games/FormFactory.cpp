@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Games/IFormFactory.h>
 
 #include <Forms/TESForm.h>

@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Forms/TESNPC.h>
 
 TP_THIS_FUNCTION(TSetLeveledNpc, TESNPC*, TESNPC, TESNPC*);

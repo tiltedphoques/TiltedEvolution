@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/ServerListService.h>
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>

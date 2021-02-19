@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Misc/BSScript.h>
 
 BSScript::Variable::Variable()

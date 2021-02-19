@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include "Events/CharacterCellChangeEvent.h"
 
 #include <Services/PlayerService.h>

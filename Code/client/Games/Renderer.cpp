@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 
 #include <ProcessMemory.hpp>
 
@@ -59,9 +61,9 @@ static void HookPresent(LPCRITICAL_SECTION lock)
 static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowConfig *pWindowConfig, void *a4)
 {
 #if TP_SKYRIM64
-    //pConfig->name = "Skyrim Together | " GIT_BRANCH "@" GIT_COMMIT;
+    pConfig->name = "Skyrim Together | " BUILD_BRANCH "@" BUILD_COMMIT;
 #else
-    //pConfig->name = "Fallout Together | " GIT_BRANCH "@" GIT_COMMIT;
+    pConfig->name = "Fallout Together | " BUILD_BRANCH "@" BUILD_COMMIT;
 #endif
 
 #if 0

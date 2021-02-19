@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Systems/InterpolationSystem.h>
 #include <Components.h>
 

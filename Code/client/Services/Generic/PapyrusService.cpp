@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Events/PapyrusFunctionRegisterEvent.h>
 
 #include <Services/PapyrusService.h>

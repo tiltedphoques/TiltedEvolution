@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/ImguiService.h>
 
 #include <OverlayApp.hpp>

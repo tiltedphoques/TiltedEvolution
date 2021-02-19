@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Misc/NEW_REFR_DATA.h>
 
 NEW_REFR_DATA::NEW_REFR_DATA()

@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Events/EventDispatcher.h>
 
 namespace details

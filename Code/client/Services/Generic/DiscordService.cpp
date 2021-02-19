@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 
 #include "Services/DiscordService.h"
 #include "Events/UpdateEvent.h"

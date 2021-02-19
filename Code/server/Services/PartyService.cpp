@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <Services/PartyService.h>
 #include <Components.h>
 #include <GameServer.h>

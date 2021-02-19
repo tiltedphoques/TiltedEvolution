@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <EquipManager.h>
 #include <Games/References.h>
 #include <Games/Overrides.h>

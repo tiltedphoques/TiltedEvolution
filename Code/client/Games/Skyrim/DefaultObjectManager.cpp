@@ -1,3 +1,5 @@
+#include <stdafx.h>
+
 #include <DefaultObjectManager.h>
 
 DefaultObjectManager& DefaultObjectManager::Get()
