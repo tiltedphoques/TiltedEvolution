@@ -304,6 +304,7 @@ void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
     SetPosition(acPosition, true);
 }
 
+
 void Actor::QueueUpdate() noexcept
 {
     auto* pSetting = INISettingCollection::Get()->GetSetting("bUseFaceGenPreprocessedHeads:General");

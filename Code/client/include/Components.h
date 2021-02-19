@@ -13,6 +13,5 @@
 #include <Components/FaceGenComponent.h>
 #include <Components/CacheComponent.h>
 #include <Components/WaitingFor3D.h>
-#include <Components/ActorValuesComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

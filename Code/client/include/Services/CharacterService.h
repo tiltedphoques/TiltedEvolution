@@ -14,7 +14,6 @@ struct NotifyInventoryChanges;
 struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
 struct NotifyCharacterTravel;
-struct NotifySpawnData;
 
 struct Actor;
 struct World;
@@ -41,7 +40,6 @@ struct CharacterService
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept;
     void OnCharacterTravel(const NotifyCharacterTravel& acEvent) const noexcept;
-    void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
 
 private:
 
@@ -80,5 +78,4 @@ private:
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_characterTravelConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
-    entt::scoped_connection m_remoteSpawnDataReceivedConnection;
 };

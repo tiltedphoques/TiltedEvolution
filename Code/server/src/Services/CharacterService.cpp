@@ -22,8 +22,6 @@
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/CharacterTravelRequest.h>
 #include <Messages/NotifyCharacterTravel.h>
-#include <Messages/RequestSpawnData.h>
-#include <Messages/NotifySpawnData.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -36,7 +34,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_characterTravelConnection(aDispatcher.sink<PacketEvent<CharacterTravelRequest>>().connect<&CharacterService::OnCharacterTravel>(this))
-    , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
 {
 }
 
@@ -60,12 +57,6 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     if (pInventoryComponent)
     {
         apSpawnRequest->InventoryContent = pInventoryComponent->Content;
-    }
-
-    const auto* pActorValuesComponent = aRegistry.try_get<ActorValuesComponent>(aEntity);
-    if (pActorValuesComponent)
-    {
-        apSpawnRequest->InitialActorValues = pActorValuesComponent->CurrentActorValues;
     }
 
     if (characterComponent.BaseId)
@@ -128,11 +119,11 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent>();
+        auto view = m_world.view<FormIdComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
-                const auto& formIdComponent = view.get<FormIdComponent>(entity);
+                const auto& formIdComponent = view.get(entity);
 
                 return formIdComponent.Id == refId;
             });
@@ -144,14 +135,10 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             const auto* pServer = GameServer::Get();
 
-            auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
-
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
-            response.AllActorValues = actorValuesComponent.CurrentActorValues;
-
             pServer->Send(acMessage.ConnectionId, response);
             return;
         }
@@ -272,35 +259,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
     }
 }
 
-void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
-{
-    auto& message = acMessage.Packet;
-
-    auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    
-    auto itor = view.find(static_cast<entt::entity>(message.Id));
-
-    if (itor != std::end(view))
-    {
-        NotifySpawnData notifySpawnData;
-        notifySpawnData.Id = message.Id;
-
-        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*itor);
-        if (pActorValuesComponent)
-        {
-            notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
-        }
-
-        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*itor);
-        if (pInventoryComponent)
-        {
-            notifySpawnData.InitialInventory = pInventoryComponent->Content;
-        }
-
-        GameServer::Get()->Send(acMessage.ConnectionId, notifySpawnData);
-    }
-}
-
 void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept
 {
     auto view = m_world.view<InventoryComponent, OwnerComponent>();
@@ -418,9 +376,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
 
-    auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
-    actorValuesComponent.CurrentActorValues = message.AllActorValues;
-
     spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
@@ -465,7 +420,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
-    response.AllActorValues = message.AllActorValues;
 
     pServer->Send(acMessage.ConnectionId, response);
 
