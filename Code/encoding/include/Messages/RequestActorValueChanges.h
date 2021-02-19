@@ -2,6 +2,8 @@
 
 #include "Message.h"
 
+using TiltedPhoques::Map;
+
 struct RequestActorValueChanges final : ClientMessage
 {
     RequestActorValueChanges() : ClientMessage(kRequestActorValueChanges)

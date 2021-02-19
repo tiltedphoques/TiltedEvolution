@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Structs/GameId.h>
-
 #include "Message.h"
+
+using TiltedPhoques::Map;
 
 struct RequestActorMaxValueChanges final : ClientMessage
 {

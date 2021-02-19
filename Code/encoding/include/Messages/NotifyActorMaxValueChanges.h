@@ -2,6 +2,8 @@
 
 #include "Message.h"
 
+using TiltedPhoques::Map;
+
 struct NotifyActorMaxValueChanges final : ServerMessage
 {
     NotifyActorMaxValueChanges() : ServerMessage(kNotifyActorMaxValueChanges)

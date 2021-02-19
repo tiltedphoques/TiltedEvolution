@@ -1,5 +1,6 @@
 #include "catch.hpp"
-#include "Messages/ClientReferencesMoveRequest.h"
+
+#include <Messages/ClientReferencesMoveRequest.h>
 
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationRequest.h>

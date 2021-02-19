@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/GameId.h>
 #include <Structs/ReferenceUpdate.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>

@@ -2,6 +2,8 @@
 
 #include "Message.h"
 
+using TiltedPhoques::Map;
+
 struct NotifyActorValueChanges final : ServerMessage
 {
     NotifyActorValueChanges() : ServerMessage(kNotifyActorValueChanges)
