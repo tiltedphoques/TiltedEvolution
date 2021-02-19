@@ -9,6 +9,7 @@
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
 #include <Structs/QuestLog.h>
+#include <Structs/ActorValues.h>
 #include <Buffer.hpp>
 #include <Stl.hpp>
 
@@ -41,6 +42,7 @@ struct AssignCharacterRequest final : ClientMessage
             LatestAction == acRhs.LatestAction &&
             FaceTints == acRhs.FaceTints &&
             QuestContent == acRhs.QuestContent &&
+            AllActorValues == acRhs.AllActorValues &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -57,4 +59,5 @@ struct AssignCharacterRequest final : ClientMessage
     ActionEvent LatestAction{};
     QuestLog QuestContent{};
     Tints FaceTints{};
+    ActorValues AllActorValues{};
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <TESObjectREFR.h>
+
 template <class T> struct BSTEventSink;
 
 // Very nasty work around to avoid template code duplication
@@ -118,7 +120,8 @@ struct TESGrabReleaseEvent
 
 struct TESHitEvent
 {
-
+    TESObjectREFR* hit;
+    TESObjectREFR* hitter;
 };
 
 struct TESLoadGameEvent

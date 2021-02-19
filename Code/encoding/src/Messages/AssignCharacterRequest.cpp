@@ -15,6 +15,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
     QuestContent.Serialize(aWriter);
     FaceTints.Serialize(aWriter);
+    AllActorValues.Serialize(aWriter);
 }
 
 void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -44,4 +45,5 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
 
     QuestContent.Deserialize(aReader);
     FaceTints.Deserialize(aReader);
+    AllActorValues.Deserialize(aReader);
 }

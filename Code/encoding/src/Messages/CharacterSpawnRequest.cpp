@@ -13,6 +13,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     FactionsContent.Serialize(aWriter);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
     FaceTints.Serialize(aWriter);
+    InitialActorValues.Serialize(aWriter);
 }
 
 void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -40,4 +41,5 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     LatestAction.ApplyDifferential(aReader);
 
     FaceTints.Deserialize(aReader);
+    InitialActorValues.Deserialize(aReader);
 }

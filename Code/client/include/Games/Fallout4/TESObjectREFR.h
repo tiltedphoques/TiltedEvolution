@@ -3,8 +3,9 @@
 #include <Games/ExtraData.h>
 #include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
+#include <Forms/ActorValueInfo.h>
+#include <Misc/ActorValueOwner.h>
 
-struct ActorValueOwner;
 struct NiNode;
 struct BSFaceGenNiNode;
 struct TESObjectCELL;
@@ -144,6 +145,7 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
+    ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
@@ -165,7 +167,7 @@ public:
     uint8_t unk20[0x48 - 0x30];
     IAnimationGraphManagerHolder animationGraphHolder;
     uint8_t unk50[0x58 - 0x50];
-    ActorValueOwner* actorValueOwner; // used when (flags >> 11) & 1 == 0 other wise uses the baseform's in TESActorBase
+    ActorValueOwner actorValueOwner; // used when (flags >> 11) & 1 == 0 other wise uses the baseform's in TESActorBase
     void* unk60; 
     uint8_t unk68[0xB8 - 0x68];
     TESObjectCELL* parentCell;
