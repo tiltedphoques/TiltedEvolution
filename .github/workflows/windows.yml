@@ -25,7 +25,12 @@ jobs:
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
-
+      
+    - name: Yeet xmake-repo
+      run: | 
+        xmake.exe repo -r xmake-repo
+        xmake.exe repo -g -a tilted https://github.com/tiltedphoques/xmake-repo.git
+        
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository
       run: xmake.exe repo --update
