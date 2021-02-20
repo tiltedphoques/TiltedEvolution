@@ -38,7 +38,7 @@ jobs:
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
-      run: xmake.exe config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --verbose
+      run: xmake.exe config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --verbose --vs_sdkver=10.0.19041.0
 
     # Build the game
     - name: Build
