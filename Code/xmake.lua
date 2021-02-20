@@ -1,6 +1,10 @@
+
+if is_plat("windows") then
+    includes("./client")
+    includes("./tp_process")
+end
+
 includes("./common")
-includes("./client")
 includes("./server")
-includes("./tp_process")
 includes("./encoding")
 includes("./tests")

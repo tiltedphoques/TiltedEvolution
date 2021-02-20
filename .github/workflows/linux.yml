@@ -1,0 +1,45 @@
+name: Build linux
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        arch: [x64]
+        mode: [debug, release]
+
+    runs-on: ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Install Nazara dependencies
+    - name: Update apt repositories
+      run: sudo apt-get update
+
+    # Install xmake
+    - name: Setup xmake
+      uses: xmake-io/github-action-setup-xmake@v1
+
+    # Update xmake repository (in order to have the file that will be cached)
+    - name: Update xmake repository
+      run: xmake repo --update
+
+    # Cache xmake dependencies
+    - uses: actions/cache@v2
+      with:
+        path: ~/.xmake/packages
+        key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua', 'xmake-repo') }}-${{ hashFiles('~/.xmake/xmake.conf') }}-${{ hashFiles('~/.xmake/repositories/**') }}
+
+    # Setup compilation mode and install project dependencies
+    - name: Configure xmake and install dependencies
+      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --verbose
+
+    # Build the game
+    - name: Build
+      run: xmake
