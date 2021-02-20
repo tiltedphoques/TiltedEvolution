@@ -9,7 +9,7 @@ target(name)
         ".",
         "../../Libraries/",
         "../../Libraries/entt")
-    set_pcxxheader("stdafx.h")
+    set_pcxxheader("TiltedOnlinePCH.h")
 
     -- exclude game specifc stuff
     add_headerfiles("**.h|Games/Fallout4/**|Games/Skyrim/**")
@@ -29,7 +29,7 @@ target(name)
         add_includedirs("Games/Fallout4")
     end
     add_deps(
-        "UiProcess", 
+        "UiProcess",
         "Common",
         "mhook",
         "Encoding",
@@ -38,14 +38,16 @@ target(name)
         "TiltedHooks",
         "TiltedScript",
         "TiltedUi")
+
     add_packages(
         "tiltedcore",
-        "spdlog", 
+        "spdlog",
         "hopscotch-map",
         "gamenetworkingsockets",
         "discord",
         "imgui",
         "cef")
+
     add_syslinks(
         "version")
 end

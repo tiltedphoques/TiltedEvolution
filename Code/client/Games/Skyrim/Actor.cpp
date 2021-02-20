@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include <TiltedOnlinePCH.h>
 
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
