@@ -8,6 +8,7 @@
 #include <Structs/Factions.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
+#include <Structs/ActorValues.h>
 
 using TiltedPhoques::String;
 
@@ -48,4 +49,5 @@ struct CharacterSpawnRequest final : ServerMessage
     Factions FactionsContent{};
     ActionEvent LatestAction{};
     Tints FaceTints{};
+    ActorValues InitialActorValues{};
 };

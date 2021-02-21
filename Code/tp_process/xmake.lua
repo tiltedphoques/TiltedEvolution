@@ -1,5 +1,5 @@
 
-target("tp_process")
+target("TPProcess")
     set_kind("binary")
     set_group("Client")
     add_includedirs(

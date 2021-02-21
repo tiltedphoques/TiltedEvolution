@@ -1,9 +1,9 @@
 #include <TiltedOnlinePCH.h>
-
 #include <Services/EntityService.h>
 
 #include <Events/ReferenceAddedEvent.h>
 #include <Events/ReferenceRemovedEvent.h>
+#include <Events/ReferenceSpawnedEvent.h>
 
 #include <World.h>
 
@@ -46,6 +46,8 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
         m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
 
         m_refIdToEntity[acEvent.FormId] = entity;
+
+        m_dispatcher.trigger(ReferenceSpawnedEvent(acEvent.FormId, acEvent.FormType, entity));
     }
 }
 

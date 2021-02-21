@@ -1,5 +1,4 @@
 #include <Messages/RequestActorMaxValueChanges.h>
-#include <Serialization.hpp>
 
 void RequestActorMaxValueChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

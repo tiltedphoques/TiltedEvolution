@@ -1,5 +1,4 @@
-#include <stdafx.h>
-
+#include <TiltedOnlinePCH.h>
 #include <Games/References.h>
 
 void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
@@ -30,4 +29,15 @@ void TESObjectREFR::RemoveAllItems() noexcept
     POINTER_FALLOUT4(TRemoveAllItems, s_removeAllItems, 0x14140CE90 - 0x140000000);
 
     s_removeAllItems(nullptr, nullptr, this, nullptr, false);
+}
+
+ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
+{
+    using TGetActorValueInfoArray = ActorValueInfo**();
+
+    POINTER_FALLOUT4(TGetActorValueInfoArray, s_getActorValueInfoArray, 0x14006B1F0 - 0x140000000);
+
+    ActorValueInfo** actorValueInfoArray = s_getActorValueInfoArray.Get()();
+
+    return actorValueInfoArray[aId];
 }

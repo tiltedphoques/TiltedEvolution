@@ -1,13 +1,16 @@
-#include <stdafx.h>
-
-#include <PlayerCharacter.h>
+#include <TiltedOnlinePCH.h>
+#include <ExtraData/ExtraFactionChanges.h>
 #include <Forms/TESFaction.h>
 #include <Forms/TESNPC.h>
-#include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
+#include <Games/References.h>
+#include <PlayerCharacter.h>
 
-#include <World.h>
 #include <Services/PapyrusService.h>
+#include <World.h>
+
+#include <Effects/ValueModifierEffect.h>
+#include <Events/HealthChangeEvent.h>
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
@@ -44,8 +47,8 @@ GamePtr<Actor> Actor::New() noexcept
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
-    using TGetEquippedWeapon = TESForm* (__fastcall)(void*, void*, const Actor*, uint32_t);
-    
+    using TGetEquippedWeapon = TESForm*(__fastcall)(void*, void*, const Actor*, uint32_t);
+
     POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 0x141388BC0 - 0x140000000);
 
     return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
@@ -104,14 +107,58 @@ Factions Actor::GetFactions() const noexcept
     return result;
 }
 
+ActorValues Actor::GetEssentialActorValues() noexcept
+{
+    ActorValues actorValues;
+
+    int essentialValues[] = {ActorValueInfo::kHealth};
+
+    for (auto i : essentialValues)
+    {
+        ActorValueInfo* pActorValueInfo = GetActorValueInfo(i);
+        float value = actorValueOwner.GetValue(pActorValueInfo);
+        actorValues.ActorValuesList.insert({i, value});
+        float maxValue = actorValueOwner.GetMaxValue(pActorValueInfo);
+        actorValues.ActorMaxValuesList.insert({i, maxValue});
+    }
+
+    ActorValueInfo* pActorValueInfoRads = GetActorValueInfo(ActorValueInfo::kRads);
+    float valueRads = actorValueOwner.GetValue(pActorValueInfoRads);
+    actorValues.ActorValuesList.insert({ActorValueInfo::kRads, valueRads});
+    ActorValueInfo* pActorValueInfoRadsMax = GetActorValueInfo(ActorValueInfo::kRadHealthMax);
+    float valueRadsMax = actorValueOwner.GetValue(pActorValueInfoRadsMax);
+    actorValues.ActorValuesList.insert({ActorValueInfo::kRadHealthMax, valueRadsMax});
+
+    return actorValues;
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
 
     UnEquipAll();
 
-    if(!acInventory.Buffer.empty())
+    if (!acInventory.Buffer.empty())
         DeserializeInventory(acInventory.Buffer);
+}
+
+void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
+{
+    for (auto& value : acActorValues.ActorMaxValuesList)
+    {
+        ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
+        float current = actorValueOwner.GetValue(pActorValueInfo);
+        actorValueOwner.ForceCurrent(0, pActorValueInfo, value.second - current);
+    }
+
+    for (auto& value : acActorValues.ActorValuesList)
+    {
+        ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
+        if (value.first == ActorValueInfo::kRads || value.first == ActorValueInfo::kRadHealthMax)
+            actorValueOwner.SetValue(pActorValueInfo, value.second);
+        float current = actorValueOwner.GetValue(pActorValueInfo);
+        actorValueOwner.ForceCurrent(2, pActorValueInfo, value.second - current);
+    }
 }
 
 void Actor::SetFactions(const Factions& acFactions) noexcept
@@ -164,15 +211,82 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
-static TiltedPhoques::Initializer s_specificReferencesHooks([]()
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
+static TDamageActor* RealDamageActor = nullptr;
+
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
+{
+    const auto pExHittee = apThis->GetExtension();
+    if (!apHitter && pExHittee->IsLocal())
     {
-        POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
-        POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+    }
 
-        RealActorConstructor = s_actorCtor.Get();
-        RealActorConstructor2 = s_actorCtor2.Get();
+    auto factions = apThis->GetFactions();
+    for (const auto& faction : factions.NpcFactions)
+    {
+        if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsRemote())
+        {
+            return 0;
+        }
+        else if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsLocal())
+        {
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        }
+    }
 
-        TP_HOOK(&RealActorConstructor, HookActorContructor);
-        TP_HOOK(&RealActorConstructor2, HookActorContructor2);
-    });
+    const auto pExHitter = apHitter->GetExtension();
+    if (pExHitter->IsLocal())
+    {
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+    }
 
+    return 0;
+}
+
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue,
+                 ActorValueInfo* apActorValueInfo);
+static TApplyActorEffect* RealApplyActorEffect = nullptr;
+
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue,
+                      ActorValueInfo* apActorValueInfo)
+{
+    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+
+    if (pValueModEffect)
+    {
+        ActorValueInfo* pHealthActorValueInfo = apTarget->GetActorValueInfo(ActorValueInfo::kHealth);
+        if (pValueModEffect->actorValueInfo == pHealthActorValueInfo && aEffectValue > 0.0f)
+        {
+            const auto pExTarget = apTarget->GetExtension();
+            if (pExTarget->IsLocal())
+            {
+                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget, aEffectValue));
+                return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
+            }
+            return;
+        }
+    }
+
+    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
+}
+
+static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
+    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
+    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
+    POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
+    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
+
+    RealActorConstructor = s_actorCtor.Get();
+    RealActorConstructor2 = s_actorCtor2.Get();
+    RealDamageActor = s_damageActor.Get();
+    RealApplyActorEffect = s_applyActorEffect.Get();
+
+    TP_HOOK(&RealActorConstructor, HookActorContructor);
+    TP_HOOK(&RealActorConstructor2, HookActorContructor2);
+    TP_HOOK(&RealDamageActor, HookDamageActor);
+    TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+});

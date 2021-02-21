@@ -1,5 +1,4 @@
 #include <stdafx.h>
-
 #include <GameServer.h>
 #include <Components.h>
 #include <Packet.hpp>
@@ -24,6 +23,10 @@
 #include <Messages/PartyAcceptInviteRequest.h> 
 #include <Messages/PartyLeaveRequest.h> 
 #include <Messages/CharacterTravelRequest.h> 
+#include <Messages/RequestActorValueChanges.h>
+#include <Messages/RequestActorMaxValueChanges.h>
+#include <Messages/RequestHealthChangeBroadcast.h>
+#include <Messages/RequestSpawnData.h>
 
 #include <Scripts/Player.h>
 
@@ -122,6 +125,10 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         SERVER_DISPATCH(PartyAcceptInviteRequest);
         SERVER_DISPATCH(PartyLeaveRequest);
         SERVER_DISPATCH(CharacterTravelRequest);
+        SERVER_DISPATCH(RequestActorValueChanges);
+        SERVER_DISPATCH(RequestActorMaxValueChanges);
+        SERVER_DISPATCH(RequestHealthChangeBroadcast);
+        SERVER_DISPATCH(RequestSpawnData);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;
