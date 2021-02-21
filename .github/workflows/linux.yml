@@ -18,7 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # Install Nazara dependencies
+    - name: Checkout submodules
+      run: |
+        git submodule sync --recursive
+        git submodule update --init --force --recursive --depth=1
+
+    # Install dependencies
     - name: Update apt repositories
       run: sudo apt-get update
 
