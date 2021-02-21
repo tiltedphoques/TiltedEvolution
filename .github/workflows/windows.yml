@@ -47,7 +47,3 @@ jobs:
     # Build the game
     - name: Build
       run: xmake.exe
-
-    # Run tests
-    - name: Tests
-      run: build/windows/${{ matrix.arch }}/${{ matrix.mode }}/TPTests.exe
