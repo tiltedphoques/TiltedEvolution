@@ -10,6 +10,6 @@ target("TPTests")
     add_deps("Encoding")
     add_packages(
         "tiltedcore",
-        "hopscotch-map", 
-        "catch2", 
+        "hopscotch-map",
+        "catch2",
         "mimalloc")
