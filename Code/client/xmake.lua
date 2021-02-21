@@ -15,6 +15,13 @@ target(name)
     add_headerfiles("**.h|Games/Fallout4/**|Games/Skyrim/**")
     add_files("**.cpp|Games/Fallout4/**|Games/Skyrim/**")
 
+    after_install(function(target)
+        local linkdir = target:pkg("cef"):get("linkdirs")
+        local bindir = path.join(linkdir, "..", "bin")
+        os.cp(bindir, target:installdir())
+        os.rm(path.join(target:installdir(), "bin", "**Tests.exe"))
+    end)
+
     -- only include selected files
     if name == "SkyrimTogether" then
         add_files("Games/Skyrim/**.cpp")
