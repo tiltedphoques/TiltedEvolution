@@ -38,7 +38,7 @@ add_requires(
 -- the xmake package manager, we intend to change this in the future though.
 
 if is_plat("windows") then
-    add_require(
+    add_requires(
     "discord",
     "imgui")
 
