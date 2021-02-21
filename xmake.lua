@@ -1,4 +1,3 @@
-
 set_xmakever("2.5.1")
 
 -- c code will use c99,
