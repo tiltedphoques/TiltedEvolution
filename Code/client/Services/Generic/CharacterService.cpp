@@ -2,6 +2,7 @@
 
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
+#include "Games/Misc/UI.h"
 #include "Messages/CharacterTravelRequest.h"
 #include "Services/PapyrusService.h"
 
@@ -707,6 +708,9 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetInventory(acMessage.InventoryContent);
     pActor->SetFactions(acMessage.FactionsContent);
+    pActor->SetActorValues(acMessage.InitialActorValues);
+
+    m_world.emplace<WaitingFor3D>(aEntity);
 
     return pActor;
 }
@@ -936,9 +940,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
 
 void CharacterService::ApplyCachedInventoryChanges() noexcept
 {
-    GLOBAL_PAPYRUS_FUNCTION(bool, UI, IsMenuOpen, BSFixedString)
-
-    if (s_pIsMenuOpen(BSFixedString("ContainerMenu")))
+    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
     auto view = m_world.view<RemoteComponent, FormIdComponent>();

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/GameId.h>
 #include <Structs/ReferenceUpdate.h>
 #include <TiltedCore/Stl.hpp>
 
