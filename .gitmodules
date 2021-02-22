@@ -7,9 +7,6 @@
 [submodule "Libraries/TiltedConnect"]
 	path = Libraries/TiltedConnect
 	url = https://github.com/TiltedPhoques/TiltedConnect
-[submodule "Libraries/entt"]
-	path = Libraries/entt
-	url = https://github.com/TiltedPhoques/entt
 [submodule "Libraries/TiltedHooks"]
 	path = Libraries/TiltedHooks
 	url = https://github.com/TiltedPhoques/TiltedHooks

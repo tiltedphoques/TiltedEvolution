@@ -62,6 +62,7 @@
 #include <common/BuildInfo.h>
 #include <Games/Primitives.h>
 
+
 extern "C"
 {
 #include <lua.h>
@@ -91,6 +92,8 @@ using TiltedPhoques::Outcome;
 using TiltedPhoques::App;
 
 using namespace std::chrono_literals;
+
+#include "Components.h"
 
 #include <RTTI.h>
 
