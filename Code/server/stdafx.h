@@ -43,7 +43,7 @@ extern "C"
 
 #define SOL_ALL_SAFETIES_ON 1
 //#define SOL_USE_CXX_LUA_I_
-#include <sol.hpp>
+#include <sol/sol.hpp>
 
 using namespace TiltedPhoques;
 using namespace std::chrono_literals;

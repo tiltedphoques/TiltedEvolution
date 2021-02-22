@@ -26,7 +26,6 @@ target(name)
 
     add_deps(
         "Common",
-        "lua",
         "TiltedScript",
         "TiltedConnect")
     add_packages(
@@ -34,7 +33,9 @@ target(name)
         "gamenetworkingsockets",
         "spdlog",
         "hopscotch-map",
-        "sqlite3")
+        "sqlite3",
+        "lua",
+        "sol2")
 end
 
 build_server("SkyrimTogetherServer", "TP_SKYRIM=1")

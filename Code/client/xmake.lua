@@ -54,7 +54,9 @@ target(name)
         "gamenetworkingsockets",
         "discord",
         "imgui",
-        "cef")
+        "cef",
+        "lua",
+        "sol2")
 
     add_syslinks(
         "version")
