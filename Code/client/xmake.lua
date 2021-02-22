@@ -28,18 +28,19 @@ target(name)
         add_headerfiles("Games/Skyrim/**.h")
         -- rather hacky:
         add_includedirs("Games/Skyrim")
+        add_deps("SkyrimEncoding")
     end
     if name == "FalloutTogether" then
         add_files("Games/Fallout4/**.cpp")
         add_headerfiles("Games/Fallout4/**.h")
         -- rather hacky:
         add_includedirs("Games/Fallout4")
+        add_deps("FalloutEncoding")
     end
     add_deps(
         "UiProcess",
         "Common",
         "mhook",
-        "Encoding",
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
