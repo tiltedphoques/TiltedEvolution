@@ -27,14 +27,14 @@ target(name)
     add_deps(
         "Common",
         "lua",
-        "sqlite3",
         "TiltedScript",
         "TiltedConnect")
     add_packages(
         "tiltedcore",
         "gamenetworkingsockets",
         "spdlog",
-        "hopscotch-map")
+        "hopscotch-map",
+        "sqlite3")
 end
 
 build_server("SkyrimTogetherServer", "TP_SKYRIM=1")
