@@ -40,7 +40,6 @@ target(name)
     add_deps(
         "UiProcess",
         "Common",
-        "mhook",
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
@@ -56,7 +55,8 @@ target(name)
         "imgui",
         "cef",
         "lua",
-        "sol2")
+        "sol2",
+        "minhook")
 
     add_syslinks(
         "version")
