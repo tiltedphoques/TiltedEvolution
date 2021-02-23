@@ -22,7 +22,7 @@ void BSAnimationGraphManager::DumpAnimationVariables()
             {
                 std::map<uint32_t, std::tuple<const char*, uint32_t> > variables;
 
-                for(auto i = 0; i < pDb->animationVariables.bucketCount; ++i)
+                for(decltype(pDb->animationVariables.bucketCount) i = 0; i < pDb->animationVariables.bucketCount; ++i)
                 {
                     auto pBucket = &pBuckets[i];
                     if (!pBucket->next)
@@ -31,7 +31,7 @@ void BSAnimationGraphManager::DumpAnimationVariables()
                     while(pBucket != pDb->animationVariables.end)
                     {
                         const auto variableIndex = pBucket->value;
-                        if(pVariableSet->size > variableIndex)
+                        if(pVariableSet->size > static_cast<uint32_t>(variableIndex))
                         {
                             const auto value = pVariableSet->data[variableIndex];
 
@@ -42,10 +42,10 @@ void BSAnimationGraphManager::DumpAnimationVariables()
                     }
                 }
 
-                for(auto& var : variables)
+                for(auto& [id, name] : variables)
                 {
-                    auto val = std::get<1>(var.second);
-                    std::cout << "k" << std::get<0>(var.second) << " = " << var.first << "," << std::endl;
+                    auto val = std::get<1>(name);
+                    std::cout << "k" << std::get<0>(name) << " = " << id << "," << std::endl;
 
                     //spdlog::info("{} {} f: {}, i: {}", var.first, std::get<0>(var.second), *(float*)&val, *(int32_t*)&val);
                 }

@@ -9,5 +9,5 @@ void RequestSpawnData::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
 {
     ClientMessage::DeserializeRaw(aReader);
 
-    Id = Serialization::ReadVarInt(aReader);
+    Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }

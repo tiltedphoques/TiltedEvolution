@@ -216,7 +216,7 @@ uint32_t BSAnimationGraphManager::ReSendEvent(BSFixedString* apEventName)
 
     uint32_t counter = 0;
 
-    for(auto i = 0; i < animationGraphs.size; ++i)
+    for (decltype(animationGraphs.size) i = 0; i < animationGraphs.size; ++i)
     {
         auto pCurrentAnimationGraph = animationGraphs.Get(i);
         if (pCurrentAnimationGraph->ReSendEvent(apEventName))

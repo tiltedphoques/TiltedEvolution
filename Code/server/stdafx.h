@@ -18,7 +18,6 @@
 #include <TiltedCore/ScratchAllocator.hpp>
 #include <TiltedCore/Stl.hpp>
 #include <TiltedCore/Outcome.hpp>
-#include <TiltedCore/Vector3.hpp>
 #include <TiltedCore/ViewBuffer.hpp>
 
 #include <any>
@@ -32,7 +31,8 @@
 #include <cxxopts.hpp>
 
 #include <spdlog/spdlog.h>
-#include <single_include/entt/entt.hpp>
+#include <entt/entt.hpp>
+#include <glm/glm.hpp>
 #include <common/BuildInfo.h>
 
 extern "C"

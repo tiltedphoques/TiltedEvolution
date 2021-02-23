@@ -22,8 +22,8 @@ DiscordService::DiscordService(entt::dispatcher &aDispatcher)
     m_ActivityState.instance = false;
     m_ActivityState.type = EDiscordActivityType::DiscordActivityType_Playing;
 
-    std::strcpy(m_ActivityState.details, "Loading");
-    std::strcpy(m_ActivityState.assets.large_image, "logo");
+    strcpy_s(m_ActivityState.details, "Loading");
+    strcpy_s(m_ActivityState.assets.large_image, "logo");
 
     m_cellChangeConnection =
         aDispatcher.sink<LocationChangeEvent>().connect<&DiscordService::OnLocationChangeEvent>(this);
@@ -44,7 +44,7 @@ DiscordService::~DiscordService() = default;
 
 void DiscordService::OnUserUpdate(void* userp)
 {
-    auto* pDiscord = reinterpret_cast<DiscordService*>(userp);
+    auto* pDiscord = static_cast<DiscordService*>(userp);
     pDiscord->m_pUserMgr->get_current_user(pDiscord->m_pUserMgr, &pDiscord->m_userData);
 }
 
@@ -62,12 +62,12 @@ void DiscordService::OnLocationChangeEvent() noexcept
         bool updateTimestamp = false;
 
         if (pLocation)
-            std::strncpy(m_ActivityState.details, pLocation->GetName(), sizeof(DiscordActivity::details));
+            strncpy_s(m_ActivityState.details, pLocation->GetName(), sizeof(DiscordActivity::details));
 
         if (pWorldspace)
         {
             if (pWorldspace->fullName.value.data)
-                std::strncpy(m_ActivityState.state, pWorldspace->fullName.value.AsAscii(),
+                strncpy_s(m_ActivityState.state, pWorldspace->fullName.value.AsAscii(),
                              sizeof(DiscordActivity::state));
 
             if (m_lastWorldspaceId != pWorldspace->formID)

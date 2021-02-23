@@ -11,6 +11,6 @@ void NotifyPartyInvite::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) n
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    InviterId = Serialization::ReadVarInt(aReader);
+    InviterId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     ExpiryTick = Serialization::ReadVarInt(aReader);
 }

@@ -368,10 +368,10 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
-TP_THIS_FUNCTION(TForceState, void, Actor, Vector3<float>*, float, float, TESObjectCELL*, TESWorldSpace*, bool);
+TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;
 
-void TP_MAKE_THISCALL(HookForceState, Actor, Vector3<float>* apPosition, float aX, float aZ,
+void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float aX, float aZ,
                       TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
 {
     /*const auto pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
@@ -384,7 +384,7 @@ void TP_MAKE_THISCALL(HookForceState, Actor, Vector3<float>* apPosition, float a
    // if (apThis != PlayerCharacter::Get())
    //     return;
 
-    return ThisCall(RealForceState, apThis, apPosition, aX, aZ, apCell, apWorldSpace, aUnkBool);
+    return ThisCall(RealForceState, apThis, acPosition, aX, aZ, apCell, apWorldSpace, aUnkBool);
 }
 
 TP_THIS_FUNCTION(TSpawnActorInWorld, bool, Actor);

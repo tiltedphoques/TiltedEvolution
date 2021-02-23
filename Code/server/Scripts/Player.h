@@ -18,8 +18,8 @@ namespace Script
         const String& GetName() const;
         const uint64_t GetDiscordId() const;
 
-        [[nodiscard]] const Vector3<float>& GetPosition() const;
-        [[nodiscard]] const Vector3<float>& GetRotation() const;
+        [[nodiscard]] const glm::vec3& GetPosition() const;
+        [[nodiscard]] const glm::vec3& GetRotation() const;
         [[nodiscard]] float GetSpeed() const;
 
         Player& operator=(const Player& acRhs)

@@ -79,8 +79,8 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     if (pMovementComponent)
     {
         apSpawnRequest->Position = pMovementComponent->Position;
-        apSpawnRequest->Rotation.X = pMovementComponent->Rotation.m_x;
-        apSpawnRequest->Rotation.Y = pMovementComponent->Rotation.m_z;
+        apSpawnRequest->Rotation.x = pMovementComponent->Rotation.x;
+        apSpawnRequest->Rotation.y = pMovementComponent->Rotation.z;
     }
 
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
@@ -249,7 +249,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         auto& movement = update.UpdatedMovement;
 
         movementComponent.Position = movement.Position;
-        movementComponent.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
+        movementComponent.Rotation = glm::vec3(movement.Rotation.x, 0.f, movement.Rotation.y);
         movementComponent.Variables = movement.Variables;
         movementComponent.Direction = movement.Direction;
 
@@ -428,7 +428,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
     movementComponent.Position = message.Position;
-    movementComponent.Rotation = Vector3<float>(message.Rotation.X, 0.f, message.Rotation.Y);
+    movementComponent.Rotation = {message.Rotation.x, 0.f, message.Rotation.y};
     movementComponent.Sent = false;
 
     auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
@@ -442,7 +442,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
         const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
             [playerView, connectionId = acMessage.ConnectionId](auto entity)
         {
-            return playerView.get(entity).ConnectionId == connectionId;
+            return playerView.get<PlayerComponent>(entity).ConnectionId == connectionId;
         });
 
         if (itor == std::end(playerView))
@@ -621,8 +621,8 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
             movement.Position = movementComponent.Position;
 
-            movement.Rotation.X = movementComponent.Rotation.m_x;
-            movement.Rotation.Y = movementComponent.Rotation.m_z;
+            movement.Rotation.x = movementComponent.Rotation.x;
+            movement.Rotation.y = movementComponent.Rotation.z;
 
             movement.Direction = movementComponent.Direction;
             movement.Variables = movementComponent.Variables;

@@ -11,14 +11,14 @@ namespace Script
         : EntityHandle(aEntity, aWorld)
     {}
 
-    const Vector3<float>& Npc::GetPosition() const
+    const glm::vec3& Npc::GetPosition() const
     {
         auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
 
         return movementComponent.Position;
     }
 
-    const Vector3<float>& Npc::GetRotation() const
+    const glm::vec3& Npc::GetRotation() const
     {
         auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
 

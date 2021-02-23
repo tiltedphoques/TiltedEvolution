@@ -23,7 +23,8 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
     const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
    [playerView, connectionId = acMessage.ConnectionId](auto entity)
     {
-        return playerView.get(entity).ConnectionId == connectionId;
+        const auto& [playerComponent] = playerView.get(entity);
+        return playerComponent.ConnectionId == connectionId;
     });
 
     if(itor == std::end(playerView))
@@ -36,7 +37,7 @@ void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessa
 
     m_world.emplace_or_replace<CellIdComponent>(*itor, message.CellId);
 
-    auto& playerComponent = playerView.get(*itor);
+    auto& playerComponent = playerView.get<PlayerComponent>(*itor);
 
     if (playerComponent.Character)
     {

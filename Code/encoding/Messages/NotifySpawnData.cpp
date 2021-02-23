@@ -11,7 +11,7 @@ void NotifySpawnData::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noe
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    Id = Serialization::ReadVarInt(aReader);
+    Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     InitialActorValues.Deserialize(aReader);
     InitialInventory.Deserialize(aReader);
 }

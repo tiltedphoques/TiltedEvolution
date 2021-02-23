@@ -162,27 +162,37 @@ struct BSHandleRefObject : NiRefObject
     }
 };
 
-struct NiPoint3 : TiltedPhoques::Vector3<float>
+struct NiPoint3 : glm::vec3
 {
-    NiPoint3() : Vector3() {}
-    NiPoint3(Vector3<float> acRhs) : Vector3(acRhs) {}
-
-    float* AsArray()
+    NiPoint3() : glm::vec3()
     {
-        return &m_x;
     }
-};
-
-struct NiPoint2
-{
-    float x;
-    float y;
+    NiPoint3(const glm::vec3& acRhs) : glm::vec3(acRhs)
+    {
+    }
 
     float* AsArray()
     {
         return &x;
     }
 };
+
+static_assert(sizeof(NiPoint3) == 12);
+static_assert(offsetof(NiPoint3, x) == 0);
+static_assert(offsetof(NiPoint3, y) == 4);
+static_assert(offsetof(NiPoint3, z) == 8);
+
+struct NiPoint2 : glm::vec2
+{
+    float* AsArray()
+    {
+        return &x;
+    }
+};
+
+static_assert(sizeof(NiPoint2) == 8);
+static_assert(offsetof(NiPoint2, x) == 0);
+static_assert(offsetof(NiPoint2, y) == 4);
 
 struct BSRecursiveLock
 {

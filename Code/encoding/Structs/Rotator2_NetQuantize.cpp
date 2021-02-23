@@ -35,8 +35,8 @@ void Rotator2_NetQuantize::Unpack(uint32_t aValue) noexcept
     auto xValue = static_cast<float>(aValue & 0xFFFF);
     auto yValue = static_cast<float>((aValue >> 16) & 0xFFFF);
 
-    X = xValue * cReverseScalingFactory;
-    Y = yValue * cReverseScalingFactory;
+    x = xValue * cReverseScalingFactory;
+    y = yValue * cReverseScalingFactory;
 }
 
 uint32_t Rotator2_NetQuantize::Pack() const noexcept
@@ -54,11 +54,11 @@ uint32_t Rotator2_NetQuantize::Pack() const noexcept
         return angle;
     };
 
-    uint32_t x = static_cast<uint32_t>(WrapAngle(X) * cScalingFactory) & 0xFFFF;
-    uint32_t y = static_cast<uint32_t>(WrapAngle(Y) * cScalingFactory) & 0xFFFF;
+    uint32_t ix = static_cast<uint32_t>(WrapAngle(x) * cScalingFactory) & 0xFFFF;
+    uint32_t iy = static_cast<uint32_t>(WrapAngle(y) * cScalingFactory) & 0xFFFF;
 
-    data |= x;
-    data |= y << 16;
+    data |= ix;
+    data |= iy << 16;
 
     return data;
 }

@@ -20,6 +20,6 @@ void NotifyPartyInfo::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noe
 
     for (auto i = 0u; i < count; ++i)
     {
-        PlayerIds[i] = Serialization::ReadVarInt(aReader);
+        PlayerIds[i] = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     }
 }

@@ -13,9 +13,9 @@ bool Vector3_NetQuantize::operator!=(const Vector3_NetQuantize& acRhs) const noe
     return !this->operator==(acRhs);
 }
 
-Vector3_NetQuantize& Vector3_NetQuantize::operator=(const Vector3<float>& acRhs) noexcept
+Vector3_NetQuantize& Vector3_NetQuantize::operator=(const glm::vec3& acRhs) noexcept
 {
-    Vector3<float>::operator=(acRhs);
+    glm::vec3::operator=(acRhs);
     return *this;
 }
 
@@ -42,26 +42,26 @@ void Vector3_NetQuantize::Unpack(uint64_t aValue) noexcept
     auto yValue = static_cast<float>((aValue >> 23) & ((1 << 20) - 1));
     auto zValue = static_cast<float>((aValue >> 43) & ((1 << 20) - 1));
 
-    m_x = xSign ? -xValue : xValue;
-    m_y = ySign ? -yValue : yValue;
-    m_z = zSign ? -zValue : zValue;
+    x = xSign ? -xValue : xValue;
+    y = ySign ? -yValue : yValue;
+    z = zSign ? -zValue : zValue;
 }
 
 uint64_t Vector3_NetQuantize::Pack() const noexcept
 {
     uint64_t data = 0;
 
-    int32_t x = static_cast<int32_t>(m_x);
-    int32_t y = static_cast<int32_t>(m_y);
-    int32_t z = static_cast<int32_t>(m_z);
+    int32_t ix = static_cast<int32_t>(x);
+    int32_t iy = static_cast<int32_t>(y);
+    int32_t iz = static_cast<int32_t>(z);
 
-    data |= (x < 0) ? 1 : 0;
-    data |= (y < 0) ? 2 : 0;
-    data |= (z < 0) ? 4 : 0;
+    data |= (ix < 0) ? 1 : 0;
+    data |= (iy < 0) ? 2 : 0;
+    data |= (iz < 0) ? 4 : 0;
 
-    const uint64_t xVal = std::abs(x) & ((1 << 20) - 1);
-    const uint64_t yVal = std::abs(y) & ((1 << 20) - 1);
-    const uint64_t zVal = std::abs(z) & ((1 << 20) - 1);
+    const uint64_t xVal = std::abs(ix) & ((1 << 20) - 1);
+    const uint64_t yVal = std::abs(iy) & ((1 << 20) - 1);
+    const uint64_t zVal = std::abs(iz) & ((1 << 20) - 1);
 
     data |= xVal << 3;
     data |= yVal << 23;

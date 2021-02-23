@@ -101,7 +101,7 @@ Mod* ModManager::GetByName(const char* acpName) const noexcept
 
     while(pEntry && pEntry->data)
     {
-        if (stricmp(acpName, pEntry->data->filename) == 0)
+        if (_stricmp(acpName, pEntry->data->filename) == 0)
             return pEntry->data;
 
         pEntry = pEntry->next;

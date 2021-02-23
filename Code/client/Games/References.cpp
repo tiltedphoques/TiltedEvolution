@@ -269,12 +269,12 @@ void TESObjectREFR::Enable() const noexcept
     s_pEnable(this, true);
 }
 
-void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPosition) const noexcept
+void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept
 {
     ScopedReferencesOverride recursionGuard;
 
-    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*, const Vector3<float>&,
-                     const Vector3<float>&);
+    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*,
+                     const NiPoint3&, const NiPoint3&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409AE5C0 - 0x140000000);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);

@@ -8,8 +8,8 @@ namespace Script
     {
         Npc(entt::entity aEntity, World& aWorld);
 
-        [[nodiscard]] const Vector3<float>& GetPosition() const;
-        [[nodiscard]] const Vector3<float>& GetRotation() const;
+        [[nodiscard]] const glm::vec3& GetPosition() const;
+        [[nodiscard]] const glm::vec3& GetRotation() const;
         [[nodiscard]] float GetSpeed() const;
 
         Npc& operator=(const Npc& acRhs)

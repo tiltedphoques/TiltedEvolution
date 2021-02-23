@@ -159,7 +159,7 @@ struct TESObjectREFR : TESForm
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
-    void MoveTo(TESObjectCELL* apCell, const Vector3<float>& acPosition) const noexcept;
+    void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
 
 public:
 

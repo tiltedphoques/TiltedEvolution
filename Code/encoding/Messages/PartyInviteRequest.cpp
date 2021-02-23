@@ -9,5 +9,5 @@ void PartyInviteRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) 
 {
     ClientMessage::DeserializeRaw(aReader);
 
-    PlayerId = Serialization::ReadVarInt(aReader);
+    PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }

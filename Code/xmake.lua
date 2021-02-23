@@ -1,3 +1,4 @@
+add_requires("glm")
 
 if is_plat("windows") then
     includes("./client")

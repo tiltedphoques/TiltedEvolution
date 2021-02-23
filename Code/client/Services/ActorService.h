@@ -45,16 +45,16 @@ private:
     void OnReferenceSpawned(const ReferenceSpawnedEvent&) noexcept;
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
-    void OnActorValueChanges(const NotifyActorValueChanges& acMessage) noexcept;
-    void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) noexcept;
+    void OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept;
+    void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) const noexcept;
     void OnHealthChange(const HealthChangeEvent&) noexcept;
-    void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) noexcept;
+    void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept;
 
     void RunSmallHealthUpdates() noexcept;
-    void CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept;
+    void CreateActorValuesComponent(entt::entity aEntity, Actor* apActor) noexcept;
     void BroadcastActorValues() noexcept;
-    void ForceActorValue(Actor* aActor, uint32_t aMode, uint32_t aId, float aValue) noexcept;
-    void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
-    float GetActorValue(Actor* aActor, uint32_t aId) noexcept;
-    float GetActorMaxValue(Actor* aActor, uint32_t aId) noexcept;
+    static void ForceActorValue(Actor* aActor, uint32_t aMode, uint32_t aId, float aValue) noexcept;
+    static void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
+    static float GetActorValue(Actor* aActor, uint32_t aId) noexcept;
+    static float GetActorMaxValue(Actor* aActor, uint32_t aId) noexcept;
 };

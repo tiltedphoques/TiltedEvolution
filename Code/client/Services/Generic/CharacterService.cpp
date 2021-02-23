@@ -176,7 +176,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     auto view = m_world.view<WaitingForAssignmentComponent>();
     const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.Cookie](auto entity)
     {
-        return view.get(entity).Cookie == cookie;
+        return view.get<WaitingForAssignmentComponent>(entity).Cookie == cookie;
     });
 
     if (itor == std::end(view))
@@ -300,8 +300,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     AnimationSystem::Setup(m_world, *entity);
 
     pActor->GetExtension()->SetRemote(true);
-    pActor->rotation.m_x = acMessage.Rotation.X;
-    pActor->rotation.m_z = acMessage.Rotation.Y;
+    pActor->rotation.x = acMessage.Rotation.x;
+    pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
 
     m_world.emplace<WaitingFor3D>(*entity);
@@ -361,7 +361,7 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
         InterpolationComponent::TimePoint point;
         point.Tick = acMessage.Tick;
         point.Position = movement.Position;
-        point.Rotation = Vector3<float>(movement.Rotation.X, 0.f, movement.Rotation.Y);
+        point.Rotation = {movement.Rotation.x, 0.f, movement.Rotation.y};
         point.Variables = movement.Variables;
         point.Direction = movement.Direction;
 
@@ -526,8 +526,8 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.CellId.ModId = cellModId;
 
     message.Position = pActor->position;
-    message.Rotation.X= pActor->rotation.m_x;
-    message.Rotation.Y = pActor->rotation.m_z;
+    message.Rotation.x = pActor->rotation.x;
+    message.Rotation.y = pActor->rotation.z;
 
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
@@ -743,8 +743,8 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
         return nullptr;
 
     pActor->GetExtension()->SetRemote(true);
-    pActor->rotation.m_x = acMessage.Rotation.X;
-    pActor->rotation.m_z = acMessage.Rotation.Y;
+    pActor->rotation.x = acMessage.Rotation.x;
+    pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
 
@@ -952,9 +952,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
         auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
         auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
 
-        auto delta = PlayerCharacter::Get()->position - interpolationComponent.Position;
-
-        if (delta.LengthSquared() < (12000.f * 12000.f))
+        if (distance2(PlayerCharacter::Get()->position, interpolationComponent.Position) < (12000.f * 12000.f))
         {
             auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
             if (!pActor)

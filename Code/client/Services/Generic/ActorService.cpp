@@ -210,7 +210,7 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
 
     for (auto entity : view)
     {
-        auto& formIdComponent = view.get(entity);
+        auto& formIdComponent = view.get<FormIdComponent>(entity);
         if (formIdComponent.Id == acEvent.pHittee->formID)
         {
             if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(entity); pLocalComponent)
@@ -283,38 +283,39 @@ void ActorService::RunSmallHealthUpdates() noexcept
     }
 }
 
-void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acEvent) noexcept
+void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent>();
 
     for (auto entity : view)
     {
         uint32_t componentId;
-        const auto localComponent = m_world.try_get<LocalComponent>(entity);
-        const auto remoteComponent = m_world.try_get<RemoteComponent>(entity);
-        if (localComponent)
-            componentId = localComponent->Id;
-        else if (remoteComponent)
-            componentId = remoteComponent->Id;
+        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
+        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+
+        if (cpLocalComponent)
+            componentId = cpLocalComponent->Id;
+        else if (cpRemoteComponent)
+            componentId = cpRemoteComponent->Id;
         else
             continue;
 
         if (componentId == acEvent.Id)
         {
-            auto& formIdComponent = view.get(entity);
+            auto& formIdComponent = view.get<FormIdComponent>(entity);
             auto* pForm = TESForm::GetById(formIdComponent.Id);
             auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
-            if (pActor != NULL)
+            if (pActor != nullptr)
             {
-                float newHealth = GetActorValue(pActor, ActorValueInfo::kHealth) + acEvent.DeltaHealth;
+                const auto newHealth = GetActorValue(pActor, ActorValueInfo::kHealth) + acEvent.DeltaHealth;
                 ForceActorValue(pActor, 2, ActorValueInfo::kHealth, newHealth);
             }
         }
     }
 }
 
-void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) noexcept
+void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
@@ -332,28 +333,28 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) n
     if (!pActor)
         return;
 
-    for (auto& value : acEvent.Values)
+    for (const auto& [key, value] : acEvent.Values)
     {
         std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.Id << std::endl;
-        std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
+        std::cout << "Key: " << std::dec << key << " Value: " << value << std::endl;
 
-        if (value.first == ActorValueInfo::kHealth)
+        if (key == ActorValueInfo::kHealth)
             continue;
 
 #if TP_SKYRIM64
-        if (value.first == ActorValueInfo::kStamina || value.first == ActorValueInfo::kMagicka)
+        if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka)
         {
-            ForceActorValue(pActor, 2, value.first, value.second);
+            ForceActorValue(pActor, 2, key, value);
         }
 #endif
         else
         {
-            SetActorValue(pActor, value.first, value.second);
+            SetActorValue(pActor, key, value);
         }
     }
 }
 
-void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) noexcept
+void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
@@ -371,19 +372,19 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
     if (!pActor)
         return;
 
-    for (auto& value : acEvent.Values)
+    for (const auto& [key, value] : acEvent.Values)
     {
         std::cout << "Max values update." << std::endl;
         std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.Id << std::endl;
-        std::cout << "Key: " << std::dec << value.first << " Value: " << value.second << std::endl;
+        std::cout << "Key: " << std::dec << key << " Value: " << value << std::endl;
 
-        ForceActorValue(pActor, 0, value.first, value.second);
+        ForceActorValue(pActor, 0, key, value);
     }
 }
 
 void ActorService::ForceActorValue(Actor* apActor, uint32_t aMode, uint32_t aId, float aValue) noexcept
 {
-    float current = GetActorValue(apActor, aId);
+    const float current = GetActorValue(apActor, aId);
 #if TP_FALLOUT4
     ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
     apActor->actorValueOwner.ForceCurrent(aMode, pActorValueInfo, aValue - current);

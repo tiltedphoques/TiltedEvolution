@@ -16,7 +16,7 @@ void NotifyActorValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    Id = Serialization::ReadVarInt(aReader);
+    Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
     auto count = Serialization::ReadVarInt(aReader);
     for (int i = 0; i < count; i++)

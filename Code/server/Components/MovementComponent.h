@@ -9,8 +9,8 @@
 struct MovementComponent
 {
     uint64_t Tick;
-    Vector3<float> Position;
-    Vector3<float> Rotation;
+    glm::vec3 Position;
+    glm::vec3 Rotation;
     AnimationVariables Variables;
     float Direction;
 

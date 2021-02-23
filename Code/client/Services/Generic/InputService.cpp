@@ -5,8 +5,8 @@
 
 #include <OverlayApp.hpp>
 
-#include <TiltedHooks/Code/hooks/include/DInputHook.hpp>
-#include <TiltedHooks/Code/hooks/include/WindowsHook.hpp>
+#include <DInputHook.hpp>
+#include <WindowsHook.hpp>
 
 #include <include/internal/cef_types.h>
 #include <Services/ImguiService.h>

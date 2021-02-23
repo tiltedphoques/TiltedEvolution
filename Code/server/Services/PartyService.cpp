@@ -47,7 +47,7 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
     auto view = m_world.view<PartyComponent>();
     for (auto entity : view)
     {
-        auto& partyComponent = view.get(entity);
+        auto& partyComponent = view.get<PartyComponent>(entity);
         auto itor = std::begin(partyComponent.Invitations);
         while (itor != std::end(partyComponent.Invitations))
         {

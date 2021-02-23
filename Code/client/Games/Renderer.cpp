@@ -9,8 +9,7 @@
 #include <Services/DiscordService.h>
 
 #include <World.h>
-#include <TiltedHooks/Code/hooks/include/D3D11Hook.hpp>
-//#include <D3D11Hook.hpp>
+#include <D3D11Hook.hpp>
 
 using TCreateViewport = bool(void*, ViewportConfig*, WindowConfig*, void*);
 

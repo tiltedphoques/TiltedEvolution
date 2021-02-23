@@ -233,7 +233,7 @@ void ScriptService::DisplayEntities() noexcept
     int i = 0;
     for(auto it : entities)
     {
-        auto& formComponent = view.get(it);
+        auto& formComponent = view.get<FormIdComponent>(it);
         const auto pActor = RTTI_CAST(TESForm::GetById(formComponent.Id), TESForm, Actor);
 
         if (!pActor || !pActor->baseForm)

@@ -158,7 +158,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
     auto playerView = m_pWorld->view<PlayerComponent>();
     for (auto entity : playerView)
     {
-        const auto& playerComponent = playerView.get(entity);
+        const auto& [playerComponent] = playerView.get(entity);
         if (playerComponent.ConnectionId == aConnectionId)
         {
             m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(entity));
@@ -172,7 +172,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
     auto ownerView = m_pWorld->view<OwnerComponent>();
     for (auto entity : ownerView)
     {
-        const auto& ownerComponent = ownerView.get(entity);
+        const auto& [ownerComponent] = ownerView.get(entity);
         if (ownerComponent.ConnectionId == aConnectionId)
         {
             entitiesToDestroy.push_back(entity);

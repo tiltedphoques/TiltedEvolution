@@ -10,6 +10,6 @@ void NotifyHealthChangeBroadcast::DeserializeRaw(TiltedPhoques::Buffer::Reader& 
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    Id = Serialization::ReadVarInt(aReader);
+    Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     DeltaHealth = Serialization::ReadFloat(aReader);
 }

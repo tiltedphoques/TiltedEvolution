@@ -25,7 +25,7 @@ void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
     }
 
     // Lite mods can not exceed 4096
-    const uint16_t liteCount = std::min(LiteMods.size(), size_t(4096));
+    const uint16_t liteCount = std::min(LiteMods.size(), size_t(4096)) & 0xFFFF;
     aWriter.WriteBits(liteCount, 13); 
     for (auto& entry : LiteMods)
     {

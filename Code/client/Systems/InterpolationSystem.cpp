@@ -9,7 +9,8 @@
 #include <Games/References.h>
 #include <World.h>
 
-void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterpolationComponent, const uint64_t aTick) noexcept
+void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterpolationComponent,
+                                 const uint64_t aTick) noexcept
 {
     auto& movements = aInterpolationComponent.TimePoints;
 
@@ -38,7 +39,7 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     delta = TiltedPhoques::Min(delta, 1.0f);
 
-    const NiPoint3 position{Lerp(first.Position, second.Position, delta)};
+    const NiPoint3 position{TiltedPhoques::Lerp(first.Position, second.Position, delta)};
 
     aInterpolationComponent.Position = position;
 
@@ -54,24 +55,21 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
         apActor->processManager->middleProcess->direction = second.Direction;
     }
 
-    float firstX, firstY, firstZ;
-    float secondX, secondY, secondZ;
+    auto rotA = first.Rotation;
+    auto rotB = second.Rotation;
 
-    first.Rotation.Decompose(firstX, firstY, firstZ);
-    second.Rotation.Decompose(secondX, secondY, secondZ);
-
-    const auto deltaX = TiltedPhoques::DeltaAngle(firstX, secondX, true) * delta;
-    const auto deltaY = TiltedPhoques::DeltaAngle(firstY, secondY, true) * delta;
-    const auto deltaZ = TiltedPhoques::DeltaAngle(firstZ, secondZ, true) * delta;
+    const auto deltaX = TiltedPhoques::DeltaAngle(rotA.x, rotB.x, true) * delta;
+    const auto deltaY = TiltedPhoques::DeltaAngle(rotA.y, rotB.y, true) * delta;
+    const auto deltaZ = TiltedPhoques::DeltaAngle(rotA.z, rotB.z, true) * delta;
 
 #if TP_FALLOUT4
     const auto finalX = 0.f;
 #else
-    const auto finalX = TiltedPhoques::Mod(firstX + deltaX, float(TiltedPhoques::Pi * 2));
+    const auto finalX = TiltedPhoques::Mod(rotA.x + deltaX, float(TiltedPhoques::Pi * 2));
 #endif
 
-    const auto finalY = TiltedPhoques::Mod(firstY + deltaY, float(TiltedPhoques::Pi * 2));
-    const auto finalZ = TiltedPhoques::Mod(firstZ + deltaZ, float(TiltedPhoques::Pi * 2));
+    const auto finalY = TiltedPhoques::Mod(rotA.y + deltaY, float(TiltedPhoques::Pi * 2));
+    const auto finalZ = TiltedPhoques::Mod(rotA.z + deltaZ, float(TiltedPhoques::Pi * 2));
 
     apActor->SetRotation(finalX, finalY, finalZ);
 }

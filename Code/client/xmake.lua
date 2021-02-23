@@ -5,10 +5,7 @@ target(name)
     set_group("Client")
     --set_basename(name .. "RebornClient")
     add_defines(def)
-    add_includedirs(
-        ".",
-        "../../Libraries/",
-        "../../Libraries/entt")
+    add_includedirs(".")
     set_pcxxheader("TiltedOnlinePCH.h")
 
     -- exclude game specifc stuff
@@ -56,7 +53,9 @@ target(name)
         "cef",
         "lua",
         "sol2",
-        "minhook")
+        "minhook",
+        "entt",
+        "glm")
 
     add_syslinks(
         "version")

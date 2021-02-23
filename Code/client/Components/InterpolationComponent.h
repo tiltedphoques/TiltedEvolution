@@ -11,8 +11,8 @@ struct InterpolationComponent
     struct TimePoint
     {
         uint64_t Tick{};
-        Vector3<float> Position{};
-        Vector3<float> Rotation{};
+        glm::vec3 Position{};
+        glm::vec3 Rotation{};
         AnimationVariables Variables{};
         float Direction{};
 
@@ -22,5 +22,5 @@ struct InterpolationComponent
     };
 
     List<TimePoint> TimePoints;
-    Vector3<float> Position;
+    glm::vec3 Position;
 };

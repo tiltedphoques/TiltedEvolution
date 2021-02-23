@@ -13,6 +13,8 @@ set_warnings("all")
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
 
+add_requires("entt")
+
 if is_mode("debug") then
     add_defines("DEBUG")
 end

@@ -40,13 +40,13 @@ namespace Script
         return playerComponent.DiscordId;
     }
 
-    const Vector3<float>& Player::GetPosition() const
+    const glm::vec3& Player::GetPosition() const
     {
         auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
         return movementComponent.Position;
     }
 
-    const Vector3<float>& Player::GetRotation() const
+    const glm::vec3& Player::GetRotation() const
     {
         auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
         return movementComponent.Rotation;
