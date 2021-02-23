@@ -1,5 +1,7 @@
 set_xmakever("2.5.1")
 
+add_repositories("tilted-repo https://github.com/tiltedphoques/xmake-repo.git")
+
 -- c code will use c99,
 -- cxx code will use cxx17 currently, cxx20 soon
 set_languages("c99", "cxx17")

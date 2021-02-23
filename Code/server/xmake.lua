@@ -28,7 +28,6 @@ target(name)
         "TiltedScript",
         "TiltedConnect")
     add_packages(
-        "tiltedcore",
         "gamenetworkingsockets",
         "spdlog",
         "hopscotch-map",
@@ -36,7 +35,8 @@ target(name)
         "lua",
         "sol2",
         "glm",
-        "entt")
+        "entt",
+        "tiltedcore")
 end
 
 build_server("SkyrimTogetherServer", "TP_SKYRIM=1")

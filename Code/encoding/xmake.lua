@@ -6,7 +6,7 @@ target(name)
     add_includedirs(".", "../", {public = true})
     add_headerfiles("**.h", {prefixdir = "Encoding"})
     add_files("**.cpp")
-    add_packages("tiltedcore", "hopscotch-map", "glm")
+    add_packages("hopscotch-map", "glm", "tiltedcore")
 end
 
 build_encoding("SkyrimEncoding", "TP_SKYRIM=1")

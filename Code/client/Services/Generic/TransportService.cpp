@@ -160,7 +160,8 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        auto& entry = pMod->IsLite() ? request.Mods.LiteMods.emplace_back() : request.Mods.StandardMods.emplace_back();
+        auto& entry =
+            pMod->IsLite() ? request.UserMods.LiteMods.emplace_back() : request.UserMods.StandardMods.emplace_back();
 
         entry.Id = pMod->GetId();
         entry.Filename = pMod->filename;
@@ -238,10 +239,10 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     m_connected = true;
 
     // Dispatch the mods to anyone who needs it
-    m_dispatcher.trigger(acMessage.Mods);
+    m_dispatcher.trigger(acMessage.UserMods);
 
     // Dispatch the scripts to anyone who needs it
-    m_dispatcher.trigger(acMessage.Scripts);
+    m_dispatcher.trigger(acMessage.ServerScripts);
 
     // Dispatch the replicated objects
     m_dispatcher.trigger(acMessage.ReplicatedObjects);

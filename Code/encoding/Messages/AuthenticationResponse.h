@@ -19,13 +19,13 @@ struct AuthenticationResponse final : ServerMessage
     {
         return GetOpcode() == achRhs.GetOpcode() && 
             Accepted == achRhs.Accepted && 
-            Mods == achRhs.Mods && 
-            Scripts == achRhs.Scripts &&
+            UserMods == achRhs.UserMods && 
+            ServerScripts == achRhs.ServerScripts &&
             ReplicatedObjects == achRhs.ReplicatedObjects;
     }
 
     bool Accepted{ false };
-    Mods Mods{};
-    Scripts Scripts{};
+    Mods UserMods{};
+    Scripts ServerScripts{};
     FullObjects ReplicatedObjects{};
 };

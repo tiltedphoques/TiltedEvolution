@@ -324,10 +324,10 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         AuthenticationRequest sendMessage, recvMessage;
         sendMessage.Token = "TesSt";
-        sendMessage.Mods.StandardMods.push_back({ "Hello", 42 });
-        sendMessage.Mods.StandardMods.push_back({ "Hi", 14 });
-        sendMessage.Mods.LiteMods.push_back({ "Test", 8 });
-        sendMessage.Mods.LiteMods.push_back({ "Toast", 49 });
+        sendMessage.UserMods.StandardMods.push_back({ "Hello", 42 });
+        sendMessage.UserMods.StandardMods.push_back({"Hi", 14});
+        sendMessage.UserMods.LiteMods.push_back({"Test", 8});
+        sendMessage.UserMods.LiteMods.push_back({"Toast", 49});
 
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);
@@ -348,12 +348,12 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         AuthenticationResponse sendMessage, recvMessage;
         sendMessage.Accepted = true;
-        sendMessage.Mods.StandardMods.push_back({ "Hello", 42 });
-        sendMessage.Mods.StandardMods.push_back({ "Hi", 14 });
-        sendMessage.Mods.LiteMods.push_back({ "Test", 8 });
-        sendMessage.Mods.LiteMods.push_back({ "Toast", 49 });
-        sendMessage.Scripts.Data.push_back(1);
-        sendMessage.Scripts.Data.push_back(2);
+        sendMessage.UserMods.StandardMods.push_back({"Hello", 42});
+        sendMessage.UserMods.StandardMods.push_back({"Hi", 14});
+        sendMessage.UserMods.LiteMods.push_back({"Test", 8});
+        sendMessage.UserMods.LiteMods.push_back({"Toast", 49});
+        sendMessage.ServerScripts.Data.push_back(1);
+        sendMessage.ServerScripts.Data.push_back(2);
         sendMessage.ReplicatedObjects.Data.push_back(3);
         sendMessage.ReplicatedObjects.Data.push_back(4);
 

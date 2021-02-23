@@ -20,13 +20,13 @@ struct AuthenticationRequest final : ClientMessage
     {
         return DiscordId == achRhs.DiscordId &&
             Token == achRhs.Token && 
-            Mods == achRhs.Mods && 
+            UserMods == achRhs.UserMods && 
             Username == achRhs.Username &&
             GetOpcode() == achRhs.GetOpcode();
     }
 
     uint64_t DiscordId;
     String Token;
-    Mods Mods;
+    Mods UserMods;
     String Username;
 };
