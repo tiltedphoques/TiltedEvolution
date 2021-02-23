@@ -26,5 +26,5 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("./libraries")
-includes("./code")
+includes("libraries")
+includes("code")
