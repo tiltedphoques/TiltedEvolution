@@ -2,9 +2,16 @@
 *.ilk
 *.sym
 
+vsxmake2019
+.xmake
+
+Build
 Build/*.log
 Build/*.torrent
 
+Build/.deps
+Build/.objs
+Build/.vs
 Build/obj
 Build/projects
 
@@ -22,6 +29,7 @@ Build/Bin/server/logs/
 Code/launcher/build
 Code/launcher/dist
 Code/launcher/package-lock.json
+Code/common/BuildInfo.h
 
 !Code/launcher/.vscode/extensions.json
 !Code/launcher/.vscode/settings.json
