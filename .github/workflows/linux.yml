@@ -43,4 +43,4 @@ jobs:
 
     # Build the game
     - name: Build
-      run: xmake --verbose
+      run: xmake
