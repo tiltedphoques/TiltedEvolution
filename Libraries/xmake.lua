@@ -32,6 +32,7 @@ end)
 
 add_requires(
     "tiltedcore",
+	"libsodium",
     "spdlog")
 
 -- all libraries listed here are under frequent change, and are thus not quired via
