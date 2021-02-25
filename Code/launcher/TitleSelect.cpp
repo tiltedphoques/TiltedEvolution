@@ -5,7 +5,7 @@
 #include "TitleSelect.h"
 #include "utils/Registry.h"
 
-constexpr wchar_t kRegistryPath[] = L"Software\\TiltedPhoques\\TiltedOnline\\";
+constexpr wchar_t kRegistryPath[] = LR"(Software\TiltedPhoques\TiltedOnline\)";
 
 WString ToClientName(TitleId aTid) noexcept
 {
@@ -74,7 +74,7 @@ TitleId ToTitleId(std::string_view aName) noexcept
 
 static std::wstring TryFindDefaultPath(TitleId aTitleId)
 {
-    auto path = WString(L"Software\\Wow6432Node\\Bethesda Softworks\\") + ToGameName(aTitleId);
+    auto path = WString(LR"(Software\Wow6432Node\Bethesda Softworks\)") + ToGameName(aTitleId);
 
     const wchar_t* subName;
     switch (aTitleId)

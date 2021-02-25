@@ -14,9 +14,6 @@ const wchar_t kSteamCrashHandlerDllName[] = L"crashhandler64.dll";
 
 void SteamLoad(TitleId aTid, const fs::path& gamePath)
 {
-    uint8_t* ptr = (uint8_t*)__readgsqword(0x60);
-    *(bool*)(ptr + 2) = false;
-
     auto appId = std::to_wstring(ToSteamAppId(aTid));
     SetEnvironmentVariableW(L"SteamAppId", appId.c_str());
 
@@ -41,10 +38,6 @@ void SteamLoad(TitleId aTid, const fs::path& gamePath)
     fs::path clientPath = steamPath / kSteamDllName;
     fs::path crashHandlerPath = steamPath / kSteamCrashHandlerDllName;
 
-    HMODULE hmod;
-    hmod = LoadLibraryW(clientPath.c_str());
-    hmod = LoadLibraryW(crashHandlerPath.c_str());
-
-    if (!hmod)
-        __debugbreak();
+    LoadLibraryW(clientPath.c_str());
+    LoadLibraryW(crashHandlerPath.c_str());
 }

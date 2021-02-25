@@ -6,8 +6,10 @@
  */
 
 #include <algorithm>
-#include "ExeLoader.h"
 
+#include "ExeLoader.h"
+#include "utils/aes.h"
+#include "utils/SteamCrypto.h"
 #include <TiltedCore/Filesystem.hpp>
 
 ExeLoader::ExeLoader(uintptr_t aLoadLimit, funchandler_t aFuncHandler) : 
@@ -58,7 +60,7 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
             }
             else
             {
-                auto import = GetTargetRVA<IMAGE_IMPORT_BY_NAME>(*nameTableEntry);
+                auto import = GetTargetRVA<IMAGE_IMPORT_BY_NAME>(static_cast<uint32_t>(*nameTableEntry));
 
                 function = m_pFuncHandler(module, import->Name);
                 functionName = import->Name;
@@ -125,9 +127,9 @@ void ExeLoader::LoadTLS(const IMAGE_NT_HEADERS* apNtHeader, const IMAGE_NT_HEADE
         VirtualProtect(reinterpret_cast<LPVOID>(targetTls->StartAddressOfRawData),
                        sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData, PAGE_READWRITE, &oldProtect);
 
-        memcpy(tlsBase, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
+        std::memcpy(tlsBase, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
                sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
-        memcpy((void*)targetTls->StartAddressOfRawData, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
+        std::memcpy((void*)targetTls->StartAddressOfRawData, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
                sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
     }
 }
@@ -149,15 +151,6 @@ uint32_t ExeLoader::Rva2Offset(uint32_t aRva) noexcept
     return 0;
 }
 
-#include "utils/aes.h"
-#include "utils/SteamCrypto.h"
-
-int roundUp(int numToRound, int multiple)
-{
-    assert(multiple);
-    return ((numToRound + multiple - 1) / multiple) * multiple;
-}
-
 void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
 {
     auto entry = apSourceNt->OptionalHeader.AddressOfEntryPoint;
@@ -177,42 +170,35 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
     SteamStubHeaderV31 stub{};
     std::memcpy(&stub, m_pBinary + (Rva2Offset(entry) - 0xF0), sizeof(SteamStubHeaderV31));
     SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31));
-
-    // most likely a different version
-    if (stub.Signature != 0xC0DEC0DF)
-    {
-        __debugbreak();
-        return;
-    }
+    assert(stub.Signature == 0xC0DEC0DF);
 
     AES_ctx ctx{};
     AES_init_ctx_iv(&ctx, stub.AES_Key, stub.AES_IV);
     AES_ECB_decrypt(&ctx, stub.AES_IV);
 
-    auto bufSiz = section->SizeOfRawData + sizeof(SteamStubHeaderV31::CodeSectionStolenData);
-    bufSiz = roundUp(bufSiz, 16);
+    auto roundUp = [](int numToRound, int multiple) {
+        assert(multiple);
+        return ((numToRound + multiple - 1) / multiple) * multiple;
+    };
 
-    auto textaddr = m_pBinary + Rva2Offset(section->VirtualAddress);
+    constexpr auto kCodeSize = sizeof(SteamStubHeaderV31::CodeSectionStolenData);
+    auto bufSiz = roundUp(section->SizeOfRawData + kCodeSize, 16);
 
-    auto it = std::make_unique<uint8_t[]>(bufSiz);
-
-    memset(it.get(), 0x00, bufSiz);
-    memcpy(it.get(), stub.CodeSectionStolenData, sizeof(SteamStubHeaderV31::CodeSectionStolenData));
-    memcpy(it.get() + sizeof(stub.CodeSectionStolenData), textaddr, section->SizeOfRawData);
+    // relocate
+    uint8_t* textaddr = GetOffset<uint8_t>(section->VirtualAddress);
+    std::memmove(textaddr + kCodeSize, textaddr, section->SizeOfRawData);
+    std::memcpy(textaddr, stub.CodeSectionStolenData, kCodeSize);
 
     // big bottleneck!!!
-    AES_CBC_decrypt_buffer(&ctx, it.get(), bufSiz);
+    AES_CBC_decrypt_buffer(&ctx, textaddr, bufSiz);
 
-    // we dont care about .bind section anymore
     apSourceNt->FileHeader.NumberOfSections--;
-    apSourceNt->OptionalHeader.AddressOfEntryPoint = stub.OriginalEntryPoint;
-
-    // IT: holds decrypted text section
+    apSourceNt->OptionalHeader.AddressOfEntryPoint = static_cast<uint32_t>(stub.OriginalEntryPoint);
 }
 
-bool ExeLoader::Load(std::filesystem::path& source)
+bool ExeLoader::Load(std::filesystem::path& aSourcePath)
 {
-    auto content = TiltedPhoques::LoadFile(source);
+    auto content = TiltedPhoques::LoadFile(aSourcePath);
     if (content.empty())
         return false;
 
@@ -245,7 +231,7 @@ bool ExeLoader::Load(std::filesystem::path& source)
     sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT] =
         ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 
-    memcpy(sourceNtHeader, ntHeader,
+    std::memcpy(sourceNtHeader, ntHeader,
            sizeof(IMAGE_NT_HEADERS) + (ntHeader->FileHeader.NumberOfSections * (sizeof(IMAGE_SECTION_HEADER))));
 
     m_pBinary = nullptr;

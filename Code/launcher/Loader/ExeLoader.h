@@ -18,7 +18,7 @@ class ExeLoader
 
     explicit ExeLoader(uintptr_t aLoadLimit, funchandler_t aFuncPtr);
 
-    bool Load(std::filesystem::path& source);
+    bool Load(std::filesystem::path& aSourcePath);
     entrypoint_t GetEntryPoint() const;
 
   private:

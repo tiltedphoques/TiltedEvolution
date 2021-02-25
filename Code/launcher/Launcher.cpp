@@ -131,10 +131,10 @@ void Launcher::LoadClient()
 
     if (!m_pGameClientHandle)
     {
-        auto errMsg = fmt::format(L"Unable to load {}", clientPath.native());
+        auto errMsg = fmt::format(L"Unable to load the client!\n({})", clientPath.native());
 
         MessageBoxW(nullptr, errMsg.c_str(), L"TiltedOnline", MB_OK);
-        TerminateProcess(GetCurrentProcess(), 0);
+        //TerminateProcess(GetCurrentProcess(), 0);
     }
 }
 
