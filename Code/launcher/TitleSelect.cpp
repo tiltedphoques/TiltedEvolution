@@ -95,15 +95,15 @@ static std::wstring TryFindDefaultPath(TitleId aTitleId)
     return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, path.c_str(), subName);
 }
 
-bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aPathOut, fs::path& aExeOut)
+bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aTitlePath, fs::path& aExePath)
 {
     auto path = WString(kRegistryPath) + ToGameName(aTitle);
 
     // separate, so a custom executable can be chosen for TP
-    aPathOut = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, path.c_str(), L"GamePath");
-    aExeOut = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, path.c_str(), L"GameExe");
+    aTitlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, path.c_str(), L"TitlePath");
+    aExePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, path.c_str(), L"TitleExe");
 
-    if (!fs::exists(aPathOut / aExeOut) || aForceReselect)
+    if (!fs::exists(aTitlePath) || !fs::exists(aExePath) || aForceReselect)
     {
         OPENFILENAMEW file{};
 
@@ -132,11 +132,11 @@ bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aPathOut, fs::
         if (pos == std::string::npos)
             return false;
 
-        aExeOut = &buffer[pos + 1];
-        aPathOut = buffer.substr(0, pos);
+        aTitlePath = buffer.substr(0, pos);
+        aExePath = buffer;
 
-        return Registry::WriteString(HKEY_CURRENT_USER, path.c_str(), L"GamePath", aPathOut.native()) &&
-               Registry::WriteString(HKEY_CURRENT_USER, path.c_str(), L"GameExe", aExeOut.native());
+        return Registry::WriteString(HKEY_CURRENT_USER, path.c_str(), L"TitlePath", aTitlePath.native()) &&
+               Registry::WriteString(HKEY_CURRENT_USER, path.c_str(), L"TitleExe", buffer);
     }
 
     return true;

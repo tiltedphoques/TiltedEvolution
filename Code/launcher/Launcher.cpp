@@ -7,14 +7,11 @@
 
 #include "Launcher.h"
 #include "loader/ExeLoader.h"
-
 #include "SteamSupport.h"
-
-namespace fs = std::filesystem;
 
 constexpr uintptr_t kGameLimit = 0x140000000 + 0x70000000;
 
-extern bool BootstrapGame(Launcher*);
+extern bool BootstrapGame(Launcher* apLauncher);
 
 Launcher::Launcher(int argc, char** argv)
 {
@@ -60,9 +57,14 @@ Launcher::~Launcher()
         FreeLibrary(m_pGameClientHandle);
 }
 
-std::filesystem::path& Launcher::GetGamePath()
+const fs::path& Launcher::GetGamePath() const
 {
     return m_gamePath;
+}
+
+const fs::path& Launcher::GetExePath() const
+{
+    return m_exePath;
 }
 
 bool Launcher::Initialize()
@@ -92,11 +94,8 @@ void Launcher::StartGame(TitleId aTid)
 
     ExeLoader::entrypoint_t start = nullptr;
     {
-        fs::path exeName;
-        bool result = FindTitlePath(m_titleId, m_bReselectFlag, m_gamePath, exeName);
-
-        auto fullPath = m_gamePath / exeName;
-        if (!result || !fs::exists(fullPath))
+        bool result = FindTitlePath(m_titleId, m_bReselectFlag, m_gamePath, m_exePath);
+        if (!result)
         {
             return;
         }
@@ -109,16 +108,13 @@ void Launcher::StartGame(TitleId aTid)
         SteamLoad(m_titleId, m_gamePath);
 
         ExeLoader loader(kGameLimit, GetProcAddress);
-        if (!loader.Load(fullPath))
+        if (!loader.Load(m_exePath))
             return;
 
         start = loader.GetEntryPoint();
     }
 
-    // apply all game hooks
     Initializer::RunAll();
-
-    // this starts the game
     start();
 }
 
@@ -138,7 +134,7 @@ void Launcher::LoadClient()
     }
 }
 
-int32_t Launcher::Exec()
+int32_t Launcher::Exec() noexcept
 {
     // temporary anyway
     std::puts("Select game:\n""1) SkyrimSE\n2) Fallout4");

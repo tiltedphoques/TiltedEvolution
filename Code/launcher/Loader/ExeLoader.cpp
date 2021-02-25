@@ -168,7 +168,7 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
     }
 
     SteamStubHeaderV31 stub{};
-    std::memcpy(&stub, m_pBinary + (Rva2Offset(entry) - 0xF0), sizeof(SteamStubHeaderV31));
+    std::memcpy(&stub, GetOffset<uint8_t>(entry) - 0xF0, sizeof(SteamStubHeaderV31));
     SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31));
     assert(stub.Signature == 0xC0DEC0DF);
 
@@ -176,13 +176,13 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
     AES_init_ctx_iv(&ctx, stub.AES_Key, stub.AES_IV);
     AES_ECB_decrypt(&ctx, stub.AES_IV);
 
-    auto roundUp = [](int numToRound, int multiple) {
+    auto nextMultiple = [](int numToRound, int multiple) {
         assert(multiple);
         return ((numToRound + multiple - 1) / multiple) * multiple;
     };
 
     constexpr auto kCodeSize = sizeof(SteamStubHeaderV31::CodeSectionStolenData);
-    auto bufSiz = roundUp(section->SizeOfRawData + kCodeSize, 16);
+    auto bufSiz = nextMultiple(section->SizeOfRawData + kCodeSize, 16);
 
     // relocate
     uint8_t* textaddr = GetOffset<uint8_t>(section->VirtualAddress);

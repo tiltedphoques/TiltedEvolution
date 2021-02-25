@@ -25,9 +25,10 @@ class Launcher
     void LoadClient();
     void StartGame(TitleId aTid);
 
-    int32_t Exec();
+    int32_t Exec() noexcept;
 
-    std::filesystem::path& GetGamePath();
+    const fs::path& GetGamePath() const;
+    const fs::path& GetExePath() const;
 
   private:
     AppState m_appState{AppState::kStarting};
@@ -36,4 +37,5 @@ class Launcher
     bool m_bReselectFlag = false;
     HMODULE m_pGameClientHandle = nullptr;
     fs::path m_gamePath;
+    fs::path m_exePath;
 };

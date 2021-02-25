@@ -23,4 +23,4 @@ WString ToGameName(TitleId id) noexcept;
 TitleId ToTitleId(std::string_view aName) noexcept;
 uint32_t ToSteamAppId(TitleId) noexcept;
 
-bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path &aPathOut, fs::path &aExeOut);
+bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aTitlePath, fs::path& aExePath);

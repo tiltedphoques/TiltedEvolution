@@ -3,15 +3,15 @@
 #include <TiltedCore/Initializer.hpp>
 #include "Launcher.h"
 
-static Launcher* g_pAppInstance = nullptr;
+static Launcher* g_pLauncher = nullptr;
 
 void GetStartupInfoW_Hook(LPSTARTUPINFOW apInfo) noexcept
 {
-    static bool once = false;
-    if (!once)
+    static bool guard = false;
+    if (!guard)
     {
-        g_pAppInstance->LoadClient();
-        once = true;
+        g_pLauncher->LoadClient();
+        guard = true;
     }
 
     GetStartupInfoW(apInfo);
@@ -30,20 +30,20 @@ DWORD WINAPI GetModuleFileNameW_Hook(HMODULE hModule, LPWSTR lpFilename, DWORD n
 {
     if (!hModule)
     {
-        auto& path = g_pAppInstance->GetGamePath();
+        auto& path = g_pLauncher->GetExePath();
         wcscpy_s(lpFilename, nSize, path.c_str());
 
-        return (DWORD)path.native().length();
+        return static_cast<DWORD>(path.native().length());
     }
 
     return GetModuleFileNameW(hModule, lpFilename, nSize);
 }
 
-bool BootstrapGame(Launcher* apAppInstance)
+bool BootstrapGame(Launcher* apLauncher)
 {
-    g_pAppInstance = apAppInstance;
+    g_pLauncher = apLauncher;
     auto appPath = TiltedPhoques::GetPath();
-    auto gamePath = apAppInstance->GetGamePath();
+    auto& gamePath = apLauncher->GetGamePath();
 
     SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_USER_DIRS);
     AddDllDirectory(appPath.c_str());
@@ -55,7 +55,7 @@ bool BootstrapGame(Launcher* apAppInstance)
     GetEnvironmentVariableW(L"PATH", pathBuf.data(), static_cast<DWORD>(pathBuf.length()));
 
     // append bin & game directories
-    std::wstring newPath = appPath.wstring() + L";" + gamePath.wstring() + L";" + pathBuf;
+    std::wstring newPath = appPath.native() + L";" + gamePath.native() + L";" + pathBuf;
     SetEnvironmentVariableW(L"PATH", newPath.c_str());
     return true;
 }

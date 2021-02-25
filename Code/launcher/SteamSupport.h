@@ -2,4 +2,4 @@
 
 #include "TitleSelect.h"
 
-void SteamLoad(TitleId, const fs::path &gamePath);
+void SteamLoad(TitleId, const fs::path &aGamePath);
