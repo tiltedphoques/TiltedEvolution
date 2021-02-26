@@ -10,19 +10,11 @@
 class Launcher
 {
  public:
-    enum class AppState
-    {
-        kFailed,
-        kStarting,
-        kInGame,
-        kBackground
-    };
-
     explicit Launcher(int argc, char** argv);
     ~Launcher();
 
     bool Initialize();
-    void LoadClient();
+    void LoadClient() noexcept;
     void StartGame(TitleId aTid);
 
     int32_t Exec() noexcept;
@@ -31,7 +23,14 @@ class Launcher
     const fs::path& GetExePath() const;
 
   private:
-    AppState m_appState{AppState::kStarting};
+    enum class AppState
+    {
+        kFailed,
+        kStarting,
+        kInGame,
+        kBackground
+    } 
+    m_appState{AppState::kStarting};
     TitleId m_titleId{TitleId::kUnknown};
 
     bool m_bReselectFlag = false;

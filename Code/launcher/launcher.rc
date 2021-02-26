@@ -1,4 +1,5 @@
 #include "winuser.h"
+#include "common/BUildInfo.h"
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L
@@ -17,8 +18,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "TiltedPhoques"
             VALUE "ProductName", "TiltedOnline"
-            VALUE "FileDescription", "Skyrim and Fallout 4 mod to play online!"
+            VALUE "FileDescription", "Multiplayer mod for Bethesda games."
             VALUE "OriginalFilename", "Launcher.exe"
+            VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
+            VALUE "LastChange", BUILD_TIMESTAMP
         END
     END
     BLOCK "VarFileInfo"

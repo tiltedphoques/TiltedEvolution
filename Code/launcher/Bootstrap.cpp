@@ -4,17 +4,30 @@
 #include "Launcher.h"
 
 static Launcher* g_pLauncher = nullptr;
+static bool g_InitGuard = false;
 
 void GetStartupInfoW_Hook(LPSTARTUPINFOW apInfo) noexcept
 {
-    static bool guard = false;
-    if (!guard)
+    if (!g_InitGuard)
     {
         g_pLauncher->LoadClient();
-        guard = true;
+        g_InitGuard = true;
     }
 
     GetStartupInfoW(apInfo);
+}
+
+static decltype(&::_initterm) initterm_Orig = nullptr;
+
+void initterm_Hook(_PVFV* apStart, _PVFV* apEnd)
+{
+    if (!g_InitGuard)
+    {
+        g_pLauncher->LoadClient();
+        g_InitGuard = true;
+    }
+
+    initterm_Orig(apStart, apEnd);
 }
 
 void WINAPI RaiseException_Hook(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments,
@@ -64,4 +77,9 @@ static TiltedPhoques::Initializer s_Init([] {
     TP_HOOK_IAT2("Kernel32.dll", "GetStartupInfoW", GetStartupInfoW_Hook);
     TP_HOOK_IAT2("Kernel32.dll", "GetModuleFileNameW", GetModuleFileNameW_Hook);
     TP_HOOK_IAT2("Kernel32.dll", "RaiseException", RaiseException_Hook);
+
+    // Fallout4 uses a silly OLD CRT
+    initterm_Orig =
+        reinterpret_cast<decltype(&::_initterm)>(GetProcAddress(GetModuleHandleW(L"MSVCR110.dll"), "_initterm"));
+    TP_HOOK_IAT2("MSVCR110.dll", "_initterm", initterm_Hook);
 });

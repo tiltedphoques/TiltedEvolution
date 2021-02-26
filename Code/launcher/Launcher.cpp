@@ -6,10 +6,11 @@
 #include <TiltedCore/Initializer.hpp>
 
 #include "Launcher.h"
-#include "loader/ExeLoader.h"
 #include "SteamSupport.h"
+#include "loader/ExeLoader.h"
+#include "common/BuildInfo.h"
 
-constexpr uintptr_t kGameLimit = 0x140000000 + 0x70000000;
+constexpr uintptr_t kGameLoadLimit = 0x140000000 + 0x70000000;
 
 extern bool BootstrapGame(Launcher* apLauncher);
 
@@ -19,15 +20,29 @@ Launcher::Launcher(int argc, char** argv)
     // only creates a new console if we aren't started from one
     Debug::CreateConsole();
 
-    cxxopts::Options options(argv[0], "Welcome to the TiltedOnline command line (^_^)/");
+    cxxopts::Options options(argv[0], R"(Welcome to the TiltedOnline command line \(^_^)/)");
 
     std::string gameName = "";
     options.add_options()
-        ("g,game", "game name", cxxopts::value<std::string>(gameName))
+        ("h,help", "Display the help message")
+        ("v,version", "Display the build version")
+        ("g,game", "game name (SkyrimSE or Fallout4)", cxxopts::value<std::string>(gameName))
         ("r,reselect", "Reselect the game path");
     try
     {
         const auto result = options.parse(argc, argv);
+
+        if (result.count("help"))
+        {
+            fmt::print(options.help({""}));
+            m_appState = AppState::kFailed;
+            return;
+        }
+
+        if (result.count("version"))
+            fmt::print("TiltedOnline version: " BUILD_BRANCH "@" BUILD_COMMIT 
+                " built on " BUILD_TIMESTAMP "\n");
+
         if (!gameName.empty())
         {
             if ((m_titleId = ToTitleId(gameName)) == TitleId::kUnknown)
@@ -75,13 +90,13 @@ bool Launcher::Initialize()
         return false;
     }
 
-    // jump directly in game
+    // no further initialization needed
     if (m_appState == AppState::kInGame)
     {
-        StartGame(m_titleId);
         return true;
     }
 
+    // TBD: shared window + context init here
     return true;
 }
 
@@ -94,20 +109,15 @@ void Launcher::StartGame(TitleId aTid)
 
     ExeLoader::entrypoint_t start = nullptr;
     {
-        bool result = FindTitlePath(m_titleId, m_bReselectFlag, m_gamePath, m_exePath);
-        if (!result)
-        {
+        if (!FindTitlePath(m_titleId, m_bReselectFlag, m_gamePath, m_exePath))
             return;
-        }
 
         if (!BootstrapGame(this))
-        {
             return;
-        }
 
         SteamLoad(m_titleId, m_gamePath);
 
-        ExeLoader loader(kGameLimit, GetProcAddress);
+        ExeLoader loader(kGameLoadLimit, GetProcAddress);
         if (!loader.Load(m_exePath))
             return;
 
@@ -118,7 +128,7 @@ void Launcher::StartGame(TitleId aTid)
     start();
 }
 
-void Launcher::LoadClient()
+void Launcher::LoadClient() noexcept
 {
     WString clientName = ToClientName(m_titleId);
 
@@ -127,17 +137,24 @@ void Launcher::LoadClient()
 
     if (!m_pGameClientHandle)
     {
-        auto errMsg = fmt::format(L"Unable to load the client!\n({})", clientPath.native());
+        auto errMsg = fmt::format(L"Unable to load the client!\nError Code: {}\nPath: {}", 
+            GetLastError(), clientPath.native());
 
         MessageBoxW(nullptr, errMsg.c_str(), L"TiltedOnline", MB_OK);
-        //TerminateProcess(GetCurrentProcess(), 0);
+        TerminateProcess(GetCurrentProcess(), 0);
     }
 }
 
 int32_t Launcher::Exec() noexcept
 {
-    // temporary anyway
-    std::puts("Select game:\n""1) SkyrimSE\n2) Fallout4");
+    if (m_appState == AppState::kInGame)
+    {
+        StartGame(m_titleId);
+        return 0;
+    }
+
+    // temporary selection code, until we have the new ui:
+    fmt::print("Select game:\n""1) SkyrimSE\n2) Fallout4\n");
 
     TitleId tid{TitleId::kUnknown};
 

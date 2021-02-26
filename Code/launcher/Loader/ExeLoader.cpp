@@ -6,9 +6,11 @@
  */
 
 #include <algorithm>
+#include <cryptopp/aes.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/filters.h>
 
 #include "ExeLoader.h"
-#include "utils/aes.h"
 #include "utils/SteamCrypto.h"
 #include <TiltedCore/Filesystem.hpp>
 
@@ -153,6 +155,8 @@ uint32_t ExeLoader::Rva2Offset(uint32_t aRva) noexcept
 
 void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
 {
+    using namespace CryptoPP;
+
     auto entry = apSourceNt->OptionalHeader.AddressOfEntryPoint;
     // analyze executable sections if the entry point is already protected
     if (*GetOffset<uint32_t>(entry) != 0x000000e8)
@@ -172,25 +176,19 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
     SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31));
     assert(stub.Signature == 0xC0DEC0DF);
 
-    AES_ctx ctx{};
-    AES_init_ctx_iv(&ctx, stub.AES_Key, stub.AES_IV);
-    AES_ECB_decrypt(&ctx, stub.AES_IV);
-
-    auto nextMultiple = [](int numToRound, int multiple) {
-        assert(multiple);
-        return ((numToRound + multiple - 1) / multiple) * multiple;
-    };
+    // decrypt IV in place
+    ECB_Mode<AES>::Decryption ecbDec(stub.AES_Key, sizeof(stub.AES_Key));
+    ecbDec.ProcessData(stub.AES_IV, stub.AES_IV, sizeof(stub.AES_IV));
 
     constexpr auto kCodeSize = sizeof(SteamStubHeaderV31::CodeSectionStolenData);
-    auto bufSiz = nextMultiple(section->SizeOfRawData + kCodeSize, 16);
+    auto bufSiz = section->SizeOfRawData + kCodeSize;
 
-    // relocate
-    uint8_t* textaddr = GetOffset<uint8_t>(section->VirtualAddress);
-    std::memmove(textaddr + kCodeSize, textaddr, section->SizeOfRawData);
-    std::memcpy(textaddr, stub.CodeSectionStolenData, kCodeSize);
+    uint8_t* pText = GetOffset<uint8_t>(section->VirtualAddress);
+    std::memmove(pText + kCodeSize, pText, section->SizeOfRawData - kCodeSize);
+    std::memcpy(pText, stub.CodeSectionStolenData, kCodeSize);
 
-    // big bottleneck!!!
-    AES_CBC_decrypt_buffer(&ctx, textaddr, bufSiz);
+    CBC_Mode<AES>::Decryption cbcDec(stub.AES_Key, sizeof(stub.AES_Key), stub.AES_IV);
+    cbcDec.ProcessData(pText, pText, section->SizeOfRawData);
 
     apSourceNt->FileHeader.NumberOfSections--;
     apSourceNt->OptionalHeader.AddressOfEntryPoint = static_cast<uint32_t>(stub.OriginalEntryPoint);

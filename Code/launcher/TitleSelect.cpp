@@ -72,7 +72,7 @@ TitleId ToTitleId(std::string_view aName) noexcept
     return TitleId::kUnknown;
 }
 
-static std::wstring TryFindDefaultPath(TitleId aTitleId)
+static std::wstring SuggestTitlePath(TitleId aTitleId)
 {
     auto path = WString(LR"(Software\Wow6432Node\Bethesda Softworks\)") + ToGameName(aTitleId);
 
@@ -82,7 +82,8 @@ static std::wstring TryFindDefaultPath(TitleId aTitleId)
     case TitleId::kSkyrimSE:
     case TitleId::kSyrimVR:
         subName = L"installed path";
-    case TitleId::kFallout4:
+        break;
+    case TitleId::kFallout4: 
     case TitleId::kFallout4VR:
         subName = L"Installed Path";
         break;
@@ -95,13 +96,13 @@ static std::wstring TryFindDefaultPath(TitleId aTitleId)
     return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, path.c_str(), subName);
 }
 
-bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aTitlePath, fs::path& aExePath)
+bool FindTitlePath(TitleId aTid, bool aForceReselect, fs::path& aTitlePath, fs::path& aExePath)
 {
-    auto path = WString(kRegistryPath) + ToGameName(aTitle);
+    const WString regPath = WString(kRegistryPath) + ToGameName(aTid);
 
     // separate, so a custom executable can be chosen for TP
-    aTitlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, path.c_str(), L"TitlePath");
-    aExePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, path.c_str(), L"TitleExe");
+    aTitlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, regPath.c_str(), L"TitlePath");
+    aExePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, regPath.c_str(), L"TitleExe");
 
     if (!fs::exists(aTitlePath) || !fs::exists(aExePath) || aForceReselect)
     {
@@ -118,11 +119,14 @@ bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aTitlePath, fs
         file.lpstrTitle = L"Please select your Game executable (*.exe)";
         file.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ENABLESIZING | OFN_EXPLORER;
 
-        auto initialDir = TryFindDefaultPath(aTitle);
+        auto initialDir = SuggestTitlePath(aTid);
         file.lpstrInitialDir = initialDir.empty() ? buffer.data() : initialDir.data();
 
         if (!GetOpenFileNameW(&file))
         {
+            auto errMsg = fmt::format(L"TitleSelect: Failed to select path. Cannot launch {}\nError Code: {}", 
+                ToGameName(aTid), GetLastError());
+
             MessageBoxW(nullptr, L"Failed to retrieve game path. Cannot launch the game!", L"TiltedPhoques",
                         MB_ICONSTOP);
             return false;
@@ -135,8 +139,8 @@ bool FindTitlePath(TitleId aTitle, bool aForceReselect, fs::path& aTitlePath, fs
         aTitlePath = buffer.substr(0, pos);
         aExePath = buffer;
 
-        return Registry::WriteString(HKEY_CURRENT_USER, path.c_str(), L"TitlePath", aTitlePath.native()) &&
-               Registry::WriteString(HKEY_CURRENT_USER, path.c_str(), L"TitleExe", buffer);
+        return Registry::WriteString(HKEY_CURRENT_USER, regPath.c_str(), L"TitlePath", aTitlePath.native()) &&
+               Registry::WriteString(HKEY_CURRENT_USER, regPath.c_str(), L"TitleExe", buffer);
     }
 
     return true;

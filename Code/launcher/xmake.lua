@@ -3,13 +3,10 @@ target("Launcher")
     set_kind("binary")
     set_group("Client")
     set_basename("TiltedOnline")
-    -- disable edit and continue
-    add_cxxflags("/Zi")
-    set_strip("all")
+    set_symbols("debug", "hidden")
     add_ldflags(
         "/IGNORE:4254",
         "/DYNAMICBASE:NO",
-       -- "/STACK:\"2097152\"",
         "/SAFESEH:NO",
         "/LARGEADDRESSAWARE",
         "/INCREMENTAL:NO",
@@ -23,7 +20,6 @@ target("Launcher")
     add_headerfiles("**.h")
     add_files(
         "**.cpp",
-        "**.c",
         "launcher.rc")
     add_deps(
         "TiltedReverse",
@@ -43,5 +39,6 @@ target("Launcher")
         "spdlog",
         "minhook",
         "hopscotch-map",
+        "cryptopp",
         "glm",
         "cef")

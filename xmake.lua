@@ -8,8 +8,8 @@ set_languages("c99", "cxx17")
 
 -- 64 bit only, as SkyrimLE support is history
 set_arch("x64")
-add_vectorexts("ssse3")
 set_warnings("all")
+add_vectorexts("sse", "sse2", "sse3", "ssse3")
 
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
