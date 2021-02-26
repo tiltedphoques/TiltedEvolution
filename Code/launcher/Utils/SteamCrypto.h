@@ -1,5 +1,21 @@
+/**
+ * Steamless Steam DRM Remover - SteamStub_Variant3.h
+ * (c) 2015 atom0s [atom0s@live.com]
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/
+ */
 #pragma once
-
 #include <cstdint>
 
 struct SteamStubHeaderV31
@@ -34,19 +50,10 @@ struct SteamStubHeaderV31
     uintptr_t GetProcAddress_Rva;   // The rva to GetProcAddress.
 };
 
-uint32_t SteamXor(uint8_t* data, uint32_t size, uint32_t key = 0)
+uint32_t SteamXor(uint8_t* data, uint32_t size, uint32_t key)
 {
-    auto offset = 0;
-
-    // Read the first key if none was given..
-    if (key == 0)
-    {
-        offset += 4;
-        key = *(uint32_t*)data;
-    }
-
     // Decode the data..
-    for (size_t x = offset; x < size; x += 4)
+    for (size_t x = 4; x < size; x += 4)
     {
         auto val = *(uint32_t*)(data + x);
         *(uint32_t*)(data + x) = val ^ key;

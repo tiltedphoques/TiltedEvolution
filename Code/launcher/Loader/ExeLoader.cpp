@@ -173,7 +173,7 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
 
     SteamStubHeaderV31 stub{};
     std::memcpy(&stub, GetOffset<uint8_t>(entry) - 0xF0, sizeof(SteamStubHeaderV31));
-    SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31));
+    SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31), stub.XorKey);
     assert(stub.Signature == 0xC0DEC0DF);
 
     // decrypt IV in place
