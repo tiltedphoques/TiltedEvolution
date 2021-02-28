@@ -3,16 +3,15 @@
 #include <TiltedCore/Initializer.hpp>
 #include "Launcher.h"
 
-static Launcher* g_pLauncher = nullptr;
-static bool g_InitGuard = false;
+static Launcher* s_pLauncher = nullptr;
+static std::once_flag s_initGuard;
 
 void GetStartupInfoW_Hook(LPSTARTUPINFOW apInfo) noexcept
 {
-    if (!g_InitGuard)
-    {
-        g_pLauncher->LoadClient();
-        g_InitGuard = true;
-    }
+    std::call_once(s_initGuard, []() 
+    { 
+        s_pLauncher->LoadClient();
+    });
 
     GetStartupInfoW(apInfo);
 }
@@ -21,11 +20,10 @@ static decltype(&::_initterm) initterm_Orig = nullptr;
 
 void initterm_Hook(_PVFV* apStart, _PVFV* apEnd)
 {
-    if (!g_InitGuard)
-    {
-        g_pLauncher->LoadClient();
-        g_InitGuard = true;
-    }
+    std::call_once(s_initGuard, []() 
+    { 
+        s_pLauncher->LoadClient();
+    });
 
     initterm_Orig(apStart, apEnd);
 }
@@ -43,7 +41,7 @@ DWORD WINAPI GetModuleFileNameW_Hook(HMODULE hModule, LPWSTR lpFilename, DWORD n
 {
     if (!hModule)
     {
-        auto& path = g_pLauncher->GetExePath();
+        auto& path = s_pLauncher->GetExePath();
         wcscpy_s(lpFilename, nSize, path.c_str());
 
         return static_cast<DWORD>(path.native().length());
@@ -54,7 +52,7 @@ DWORD WINAPI GetModuleFileNameW_Hook(HMODULE hModule, LPWSTR lpFilename, DWORD n
 
 bool BootstrapGame(Launcher* apLauncher)
 {
-    g_pLauncher = apLauncher;
+    s_pLauncher = apLauncher;
     auto appPath = TiltedPhoques::GetPath();
     auto& gamePath = apLauncher->GetGamePath();
 

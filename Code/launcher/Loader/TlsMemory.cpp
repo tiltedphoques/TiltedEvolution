@@ -1,4 +1,15 @@
 
+/*
+ * This file is part of the CitizenFX project - http://citizen.re/
+ *
+ * See LICENSE and MENTIONS in the root of the source tree for information
+ * regarding licensing.
+ */
+
+// Changes:
+// - 2021/2/23: use TLS touched class to automatically initialize TLS.
+// - 2021/2/24: Lowered necessary TLS pool size for Fallout4 and SkyrimSE.
+
 // Tls pool for the game
 #pragma region tls
 __declspec(thread) int tls1;

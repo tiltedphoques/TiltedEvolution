@@ -5,6 +5,10 @@
  * regarding licensing.
  */
 
+// Changes:
+// - 2021/2/24: Moved TLS routine.
+// - 2021/2/25: Implemented CEG decryption method.
+
 #include <algorithm>
 #include <cryptopp/aes.h>
 #include <cryptopp/modes.h>
@@ -14,7 +18,7 @@
 #include "utils/SteamCrypto.h"
 #include <TiltedCore/Filesystem.hpp>
 
-ExeLoader::ExeLoader(uintptr_t aLoadLimit, funchandler_t aFuncHandler) : 
+ExeLoader::ExeLoader(uintptr_t aLoadLimit, TFuncHandler aFuncHandler) : 
     m_loadLimit(aLoadLimit), m_pFuncHandler(aFuncHandler)
 {}
 
@@ -194,7 +198,7 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
     apSourceNt->OptionalHeader.AddressOfEntryPoint = static_cast<uint32_t>(stub.OriginalEntryPoint);
 }
 
-bool ExeLoader::Load(std::filesystem::path& aSourcePath)
+bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
 {
     auto content = TiltedPhoques::LoadFile(aSourcePath);
     if (content.empty())
@@ -236,7 +240,7 @@ bool ExeLoader::Load(std::filesystem::path& aSourcePath)
     return true;
 }
 
-ExeLoader::entrypoint_t ExeLoader::GetEntryPoint() const
+ExeLoader::TEntryPoint ExeLoader::GetEntryPoint() const
 {
-    return static_cast<void (*)()>(m_pEntryPoint);
+    return static_cast<TEntryPoint>(m_pEntryPoint);
 }

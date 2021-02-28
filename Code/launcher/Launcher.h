@@ -29,8 +29,7 @@ class Launcher
         kStarting,
         kInGame,
         kBackground
-    } 
-    m_appState{AppState::kStarting};
+    } m_appState{AppState::kStarting};
     TitleId m_titleId{TitleId::kUnknown};
 
     bool m_bReselectFlag = false;

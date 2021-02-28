@@ -1,9 +1,10 @@
 Tilted Online is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation at https://www.gnu.de/documents/gpl-3.0.en.html, 
+either version 3 of the License, or (at your option) any later version.
 
-The following components are licensed under the LGPLv2, as they use code derived by 
-the CitizenFX authors:
+The following component(s) are licensed under the LGPLv2 (https://www.gnu.de/documents/lgpl-2.1.en.html) as
+in point 21) of the FiveM Platform Service Agreement (https://fivem.net/terms), as of the time of this writing as they use 
+code derived by the CitizenFX authors:
 
 - code/launcher

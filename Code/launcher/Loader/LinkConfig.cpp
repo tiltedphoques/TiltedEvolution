@@ -6,6 +6,9 @@
  * regarding licensing.
  */
 
+// Changes:
+// - 2021/2/24: Increased game segment size for Fallout4.
+
 #pragma comment(linker, "/merge:.data=.cld")
 #pragma comment(linker, "/merge:.rdata=.clr")
 #pragma comment(linker, "/merge:.cl=.zdata")

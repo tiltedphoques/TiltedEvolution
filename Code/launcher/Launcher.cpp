@@ -47,7 +47,7 @@ Launcher::Launcher(int argc, char** argv)
         {
             if ((m_titleId = ToTitleId(gameName)) == TitleId::kUnknown)
             {
-                fmt::print("Unable to determine game type");
+                fmt::print("Unable to determine game type\n");
                 m_appState = AppState::kFailed;
                 return;
             }
@@ -107,7 +107,7 @@ void Launcher::StartGame(TitleId aTid)
     if (m_titleId == TitleId::kUnknown)
         m_titleId = aTid;
 
-    ExeLoader::entrypoint_t start = nullptr;
+    ExeLoader::TEntryPoint start = nullptr;
     {
         if (!FindTitlePath(m_titleId, m_bReselectFlag, m_gamePath, m_exePath))
             return;
@@ -158,17 +158,26 @@ int32_t Launcher::Exec() noexcept
 
     TitleId tid{TitleId::kUnknown};
 
-    int result = getchar();
-    switch (result)
+    int c;
+    while (c = std::getchar())
     {
-    case '1':
-        tid = TitleId::kSkyrimSE;
-        break;
-    case '2':
-        tid = TitleId::kFallout4;
-        break;
-    default:
-        return 0;
+        switch (c)
+        {
+        case '1':
+            tid = TitleId::kSkyrimSE;
+            break;
+        case '2':
+            tid = TitleId::kFallout4;
+            break;
+        case '\n':
+            break;
+        default:
+            fmt::print("Invalid selection. Try again!\n");
+            break;
+        }
+
+        if (tid != TitleId::kUnknown)
+            break;
     }
 
     StartGame(tid);

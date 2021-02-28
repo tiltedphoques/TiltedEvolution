@@ -7,19 +7,22 @@
  * regarding licensing.
  */
 
+// Changes:
+// - 2021/2/25: Added CEG decryption method.
+
 #include <Windows.h>
 #include <TiltedCore/Filesystem.hpp>
 
 class ExeLoader
 {
   public:
-    using entrypoint_t = void(*)();
-    using funchandler_t = FARPROC(*)(HMODULE, const char*);
+    using TEntryPoint = void(*)();
+    using TFuncHandler = FARPROC(*)(HMODULE, const char*);
 
-    explicit ExeLoader(uintptr_t aLoadLimit, funchandler_t aFuncPtr);
+    explicit ExeLoader(uintptr_t aLoadLimit, TFuncHandler aFuncPtr);
 
-    bool Load(std::filesystem::path& aSourcePath);
-    entrypoint_t GetEntryPoint() const;
+    bool Load(const std::filesystem::path& aSourcePath);
+    TEntryPoint GetEntryPoint() const;
 
   private:
     void LoadSections(const IMAGE_NT_HEADERS* apNtHeader);
@@ -46,7 +49,7 @@ class ExeLoader
     uint32_t Rva2Offset(uint32_t aRva) noexcept;
 
     const uint8_t* m_pBinary = nullptr;
-    const funchandler_t m_pFuncHandler = nullptr;
+    const TFuncHandler m_pFuncHandler = nullptr;
 
     uintptr_t m_loadLimit;
     HMODULE m_moduleHandle = nullptr;

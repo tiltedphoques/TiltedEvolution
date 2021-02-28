@@ -33,18 +33,18 @@ namespace Registry
     {
         HKEY hKey = nullptr;
 
-        RegOpenKeyExW(aLocation, aSubKey, 0, KEY_WRITE, &hKey);
+        ::RegOpenKeyExW(aLocation, aSubKey, 0, KEY_WRITE, &hKey);
 
         if (!hKey)
-            RegCreateKeyW(aLocation, aSubKey, &hKey);
+            ::RegCreateKeyW(aLocation, aSubKey, &hKey);
 
         if (hKey)
         {
-            LSTATUS ls = RegSetValueExW(hKey, aKey, 0, REG_SZ, 
+            LSTATUS ls = ::RegSetValueExW(hKey, aKey, 0, REG_SZ, 
                 reinterpret_cast<const BYTE*>(aData.data()), 
                 static_cast<DWORD>(aData.size() * sizeof(T)) + sizeof(T));
 
-            RegCloseKey(hKey);
+            ::RegCloseKey(hKey);
             return ls == ERROR_SUCCESS;
         }
 
