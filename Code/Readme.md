@@ -3,6 +3,7 @@
 **Main project source tree.**
 
 * [**client/**](./client): Sources for the SkyrimSE and FO4 clients.
+* [**launcher/**](./launcher): Game starter/updater.
 * [**common/**](./common): Common code shared between plugin and server.
 * [**encoding/**](./encoding): Net-message definitions.
 * [**server/**](./server): GameServer implementation.
