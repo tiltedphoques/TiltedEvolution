@@ -7,12 +7,20 @@
 
 #include "Launcher.h"
 #include "SteamSupport.h"
+
 #include "loader/ExeLoader.h"
 #include "common/BuildInfo.h"
+#include "Utils/Error.h"
 
+Launcher* g_pLauncher = nullptr;
 constexpr uintptr_t kGameLoadLimit = 0x140000000 + 0x70000000;
 
-extern bool BootstrapGame(Launcher* apLauncher);
+extern void BootstrapGame(Launcher* apLauncher);
+
+Launcher* GetLauncher() 
+{
+    return g_pLauncher;
+}
 
 Launcher::Launcher(int argc, char** argv)
 {
@@ -63,6 +71,8 @@ Launcher::Launcher(int argc, char** argv)
         m_appState = AppState::kFailed;
         fmt::print("Exception while parsing options: {}\n", ex.what());
     }
+
+    g_pLauncher = this;
 }
 
 Launcher::~Launcher()
@@ -70,6 +80,8 @@ Launcher::~Launcher()
     // explicit
     if (m_pGameClientHandle)
         FreeLibrary(m_pGameClientHandle);
+
+    g_pLauncher = nullptr;
 }
 
 const fs::path& Launcher::GetGamePath() const
@@ -112,9 +124,7 @@ void Launcher::StartGame(TitleId aTid)
         if (!FindTitlePath(m_titleId, m_bReselectFlag, m_gamePath, m_exePath))
             return;
 
-        if (!BootstrapGame(this))
-            return;
-
+        BootstrapGame(this);
         SteamLoad(m_titleId, m_gamePath);
 
         ExeLoader loader(kGameLoadLimit, GetProcAddress);
@@ -137,10 +147,9 @@ void Launcher::LoadClient() noexcept
 
     if (!m_pGameClientHandle)
     {
-        auto errMsg = fmt::format(L"Unable to load the client!\nError Code: {}\nPath: {}", 
-            GetLastError(), clientPath.native());
+        auto fmt = fmt::format(L"Failed to load client\nPath: {}", clientPath.native());
 
-        MessageBoxW(nullptr, errMsg.c_str(), L"TiltedOnline", MB_OK);
+        FatalError(fmt.c_str());
         TerminateProcess(GetCurrentProcess(), 0);
     }
 }

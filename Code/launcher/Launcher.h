@@ -23,6 +23,8 @@ class Launcher
     const fs::path& GetExePath() const;
 
   private:
+    static Launcher* s_mLauncher;
+
     enum class AppState
     {
         kFailed,
@@ -37,3 +39,5 @@ class Launcher
     fs::path m_gamePath;
     fs::path m_exePath;
 };
+
+Launcher* GetLauncher();

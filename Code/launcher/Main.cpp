@@ -1,6 +1,14 @@
 
 #include <Windows.h>
 #include "Launcher.h"
+#include "Utils/Error.h"
+#include "Utils/RipZone.h"
+
+extern "C"
+{
+    __declspec(dllexport) int NvOptimusEnablement = 1;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
 
 struct ComInitializer
 {
@@ -17,13 +25,20 @@ struct ComInitializer
 
 int main(int argc, char** argv)
 {
+    if (!LowRipZoneInit())
+    {
+        FatalError(L"Failed to initialize rip zone.\nCannot continue!");
+        return -1;
+    }
+
     ComInitializer comInit;
     TP_UNUSED(comInit);
 
     auto launcher = TiltedPhoques::MakeUnique<Launcher>(argc, argv);
+
     if (!launcher->Initialize())
     {
-        return -1;
+        return -2;
     }
 
     return launcher->Exec();

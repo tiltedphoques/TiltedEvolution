@@ -17,7 +17,10 @@
 
 #pragma bss_seg(".game")
 char game_seg[0x7000000];
-char stub_seg[0x100000];
+
+// high rip zone, used for RIP relative addressing
+// guaranteed to always be there.
+char highrip[0x100000];
 
 #pragma data_seg(".code")
 char zdata[200] = { 1 };
