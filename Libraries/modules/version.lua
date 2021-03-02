@@ -20,7 +20,7 @@ function main (target)
 			local git = find_git()
 			if (git) then
 				branch = os.iorunv(git, {"rev-parse", "--abbrev-ref", "HEAD"}):trim()
-				commit = os.iorunv(git, {"describe", "--tags"}):trim()
+				commit = os.iorunv(git, {"rev-parse", "--short", "HEAD"}):trim()
 				timestamp = os.iorunv(git, {"log", "-1", "--date=short", "--pretty=format:%ci"}):trim()
 			else
 				error("git not found")

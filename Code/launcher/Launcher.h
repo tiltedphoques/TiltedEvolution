@@ -23,8 +23,6 @@ class Launcher
     const fs::path& GetExePath() const;
 
   private:
-    static Launcher* s_mLauncher;
-
     enum class AppState
     {
         kFailed,
