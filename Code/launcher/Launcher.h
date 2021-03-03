@@ -37,3 +37,5 @@ class Launcher
     fs::path m_gamePath;
     fs::path m_exePath;
 };
+
+Launcher* GetLauncher();

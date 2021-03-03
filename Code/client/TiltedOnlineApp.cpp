@@ -24,10 +24,12 @@ TiltedOnlineApp::TiltedOnlineApp()
 {
     Debug::CreateConsole();
 
-    std::error_code ec;
-    std::filesystem::create_directory("logs", ec);
+    auto logPath = TiltedPhoques::GetPath() / "logs";
 
-    auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("logs/tp_client.log", 1048576 * 5, 3);
+    std::error_code ec;
+    std::filesystem::create_directory(logPath, ec);
+
+    auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
 

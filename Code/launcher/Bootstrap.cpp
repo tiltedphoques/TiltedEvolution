@@ -6,7 +6,7 @@
 static Launcher* s_pLauncher = nullptr;
 static std::once_flag s_initGuard;
 
-void GetStartupInfoW_Hook(LPSTARTUPINFOW apInfo) noexcept
+void TP_GetStartupInfoW(LPSTARTUPINFOW apInfo) noexcept
 {
     std::call_once(s_initGuard, []() 
     { 
@@ -16,19 +16,20 @@ void GetStartupInfoW_Hook(LPSTARTUPINFOW apInfo) noexcept
     GetStartupInfoW(apInfo);
 }
 
-static decltype(&::_initterm) initterm_Orig = nullptr;
+static uint16_t(WINAPI* Real_crtGetShowWindowMode)() = nullptr;
 
-void initterm_Hook(_PVFV* apStart, _PVFV* apEnd)
+uint16_t TP_crtGetShowWindowMode()
 {
     std::call_once(s_initGuard, []() 
     { 
-        s_pLauncher->LoadClient();
+         s_pLauncher->LoadClient(); 
     });
 
-    initterm_Orig(apStart, apEnd);
+    return Real_crtGetShowWindowMode();
 }
 
-void WINAPI RaiseException_Hook(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments,
+
+void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments,
                                 const ULONG_PTR* lpArguments)
 {
     if (dwExceptionCode == 0x406D1388 && !IsDebuggerPresent())
@@ -37,20 +38,9 @@ void WINAPI RaiseException_Hook(DWORD dwExceptionCode, DWORD dwExceptionFlags, D
     RaiseException(dwExceptionCode, dwExceptionFlags, nNumberOfArguments, lpArguments);
 }
 
-DWORD WINAPI GetModuleFileNameW_Hook(HMODULE hModule, LPWSTR lpFilename, DWORD nSize)
-{
-    if (!hModule)
-    {
-        auto& path = s_pLauncher->GetExePath();
-        wcscpy_s(lpFilename, nSize, path.c_str());
+// TODO: check for updates... etc
 
-        return static_cast<DWORD>(path.native().length());
-    }
-
-    return GetModuleFileNameW(hModule, lpFilename, nSize);
-}
-
-bool BootstrapGame(Launcher* apLauncher)
+void BootstrapGame(Launcher* apLauncher)
 {
     s_pLauncher = apLauncher;
     auto appPath = TiltedPhoques::GetPath();
@@ -68,16 +58,14 @@ bool BootstrapGame(Launcher* apLauncher)
     // append bin & game directories
     std::wstring newPath = appPath.native() + L";" + gamePath.native() + L";" + pathBuf;
     SetEnvironmentVariableW(L"PATH", newPath.c_str());
-    return true;
 }
 
 static TiltedPhoques::Initializer s_Init([] {
-    TP_HOOK_IAT2("Kernel32.dll", "GetStartupInfoW", GetStartupInfoW_Hook);
-    TP_HOOK_IAT2("Kernel32.dll", "GetModuleFileNameW", GetModuleFileNameW_Hook);
-    TP_HOOK_IAT2("Kernel32.dll", "RaiseException", RaiseException_Hook);
+    TP_HOOK_IAT2("Kernel32.dll", "GetStartupInfoW", TP_GetStartupInfoW);
+    TP_HOOK_IAT2("Kernel32.dll", "RaiseException", TP_RaiseException);
 
     // Fallout4 uses a silly OLD CRT
-    initterm_Orig =
-        reinterpret_cast<decltype(&::_initterm)>(GetProcAddress(GetModuleHandleW(L"MSVCR110.dll"), "_initterm"));
-    TP_HOOK_IAT2("MSVCR110.dll", "_initterm", initterm_Hook);
+    Real_crtGetShowWindowMode = reinterpret_cast<decltype(Real_crtGetShowWindowMode)>(
+        GetProcAddress(GetModuleHandleW(L"MSVCR110.dll"), "__crtGetShowWindowMode"));
+    TP_HOOK_IAT2("MSVCR110.dll", "__crtGetShowWindowMode", TP_crtGetShowWindowMode);
 });

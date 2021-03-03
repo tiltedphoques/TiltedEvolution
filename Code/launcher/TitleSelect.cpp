@@ -1,9 +1,10 @@
 
 #include <Windows.h>
 #include <spdlog/spdlog.h>
-
 #include "TitleSelect.h"
+
 #include "utils/Registry.h"
+#include "utils/Error.h"
 
 constexpr wchar_t kRegistryPath[] = LR"(Software\TiltedPhoques\TiltedOnline\)";
 
@@ -124,11 +125,8 @@ bool FindTitlePath(TitleId aTid, bool aForceReselect, fs::path& aTitlePath, fs::
 
         if (!GetOpenFileNameW(&file))
         {
-            auto errMsg = fmt::format(L"TitleSelect: Failed to select path. Cannot launch {}\nError Code: {}", 
-                ToGameName(aTid), GetLastError());
-
-            MessageBoxW(nullptr, L"Failed to retrieve game path. Cannot launch the game!", L"TiltedPhoques",
-                        MB_ICONSTOP);
+            FatalError(L"Failed to select path. Cannot launch!\nTry reselecting the path by launching TiltedOnline "
+                       L"with the '-r' parameter.");
             return false;
         }
 

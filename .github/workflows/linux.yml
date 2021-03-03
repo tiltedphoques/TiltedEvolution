@@ -44,3 +44,13 @@ jobs:
     # Build the game
     - name: Build
       run: xmake
+    
+    # Create install
+    - name: Install
+      run: xmake install -o packaged
+
+    # Upload artifacts
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
+        path: packaged/bin/**
