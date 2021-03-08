@@ -26,7 +26,7 @@ target("Launcher")
         "TiltedHooks",
         "TiltedUi")
     add_syslinks(
-        "user32", 
+        "user32",
         "shell32",
         "comdlg32",
         "bcrypt",
