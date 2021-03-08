@@ -32,7 +32,6 @@ end)
 
 add_requires(
     "tiltedcore",
-	"libsodium",
 	"cryptopp",
     "spdlog")
 
