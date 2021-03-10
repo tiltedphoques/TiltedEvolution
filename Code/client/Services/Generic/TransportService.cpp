@@ -41,6 +41,7 @@
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/NotifySpawnData.h>
+#include <Messages/NotifyDeathStateChange.h>
 
 #define TRANSPORT_DISPATCH(packetName) \
 case k##packetName: \
@@ -129,6 +130,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
     TRANSPORT_DISPATCH(NotifyActorMaxValueChanges);
     TRANSPORT_DISPATCH(NotifyHealthChangeBroadcast);
     TRANSPORT_DISPATCH(NotifySpawnData);
+    TRANSPORT_DISPATCH(NotifyDeathStateChange);
 
     default:
         spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());

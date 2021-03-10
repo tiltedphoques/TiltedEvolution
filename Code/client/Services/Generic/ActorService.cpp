@@ -19,6 +19,8 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
+#include <Messages/NotifyDeathStateChange.h>
+#include <Messages/RequestDeathStateChange.h>
 
 #include <misc/ActorValueOwner.h>
 
@@ -35,6 +37,7 @@ ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     aDispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
     aDispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
     aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
+    aDispatcher.sink<NotifyDeathStateChange>().connect<&ActorService::OnDeathStateChange>(this);
 }
 
 ActorService::~ActorService() noexcept
@@ -64,6 +67,9 @@ void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor*
         float maxValue = GetActorMaxValue(apActor, i);
         actorValuesComponent.CurrentActorValues.ActorMaxValuesList.insert({i, maxValue});
     }
+
+    auto& deathComponent = m_world.emplace<DeathComponent>(aEntity);
+    deathComponent.IsDead = apActor->IsDead();
 }
 
 void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
@@ -125,6 +131,7 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunSmallHealthUpdates();
+    RunDeathStateUpdates();
     m_timeSinceDiff += acEvent.Delta;
     if (m_timeSinceDiff >= 1)
     {
@@ -283,6 +290,40 @@ void ActorService::RunSmallHealthUpdates() noexcept
     }
 }
 
+void ActorService::RunDeathStateUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent, DeathComponent>();
+
+    for (auto entity : view)
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(entity);
+        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        auto& localComponent = view.get<LocalComponent>(entity);
+        auto& deathComponent = view.get<DeathComponent>(entity);
+
+        bool isDead = pActor->IsDead();
+        if (isDead != deathComponent.IsDead)
+        {
+            deathComponent.IsDead = isDead;
+
+            RequestDeathStateChange requestChange;
+            requestChange.Id = localComponent.Id;
+            requestChange.IsDead = isDead;
+
+            m_transport.Send(requestChange);
+        }
+    }
+}
+
 void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent>();
@@ -379,6 +420,35 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
         std::cout << "Key: " << std::dec << key << " Value: " << value << std::endl;
 
         ForceActorValue(pActor, 0, key, value);
+    }
+}
+
+void ActorService::OnDeathStateChange(const NotifyDeathStateChange& acEvent) const noexcept
+{
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.Id, view](entt::entity entity) {
+        return view.get<RemoteComponent>(entity).Id == id;
+    });
+
+    if (itor == std::end(view))
+        return;
+
+    auto& formIdComponent = view.get<FormIdComponent>(*itor);
+    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+
+    if (!pActor)
+        return;
+
+    spdlog::info("Old death state: {}", pActor->IsDead());
+    spdlog::info("New death state: {}", acEvent.IsDead);
+
+    if (pActor->IsDead() != acEvent.IsDead)
+    {
+        if (acEvent.IsDead == true)
+            pActor->Kill();
+        else
+            pActor->ResurrectWrapper();
     }
 }
 

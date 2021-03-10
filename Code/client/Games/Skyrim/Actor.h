@@ -44,7 +44,7 @@ struct Actor : TESObjectREFR
     virtual void sub_A8();
     virtual void SetPosition(const NiPoint3& acPoint, bool aSyncHavok = true);
     virtual void sub_AA();
-    virtual void sub_AB();
+    virtual void Resurrect(bool, bool);
     virtual void sub_AC();
     virtual void sub_AD();
     virtual void sub_AE();
@@ -198,6 +198,10 @@ struct Actor : TESObjectREFR
     void UnEquipAll() noexcept;
     void RemoveFromAllFactions() noexcept;
     void QueueUpdate() noexcept;
+
+    bool IsDead() noexcept;
+    void Kill() noexcept;
+    void ResurrectWrapper() noexcept;
 
 public:
 

@@ -368,6 +368,26 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+bool Actor::IsDead() noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, IsDead);
+
+    return s_pIsDead(this);
+}
+
+void Actor::Kill() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
+
+    s_pKill(this, NULL);
+}
+
+void Actor::ResurrectWrapper() noexcept
+{
+    bool isNiNode = GetNiNode() != 0;
+    Resurrect(true, isNiNode);
+}
+
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;
 

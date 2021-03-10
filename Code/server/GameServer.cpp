@@ -27,6 +27,7 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
 #include <Messages/RequestSpawnData.h>
+#include <Messages/RequestDeathStateChange.h>
 
 #include <Scripts/Player.h>
 
@@ -129,6 +130,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         SERVER_DISPATCH(RequestActorMaxValueChanges);
         SERVER_DISPATCH(RequestHealthChangeBroadcast);
         SERVER_DISPATCH(RequestSpawnData);
+        SERVER_DISPATCH(RequestDeathStateChange);
     default:
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;

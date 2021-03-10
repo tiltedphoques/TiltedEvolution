@@ -22,6 +22,7 @@
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/NotifySpawnData.h>
+#include <Messages/NotifyDeathStateChange.h>
 
 #define EXTRACT_MESSAGE(Name) case k##Name: \
     { \
@@ -56,6 +57,7 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(NotifyActorMaxValueChanges);
         EXTRACT_MESSAGE(NotifyHealthChangeBroadcast);
         EXTRACT_MESSAGE(NotifySpawnData);
+        EXTRACT_MESSAGE(NotifyDeathStateChange);
     }
 
     return UniquePtr<ServerMessage>(nullptr);

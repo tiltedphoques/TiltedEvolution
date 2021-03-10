@@ -19,7 +19,8 @@ enum ClientOpcode : unsigned char
     kRequestActorValueChanges,
     kRequestActorMaxValueChanges,
     kRequestHealthChangeBroadcast,
-    kRequestSpawnData
+    kRequestSpawnData,
+    kRequestDeathStateChange
 };
 
 enum ServerOpcode : unsigned char
@@ -41,5 +42,6 @@ enum ServerOpcode : unsigned char
     kNotifyActorValueChanges,
     kNotifyActorMaxValueChanges,
     kNotifyHealthChangeBroadcast,
-    kNotifySpawnData
+    kNotifySpawnData,
+    kNotifyDeathStateChange
 };

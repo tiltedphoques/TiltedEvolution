@@ -20,6 +20,7 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
 #include <Messages/RequestSpawnData.h>
+#include <Messages/RequestDeathStateChange.h>
 
 #include <iostream>
 
@@ -56,6 +57,7 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         EXTRACT_MESSAGE(RequestActorMaxValueChanges);
         EXTRACT_MESSAGE(RequestHealthChangeBroadcast);
         EXTRACT_MESSAGE(RequestSpawnData);
+        EXTRACT_MESSAGE(RequestDeathStateChange);
     }
 
     return UniquePtr<ClientMessage>(nullptr);

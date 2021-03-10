@@ -59,6 +59,10 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     void RemoveFromAllFactions() noexcept;
 
+    bool IsDead() noexcept;
+    void Kill() noexcept;
+    void ResurrectWrapper() noexcept;
+
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];
     ActorState actorState;

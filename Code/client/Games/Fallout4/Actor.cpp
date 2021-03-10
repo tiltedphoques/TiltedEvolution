@@ -211,6 +211,21 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+bool Actor::IsDead() noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, IsDead);
+
+    return s_pIsDead(this);
+}
+
+void Actor::Kill() noexcept
+{
+}
+
+void Actor::ResurrectWrapper() noexcept
+{
+}
+
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
 static TDamageActor* RealDamageActor = nullptr;
 
