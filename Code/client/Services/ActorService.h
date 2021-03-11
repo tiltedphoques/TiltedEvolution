@@ -23,7 +23,7 @@ struct Actor;
 struct ActorService
 {
   public:
-    ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept;
+    ActorService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~ActorService() noexcept;
 
     TP_NOCOPYMOVE(ActorService);
@@ -36,6 +36,7 @@ private:
     };
 
     World& m_world;
+    entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
     Map<uint32_t, float> m_smallHealthChanges;
