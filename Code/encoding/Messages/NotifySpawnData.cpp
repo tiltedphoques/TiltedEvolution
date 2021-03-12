@@ -5,6 +5,7 @@ void NotifySpawnData::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const
     Serialization::WriteVarInt(aWriter, Id);
     InitialActorValues.Serialize(aWriter);
     InitialInventory.Serialize(aWriter);
+    Serialization::WriteBool(aWriter, IsDead);
 }
 
 void NotifySpawnData::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -14,4 +15,5 @@ void NotifySpawnData::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noe
     Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     InitialActorValues.Deserialize(aReader);
     InitialInventory.Deserialize(aReader);
+    IsDead = Serialization::ReadBool(aReader);
 }

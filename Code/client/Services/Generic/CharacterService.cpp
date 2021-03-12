@@ -200,6 +200,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             return;
 
         pActor->SetActorValues(acMessage.AllActorValues);
+        if (pActor->IsDead() != acMessage.IsDead)
+        {
+            if (acMessage.IsDead == true)
+                pActor->Kill();
+            else
+                pActor->ResurrectWrapper();
+        }
         return;
     }
 
@@ -226,6 +233,14 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         AnimationSystem::Setup(m_world, cEntity);
 
         pActor->SetActorValues(acMessage.AllActorValues);
+
+        if (pActor->IsDead() != acMessage.IsDead)
+        {
+            if (acMessage.IsDead == true)
+                pActor->Kill();
+            else
+                pActor->ResurrectWrapper();
+        }
     }
 }
 
@@ -327,6 +342,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
         auto& remoteComponent = view.get<RemoteComponent>(*itor);
         remoteComponent.SpawnRequest.InitialActorValues = acEvent.InitialActorValues;
         remoteComponent.SpawnRequest.InventoryContent = acEvent.InitialInventory;
+        remoteComponent.SpawnRequest.IsDead = acEvent.IsDead;
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
@@ -337,6 +353,14 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
+
+        if (pActor->IsDead() != acEvent.IsDead)
+        {
+            if (acEvent.IsDead == true)
+                pActor->Kill();
+            else
+                pActor->ResurrectWrapper();
+        }
     }
 }
 
@@ -599,6 +623,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
+    message.IsDead = pActor->IsDead();
 
     if(isTemporary)
     {
@@ -747,6 +772,14 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+
+    if (pActor->IsDead() != acMessage.IsDead)
+    {
+        if (acMessage.IsDead == true)
+            pActor->Kill();
+        else
+            pActor->ResurrectWrapper();
+    }
 
     m_world.emplace<WaitingFor3D>(aEntity);
 

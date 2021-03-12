@@ -70,6 +70,12 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
         apSpawnRequest->InitialActorValues = pActorValuesComponent->CurrentActorValues;
     }
 
+    const auto* pDeathComponent = aRegistry.try_get<DeathComponent>(aEntity);
+    if (pDeathComponent)
+    {
+        apSpawnRequest->IsDead = pDeathComponent->IsDead;
+    }
+
     if (characterComponent.BaseId)
     {
         apSpawnRequest->BaseId = characterComponent.BaseId.Id;
@@ -130,7 +136,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent, DeathComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
@@ -147,12 +153,14 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             const auto* pServer = GameServer::Get();
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
+            auto& deathComponent = view.get<DeathComponent>(*itor);
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
+            response.IsDead = deathComponent.IsDead;
 
             pServer->Send(acMessage.ConnectionId, response);
             return;
@@ -278,7 +286,7 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
 {
     auto& message = acMessage.Packet;
 
-    auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
+    auto view = m_world.view<ActorValuesComponent, InventoryComponent, DeathComponent>();
     
     auto itor = view.find(static_cast<entt::entity>(message.Id));
 
@@ -297,6 +305,12 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
         if (pInventoryComponent)
         {
             notifySpawnData.InitialInventory = pInventoryComponent->Content;
+        }
+
+        const auto* pDeathComponent = m_world.try_get<DeathComponent>(*itor);
+        if (pDeathComponent)
+        {
+            notifySpawnData.IsDead = pDeathComponent->IsDead;
         }
 
         GameServer::Get()->Send(acMessage.ConnectionId, notifySpawnData);
@@ -422,6 +436,9 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
     actorValuesComponent.CurrentActorValues = message.AllActorValues;
+
+    auto& deathComponent = m_world.emplace<DeathComponent>(cEntity);
+    deathComponent.IsDead = message.IsDead;
 
     spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
 

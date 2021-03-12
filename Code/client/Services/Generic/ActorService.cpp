@@ -89,6 +89,7 @@ void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::
 void ActorService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     m_world.clear<ActorValuesComponent>();
+    m_world.clear<DeathComponent>();
 }
 
 void ActorService::OnReferenceSpawned(const ReferenceSpawnedEvent& acEvent) noexcept
@@ -126,7 +127,10 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
     });
 
     if (itor != std::end(view))
+    {
         m_world.remove_if_exists<ActorValuesComponent>(*itor);
+        m_world.remove_if_exists<DeathComponent>(*itor);
+    }
 }
 
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
