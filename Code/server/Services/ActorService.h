@@ -11,7 +11,7 @@ struct RequestHealthChangeBroadcast;
 
 struct ActorService
 {
-    ActorService(entt::dispatcher& aDispatcher, World& aWorld) noexcept;
+    ActorService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
     ~ActorService() noexcept;
 
     TP_NOCOPYMOVE(ActorService);

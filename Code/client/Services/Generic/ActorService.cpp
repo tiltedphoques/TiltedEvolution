@@ -22,19 +22,20 @@
 
 #include <misc/ActorValueOwner.h>
 
-ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport) noexcept
+ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
+    , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
     m_world.on_construct<LocalComponent>().connect<&ActorService::OnLocalComponentAdded>(this);
-    aDispatcher.sink<DisconnectedEvent>().connect<&ActorService::OnDisconnected>(this);
-    aDispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorService::OnReferenceSpawned>(this);
-    aDispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
-    aDispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
-    aDispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
-    aDispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
-    aDispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
-    aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
+    m_dispatcher.sink<DisconnectedEvent>().connect<&ActorService::OnDisconnected>(this);
+    m_dispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorService::OnReferenceSpawned>(this);
+    m_dispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
+    m_dispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
+    m_dispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
+    m_dispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
+    m_dispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
+    m_dispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
 }
 
 ActorService::~ActorService() noexcept
