@@ -11,7 +11,7 @@
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 
-ActorService::ActorService(entt::dispatcher& aDispatcher, World& aWorld) noexcept
+ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
 {
     m_updateHealthConnection = aDispatcher.sink<PacketEvent<RequestActorValueChanges>>().connect<&ActorService::OnActorValueChanges>(this);
