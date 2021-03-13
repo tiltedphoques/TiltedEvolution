@@ -7,26 +7,33 @@ namespace TiltedPhoques
     struct OverlayApp;
 }
 
-struct RenderSystemD3D9;
 struct RenderSystemD3D11;
+struct D3D11RenderProvider;
+struct World;
+struct TransportService;
 
 using TiltedPhoques::OverlayApp;
 
 struct OverlayService
 {
-    OverlayService();
+  public:
+    OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher);
     ~OverlayService() noexcept;
 
     TP_NOCOPYMOVE(OverlayService);
 
-    void Create(RenderSystemD3D11* apRenderSystem);
+    void Create(RenderSystemD3D11* apRenderSystem) noexcept;
 
-    void Render() const;
-    void Reset() const;
+    void Render() const noexcept;
+    void Reset() const noexcept;
 
     OverlayApp* GetOverlayApp() const noexcept { return m_pOverlay.get(); }
 
 private:
 
     CefRefPtr<OverlayApp> m_pOverlay{nullptr};
+    std::unique_ptr<D3D11RenderProvider> m_pProvider;
+
+    World& m_world;
+    TransportService& m_transport;
 };
