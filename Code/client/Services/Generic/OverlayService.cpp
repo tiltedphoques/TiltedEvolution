@@ -58,7 +58,7 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
     m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
 
     if (!m_pOverlay->Initialize())
-        spdlog::debug("Overlay could not be initialised");
+        spdlog::error("Overlay could not be initialised");
 
     m_pOverlay->GetClient()->Create();
 }
