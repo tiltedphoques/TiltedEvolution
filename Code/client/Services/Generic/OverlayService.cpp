@@ -54,13 +54,6 @@ OverlayService::~OverlayService() noexcept
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 {
-    m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(apRenderSystem);
-    m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
-
-    if (!m_pOverlay->Initialize())
-        __debugbreak();
-
-    m_pOverlay->GetClient()->Create();
 }
 
 void OverlayService::Render() const noexcept
