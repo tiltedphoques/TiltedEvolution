@@ -52,6 +52,8 @@ Code/protocol/cpp/*.h
 Code/protocol/cpp/*.cc
 Code/skyrimtogether/include/buildver.h
 
+distrib
+
 Libraries/discord_game_sdk
 Libraries/DXSDK
 
