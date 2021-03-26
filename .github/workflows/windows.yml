@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [windows-latest]
         arch: [x64]
-        mode: [releasedbg, debug]
+        mode: [releasedbg]
 
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
