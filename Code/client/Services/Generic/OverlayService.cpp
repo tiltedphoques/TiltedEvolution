@@ -9,7 +9,6 @@
 
 #include <Systems/RenderSystemD3D11.h>
 
-#include <Components.h>
 #include <World.h>
 
 #include <Services/OverlayClient.h>
