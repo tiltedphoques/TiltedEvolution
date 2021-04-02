@@ -385,7 +385,7 @@ void Actor::Kill() noexcept
 void Actor::ResurrectWrapper() noexcept
 {
     bool isNiNode = GetNiNode() != 0;
-    Resurrect(true, isNiNode);
+    Resurrect(true, true, isNiNode);
 }
 
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);

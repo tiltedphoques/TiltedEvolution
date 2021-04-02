@@ -305,6 +305,10 @@ void ScriptService::DisplayFormComponent(FormIdComponent& aFormComponent) const 
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     int isDead = int(pActor->IsDead());
     ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::Button("Resurrect"))
+    {
+        pActor->ResurrectWrapper();
+    }
 }
 
 void ScriptService::DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept
