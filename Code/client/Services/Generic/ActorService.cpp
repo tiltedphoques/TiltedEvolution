@@ -12,6 +12,7 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/HealthChangeEvent.h>
+#include <Events/ResurrectEvent.h>
 
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/RequestActorValueChanges.h>
@@ -39,10 +40,17 @@ ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_dispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
     m_dispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
     m_dispatcher.sink<NotifyDeathStateChange>().connect<&ActorService::OnDeathStateChange>(this);
+
+    m_dispatcher.sink<ResurrectEvent>().connect<&ActorService::OnResurrectEvent>(this);
 }
 
 ActorService::~ActorService() noexcept
 {
+}
+
+void ActorService::OnResurrectEvent(ResurrectEvent& aEvent) noexcept
+{
+    aEvent.pActor->ResurrectWrapper();
 }
 
 void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept
@@ -71,6 +79,7 @@ void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor*
 
     auto& deathComponent = m_world.emplace<DeathComponent>(aEntity);
     deathComponent.IsDead = apActor->IsDead();
+    deathComponent.RequestResurrect = false;
 }
 
 void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
@@ -315,6 +324,12 @@ void ActorService::RunDeathStateUpdates() noexcept
         auto& localComponent = view.get<LocalComponent>(entity);
         auto& deathComponent = view.get<DeathComponent>(entity);
 
+        if (deathComponent.RequestResurrect)
+        {
+            deathComponent.RequestResurrect = false;
+            pActor->ResurrectWrapper();
+        }
+
         bool isDead = pActor->IsDead();
         if (isDead != deathComponent.IsDead)
         {
@@ -452,9 +467,15 @@ void ActorService::OnDeathStateChange(const NotifyDeathStateChange& acEvent) con
     if (pActor->IsDead() != acEvent.IsDead)
     {
         if (acEvent.IsDead == true)
+        {
+            spdlog::info("Killing {:x}", formIdComponent.Id);
             pActor->Kill();
+        }
         else
-            pActor->ResurrectWrapper();
+        {
+            spdlog::info("Rezzing {:x}", formIdComponent.Id);
+            //pActor->ResurrectWrapper();
+        }
     }
 }
 

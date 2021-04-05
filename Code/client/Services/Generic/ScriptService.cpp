@@ -15,6 +15,7 @@
 #include <Forms/TESForm.h>
 
 #include <Events/EventDispatcher.h>
+#include <Events/ResurrectEvent.h>
 #include <Messages/ClientRpcCalls.h>
 
 #include <imgui.h>
@@ -307,7 +308,10 @@ void ScriptService::DisplayFormComponent(FormIdComponent& aFormComponent) const 
     ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     if (ImGui::Button("Resurrect"))
     {
-        pActor->ResurrectWrapper();
+        //World::Get().GetRunner().Trigger(ResurrectEvent(pActor));
+        const auto entity = entt::to_entity(m_world, aFormComponent);
+        auto& deathComponent = m_world.get<DeathComponent>(entity);
+        deathComponent.RequestResurrect = true;
     }
 }
 

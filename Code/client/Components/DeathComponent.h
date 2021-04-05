@@ -7,4 +7,5 @@
 struct DeathComponent
 {
     bool IsDead{};
+    bool RequestResurrect{};
 };

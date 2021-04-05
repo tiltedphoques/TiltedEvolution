@@ -144,7 +144,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+            const auto pActor = RTTI_CAST(TESForm::GetById(0x1ebf6), TESForm, Actor);
+            pActor->ResurrectWrapper();
         }
     }
     else
