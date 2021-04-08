@@ -12,6 +12,7 @@
 #include <Services/TransportService.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/ResurrectEvent.h>
 
 #include <Games/References.h>
 
@@ -146,7 +147,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             //PlaceActorInWorld();
             const auto pActor = RTTI_CAST(TESForm::GetById(0x1ebf6), TESForm, Actor);
-            pActor->ResurrectWrapper();
+            World::Get().GetRunner().Trigger(ResurrectEvent(pActor));
+            //pActor->ResurrectWrapper();
         }
     }
     else

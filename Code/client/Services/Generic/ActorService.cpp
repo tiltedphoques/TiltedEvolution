@@ -474,7 +474,7 @@ void ActorService::OnDeathStateChange(const NotifyDeathStateChange& acEvent) con
         else
         {
             spdlog::info("Rezzing {:x}", formIdComponent.Id);
-            //pActor->ResurrectWrapper();
+            pActor->ResurrectWrapper();
         }
     }
 }

@@ -300,7 +300,9 @@ void ScriptService::DisplayFormComponent(FormIdComponent& aFormComponent) const 
         return;
 
     const auto pActor = RTTI_CAST(TESForm::GetById(aFormComponent.Id), TESForm, Actor);
+    int pActorAddress = (int)pActor;
 
+    ImGui::InputInt("Memory address", &pActorAddress, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
@@ -308,10 +310,10 @@ void ScriptService::DisplayFormComponent(FormIdComponent& aFormComponent) const 
     ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     if (ImGui::Button("Resurrect"))
     {
-        //World::Get().GetRunner().Trigger(ResurrectEvent(pActor));
-        const auto entity = entt::to_entity(m_world, aFormComponent);
-        auto& deathComponent = m_world.get<DeathComponent>(entity);
-        deathComponent.RequestResurrect = true;
+        World::Get().GetRunner().Trigger(ResurrectEvent(pActor));
+        //const auto entity = entt::to_entity(m_world, aFormComponent);
+        //auto& deathComponent = m_world.get<DeathComponent>(entity);
+        //deathComponent.RequestResurrect = true;
     }
 }
 
