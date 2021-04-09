@@ -4,11 +4,13 @@
 #include <World.h>
 #include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/ActivateEvent.h>
 #include <Services/EnvironmentService.h>
 #include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
 
 #include <TimeManager.h>
+#include <PlayerCharacter.h>
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -27,7 +29,10 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
+
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
+
+    aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
@@ -73,6 +78,11 @@ void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
     auto entity = m_world.create();
     auto& interactiveObjectComponent = m_world.emplace<InteractiveObjectComponent>(entity);
     interactiveObjectComponent.Id = apObject->formID;
+}
+
+void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
+{
+    acEvent.pObject->Activate(acEvent.pActivator, acEvent.unk1, acEvent.unk2, acEvent.unk3, acEvent.unk4);
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
@@ -209,6 +219,11 @@ void EnvironmentService::OnDraw() noexcept
 
         uint64_t address = reinterpret_cast<uint64_t>(pObject);
         ImGui::InputScalar("Memory address", ImGuiDataType_U64, &address, 0, 0, "%" PRIx64, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        if (ImGui::Button("Activate"))
+        {
+            auto* pActor = PlayerCharacter::Get();
+            World::Get().GetRunner().Trigger(ActivateEvent(pObject, pActor, 0, 0, 1, 0));
+        }
     }
 
     ImGui::End();

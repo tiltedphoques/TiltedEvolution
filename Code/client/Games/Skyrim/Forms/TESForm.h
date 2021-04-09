@@ -79,7 +79,7 @@ struct TESForm : BaseFormComponent
     virtual void sub_34();
     virtual void sub_35();
     virtual void sub_36();
-    virtual void sub_37();
+    virtual void ActivateReference();
     virtual void sub_38();
 
     //void CopyFromEx(TESForm* rhs);

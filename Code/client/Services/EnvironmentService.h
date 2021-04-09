@@ -9,6 +9,7 @@ struct ServerTimeSettings;
 struct DisconnectedEvent;
 struct World;
 struct UpdateEvent;
+struct ActivateEvent;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
@@ -22,6 +23,7 @@ public:
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
     void OnDraw() noexcept;
+    void OnActivate(const ActivateEvent&) noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 
