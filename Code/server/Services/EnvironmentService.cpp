@@ -7,12 +7,15 @@
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
 #include <Messages/ServerTimeSettings.h>
+#include <Messages/ActivateRequest.h>
+#include <Messages/NotifyActivate.h>
 #include <Components.h>
 
 EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
+    aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
 }
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -23,6 +26,24 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 
     const auto &playerComponent = m_world.get<PlayerComponent>(acEvent.Entity);
     GameServer::Get()->Send(playerComponent.ConnectionId, timeMsg);
+}
+
+void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
+{
+    NotifyActivate notifyActivate;
+    notifyActivate.Id = acMessage.Packet.Id;
+    notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
+
+    auto view = m_world.view<PlayerComponent>();
+    for (auto entity : view)
+    {
+        auto& player = view.get<PlayerComponent>(entity);
+
+        if (player.ConnectionId != acMessage.ConnectionId)
+        {
+            GameServer::Get()->Send(player.ConnectionId, notifyActivate);
+        }
+    }
 }
 
 bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcept

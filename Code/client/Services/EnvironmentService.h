@@ -10,12 +10,14 @@ struct DisconnectedEvent;
 struct World;
 struct UpdateEvent;
 struct ActivateEvent;
+struct TransportService;
+struct NotifyActivate;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
 {
 public:
-    EnvironmentService(World&, entt::dispatcher&, ImguiService&);
+    EnvironmentService(World&, entt::dispatcher&, ImguiService&, TransportService&);
 
     static bool AllowGameTick() noexcept;
   private:
@@ -24,6 +26,7 @@ public:
     void OnDisconnected(const DisconnectedEvent &) noexcept;
     void OnDraw() noexcept;
     void OnActivate(const ActivateEvent&) noexcept;
+    void OnActivateNotify(const NotifyActivate&) noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 
@@ -46,4 +49,5 @@ public:
 
     uint64_t m_lastTick = 0;
     World& m_world;
+    TransportService& m_transport;
 };

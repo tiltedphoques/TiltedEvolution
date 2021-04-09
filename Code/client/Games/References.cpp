@@ -153,8 +153,8 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
             if (!pDescriptor)
             {
-                if ((formID & 0xFF000000) == 0xFF000000)
-                    spdlog::info("Form id {} has {}", formID, pGraph->behaviorGraph->stateMachine->name);
+                //if ((formID & 0xFF000000) == 0xFF000000)
+                    //spdlog::info("Form id {} has {}", formID, pGraph->behaviorGraph->stateMachine->name);
                 return;
             }
 
@@ -513,19 +513,12 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4)
 {
-    return ThisCall(RealActivate, apThis, apActivator, aUnk1, aUnk2, aUnk3, aUnk4);
-    /*
+    // Check whether activator is player (incomplete)
     auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
-    if (!pActivator)
-        return ThisCall(RealActivate, apThis, apActivator, aUnk1, aUnk2, aUnk3, aUnk4);
+    if (pActivator)
+        World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, aUnk1, aUnk2, aUnk3, aUnk4));
 
-    const auto pExActivator = pActivator->GetExtension();
-    if (pExActivator->IsRemote())
-        return;
-
-    World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator));
     return ThisCall(RealActivate, apThis, apActivator, aUnk1, aUnk2, aUnk3, aUnk4);
-    */
 }
 
 TiltedPhoques::Initializer s_referencesHooks([]()

@@ -8,6 +8,8 @@
 #include <Services/EnvironmentService.h>
 #include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
+#include <Messages/ActivateRequest.h>
+#include <Messages/NotifyActivate.h>
 
 #include <TimeManager.h>
 #include <PlayerCharacter.h>
@@ -24,7 +26,9 @@ bool EnvironmentService::AllowGameTick() noexcept
     return !s_gameClockLocked;
 }
 
-EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) : m_world(aWorld)
+EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService, TransportService& aTransport) 
+    : m_world(aWorld)
+    , m_transport(aTransport)
 {
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
@@ -33,6 +37,7 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
 
     aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
+    aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
@@ -82,7 +87,58 @@ void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
 
 void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 {
-    acEvent.pObject->Activate(acEvent.pActivator, acEvent.unk1, acEvent.unk2, acEvent.unk3, acEvent.unk4);
+    if (acEvent.ActivateFlag)
+        acEvent.pObject->Activate(acEvent.pActivator, acEvent.unk1, acEvent.unk2, acEvent.unk3, acEvent.unk4);
+
+    if (!m_transport.IsConnected())
+        return;
+
+    ActivateRequest request;
+    request.Id = acEvent.pObject->formID;
+
+    auto view = m_world.view<FormIdComponent>();
+    const auto pEntity =
+        std::find_if(std::begin(view), std::end(view), [id = acEvent.pActivator->formID, view](entt::entity entity) {
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
+
+    if (pEntity == std::end(view))
+        return;
+
+    const auto localComponent = m_world.try_get<LocalComponent>(*pEntity);
+    const auto remoteComponent = m_world.try_get<RemoteComponent>(*pEntity);
+    request.ActivatorId = localComponent ? localComponent->Id : remoteComponent->Id;
+
+    m_transport.Send(request);
+}
+
+void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
+{
+    auto view = m_world.view<FormIdComponent>();
+
+    for (auto entity : view)
+    {
+        uint32_t componentId;
+        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
+        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+
+        if (cpLocalComponent)
+            componentId = cpLocalComponent->Id;
+        else if (cpRemoteComponent)
+            componentId = cpRemoteComponent->Id;
+        else
+            continue;
+
+        if (componentId == acMessage.ActivatorId)
+        {
+            auto* pObject = RTTI_CAST(TESForm::GetById(acMessage.Id), TESForm, TESObjectREFR);
+            auto& formIdComponent = view.get<FormIdComponent>(entity);
+            auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            
+            if (pActor)
+                pObject->Activate(pActor, 0, 0, 1, 0);
+        }
+    }
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
@@ -222,7 +278,7 @@ void EnvironmentService::OnDraw() noexcept
         if (ImGui::Button("Activate"))
         {
             auto* pActor = PlayerCharacter::Get();
-            World::Get().GetRunner().Trigger(ActivateEvent(pObject, pActor, 0, 0, 1, 0));
+            World::Get().GetRunner().Trigger(ActivateEvent(pObject, pActor, 0, 0, 1, 0, true));
         }
     }
 
