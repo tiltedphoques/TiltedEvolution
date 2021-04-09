@@ -1,5 +1,7 @@
 #pragma once
 
+#include <TESObjectREFR.h>
+
 template <class T> struct BSTEventSink;
 
 // Very nasty work around to avoid template code duplication
@@ -51,6 +53,11 @@ struct TESQuestStageEvent
     uint32_t formId;
     uint16_t stageId;
     bool bUnk;
+};
+
+struct TESActivateEvent
+{
+    TESObjectREFR* object;
 };
 
 #define DECLARE_DISPATCHER(name, address) \

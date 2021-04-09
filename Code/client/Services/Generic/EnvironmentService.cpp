@@ -5,9 +5,13 @@
 #include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Services/EnvironmentService.h>
+#include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
 
 #include <TimeManager.h>
+
+#include <imgui.h>
+#include <inttypes.h>
 
 constexpr float kTransitionSpeed = 5.f;
 
@@ -18,11 +22,16 @@ bool EnvironmentService::AllowGameTick() noexcept
     return !s_gameClockLocked;
 }
 
-EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
+EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) : m_world(aWorld)
 {
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
+    m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
+
+#if TP_SKYRIM64
+    EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
+#endif
 }
 
 void EnvironmentService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
@@ -38,6 +47,32 @@ void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
     // signal a time transition
     m_fadeTimer = 0.f;
     m_switchToOffline = true;
+}
+
+BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* dispatcher)
+{
+    spdlog::info("Activated {:p}", (void*)acEvent->object);
+
+    auto view = m_world.view<InteractiveObjectComponent>();
+
+    const auto itor =
+        std::find_if(std::begin(view), std::end(view), [id = acEvent->object->formID, view](entt::entity entity) {
+            return view.get<InteractiveObjectComponent>(entity).Id == id;
+        });
+
+    if (itor == std::end(view))
+    {
+        AddObjectComponent(acEvent->object);
+    }
+
+    return BSTEventResult::kOk;
+}
+
+void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
+{
+    auto entity = m_world.create();
+    auto& interactiveObjectComponent = m_world.emplace<InteractiveObjectComponent>(entity);
+    interactiveObjectComponent.Id = apObject->formID;
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
@@ -132,4 +167,49 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         else
             pGameTime->GameHour->f = m_onlineTime.Time;
     }
+}
+
+void EnvironmentService::OnDraw() noexcept
+{
+    static uint32_t s_selectedFormId = 0;
+    static uint32_t s_selected = 0;
+
+    ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Interactive object list");
+    ImGui::BeginChild("Objects", ImVec2(0, 200), true);
+
+    const auto view = m_world.view<InteractiveObjectComponent>();
+    Vector<entt::entity> entities(view.begin(), view.end());
+
+    int i = 0;
+    for (auto entity : entities)
+    {
+        auto& objectComponent = view.get<InteractiveObjectComponent>(entity);
+        auto* pForm = TESForm::GetById(objectComponent.Id);
+        auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+
+        char name[256];
+        sprintf_s(name, std::size(name), "%s (%x)", pObject->baseForm->GetName(), objectComponent.Id);
+        if (ImGui::Selectable(name, s_selectedFormId == objectComponent.Id))
+            s_selectedFormId = objectComponent.Id;
+
+        if (s_selectedFormId == objectComponent.Id)
+            s_selected = i;
+
+        ++i;
+    }
+
+    ImGui::EndChild();
+
+    if (s_selected < entities.size())
+    {
+        auto& objectComponent = view.get<InteractiveObjectComponent>(entities[s_selected]);
+        auto* pForm = TESForm::GetById(objectComponent.Id);
+        auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+
+        uint64_t address = reinterpret_cast<uint64_t>(pObject);
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, &address, 0, 0, "%" PRIx64, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    }
+
+    ImGui::End();
 }
