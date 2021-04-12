@@ -114,8 +114,12 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
 void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
-    auto view = m_world.view<FormIdComponent>();
+    auto* pObject = RTTI_CAST(TESForm::GetById(acMessage.Id), TESForm, TESObjectREFR);
+    auto* pPlayer = PlayerCharacter::Get();
+    pObject->Activate(pPlayer, 0, 0, 1, 0);
 
+    //auto view = m_world.view<FormIdComponent>();
+    /*
     for (auto entity : view)
     {
         uint32_t componentId;
@@ -139,6 +143,7 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
                 pObject->Activate(pActor, 0, 0, 1, 0);
         }
     }
+    */
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
@@ -239,6 +244,7 @@ void EnvironmentService::OnDraw() noexcept
 {
     static uint32_t s_selectedFormId = 0;
     static uint32_t s_selected = 0;
+    static uint32_t formId;
 
     ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Interactive object list");
@@ -253,6 +259,9 @@ void EnvironmentService::OnDraw() noexcept
         auto& objectComponent = view.get<InteractiveObjectComponent>(entity);
         auto* pForm = TESForm::GetById(objectComponent.Id);
         auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+
+        if (!pObject)
+            continue;
 
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pObject->baseForm->GetName(), objectComponent.Id);
@@ -273,12 +282,43 @@ void EnvironmentService::OnDraw() noexcept
         auto* pForm = TESForm::GetById(objectComponent.Id);
         auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
 
-        uint64_t address = reinterpret_cast<uint64_t>(pObject);
-        ImGui::InputScalar("Memory address", ImGuiDataType_U64, &address, 0, 0, "%" PRIx64, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-        if (ImGui::Button("Activate"))
+        if (pObject)
         {
-            auto* pActor = PlayerCharacter::Get();
-            World::Get().GetRunner().Trigger(ActivateEvent(pObject, pActor, 0, 0, 1, 0, true));
+            uint64_t address = reinterpret_cast<uint64_t>(pObject);
+            ImGui::InputScalar("Memory address", ImGuiDataType_U64, &address, 0, 0, "%" PRIx64, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            if (ImGui::Button("Activate"))
+            {
+                auto* pActor = PlayerCharacter::Get();
+                World::Get().GetRunner().Trigger(ActivateEvent(pObject, pActor, 0, 0, 1, 0, true));
+            }
+            int formType = pObject->GetFormType();
+            ImGui::InputInt("Form type", &formType, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            int formTypeBase = pObject->baseForm->GetFormType();
+            ImGui::InputInt("Form type base", &formTypeBase, 0, 0, ImGuiInputTextFlags_ReadOnly);
+        }
+    }
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &formId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::Button("Get address from form ID"))
+    {
+        if (formId)
+        {
+            auto* pForm = TESForm::GetById(formId);
+            auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+            if (pObject)
+            {
+                auto view = m_world.view<InteractiveObjectComponent>();
+
+                const auto itor =
+                    std::find_if(std::begin(view), std::end(view), [id = pObject->formID, view](entt::entity entity) {
+                        return view.get<InteractiveObjectComponent>(entity).Id == id;
+                    });
+
+                if (itor == std::end(view))
+                {
+                    AddObjectComponent(pObject);
+                }
+            }
         }
     }
 
