@@ -16,15 +16,15 @@ struct World : entt::registry
     entt::dispatcher& GetDispatcher() noexcept { return m_dispatcher; }
     const entt::dispatcher& GetDispatcher() const noexcept { return m_dispatcher; }
     CharacterService& GetCharacterService() noexcept { return ctx<CharacterService>(); }
-    const CharacterService& GetCharacterService() const noexcept { return ctx<CharacterService>(); }
+    const CharacterService& GetCharacterService() const noexcept { return ctx<const CharacterService>(); }
     PlayerService& GetPlayerService() noexcept { return ctx<PlayerService>(); }
-    const PlayerService& GetPlayerService() const noexcept { return ctx<PlayerService>(); }
+    const PlayerService& GetPlayerService() const noexcept { return ctx<const PlayerService>(); }
     ScriptService& GetScriptService() noexcept { return *m_scriptService; }
     const ScriptService& GetScriptService() const noexcept { return *m_scriptService; }
     EnvironmentService& GetEnvironmentService() noexcept { return ctx<EnvironmentService>(); }
-    const EnvironmentService& GetEnvironmentService() const noexcept { return ctx<EnvironmentService>(); }
+    const EnvironmentService& GetEnvironmentService() const noexcept { return ctx<const EnvironmentService>(); }
     QuestService& GetQuestService() noexcept { return ctx<QuestService>(); }
-    const QuestService& GetQuestService() const noexcept { return ctx<QuestService>(); }
+    const QuestService& GetQuestService() const noexcept { return ctx<const QuestService>(); }
 
     [[nodiscard]] static uint32_t ToInteger(entt::entity aEntity) { return to_integral(aEntity); }
 

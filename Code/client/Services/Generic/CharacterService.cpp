@@ -105,7 +105,7 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
         m_transport.Send(requestSpawnData);
     }
 
-    if (aRegistry.has<RemoteComponent>(aEntity) || aRegistry.has<LocalComponent>(aEntity) || aRegistry.has<WaitingForAssignmentComponent>(aEntity))
+    if (aRegistry.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))
         return;
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
@@ -191,7 +191,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
     m_world.remove<WaitingForAssignmentComponent>(cEntity);
 
-    if (m_world.has<LocalComponent>(cEntity) || m_world.has<RemoteComponent>(cEntity))
+    if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
     {
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
@@ -624,7 +624,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
 void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
-    if (aRegistry.has<RemoteComponent>(aEntity))
+    if (aRegistry.all_of<RemoteComponent>(aEntity))
     {
         // Do nothing, a system will detect a remote component missing a form id component later on and try to spawn it
         auto* const pForm = TESForm::GetById(aFormId);
@@ -650,7 +650,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
     }
 
     // In the event we were waiting for assignment, drop it
-    if (aRegistry.has<WaitingForAssignmentComponent>(aEntity))
+    if (aRegistry.all_of<WaitingForAssignmentComponent>(aEntity))
     {
         auto& waitingComponent = aRegistry.get<WaitingForAssignmentComponent>(aEntity);
 
@@ -662,7 +662,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         aRegistry.remove_if_exists<WaitingForAssignmentComponent>(aEntity);
     }
 
-    if (aRegistry.has<LocalComponent>(aEntity))
+    if (aRegistry.all_of<LocalComponent>(aEntity))
     {
         auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
 
