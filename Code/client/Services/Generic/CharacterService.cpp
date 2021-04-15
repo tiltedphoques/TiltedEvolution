@@ -306,6 +306,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
+    spdlog::error("OnCharacterSpawn: {:x}", pActor->formID);
+
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
     remoteComponent.SpawnRequest = acMessage;
 
@@ -346,21 +348,28 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
-        auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (!pActor)
             return;
 
-        pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
-        pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
-
+        spdlog::warn("Remote spawn data {:x}", pActor->formID);
         if (pActor->IsDead() != acEvent.IsDead)
         {
             if (acEvent.IsDead == true)
                 pActor->Kill();
             else
-                pActor->ResurrectWrapper();
+            {
+                //pActor->ResurrectWrapper();
+                //pActor->Respawn();
+                spdlog::info("Respawning actor {:x}", pActor->formID);
+                pActor->Delete();
+                pActor = CreateCharacterForEntity(*itor);
+            }
         }
+
+        pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
+        pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
     }
 }
 

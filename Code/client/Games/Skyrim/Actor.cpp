@@ -382,11 +382,31 @@ void Actor::Kill() noexcept
     s_pKill(this, NULL);
 }
 
+void Actor::Reset() noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, Reset, int, TESObjectREFR*);
+
+    s_pReset(this, 0, nullptr);
+}
+
 void Actor::ResurrectWrapper() noexcept
 {
+    spdlog::critical("Resurrecting {:x}", formID);
     bool isNiNode = GetNiNode() != 0;
     Resurrect(true, true, isNiNode);
+    Reset();
 }
+
+/*
+void Actor::Resurrect() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, Resurrect, bool);
+
+    s_pResurrect(this, true);
+}
+*/
 
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;

@@ -179,6 +179,11 @@ void TestService::OnDraw() noexcept
         }
     }
 
+    if(ImGui::Button("Spawn"))
+    {
+        PlaceActorInWorld();
+    }
+
     ImGui::End();
 
     ImGui::Begin("Player");

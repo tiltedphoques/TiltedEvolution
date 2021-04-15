@@ -202,6 +202,9 @@ struct Actor : TESObjectREFR
     bool IsDead() noexcept;
     void Kill() noexcept;
     void ResurrectWrapper() noexcept;
+    void Reset() noexcept;
+    void Respawn() noexcept;
+    void Resurrect() noexcept;
 
 public:
 

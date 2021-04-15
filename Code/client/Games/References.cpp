@@ -433,6 +433,11 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 }
 #endif
 
+void Actor::Respawn() noexcept
+{
+
+}
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
