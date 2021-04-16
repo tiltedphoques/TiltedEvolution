@@ -359,13 +359,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
             if (acEvent.IsDead == true)
                 pActor->Kill();
             else
-            {
-                //pActor->ResurrectWrapper();
-                //pActor->Respawn();
-                spdlog::info("Respawning actor {:x}", pActor->formID);
-                pActor->Delete();
-                pActor = CreateCharacterForEntity(*itor);
-            }
+                pActor->ResurrectWrapper();
         }
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);

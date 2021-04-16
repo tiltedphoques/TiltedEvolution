@@ -173,6 +173,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
 void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept
 {
+    spdlog::warn("OnRemoveCharacterRequest");
     auto& message = acMessage.Packet;
 
     const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();

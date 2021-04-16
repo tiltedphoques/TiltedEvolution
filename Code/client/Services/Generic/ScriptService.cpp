@@ -64,7 +64,7 @@ void ScriptService::OnDraw() noexcept
     if (view.empty())
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Engine");
 
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
