@@ -40,6 +40,8 @@ public:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_drawConnection;
+    entt::scoped_connection m_onActivateConnection;
+    entt::scoped_connection m_activateConnection;
 
     TimeModel m_onlineTime;
     TimeModel m_offlineTime;

@@ -15,7 +15,7 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
-    aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
+    m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
 }
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept

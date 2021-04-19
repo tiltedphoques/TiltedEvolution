@@ -35,9 +35,9 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
+    m_onActivateConnection = aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
+    m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
 
-    aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
-    aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
 #if ENVIRONMENT_DEBUG
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
 #endif
@@ -66,8 +66,6 @@ void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
 
 BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* dispatcher)
 {
-    spdlog::info("Activated {:p}", (void*)acEvent->object);
-
     auto view = m_world.view<InteractiveObjectComponent>();
 
     const auto itor =
@@ -107,6 +105,7 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
             return view.get<FormIdComponent>(entity).Id == id;
         });
 
+    // Only sync activations triggered by actors
     if (pEntity == std::end(view))
         return;
 
@@ -143,8 +142,8 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
             {
                 // unsure if these flags are the best, but these are passed with the papyrus Activate fn
                 // might be an idea to have the client send the flags through NotifyActivate
-                spdlog::warn("Activating");
                 pObject->Activate(pActor, 0, 0, 1, 0);
+                return;
             }
         }
     }
