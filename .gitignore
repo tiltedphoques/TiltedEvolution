@@ -56,6 +56,8 @@ distrib
 
 Libraries/discord_game_sdk
 Libraries/DXSDK
+Libraries/Vivox
+!Libraries/Vivox/xmake.lua
 
 *__pycache__*
 Artifacts/Server
