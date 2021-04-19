@@ -17,6 +17,8 @@
 #include <imgui.h>
 #include <inttypes.h>
 
+#define ENVIRONMENT_DEBUG 1
+
 constexpr float kTransitionSpeed = 5.f;
 
 bool EnvironmentService::s_gameClockLocked = false;
@@ -34,10 +36,11 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
 
-    m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
-
     aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
     aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
+#if ENVIRONMENT_DEBUG
+    m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
+#endif
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
@@ -114,12 +117,13 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
 void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
+    /*
     auto* pObject = RTTI_CAST(TESForm::GetById(acMessage.Id), TESForm, TESObjectREFR);
     auto* pPlayer = PlayerCharacter::Get();
     pObject->Activate(pPlayer, 0, 0, 1, 0);
+    */
 
-    //auto view = m_world.view<FormIdComponent>();
-    /*
+    auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
         uint32_t componentId;
@@ -143,7 +147,6 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
                 pObject->Activate(pActor, 0, 0, 1, 0);
         }
     }
-    */
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
