@@ -9,7 +9,7 @@
 #include "SteamSupport.h"
 
 #include "loader/ExeLoader.h"
-#include "common/BuildInfo.h"
+#include <BuildInfo.h>
 #include "Utils/Error.h"
 
 Launcher* g_pLauncher = nullptr;
@@ -48,8 +48,7 @@ Launcher::Launcher(int argc, char** argv)
         }
 
         if (result.count("version"))
-            fmt::print("TiltedOnline version: " BUILD_BRANCH "@" BUILD_COMMIT 
-                " built on " BUILD_TIMESTAMP "\n");
+            fmt::print("TiltedOnline version: " BUILD_BRANCH "@" BUILD_COMMIT "\n");
 
         if (!gameName.empty())
         {
