@@ -33,7 +33,7 @@
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
-#include <common/BuildInfo.h>
+#include <BuildInfo.h>
 
 extern "C"
 {
