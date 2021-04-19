@@ -17,7 +17,7 @@
 #include <imgui.h>
 #include <inttypes.h>
 
-#define ENVIRONMENT_DEBUG 1
+#define ENVIRONMENT_DEBUG 0
 
 constexpr float kTransitionSpeed = 5.f;
 
@@ -44,6 +44,8 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
+#else
+    GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
 #endif
 }
 
@@ -117,12 +119,6 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
 void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
-    /*
-    auto* pObject = RTTI_CAST(TESForm::GetById(acMessage.Id), TESForm, TESObjectREFR);
-    auto* pPlayer = PlayerCharacter::Get();
-    pObject->Activate(pPlayer, 0, 0, 1, 0);
-    */
-
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
@@ -144,7 +140,12 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
             auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
             
             if (pActor)
+            {
+                // unsure if these flags are the best, but these are passed with the papyrus Activate fn
+                // might be an idea to have the client send the flags through NotifyActivate
+                spdlog::warn("Activating");
                 pObject->Activate(pActor, 0, 0, 1, 0);
+            }
         }
     }
 }

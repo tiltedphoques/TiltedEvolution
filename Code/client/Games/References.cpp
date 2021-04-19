@@ -539,8 +539,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
 
         POINTER_SKYRIMSE(TActivate, s_activate, 0x140296C00 - 0x140000000);
-        // Placeholder! Wrong address!
-        POINTER_FALLOUT4(TActivate, s_activate, 0x140296C00 - 0x140000000);
+        POINTER_FALLOUT4(TActivate, s_activate, 0x14040C750 - 0x140000000);
 
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
