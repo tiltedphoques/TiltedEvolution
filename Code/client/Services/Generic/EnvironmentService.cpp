@@ -66,6 +66,7 @@ void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
 
 BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* dispatcher)
 {
+#if ENVIRONMENT_DEBUG
     auto view = m_world.view<InteractiveObjectComponent>();
 
     const auto itor =
@@ -77,6 +78,7 @@ BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, cons
     {
         AddObjectComponent(acEvent->object);
     }
+#endif
 
     return BSTEventResult::kOk;
 }
@@ -245,11 +247,12 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 
 void EnvironmentService::OnDraw() noexcept
 {
+#if ENVIRONMENT_DEBUG
     static uint32_t s_selectedFormId = 0;
     static uint32_t s_selected = 0;
     static uint32_t formId;
 
-    ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Interactive object list");
     ImGui::BeginChild("Objects", ImVec2(0, 200), true);
 
@@ -326,4 +329,5 @@ void EnvironmentService::OnDraw() noexcept
     }
 
     ImGui::End();
+#endif
 }
