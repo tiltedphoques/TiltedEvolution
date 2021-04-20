@@ -6,8 +6,9 @@
 
 struct AuthenticationRequest final : ClientMessage
 {
-    AuthenticationRequest()
-        : ClientMessage(kAuthenticationRequest)
+    static constexpr ClientOpcode Opcode = kAuthenticationRequest;
+
+    AuthenticationRequest() : ClientMessage(Opcode)
     {
     }
 

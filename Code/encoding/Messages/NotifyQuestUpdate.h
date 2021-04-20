@@ -7,7 +7,9 @@ using TiltedPhoques::Map;
 
 struct NotifyQuestUpdate final : ServerMessage
 {
-    NotifyQuestUpdate() : ServerMessage(kNotifyQuestUpdate)
+    static constexpr ServerOpcode Opcode = kNotifyQuestUpdate;
+
+    NotifyQuestUpdate() : ServerMessage(Opcode)
     {
     }
 

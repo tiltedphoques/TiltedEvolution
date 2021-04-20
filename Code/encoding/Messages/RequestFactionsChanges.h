@@ -7,8 +7,9 @@ using TiltedPhoques::Map;
 
 struct RequestFactionsChanges final : ClientMessage
 {
-    RequestFactionsChanges()
-        : ClientMessage(kRequestFactionsChanges)
+    static constexpr ClientOpcode Opcode = kRequestFactionsChanges;
+
+    RequestFactionsChanges() : ClientMessage(Opcode)
     {
     }
 

@@ -8,8 +8,9 @@ using TiltedPhoques::Map;
 
 struct NotifyInventoryChanges final : ServerMessage
 {
-    NotifyInventoryChanges()
-        : ServerMessage(kNotifyInventoryChanges)
+    static constexpr ServerOpcode Opcode = kNotifyInventoryChanges;
+
+    NotifyInventoryChanges() : ServerMessage(Opcode)
     {
     }
 

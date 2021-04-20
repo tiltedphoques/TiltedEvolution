@@ -14,8 +14,10 @@ using TiltedPhoques::String;
 
 struct CharacterSpawnRequest final : ServerMessage
 {
+    static constexpr ServerOpcode Opcode = kCharacterSpawnRequest;
+
     CharacterSpawnRequest()
-        : ServerMessage(kCharacterSpawnRequest)
+        : ServerMessage(Opcode)
     {
     }
 

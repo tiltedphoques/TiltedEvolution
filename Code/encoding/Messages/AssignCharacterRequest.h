@@ -15,8 +15,9 @@ using TiltedPhoques::String;
 
 struct AssignCharacterRequest final : ClientMessage
 {
-    AssignCharacterRequest()
-        : ClientMessage(kAssignCharacterRequest)
+    static constexpr ClientOpcode Opcode = kAssignCharacterRequest;
+
+    AssignCharacterRequest() : ClientMessage(Opcode)
     {
     }
 

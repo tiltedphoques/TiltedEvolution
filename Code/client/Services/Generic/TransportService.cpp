@@ -1,3 +1,4 @@
+
 #include <Services/TransportService.h>
 
 #include <Events/UpdateEvent.h>
@@ -14,41 +15,14 @@
 
 #include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
-#include <TiltedCore/ScratchAllocator.hpp>
+#include <Messages/ServerMessageFactory.h>
+#include <Messages/EnterCellRequest.h>
 
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 
 #include <imgui.h>
 //#include <imgui_internal.h>
-
-#include <Messages/AuthenticationResponse.h>
-#include <Messages/ServerMessageFactory.h>
-#include <Messages/AssignCharacterResponse.h>
-#include <Messages/ServerReferencesMoveRequest.h>
-#include <Messages/EnterCellRequest.h>
-#include <Messages/CharacterSpawnRequest.h>
-#include <Messages/NotifyInventoryChanges.h>
-#include <Messages/NotifyFactionsChanges.h>
-#include <Messages/ServerTimeSettings.h>
-#include <Messages/NotifyRemoveCharacter.h>
-#include <Messages/NotifyQuestUpdate.h>
-#include <Messages/NotifyPlayerList.h>
-#include <Messages/NotifyPartyInfo.h>
-#include <Messages/NotifyPartyInvite.h>
-#include <Messages/NotifyCharacterTravel.h>
-#include <Messages/NotifyActorValueChanges.h>
-#include <Messages/NotifyActorMaxValueChanges.h>
-#include <Messages/NotifyHealthChangeBroadcast.h>
-#include <Messages/NotifySpawnData.h>
-
-#define TRANSPORT_DISPATCH(packetName) \
-case k##packetName: \
-    { \
-    const auto pRealMessage = TiltedPhoques::CastUnique<packetName>(std::move(pMessage)); \
-    m_dispatcher.trigger(*pRealMessage); \
-    } \
-    break; 
 
 using TiltedPhoques::Packet;
 
@@ -61,6 +35,25 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
     m_connected = false;
+
+    auto handlerGenerator = [this](auto& x) {
+        using T = typename std::remove_reference_t<decltype(x)>::Type;
+
+        m_messageHandlers[T::Opcode] = [this](UniquePtr<ServerMessage>& apMessage) {
+            const auto pRealMessage = TiltedPhoques::CastUnique<T>(std::move(apMessage));
+            m_dispatcher.trigger(*pRealMessage);
+        };
+
+        return false;
+    };
+
+    ServerMessageFactory::Visit(handlerGenerator);
+
+    // Override authentication response
+    m_messageHandlers[AuthenticationResponse::Opcode] = [this](UniquePtr<ServerMessage>& apMessage) {
+        const auto pRealMessage = TiltedPhoques::CastUnique<AuthenticationResponse>(std::move(apMessage));
+        HandleAuthenticationResponse(*pRealMessage);
+    };
 }
 
 bool TransportService::Send(const ClientMessage& acMessage) const noexcept
@@ -104,36 +97,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
         return;
     }
 
-    switch (pMessage->GetOpcode())
-    {
-    case kAuthenticationResponse:
-    {
-        const auto pRealMessage = TiltedPhoques::CastUnique<AuthenticationResponse>(std::move(pMessage));
-        HandleAuthenticationResponse(*pRealMessage);
-    }
-    break;
-
-    TRANSPORT_DISPATCH(AssignCharacterResponse);
-    TRANSPORT_DISPATCH(ServerReferencesMoveRequest);
-    TRANSPORT_DISPATCH(ServerTimeSettings);
-    TRANSPORT_DISPATCH(CharacterSpawnRequest);
-    TRANSPORT_DISPATCH(NotifyInventoryChanges);
-    TRANSPORT_DISPATCH(NotifyFactionsChanges);
-    TRANSPORT_DISPATCH(NotifyRemoveCharacter);
-    TRANSPORT_DISPATCH(NotifyQuestUpdate);
-    TRANSPORT_DISPATCH(NotifyPlayerList);
-    TRANSPORT_DISPATCH(NotifyPartyInfo);
-    TRANSPORT_DISPATCH(NotifyPartyInvite);
-    TRANSPORT_DISPATCH(NotifyCharacterTravel);
-    TRANSPORT_DISPATCH(NotifyActorValueChanges);
-    TRANSPORT_DISPATCH(NotifyActorMaxValueChanges);
-    TRANSPORT_DISPATCH(NotifyHealthChangeBroadcast);
-    TRANSPORT_DISPATCH(NotifySpawnData);
-
-    default:
-        spdlog::error("Client message opcode {} from server has no handler", pMessage->GetOpcode());
-        break;
-    }
+    m_messageHandlers[pMessage->GetOpcode()](pMessage);
 }
 
 void TransportService::OnConnected()

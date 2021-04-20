@@ -4,8 +4,9 @@
 
 struct ClientRpcCalls final : ClientMessage
 {
-    ClientRpcCalls()
-        : ClientMessage(kClientRpcCalls)
+    static constexpr ClientOpcode Opcode = kClientRpcCalls;
+
+    ClientRpcCalls() : ClientMessage(Opcode)
     {
     }
 

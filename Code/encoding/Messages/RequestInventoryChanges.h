@@ -7,8 +7,9 @@ using TiltedPhoques::Map;
 
 struct RequestInventoryChanges final : ClientMessage
 {
-    RequestInventoryChanges()
-        : ClientMessage(kRequestInventoryChanges)
+    static constexpr ClientOpcode Opcode = kRequestInventoryChanges;
+
+    RequestInventoryChanges() : ClientMessage(Opcode)
     {
     }
 

@@ -4,7 +4,9 @@
 
 struct NotifyHealthChangeBroadcast final : ServerMessage
 {
-    NotifyHealthChangeBroadcast() : ServerMessage(kNotifyHealthChangeBroadcast)
+    static constexpr ServerOpcode Opcode = kNotifyHealthChangeBroadcast;
+
+    NotifyHealthChangeBroadcast() : ServerMessage(Opcode)
     {
     }
 

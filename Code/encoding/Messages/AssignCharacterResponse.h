@@ -2,14 +2,13 @@
 
 #include "Message.h"
 #include <Structs/Mods.h>
-#include <Structs/Scripts.h>
-#include <Structs/FullObjects.h>
 #include <Structs/ActorValues.h>
 
 struct AssignCharacterResponse final : ServerMessage
 {
-    AssignCharacterResponse()
-        : ServerMessage(kAssignCharacterResponse)
+    static constexpr ServerOpcode Opcode = kAssignCharacterResponse;
+
+    AssignCharacterResponse() : ServerMessage(Opcode)
     {
     }
 

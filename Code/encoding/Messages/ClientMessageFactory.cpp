@@ -2,61 +2,41 @@
 
 #include <Messages/ClientMessageFactory.h>
 
-#include <Messages/AuthenticationRequest.h>
-#include <Messages/AssignCharacterRequest.h>
-#include <Messages/CancelAssignmentRequest.h>
-#include <Messages/RemoveCharacterRequest.h>
-#include <Messages/ClientReferencesMoveRequest.h>
-#include <Messages/EnterCellRequest.h>
-#include <Messages/ClientRpcCalls.h>
-#include <Messages/RequestInventoryChanges.h>
-#include <Messages/RequestFactionsChanges.h>
-#include <Messages/RequestQuestUpdate.h>
-#include <Messages/PartyInviteRequest.h>
-#include <Messages/PartyAcceptInviteRequest.h>
-#include <Messages/PartyLeaveRequest.h>
-#include <Messages/CharacterTravelRequest.h>
-#include <Messages/RequestActorValueChanges.h>
-#include <Messages/RequestActorMaxValueChanges.h>
-#include <Messages/RequestHealthChangeBroadcast.h>
-#include <Messages/RequestSpawnData.h>
+static std::function<UniquePtr<ClientMessage>(TiltedPhoques::Buffer::Reader& aReader)>
+    s_clientMessageExtractor[kClientOpcodeMax];
 
-#include <iostream>
+namespace details
+{
+    struct S
+    {
+        S()
+        {
+            auto extractor = [](auto& x) {
+                using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-#define EXTRACT_MESSAGE(Name) case k##Name: \
-    { \
-        auto ptr = TiltedPhoques::MakeUnique<Name>(); \
-        ptr->DeserializeRaw(aReader); \
-        return TiltedPhoques::CastUnique<ClientMessage>(std::move(ptr)); \
-    }
+                s_clientMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) {
+                    auto ptr = TiltedPhoques::MakeUnique<T>();
+                    ptr->DeserializeRaw(aReader);
+                    return TiltedPhoques::CastUnique<ClientMessage>(std::move(ptr));
+                };
+
+                return false;
+            };
+
+            ClientMessageFactory::Visit(extractor);
+        }
+    } s;
+}
+
 
 UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Reader& aReader) const noexcept
 {
     uint64_t data;
     aReader.ReadBits(data, sizeof(ClientOpcode) * 8);
 
-    const auto opcode = static_cast<ClientOpcode>(data);
-    switch(opcode)
-    {
-        EXTRACT_MESSAGE(AuthenticationRequest);
-        EXTRACT_MESSAGE(AssignCharacterRequest);
-        EXTRACT_MESSAGE(CancelAssignmentRequest);
-        EXTRACT_MESSAGE(RemoveCharacterRequest);
-        EXTRACT_MESSAGE(ClientReferencesMoveRequest);
-        EXTRACT_MESSAGE(EnterCellRequest);
-        EXTRACT_MESSAGE(ClientRpcCalls);
-        EXTRACT_MESSAGE(RequestInventoryChanges);
-        EXTRACT_MESSAGE(RequestFactionsChanges);
-        EXTRACT_MESSAGE(RequestQuestUpdate);
-        EXTRACT_MESSAGE(PartyInviteRequest);
-        EXTRACT_MESSAGE(PartyAcceptInviteRequest);
-        EXTRACT_MESSAGE(PartyLeaveRequest);
-        EXTRACT_MESSAGE(CharacterTravelRequest);
-        EXTRACT_MESSAGE(RequestActorValueChanges);
-        EXTRACT_MESSAGE(RequestActorMaxValueChanges);
-        EXTRACT_MESSAGE(RequestHealthChangeBroadcast);
-        EXTRACT_MESSAGE(RequestSpawnData);
-    }
+    if (data >= kClientOpcodeMax) [[unlikely]]
+        return {nullptr};
 
-    return UniquePtr<ClientMessage>(nullptr);
+    const auto opcode = static_cast<ClientOpcode>(data);
+    return s_clientMessageExtractor[opcode](aReader);
 }
