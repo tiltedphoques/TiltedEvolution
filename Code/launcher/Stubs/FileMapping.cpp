@@ -8,6 +8,7 @@
 #include <TiltedCore/Initializer.hpp>
 
 #include "Launcher.h"
+#include "DllBlocklist.h"
 #include "Utils/NtInternal.h"
 
 static fs::path s_OverridePath;
@@ -16,7 +17,7 @@ static DWORD(WINAPI* RealGetModuleFileNameW)(HMODULE, LPWSTR, DWORD) = nullptr;
 static DWORD(WINAPI* RealGetModuleFileNameA)(HMODULE, LPSTR, DWORD) = nullptr;
 static HMODULE(WINAPI* RealGetModuleHandleW)(LPCWSTR) = nullptr;
 static HMODULE(WINAPI* RealGetModuleHandleA)(LPSTR) = nullptr;
-static NTSTATUS(WINAPI* RealLdrLoadDll)(WCHAR*, ULONG, UNICODE_STRING*, HANDLE*) = nullptr;
+static NTSTATUS(WINAPI* RealLdrLoadDll)(const wchar_t*, uint32_t*, UNICODE_STRING*, HANDLE*) = nullptr;
 
 // if the module path functions are called from any TP dll within the TP bin folder we return the real path to TiltedOnline.exe
 bool IsLocalModulePath(void *apAddress)
@@ -50,8 +51,7 @@ static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, D
     if (aModule == nullptr || aModule == NtInternal::ThePeb()->pImageBase)
     {
         void* rbp = _ReturnAddress(); 
-
-        if (!IsLocalModulePath(rbp))
+        if (!IsLocalModulePath(rbp) && GetLauncher())
         {
             auto& aExePath = GetLauncher()->GetExePath();
             StringCchCopyW(alpFilename, aSize, aExePath.c_str());
@@ -59,7 +59,6 @@ static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, D
             return static_cast<DWORD>(std::wcslen(alpFilename));
         }
     }
-
 
     return RealGetModuleFileNameW(aModule, alpFilename, aSize);
 }
@@ -72,7 +71,7 @@ static DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, LPSTR alpFileName, DW
     {
         void* rbp = _ReturnAddress();
 
-        if (!IsLocalModulePath(rbp))
+        if (!IsLocalModulePath(rbp) && GetLauncher())
         {
 
             auto aExePath = GetLauncher()->GetExePath().u8string();
@@ -137,31 +136,44 @@ HMODULE WINAPI TP_GetModuleHandleA(LPSTR alpModuleName)
     return RealGetModuleHandleA(alpModuleName);
 }
 
-NTSTATUS WINAPI TP_LdrLoadDll(WCHAR *apPathToFile, ULONG aFlags, UNICODE_STRING *apModuleFileName, HANDLE *apModuleHandle)
+NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_STRING* apFileName, HANDLE* apHandle)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
+    std::wstring fileName(apFileName->Buffer, apFileName->Length / sizeof(wchar_t));
+    size_t pos = fileName.find_last_of(L'\\');
+    // just to make sure..
+    if (pos != std::wstring::npos && (pos + 1) != fileName.length())
+    {
+        if (stubs::IsDllBlocked(&fileName[pos + 1]))
+        {
+            return STATUS_DLL_NOT_FOUND;
+        }
+    }
+
     // will be used in the future to blacklist mods that break ST/FT
-    return RealLdrLoadDll(apPathToFile, aFlags, apModuleFileName, apModuleHandle);
+    return RealLdrLoadDll(apPath, apFlags, apFileName, apHandle);
 }
 
-static TiltedPhoques::Initializer s_Init([] {
+// free function until we introduce a second TP initializer init chain
+void CoreStubsInit()
+{
+    s_OverridePath = TiltedPhoques::GetPath();
 
-    // workaround until TPCore is updated
-   static std::once_flag s_initGuard;
+    MH_Initialize();
 
-   std::call_once(s_initGuard, []() { 
-       
-       s_OverridePath = TiltedPhoques::GetPath();
+    // check if we are started from mod organizer 2, if so, we disable our hooks.
+    // this will require a proper fix in the future, but for now it does the job.
+    if (!GetModuleHandleW(L"usvfs_x64.dll"))
+    {
+        MH_CreateHookApi(L"Kernel32.dll", "GetModuleFileNameW", &TP_GetModuleFileNameW,
+                         (void**)&RealGetModuleFileNameW);
+        MH_CreateHookApi(L"Kernel32.dll", "GetModuleFileNameA", &TP_GetModuleFileNameA,
+                         (void**)&RealGetModuleFileNameA);
+        MH_CreateHookApi(L"Kernel32.dll", "GetModuleHandleW", &TP_GetModuleHandleW, (void**)&RealGetModuleHandleW);
+        MH_CreateHookApi(L"Kernel32.dll", "GetModuleHandleA", &TP_GetModuleHandleA, (void**)&RealGetModuleHandleA);
+    }
 
-       MH_Initialize();
-
-       MH_CreateHookApi(L"Kernel32.dll", "GetModuleFileNameW", &TP_GetModuleFileNameW, (void**)&RealGetModuleFileNameW);
-       MH_CreateHookApi(L"Kernel32.dll", "GetModuleFileNameA", &TP_GetModuleFileNameA, (void**)&RealGetModuleFileNameA);
-       MH_CreateHookApi(L"Kernel32.dll", "GetModuleHandleW", &TP_GetModuleHandleW, (void**)&RealGetModuleHandleW);
-       MH_CreateHookApi(L"Kernel32.dll", "GetModuleHandleA", &TP_GetModuleHandleA, (void**)&RealGetModuleHandleA);
-      // MH_CreateHookApi(L"ntdll.dll", "LdrLoadDll", &TP_LdrLoadDll, (void**)&RealLdrLoadDll);
-
-       MH_EnableHook(nullptr);
-   });
-});
+    MH_CreateHookApi(L"ntdll.dll", "LdrLoadDll", &TP_LdrLoadDll, (void**)&RealLdrLoadDll);
+    MH_EnableHook(nullptr);
+}

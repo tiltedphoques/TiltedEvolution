@@ -23,6 +23,8 @@ class Launcher
     const fs::path& GetExePath() const;
 
   private:
+    void InitPathEnvironment() noexcept;
+
     enum class AppState
     {
         kFailed,
@@ -33,7 +35,7 @@ class Launcher
     TitleId m_titleId{TitleId::kUnknown};
 
     bool m_bReselectFlag = false;
-    HMODULE m_pGameClientHandle = nullptr;
+    HMODULE m_pClientHandle = nullptr;
     fs::path m_gamePath;
     fs::path m_exePath;
 };
