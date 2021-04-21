@@ -98,10 +98,8 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    GameId id{};
     uint32_t baseId = 0;
     uint32_t modId = 0;
-
     if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, modId, baseId))
         return;
 
@@ -111,7 +109,10 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
 
     ActivateRequest request;
-    request.Id = id;
+    request.Id.BaseId = baseId;
+    request.Id.ModId = modId;
+    request.CellId.BaseId = cellBaseId;
+    request.CellId.ModId = cellModId;
 
     auto view = m_world.view<FormIdComponent>();
     const auto pEntity =
