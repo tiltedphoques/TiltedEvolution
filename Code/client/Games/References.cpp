@@ -10,6 +10,8 @@
 #include <Forms/TESNPC.h>
 #include <SaveLoad.h>
 
+#include <Events/ActivateEvent.h>
+
 #include <BSAnimationGraphManager.h>
 #include <Misc/GameVM.h>
 #include <Havok/BShkbAnimationGraph.h>
@@ -34,12 +36,14 @@ thread_local uint32_t ScopedReferencesOverride::s_refCount = 0;
 TP_THIS_FUNCTION(TSetPosition, char, Actor, NiPoint3& acPosition);
 TP_THIS_FUNCTION(TRotate, void, TESObjectREFR, float aAngle);
 TP_THIS_FUNCTION(TActorProcess, char, Actor, float aValue);
+TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4);
 
 static TSetPosition* RealSetPosition = nullptr;
 static TRotate* RealRotateX = nullptr;
 static TRotate* RealRotateY = nullptr;
 static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
+static TActivate* RealActivate = nullptr;
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
@@ -282,6 +286,11 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
+void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4) noexcept
+{
+    return ThisCall(RealActivate, this, apActivator, aUnk1, aUnk2, aUnk3, aUnk4);
+}
+
 float Actor::GetSpeed() noexcept
 {
     static BSFixedString speedSampledStr("SpeedSampled");
@@ -502,6 +511,15 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
     return ThisCall(RealActorProcess, apThis, a2);
 }
 
+void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4)
+{
+    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    if (pActivator)
+        World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, aUnk1, aUnk2, aUnk3, aUnk4));
+
+    return ThisCall(RealActivate, apThis, apActivator, aUnk1, aUnk2, aUnk3, aUnk4);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x140296910 - 0x140000000);
@@ -519,16 +537,21 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 0x1405D87F0 - 0x140000000);
         POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
 
+        POINTER_SKYRIMSE(TActivate, s_activate, 0x140296C00 - 0x140000000);
+        POINTER_FALLOUT4(TActivate, s_activate, 0x14040C750 - 0x140000000);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
         RealRotateZ = s_rotateZ.Get();
         RealActorProcess = s_actorProcess.Get();
+        RealActivate = s_activate.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
         TP_HOOK(&RealRotateY, HookRotateY);
         TP_HOOK(&RealRotateZ, HookRotateZ);
         TP_HOOK(&RealActorProcess, HookActorProcess);
+        TP_HOOK(&RealActivate, HookActivate);
     });
 

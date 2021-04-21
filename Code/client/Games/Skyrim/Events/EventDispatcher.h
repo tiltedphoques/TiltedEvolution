@@ -45,7 +45,7 @@ struct BGSEventProcessedEvent
 
 struct TESActivateEvent
 {
-
+    TESObjectREFR* object;
 };
 
 struct TESActiveEffectApplyRemove

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <TESObjectREFR.h>
+
 template <class T> struct BSTEventSink;
 
 // Very nasty work around to avoid template code duplication
@@ -53,6 +55,11 @@ struct TESQuestStageEvent
     bool bUnk;
 };
 
+struct TESActivateEvent
+{
+    TESObjectREFR* object;
+};
+
 #define DECLARE_DISPATCHER(name, address) \
 inline EventDispatcher<name>* GetEventDispatcher_##name() \
     { \
@@ -64,3 +71,4 @@ inline EventDispatcher<name>* GetEventDispatcher_##name() \
 DECLARE_DISPATCHER(TESQuestStartStopEvent, 0x1404438B0);
 DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 0x140443810);
 DECLARE_DISPATCHER(TESQuestStageEvent, 0x140443770);
+DECLARE_DISPATCHER(TESActivateEvent, 0x140441C90);

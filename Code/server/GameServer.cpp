@@ -10,7 +10,6 @@
 
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
-
 #include <Scripts/Player.h>
 
 #if TP_PLATFORM_WINDOWS

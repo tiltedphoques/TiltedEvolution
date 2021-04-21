@@ -14,5 +14,6 @@
 #include <Components/CacheComponent.h>
 #include <Components/WaitingFor3D.h>
 #include <Components/ActorValuesComponent.h>
+#include <Components/InteractiveObjectComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD
