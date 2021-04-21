@@ -98,8 +98,20 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
+    GameId id{};
+    uint32_t baseId = 0;
+    uint32_t modId = 0;
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, modId, baseId))
+        return;
+
+    uint32_t cellBaseId = 0;
+    uint32_t cellModId = 0;
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), cellModId, cellBaseId))
+        return;
+
     ActivateRequest request;
-    request.Id = acEvent.pObject->formID;
+    request.Id = id;
 
     auto view = m_world.view<FormIdComponent>();
     const auto pEntity =
@@ -136,7 +148,20 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
 
         if (componentId == acMessage.ActivatorId)
         {
-            auto* pObject = RTTI_CAST(TESForm::GetById(acMessage.Id), TESForm, TESObjectREFR);
+            const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
+            if (cObjectId == 0)
+            {
+                spdlog::error("Failed to retrieve object to activate.");
+                return;
+            }
+
+            auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+            if (!pObject)
+            {
+                spdlog::error("Failed to retrieve object to activate.");
+                return;
+            }
+
             auto& formIdComponent = view.get<FormIdComponent>(entity);
             auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
             

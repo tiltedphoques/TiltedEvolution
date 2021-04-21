@@ -2,9 +2,13 @@
 
 #include "Message.h"
 
+#include <Structs/GameId.h>
+
 struct ActivateRequest final : ClientMessage
 {
-    ActivateRequest() : ClientMessage(kActivateRequest)
+    static constexpr ClientOpcode Opcode = kActivateRequest;
+
+    ActivateRequest() : ClientMessage(Opcode)
     {
     }
 
@@ -18,6 +22,7 @@ struct ActivateRequest final : ClientMessage
                GetOpcode() == acRhs.GetOpcode();
     }
 
-    uint32_t Id;
+    GameId Id;
+    GameId CellId;
     uint32_t ActivatorId;
 };

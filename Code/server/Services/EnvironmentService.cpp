@@ -34,12 +34,13 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
     notifyActivate.Id = acMessage.Packet.Id;
     notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
 
-    auto view = m_world.view<PlayerComponent>();
+    auto view = m_world.view<PlayerComponent, CellIdComponent>();
     for (auto entity : view)
     {
         auto& player = view.get<PlayerComponent>(entity);
+        auto& cell = view.get<CellIdComponent>(entity);
 
-        if (player.ConnectionId != acMessage.ConnectionId)
+        if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyActivate);
         }

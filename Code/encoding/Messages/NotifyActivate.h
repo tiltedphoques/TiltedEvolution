@@ -2,9 +2,12 @@
 
 #include "Message.h"
 
+#include <Structs/GameId.h>
+
 struct NotifyActivate final : ServerMessage
 {
-    NotifyActivate() : ServerMessage(kNotifyActivate)
+    static constexpr ServerOpcode Opcode = kNotifyActivate;
+    NotifyActivate() : ServerMessage(Opcode)
     {
     }
 
@@ -18,6 +21,6 @@ struct NotifyActivate final : ServerMessage
                GetOpcode() == acRhs.GetOpcode();
     }
 
-    uint32_t Id;
+    GameId Id;
     uint32_t ActivatorId;
 };

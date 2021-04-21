@@ -10,24 +10,6 @@
 
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
-<<<<<<< HEAD
-#include <Messages/EnterCellRequest.h>
-#include <Messages/ClientReferencesMoveRequest.h>
-#include <Messages/RequestInventoryChanges.h>
-#include <Messages/RequestFactionsChanges.h>
-#include <Messages/RequestQuestUpdate.h>
-#include <Messages/PartyInviteRequest.h>
-#include <Messages/PartyAcceptInviteRequest.h> 
-#include <Messages/PartyLeaveRequest.h> 
-#include <Messages/CharacterTravelRequest.h> 
-#include <Messages/RequestActorValueChanges.h>
-#include <Messages/RequestActorMaxValueChanges.h>
-#include <Messages/RequestHealthChangeBroadcast.h>
-#include <Messages/RequestSpawnData.h>
-#include <Messages/ActivateRequest.h>
-=======
->>>>>>> master
-
 #include <Scripts/Player.h>
 
 #if TP_PLATFORM_WINDOWS
@@ -116,41 +98,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         return;
     }
 
-<<<<<<< HEAD
-    auto& dispatcher = m_pWorld->GetDispatcher();
-
-    switch(pMessage->GetOpcode())
-    {
-    case kAuthenticationRequest:
-    {
-        const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(pMessage));
-        HandleAuthenticationRequest(aConnectionId, pRealMessage);
-        break;
-    }
-        SERVER_DISPATCH(RemoveCharacterRequest);
-        SERVER_DISPATCH(AssignCharacterRequest);
-        SERVER_DISPATCH(CancelAssignmentRequest);
-        SERVER_DISPATCH(ClientReferencesMoveRequest);
-        SERVER_DISPATCH(EnterCellRequest);
-        SERVER_DISPATCH(RequestInventoryChanges);
-        SERVER_DISPATCH(RequestFactionsChanges);
-        SERVER_DISPATCH(RequestQuestUpdate);
-        SERVER_DISPATCH(PartyInviteRequest);
-        SERVER_DISPATCH(PartyAcceptInviteRequest);
-        SERVER_DISPATCH(PartyLeaveRequest);
-        SERVER_DISPATCH(CharacterTravelRequest);
-        SERVER_DISPATCH(RequestActorValueChanges);
-        SERVER_DISPATCH(RequestActorMaxValueChanges);
-        SERVER_DISPATCH(RequestHealthChangeBroadcast);
-        SERVER_DISPATCH(RequestSpawnData);
-        SERVER_DISPATCH(ActivateRequest);
-    default:
-        spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
-        break;
-    }
-=======
     m_messageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
->>>>>>> master
 }
 
 void GameServer::OnConnection(const ConnectionId_t aHandle)

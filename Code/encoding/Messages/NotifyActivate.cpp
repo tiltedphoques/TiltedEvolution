@@ -2,7 +2,7 @@
 
 void NotifyActivate::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, Id);
+    Id.Serialize(aWriter);
     Serialization::WriteVarInt(aWriter, ActivatorId);
 }
 
@@ -10,6 +10,6 @@ void NotifyActivate::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noex
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Id.Deserialize(aReader);
     ActivatorId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
