@@ -4,8 +4,10 @@
 
 struct NotifyPartyInvite final : ServerMessage
 {
+    static constexpr ServerOpcode Opcode = kNotifyPartyInvite;
+
     NotifyPartyInvite() : 
-        ServerMessage(kNotifyPartyInvite)
+        ServerMessage(Opcode)
     {
     }
 

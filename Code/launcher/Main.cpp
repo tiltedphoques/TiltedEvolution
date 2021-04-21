@@ -4,6 +4,8 @@
 #include "Utils/Error.h"
 #include "Utils/RipZone.h"
 
+extern void CoreStubsInit();
+
 extern "C"
 {
     __declspec(dllexport) int NvOptimusEnablement = 1;
@@ -25,6 +27,7 @@ struct ComInitializer
 
 int main(int argc, char** argv)
 {
+    CoreStubsInit();
     if (!LowRipZoneInit())
     {
         FatalError(L"Failed to initialize rip zone.\nCannot continue!");

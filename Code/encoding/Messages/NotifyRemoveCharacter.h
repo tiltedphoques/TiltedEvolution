@@ -4,8 +4,9 @@
 
 struct NotifyRemoveCharacter final : ServerMessage
 {
-    NotifyRemoveCharacter()
-        : ServerMessage(kNotifyRemoveCharacter)
+    static constexpr ServerOpcode Opcode = kNotifyRemoveCharacter;
+
+    NotifyRemoveCharacter() : ServerMessage(Opcode)
     {
     }
 

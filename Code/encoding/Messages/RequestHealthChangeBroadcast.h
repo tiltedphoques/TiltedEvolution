@@ -4,7 +4,9 @@
 
 struct RequestHealthChangeBroadcast final : ClientMessage
 {
-    RequestHealthChangeBroadcast() : ClientMessage(kRequestHealthChangeBroadcast)
+    static constexpr ClientOpcode Opcode = kRequestHealthChangeBroadcast;
+
+    RequestHealthChangeBroadcast() : ClientMessage(Opcode)
     {
     }
 

@@ -62,7 +62,7 @@
 #include <fstream>
 
 #include <Utils.h>
-#include <common/BuildInfo.h>
+#include <BuildInfo.h>
 #include <Games/Primitives.h>
 
 

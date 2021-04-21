@@ -9,11 +9,8 @@
 #include <Events/PlayerLeaveEvent.h>
 
 #include <Messages/ClientMessageFactory.h>
-#include <Messages/AuthenticationRequest.h>
-#include <Messages/CancelAssignmentRequest.h>
-#include <Messages/RemoveCharacterRequest.h>
-#include <Messages/AssignCharacterRequest.h>
 #include <Messages/AuthenticationResponse.h>
+<<<<<<< HEAD
 #include <Messages/EnterCellRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/RequestInventoryChanges.h>
@@ -28,19 +25,14 @@
 #include <Messages/RequestHealthChangeBroadcast.h>
 #include <Messages/RequestSpawnData.h>
 #include <Messages/ActivateRequest.h>
+=======
+>>>>>>> master
 
 #include <Scripts/Player.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
 #endif
-
-#define SERVER_HANDLE(packetName, functionName) case TiltedMessages::ClientMessage::k##packetName: Handle##packetName(aConnectionId, message.functionName()); break;
-#define SERVER_DISPATCH(packetName) case k##packetName: \
-{\
-    const auto pRealMessage = CastUnique<packetName>(std::move(pMessage)); \
-    dispatcher.trigger(PacketEvent<packetName>(pRealMessage.get(), aConnectionId)); break; \
-}
 
 GameServer* GameServer::s_pInstance = nullptr;
 
@@ -63,6 +55,26 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     SetTitle();
 
     m_pWorld = std::make_unique<World>();
+
+    auto handlerGenerator = [this](auto& x)
+    {
+        using T = typename std::remove_reference_t<decltype(x)>::Type;
+
+        m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
+            const auto pRealMessage = CastUnique<T>(std::move(apMessage));
+            m_pWorld->GetDispatcher().trigger(PacketEvent<T>(pRealMessage.get(), aConnectionId));
+        };
+
+        return false;
+    };
+
+    ClientMessageFactory::Visit(handlerGenerator);
+
+    // Override authentication request
+    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
+        const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(apMessage));
+        HandleAuthenticationRequest(aConnectionId, pRealMessage);
+    };
 }
 
 GameServer::~GameServer()
@@ -104,6 +116,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         return;
     }
 
+<<<<<<< HEAD
     auto& dispatcher = m_pWorld->GetDispatcher();
 
     switch(pMessage->GetOpcode())
@@ -135,6 +148,9 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         spdlog::error("Client message opcode {} from {:x} has no handler", pMessage->GetOpcode(), aConnectionId);
         break;
     }
+=======
+    m_messageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
+>>>>>>> master
 }
 
 void GameServer::OnConnection(const ConnectionId_t aHandle)

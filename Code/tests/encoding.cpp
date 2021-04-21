@@ -1,22 +1,10 @@
+
 #include <catch2/catch.hpp>
-#include "Messages/ClientReferencesMoveRequest.h"
 
 #include <Messages/ClientMessageFactory.h>
-#include <Messages/AuthenticationRequest.h>
-#include <Messages/AuthenticationResponse.h>
-#include <Messages/CancelAssignmentRequest.h>
-#include <Messages/RemoveCharacterRequest.h>
-#include <Messages/AssignCharacterRequest.h>
-#include <Structs/ActionEvent.h>
-#include <Structs/Mods.h>
-#include <Structs/FullObjects.h>
-#include <Structs/Objects.h>
-#include <Structs/Scripts.h>
-#include <Structs/GameId.h>
-#include <Structs/Vector3_NetQuantize.h>
+#include <Messages/ServerMessageFactory.h>
 #include <Structs/Vector2_NetQuantize.h>
-#include <Structs/Rotator2_NetQuantize.h>
-  
+ 
 #include <TiltedCore/Math.hpp>
 
 using namespace TiltedPhoques;
@@ -25,22 +13,43 @@ TEST_CASE("Encoding factory", "[encoding.factory]")
 {
     Buffer buff(1000);
 
-    AuthenticationRequest request;
-    request.Token = "TesSt";
+    {
+        AuthenticationRequest request;
+        request.Token = "TesSt";
 
-    Buffer::Writer writer(&buff);
-    request.Serialize(writer);
+        Buffer::Writer writer(&buff);
+        request.Serialize(writer);
 
-    Buffer::Reader reader(&buff);
+        Buffer::Reader reader(&buff);
 
-    const ClientMessageFactory factory;
-    auto pMessage = factory.Extract(reader);
+        const ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
 
-    REQUIRE(pMessage);
-    REQUIRE(pMessage->GetOpcode() == request.GetOpcode());
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == request.GetOpcode());
 
-    auto pRequest = CastUnique<AuthenticationRequest>(std::move(pMessage));
-    REQUIRE(pRequest->Token == request.Token);
+        auto pRequest = CastUnique<AuthenticationRequest>(std::move(pMessage));
+        REQUIRE(pRequest->Token == request.Token);
+    }
+
+    {
+        PartyAcceptInviteRequest request;
+        request.InviterId = 123456;
+
+        Buffer::Writer writer(&buff);
+        request.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == request.GetOpcode());
+
+        auto pRequest = CastUnique<PartyAcceptInviteRequest>(std::move(pMessage));
+        REQUIRE(pRequest->InviterId == request.InviterId);
+    }
 }
 
 TEST_CASE("Static structures", "[encoding.static]")

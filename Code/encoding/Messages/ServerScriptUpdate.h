@@ -5,8 +5,9 @@
 
 struct ServerScriptUpdate final : ServerMessage
 {
-    ServerScriptUpdate()
-        : ServerMessage(kServerScriptUpdate)
+    static constexpr ServerOpcode Opcode = kServerScriptUpdate;
+
+    ServerScriptUpdate() : ServerMessage(Opcode)
     {
     }
 

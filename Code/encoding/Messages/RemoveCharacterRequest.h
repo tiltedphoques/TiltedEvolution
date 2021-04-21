@@ -4,8 +4,9 @@
 
 struct RemoveCharacterRequest final : ClientMessage
 {
-    RemoveCharacterRequest()
-        : ClientMessage(kRemoveCharacterRequest)
+    static constexpr ClientOpcode Opcode = kRemoveCharacterRequest;
+
+    RemoveCharacterRequest() : ClientMessage(Opcode)
     {
     }
 

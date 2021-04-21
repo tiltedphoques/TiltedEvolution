@@ -4,7 +4,9 @@
 
 struct PartyAcceptInviteRequest final : ClientMessage
 {
-    PartyAcceptInviteRequest() : ClientMessage(kPartyAcceptInviteRequest)
+    static constexpr ClientOpcode Opcode = kPartyAcceptInviteRequest;
+
+    PartyAcceptInviteRequest() : ClientMessage(Opcode)
     {
     }
 

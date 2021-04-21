@@ -8,8 +8,9 @@ using TiltedPhoques::Map;
 
 struct ServerReferencesMoveRequest final : ServerMessage
 {
-    ServerReferencesMoveRequest()
-        : ServerMessage(kServerReferencesMoveRequest)
+    static constexpr ServerOpcode Opcode = kServerReferencesMoveRequest;
+
+    ServerReferencesMoveRequest() : ServerMessage(Opcode)
     {
     }
 
