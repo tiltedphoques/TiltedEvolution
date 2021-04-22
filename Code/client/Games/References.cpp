@@ -25,10 +25,8 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Misc/DoorTravelData.h>
 
 #include <Events/LockChangeEvent.h>
-#include <Events/UnlockConnectedCellsEvent.h>
 
 #include <TiltedCore/Serialization.hpp>
 
@@ -43,7 +41,6 @@ TP_THIS_FUNCTION(TRotate, void, TESObjectREFR, float aAngle);
 TP_THIS_FUNCTION(TActorProcess, char, Actor, float aValue);
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4);
 TP_THIS_FUNCTION(TLockChange, void, TESObjectREFR);
-TP_THIS_FUNCTION(TUnlockConnectedCells, void, DoorTravelData, TESObjectREFR*, bool)
 
 static TSetPosition* RealSetPosition = nullptr;
 static TRotate* RealRotateX = nullptr;
@@ -52,7 +49,6 @@ static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
 static TActivate* RealActivate = nullptr;
 static TLockChange* RealLockChange = nullptr;
-static TUnlockConnectedCells* RealUnlockConnectedCells = nullptr;
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
@@ -474,15 +470,6 @@ void TESObjectREFR::LockChange() noexcept
     ThisCall(RealLockChange, this);
 }
 
-DoorTravelData* TESObjectREFR::GetTeleportData() noexcept
-{
-    TP_THIS_FUNCTION(TGetTeleportData, DoorTravelData*, TESObjectREFR);
-    POINTER_SKYRIMSE(TGetTeleportData, realGetTeleportData, 0x1402A71A0 - 0x140000000);
-    POINTER_FALLOUT4(TGetTeleportData, realGetTeleportData, 0x14047FC20 - 0x140000000);
-
-    return ThisCall(realGetTeleportData, this);
-}
-
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
@@ -571,12 +558,6 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     ThisCall(RealLockChange, apThis);
 }
 
-void TP_MAKE_THISCALL(HookUnlockConnectedCells, DoorTravelData, TESObjectREFR* apDoor, bool abIsUnlocked)
-{
-    World::Get().GetRunner().Trigger(UnlockConnectedCellsEvent(apDoor, abIsUnlocked));
-    ThisCall(RealUnlockConnectedCells, apThis, apDoor, abIsUnlocked);
-}
-
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x140296910 - 0x140000000);
@@ -600,9 +581,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x140285BE0 - 0x140000000);
         POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
 
-        POINTER_SKYRIMSE(TUnlockConnectedCells, s_unlockConnectedCells, 0x140144670 - 0x140000000);
-        POINTER_FALLOUT4(TUnlockConnectedCells, s_unlockConnectedCells, 0x1400E0260 - 0x140000000);
-
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -610,7 +588,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealActorProcess = s_actorProcess.Get();
         RealActivate = s_activate.Get();
         RealLockChange = s_lockChange.Get();
-        RealUnlockConnectedCells = s_unlockConnectedCells.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -619,6 +596,5 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealActorProcess, HookActorProcess);
         TP_HOOK(&RealActivate, HookActivate);
         TP_HOOK(&RealLockChange, HookLockChange);
-        TP_HOOK(&RealUnlockConnectedCells, HookUnlockConnectedCells);
     });
 

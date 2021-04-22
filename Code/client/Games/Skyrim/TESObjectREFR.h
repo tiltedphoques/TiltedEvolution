@@ -7,7 +7,6 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Misc/DoorTravelData.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -141,7 +140,6 @@ struct TESObjectREFR : TESForm
     ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() noexcept;
-    DoorTravelData* GetTeleportData() noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;

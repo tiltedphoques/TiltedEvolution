@@ -6,7 +6,6 @@
 #include <Forms/ActorValueInfo.h>
 #include <Misc/ActorValueOwner.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Misc/DoorTravelData.h>
 
 struct NiNode;
 struct BSFaceGenNiNode;
@@ -149,7 +148,6 @@ struct TESObjectREFR : TESForm
     BSExtraDataList* GetExtraDataList() noexcept;
     ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
     Lock* GetLock() noexcept;
-    DoorTravelData* GetTeleportData() noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
