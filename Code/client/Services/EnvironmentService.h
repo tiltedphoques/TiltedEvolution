@@ -12,6 +12,8 @@ struct UpdateEvent;
 struct ActivateEvent;
 struct TransportService;
 struct NotifyActivate;
+struct LockChangeEvent;
+struct NotifyLockChange;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
@@ -25,8 +27,10 @@ public:
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
     void OnDraw() noexcept;
-    void OnActivate(const ActivateEvent&) noexcept;
-    void OnActivateNotify(const NotifyActivate&) noexcept;
+    void OnActivate(const ActivateEvent &) noexcept;
+    void OnActivateNotify(const NotifyActivate &) noexcept;
+    void OnLockChange(const LockChangeEvent &) noexcept;
+    void OnLockChangeNotify(const NotifyLockChange &) noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 

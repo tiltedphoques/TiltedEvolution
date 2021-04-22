@@ -5,11 +5,14 @@
 #include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ActivateEvent.h>
+#include <Events/LockChangeEvent.h>
 #include <Services/EnvironmentService.h>
 #include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
+#include <Messages/LockChangeRequest.h>
+#include <Messages/NotifyLockChange.h>
 
 #include <TimeManager.h>
 #include <PlayerCharacter.h>
@@ -37,6 +40,9 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
     m_onActivateConnection = aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
     m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
+
+    aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
+    aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
 
 #if ENVIRONMENT_DEBUG
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
@@ -120,7 +126,6 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
             return view.get<FormIdComponent>(entity).Id == id;
         });
 
-    // Only sync activations triggered by actors
     if (pEntity == std::end(view))
         return;
 
@@ -174,6 +179,65 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
                 return;
             }
         }
+    }
+}
+
+void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    uint32_t baseId = 0;
+    uint32_t modId = 0;
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, modId, baseId))
+        return;
+
+    uint32_t cellBaseId = 0;
+    uint32_t cellModId = 0;
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), cellModId, cellBaseId))
+        return;
+
+    LockChangeRequest request;
+    request.Id.BaseId = baseId;
+    request.Id.ModId = modId;
+    request.CellId.BaseId = cellBaseId;
+    request.CellId.ModId = cellModId;
+    request.IsLocked = acEvent.iIsLocked;
+    request.LockLevel = acEvent.iLockLevel;
+
+    m_transport.Send(request);
+    spdlog::warn("Sent lock change {:x}:{:x} in {:x}:{:x}", baseId, modId, cellBaseId, cellModId);
+}
+
+void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexcept
+{
+    spdlog::warn("Received lock change {:x}:{:x}", acMessage.Id.BaseId, acMessage.Id.ModId);
+    const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
+    if (cObjectId == 0)
+    {
+        spdlog::error("Failed to retrieve object id to (un)lock.");
+        return;
+    }
+
+    auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+    if (!pObject)
+    {
+        spdlog::error("Failed to retrieve object to (un)lock.");
+        return;
+    }
+
+    auto* pLock = pObject->GetLock();
+
+    if (!pLock)
+    {
+        pLock = pObject->CreateLock();
+    }
+
+    if (pLock || pLock->flags != acMessage.IsLocked)
+    {
+        pLock->lockLevel = acMessage.LockLevel;
+        pLock->SetLock(acMessage.IsLocked);
+        pObject->LockChange();
     }
 }
 

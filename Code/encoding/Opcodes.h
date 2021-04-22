@@ -21,6 +21,7 @@ enum ClientOpcode : unsigned char
     kRequestHealthChangeBroadcast,
     kRequestSpawnData,
     kActivateRequest,
+    kLockChangeRequest,
     kClientOpcodeMax
 };
 
@@ -45,5 +46,6 @@ enum ServerOpcode : unsigned char
     kNotifyHealthChangeBroadcast,
     kNotifySpawnData,
     kNotifyActivate,
+    kNotifyLockChange,
     kServerOpcodeMax
 };

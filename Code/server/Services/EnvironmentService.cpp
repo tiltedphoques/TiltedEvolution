@@ -9,6 +9,8 @@
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
+#include <Messages/LockChangeRequest.h>
+#include <Messages/NotifyLockChange.h>
 #include <Components.h>
 
 EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
@@ -16,6 +18,8 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
+
+    aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
 }
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -43,6 +47,29 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
         if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyActivate);
+        }
+    }
+}
+
+void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
+{
+    auto message = acMessage.Packet;
+    spdlog::warn("Received OnLockChange {:x}:{:x} in {:x}:{:x}", message.Id.BaseId, message.Id.ModId, message.CellId.BaseId, message.CellId.ModId);
+    NotifyLockChange notifyLockChange;
+    notifyLockChange.Id = acMessage.Packet.Id;
+    notifyLockChange.IsLocked = acMessage.Packet.IsLocked;
+    notifyLockChange.LockLevel = acMessage.Packet.LockLevel;
+
+    auto view = m_world.view<PlayerComponent, CellIdComponent>();
+    for (auto entity : view)
+    {
+        auto& player = view.get<PlayerComponent>(entity);
+        auto& cell = view.get<CellIdComponent>(entity);
+
+        if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+        {
+            GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
+            spdlog::warn("Sent Notify lock change");
         }
     }
 }

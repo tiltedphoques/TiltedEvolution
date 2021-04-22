@@ -4,26 +4,28 @@
 
 #include <Structs/GameId.h>
 
-struct ActivateRequest final : ClientMessage
+struct LockChangeRequest final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kActivateRequest;
+    static constexpr ClientOpcode Opcode = kLockChangeRequest;
 
-    ActivateRequest() : ClientMessage(Opcode)
+    LockChangeRequest() : ClientMessage(Opcode)
     {
     }
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const ActivateRequest& acRhs) const noexcept
+    bool operator==(const LockChangeRequest& acRhs) const noexcept
     {
         return Id == acRhs.Id && 
-               ActivatorId == acRhs.ActivatorId &&
                CellId == acRhs.CellId &&
+               IsLocked == acRhs.IsLocked &&
+               LockLevel == acRhs.LockLevel &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
     GameId Id;
     GameId CellId;
-    uint32_t ActivatorId;
+    uint8_t IsLocked;
+    uint8_t LockLevel;
 };

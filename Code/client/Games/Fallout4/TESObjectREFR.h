@@ -5,6 +5,8 @@
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Forms/ActorValueInfo.h>
 #include <Misc/ActorValueOwner.h>
+#include <Games/Misc/Lock.h>
+#include <Games/Misc/DoorTravelData.h>
 
 struct NiNode;
 struct BSFaceGenNiNode;
@@ -146,6 +148,8 @@ struct TESObjectREFR : TESForm
     struct TESWorldSpace* GetWorldSpace() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
     ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
+    Lock* GetLock() noexcept;
+    DoorTravelData* GetTeleportData() noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
@@ -162,6 +166,9 @@ struct TESObjectREFR : TESForm
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
 
     void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4) noexcept;
+
+    Lock* CreateLock() noexcept;
+    void LockChange() noexcept;
 
 public:
 
