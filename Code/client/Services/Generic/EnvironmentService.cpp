@@ -4,11 +4,14 @@
 #include <World.h>
 #include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/CellChangeEvent.h>
 #include <Events/ActivateEvent.h>
 #include <Events/LockChangeEvent.h>
 #include <Services/EnvironmentService.h>
 #include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
+#include <Messages/AssignObjectRequest.h>
+#include <Messages/AssignObjectResponse.h>
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
 #include <Messages/LockChangeRequest.h>
@@ -16,6 +19,7 @@
 
 #include <TimeManager.h>
 #include <PlayerCharacter.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -41,8 +45,10 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_onActivateConnection = aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
     m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
 
+    aDispatcher.sink<CellChangeEvent>().connect<&EnvironmentService::OnCellChange>(this);
     aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
     aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
+    aDispatcher.sink<AssignObjectResponse>().connect<&EnvironmentService::OnAssignObjectResponse>(this);
 
 #if ENVIRONMENT_DEBUG
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
@@ -68,6 +74,101 @@ void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
     // signal a time transition
     m_fadeTimer = 0.f;
     m_switchToOffline = true;
+}
+
+void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
+{
+    spdlog::warn("Location change");
+    if (!m_transport.IsConnected())
+        return;
+
+    auto* pPlayer = PlayerCharacter::Get();
+
+    uint32_t baseId = 0;
+    uint32_t modId = 0;
+    if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, modId, baseId))
+    {
+        spdlog::error("Cell not found1");
+        return;
+    }
+
+    auto* pCell = RTTI_CAST(TESForm::GetById(baseId), TESForm, TESObjectCELL);
+    if (!pCell)
+    {
+        spdlog::error("Cell not found2");
+        return;
+    }
+
+    Vector<TESObjectREFR*> objects;
+    Vector<FormType> formTypes = {FormType::Container, FormType::Door};
+    pCell->GetRefsByFormTypes(&objects, formTypes);
+
+    for (auto object : objects)
+    {
+        RequestObjectAssignment(object, GameId(modId, baseId));
+    }
+}
+
+void EnvironmentService::RequestObjectAssignment(TESObjectREFR* apObject, GameId aCellId) noexcept
+{
+    spdlog::warn("Request object assignment");
+    AssignObjectRequest request;
+    request.CellId.BaseId = aCellId.BaseId;
+    request.CellId.ModId = aCellId.ModId;
+
+    uint32_t baseId = 0;
+    uint32_t modId = 0;
+    if (!m_world.GetModSystem().GetServerModId(apObject->formID, modId, baseId))
+    {
+        spdlog::error("Object not found");
+        return;
+    }
+
+    request.Id.BaseId = baseId;
+    request.Id.ModId = modId;
+
+    if (auto* pLock = apObject->GetLock())
+    {
+        spdlog::critical("Fetching lock data");
+        request.CurrentLockdata.IsLocked = pLock->flags;
+        request.CurrentLockdata.LockLevel = pLock->lockLevel;
+    }
+
+    m_transport.Send(request);
+}
+
+void EnvironmentService::OnAssignObjectResponse(const AssignObjectResponse& acMessage) noexcept
+{
+    spdlog::warn("Received object data");
+    const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
+    if (cObjectId == 0)
+    {
+        spdlog::error("Failed to retrieve object id to (un)lock.");
+        return;
+    }
+
+    auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+    if (!pObject)
+    {
+        spdlog::error("Failed to retrieve object to (un)lock.");
+        return;
+    }
+
+    if (acMessage.CurrentLockData != LockData{})
+    {
+        auto* pLock = pObject->GetLock();
+
+        if (!pLock)
+        {
+            pLock = pObject->CreateLock();
+            if (!pLock)
+                return;
+        }
+
+        pLock->lockLevel = acMessage.CurrentLockData.LockLevel;
+        pLock->SetLock(acMessage.CurrentLockData.IsLocked);
+        pObject->LockChange();
+    }
 }
 
 BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* dispatcher)
@@ -206,12 +307,10 @@ void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept
     request.LockLevel = acEvent.iLockLevel;
 
     m_transport.Send(request);
-    spdlog::warn("Sent lock change {:x}:{:x} in {:x}:{:x}", baseId, modId, cellBaseId, cellModId);
 }
 
 void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexcept
 {
-    spdlog::warn("Received lock change {:x}:{:x}", acMessage.Id.BaseId, acMessage.Id.ModId);
     const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
     if (cObjectId == 0)
     {
@@ -231,14 +330,13 @@ void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) n
     if (!pLock)
     {
         pLock = pObject->CreateLock();
+        if (!pLock)
+            return;
     }
 
-    if (pLock || pLock->flags != acMessage.IsLocked)
-    {
-        pLock->lockLevel = acMessage.LockLevel;
-        pLock->SetLock(acMessage.IsLocked);
-        pObject->LockChange();
-    }
+    pLock->lockLevel = acMessage.LockLevel;
+    pLock->SetLock(acMessage.IsLocked);
+    pObject->LockChange();
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const

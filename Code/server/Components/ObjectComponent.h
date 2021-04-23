@@ -8,5 +8,7 @@
 
 struct ObjectComponent
 {
+    GameId Id{};
+    GameId CellId{};
     LockData CurrentLockData{};
 };

@@ -16,5 +16,6 @@
 #include <Components/QuestLogComponent.h>
 #include <Components/PartyComponent.h>
 #include <Components/ActorValuesComponent.h>
+#include <Components/ObjectComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

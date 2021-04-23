@@ -24,6 +24,7 @@
 #include <Messages/NotifySpawnData.h>
 #include <Messages/NotifyActivate.h>
 #include <Messages/NotifyLockChange.h>
+#include <Messages/AssignObjectResponse.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -39,7 +40,7 @@ struct ServerMessageFactory
                                  NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyCharacterTravel, NotifyActorValueChanges,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
-                                 NotifyLockChange>;
+                                 NotifyLockChange, AssignObjectResponse>;
 
         return s_visitor(std::forward<T>(func));
     }

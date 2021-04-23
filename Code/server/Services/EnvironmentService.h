@@ -8,6 +8,7 @@ struct UpdateEvent;
 struct PlayerJoinEvent;
 struct ActivateRequest;
 struct LockChangeRequest;
+struct AssignObjectRequest;
 
 class EnvironmentService
 {
@@ -34,6 +35,7 @@ public:
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 
     void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
+    void OnAssignObjectRequest(const PacketEvent<AssignObjectRequest>&) noexcept;
     void OnActivate(const PacketEvent<ActivateRequest>&) const noexcept;
     void OnLockChange(const PacketEvent<LockChangeRequest>&) const noexcept;
 

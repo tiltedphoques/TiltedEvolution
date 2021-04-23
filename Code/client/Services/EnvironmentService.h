@@ -14,6 +14,8 @@ struct TransportService;
 struct NotifyActivate;
 struct LockChangeEvent;
 struct NotifyLockChange;
+struct CellChangeEvent;
+struct AssignObjectResponse;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
@@ -26,11 +28,13 @@ public:
     void OnTimeUpdate(const ServerTimeSettings &) noexcept;
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
-    void OnDraw() noexcept;
+    void OnCellChange(const CellChangeEvent &) noexcept;
+    void OnAssignObjectResponse(const AssignObjectResponse &) noexcept;
     void OnActivate(const ActivateEvent &) noexcept;
     void OnActivateNotify(const NotifyActivate &) noexcept;
     void OnLockChange(const LockChangeEvent &) noexcept;
     void OnLockChangeNotify(const NotifyLockChange &) noexcept;
+    void OnDraw() noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 
@@ -38,6 +42,7 @@ public:
     float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
 
     void AddObjectComponent(TESObjectREFR* apObject) noexcept;
+    void RequestObjectAssignment(TESObjectREFR* apObject, GameId aCellId) noexcept;
 
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_weatherUpdateConnection;

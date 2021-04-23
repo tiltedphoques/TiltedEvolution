@@ -11,6 +11,8 @@
 #include <Messages/NotifyActivate.h>
 #include <Messages/LockChangeRequest.h>
 #include <Messages/NotifyLockChange.h>
+#include <Messages/AssignObjectRequest.h>
+#include <Messages/AssignObjectResponse.h>
 #include <Components.h>
 
 EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
@@ -20,6 +22,7 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
 
     aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
+    aDispatcher.sink<PacketEvent<AssignObjectRequest>>().connect<&EnvironmentService::OnAssignObjectRequest>(this);
 }
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -30,6 +33,36 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 
     const auto &playerComponent = m_world.get<PlayerComponent>(acEvent.Entity);
     GameServer::Get()->Send(playerComponent.ConnectionId, timeMsg);
+}
+
+void EnvironmentService::OnAssignObjectRequest(const PacketEvent<AssignObjectRequest>& acMessage) noexcept
+{
+    auto message = acMessage.Packet;
+    auto view = m_world.view<ObjectComponent>();
+    auto id = message.Id;
+
+    const auto itor = std::find_if(std::begin(view), std::end(view), [view, id](auto entity) {
+        const auto& objectComponent = view.get<ObjectComponent>(entity);
+        return objectComponent.Id == id;
+    });
+
+    if (itor != std::end(view))
+    {
+        auto& objectComponent = view.get<ObjectComponent>(*itor);
+
+        AssignObjectResponse response;
+        response.Id = objectComponent.Id;
+        response.CurrentLockData = objectComponent.CurrentLockData;
+
+        GameServer::Get()->Send(acMessage.ConnectionId, response);
+        return;
+    }
+
+    const auto cEntity = m_world.create();
+    auto& newObjectComponent = m_world.emplace<ObjectComponent>(cEntity);
+    newObjectComponent.Id = message.Id;
+    newObjectComponent.CellId = message.CellId;
+    newObjectComponent.CurrentLockData = message.CurrentLockdata;
 }
 
 void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
@@ -53,12 +86,26 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
 
 void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
 {
-    auto message = acMessage.Packet;
-    spdlog::warn("Received OnLockChange {:x}:{:x} in {:x}:{:x}", message.Id.BaseId, message.Id.ModId, message.CellId.BaseId, message.CellId.ModId);
     NotifyLockChange notifyLockChange;
     notifyLockChange.Id = acMessage.Packet.Id;
     notifyLockChange.IsLocked = acMessage.Packet.IsLocked;
     notifyLockChange.LockLevel = acMessage.Packet.LockLevel;
+
+    auto objectView = m_world.view<ObjectComponent>();
+
+    GameId id = acMessage.Packet.Id;
+    const auto itor = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id](auto entity) {
+        const auto& objectComponent = objectView.get<ObjectComponent>(entity);
+        return objectComponent.Id == id;
+    });
+
+    if (itor != std::end(objectView))
+    {
+        spdlog::critical("Updating lock object");
+        auto& objectComponent = objectView.get<ObjectComponent>(*itor);
+        objectComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
+        objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
+    }
 
     auto view = m_world.view<PlayerComponent, CellIdComponent>();
     for (auto entity : view)
@@ -69,7 +116,6 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
-            spdlog::warn("Sent Notify lock change");
         }
     }
 }
