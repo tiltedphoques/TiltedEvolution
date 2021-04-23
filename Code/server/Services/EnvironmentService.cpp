@@ -101,7 +101,6 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
 
     if (itor != std::end(objectView))
     {
-        spdlog::critical("Updating lock object");
         auto& objectComponent = objectView.get<ObjectComponent>(*itor);
         objectComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
         objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;

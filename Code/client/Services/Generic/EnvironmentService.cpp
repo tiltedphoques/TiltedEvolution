@@ -42,13 +42,12 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
+    m_cellChangeConnection = aDispatcher.sink<CellChangeEvent>().connect<&EnvironmentService::OnCellChange>(this);
     m_onActivateConnection = aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
     m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
-
-    aDispatcher.sink<CellChangeEvent>().connect<&EnvironmentService::OnCellChange>(this);
-    aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
-    aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
-    aDispatcher.sink<AssignObjectResponse>().connect<&EnvironmentService::OnAssignObjectResponse>(this);
+    m_lockChangeConnection = aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
+    m_lockChangeNotifyConnection = aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
+    m_assignObjectConnection = aDispatcher.sink<AssignObjectResponse>().connect<&EnvironmentService::OnAssignObjectResponse>(this);
 
 #if ENVIRONMENT_DEBUG
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
@@ -78,7 +77,6 @@ void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
 
 void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 {
-    spdlog::warn("Location change");
     if (!m_transport.IsConnected())
         return;
 
@@ -87,17 +85,11 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     uint32_t baseId = 0;
     uint32_t modId = 0;
     if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, modId, baseId))
-    {
-        spdlog::error("Cell not found1");
         return;
-    }
 
     auto* pCell = RTTI_CAST(TESForm::GetById(baseId), TESForm, TESObjectCELL);
     if (!pCell)
-    {
-        spdlog::error("Cell not found2");
         return;
-    }
 
     Vector<TESObjectREFR*> objects;
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
@@ -111,7 +103,6 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
 void EnvironmentService::RequestObjectAssignment(TESObjectREFR* apObject, GameId aCellId) noexcept
 {
-    spdlog::warn("Request object assignment");
     AssignObjectRequest request;
     request.CellId.BaseId = aCellId.BaseId;
     request.CellId.ModId = aCellId.ModId;
@@ -119,17 +110,13 @@ void EnvironmentService::RequestObjectAssignment(TESObjectREFR* apObject, GameId
     uint32_t baseId = 0;
     uint32_t modId = 0;
     if (!m_world.GetModSystem().GetServerModId(apObject->formID, modId, baseId))
-    {
-        spdlog::error("Object not found");
         return;
-    }
 
     request.Id.BaseId = baseId;
     request.Id.ModId = modId;
 
     if (auto* pLock = apObject->GetLock())
     {
-        spdlog::critical("Fetching lock data");
         request.CurrentLockdata.IsLocked = pLock->flags;
         request.CurrentLockdata.LockLevel = pLock->lockLevel;
     }
@@ -139,20 +126,13 @@ void EnvironmentService::RequestObjectAssignment(TESObjectREFR* apObject, GameId
 
 void EnvironmentService::OnAssignObjectResponse(const AssignObjectResponse& acMessage) noexcept
 {
-    spdlog::warn("Received object data");
     const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
     if (cObjectId == 0)
-    {
-        spdlog::error("Failed to retrieve object id to (un)lock.");
         return;
-    }
 
     auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
     if (!pObject)
-    {
-        spdlog::error("Failed to retrieve object to (un)lock.");
         return;
-    }
 
     if (acMessage.CurrentLockData != LockData{})
     {
