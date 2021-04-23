@@ -44,6 +44,8 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
+    entt::scoped_connection m_assignObjectConnection;
     entt::scoped_connection m_activateConnection;
+    entt::scoped_connection m_lockChangeConnection;
     World &m_world;
 };

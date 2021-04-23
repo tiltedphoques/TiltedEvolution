@@ -6,9 +6,11 @@
 
 #include <Structs/LockData.h>
 
-struct ObjectComponent
+struct LockComponent
 {
-    GameId Id{};
-    GameId CellId{};
+    LockComponent(LockData& aLockData) noexcept
+        : CurrentLockData(aLockData)
+    {}
+
     LockData CurrentLockData{};
 };

@@ -19,10 +19,9 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
+    m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectRequest>>().connect<&EnvironmentService::OnAssignObjectRequest>(this);
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
-
-    aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
-    aDispatcher.sink<PacketEvent<AssignObjectRequest>>().connect<&EnvironmentService::OnAssignObjectRequest>(this);
+    m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
 }
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -38,31 +37,32 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 void EnvironmentService::OnAssignObjectRequest(const PacketEvent<AssignObjectRequest>& acMessage) noexcept
 {
     auto message = acMessage.Packet;
-    auto view = m_world.view<ObjectComponent>();
+    auto view = m_world.view<FormIdComponent>();
     auto id = message.Id;
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [view, id](auto entity) {
-        const auto& objectComponent = view.get<ObjectComponent>(entity);
-        return objectComponent.Id == id;
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        return formIdComponent.Id == id;
     });
 
     if (itor != std::end(view))
     {
-        auto& objectComponent = view.get<ObjectComponent>(*itor);
+        auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
         AssignObjectResponse response;
-        response.Id = objectComponent.Id;
-        response.CurrentLockData = objectComponent.CurrentLockData;
+        response.Id = formIdComponent.Id;
+
+        auto& lockComponent = m_world.get<LockComponent>(*itor);
+        response.CurrentLockData = lockComponent.CurrentLockData;
 
         GameServer::Get()->Send(acMessage.ConnectionId, response);
         return;
     }
 
     const auto cEntity = m_world.create();
-    auto& newObjectComponent = m_world.emplace<ObjectComponent>(cEntity);
-    newObjectComponent.Id = message.Id;
-    newObjectComponent.CellId = message.CellId;
-    newObjectComponent.CurrentLockData = message.CurrentLockdata;
+    m_world.emplace<FormIdComponent>(cEntity, message.Id);
+    m_world.emplace<CellIdComponent>(cEntity, message.CellId);
+    m_world.emplace<LockComponent>(cEntity, message.CurrentLockdata);
 }
 
 void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
@@ -91,19 +91,19 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
     notifyLockChange.IsLocked = acMessage.Packet.IsLocked;
     notifyLockChange.LockLevel = acMessage.Packet.LockLevel;
 
-    auto objectView = m_world.view<ObjectComponent>();
+    auto objectView = m_world.view<FormIdComponent, LockComponent>();
 
     GameId id = acMessage.Packet.Id;
     const auto itor = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id](auto entity) {
-        const auto& objectComponent = objectView.get<ObjectComponent>(entity);
-        return objectComponent.Id == id;
+        const auto& formIdComponent = objectView.get<FormIdComponent>(entity);
+        return formIdComponent.Id == id;
     });
 
     if (itor != std::end(objectView))
     {
-        auto& objectComponent = objectView.get<ObjectComponent>(*itor);
-        objectComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
-        objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
+        auto& lockComponent = objectView.get<LockComponent>(*itor);
+        lockComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
+        lockComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
     auto view = m_world.view<PlayerComponent, CellIdComponent>();
