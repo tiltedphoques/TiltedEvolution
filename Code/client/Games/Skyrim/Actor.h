@@ -203,7 +203,6 @@ struct Actor : TESObjectREFR
     void Kill() noexcept;
     void ResurrectWrapper() noexcept;
     void Reset() noexcept;
-    void Respawn() noexcept;
     //void ResetInventory(bool abLeveledOnly) noexcept;
 
 public:

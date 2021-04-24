@@ -12,6 +12,10 @@ struct UpdateEvent;
 struct ActivateEvent;
 struct TransportService;
 struct NotifyActivate;
+struct LockChangeEvent;
+struct NotifyLockChange;
+struct CellChangeEvent;
+struct AssignObjectsResponse;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
@@ -24,9 +28,13 @@ public:
     void OnTimeUpdate(const ServerTimeSettings &) noexcept;
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
+    void OnCellChange(const CellChangeEvent &) noexcept;
+    void OnAssignObjectsResponse(const AssignObjectsResponse &) noexcept;
+    void OnActivate(const ActivateEvent &) noexcept;
+    void OnActivateNotify(const NotifyActivate &) noexcept;
+    void OnLockChange(const LockChangeEvent &) noexcept;
+    void OnLockChangeNotify(const NotifyLockChange &) noexcept;
     void OnDraw() noexcept;
-    void OnActivate(const ActivateEvent&) noexcept;
-    void OnActivateNotify(const NotifyActivate&) noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 
@@ -39,9 +47,13 @@ public:
     entt::scoped_connection m_weatherUpdateConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;
+    entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_drawConnection;
     entt::scoped_connection m_onActivateConnection;
     entt::scoped_connection m_activateConnection;
+    entt::scoped_connection m_lockChangeConnection;
+    entt::scoped_connection m_lockChangeNotifyConnection;
+    entt::scoped_connection m_assignObjectConnection;
 
     TimeModel m_onlineTime;
     TimeModel m_offlineTime;
