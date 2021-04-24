@@ -306,6 +306,14 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
+    if (pActor->IsDead() != acMessage.IsDead)
+    {
+        if (acMessage.IsDead == true)
+            pActor->Kill();
+        else
+            pActor->ResurrectWrapper();
+    }
+
     spdlog::error("OnCharacterSpawn: {:x}", pActor->formID);
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
