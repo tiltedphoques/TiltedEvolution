@@ -4,7 +4,7 @@ void NotifyLockChange::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) cons
 {
     Id.Serialize(aWriter);
     Serialization::WriteBool(aWriter, IsLocked);
-    Serialization::WriteBool(aWriter, LockLevel);
+    aWriter.WriteBits(LockLevel, 8);
 }
 
 void NotifyLockChange::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -13,5 +13,8 @@ void NotifyLockChange::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
 
     Id.Deserialize(aReader);
     IsLocked = Serialization::ReadBool(aReader);
-    LockLevel = Serialization::ReadBool(aReader);
+
+    uint64_t lockLevel = 0;
+    aReader.ReadBits(lockLevel, 8);
+    LockLevel = lockLevel & 0xFF;
 }

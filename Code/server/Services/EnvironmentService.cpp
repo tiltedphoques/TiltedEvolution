@@ -36,26 +36,20 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
-    auto view = m_world.view<FormIdComponent>();
+    auto view = m_world.view<FormIdComponent, LockComponent>();
     AssignObjectsResponse response;
 
     for (const auto& object : acMessage.Packet.Objects)
     {
-        auto id = object.Id;
-
-        const auto itor = std::find_if(std::begin(view), std::end(view), [view, id](auto entity) {
-            const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            return formIdComponent.Id == id;
-        });
-
-        if (itor != std::end(view))
+        auto itor = m_objectsWithLocks.find(object.Id);
+        if (itor != m_objectsWithLocks.end())
         {
             ObjectData objectData;
 
-            auto& formIdComponent = view.get<FormIdComponent>(*itor);
+            auto& formIdComponent = view.get<FormIdComponent>(itor->second);
             objectData.Id = formIdComponent.Id;
 
-            auto& lockComponent = m_world.get<LockComponent>(*itor);
+            auto& lockComponent = view.get<LockComponent>(itor->second);
             objectData.CurrentLockData = lockComponent.CurrentLockData;
 
             response.Objects.push_back(objectData);
@@ -66,6 +60,7 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
         m_world.emplace<FormIdComponent>(cEntity, object.Id);
         m_world.emplace<CellIdComponent>(cEntity, object.CellId);
         m_world.emplace<LockComponent>(cEntity, object.CurrentLockData);
+        m_objectsWithLocks.insert({object.Id, cEntity});
     }
 
     if (!response.Objects.empty())
@@ -98,17 +93,11 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
     notifyLockChange.IsLocked = acMessage.Packet.IsLocked;
     notifyLockChange.LockLevel = acMessage.Packet.LockLevel;
 
-    auto objectView = m_world.view<FormIdComponent, LockComponent>();
-
-    GameId id = acMessage.Packet.Id;
-    const auto itor = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id](auto entity) {
-        const auto& formIdComponent = objectView.get<FormIdComponent>(entity);
-        return formIdComponent.Id == id;
-    });
-
-    if (itor != std::end(objectView))
+    auto itor = m_objectsWithLocks.find(acMessage.Packet.Id);
+    if (itor != m_objectsWithLocks.end())
     {
-        auto& lockComponent = objectView.get<LockComponent>(*itor);
+        auto objectView = m_world.view<LockComponent>();
+        auto& lockComponent = objectView.get<LockComponent>(itor->second);
         lockComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
         lockComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }

@@ -23,6 +23,6 @@ struct NotifyLockChange final : ServerMessage
     }
 
     GameId Id;
-    uint8_t IsLocked;
+    bool IsLocked;
     uint8_t LockLevel;
 };

@@ -13,6 +13,6 @@ struct LockData
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    uint8_t IsLocked{};
+    bool IsLocked{};
     uint8_t LockLevel{};
 };

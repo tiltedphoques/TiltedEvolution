@@ -2,6 +2,7 @@
 
 #include <Events/PacketEvent.h>
 #include <Structs/TimeModel.h>
+#include <Structs/GameId.h>
 
 struct World;
 struct UpdateEvent;
@@ -41,6 +42,7 @@ private:
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
+    Map<GameId, entt::entity> m_objectsWithLocks;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;

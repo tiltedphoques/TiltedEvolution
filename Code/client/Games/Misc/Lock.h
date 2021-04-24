@@ -2,7 +2,7 @@
 
 struct Lock
 {
-    void SetLock(bool abIsLocked) noexcept;
+    void SetLock(bool aIsLocked) noexcept;
 
     uint8_t lockLevel;
     uint8_t pad1[7];

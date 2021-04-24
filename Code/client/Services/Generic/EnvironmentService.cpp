@@ -291,8 +291,8 @@ void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept
     request.Id.ModId = modId;
     request.CellId.BaseId = cellBaseId;
     request.CellId.ModId = cellModId;
-    request.IsLocked = acEvent.iIsLocked;
-    request.LockLevel = acEvent.iLockLevel;
+    request.IsLocked = acEvent.IsLocked;
+    request.LockLevel = acEvent.LockLevel;
 
     m_transport.Send(request);
 }

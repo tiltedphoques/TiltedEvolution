@@ -4,11 +4,11 @@ struct TESObjectREFR;
 
 struct LockChangeEvent
 {
-    LockChangeEvent(TESObjectREFR* apObject, char aiIsLocked, uint8_t aiLockLevel) 
-        : pObject(apObject), iIsLocked(aiIsLocked), iLockLevel(aiLockLevel)
+    LockChangeEvent(TESObjectREFR* apObject, bool aIsLocked, uint8_t aLockLevel) 
+        : pObject(apObject), IsLocked(aIsLocked), LockLevel(aLockLevel)
     {}
 
     TESObjectREFR* pObject;
-    uint8_t iIsLocked;
-    uint8_t iLockLevel;
+    bool IsLocked;
+    uint8_t LockLevel;
 };
