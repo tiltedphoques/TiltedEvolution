@@ -7,6 +7,8 @@ struct TESWorldSpace;
 
 struct TESObjectCELL : TESForm
 {
+    void GetRefsByFormTypes(Vector<TESObjectREFR*>& aRefs, const Vector<FormType>& aFormTypes) noexcept;
+
     uint8_t pad20[0x40 - 0x20];
     uint8_t cellFlags[5];
     uint8_t pad45[0x88 - 0x45];
