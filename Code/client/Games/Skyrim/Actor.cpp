@@ -395,16 +395,18 @@ void Actor::ResurrectWrapper() noexcept
 {
     spdlog::critical("Resurrecting {:x}", formID);
     bool isNiNode = GetNiNode() != 0;
-    Resurrect(true, true, isNiNode);
+    Resurrect(false);
     Reset();
 }
 
 /*
-void Actor::Resurrect() noexcept
+void Actor::ResetInventory(bool abLeveledOnly) noexcept
 {
-    PAPYRUS_FUNCTION(void, Actor, Resurrect, bool);
+    TP_THIS_FUNCTION(TResetInventory, void, Actor, bool);
 
-    s_pResurrect(this, true);
+    POINTER_SKYRIMSE(TResetInventory, s_resetInventory, 0x1405D56B0 - 0x140000000);
+
+    ThisCall(s_resetInventory, this, abLeveledOnly);
 }
 */
 

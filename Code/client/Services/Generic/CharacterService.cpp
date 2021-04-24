@@ -306,14 +306,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
-    if (pActor->IsDead() != acMessage.IsDead)
-    {
-        if (acMessage.IsDead == true)
-            pActor->Kill();
-        else
-            pActor->ResurrectWrapper();
-    }
-
     spdlog::error("OnCharacterSpawn: {:x}", pActor->formID);
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
@@ -323,6 +315,24 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     interpolationComponent.Position = acMessage.Position;
 
     AnimationSystem::Setup(m_world, *entity);
+
+    if (pActor->IsDead() != acMessage.IsDead)
+    {
+        if (acMessage.IsDead == true)
+            pActor->Kill();
+        else
+        {
+            pActor->ResurrectWrapper();
+            auto* deathComponent = m_world.try_get<DeathComponent>(*entity);
+            if (!deathComponent)
+            {
+                auto& newDeathComponent = m_world.emplace<DeathComponent>(*entity);
+                newDeathComponent.IsDead = pActor->IsDead();
+                newDeathComponent.RequestResurrect = false;
+                newDeathComponent.RequestReset = false;
+            }
+        }
+    }
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
@@ -894,6 +904,15 @@ void CharacterService::RunRemoteUpdates() const noexcept
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor || !pActor->GetNiNode())
             continue;
+
+        auto deathComponent = m_world.try_get<DeathComponent>(entity);
+        if (deathComponent && deathComponent->RequestReset)
+        {
+            spdlog::warn("Resetting");
+        #if TP_SKYRIM64
+            pActor->Reset();
+        #endif
+        }
 
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
