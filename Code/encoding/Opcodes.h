@@ -22,7 +22,7 @@ enum ClientOpcode : unsigned char
     kRequestSpawnData,
     kActivateRequest,
     kLockChangeRequest,
-    kAssignObjectRequest,
+    kAssignObjectsRequest,
     kClientOpcodeMax
 };
 
@@ -48,6 +48,6 @@ enum ServerOpcode : unsigned char
     kNotifySpawnData,
     kNotifyActivate,
     kNotifyLockChange,
-    kAssignObjectResponse,
+    kAssignObjectsResponse,
     kServerOpcodeMax
 };

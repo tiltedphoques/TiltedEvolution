@@ -8,7 +8,7 @@
 
 struct LockComponent
 {
-    LockComponent(LockData& aLockData) noexcept
+    LockComponent(const LockData& aLockData) noexcept
         : CurrentLockData(aLockData)
     {}
 

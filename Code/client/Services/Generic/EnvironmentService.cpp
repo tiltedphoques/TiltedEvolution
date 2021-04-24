@@ -10,8 +10,8 @@
 #include <Services/EnvironmentService.h>
 #include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
-#include <Messages/AssignObjectRequest.h>
-#include <Messages/AssignObjectResponse.h>
+#include <Messages/AssignObjectsRequest.h>
+#include <Messages/AssignObjectsResponse.h>
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
 #include <Messages/LockChangeRequest.h>
@@ -47,7 +47,7 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
     m_lockChangeConnection = aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
     m_lockChangeNotifyConnection = aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
-    m_assignObjectConnection = aDispatcher.sink<AssignObjectResponse>().connect<&EnvironmentService::OnAssignObjectResponse>(this);
+    m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&EnvironmentService::OnAssignObjectsResponse>(this);
 
 #if ENVIRONMENT_DEBUG
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
@@ -95,54 +95,61 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
     pCell->GetRefsByFormTypes(objects, formTypes);
 
+    AssignObjectsRequest request;
+
     for (const auto& object : objects)
     {
-        AssignObjectRequest request;
-        request.CellId.BaseId = baseId;
-        request.CellId.ModId = modId;
+        ObjectData objectData;
+        objectData.CellId.BaseId = baseId;
+        objectData.CellId.ModId = modId;
 
         uint32_t baseId = 0;
         uint32_t modId = 0;
         if (!m_world.GetModSystem().GetServerModId(object->formID, modId, baseId))
             return;
 
-        request.Id.BaseId = baseId;
-        request.Id.ModId = modId;
+        objectData.Id.BaseId = baseId;
+        objectData.Id.ModId = modId;
 
         if (auto* pLock = object->GetLock())
         {
-            request.CurrentLockdata.IsLocked = pLock->flags;
-            request.CurrentLockdata.LockLevel = pLock->lockLevel;
+            objectData.CurrentLockData.IsLocked = pLock->flags;
+            objectData.CurrentLockData.LockLevel = pLock->lockLevel;
         }
 
-        m_transport.Send(request);
+        request.Objects.push_back(objectData);
     }
+
+    m_transport.Send(request);
 }
 
-void EnvironmentService::OnAssignObjectResponse(const AssignObjectResponse& acMessage) noexcept
+void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessage) noexcept
 {
-    const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
-    if (cObjectId == 0)
-        return;
-
-    auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
-    if (!pObject)
-        return;
-
-    if (acMessage.CurrentLockData != LockData{})
+    for (const auto& object : acMessage.Objects)
     {
-        auto* pLock = pObject->GetLock();
+        const auto cObjectId = World::Get().GetModSystem().GetGameId(object.Id);
+        if (cObjectId == 0)
+            continue;
 
-        if (!pLock)
+        auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+        if (!pObject)
+            continue;
+
+        if (object.CurrentLockData != LockData{})
         {
-            pLock = pObject->CreateLock();
-            if (!pLock)
-                return;
-        }
+            auto* pLock = pObject->GetLock();
 
-        pLock->lockLevel = acMessage.CurrentLockData.LockLevel;
-        pLock->SetLock(acMessage.CurrentLockData.IsLocked);
-        pObject->LockChange();
+            if (!pLock)
+            {
+                pLock = pObject->CreateLock();
+                if (!pLock)
+                    continue;
+            }
+
+            pLock->lockLevel = object.CurrentLockData.LockLevel;
+            pLock->SetLock(object.CurrentLockData.IsLocked);
+            pObject->LockChange();
+        }
     }
 }
 

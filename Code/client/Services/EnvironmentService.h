@@ -15,7 +15,7 @@ struct NotifyActivate;
 struct LockChangeEvent;
 struct NotifyLockChange;
 struct CellChangeEvent;
-struct AssignObjectResponse;
+struct AssignObjectsResponse;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
@@ -29,7 +29,7 @@ public:
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
     void OnCellChange(const CellChangeEvent &) noexcept;
-    void OnAssignObjectResponse(const AssignObjectResponse &) noexcept;
+    void OnAssignObjectsResponse(const AssignObjectsResponse &) noexcept;
     void OnActivate(const ActivateEvent &) noexcept;
     void OnActivateNotify(const NotifyActivate &) noexcept;
     void OnLockChange(const LockChangeEvent &) noexcept;
