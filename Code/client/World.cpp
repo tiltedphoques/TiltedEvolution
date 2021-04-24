@@ -37,7 +37,7 @@ World::World()
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<PapyrusService>(m_dispatcher);
     set<DiscordService>(m_dispatcher);
-    set<EnvironmentService>(*this, m_dispatcher);
+    set<EnvironmentService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<QuestService>(*this, m_dispatcher, ctx<ImguiService>());
     set<PartyService>(m_dispatcher, ctx<ImguiService>(), m_transport);
     set<ActorService>(*this, m_dispatcher, m_transport);

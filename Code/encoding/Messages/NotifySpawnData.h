@@ -6,7 +6,9 @@
 
 struct NotifySpawnData final : ServerMessage
 {
-    NotifySpawnData() : ServerMessage(kNotifySpawnData)
+    static constexpr ServerOpcode Opcode = kNotifySpawnData;
+
+    NotifySpawnData() : ServerMessage(Opcode)
     {
     }
 

@@ -1,5 +1,5 @@
 #include "winuser.h"
-#include "common/BuildInfo.h"
+#include "BuildInfo.h"
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L
@@ -21,7 +21,6 @@ BEGIN
             VALUE "FileDescription", "Multiplayer mod for Bethesda games."
             VALUE "OriginalFilename", "Launcher.exe"
             VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
-            VALUE "LastChange", BUILD_TIMESTAMP
         END
     END
     BLOCK "VarFileInfo"

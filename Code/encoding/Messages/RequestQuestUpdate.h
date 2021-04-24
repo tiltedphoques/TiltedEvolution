@@ -5,7 +5,9 @@
 
 struct RequestQuestUpdate final : ClientMessage
 {
-    RequestQuestUpdate() : ClientMessage(kRequestQuestUpdate)
+    static constexpr ClientOpcode Opcode = kRequestQuestUpdate;
+
+    RequestQuestUpdate() : ClientMessage(Opcode)
     {
     }
 

@@ -6,7 +6,9 @@
 
 struct NotifyCharacterTravel final : ServerMessage
 {
-    NotifyCharacterTravel() : ServerMessage(kNotifyCharacterTravel)
+    static constexpr ServerOpcode Opcode = kNotifyCharacterTravel;
+
+    NotifyCharacterTravel() : ServerMessage(Opcode)
     {
     }
 

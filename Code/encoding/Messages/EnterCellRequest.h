@@ -8,8 +8,9 @@ using TiltedPhoques::Map;
 
 struct EnterCellRequest final : ClientMessage
 {
-    EnterCellRequest()
-        : ClientMessage(kEnterCellRequest)
+    static constexpr ClientOpcode Opcode = kEnterCellRequest;
+
+    EnterCellRequest() : ClientMessage(Opcode)
     {
     }
 

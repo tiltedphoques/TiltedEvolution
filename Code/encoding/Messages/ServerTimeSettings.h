@@ -5,7 +5,9 @@
 
 struct ServerTimeSettings final : ServerMessage
 {
-    ServerTimeSettings() : ServerMessage(kServerTimeSettings)
+    static constexpr ServerOpcode Opcode = kServerTimeSettings;
+
+    ServerTimeSettings() : ServerMessage(Opcode)
     {
     }
 

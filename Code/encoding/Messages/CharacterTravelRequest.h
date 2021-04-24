@@ -6,8 +6,9 @@
 
 struct CharacterTravelRequest final : ClientMessage
 {
-    CharacterTravelRequest()
-        : ClientMessage(kCharacterTravelRequest)
+    static constexpr ClientOpcode Opcode = kCharacterTravelRequest;
+
+    CharacterTravelRequest() : ClientMessage(Opcode)
     {
     }
 

@@ -43,6 +43,8 @@ private:
     void SetTitle() const;
 
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
+    std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
+
     String m_name;
     String m_token;
 

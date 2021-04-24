@@ -6,7 +6,9 @@ using TiltedPhoques::Map;
 
 struct RequestActorMaxValueChanges final : ClientMessage
 {
-    RequestActorMaxValueChanges() : ClientMessage(kRequestActorMaxValueChanges)
+    static constexpr ClientOpcode Opcode = kRequestActorMaxValueChanges;
+
+    RequestActorMaxValueChanges() : ClientMessage(Opcode)
     {
     }
 

@@ -4,7 +4,9 @@
 
 struct RequestSpawnData final : ClientMessage
 {
-    RequestSpawnData() : ClientMessage(kRequestSpawnData)
+    static constexpr ClientOpcode Opcode = kRequestSpawnData;
+
+    RequestSpawnData() : ClientMessage(Opcode)
     {
     }
 

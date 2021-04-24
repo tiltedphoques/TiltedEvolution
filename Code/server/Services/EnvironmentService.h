@@ -6,6 +6,7 @@
 struct World;
 struct UpdateEvent;
 struct PlayerJoinEvent;
+struct ActivateRequest;
 
 class EnvironmentService
 {
@@ -32,11 +33,13 @@ public:
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 
     void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
+    void OnActivate(const PacketEvent<ActivateRequest>&) const noexcept;
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
+    entt::scoped_connection m_activateConnection;
     World &m_world;
 };

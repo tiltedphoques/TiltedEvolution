@@ -4,7 +4,9 @@
 
 struct NotifyDeathStateChange final : ServerMessage
 {
-    NotifyDeathStateChange() : ServerMessage(kNotifyDeathStateChange)
+    static constexpr ServerOpcode Opcode = kNotifyDeathStateChange;
+
+    NotifyDeathStateChange() : ServerMessage(Opcode)
     {
     }
 

@@ -48,5 +48,5 @@ private:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_drawImGuiConnection;
-
+    std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };

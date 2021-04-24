@@ -7,8 +7,10 @@ using TiltedPhoques::Map;
 
 struct NotifyPlayerList final : ServerMessage
 {
+    static constexpr ServerOpcode Opcode = kNotifyPlayerList;
+
     NotifyPlayerList() : 
-        ServerMessage(kNotifyPlayerList)
+        ServerMessage(Opcode)
     {
     }
 

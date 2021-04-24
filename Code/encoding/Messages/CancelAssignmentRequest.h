@@ -4,8 +4,9 @@
 
 struct CancelAssignmentRequest final : ClientMessage
 {
-    CancelAssignmentRequest()
-        : ClientMessage(kAuthenticationRequest)
+    static constexpr ClientOpcode Opcode = kCancelAssignmentRequest;
+
+    CancelAssignmentRequest() : ClientMessage(Opcode)
     {
     }
 

@@ -4,7 +4,9 @@
 
 struct RequestDeathStateChange final : ClientMessage
 {
-    RequestDeathStateChange() : ClientMessage(kRequestDeathStateChange)
+    static constexpr ClientOpcode Opcode = kRequestDeathStateChange;
+
+    RequestDeathStateChange() : ClientMessage(Opcode)
     {
     }
 

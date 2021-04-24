@@ -6,7 +6,9 @@ using TiltedPhoques::Map;
 
 struct NotifyActorMaxValueChanges final : ServerMessage
 {
-    NotifyActorMaxValueChanges() : ServerMessage(kNotifyActorMaxValueChanges)
+    static constexpr ServerOpcode Opcode = kNotifyActorMaxValueChanges;
+
+    NotifyActorMaxValueChanges() : ServerMessage(Opcode)
     {
     }
 

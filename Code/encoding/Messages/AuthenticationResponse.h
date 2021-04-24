@@ -7,8 +7,9 @@
 
 struct AuthenticationResponse final : ServerMessage
 {
-    AuthenticationResponse()
-        : ServerMessage(kAuthenticationResponse)
+    static constexpr ServerOpcode Opcode = kAuthenticationResponse;
+
+    AuthenticationResponse() : ServerMessage(Opcode)
     {
     }
 

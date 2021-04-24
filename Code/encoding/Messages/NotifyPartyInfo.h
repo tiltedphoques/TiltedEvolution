@@ -7,8 +7,10 @@ using TiltedPhoques::Vector;
 
 struct NotifyPartyInfo final : ServerMessage
 {
+    static constexpr ServerOpcode Opcode = kNotifyPartyInfo;
+
     NotifyPartyInfo() : 
-        ServerMessage(kNotifyPartyInfo)
+        ServerMessage(Opcode)
     {
     }
 

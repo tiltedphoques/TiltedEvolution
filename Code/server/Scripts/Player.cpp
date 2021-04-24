@@ -137,7 +137,7 @@ namespace Script
         auto index = it - playerMods.begin();
 
         // this should probably be an assert instead
-        if (index < 0 || index > playerMods.size())
+        if (index < 0ll || index > playerMods.size())
             return std::nullopt;
 
         // if we not set a baseid we should set it to temporary.. :)

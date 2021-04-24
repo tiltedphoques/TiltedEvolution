@@ -4,7 +4,9 @@
 
 struct PartyLeaveRequest final : ClientMessage
 {
-    PartyLeaveRequest() : ClientMessage(kPartyLeaveRequest)
+    static constexpr ClientOpcode Opcode = kPartyLeaveRequest;
+
+    PartyLeaveRequest() : ClientMessage(Opcode)
     {
     }
 

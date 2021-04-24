@@ -9,8 +9,9 @@ using TiltedPhoques::Map;
 
 struct ClientReferencesMoveRequest final : ClientMessage
 {
-    ClientReferencesMoveRequest()
-        : ClientMessage(kClientReferencesMoveRequest)
+    static constexpr ClientOpcode Opcode = kClientReferencesMoveRequest;
+
+    ClientReferencesMoveRequest() : ClientMessage(Opcode)
     {
     }
 
