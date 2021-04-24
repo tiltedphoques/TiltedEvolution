@@ -16,12 +16,12 @@ bool LockData::operator!=(const LockData& acRhs) const noexcept
 
 void LockData::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, IsLocked);
-    Serialization::WriteVarInt(aWriter, LockLevel);
+    Serialization::WriteBool(aWriter, IsLocked);
+    Serialization::WriteBool(aWriter, LockLevel);
 }
 
 void LockData::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    IsLocked = Serialization::ReadVarInt(aReader) & 0xFF;
-    LockLevel = Serialization::ReadVarInt(aReader) & 0xFF;
+    IsLocked = Serialization::ReadBool(aReader);
+    LockLevel = Serialization::ReadBool(aReader);
 }

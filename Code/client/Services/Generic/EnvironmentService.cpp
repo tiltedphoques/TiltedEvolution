@@ -93,35 +93,30 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     Vector<TESObjectREFR*> objects;
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    pCell->GetRefsByFormTypes(&objects, formTypes);
+    pCell->GetRefsByFormTypes(objects, formTypes);
 
-    for (auto object : objects)
+    for (const auto& object : objects)
     {
-        RequestObjectAssignment(object, GameId(modId, baseId));
+        AssignObjectRequest request;
+        request.CellId.BaseId = baseId;
+        request.CellId.ModId = modId;
+
+        uint32_t baseId = 0;
+        uint32_t modId = 0;
+        if (!m_world.GetModSystem().GetServerModId(object->formID, modId, baseId))
+            return;
+
+        request.Id.BaseId = baseId;
+        request.Id.ModId = modId;
+
+        if (auto* pLock = object->GetLock())
+        {
+            request.CurrentLockdata.IsLocked = pLock->flags;
+            request.CurrentLockdata.LockLevel = pLock->lockLevel;
+        }
+
+        m_transport.Send(request);
     }
-}
-
-void EnvironmentService::RequestObjectAssignment(TESObjectREFR* apObject, GameId aCellId) noexcept
-{
-    AssignObjectRequest request;
-    request.CellId.BaseId = aCellId.BaseId;
-    request.CellId.ModId = aCellId.ModId;
-
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (!m_world.GetModSystem().GetServerModId(apObject->formID, modId, baseId))
-        return;
-
-    request.Id.BaseId = baseId;
-    request.Id.ModId = modId;
-
-    if (auto* pLock = apObject->GetLock())
-    {
-        request.CurrentLockdata.IsLocked = pLock->flags;
-        request.CurrentLockdata.LockLevel = pLock->lockLevel;
-    }
-
-    m_transport.Send(request);
 }
 
 void EnvironmentService::OnAssignObjectResponse(const AssignObjectResponse& acMessage) noexcept
@@ -184,6 +179,12 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
     if (!m_transport.IsConnected())
         return;
+
+    if (auto* pLock = acEvent.pObject->GetLock())
+    {
+        if (pLock->flags & 0xFF)
+            return;
+    }
 
     uint32_t baseId = 0;
     uint32_t modId = 0;

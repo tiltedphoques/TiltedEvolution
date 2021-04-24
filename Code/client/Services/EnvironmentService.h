@@ -42,7 +42,6 @@ public:
     float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
 
     void AddObjectComponent(TESObjectREFR* apObject) noexcept;
-    void RequestObjectAssignment(TESObjectREFR* apObject, GameId aCellId) noexcept;
 
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_weatherUpdateConnection;

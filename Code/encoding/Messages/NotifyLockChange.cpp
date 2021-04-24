@@ -3,8 +3,8 @@
 void NotifyLockChange::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Id.Serialize(aWriter);
-    Serialization::WriteVarInt(aWriter, IsLocked);
-    Serialization::WriteVarInt(aWriter, LockLevel);
+    Serialization::WriteBool(aWriter, IsLocked);
+    Serialization::WriteBool(aWriter, LockLevel);
 }
 
 void NotifyLockChange::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,6 +12,6 @@ void NotifyLockChange::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
     ServerMessage::DeserializeRaw(aReader);
 
     Id.Deserialize(aReader);
-    IsLocked = Serialization::ReadVarInt(aReader) & 0xFF;
-    LockLevel = Serialization::ReadVarInt(aReader) & 0xFF;
+    IsLocked = Serialization::ReadBool(aReader);
+    LockLevel = Serialization::ReadBool(aReader);
 }

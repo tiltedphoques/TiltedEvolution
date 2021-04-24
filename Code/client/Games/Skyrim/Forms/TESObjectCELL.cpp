@@ -1,7 +1,7 @@
 #include <Forms/TESObjectCELL.h>
 #include <TESObjectREFR.h>
 
-void TESObjectCELL::GetRefsByFormTypes(Vector<TESObjectREFR*>* aRefs, Vector<FormType> aFormTypes) noexcept
+void TESObjectCELL::GetRefsByFormTypes(Vector<TESObjectREFR*>& aRefs, const Vector<FormType>& aFormTypes) noexcept
 {
     if (!refData.refArray)
         return;
@@ -15,7 +15,7 @@ void TESObjectCELL::GetRefsByFormTypes(Vector<TESObjectREFR*>* aRefs, Vector<For
         for (auto formType : aFormTypes)
         {
             if (ref->baseForm->formType == formType)
-                aRefs->push_back(ref);
+                aRefs.push_back(ref);
         }
     }
 }
