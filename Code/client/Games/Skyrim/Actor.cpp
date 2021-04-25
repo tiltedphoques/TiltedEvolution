@@ -393,8 +393,8 @@ void Actor::Reset() noexcept
 
 void Actor::Respawn() noexcept
 {
-    Reset();
     Resurrect(false);
+    Reset();
 }
 
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
