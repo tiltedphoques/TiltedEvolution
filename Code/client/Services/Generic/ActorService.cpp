@@ -68,20 +68,18 @@ void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor*
         float maxValue = GetActorMaxValue(apActor, i);
         actorValuesComponent.CurrentActorValues.ActorMaxValuesList.insert({i, maxValue});
     }
-
-    auto& deathComponent = m_world.emplace<DeathComponent>(aEntity);
-    deathComponent.IsDead = apActor->IsDead();
 }
 
 void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-    auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
     auto* pForm = TESForm::GetById(formIdComponent.Id);
     auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
     if (pActor != NULL)
     {
+        auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+        localComponent.IsDead = pActor->IsDead();
         CreateActorValuesComponent(aEntity, pActor);
     }
 }
@@ -89,7 +87,6 @@ void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::
 void ActorService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     m_world.clear<ActorValuesComponent>();
-    m_world.clear<DeathComponent>();
 }
 
 void ActorService::OnReferenceSpawned(const ReferenceSpawnedEvent& acEvent) noexcept
@@ -129,7 +126,6 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
     if (itor != std::end(view))
     {
         m_world.remove_if_exists<ActorValuesComponent>(*itor);
-        m_world.remove_if_exists<DeathComponent>(*itor);
     }
 }
 
@@ -306,19 +302,18 @@ void ActorService::RunDeathStateUpdates() noexcept
 
     lastSendTimePoint = now;
 
-    auto view = m_world.view<FormIdComponent, LocalComponent, DeathComponent>();
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
 
     for (auto entity : view)
     {
         auto& formIdComponent = view.get<FormIdComponent>(entity);
         auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         auto& localComponent = view.get<LocalComponent>(entity);
-        auto& deathComponent = view.get<DeathComponent>(entity);
 
         bool isDead = pActor->IsDead();
-        if (isDead != deathComponent.IsDead)
+        if (isDead != localComponent.IsDead)
         {
-            deathComponent.IsDead = isDead;
+            localComponent.IsDead = isDead;
 
             RequestDeathStateChange requestChange;
             requestChange.Id = localComponent.Id;

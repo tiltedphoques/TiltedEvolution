@@ -15,4 +15,5 @@ struct CharacterComponent
     Tints FaceTints{};
     Factions FactionsContent{};
     bool DirtyFactions{ false };
+    bool IsDead{};
 };

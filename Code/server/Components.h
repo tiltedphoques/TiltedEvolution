@@ -17,6 +17,5 @@
 #include <Components/PartyComponent.h>
 #include <Components/ActorValuesComponent.h>
 #include <Components/LockComponent.h>
-#include <Components/DeathComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD
