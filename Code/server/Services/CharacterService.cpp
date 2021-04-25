@@ -302,6 +302,7 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
             notifySpawnData.InitialInventory = pInventoryComponent->Content;
         }
 
+        notifySpawnData.IsDead = false;
         const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*itor);
         if (pCharacterComponent)
         {

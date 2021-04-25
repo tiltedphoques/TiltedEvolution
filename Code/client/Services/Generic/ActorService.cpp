@@ -294,7 +294,7 @@ void ActorService::RunSmallHealthUpdates() noexcept
 void ActorService::RunDeathStateUpdates() noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms;
+    constexpr auto cDelayBetweenSnapshots = 250ms;
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenSnapshots)
