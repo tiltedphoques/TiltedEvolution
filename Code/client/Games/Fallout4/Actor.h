@@ -61,7 +61,7 @@ struct Actor : TESObjectREFR
 
     bool IsDead() noexcept;
     void Kill() noexcept;
-    void ResurrectWrapper() noexcept;
+    void Respawn() noexcept;
 
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];

@@ -222,7 +222,7 @@ void Actor::Kill() noexcept
 {
 }
 
-void Actor::ResurrectWrapper() noexcept
+void Actor::Respawn() noexcept
 {
 }
 

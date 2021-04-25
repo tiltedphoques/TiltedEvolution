@@ -44,7 +44,7 @@ struct Actor : TESObjectREFR
     virtual void sub_A8();
     virtual void SetPosition(const NiPoint3& acPoint, bool aSyncHavok = true);
     virtual void sub_AA();
-    virtual void Resurrect(bool);
+    virtual void Resurrect(bool aResetInventory);
     virtual void sub_AC();
     virtual void sub_AD();
     virtual void sub_AE();
@@ -201,9 +201,8 @@ struct Actor : TESObjectREFR
 
     bool IsDead() noexcept;
     void Kill() noexcept;
-    void ResurrectWrapper() noexcept;
     void Reset() noexcept;
-    //void ResetInventory(bool abLeveledOnly) noexcept;
+    void Respawn() noexcept;
 
 public:
 
@@ -301,8 +300,6 @@ public:
 
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
-//constexpr size_t t = offsetof(Actor, healthValues);
-//constexpr size_t t = offsetof(Actor, staminaValues);
 
 static_assert(offsetof(Actor, processManager) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);

@@ -199,14 +199,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (!pActor)
             return;
 
-        pActor->SetActorValues(acMessage.AllActorValues);
         if (pActor->IsDead() != acMessage.IsDead)
-        {
-            if (acMessage.IsDead == true)
-                pActor->Kill();
-            else
-                pActor->ResurrectWrapper();
-        }
+            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
         return;
     }
 
@@ -235,12 +230,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         pActor->SetActorValues(acMessage.AllActorValues);
 
         if (pActor->IsDead() != acMessage.IsDead)
-        {
-            if (acMessage.IsDead == true)
-                pActor->Kill();
-            else
-                pActor->ResurrectWrapper();
-        }
+            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
     }
 }
 
@@ -306,7 +296,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
-    spdlog::error("OnCharacterSpawn: {:x}", pActor->formID);
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
     remoteComponent.SpawnRequest = acMessage;
@@ -315,24 +306,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     interpolationComponent.Position = acMessage.Position;
 
     AnimationSystem::Setup(m_world, *entity);
-
-    if (pActor->IsDead() != acMessage.IsDead)
-    {
-        if (acMessage.IsDead == true)
-            pActor->Kill();
-        else
-        {
-            pActor->ResurrectWrapper();
-            auto* deathComponent = m_world.try_get<DeathComponent>(*entity);
-            if (!deathComponent)
-            {
-                auto& newDeathComponent = m_world.emplace<DeathComponent>(*entity);
-                newDeathComponent.IsDead = pActor->IsDead();
-                newDeathComponent.RequestResurrect = false;
-                newDeathComponent.RequestReset = false;
-            }
-        }
-    }
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
@@ -371,14 +344,8 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
         if (!pActor)
             return;
 
-        spdlog::warn("Remote spawn data {:x}", pActor->formID);
         if (pActor->IsDead() != acEvent.IsDead)
-        {
-            if (acEvent.IsDead == true)
-                pActor->Kill();
-            else
-                pActor->ResurrectWrapper();
-        }
+            acEvent.IsDead ? pActor->Kill() : pActor->Respawn();
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
@@ -788,19 +755,14 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (!pActor)
         return nullptr;
 
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
-
-    if (pActor->IsDead() != acMessage.IsDead)
-    {
-        if (acMessage.IsDead == true)
-            pActor->Kill();
-        else
-            pActor->ResurrectWrapper();
-    }
 
     m_world.emplace<WaitingFor3D>(aEntity);
 
@@ -904,15 +866,6 @@ void CharacterService::RunRemoteUpdates() const noexcept
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor || !pActor->GetNiNode())
             continue;
-
-        auto deathComponent = m_world.try_get<DeathComponent>(entity);
-        if (deathComponent && deathComponent->RequestReset)
-        {
-            spdlog::warn("Resetting");
-        #if TP_SKYRIM64
-            pActor->Reset();
-        #endif
-        }
 
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);

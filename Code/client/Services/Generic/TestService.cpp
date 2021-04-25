@@ -12,7 +12,6 @@
 #include <Services/TransportService.h>
 
 #include <Events/UpdateEvent.h>
-#include <Events/ResurrectEvent.h>
 
 #include <Games/References.h>
 
@@ -145,10 +144,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
-            const auto pActor = RTTI_CAST(TESForm::GetById(0x1ebf6), TESForm, Actor);
-            World::Get().GetRunner().Trigger(ResurrectEvent(pActor));
-            //pActor->ResurrectWrapper();
+            PlaceActorInWorld();
         }
     }
     else
@@ -177,11 +173,6 @@ void TestService::OnDraw() noexcept
         {
             m_transport.Connect(s_address);
         }
-    }
-
-    if(ImGui::Button("Spawn"))
-    {
-        PlaceActorInWorld();
     }
 
     ImGui::End();

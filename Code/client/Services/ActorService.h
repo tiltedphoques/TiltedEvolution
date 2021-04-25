@@ -11,7 +11,6 @@ struct ReferenceSpawnedEvent;
 struct ReferenceRemovedEvent;
 struct UpdateEvent;
 struct HealthChangeEvent;
-struct ResurrectEvent;
 
 struct TransportService;
 struct NotifyActorValueChanges;
@@ -62,6 +61,4 @@ private:
     static void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
     static float GetActorValue(Actor* aActor, uint32_t aId) noexcept;
     static float GetActorMaxValue(Actor* aActor, uint32_t aId) noexcept;
-
-    void OnResurrectEvent(ResurrectEvent& aEvent) noexcept;
 };

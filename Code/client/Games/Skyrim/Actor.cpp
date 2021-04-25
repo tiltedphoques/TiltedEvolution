@@ -391,24 +391,11 @@ void Actor::Reset() noexcept
     s_pReset(this, 0, nullptr);
 }
 
-void Actor::ResurrectWrapper() noexcept
+void Actor::Respawn() noexcept
 {
-    spdlog::critical("Resurrecting {:x}", formID);
-    bool isNiNode = GetNiNode() != 0;
     Resurrect(false);
     Reset();
 }
-
-/*
-void Actor::ResetInventory(bool abLeveledOnly) noexcept
-{
-    TP_THIS_FUNCTION(TResetInventory, void, Actor, bool);
-
-    POINTER_SKYRIMSE(TResetInventory, s_resetInventory, 0x1405D56B0 - 0x140000000);
-
-    ThisCall(s_resetInventory, this, abLeveledOnly);
-}
-*/
 
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;
