@@ -72,3 +72,7 @@ Artifacts/logs**
 /Setup.bat
 
 Package/
+
+distrib/
+distrib_debug/
+distrib_releasedbg/

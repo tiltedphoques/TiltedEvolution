@@ -8,6 +8,7 @@ struct TransportService;
 struct RequestActorValueChanges;
 struct RequestActorMaxValueChanges;
 struct RequestHealthChangeBroadcast;
+struct RequestDeathStateChange;
 
 struct ActorService
 {
@@ -22,6 +23,7 @@ struct ActorService
     void OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept;
     void OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept;
     void OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept;
+    void OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept;
 
     entt::scoped_connection m_updateHealthConnection;
     entt::scoped_connection m_updateMaxValueConnection;

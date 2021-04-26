@@ -4,12 +4,14 @@
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
+#include <Messages/RequestDeathStateChange.h>
 #include <Services/ActorService.h>
 #include <World.h>
 #include <GameServer.h>
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
+#include <Messages/NotifyDeathStateChange.h>
 
 ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -17,6 +19,7 @@ ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher) noexcep
     m_updateHealthConnection = aDispatcher.sink<PacketEvent<RequestActorValueChanges>>().connect<&ActorService::OnActorValueChanges>(this);
     m_updateMaxValueConnection = aDispatcher.sink<PacketEvent<RequestActorMaxValueChanges>>().connect<&ActorService::OnActorMaxValueChanges>(this);
     m_updateDeltaHealthConnection = aDispatcher.sink<PacketEvent<RequestHealthChangeBroadcast>>().connect<&ActorService::OnHealthChangeBroadcast>(this);
+    aDispatcher.sink<PacketEvent<RequestDeathStateChange>>().connect<&ActorService::OnDeathStateChange>(this);
 }
 
 ActorService::~ActorService() noexcept
@@ -109,6 +112,24 @@ void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChange
         if (player.ConnectionId != acMessage.ConnectionId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyDamageEvent);
+        }
+    }
+}
+
+void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
+{
+    NotifyDeathStateChange notifyChange;
+    notifyChange.Id = acMessage.Packet.Id;
+    notifyChange.IsDead = acMessage.Packet.IsDead;
+
+    auto view = m_world.view<PlayerComponent>();
+    for (auto entity : view)
+    {
+        auto& player = view.get<PlayerComponent>(entity);
+
+        if (player.ConnectionId != acMessage.ConnectionId)
+        {
+            GameServer::Get()->Send(player.ConnectionId, notifyChange);
         }
     }
 }

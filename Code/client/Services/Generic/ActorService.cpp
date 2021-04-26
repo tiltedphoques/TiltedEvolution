@@ -19,6 +19,8 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
+#include <Messages/NotifyDeathStateChange.h>
+#include <Messages/RequestDeathStateChange.h>
 
 #include <misc/ActorValueOwner.h>
 
@@ -36,6 +38,7 @@ ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_dispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
     m_dispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
     m_dispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
+    m_dispatcher.sink<NotifyDeathStateChange>().connect<&ActorService::OnDeathStateChange>(this);
 }
 
 ActorService::~ActorService() noexcept
@@ -70,12 +73,13 @@ void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor*
 void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-    auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
     auto* pForm = TESForm::GetById(formIdComponent.Id);
     auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
     if (pActor != NULL)
     {
+        auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+        localComponent.IsDead = pActor->IsDead();
         CreateActorValuesComponent(aEntity, pActor);
     }
 }
@@ -120,12 +124,15 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
     });
 
     if (itor != std::end(view))
+    {
         m_world.remove_if_exists<ActorValuesComponent>(*itor);
+    }
 }
 
 void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunSmallHealthUpdates();
+    RunDeathStateUpdates();
     m_timeSinceDiff += acEvent.Delta;
     if (m_timeSinceDiff >= 1)
     {
@@ -277,10 +284,43 @@ void ActorService::RunSmallHealthUpdates() noexcept
 
             m_transport.Send(requestHealthChange);
 
-            spdlog::info("Sent out delta health through timer. {:x}:{:f}", value.first, value.second);
+            spdlog::debug("Sent out delta health through timer. {:x}:{:f}", value.first, value.second);
         }
 
         m_smallHealthChanges.clear();
+    }
+}
+
+void ActorService::RunDeathStateUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 250ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+
+    for (auto entity : view)
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(entity);
+        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        auto& localComponent = view.get<LocalComponent>(entity);
+
+        bool isDead = pActor->IsDead();
+        if (isDead != localComponent.IsDead)
+        {
+            localComponent.IsDead = isDead;
+
+            RequestDeathStateChange requestChange;
+            requestChange.Id = localComponent.Id;
+            requestChange.IsDead = isDead;
+
+            m_transport.Send(requestChange);
+        }
     }
 }
 
@@ -381,6 +421,27 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
 
         ForceActorValue(pActor, 0, key, value);
     }
+}
+
+void ActorService::OnDeathStateChange(const NotifyDeathStateChange& acMessage) const noexcept
+{
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) {
+        return view.get<RemoteComponent>(entity).Id == id;
+    });
+
+    if (itor == std::end(view))
+        return;
+
+    auto& formIdComponent = view.get<FormIdComponent>(*itor);
+    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+
+    if (!pActor)
+        return;
+
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 }
 
 void ActorService::ForceActorValue(Actor* apActor, uint32_t aMode, uint32_t aId, float aValue) noexcept

@@ -42,6 +42,7 @@ struct AssignCharacterRequest final : ClientMessage
             FaceTints == acRhs.FaceTints &&
             QuestContent == acRhs.QuestContent &&
             AllActorValues == acRhs.AllActorValues &&
+            IsDead == acRhs.IsDead &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -59,4 +60,5 @@ struct AssignCharacterRequest final : ClientMessage
     QuestLog QuestContent{};
     Tints FaceTints{};
     ActorValues AllActorValues{};
+    bool IsDead{};
 };

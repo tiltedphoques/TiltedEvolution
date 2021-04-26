@@ -16,6 +16,7 @@ struct TransportService;
 struct NotifyActorValueChanges;
 struct NotifyActorMaxValueChanges;
 struct NotifyHealthChangeBroadcast;
+struct NotifyDeathStateChange;
 
 struct Actor;
 
@@ -50,8 +51,10 @@ private:
     void OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) const noexcept;
     void OnHealthChange(const HealthChangeEvent&) noexcept;
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept;
+    void OnDeathStateChange(const NotifyDeathStateChange& acEvent) const noexcept;
 
     void RunSmallHealthUpdates() noexcept;
+    void RunDeathStateUpdates() noexcept;
     void CreateActorValuesComponent(entt::entity aEntity, Actor* apActor) noexcept;
     void BroadcastActorValues() noexcept;
     static void ForceActorValue(Actor* aActor, uint32_t aMode, uint32_t aId, float aValue) noexcept;

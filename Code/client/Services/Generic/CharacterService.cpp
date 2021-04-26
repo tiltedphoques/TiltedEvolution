@@ -199,7 +199,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (!pActor)
             return;
 
-        pActor->SetActorValues(acMessage.AllActorValues);
+        if (pActor->IsDead() != acMessage.IsDead)
+            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
         return;
     }
 
@@ -226,6 +228,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         AnimationSystem::Setup(m_world, cEntity);
 
         pActor->SetActorValues(acMessage.AllActorValues);
+
+        if (pActor->IsDead() != acMessage.IsDead)
+            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
     }
 }
 
@@ -291,6 +296,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
     remoteComponent.SpawnRequest = acMessage;
 
@@ -327,13 +335,17 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
         auto& remoteComponent = view.get<RemoteComponent>(*itor);
         remoteComponent.SpawnRequest.InitialActorValues = acEvent.InitialActorValues;
         remoteComponent.SpawnRequest.InventoryContent = acEvent.InitialInventory;
+        remoteComponent.SpawnRequest.IsDead = acEvent.IsDead;
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
-        auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (!pActor)
             return;
+
+        if (pActor->IsDead() != acEvent.IsDead)
+            acEvent.IsDead ? pActor->Kill() : pActor->Respawn();
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
@@ -599,6 +611,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
+    message.IsDead = pActor->IsDead();
 
     if(isTemporary)
     {
@@ -741,6 +754,9 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
     if (!pActor)
         return nullptr;
+
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;

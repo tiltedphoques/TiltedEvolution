@@ -32,6 +32,8 @@ struct Actor : TESObjectREFR
     virtual void sub_C8();
     virtual void SetWeaponDrawn(bool aIsDrawn);
     virtual void SetPosition(const NiPoint3& acPosition, bool aSyncHavok = true);
+    virtual void sub_CB();
+    virtual void Resurrect(bool aResetInventory);
 
     // Casting
     ActorExtension* GetExtension() noexcept;
@@ -58,6 +60,11 @@ struct Actor : TESObjectREFR
     void UnEquipAll() noexcept;
     void QueueUpdate() noexcept;
     void RemoveFromAllFactions() noexcept;
+
+    bool IsDead() noexcept;
+    void Kill() noexcept;
+    void Reset() noexcept;
+    void Respawn() noexcept;
 
     MagicTarget magicTarget;
     uint8_t unk118[0x128 - 0x118];

@@ -21,6 +21,7 @@ struct AssignCharacterResponse final : ServerMessage
             Owner == achRhs.Owner &&
             Cookie == achRhs.Cookie &&
             ServerId == achRhs.ServerId &&
+            IsDead == achRhs.IsDead &&
             AllActorValues == achRhs.AllActorValues;
     }
 
@@ -28,4 +29,5 @@ struct AssignCharacterResponse final : ServerMessage
     uint32_t Cookie{};
     uint32_t ServerId{};
     ActorValues AllActorValues{};
+    bool IsDead{};
 };

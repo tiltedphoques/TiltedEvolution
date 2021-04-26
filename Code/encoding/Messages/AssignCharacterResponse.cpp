@@ -6,6 +6,7 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteVarInt(aWriter, Cookie);
     Serialization::WriteVarInt(aWriter, ServerId);
     AllActorValues.Serialize(aWriter);
+    Serialization::WriteBool(aWriter, IsDead);
 }
 
 void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -14,4 +15,5 @@ void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     Cookie = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     AllActorValues.Deserialize(aReader);
+    IsDead = Serialization::ReadBool(aReader);
 }

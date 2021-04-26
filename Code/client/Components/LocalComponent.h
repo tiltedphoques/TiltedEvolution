@@ -12,4 +12,5 @@ struct LocalComponent
 
     uint32_t Id;
     ActionEvent CurrentAction;
+    bool IsDead;
 };

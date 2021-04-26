@@ -20,10 +20,12 @@ struct NotifySpawnData final : ServerMessage
         return Id == acRhs.Id &&
                InitialActorValues == acRhs.InitialActorValues && 
                InitialInventory == acRhs.InitialInventory &&
+               IsDead == acRhs.IsDead &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
     uint32_t Id;
     ActorValues InitialActorValues{};
     Inventory InitialInventory{};
+    bool IsDead{};
 };

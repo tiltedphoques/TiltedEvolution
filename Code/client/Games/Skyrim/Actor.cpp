@@ -368,6 +368,35 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+bool Actor::IsDead() noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, IsDead);
+
+    return s_pIsDead(this);
+}
+
+void Actor::Kill() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
+
+    s_pKill(this, NULL);
+}
+
+void Actor::Reset() noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, Reset, int, TESObjectREFR*);
+
+    s_pReset(this, 0, nullptr);
+}
+
+void Actor::Respawn() noexcept
+{
+    Resurrect(false);
+    Reset();
+}
+
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;
 

@@ -37,6 +37,7 @@ struct CharacterSpawnRequest final : ServerMessage
             InventoryContent == acRhs.InventoryContent &&
             FactionsContent == acRhs.FactionsContent &&
             FaceTints == acRhs.FaceTints &&
+            IsDead == acRhs.IsDead &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -52,4 +53,5 @@ struct CharacterSpawnRequest final : ServerMessage
     ActionEvent LatestAction{};
     Tints FaceTints{};
     ActorValues InitialActorValues{};
+    bool IsDead{};
 };
