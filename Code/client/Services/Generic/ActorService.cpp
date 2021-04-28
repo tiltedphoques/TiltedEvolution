@@ -242,7 +242,7 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
             }
             else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(entity); pRemoteComponent)
             {
-                if (-1.0f < acEvent.DeltaHealth < 1.0f)
+                if (-1.0f < acEvent.DeltaHealth && acEvent.DeltaHealth < 1.0f)
                 {
                     if (m_smallHealthChanges.find(pRemoteComponent->Id) == m_smallHealthChanges.end())
                         m_smallHealthChanges[pRemoteComponent->Id] = acEvent.DeltaHealth;
