@@ -40,10 +40,14 @@ struct TES
     GridCellArray* cells;
 
 #if TP_FALLOUT4
-    uint8_t pad20[0x58 - 0x20];
+    uint8_t pad20[0x48 - 0x20];
 #elif TP_SKYRIM
-    uint8_t pad80[0xC0 - 0x80];
+    uint8_t pad80[0xB0 - 0x80];
 #endif
+    int32_t centerGridX;
+    int32_t centerGridY;
+    int32_t playerGridX;
+    int32_t playerGridY;
     TESObjectCELL* interiorCell;
 };
 

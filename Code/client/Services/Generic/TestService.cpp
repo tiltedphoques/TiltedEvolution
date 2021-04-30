@@ -24,7 +24,12 @@
 #include <Components.h>
 #include <World.h>
 
+#include <Games/TES.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
+
 #include <imgui.h>
+#include <inttypes.h>
 
 extern thread_local bool g_overrideFormId;
 
@@ -202,7 +207,32 @@ void TestService::OnDraw() noexcept
 
         ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
 #endif  
- 
+
+        auto pWorldSpace = pPlayer->GetWorldSpace();
+        if (pWorldSpace)
+        {
+            auto worldFormId = pWorldSpace->formID;
+            ImGui::InputScalar("Worldspace", ImGuiDataType_U32, (void*)&worldFormId, "%" PRIx32, nullptr, nullptr,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        auto pCell = pPlayer->GetParentCell();
+        if (pCell)
+        {
+            auto cellFormId = pCell->formID;
+            ImGui::InputScalar("Cell Id", ImGuiDataType_U32, (void*)&cellFormId, "%" PRIx32, nullptr, nullptr,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        auto* pTES = TES::Get();
+        if (pTES)
+        {
+            int32_t playerGrid[2] = {pTES->playerGridX, pTES->playerGridY};
+            int32_t centerGrid[2] = {pTES->centerGridX, pTES->centerGridY};
+
+            ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
+        }
     }
 
     ImGui::End();
