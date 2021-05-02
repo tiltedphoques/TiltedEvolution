@@ -212,7 +212,7 @@ void TestService::OnDraw() noexcept
         if (pWorldSpace)
         {
             auto worldFormId = pWorldSpace->formID;
-            ImGui::InputScalar("Worldspace", ImGuiDataType_U32, (void*)&worldFormId, "%" PRIx32, nullptr, nullptr,
+            ImGui::InputScalar("Worldspace", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32, 
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
@@ -220,7 +220,7 @@ void TestService::OnDraw() noexcept
         if (pCell)
         {
             auto cellFormId = pCell->formID;
-            ImGui::InputScalar("Cell Id", ImGuiDataType_U32, (void*)&cellFormId, "%" PRIx32, nullptr, nullptr,
+            ImGui::InputScalar("Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32,
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
@@ -232,6 +232,30 @@ void TestService::OnDraw() noexcept
 
             ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);
             ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
+        }
+
+        auto* pForm = TESForm::GetById(0x1348C);
+        if (pForm)
+        {
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            if (pActor)
+            {
+                auto* pWorldSpace = pActor->GetWorldSpace();
+                if (pWorldSpace)
+                {
+                    auto worldFormId = pWorldSpace->formID;
+                    ImGui::InputScalar("Actor Worldspace", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32,
+                                       ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                }
+
+                auto pCell = pPlayer->GetParentCell();
+                if (pCell)
+                {
+                    auto cellFormId = pCell->formID;
+                    ImGui::InputScalar("Actor Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32,
+                                       ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                }
+            }
         }
     }
 
