@@ -15,6 +15,7 @@ struct PlayerService
 protected:
 
     void HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept;
+    //void HandleCellGridChange(const PacketEvent<CellGridChangeRequest>& acMessage) const noexcept;
 
 private:
 

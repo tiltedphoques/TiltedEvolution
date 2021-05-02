@@ -5,6 +5,7 @@
 
 struct ImguiService;
 struct CellChangeEvent;
+struct WorldSpaceChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
@@ -33,6 +34,7 @@ protected:
 
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnWorldSpaceChangeEvent(const WorldSpaceChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnDraw() noexcept;
 

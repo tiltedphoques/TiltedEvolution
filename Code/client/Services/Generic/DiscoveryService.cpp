@@ -6,10 +6,12 @@
 #include <Games/References.h>
 
 #include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
 
 #include <Events/ReferenceAddedEvent.h>
 #include <Events/ReferenceRemovedEvent.h>
 #include <Events/PreUpdateEvent.h>
+#include <Events/WorldSpaceChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
@@ -29,11 +31,48 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
     if (!pPlayer)
         return;
 
-    const auto cellId = pPlayer->GetCellId();
-    if(m_cellId != cellId || aForceTrigger)
+    if (const auto pWorldSpace = pPlayer->GetWorldSpace())
     {
-        m_dispatcher.trigger(CellChangeEvent(cellId));
-        m_cellId = cellId;
+        m_interiorCellId = 0;
+        const auto worldSpaceId = pWorldSpace->formID;
+        if (m_worldSpaceId != worldSpaceId || aForceTrigger)
+        {
+            WorldSpaceChangeEvent changeEvent(worldSpaceId);
+
+            const auto* pTES = TES::Get();
+            auto* pDataHandler = DataHandler::Get();
+
+            uint32_t count = 0;
+            const auto centerGridX = pTES->centerGridX;
+            const auto centerGridY = pTES->centerGridY;
+            for (uint32_t i = 0; i < m_gridsToLoad; ++i)
+            {
+                for (uint32_t j = 0; j < m_gridsToLoad; ++j)
+                {
+                    const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, centerGridX + i, centerGridY + j, pWorldSpace, 0);
+                    if (pCell)
+                    {
+                        changeEvent.Cells.push_back(pCell->formID);
+                        count++;
+                        spdlog::warn("Init cell added: {:x}, count: {}", pCell->formID, count);
+                    }
+                }
+            }
+
+            m_dispatcher.trigger(WorldSpaceChangeEvent(worldSpaceId));
+            m_worldSpaceId = worldSpaceId;
+        }
+    }
+
+    else if (const auto pParentCell = pPlayer->GetParentCell())
+    {
+        m_worldSpaceId = 0;
+        const auto cellId = pParentCell->formID;
+        if (m_interiorCellId != cellId || aForceTrigger)
+        {
+            m_dispatcher.trigger(CellChangeEvent(cellId));
+            m_interiorCellId = cellId;
+        }
     }
 
     // exactly how the game does it too

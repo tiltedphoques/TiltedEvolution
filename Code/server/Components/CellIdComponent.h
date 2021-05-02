@@ -21,4 +21,7 @@ struct CellIdComponent
     }
 
     GameId Cell;
+    GameId WorldSpaceId{};
+    int32_t CurrentGridX{0};
+    int32_t CurrentGridY{0};
 };

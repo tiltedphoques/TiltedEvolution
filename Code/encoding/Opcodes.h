@@ -24,6 +24,7 @@ enum ClientOpcode : unsigned char
     kAssignObjectsRequest,
     kRequestSpawnData,
     kRequestDeathStateChange,
+    kEnterWorldSpaceRequest,
     kClientOpcodeMax
 };
 

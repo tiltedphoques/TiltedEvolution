@@ -7,6 +7,13 @@ struct NiPoint3;
 struct TESForm;
 struct Actor;
 
+struct DataHandler
+{
+    static DataHandler* Get() noexcept;
+
+    static TESObjectCELL* GetCellFromCoordinates(DataHandler* aDataHandler, int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
+};
+
 struct GridCellArray
 {
     virtual ~GridCellArray();
