@@ -25,6 +25,7 @@
 #include <Messages/LockChangeRequest.h>
 #include <Messages/AssignObjectsRequest.h>
 #include <Messages/RequestDeathStateChange.h>
+#include <Messages/EnterWorldSpaceRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -41,7 +42,7 @@ struct ClientMessageFactory
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
                                  CharacterTravelRequest, RequestActorValueChanges, RequestActorMaxValueChanges,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
-                                 AssignObjectsRequest, RequestDeathStateChange>;
+                                 AssignObjectsRequest, RequestDeathStateChange, EnterWorldSpaceRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

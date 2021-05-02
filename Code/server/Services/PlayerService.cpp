@@ -16,6 +16,26 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 {
 }
 
+void PlayerService::HandleWorldSpaceEnter(const PacketEvent<EnterWorldSpaceRequest>& acMessage) const noexcept
+{
+    auto playerView = m_world.view<PlayerComponent>();
+
+    const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
+   [playerView, connectionId = acMessage.ConnectionId](auto entity)
+    {
+        const auto& [playerComponent] = playerView.get(entity);
+        return playerComponent.ConnectionId == connectionId;
+    });
+
+    if(itor == std::end(playerView))
+    {
+        spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
+        return;
+    }
+
+    auto& message = acMessage.Packet;
+}
+
 void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept
 {
     auto playerView = m_world.view<PlayerComponent>();

@@ -32,7 +32,7 @@ private:
     entt::dispatcher& m_dispatcher;
 
     Set<uint32_t> m_forms;
-    uint32_t m_gridsToLoad = 5;
+    int32_t m_gridsToLoad = 5;
     uint32_t m_interiorCellId = 0;
     uint32_t m_worldSpaceId = 0;
     struct TESForm *m_pLocation = nullptr;

@@ -7,5 +7,7 @@ struct WorldSpaceChangeEvent
     {}
 
     uint32_t WorldSpaceId;
-    Vector<uint32_t> Cells{};
+    int32_t CurrentGridX;
+    int32_t CurrentGridY;
+    Vector<GameId> Cells{};
 };

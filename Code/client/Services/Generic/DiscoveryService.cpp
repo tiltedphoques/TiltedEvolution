@@ -16,6 +16,8 @@
 #include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
 
+#include <World.h>
+
 
 DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -42,24 +44,28 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
             const auto* pTES = TES::Get();
             auto* pDataHandler = DataHandler::Get();
 
-            uint32_t count = 0;
-            const auto centerGridX = pTES->centerGridX;
-            const auto centerGridY = pTES->centerGridY;
-            for (uint32_t i = 0; i < m_gridsToLoad; ++i)
+            const auto startGridX = pTES->centerGridX - m_gridsToLoad / 2;
+            const auto startGridY = pTES->centerGridY - m_gridsToLoad / 2;
+            for (int32_t i = 0; i < m_gridsToLoad; ++i)
             {
-                for (uint32_t j = 0; j < m_gridsToLoad; ++j)
+                for (int32_t j = 0; j < m_gridsToLoad; ++j)
                 {
-                    const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, centerGridX + i, centerGridY + j, pWorldSpace, 0);
+                    const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, startGridX + i, startGridY + j, pWorldSpace, 0);
+
                     if (pCell)
                     {
-                        changeEvent.Cells.push_back(pCell->formID);
-                        count++;
-                        spdlog::warn("Init cell added: {:x}, count: {}", pCell->formID, count);
+                        uint32_t baseId = 0;
+                        uint32_t modId = 0;
+                        if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
+                            changeEvent.Cells.push_back(GameId(modId, baseId));
                     }
                 }
             }
 
-            m_dispatcher.trigger(WorldSpaceChangeEvent(worldSpaceId));
+            changeEvent.CurrentGridX = pTES->centerGridX;
+            changeEvent.CurrentGridY = pTES->centerGridY;
+
+            m_dispatcher.trigger(changeEvent);
             m_worldSpaceId = worldSpaceId;
         }
     }

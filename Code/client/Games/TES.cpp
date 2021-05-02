@@ -6,7 +6,7 @@ DataHandler* DataHandler::Get() noexcept
 {
     // TODO: WRONG ADDRESS!
     POINTER_SKYRIMSE(DataHandler*, dataHandler, 0x141EC0A50 - 0x140000000);
-    POINTER_FALLOUT4(DataHandler*, dataHandler, 0x1400FFCA0 - 0x140000000);
+    POINTER_FALLOUT4(DataHandler*, dataHandler, 0x1458CF080 - 0x140000000);
 
     return *dataHandler.Get();
 }

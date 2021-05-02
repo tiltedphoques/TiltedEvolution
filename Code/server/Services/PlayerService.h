@@ -3,6 +3,7 @@
 #include <Events/PacketEvent.h>
 
 struct World;
+struct EnterWorldSpaceRequest;
 struct EnterCellRequest;
 
 struct PlayerService
@@ -14,8 +15,8 @@ struct PlayerService
 
 protected:
 
+    void HandleWorldSpaceEnter(const PacketEvent<EnterWorldSpaceRequest>& acMessage) const noexcept;
     void HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept;
-    //void HandleCellGridChange(const PacketEvent<CellGridChangeRequest>& acMessage) const noexcept;
 
 private:
 
