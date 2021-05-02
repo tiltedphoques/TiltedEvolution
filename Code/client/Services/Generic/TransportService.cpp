@@ -163,6 +163,9 @@ void TransportService::OnWorldSpaceChangeEvent(const WorldSpaceChangeEvent& acEv
     {
         EnterWorldSpaceRequest request;
         request.WorldSpaceId = GameId(modId, baseId);
+        request.PlayerCell = acEvent.PlayerCell;
+        request.CurrentGridX = acEvent.CurrentGridX;
+        request.CurrentGridY = acEvent.CurrentGridY;
 
         Send(request);
     }

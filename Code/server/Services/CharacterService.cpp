@@ -97,6 +97,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
 
 void CharacterService::OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept
 {
+    // TODO: change code to broadcast to everyone in grid cell
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
     CharacterSpawnRequest spawnMessage;

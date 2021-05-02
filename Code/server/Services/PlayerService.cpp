@@ -7,6 +7,7 @@
 #include <Components.h>
 #include <GameServer.h>
 
+#include <Messages/EnterWorldSpaceRequest.h>
 #include <Messages/EnterCellRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
 
@@ -34,6 +35,46 @@ void PlayerService::HandleWorldSpaceEnter(const PacketEvent<EnterWorldSpaceReque
     }
 
     auto& message = acMessage.Packet;
+
+    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell);
+
+    auto& playerComponent = playerView.get<PlayerComponent>(*itor);
+
+    if (playerComponent.Character)
+    {
+        if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
+        {
+            m_world.GetDispatcher().trigger(CharacterCellChangeEvent{*itor, *playerComponent.Character, pCellIdComponent->Cell, message.PlayerCell});
+
+            pCellIdComponent->Cell = message.PlayerCell;
+        }
+        else
+            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell);
+    }
+
+    playerComponent.CurrentGridX = message.CurrentGridX;
+    playerComponent.CurrentGridY = message.CurrentGridY;
+
+    for (auto cell : message.Cells)
+    {
+        auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
+        for (auto character : characterView)
+        {
+            const auto& ownedComponent = characterView.get<OwnerComponent>(character);
+
+            // Don't send self managed
+            if (ownedComponent.ConnectionId == acMessage.ConnectionId)
+                continue;
+
+            if (cell != characterView.get<CellIdComponent>(character).Cell)
+                continue;
+
+            CharacterSpawnRequest spawnMessage;
+            CharacterService::Serialize(m_world, character, &spawnMessage);
+
+            GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
+        }
+    }
 }
 
 void PlayerService::HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept

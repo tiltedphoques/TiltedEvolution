@@ -3,6 +3,7 @@
 void EnterWorldSpaceRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     WorldSpaceId.Serialize(aWriter);
+    PlayerCell.Serialize(aWriter);
     Serialization::WriteVarInt(aWriter, CurrentGridX);
     Serialization::WriteVarInt(aWriter, CurrentGridY);
 
@@ -19,6 +20,7 @@ void EnterWorldSpaceRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     ClientMessage::DeserializeRaw(aReader);
 
     WorldSpaceId.Deserialize(aReader);
+    PlayerCell.Deserialize(aReader);
     CurrentGridX = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     CurrentGridY = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 

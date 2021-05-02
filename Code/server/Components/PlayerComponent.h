@@ -17,4 +17,6 @@ struct PlayerComponent
     uint64_t DiscordId;
     String Endpoint;
     String Username;
+    int32_t CurrentGridX;
+    int32_t CurrentGridY;
 };

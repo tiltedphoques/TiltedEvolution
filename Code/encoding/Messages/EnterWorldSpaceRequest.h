@@ -27,6 +27,7 @@ struct EnterWorldSpaceRequest final : ClientMessage
     }
     
     GameId WorldSpaceId;
+    GameId PlayerCell;
     int32_t CurrentGridX;
     int32_t CurrentGridY;
     Vector<GameId> Cells;

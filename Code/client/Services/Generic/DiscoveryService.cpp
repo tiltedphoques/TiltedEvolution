@@ -62,6 +62,13 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
                 }
             }
 
+            const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, pTES->centerGridX, pTES->centerGridY, pWorldSpace, 0);
+
+            uint32_t baseId = 0;
+            uint32_t modId = 0;
+            if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
+                changeEvent.PlayerCell = GameId(modId, baseId);
+
             changeEvent.CurrentGridX = pTES->centerGridX;
             changeEvent.CurrentGridY = pTES->centerGridY;
 
