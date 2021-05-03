@@ -979,6 +979,10 @@ void CharacterService::RunSpawnUpdates() const noexcept
         auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
         auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
 
+        float x = interpolationComponent.Position.x;
+        float y = interpolationComponent.Position.y;
+        auto currentCoords = GridCellCoords::CalculateGridCellCoords(x, y);
+
         if (distance2(PlayerCharacter::Get()->position, interpolationComponent.Position) < (12000.f * 12000.f))
         {
             auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);

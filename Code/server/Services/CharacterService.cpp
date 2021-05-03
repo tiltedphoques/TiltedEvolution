@@ -116,9 +116,11 @@ void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEven
         if (acEvent.Owner == entity || !pPlayerCharacterComponent)
             continue;
 
-        if (cellIdComponent.WorldSpaceId == acEvent.OldWorldSpaceId && AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &acEvent.OldCoords))
+        if (cellIdComponent.WorldSpaceId == acEvent.OldWorldSpaceId 
+          && GridCellCoords::AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &acEvent.OldCoords))
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
-        else if (cellIdComponent.WorldSpaceId == acEvent.NewWorldSpaceId && AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &acEvent.NewCoords))
+        else if (cellIdComponent.WorldSpaceId == acEvent.NewWorldSpaceId 
+          && GridCellCoords::AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &acEvent.NewCoords))
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
     }
 }
@@ -268,7 +270,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
                 continue;
 
             if (cellIdComponent.WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
-              AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &characterCharacterComponent.CenterCoords))
+              GridCellCoords::AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &characterCharacterComponent.CenterCoords))
                 GameServer::Get()->Send(playerComponent.ConnectionId, message);
         }
     }
@@ -480,7 +482,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     else
     {
         m_world.emplace<CellIdComponent>(cEntity, message.CellId, message.WorldSpaceId);
-        auto coords = CalculateGridCellCoords(message.Position.x, message.Position.y);
+        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
         characterComponent.CenterCoords = coords;
     }
 
@@ -716,18 +718,4 @@ void CharacterService::ProcessMovementChanges() const noexcept
         if (!message.Updates.empty())
             GameServer::Get()->Send(connectionId, message);
     }
-}
-
-bool CharacterService::AreGridCellsOverlapping(const GridCellCoords* aCoords1, const GridCellCoords* aCoords2) const noexcept
-{
-    if ((abs(aCoords1->X - aCoords2->X) < m_gridsToLoad) && (abs(aCoords1->Y - aCoords2->Y) < m_gridsToLoad))
-        return true;
-    return false;
-}
-
-GridCellCoords CharacterService::CalculateGridCellCoords(const float aX, const float aY) const noexcept
-{
-    auto x = static_cast<int32_t>(aX / 4096);
-    auto y = static_cast<int32_t>(aY / 4096);
-    return GridCellCoords(x, y);
 }

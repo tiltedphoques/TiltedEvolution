@@ -31,3 +31,25 @@ void GridCellCoords::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     X = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Y = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
+
+GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const float aY) noexcept
+{
+    auto x = static_cast<int32_t>(aX / 4096);
+    auto y = static_cast<int32_t>(aY / 4096);
+    return GridCellCoords(x, y);
+}
+
+bool GridCellCoords::AreGridCellsOverlapping(const GridCellCoords* aCoords1, const GridCellCoords* aCoords2) noexcept
+{
+    if ((abs(aCoords1->X - aCoords2->X) < m_gridsToLoad) && (abs(aCoords1->Y - aCoords2->Y) < m_gridsToLoad))
+        return true;
+    return false;
+}
+
+bool GridCellCoords::IsCellInGridCell(const GridCellCoords* aCell, const GridCellCoords* aGridCell) noexcept
+{
+    int32_t distanceToBorder = m_gridsToLoad / 2;
+    if ((abs(aCell->X - aGridCell->X) <= distanceToBorder) && abs(aCell->Y - aGridCell->Y) <= distanceToBorder)
+        return true;
+    return false;
+}

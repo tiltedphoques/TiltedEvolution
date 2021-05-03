@@ -78,15 +78,18 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
     const auto worldSpaceId = aWorldSpace->formID;
     GridCellChangeEvent changeEvent(worldSpaceId);
 
-    const auto startGridX = pTES->centerGridX - m_gridsToLoad / 2;
-    const auto startGridY = pTES->centerGridY - m_gridsToLoad / 2;
-    for (int32_t i = 0; i < m_gridsToLoad; ++i)
+    const auto startGridX = pTES->centerGridX - GridCellCoords::m_gridsToLoad / 2;
+    const auto startGridY = pTES->centerGridY - GridCellCoords::m_gridsToLoad / 2;
+    for (int32_t i = 0; i < GridCellCoords::m_gridsToLoad; ++i)
     {
-        for (int32_t j = 0; j < m_gridsToLoad; ++j)
+        for (int32_t j = 0; j < GridCellCoords::m_gridsToLoad; ++j)
         {
-            if (!aNewGridCell && 
-                (abs(m_currentGridX - (startGridX + i)) <= 2) && (abs(m_currentGridY - (startGridY + j)) <= 2))
-                continue;
+            if (!aNewGridCell)
+            {
+                if (GridCellCoords::IsCellInGridCell(&GridCellCoords(m_currentGridX, m_currentGridY),
+                                                     &GridCellCoords(startGridX + i, startGridY + j)))
+                    continue;
+            }
 
             const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, startGridX + i, startGridY + j, aWorldSpace, 0);
 

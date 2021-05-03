@@ -46,9 +46,6 @@ protected:
     void ProcessFactionsChanges() const noexcept;
     void ProcessMovementChanges() const noexcept;
 
-    bool AreGridCellsOverlapping(const GridCellCoords* aCoords1, const GridCellCoords* aCoords2) const noexcept;
-    GridCellCoords CalculateGridCellCoords(const float aX, const float aY) const noexcept;
-
 private:
 
     World& m_world;
