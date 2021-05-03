@@ -238,17 +238,35 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     const auto& characterCellIdComponent = m_world.get<CellIdComponent>(acEvent.Entity);
     const auto& characterOwnerComponent = m_world.get<OwnerComponent>(acEvent.Entity);
 
-    const auto view = m_world.view<PlayerComponent, CellIdComponent>(); 
+    const auto view = m_world.view<PlayerComponent, CellIdComponent>();
 
-    for (auto entity : view)
+    if (characterCellIdComponent.WorldSpaceId == GameId{})
     {
-        auto& playerComponent = view.get<PlayerComponent>(entity);
-        auto& cellIdComponent = view.get<CellIdComponent>(entity);
+        for (auto entity : view)
+        {
+            auto& playerComponent = view.get<PlayerComponent>(entity);
+            auto& cellIdComponent = view.get<CellIdComponent>(entity);
 
-        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.Cell != cellIdComponent.Cell)
-            continue;
+            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || characterCellIdComponent.Cell != cellIdComponent.Cell)
+                continue;
 
-        GameServer::Get()->Send(playerComponent.ConnectionId, message);
+            GameServer::Get()->Send(playerComponent.ConnectionId, message);
+        }
+    }
+    else
+    {
+        for (auto entity : view)
+        {
+            auto& playerComponent = view.get<PlayerComponent>(entity);
+            auto& cellIdComponent = view.get<CellIdComponent>(entity);
+
+            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
+                continue;
+
+            if (cellIdComponent.WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
+              AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &characterCellIdComponent.CenterCoords))
+                GameServer::Get()->Send(playerComponent.ConnectionId, message);
+        }
     }
 }
 
@@ -281,6 +299,15 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         movementComponent.Rotation = glm::vec3(movement.Rotation.x, 0.f, movement.Rotation.y);
         movementComponent.Variables = movement.Variables;
         movementComponent.Direction = movement.Direction;
+
+        if (auto cellIdComponent = m_world.try_get<CellIdComponent>(*itor); cellIdComponent)
+        {
+            if (cellIdComponent->WorldSpaceId != GameId{})
+            {
+                auto coords = CalculateGridCellCoords(movement.Position.x, movement.Position.y);
+                cellIdComponent->CenterCoords = coords;
+            }
+        }
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -444,7 +471,13 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
     m_world.emplace<ScriptsComponent>(cEntity);
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
-    m_world.emplace<CellIdComponent>(cEntity, message.CellId);
+    if (message.WorldSpaceId == GameId{})
+        m_world.emplace<CellIdComponent>(cEntity, message.CellId);
+    else
+    {
+        auto coords = CalculateGridCellCoords(message.Position.x, message.Position.y);
+        m_world.emplace<CellIdComponent>(cEntity, message.CellId, message.WorldSpaceId, coords);
+    }
 
     auto& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = message.ChangeFlags;
@@ -693,4 +726,11 @@ bool CharacterService::AreGridCellsOverlapping(const GridCellCoords* aCoords1, c
     if ((abs(aCoords1->X - aCoords2->X) < m_gridsToLoad) && (abs(aCoords1->Y - aCoords2->Y) < m_gridsToLoad))
         return true;
     return false;
+}
+
+GridCellCoords CharacterService::CalculateGridCellCoords(const float aX, const float aY) const noexcept
+{
+    auto x = static_cast<int32_t>(aX / 4096);
+    auto y = static_cast<int32_t>(aY / 4096);
+    return GridCellCoords(x, y);
 }

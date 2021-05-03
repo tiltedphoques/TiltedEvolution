@@ -19,5 +19,4 @@ struct PlayerComponent
     uint64_t DiscordId;
     String Endpoint;
     String Username;
-    GridCellCoords CenterCoords;
 };

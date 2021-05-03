@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Structs/GameId.h>
+#include <Structs/GridCellCoords.h>
 #include <Structs/ActionEvent.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
@@ -32,6 +33,7 @@ struct AssignCharacterRequest final : ClientMessage
             ReferenceId == acRhs.ReferenceId &&
             FormId == acRhs.FormId &&
             CellId == acRhs.CellId &&
+            WorldSpaceId == acRhs.WorldSpaceId &&
             Position == acRhs.Position &&
             Rotation == acRhs.Rotation &&
             ChangeFlags == acRhs.ChangeFlags &&
@@ -50,6 +52,7 @@ struct AssignCharacterRequest final : ClientMessage
     GameId ReferenceId{};
     GameId FormId{};
     GameId CellId{};
+    GameId WorldSpaceId{};
     Vector3_NetQuantize Position{};
     Rotator2_NetQuantize Rotation{};
     uint32_t ChangeFlags{};

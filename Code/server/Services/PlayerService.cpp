@@ -56,8 +56,6 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
             m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
     }
 
-    playerComponent.CenterCoords = message.CenterCoords;
-
     for (auto cell : message.Cells)
     {
         auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();

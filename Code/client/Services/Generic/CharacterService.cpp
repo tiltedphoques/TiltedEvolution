@@ -526,7 +526,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     uint32_t cellBaseId = 0;
     uint32_t cellModId = 0;
-    if (!m_world.GetModSystem().GetServerModId(pActor->GetCellId(), cellModId, cellBaseId))
+    if (!m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, cellModId, cellBaseId))
         return;
 
     AssignCharacterRequest message;
@@ -536,6 +536,17 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.ReferenceId.ModId = modId;
     message.CellId.BaseId = cellBaseId;
     message.CellId.ModId = cellModId;
+
+    if (const auto pWorldSpace = pActor->GetWorldSpace())
+    {
+        uint32_t worldSpaceBaseId = 0;
+        uint32_t worldSpaceModId = 0;
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, worldSpaceModId, worldSpaceBaseId))
+            return;
+
+        message.WorldSpaceId.BaseId = worldSpaceBaseId;
+        message.WorldSpaceId.ModId = worldSpaceModId;
+    }
 
     message.Position = pActor->position;
     message.Rotation.x = pActor->rotation.x;
