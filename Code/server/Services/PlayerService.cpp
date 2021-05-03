@@ -7,7 +7,7 @@
 #include <Components.h>
 #include <GameServer.h>
 
-#include <Messages/EnterWorldSpaceRequest.h>
+#include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterCellRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
 
@@ -17,12 +17,12 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 {
 }
 
-void PlayerService::HandleWorldSpaceEnter(const PacketEvent<EnterWorldSpaceRequest>& acMessage) const noexcept
+void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept
 {
     auto playerView = m_world.view<PlayerComponent>();
 
     const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-   [playerView, connectionId = acMessage.ConnectionId](auto entity)
+        [playerView, connectionId = acMessage.ConnectionId](auto entity)
     {
         const auto& [playerComponent] = playerView.get(entity);
         return playerComponent.ConnectionId == connectionId;
@@ -36,7 +36,7 @@ void PlayerService::HandleWorldSpaceEnter(const PacketEvent<EnterWorldSpaceReque
 
     auto& message = acMessage.Packet;
 
-    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell);
+    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell, message.WorldSpaceId);
 
     auto& playerComponent = playerView.get<PlayerComponent>(*itor);
 
@@ -47,9 +47,10 @@ void PlayerService::HandleWorldSpaceEnter(const PacketEvent<EnterWorldSpaceReque
             m_world.GetDispatcher().trigger(CharacterCellChangeEvent{*itor, *playerComponent.Character, pCellIdComponent->Cell, message.PlayerCell});
 
             pCellIdComponent->Cell = message.PlayerCell;
+            pCellIdComponent->WorldSpaceId = message.WorldSpaceId;
         }
         else
-            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell);
+            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId);
     }
 
     playerComponent.CurrentGridX = message.CurrentGridX;

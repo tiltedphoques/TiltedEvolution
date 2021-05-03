@@ -5,20 +5,20 @@
 
 using TiltedPhoques::Vector;
 
-struct EnterWorldSpaceRequest final : ClientMessage
+struct ShiftGridCellRequest final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kEnterWorldSpaceRequest;
+    static constexpr ClientOpcode Opcode = kShiftGridCellRequest;
 
-    EnterWorldSpaceRequest() : ClientMessage(Opcode)
+    ShiftGridCellRequest() : ClientMessage(Opcode)
     {
     }
 
-    virtual ~EnterWorldSpaceRequest() = default;
+    virtual ~ShiftGridCellRequest() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const EnterWorldSpaceRequest& acRhs) const noexcept
+    bool operator==(const ShiftGridCellRequest& acRhs) const noexcept
     {
         return WorldSpaceId == acRhs.WorldSpaceId &&
             CurrentGridX == acRhs.CurrentGridX &&

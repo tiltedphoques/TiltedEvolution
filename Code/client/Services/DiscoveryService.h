@@ -9,6 +9,7 @@ struct PreUpdateEvent;
 struct ReferenceSpawnedEvent;
 
 struct TESObjectREFR;
+struct TESWorldSpace;
 
 struct DiscoveryService final
 {
@@ -20,6 +21,7 @@ struct DiscoveryService final
 protected:
 
     void VisitCell(bool aForceTrigger = false) noexcept;
+    void DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewGridCell) noexcept;
     void VisitForms() noexcept;
 
     void OnUpdate(const PreUpdateEvent& acPreUpdateEvent) noexcept;
@@ -33,8 +35,10 @@ private:
 
     Set<uint32_t> m_forms;
     int32_t m_gridsToLoad = 5;
-    uint32_t m_interiorCellId = 0;
+    int32_t m_currentGridX = 0;
+    int32_t m_currentGridY = 0;
     uint32_t m_worldSpaceId = 0;
+    uint32_t m_interiorCellId = 0;
     struct TESForm *m_pLocation = nullptr;
 
     entt::scoped_connection m_preUpdateConnection;

@@ -1,6 +1,6 @@
-#include <Messages/EnterWorldSpaceRequest.h>
+#include <Messages/ShiftGridCellRequest.h>
 
-void EnterWorldSpaceRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+void ShiftGridCellRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     WorldSpaceId.Serialize(aWriter);
     PlayerCell.Serialize(aWriter);
@@ -15,7 +15,7 @@ void EnterWorldSpaceRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     }
 }
 
-void EnterWorldSpaceRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void ShiftGridCellRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ClientMessage::DeserializeRaw(aReader);
 

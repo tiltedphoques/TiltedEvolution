@@ -1,8 +1,8 @@
 #pragma once
 
-struct WorldSpaceChangeEvent
+struct GridCellChangeEvent
 {
-    explicit WorldSpaceChangeEvent(const uint32_t aWorldSpaceId)
+    GridCellChangeEvent(const uint32_t aWorldSpaceId)
         : WorldSpaceId(aWorldSpaceId)
     {}
 

@@ -4,7 +4,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/WorldSpaceChangeEvent.h>
+#include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 
 #include <Games/TES.h>
@@ -17,7 +17,7 @@
 #include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
-#include <Messages/EnterWorldSpaceRequest.h>
+#include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterCellRequest.h>
 
 #include <Services/ImguiService.h>
@@ -154,14 +154,14 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
     Update();
 }
 
-void TransportService::OnWorldSpaceChangeEvent(const WorldSpaceChangeEvent& acEvent) const noexcept
+void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept
 {
     uint32_t baseId = 0;
     uint32_t modId = 0;
 
     if (m_world.GetModSystem().GetServerModId(acEvent.WorldSpaceId, modId, baseId))
     {
-        EnterWorldSpaceRequest request;
+        ShiftGridCellRequest request;
         request.WorldSpaceId = GameId(modId, baseId);
         request.PlayerCell = acEvent.PlayerCell;
         request.CurrentGridX = acEvent.CurrentGridX;
