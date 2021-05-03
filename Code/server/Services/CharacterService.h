@@ -3,6 +3,7 @@
 #include <Events/PacketEvent.h>
 
 struct UpdateEvent;
+struct CharacterGridCellShiftEvent;
 struct CharacterCellChangeEvent;
 struct CharacterSpawnedEvent;
 struct World;
@@ -14,6 +15,7 @@ struct RequestFactionsChanges;
 struct RemoveCharacterRequest;
 struct CharacterTravelRequest;
 struct RequestSpawnData;
+struct GridCellCoords;
 
 struct CharacterService
 {
@@ -27,6 +29,7 @@ struct CharacterService
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
+    void OnCharacterGridCellShift(const CharacterGridCellShiftEvent& acEvent) const noexcept;
     void OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept;
@@ -43,9 +46,14 @@ protected:
     void ProcessFactionsChanges() const noexcept;
     void ProcessMovementChanges() const noexcept;
 
+    bool AreGridCellsOverlapping(const GridCellCoords* aCoords1, const GridCellCoords* aCoords2) const noexcept;
+
 private:
 
     World& m_world;
+
+    // TODO: change this to be on player per player basis
+    int32_t m_gridsToLoad = 5;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_characterCellChangeEventConnection;

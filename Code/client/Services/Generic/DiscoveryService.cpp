@@ -107,8 +107,10 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
     if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
         changeEvent.PlayerCell = GameId(modId, baseId);
 
-    m_currentGridX = changeEvent.CurrentGridX = pTES->centerGridX;
-    m_currentGridY = changeEvent.CurrentGridY = pTES->centerGridY;
+    m_currentGridX = pTES->centerGridX;
+    m_currentGridY = pTES->centerGridY;
+
+    changeEvent.CenterCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
     m_dispatcher.trigger(changeEvent);
     m_worldSpaceId = worldSpaceId;

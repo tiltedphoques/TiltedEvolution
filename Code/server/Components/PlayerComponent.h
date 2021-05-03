@@ -4,6 +4,8 @@
 #error Include Components.h instead
 #endif
 
+#include <Structs/GridCellCoords.h>
+
 struct PlayerComponent
 {
     PlayerComponent(const ConnectionId_t aConnectionId)
@@ -17,6 +19,5 @@ struct PlayerComponent
     uint64_t DiscordId;
     String Endpoint;
     String Username;
-    int32_t CurrentGridX;
-    int32_t CurrentGridY;
+    GridCellCoords CenterCoords;
 };

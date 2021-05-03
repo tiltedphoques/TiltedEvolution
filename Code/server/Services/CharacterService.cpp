@@ -6,6 +6,7 @@
 #include <World.h>
 
 #include <Events/CharacterSpawnedEvent.h>
+#include <Events/CharacterGridCellShiftEvent.h>
 #include <Events/CharacterCellChangeEvent.h>
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
@@ -95,9 +96,33 @@ void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
     ProcessMovementChanges();
 }
 
+void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEvent& acEvent) const noexcept
+{
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+
+    CharacterSpawnRequest spawnMessage;
+    Serialize(m_world, acEvent.Entity, &spawnMessage);
+
+    NotifyRemoveCharacter removeMessage;
+    removeMessage.ServerId = World::ToInteger(acEvent.Entity);
+
+    for (auto entity : playerView)
+    {
+        auto& playerComponent = playerView.get<PlayerComponent>(entity);
+        auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
+
+        if (acEvent.Owner == entity)
+            continue;
+
+        if (cellIdComponent.WorldSpaceId == acEvent.OldWorldSpaceId && AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &acEvent.OldCoords))
+            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
+        else if (cellIdComponent.WorldSpaceId == acEvent.NewWorldSpaceId && AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &acEvent.NewCoords))
+            GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
+    }
+}
+
 void CharacterService::OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept
 {
-    // TODO: change code to broadcast to everyone in grid cell
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
     CharacterSpawnRequest spawnMessage;
@@ -661,4 +686,11 @@ void CharacterService::ProcessMovementChanges() const noexcept
         if (!message.Updates.empty())
             GameServer::Get()->Send(connectionId, message);
     }
+}
+
+bool CharacterService::AreGridCellsOverlapping(const GridCellCoords* aCoords1, const GridCellCoords* aCoords2) const noexcept
+{
+    if ((abs(aCoords1->X - aCoords2->X) < m_gridsToLoad) && (abs(aCoords1->Y - aCoords2->Y) < m_gridsToLoad))
+        return true;
+    return false;
 }

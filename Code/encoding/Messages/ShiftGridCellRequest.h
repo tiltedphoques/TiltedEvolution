@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Structs/GameId.h>
+#include <Structs/GridCellCoords.h>
 
 using TiltedPhoques::Vector;
 
@@ -21,14 +22,12 @@ struct ShiftGridCellRequest final : ClientMessage
     bool operator==(const ShiftGridCellRequest& acRhs) const noexcept
     {
         return WorldSpaceId == acRhs.WorldSpaceId &&
-            CurrentGridX == acRhs.CurrentGridX &&
-            CurrentGridY == acRhs.CurrentGridY &&
+            CenterCoords == acRhs.CenterCoords &&
             GetOpcode() == acRhs.GetOpcode();
     }
     
     GameId WorldSpaceId;
     GameId PlayerCell;
-    int32_t CurrentGridX;
-    int32_t CurrentGridY;
+    GridCellCoords CenterCoords;
     Vector<GameId> Cells;
 };

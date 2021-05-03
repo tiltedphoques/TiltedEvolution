@@ -1,6 +1,7 @@
 #include <stdafx.h>
 
 #include "Events/CharacterCellChangeEvent.h"
+#include "Events/CharacterGridCellShiftEvent.h"
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -36,7 +37,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
 
     auto& message = acMessage.Packet;
 
-    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell, message.WorldSpaceId);
+    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
 
     auto& playerComponent = playerView.get<PlayerComponent>(*itor);
 
@@ -44,17 +45,18 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            m_world.GetDispatcher().trigger(CharacterCellChangeEvent{*itor, *playerComponent.Character, pCellIdComponent->Cell, message.PlayerCell});
+            m_world.GetDispatcher().trigger(CharacterGridCellShiftEvent{*itor, *playerComponent.Character, pCellIdComponent->WorldSpaceId, 
+                                                                        message.WorldSpaceId, pCellIdComponent->CenterCoords, message.CenterCoords});
 
             pCellIdComponent->Cell = message.PlayerCell;
             pCellIdComponent->WorldSpaceId = message.WorldSpaceId;
+            pCellIdComponent->CenterCoords = message.CenterCoords;
         }
         else
-            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId);
+            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
     }
 
-    playerComponent.CurrentGridX = message.CurrentGridX;
-    playerComponent.CurrentGridY = message.CurrentGridY;
+    playerComponent.CenterCoords = message.CenterCoords;
 
     for (auto cell : message.Cells)
     {

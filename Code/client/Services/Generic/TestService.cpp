@@ -255,6 +255,9 @@ void TestService::OnDraw() noexcept
                     ImGui::InputScalar("Actor Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32,
                                        ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
                 }
+
+                if (pActor->position != NiPoint3{} && pActor->position.AsArray())
+                    ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
             }
         }
     }

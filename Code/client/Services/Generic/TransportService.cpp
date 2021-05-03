@@ -164,8 +164,7 @@ void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent)
         ShiftGridCellRequest request;
         request.WorldSpaceId = GameId(modId, baseId);
         request.PlayerCell = acEvent.PlayerCell;
-        request.CurrentGridX = acEvent.CurrentGridX;
-        request.CurrentGridY = acEvent.CurrentGridY;
+        request.CenterCoords = acEvent.CenterCoords;
 
         Send(request);
     }
