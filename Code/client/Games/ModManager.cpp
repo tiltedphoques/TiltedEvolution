@@ -95,6 +95,16 @@ Mod* ModManager::GetByName(const char* acpName) const noexcept
 	return nullptr;
 }
 
+TESObjectCELL* ModManager::GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept
+{
+    TP_THIS_FUNCTION(TModManager, TESObjectCELL*, ModManager, int32_t, int32_t, TESWorldSpace*, bool);
+    POINTER_SKYRIMSE(TModManager, getCell, 0x14016BAC0 - 0x140000000);
+    POINTER_FALLOUT4(TModManager, getCell, 0x140113480 - 0x140000000);
+
+    return ThisCall(getCell, this, aX, aY, aWorldSpace, aSpawnCell);
+}
+
+
 static TiltedPhoques::Initializer s_tesHooks([]()
 {
     POINTER_FALLOUT4(TSpawnNewREFR, s_realSpawnNewREFR, 0x1401140B0 - 0x140000000);

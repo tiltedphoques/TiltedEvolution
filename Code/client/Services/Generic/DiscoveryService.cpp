@@ -39,7 +39,6 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
     {
         m_interiorCellId = 0;
         const auto* pTES = TES::Get();
-        auto* pDataHandler = DataHandler::Get();
         const auto worldSpaceId = pWorldSpace->formID;
 
         if (m_worldSpaceId != worldSpaceId || aForceTrigger)
@@ -73,7 +72,6 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewGridCell) noexcept
 {
     const auto* pTES = TES::Get();
-    auto* pDataHandler = DataHandler::Get();
 
     const auto worldSpaceId = aWorldSpace->formID;
     GridCellChangeEvent changeEvent(worldSpaceId);
@@ -91,7 +89,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
                     continue;
             }
 
-            const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, startGridX + i, startGridY + j, aWorldSpace, 0);
+            const auto* pCell = ModManager::Get()->GetCellFromCoordinates(startGridX + i, startGridY + j, aWorldSpace, 0);
 
             if (pCell)
             {
@@ -103,7 +101,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         }
     }
 
-    const auto* pCell = DataHandler::GetCellFromCoordinates(pDataHandler, pTES->centerGridX, pTES->centerGridY, aWorldSpace, 0);
+    const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->centerGridX, pTES->centerGridY, aWorldSpace, 0);
 
     uint32_t baseId = 0;
     uint32_t modId = 0;

@@ -979,9 +979,28 @@ void CharacterService::RunSpawnUpdates() const noexcept
         auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
         auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
 
-        float x = interpolationComponent.Position.x;
-        float y = interpolationComponent.Position.y;
-        auto currentCoords = GridCellCoords::CalculateGridCellCoords(x, y);
+        float characterX = interpolationComponent.Position.x;
+        float characterY = interpolationComponent.Position.y;
+        const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
+        auto playerPos = PlayerCharacter::Get()->position;
+        const auto playerCoords = GridCellCoords::CalculateGridCellCoords(playerPos.x, playerPos.y);
+
+        if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
+        {
+            auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
+            if (!pActor)
+            {
+                pActor = CreateCharacterForEntity(entity);
+                if (!pActor)
+                {
+                    continue;
+                }
+
+                remoteComponent.CachedRefId = pActor->formID;
+            }
+
+            pActor->MoveTo(PlayerCharacter::Get()->parentCell, interpolationComponent.Position);
+        }
 
         if (distance2(PlayerCharacter::Get()->position, interpolationComponent.Position) < (12000.f * 12000.f))
         {

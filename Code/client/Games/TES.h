@@ -7,13 +7,6 @@ struct NiPoint3;
 struct TESForm;
 struct Actor;
 
-struct DataHandler
-{
-    static DataHandler* Get() noexcept;
-
-    static TESObjectCELL* GetCellFromCoordinates(DataHandler* aDataHandler, int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
-};
-
 struct GridCellArray
 {
     virtual ~GridCellArray();
@@ -156,6 +149,7 @@ struct ModManager
 
     uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept;
     Mod* GetByName(const char* acpName) const noexcept;
+    TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 
 #if TP_FALLOUT4
     uint8_t pad0[0xFB0];
