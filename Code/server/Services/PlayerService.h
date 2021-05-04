@@ -23,4 +23,5 @@ private:
     World& m_world;
 
     entt::scoped_connection m_cellEnterConnection;
+    entt::scoped_connection m_gridCellShiftConnection;
 };

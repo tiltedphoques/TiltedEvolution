@@ -32,6 +32,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
     , m_characterCellChangeEventConnection(aDispatcher.sink<CharacterCellChangeEvent>().connect<&CharacterService::OnCharacterCellChange>(this))
+    , m_characterGridCellShiftEventConnection(aDispatcher.sink<CharacterGridCellShiftEvent>().connect<&CharacterService::OnCharacterGridCellShift>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_removeChatacterConnection(aDispatcher.sink<PacketEvent<RemoveCharacterRequest>>().connect<&CharacterService::OnRemoveCharacterRequest>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
@@ -444,6 +445,7 @@ void CharacterService::OnCharacterTravel(const PacketEvent<CharacterTravelReques
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
+    spdlog::warn("CreateCharacter cell: {:x} worldspace: {:x}", message.CellId.BaseId, message.WorldSpaceId.BaseId);
 
     const auto gameId = message.ReferenceId;
     const auto baseId = message.FormId;

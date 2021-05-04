@@ -33,6 +33,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
+    m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
@@ -156,6 +157,7 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 
 void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept
 {
+    spdlog::error("OnGridCellChangeEvent");
     uint32_t baseId = 0;
     uint32_t modId = 0;
 
@@ -164,6 +166,7 @@ void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent)
         ShiftGridCellRequest request;
         request.WorldSpaceId = GameId(modId, baseId);
         request.PlayerCell = acEvent.PlayerCell;
+        request.Cells = acEvent.Cells;
         request.CenterCoords = acEvent.CenterCoords;
 
         Send(request);

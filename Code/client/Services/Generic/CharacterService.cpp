@@ -236,6 +236,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
+    spdlog::error("OnCharacterSpawn {:x}", acMessage.FormId.BaseId);
     Actor* pActor = nullptr;
 
     std::optional<entt::entity> entity;
@@ -979,48 +980,31 @@ void CharacterService::RunSpawnUpdates() const noexcept
         auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
         auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
 
-        float characterX = interpolationComponent.Position.x;
-        float characterY = interpolationComponent.Position.y;
-        const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
-        auto playerPos = PlayerCharacter::Get()->position;
-        const auto playerCoords = GridCellCoords::CalculateGridCellCoords(playerPos.x, playerPos.y);
-
-        if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
+        if (const auto pWorldSpace = PlayerCharacter::Get()->GetWorldSpace())
         {
-            auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
-            if (!pActor)
+            float characterX = interpolationComponent.Position.x;
+            float characterY = interpolationComponent.Position.y;
+            const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
+            auto playerPos = PlayerCharacter::Get()->position;
+            const auto playerCoords = GridCellCoords::CalculateGridCellCoords(playerPos.x, playerPos.y);
+
+            if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
             {
-                pActor = CreateCharacterForEntity(entity);
+                auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
                 if (!pActor)
                 {
-                    continue;
+                    pActor = CreateCharacterForEntity(entity);
+                    if (!pActor)
+                    {
+                        continue;
+                    }
+
+                    remoteComponent.CachedRefId = pActor->formID;
                 }
 
-                remoteComponent.CachedRefId = pActor->formID;
+                pActor->MoveTo(PlayerCharacter::Get()->parentCell, interpolationComponent.Position);
             }
-
-            pActor->MoveTo(PlayerCharacter::Get()->parentCell, interpolationComponent.Position);
         }
-
-        if (distance2(PlayerCharacter::Get()->position, interpolationComponent.Position) < (12000.f * 12000.f))
-        {
-            auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
-            if (!pActor)
-            {
-                pActor = CreateCharacterForEntity(entity);
-                if (!pActor)
-                {
-                    continue;
-                }
-
-                remoteComponent.CachedRefId = pActor->formID;
-            }
-
-            pActor->MoveTo(PlayerCharacter::Get()->parentCell, interpolationComponent.Position);
-        }
-
-        /*spdlog::info("Remote entity {:X} with cached id {:X} is invisible", remoteComponent.Id,
-                     remoteComponent.CachedRefId);*/
     }
 }
 

@@ -14,7 +14,8 @@
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
-    , m_cellEnterConnection(aDispatcher.sink<PacketEvent<EnterCellRequest>>().connect<&PlayerService::HandleCellEnter>(this))
+    , m_cellEnterConnection(aDispatcher.sink<PacketEvent<EnterCellRequest>>().connect<&PlayerService::HandleCellEnter>(this)),
+      m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
 {
 }
 
@@ -64,18 +65,21 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         for (auto character : characterView)
         {
             const auto& ownedComponent = characterView.get<OwnerComponent>(character);
+            const auto& characterComponent = characterView.get<CharacterComponent>(character);
+            const auto& characterCellComponent = characterView.get<CellIdComponent>(character);
 
             // Don't send self managed
             if (ownedComponent.ConnectionId == acMessage.ConnectionId)
                 continue;
 
-            if (cell != characterView.get<CellIdComponent>(character).Cell)
+            if (cell != characterCellComponent.Cell)
                 continue;
 
             CharacterSpawnRequest spawnMessage;
             CharacterService::Serialize(m_world, character, &spawnMessage);
 
             GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
+            spdlog::error("CharacterSpawnRequest {:x}", spawnMessage.FormId.BaseId);
         }
     }
 }

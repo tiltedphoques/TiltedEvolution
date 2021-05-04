@@ -54,6 +54,7 @@ private:
     int32_t m_gridsToLoad = 5;
 
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_characterGridCellShiftEventConnection;
     entt::scoped_connection m_characterCellChangeEventConnection;
     entt::scoped_connection m_characterAssignRequestConnection;
     entt::scoped_connection m_removeChatacterConnection;

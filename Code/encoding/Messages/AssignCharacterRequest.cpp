@@ -27,8 +27,8 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     Cookie = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     ReferenceId.Deserialize(aReader);
     FormId.Deserialize(aReader);
-    WorldSpaceId.Deserialize(aReader);
     CellId.Deserialize(aReader);
+    WorldSpaceId.Deserialize(aReader);
     Position.Deserialize(aReader);
     Rotation.Deserialize(aReader);
 
