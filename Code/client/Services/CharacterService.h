@@ -15,6 +15,7 @@ struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
 struct NotifyCharacterTravel;
 struct NotifySpawnData;
+struct NotifyOwnershipTransfer;
 
 struct Actor;
 struct World;
@@ -39,7 +40,8 @@ struct CharacterService
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
     void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
-    void OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept;
+    void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept;
+    void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
     void OnCharacterTravel(const NotifyCharacterTravel& acEvent) const noexcept;
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
 
@@ -73,6 +75,7 @@ private:
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_factionsConnection;
+    entt::scoped_connection m_ownershipTransferConnection;
     entt::scoped_connection m_removeCharacterConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;

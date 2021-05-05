@@ -36,6 +36,8 @@ GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const flo
 {
     auto x = static_cast<int32_t>(aX / 4096);
     auto y = static_cast<int32_t>(aY / 4096);
+    x = (aX < 0.f) ? (x - 1) : x;
+    y = (aY < 0.f) ? (y - 1) : y;
     return GridCellCoords(x, y);
 }
 

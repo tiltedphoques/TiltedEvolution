@@ -49,6 +49,8 @@
 #include <Messages/NotifyCharacterTravel.h>
 #include <Messages/RequestSpawnData.h>
 #include <Messages/NotifySpawnData.h>
+#include <Messages/RequestOwnershipTransfer.h>
+#include <Messages/NotifyOwnershipTransfer.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -76,6 +78,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
     m_inventoryConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
     m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
+    m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_characterTravelConnection = m_dispatcher.sink<NotifyCharacterTravel>().connect<&CharacterService::OnCharacterTravel>(this);
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
@@ -459,11 +462,35 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
     }
 }
 
-void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acEvent) const noexcept
+void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept
+{
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+
+    const auto itor = std::find_if(std::begin(view), std::end(view), [&acMessage, &view](auto entity) {
+        return view.get<RemoteComponent>(entity).Id == acMessage.ServerId;
+    });
+
+    // TODO: send back message to the server if actor not found
+    if (itor != std::end(view))
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(*itor);
+
+        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        if (pActor)
+            pActor->GetExtension()->SetRemote(false);
+
+        m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
+        m_world.emplace<LocalAnimationComponent>(*itor);
+        m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent,
+                                 FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
+    }
+}
+
+void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
 {
     auto view = m_world.view<RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent.ServerId, view](entt::entity entity) {
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.ServerId, view](entt::entity entity) {
             return view.get<RemoteComponent>(entity).Id == id;
         });
 
@@ -517,6 +544,7 @@ void CharacterService::OnCharacterTravel(const NotifyCharacterTravel& acEvent) c
 
         if (acEvent.Owner)
         {
+            spdlog::info("Received ownership {:x}", acEvent.ServerId);
             m_world.emplace<LocalComponent>(*itor, acEvent.ServerId);
             m_world.emplace<LocalAnimationComponent>(*itor);
             m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent,
@@ -713,6 +741,14 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
     {
         auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
 
+        RequestOwnershipTransfer request;
+        request.ServerId = localComponent.Id;
+
+        m_transport.Send(request);
+
+        aRegistry.remove_if_exists<LocalAnimationComponent, LocalComponent>(aEntity);
+
+        /*
         auto* const pForm = TESForm::GetById(aFormId);
         auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
@@ -721,7 +757,9 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             CharacterTravelRequest message;
             message.ServerId = localComponent.Id;
             message.Position = pActor->position;
-            m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId);
+
+            if (pActor->parentCell)
+                m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId);
 
             const auto pWorldSpace = pActor->GetWorldSpace();
             if (pWorldSpace)
@@ -740,6 +778,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         }
 
         aRegistry.remove_if_exists<LocalAnimationComponent, LocalComponent>(aEntity);
+        */
     }
 }
 

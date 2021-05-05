@@ -12,10 +12,11 @@ struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
 struct RequestInventoryChanges;
 struct RequestFactionsChanges;
-struct RemoveCharacterRequest;
 struct CharacterTravelRequest;
 struct RequestSpawnData;
 struct GridCellCoords;
+struct RequestOwnershipTransfer;
+struct CharacterRemoveEvent;
 
 struct CharacterService
 {
@@ -32,7 +33,8 @@ protected:
     void OnCharacterGridCellShift(const CharacterGridCellShiftEvent& acEvent) const noexcept;
     void OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
-    void OnRemoveCharacterRequest(const PacketEvent<RemoveCharacterRequest>& acMessage) const noexcept;
+    void OnOwnershipTransferRequest(const PacketEvent<RequestOwnershipTransfer>& acMessage) const noexcept;
+    void OnCharacterRemoveEvent(const CharacterRemoveEvent& acEvent) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
@@ -57,11 +59,12 @@ private:
     entt::scoped_connection m_characterGridCellShiftEventConnection;
     entt::scoped_connection m_characterCellChangeEventConnection;
     entt::scoped_connection m_characterAssignRequestConnection;
-    entt::scoped_connection m_removeChatacterConnection;
+    entt::scoped_connection m_removeCharacterConnection;
     entt::scoped_connection m_characterSpawnedConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_inventoryChangesConnection;
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_characterTravelConnection;
     entt::scoped_connection m_spawnDataConnection;
+    entt::scoped_connection m_transferOwnershipConnection;
 };

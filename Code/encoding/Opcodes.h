@@ -25,6 +25,7 @@ enum ClientOpcode : unsigned char
     kRequestSpawnData,
     kRequestDeathStateChange,
     kShiftGridCellRequest,
+    kRequestOwnershipTransfer,
     kClientOpcodeMax
 };
 
@@ -52,5 +53,6 @@ enum ServerOpcode : unsigned char
     kNotifyLockChange,
     kAssignObjectsResponse,
     kNotifyDeathStateChange,
+    kNotifyOwnershipTransfer,
     kServerOpcodeMax
 };
