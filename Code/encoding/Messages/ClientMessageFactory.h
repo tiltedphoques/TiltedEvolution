@@ -16,7 +16,6 @@
 #include <Messages/PartyInviteRequest.h>
 #include <Messages/PartyAcceptInviteRequest.h>
 #include <Messages/PartyLeaveRequest.h>
-#include <Messages/CharacterTravelRequest.h>
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
@@ -41,7 +40,7 @@ struct ClientMessageFactory
                                  RemoveCharacterRequest, ClientReferencesMoveRequest, EnterCellRequest, ClientRpcCalls,
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
-                                 CharacterTravelRequest, RequestActorValueChanges, RequestActorMaxValueChanges,
+                                 RequestActorValueChanges, RequestActorMaxValueChanges,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer>;
 

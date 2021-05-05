@@ -12,7 +12,6 @@ struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
 struct RequestInventoryChanges;
 struct RequestFactionsChanges;
-struct CharacterTravelRequest;
 struct RequestSpawnData;
 struct GridCellCoords;
 struct RequestOwnershipTransfer;
@@ -39,7 +38,6 @@ protected:
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
-    void OnCharacterTravel(const PacketEvent<CharacterTravelRequest>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
@@ -64,7 +62,6 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_inventoryChangesConnection;
     entt::scoped_connection m_factionsChangesConnection;
-    entt::scoped_connection m_characterTravelConnection;
     entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_transferOwnershipConnection;
 };
