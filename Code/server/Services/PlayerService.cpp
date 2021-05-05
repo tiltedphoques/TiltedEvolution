@@ -38,7 +38,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
 
     auto& message = acMessage.Packet;
 
-    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell, message.WorldSpaceId);
+    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
 
     auto& playerComponent = playerView.get<PlayerComponent>(*itor);
 
@@ -46,17 +46,15 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            auto characterComponent = m_world.get<CharacterComponent>(*playerComponent.Character);
-
             m_world.GetDispatcher().trigger(CharacterGridCellShiftEvent{*itor, *playerComponent.Character, pCellIdComponent->WorldSpaceId, 
-                                                                        message.WorldSpaceId, characterComponent.CenterCoords, message.CenterCoords});
+                                                                        message.WorldSpaceId, pCellIdComponent->CenterCoords, message.CenterCoords});
 
             pCellIdComponent->Cell = message.PlayerCell;
             pCellIdComponent->WorldSpaceId = message.WorldSpaceId;
-            characterComponent.CenterCoords = message.CenterCoords;
+            pCellIdComponent->CenterCoords = message.CenterCoords;
         }
         else
-            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId);
+            m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
     }
 
     for (auto cell : message.Cells)

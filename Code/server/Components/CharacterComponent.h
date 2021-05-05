@@ -17,5 +17,4 @@ struct CharacterComponent
     Factions FactionsContent{};
     bool DirtyFactions{ false };
     bool IsDead{};
-    GridCellCoords CenterCoords{};
 };

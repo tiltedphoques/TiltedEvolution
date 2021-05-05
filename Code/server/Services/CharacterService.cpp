@@ -112,16 +112,14 @@ void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEven
         auto& playerComponent = playerView.get<PlayerComponent>(entity);
         auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
 
-        auto pPlayerCharacterComponent = m_world.try_get<CharacterComponent>(*playerComponent.Character);
-
-        if (acEvent.Owner == entity || !pPlayerCharacterComponent)
+        if (acEvent.Owner == entity)
             continue;
 
         if (cellIdComponent.WorldSpaceId == acEvent.OldWorldSpaceId 
-          && GridCellCoords::AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &acEvent.OldCoords))
+          && GridCellCoords::AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &acEvent.OldCoords))
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
         else if (cellIdComponent.WorldSpaceId == acEvent.NewWorldSpaceId 
-          && GridCellCoords::AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &acEvent.NewCoords))
+          && GridCellCoords::AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &acEvent.NewCoords))
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
     }
 }
@@ -242,7 +240,6 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
 
     const auto& characterCellIdComponent = m_world.get<CellIdComponent>(acEvent.Entity);
     const auto& characterOwnerComponent = m_world.get<OwnerComponent>(acEvent.Entity);
-    const auto& characterCharacterComponent = m_world.get<CharacterComponent>(acEvent.Entity);
 
     const auto view = m_world.view<PlayerComponent, CellIdComponent>();
 
@@ -265,15 +262,50 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         {
             auto& playerComponent = view.get<PlayerComponent>(entity);
             auto& cellIdComponent = view.get<CellIdComponent>(entity);
-            auto pPlayerCharacterComponent = m_world.try_get<CharacterComponent>(*playerComponent.Character);
 
-            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId || !pPlayerCharacterComponent)
+            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
                 continue;
 
             if (cellIdComponent.WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
-              GridCellCoords::AreGridCellsOverlapping(&pPlayerCharacterComponent->CenterCoords, &characterCharacterComponent.CenterCoords))
+              GridCellCoords::AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &characterCellIdComponent.CenterCoords))
                 GameServer::Get()->Send(playerComponent.ConnectionId, message);
         }
+    }
+}
+
+void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
+    
+    auto itor = view.find(static_cast<entt::entity>(message.Id));
+
+    if (itor != std::end(view))
+    {
+        NotifySpawnData notifySpawnData;
+        notifySpawnData.Id = message.Id;
+
+        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*itor);
+        if (pActorValuesComponent)
+        {
+            notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
+        }
+
+        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*itor);
+        if (pInventoryComponent)
+        {
+            notifySpawnData.InitialInventory = pInventoryComponent->Content;
+        }
+
+        notifySpawnData.IsDead = false;
+        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*itor);
+        if (pCharacterComponent)
+        {
+            notifySpawnData.IsDead = pCharacterComponent->IsDead;
+        }
+
+        GameServer::Get()->Send(acMessage.ConnectionId, notifySpawnData);
     }
 }
 
@@ -325,42 +357,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         }
 
         movementComponent.Sent = false;
-    }
-}
-
-void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
-{
-    auto& message = acMessage.Packet;
-
-    auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    
-    auto itor = view.find(static_cast<entt::entity>(message.Id));
-
-    if (itor != std::end(view))
-    {
-        NotifySpawnData notifySpawnData;
-        notifySpawnData.Id = message.Id;
-
-        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*itor);
-        if (pActorValuesComponent)
-        {
-            notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
-        }
-
-        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*itor);
-        if (pInventoryComponent)
-        {
-            notifySpawnData.InitialInventory = pInventoryComponent->Content;
-        }
-
-        notifySpawnData.IsDead = false;
-        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*itor);
-        if (pCharacterComponent)
-        {
-            notifySpawnData.IsDead = pCharacterComponent->IsDead;
-        }
-
-        GameServer::Get()->Send(acMessage.ConnectionId, notifySpawnData);
     }
 }
 
@@ -471,6 +467,14 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     m_world.emplace<ScriptsComponent>(cEntity);
     m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
 
+    auto& cellIdComponent = m_world.emplace<CellIdComponent>(cEntity, message.CellId);
+    if (message.WorldSpaceId != GameId{})
+    {
+        cellIdComponent.WorldSpaceId = message.WorldSpaceId;
+        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
+        cellIdComponent.CenterCoords = coords;
+    }
+
     auto& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
@@ -478,15 +482,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
     characterComponent.IsDead = message.IsDead;
-
-    if (message.WorldSpaceId == GameId{})
-        m_world.emplace<CellIdComponent>(cEntity, message.CellId);
-    else
-    {
-        m_world.emplace<CellIdComponent>(cEntity, message.CellId, message.WorldSpaceId);
-        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
-        characterComponent.CenterCoords = coords;
-    }
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
