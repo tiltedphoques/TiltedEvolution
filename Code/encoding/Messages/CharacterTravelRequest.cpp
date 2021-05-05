@@ -4,6 +4,7 @@ void CharacterTravelRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
 {
     Serialization::WriteVarInt(aWriter, ServerId);
     CellId.Serialize(aWriter);
+    WorldSpaceId.Serialize(aWriter);
     Position.Serialize(aWriter);
 }
 
@@ -13,5 +14,6 @@ void CharacterTravelRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
 
     ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     CellId.Deserialize(aReader);
+    WorldSpaceId.Deserialize(aReader);
     Position.Deserialize(aReader);
 }

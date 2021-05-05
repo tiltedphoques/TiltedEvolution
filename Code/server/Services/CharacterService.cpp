@@ -229,8 +229,99 @@ void CharacterService::OnRemoveCharacterRequest(const PacketEvent<RemoveCharacte
         GameServer::Get()->Send(playerComponent.ConnectionId, response);
     }
 
-    // For now just destroy the entity, in the future we might want to request a new host
     m_world.destroy(*it);
+}
+
+void CharacterService::OnCharacterTravel(const PacketEvent<CharacterTravelRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
+    if (it == view.end())
+    {
+        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.ConnectionId);
+        return;
+    }
+
+    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+    if (characterOwnerComponent.ConnectionId != acMessage.ConnectionId)
+    {
+        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.ConnectionId);
+        return;
+    }
+
+    auto& characterCellIdComponent = view.get<CellIdComponent>(*it);
+    characterCellIdComponent.Cell = message.CellId;
+
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+
+    NotifyCharacterTravel response;
+    response.ServerId = World::ToInteger(*it);
+    response.CellId = message.CellId;
+    response.Position = message.Position;
+    response.Owner = false;
+
+    bool foundOwner = false;
+    if (message.WorldSpaceId != GameId{})
+    {
+        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
+        characterCellIdComponent.WorldSpaceId = message.WorldSpaceId;
+        characterCellIdComponent.CenterCoords = coords;
+
+        for (auto entity : playerView)
+        {
+            auto& playerComponent = playerView.get<PlayerComponent>(entity);
+
+            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
+                continue;
+
+            auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
+
+            if (!foundOwner && GridCellCoords::IsCellInGridCell(&coords, &cellIdComponent.CenterCoords))
+            {
+                response.Owner = true;
+                characterOwnerComponent.ConnectionId = playerComponent.ConnectionId;
+            }
+
+            GameServer::Get()->Send(playerComponent.ConnectionId, response);
+
+            if (response.Owner)
+            {
+                foundOwner = true;
+                response.Owner = false;
+            }
+        }
+    }
+    else
+    {
+        for (auto entity : playerView)
+        {
+            auto& playerComponent = playerView.get<PlayerComponent>(entity);
+
+            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
+                continue;
+
+            auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
+
+            if (cellIdComponent.Cell == message.CellId)
+            {
+                response.Owner = true;
+                characterOwnerComponent.ConnectionId = playerComponent.ConnectionId;
+            }
+
+            GameServer::Get()->Send(playerComponent.ConnectionId, response);
+
+            if (response.Owner)
+            {
+                foundOwner = true;
+                response.Owner = false;
+            }
+        }
+    }
+
+    if (!foundOwner)
+        m_world.destroy(*it);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
@@ -311,7 +402,7 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
 
 void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
-    auto view = m_world.view<OwnerComponent, AnimationComponent, MovementComponent>();
+    auto view = m_world.view<OwnerComponent, AnimationComponent, MovementComponent, CellIdComponent>(entt::exclude<PlayerComponent>);
 
     auto& message = acMessage.Packet;
 
@@ -325,6 +416,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         Script::Npc npc(*itor, m_world);
 
         auto& movementComponent = view.get<MovementComponent>(*itor);
+        auto& cellIdComponent = view.get<CellIdComponent>(*itor);
         auto& animationComponent = view.get<AnimationComponent>(*itor);
 
         movementComponent.Tick = message.Tick;
@@ -338,6 +430,13 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         movementComponent.Rotation = glm::vec3(movement.Rotation.x, 0.f, movement.Rotation.y);
         movementComponent.Variables = movement.Variables;
         movementComponent.Direction = movement.Direction;
+
+        if (cellIdComponent.WorldSpaceId != GameId{})
+        {
+            auto coords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
+            if (coords != cellIdComponent.CenterCoords)
+                cellIdComponent.CenterCoords = coords;
+        }
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -396,46 +495,6 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
         characterComponent.FactionsContent = factions;
         characterComponent.DirtyFactions = true;
     }
-}
-
-void CharacterService::OnCharacterTravel(const PacketEvent<CharacterTravelRequest>& acMessage) const noexcept
-{
-    auto& message = acMessage.Packet;
-
-    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
-    {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.ConnectionId);
-        return;
-    }
-
-    const auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.ConnectionId != acMessage.ConnectionId)
-    {
-        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.ConnectionId);
-        return;
-    }
-
-    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-
-    NotifyCharacterTravel response;
-    response.ServerId = World::ToInteger(*it);
-    response.CellId = message.CellId;
-    response.Position = message.Position;
-
-    for (auto entity : playerView)
-    {
-        auto& playerComponent = playerView.get<PlayerComponent>(entity);
-
-        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
-            continue;
-
-        GameServer::Get()->Send(playerComponent.ConnectionId, response);
-    }
-
-    // For now just destroy the entity, in the future we might want to request a new host
-    m_world.destroy(*it);
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept

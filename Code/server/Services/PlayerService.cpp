@@ -47,11 +47,11 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
             m_world.GetDispatcher().trigger(CharacterGridCellShiftEvent{*itor, *playerComponent.Character, pCellIdComponent->WorldSpaceId, 
-                                                                        message.WorldSpaceId, pCellIdComponent->CenterCoords, message.CenterCoords});
+                                                                        message.WorldSpaceId, pCellIdComponent->CenterCoords, message.PlayerCoords});
 
             pCellIdComponent->Cell = message.PlayerCell;
             pCellIdComponent->WorldSpaceId = message.WorldSpaceId;
-            pCellIdComponent->CenterCoords = message.CenterCoords;
+            pCellIdComponent->CenterCoords = message.PlayerCoords;
         }
         else
             m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);

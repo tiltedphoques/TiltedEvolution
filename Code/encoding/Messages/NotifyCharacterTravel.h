@@ -22,10 +22,12 @@ struct NotifyCharacterTravel final : ServerMessage
         return ServerId == achRhs.ServerId && 
             CellId == achRhs.CellId &&
             Position == achRhs.Position &&
+            Owner == achRhs.Owner &&
             GetOpcode() == achRhs.GetOpcode();
     }
 
     uint32_t ServerId;
     GameId CellId;
     Vector3_NetQuantize Position;
+    bool Owner{};
 };

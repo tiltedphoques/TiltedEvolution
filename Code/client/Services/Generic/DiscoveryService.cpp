@@ -112,6 +112,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
     m_currentGridY = pTES->centerGridY;
 
     changeEvent.CenterCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
+    changeEvent.PlayerCoords = GridCellCoords(pTES->playerGridX, pTES->playerGridY);
 
     m_dispatcher.trigger(changeEvent);
     m_worldSpaceId = worldSpaceId;

@@ -5,6 +5,7 @@ void ShiftGridCellRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) 
     WorldSpaceId.Serialize(aWriter);
     PlayerCell.Serialize(aWriter);
     CenterCoords.Serialize(aWriter);
+    PlayerCoords.Serialize(aWriter);
 
     aWriter.WriteBits(Cells.size() & 0xFF, 8);
 
@@ -21,6 +22,7 @@ void ShiftGridCellRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader
     WorldSpaceId.Deserialize(aReader);
     PlayerCell.Deserialize(aReader);
     CenterCoords.Deserialize(aReader);
+    PlayerCoords.Deserialize(aReader);
 
     uint64_t count = 0;
     aReader.ReadBits(count, 8);

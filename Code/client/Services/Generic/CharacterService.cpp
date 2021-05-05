@@ -51,6 +51,7 @@
 #include <Messages/NotifySpawnData.h>
 
 #include <World.h>
+#include <Games/TES.h>
 
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -135,7 +136,7 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    RunSpawnUpdates();
+    //RunSpawnUpdates();
     RunLocalUpdates();
     RunInventoryUpdates();
     RunFactionsUpdates();
@@ -236,7 +237,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
-    spdlog::error("OnCharacterSpawn {:x}", acMessage.FormId.BaseId);
+    spdlog::critical("OnCharacterSpawn {:x}", acMessage.FormId.BaseId);
 
     auto remoteView = m_world.view<RemoteComponent>();
     const auto remoteItor = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
@@ -246,7 +247,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (remoteItor == std::end(remoteView))
     {
-        spdlog::error("Character with remote id {:X} is already spawned.", acMessage.ServerId);
+        spdlog::warn("Character with remote id {:X} is already spawned.", acMessage.ServerId);
         //return;
     }
 
@@ -509,9 +510,18 @@ void CharacterService::OnCharacterTravel(const NotifyCharacterTravel& acEvent) c
                     pActor->MoveTo(pCell, acEvent.Position);
                 }
             }
+
+            if (!acEvent.Owner)
+                pActor->GetExtension()->SetRemote(true);
         }
 
-        m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(*itor);
+        if (acEvent.Owner)
+        {
+            m_world.emplace<LocalComponent>(*itor, acEvent.ServerId);
+            m_world.emplace<LocalAnimationComponent>(*itor);
+            m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent,
+                                     FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
+        }
     }
 }
 
@@ -706,27 +716,20 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         auto* const pForm = TESForm::GetById(aFormId);
         auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
-        bool actorWasMoved = false;
-
         if (pActor)
         {
+            CharacterTravelRequest message;
+            message.ServerId = localComponent.Id;
+            message.Position = pActor->position;
+            m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId);
+
             const auto pWorldSpace = pActor->GetWorldSpace();
-            const auto pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+            if (pWorldSpace)
+                m_world.GetModSystem().GetServerModId(pWorldSpace->formID, message.WorldSpaceId);
 
-            if (pWorldSpace != pPlayerWorldSpace && pActor->parentCell)
-            {
-                actorWasMoved = true;
-
-                CharacterTravelRequest message;
-                message.ServerId = localComponent.Id;
-                message.Position = pActor->position;
-                m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId);
-
-                m_transport.Send(message);
-            }
+            m_transport.Send(message);
         }
-        
-        if (!actorWasMoved)
+        else
         {
             RemoveCharacterRequest message;
             message.ServerId = localComponent.Id;
@@ -998,8 +1001,8 @@ void CharacterService::RunSpawnUpdates() const noexcept
             float characterX = interpolationComponent.Position.x;
             float characterY = interpolationComponent.Position.y;
             const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
-            auto playerPos = PlayerCharacter::Get()->position;
-            const auto playerCoords = GridCellCoords::CalculateGridCellCoords(playerPos.x, playerPos.y);
+            const auto* pTES = TES::Get();
+            const auto playerCoords = GridCellCoords::CalculateGridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
             if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
             {

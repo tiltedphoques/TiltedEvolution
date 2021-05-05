@@ -12,4 +12,5 @@ struct GridCellChangeEvent
     GameId PlayerCell;
     Vector<GameId> Cells{};
     GridCellCoords CenterCoords;
+    GridCellCoords PlayerCoords;
 };

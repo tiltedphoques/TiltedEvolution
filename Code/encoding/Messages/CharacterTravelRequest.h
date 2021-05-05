@@ -21,11 +21,13 @@ struct CharacterTravelRequest final : ClientMessage
     {
         return ServerId == achRhs.ServerId &&
             CellId == achRhs.CellId && 
+            WorldSpaceId == achRhs.WorldSpaceId &&
             Position == achRhs.Position &&
             GetOpcode() == achRhs.GetOpcode();
     }
 
     uint32_t ServerId;
     GameId CellId;
+    GameId WorldSpaceId{};
     Vector3_NetQuantize Position;
 };

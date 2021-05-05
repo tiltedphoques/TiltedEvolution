@@ -29,5 +29,6 @@ struct ShiftGridCellRequest final : ClientMessage
     GameId WorldSpaceId;
     GameId PlayerCell;
     GridCellCoords CenterCoords;
+    GridCellCoords PlayerCoords;
     Vector<GameId> Cells;
 };
