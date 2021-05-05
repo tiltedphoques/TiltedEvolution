@@ -571,8 +571,22 @@ void CharacterService::ProcessInventoryChanges() const noexcept
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            if (playerView.get<CellIdComponent>(player) != cellIdComponent || playerComponent.ConnectionId == ownerComponent.ConnectionId)
+            if (playerComponent.ConnectionId == ownerComponent.ConnectionId)
                 continue;
+
+            const auto& playerCellIdComponent = playerView.get<CellIdComponent>(player);
+            if (cellIdComponent.WorldSpaceId == GameId{})
+            {
+                if (playerCellIdComponent != cellIdComponent)
+                    continue;
+            }
+            else
+            {
+                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
+                    !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
+                                                      &playerCellIdComponent.CenterCoords))
+                    continue;
+            }
 
             auto& message = messages[playerComponent.ConnectionId];
             auto& change = message.Changes[World::ToInteger(entity)];
@@ -620,8 +634,22 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            if (playerView.get<CellIdComponent>(player) != cellIdComponent || playerComponent.ConnectionId == ownerComponent.ConnectionId)
+            if (playerComponent.ConnectionId == ownerComponent.ConnectionId)
                 continue;
+
+            const auto& playerCellIdComponent = playerView.get<CellIdComponent>(player);
+            if (cellIdComponent.WorldSpaceId == GameId{})
+            {
+                if (playerCellIdComponent != cellIdComponent)
+                    continue;
+            }
+            else
+            {
+                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
+                    !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
+                                                      &playerCellIdComponent.CenterCoords))
+                    continue;
+            }
 
             auto& message = messages[playerComponent.ConnectionId];
             auto& change = message.Changes[World::ToInteger(entity)];
@@ -678,8 +706,22 @@ void CharacterService::ProcessMovementChanges() const noexcept
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            if (playerView.get<CellIdComponent>(player) != cellIdComponent || playerComponent.ConnectionId == ownerComponent.ConnectionId)
+            if (playerComponent.ConnectionId == ownerComponent.ConnectionId)
                 continue;
+
+            const auto& playerCellIdComponent = playerView.get<CellIdComponent>(player);
+            if (cellIdComponent.WorldSpaceId == GameId{})
+            {
+                if (playerCellIdComponent != cellIdComponent)
+                    continue;
+            }
+            else
+            {
+                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
+                    !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
+                                                      &playerCellIdComponent.CenterCoords))
+                    continue;
+            }
 
             auto& message = messages[playerComponent.ConnectionId];
             auto& update = message.Updates[World::ToInteger(entity)];

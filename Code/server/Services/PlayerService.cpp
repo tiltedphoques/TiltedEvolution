@@ -57,28 +57,31 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
             m_world.emplace<CellIdComponent>(*playerComponent.Character, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
     }
 
-    for (auto cell : message.Cells)
+    auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
+    for (auto character : characterView)
     {
-        auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
-        for (auto character : characterView)
+        const auto& ownedComponent = characterView.get<OwnerComponent>(character);
+        const auto& characterComponent = characterView.get<CharacterComponent>(character);
+        const auto& characterCellComponent = characterView.get<CellIdComponent>(character);
+
+        // Don't send self managed
+        if (ownedComponent.ConnectionId == acMessage.ConnectionId)
+            continue;
+
+        const auto cellItor = std::find_if(std::begin(message.Cells), std::end(message.Cells),
+            [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell)
         {
-            const auto& ownedComponent = characterView.get<OwnerComponent>(character);
-            const auto& characterComponent = characterView.get<CharacterComponent>(character);
-            const auto& characterCellComponent = characterView.get<CellIdComponent>(character);
+           return playerCell == CharacterCell;
+        });
 
-            // Don't send self managed
-            if (ownedComponent.ConnectionId == acMessage.ConnectionId)
-                continue;
+        if (cellItor == std::end(message.Cells))
+            continue;
 
-            if (cell != characterCellComponent.Cell)
-                continue;
+        CharacterSpawnRequest spawnMessage;
+        CharacterService::Serialize(m_world, character, &spawnMessage);
 
-            CharacterSpawnRequest spawnMessage;
-            CharacterService::Serialize(m_world, character, &spawnMessage);
-
-            GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
-            spdlog::error("CharacterSpawnRequest {:x}", spawnMessage.FormId.BaseId);
-        }
+        GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
+        spdlog::error("CharacterSpawnRequest {:x}", spawnMessage.FormId.BaseId);
     }
 }
 

@@ -237,6 +237,19 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
     spdlog::error("OnCharacterSpawn {:x}", acMessage.FormId.BaseId);
+
+    auto remoteView = m_world.view<RemoteComponent>();
+    const auto remoteItor = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteItor == std::end(remoteView))
+    {
+        spdlog::error("Character with remote id {:X} is already spawned.", acMessage.ServerId);
+        //return;
+    }
+
     Actor* pActor = nullptr;
 
     std::optional<entt::entity> entity;
@@ -291,7 +304,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             entity = *itor;
         else
             entity = m_world.create();
-
     }
 
     if (!pActor)
@@ -729,6 +741,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
 {
     auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
+    spdlog::critical("CreateCharacterForEntity {:x}", aEntity);
     auto* pInterpolationComponent = m_world.try_get<InterpolationComponent>(aEntity);
 
     if (!pRemoteComponent || !pInterpolationComponent)

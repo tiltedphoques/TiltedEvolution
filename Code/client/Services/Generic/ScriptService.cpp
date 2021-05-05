@@ -63,7 +63,7 @@ void ScriptService::OnDraw() noexcept
     if (view.empty())
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Engine");
 
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
@@ -299,6 +299,9 @@ void ScriptService::DisplayFormComponent(FormIdComponent& aFormComponent) const 
         return;
 
     const auto pActor = RTTI_CAST(TESForm::GetById(aFormComponent.Id), TESForm, Actor);
+
+    if (!pActor)
+        return;
 
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
