@@ -727,6 +727,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             if (pWorldSpace)
                 m_world.GetModSystem().GetServerModId(pWorldSpace->formID, message.WorldSpaceId);
 
+            spdlog::warn("CharacterTravelRequest {:x}:{:x}", localComponent.Id, pActor->formID);
             m_transport.Send(message);
         }
         else
@@ -734,6 +735,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             RemoveCharacterRequest message;
             message.ServerId = localComponent.Id;
 
+            spdlog::critical("RemoveCharacterRequest {:x}", localComponent.Id);
             m_transport.Send(message);
         }
 
