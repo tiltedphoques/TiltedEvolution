@@ -46,7 +46,6 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            spdlog::critical("Trigger grid cell shift ({}, {})", message.PlayerCoords.X, message.PlayerCoords.Y);
             m_world.GetDispatcher().trigger(CharacterGridCellShiftEvent{*itor, *playerComponent.Character, message.WorldSpaceId, 
                                                                         message.PlayerCoords, message.Cells});
 
@@ -82,7 +81,6 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
         GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
-        spdlog::error("CharacterSpawnRequest {:x}", spawnMessage.FormId.BaseId);
     }
 }
 

@@ -124,14 +124,18 @@ void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEven
 
         if (cellItor != std::end(acEvent.Cells))
         {
+            /*
             spdlog::error("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
                          cellIdComponent.CenterCoords.Y, acEvent.PlayerCoords.X, acEvent.PlayerCoords.Y);
+            */
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
         }
         else if (!GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords, &acEvent.PlayerCoords))
         {
+            /*
             spdlog::warn("Grid cell shift removal ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
                          cellIdComponent.CenterCoords.Y, acEvent.PlayerCoords.X, acEvent.PlayerCoords.Y);
+            */
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
         }
     }
@@ -234,51 +238,33 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     NotifyOwnershipTransfer response;
     response.ServerId = World::ToInteger(*it);
     
-    // TODO: refactor this please
     bool foundOwner = false;
-    if (characterCellIdComponent.WorldSpaceId != GameId{})
+    for (auto entity : playerView)
     {
-        for (auto entity : playerView)
+        auto& playerComponent = playerView.get<PlayerComponent>(entity);
+
+        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
+            continue;
+
+        auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
+
+        if (characterCellIdComponent.WorldSpaceId == GameId{})
         {
-            auto& playerComponent = playerView.get<PlayerComponent>(entity);
-
-            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
-                continue;
-
-            auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
-
-            if (!GridCellCoords::IsCellInGridCell(&characterCellIdComponent.CenterCoords, &cellIdComponent.CenterCoords))
-                continue;
-
-            characterOwnerComponent.ConnectionId = playerComponent.ConnectionId;
-
-            GameServer::Get()->Send(playerComponent.ConnectionId, response);
-
-            foundOwner = true;
-            break;
-        }
-    }
-    else
-    {
-        for (auto entity : playerView)
-        {
-            auto& playerComponent = playerView.get<PlayerComponent>(entity);
-
-            if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
-                continue;
-
-            auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
-
             if (cellIdComponent.Cell != characterCellIdComponent.Cell)
                 continue;
-
-            characterOwnerComponent.ConnectionId = playerComponent.ConnectionId;
-
-            GameServer::Get()->Send(playerComponent.ConnectionId, response);
-
-            foundOwner = true;
-            break;
         }
+        else
+        {
+            if (!GridCellCoords::IsCellInGridCell(&characterCellIdComponent.CenterCoords, &cellIdComponent.CenterCoords))
+                continue;
+        }
+
+        characterOwnerComponent.ConnectionId = playerComponent.ConnectionId;
+
+        GameServer::Get()->Send(playerComponent.ConnectionId, response);
+
+        foundOwner = true;
+        break;
     }
 
     if (!foundOwner)
