@@ -113,15 +113,27 @@ void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEven
         auto& playerComponent = playerView.get<PlayerComponent>(entity);
         auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
 
-        if (acEvent.Owner == entity)
+        if (acEvent.Owner == entity || cellIdComponent.WorldSpaceId != acEvent.WorldSpaceId)
             continue;
 
-        if (cellIdComponent.WorldSpaceId == acEvent.OldWorldSpaceId 
-          && GridCellCoords::AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &acEvent.OldCoords))
-            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
-        else if (cellIdComponent.WorldSpaceId == acEvent.NewWorldSpaceId 
-          && GridCellCoords::AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &acEvent.NewCoords))
+        const auto cellItor = std::find_if(std::begin(acEvent.Cells), std::end(acEvent.Cells),
+            [Cells = acEvent.Cells, PlayerCell = cellIdComponent.Cell](auto cell)
+        {
+           return cell == PlayerCell;
+        });
+
+        if (cellItor != std::end(acEvent.Cells))
+        {
+            spdlog::error("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
+                         cellIdComponent.CenterCoords.Y, acEvent.PlayerCoords.X, acEvent.PlayerCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
+        }
+        else if (!GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords, &acEvent.PlayerCoords))
+        {
+            spdlog::warn("Grid cell shift removal ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
+                         cellIdComponent.CenterCoords.Y, acEvent.PlayerCoords.X, acEvent.PlayerCoords.Y);
+            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
+        }
     }
 }
 

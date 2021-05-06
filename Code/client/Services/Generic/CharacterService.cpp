@@ -699,6 +699,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         RequestOwnershipTransfer request;
         request.ServerId = localComponent.Id;
 
+        spdlog::critical("RequestOwnershipTransfer {:x}", localComponent.Id);
         m_transport.Send(request);
 
         aRegistry.remove_if_exists<LocalAnimationComponent, LocalComponent>(aEntity);

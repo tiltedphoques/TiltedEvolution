@@ -46,8 +46,9 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            m_world.GetDispatcher().trigger(CharacterGridCellShiftEvent{*itor, *playerComponent.Character, pCellIdComponent->WorldSpaceId, 
-                                                                        message.WorldSpaceId, pCellIdComponent->CenterCoords, message.PlayerCoords});
+            spdlog::critical("Trigger grid cell shift ({}, {})", message.PlayerCoords.X, message.PlayerCoords.Y);
+            m_world.GetDispatcher().trigger(CharacterGridCellShiftEvent{*itor, *playerComponent.Character, message.WorldSpaceId, 
+                                                                        message.PlayerCoords, message.Cells});
 
             pCellIdComponent->Cell = message.PlayerCell;
             pCellIdComponent->WorldSpaceId = message.WorldSpaceId;

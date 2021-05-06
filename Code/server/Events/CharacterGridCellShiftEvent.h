@@ -4,20 +4,18 @@
 
 struct CharacterGridCellShiftEvent
 {
-    CharacterGridCellShiftEvent(const entt::entity aOwner, const entt::entity aEntity, const GameId aOldWorldSpaceId, 
-                                const GameId aNewWorldSpaceId, const GridCellCoords& aOldCoords, const GridCellCoords& aNewCoords)
+    CharacterGridCellShiftEvent(const entt::entity aOwner, const entt::entity aEntity, const GameId aWorldSpaceId,
+                                const GridCellCoords aPlayerCoords, const Vector<GameId> aCells)
         : Owner(aOwner)
         , Entity{aEntity}
-        , OldWorldSpaceId(aOldWorldSpaceId)
-        , NewWorldSpaceId(aNewWorldSpaceId)
-        , OldCoords(aOldCoords)
-        , NewCoords(aNewCoords)
+        , WorldSpaceId(aWorldSpaceId)
+        , PlayerCoords(aPlayerCoords)
+        , Cells(aCells)
     {}
 
     entt::entity Owner;
     entt::entity Entity;
-    GameId OldWorldSpaceId;
-    GameId NewWorldSpaceId;
-    GridCellCoords OldCoords;
-    GridCellCoords NewCoords;
+    GameId WorldSpaceId;
+    GridCellCoords PlayerCoords;
+    Vector<GameId> Cells;
 };
