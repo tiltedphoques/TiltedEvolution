@@ -34,10 +34,8 @@ void GridCellCoords::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
 
 GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const float aY) noexcept
 {
-    auto x = static_cast<int32_t>(aX / 4096);
-    auto y = static_cast<int32_t>(aY / 4096);
-    x = (aX < 0.f) ? (x - 1) : x;
-    y = (aY < 0.f) ? (y - 1) : y;
+    auto x = static_cast<int32_t>(floor(aX / 4096.f));
+    auto y = static_cast<int32_t>(floor(aY / 4096.f));
     return GridCellCoords(x, y);
 }
 
