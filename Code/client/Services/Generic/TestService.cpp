@@ -158,6 +158,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void TestService::OnDraw() noexcept
 {
+    static uint32_t fetchFormId;
+    static Actor* pFetchActor = 0;
+
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
         return;
@@ -248,7 +251,7 @@ void TestService::OnDraw() noexcept
                                        ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
                 }
 
-                auto pCell = pPlayer->GetParentCell();
+                auto pCell = pActor->GetParentCell();
                 if (pCell)
                 {
                     auto cellFormId = pCell->formID;
@@ -259,6 +262,54 @@ void TestService::OnDraw() noexcept
                 if (pActor->position != NiPoint3{} && pActor->position.AsArray())
                     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
             }
+        }
+    }
+
+    ImGui::End();
+
+    ImGui::Begin("Actor lookup");
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
+    {
+        if (fetchFormId)
+        {
+            pFetchActor = RTTI_CAST(TESForm::GetById(fetchFormId), TESForm, Actor);
+        }
+    }
+
+    if (pFetchActor)
+    {
+        /*
+        char name[256];
+        sprintf_s(name, std::size(name), "%s", pFetchActor->baseForm->GetName());
+        ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
+        */
+
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchActor, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::InputInt("Game Id", (int*)&pFetchActor->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputFloat3("Position", pFetchActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat3("Rotation", pFetchActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        int isDead = int(pFetchActor->IsDead());
+        ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+        auto* pWorldSpace = pFetchActor->GetWorldSpace();
+        if (pWorldSpace)
+        {
+            auto worldFormId = pWorldSpace->formID;
+            ImGui::InputScalar("Actor Worldspace", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        auto* pCell = pFetchActor->GetParentCell();
+        if (pCell)
+        {
+            auto cellFormId = pCell->formID;
+            ImGui::InputScalar("Actor Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
     }
 
