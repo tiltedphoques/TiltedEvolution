@@ -274,6 +274,7 @@ void TestService::OnDraw() noexcept
 
     ImGui::End();
 
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
     ImGui::Begin("Actor lookup");
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
@@ -288,6 +289,15 @@ void TestService::OnDraw() noexcept
 
     if (pFetchActor)
     {
+        #if TP_SKYRIM64
+        const auto* pNpc = RTTI_CAST(pFetchActor->baseForm, TESForm, TESNPC);
+        if (pNpc && pNpc->fullName.value.data)
+        {
+            char name[256];
+            sprintf_s(name, std::size(name), "%s", pNpc->fullName.value.data);
+            ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
+        }
+        #endif
         /*
         char name[256];
         sprintf_s(name, std::size(name), "%s", pFetchActor->baseForm->GetName());
