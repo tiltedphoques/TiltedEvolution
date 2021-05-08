@@ -26,6 +26,7 @@
 #include <Messages/RequestDeathStateChange.h>
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/RequestOwnershipTransfer.h>
+#include <Messages/EnterExteriorCellRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -40,7 +41,7 @@ struct ClientMessageFactory
                                  RemoveCharacterRequest, ClientReferencesMoveRequest, EnterCellRequest, ClientRpcCalls,
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
-                                 RequestActorValueChanges, RequestActorMaxValueChanges,
+                                 RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer>;
 

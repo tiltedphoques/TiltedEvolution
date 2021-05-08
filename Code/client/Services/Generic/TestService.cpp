@@ -227,10 +227,17 @@ void TestService::OnDraw() noexcept
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
+        const auto playerParentCell = pPlayer->parentCell;
+        if (playerParentCell)
+        {
+            ImGui::InputScalar("Player parent cell", ImGuiDataType_U32, (void*)&playerParentCell->formID, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
         auto* pTES = TES::Get();
         if (pTES)
         {
-            int32_t playerGrid[2] = {pTES->playerGridX, pTES->playerGridY};
+            int32_t playerGrid[2] = {pTES->currentGridX, pTES->currentGridY};
             int32_t centerGrid[2] = {pTES->centerGridX, pTES->centerGridY};
 
             ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);

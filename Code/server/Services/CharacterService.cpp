@@ -7,6 +7,7 @@
 
 #include <Events/CharacterSpawnedEvent.h>
 #include <Events/CharacterGridCellShiftEvent.h>
+#include <Events/CharacterExteriorCellChangeEvent.h>
 #include <Events/CharacterCellChangeEvent.h>
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
@@ -33,7 +34,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
     , m_characterCellChangeEventConnection(aDispatcher.sink<CharacterCellChangeEvent>().connect<&CharacterService::OnCharacterCellChange>(this))
-    , m_characterGridCellShiftEventConnection(aDispatcher.sink<CharacterGridCellShiftEvent>().connect<&CharacterService::OnCharacterGridCellShift>(this))
+    , m_exteriorCellChangeEventConnection(aDispatcher.sink<CharacterExteriorCellChangeEvent>().connect<&CharacterService::OnCharacterExteriorCellChange>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_transferOwnershipConnection(aDispatcher.sink<PacketEvent<RequestOwnershipTransfer>>().connect<&CharacterService::OnOwnershipTransferRequest>(this))
     , m_removeCharacterConnection(aDispatcher.sink<CharacterRemoveEvent>().connect<&CharacterService::OnCharacterRemoveEvent>(this))
@@ -98,7 +99,7 @@ void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
     ProcessMovementChanges();
 }
 
-void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEvent& acEvent) const noexcept
+void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCellChangeEvent& acEvent) const noexcept
 {
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
@@ -116,26 +117,16 @@ void CharacterService::OnCharacterGridCellShift(const CharacterGridCellShiftEven
         if (acEvent.Owner == entity || cellIdComponent.WorldSpaceId != acEvent.WorldSpaceId)
             continue;
 
-        const auto cellItor = std::find_if(std::begin(acEvent.Cells), std::end(acEvent.Cells),
-            [Cells = acEvent.Cells, PlayerCell = cellIdComponent.Cell](auto cell)
+        if (GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
         {
-           return cell == PlayerCell;
-        });
-
-        if (cellItor != std::end(acEvent.Cells))
-        {
-            /*
             spdlog::error("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
-                         cellIdComponent.CenterCoords.Y, acEvent.PlayerCoords.X, acEvent.PlayerCoords.Y);
-            */
+                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
         }
-        else if (!GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords, &acEvent.PlayerCoords))
+        else
         {
-            /*
             spdlog::warn("Grid cell shift removal ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
-                         cellIdComponent.CenterCoords.Y, acEvent.PlayerCoords.X, acEvent.PlayerCoords.Y);
-            */
+                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
         }
     }
@@ -329,7 +320,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
                 continue;
 
             if (cellIdComponent.WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
-              GridCellCoords::AreGridCellsOverlapping(&cellIdComponent.CenterCoords, &characterCellIdComponent.CenterCoords))
+              GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords, &characterCellIdComponent.CenterCoords))
                 GameServer::Get()->Send(playerComponent.ConnectionId, message);
         }
     }

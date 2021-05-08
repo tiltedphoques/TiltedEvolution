@@ -6,6 +6,7 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
+#include <Events/ExteriorCellChangeEvent.h>
 
 #include <Games/TES.h>
 #include <Games/References.h>
@@ -18,6 +19,7 @@
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
 #include <Messages/ShiftGridCellRequest.h>
+#include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterCellRequest.h>
 
 #include <Services/ImguiService.h>
@@ -34,6 +36,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
+    m_exteriorCellChangeConnection = m_dispatcher.sink<ExteriorCellChangeEvent>().connect<&TransportService::OnExteriorCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
@@ -172,6 +175,16 @@ void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent)
 
         Send(request);
     }
+}
+
+void TransportService::OnExteriorCellChangeEvent(const ExteriorCellChangeEvent& acEvent) const noexcept
+{
+    EnterExteriorCellRequest message;
+    message.WorldSpaceId = acEvent.WorldSpaceId;
+    message.CellId = acEvent.CellId;
+    message.CurrentCoords = acEvent.CurrentCoords;
+
+    Send(message);
 }
 
 void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept

@@ -4,8 +4,9 @@
 #include <Client.hpp>
 
 struct ImguiService;
-struct CellChangeEvent;
 struct GridCellChangeEvent;
+struct ExteriorCellChangeEvent;
+struct CellChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
@@ -35,6 +36,7 @@ protected:
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
+    void OnExteriorCellChangeEvent(const ExteriorCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnDraw() noexcept;
 
@@ -50,6 +52,7 @@ private:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
+    entt::scoped_connection m_exteriorCellChangeConnection;
     entt::scoped_connection m_drawImGuiConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };

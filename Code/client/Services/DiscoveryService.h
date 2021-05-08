@@ -34,6 +34,8 @@ private:
     entt::dispatcher& m_dispatcher;
 
     Set<uint32_t> m_forms;
+    int32_t m_centerGridX = 0;
+    int32_t m_centerGridY = 0;
     int32_t m_currentGridX = 0;
     int32_t m_currentGridY = 0;
     uint32_t m_worldSpaceId = 0;

@@ -46,8 +46,8 @@ struct TES
 #endif
     int32_t centerGridX;
     int32_t centerGridY;
-    int32_t playerGridX;
-    int32_t playerGridY;
+    int32_t currentGridX;
+    int32_t currentGridY;
     TESObjectCELL* interiorCell;
 };
 

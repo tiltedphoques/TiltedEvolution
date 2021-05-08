@@ -237,7 +237,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
-    spdlog::critical("OnCharacterSpawn {:x}", acMessage.FormId.BaseId);
+    spdlog::critical("OnCharacterSpawn {:x} {:x} {:x}", acMessage.ServerId, acMessage.FormId.BaseId, acMessage.BaseId.BaseId);
 
     auto remoteView = m_world.view<RemoteComponent>();
     const auto remoteItor = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
@@ -245,10 +245,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         return remoteView.get<RemoteComponent>(entity).Id == Id;
     });
 
-    if (remoteItor == std::end(remoteView))
+    if (remoteItor != std::end(remoteView))
     {
         spdlog::warn("Character with remote id {:X} is already spawned.", acMessage.ServerId);
-        //return;
+        return;
     }
 
     Actor* pActor = nullptr;
@@ -309,6 +309,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (!pActor)
         return;
+
+    spdlog::warn("Spawned actor {:x}", acMessage.ServerId);
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();

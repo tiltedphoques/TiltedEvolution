@@ -12,6 +12,7 @@
 #include <Events/ReferenceRemovedEvent.h>
 #include <Events/PreUpdateEvent.h>
 #include <Events/GridCellChangeEvent.h>
+#include <Events/ExteriorCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
@@ -44,15 +45,38 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
         if (m_worldSpaceId != worldSpaceId || aForceTrigger)
             DetectGridCellChange(pWorldSpace, true);
 
-        if (m_currentGridX != pTES->centerGridX || m_currentGridY != pTES->centerGridY)
+        if (m_centerGridX != pTES->centerGridX || m_centerGridY != pTES->centerGridY)
             DetectGridCellChange(pWorldSpace, false);
-    }
 
+        if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY)
+        {
+            ExteriorCellChangeEvent cellChangeEvent;
+            uint32_t baseId = 0;
+            uint32_t modId = 0;
+
+            if (m_world.GetModSystem().GetServerModId(pWorldSpace->formID, modId, baseId))
+                cellChangeEvent.WorldSpaceId = GameId(modId, baseId);
+
+            const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
+
+            if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
+                cellChangeEvent.CellId = GameId(modId, baseId);
+
+            cellChangeEvent.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
+
+            m_dispatcher.trigger(cellChangeEvent);
+            m_currentGridX = pTES->currentGridX;
+            m_currentGridY = pTES->currentGridY;
+        }
+    }
     else if (const auto pParentCell = pPlayer->GetParentCell())
     {
         m_worldSpaceId = 0;
+        m_centerGridX = 0;
+        m_centerGridY = 0;
         m_currentGridX = 0;
         m_currentGridY = 0;
+
         const auto cellId = pParentCell->formID;
         if (m_interiorCellId != cellId || aForceTrigger)
         {
@@ -73,8 +97,9 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
 {
     const auto* pTES = TES::Get();
 
+    GridCellChangeEvent changeEvent;
     const auto worldSpaceId = aWorldSpace->formID;
-    GridCellChangeEvent changeEvent(worldSpaceId);
+    changeEvent.WorldSpaceId = worldSpaceId;
 
     const auto startGridX = pTES->centerGridX - GridCellCoords::m_gridsToLoad / 2;
     const auto startGridY = pTES->centerGridY - GridCellCoords::m_gridsToLoad / 2;
@@ -84,7 +109,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         {
             if (!aNewGridCell)
             {
-                if (GridCellCoords::IsCellInGridCell(&GridCellCoords(m_currentGridX, m_currentGridY),
+                if (GridCellCoords::IsCellInGridCell(&GridCellCoords(m_centerGridX, m_centerGridY),
                                                      &GridCellCoords(startGridX + i, startGridY + j)))
                     continue;
             }
@@ -108,11 +133,11 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
     if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
         changeEvent.PlayerCell = GameId(modId, baseId);
 
-    m_currentGridX = pTES->centerGridX;
-    m_currentGridY = pTES->centerGridY;
+    m_centerGridX = pTES->centerGridX;
+    m_centerGridY = pTES->centerGridY;
 
     changeEvent.CenterCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
-    changeEvent.PlayerCoords = GridCellCoords(pTES->playerGridX, pTES->playerGridY);
+    changeEvent.PlayerCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
 
     m_dispatcher.trigger(changeEvent);
     m_worldSpaceId = worldSpaceId;

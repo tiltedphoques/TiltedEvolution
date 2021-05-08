@@ -5,6 +5,7 @@
 struct World;
 struct ShiftGridCellRequest;
 struct EnterCellRequest;
+struct EnterExteriorCellRequest;
 
 struct PlayerService
 {
@@ -16,12 +17,14 @@ struct PlayerService
 protected:
 
     void HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept;
+    void HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellRequest>& acMessage) const noexcept;
     void HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept;
 
 private:
 
     World& m_world;
 
-    entt::scoped_connection m_cellEnterConnection;
     entt::scoped_connection m_gridCellShiftConnection;
+    entt::scoped_connection m_exteriorCellEnterConnection;
+    entt::scoped_connection m_cellEnterConnection;
 };
