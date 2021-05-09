@@ -289,7 +289,7 @@ void TestService::OnDraw() noexcept
 
     if (pFetchActor)
     {
-        #if TP_SKYRIM64
+#if TP_SKYRIM64
         const auto* pNpc = RTTI_CAST(pFetchActor->baseForm, TESForm, TESNPC);
         if (pNpc && pNpc->fullName.value.data)
         {
@@ -297,12 +297,7 @@ void TestService::OnDraw() noexcept
             sprintf_s(name, std::size(name), "%s", pNpc->fullName.value.data);
             ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
         }
-        #endif
-        /*
-        char name[256];
-        sprintf_s(name, std::size(name), "%s", pFetchActor->baseForm->GetName());
-        ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
-        */
+#endif
 
         ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchActor, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
@@ -328,6 +323,51 @@ void TestService::OnDraw() noexcept
             ImGui::InputScalar("Actor Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32,
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
+    }
+
+    ImGui::End();
+
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Component view");
+
+    ImGui::BeginChild("Components", ImVec2(0, 100), true);
+
+    static uint32_t s_selectedComponentId = 0;
+    static uint32_t s_selected = 0;
+
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
+
+    int i = 0;
+    for (auto entity : entities)
+    {
+        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
+        auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+
+        char buffer[32];
+        if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedComponentId == remoteComponent.Id))
+            s_selectedComponentId = remoteComponent.Id;
+
+        if(s_selectedComponentId == remoteComponent.Id)
+            s_selected = i;
+
+        ++i;
+    }
+
+    ImGui::EndChild();
+
+    if (s_selected < entities.size())
+    {
+        auto entity = entities[s_selected];
+
+        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
+        ImGui::InputScalar("Server ID", ImGuiDataType_U32, &remoteComponent.Id, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &remoteComponent.CachedRefId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+        auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+        ImGui::InputFloat("Position x", &interpolationComponent.Position.x, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Position y", &interpolationComponent.Position.y, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputFloat("Position z", &interpolationComponent.Position.z, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
     }
 
     ImGui::End();

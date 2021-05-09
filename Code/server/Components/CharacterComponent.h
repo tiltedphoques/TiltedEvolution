@@ -6,7 +6,6 @@
 
 #include <Structs/Tints.h>
 #include <Structs/Factions.h>
-#include <Structs/GridCellCoords.h>
 
 struct CharacterComponent
 {

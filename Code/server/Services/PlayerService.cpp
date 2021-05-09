@@ -1,7 +1,6 @@
 #include <stdafx.h>
 
 #include "Events/CharacterCellChangeEvent.h"
-#include "Events/CharacterGridCellShiftEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
 
 #include <Services/PlayerService.h>

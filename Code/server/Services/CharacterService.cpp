@@ -6,7 +6,6 @@
 #include <World.h>
 
 #include <Events/CharacterSpawnedEvent.h>
-#include <Events/CharacterGridCellShiftEvent.h>
 #include <Events/CharacterExteriorCellChangeEvent.h>
 #include <Events/CharacterCellChangeEvent.h>
 #include <Events/PlayerEnterWorldEvent.h>
@@ -462,7 +461,6 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
-    spdlog::warn("CreateCharacter cell: {:x} worldspace: {:x}", message.CellId.BaseId, message.WorldSpaceId.BaseId);
 
     const auto gameId = message.ReferenceId;
     const auto baseId = message.FormId;
@@ -606,7 +604,9 @@ void CharacterService::ProcessInventoryChanges() const noexcept
                 if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
                     !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
                                                       &playerCellIdComponent.CenterCoords))
+                {
                     continue;
+                }
             }
 
             auto& message = messages[playerComponent.ConnectionId];
@@ -669,7 +669,9 @@ void CharacterService::ProcessFactionsChanges() const noexcept
                 if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
                     !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
                                                       &playerCellIdComponent.CenterCoords))
+                {
                     continue;
+                }
             }
 
             auto& message = messages[playerComponent.ConnectionId];
@@ -741,7 +743,9 @@ void CharacterService::ProcessMovementChanges() const noexcept
                 if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
                     !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
                                                       &playerCellIdComponent.CenterCoords))
+                {
                     continue;
+                }
             }
 
             auto& message = messages[playerComponent.ConnectionId];

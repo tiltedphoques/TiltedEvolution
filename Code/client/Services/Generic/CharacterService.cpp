@@ -136,7 +136,7 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    //RunSpawnUpdates();
+    RunSpawnUpdates();
     RunLocalUpdates();
     RunInventoryUpdates();
     RunFactionsUpdates();
@@ -310,7 +310,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (!pActor)
         return;
 
-    spdlog::warn("Spawned actor {:x}", acMessage.ServerId);
+    spdlog::warn("Spawned actor {:x} at x {} y {}", acMessage.ServerId, acMessage.Position.x, acMessage.Position.y);
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -360,11 +360,11 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
         if (!pActor)
             return;
 
-        if (pActor->IsDead() != acEvent.IsDead)
-            acEvent.IsDead ? pActor->Kill() : pActor->Respawn();
-
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
+
+        if (pActor->IsDead() != acEvent.IsDead)
+            acEvent.IsDead ? pActor->Kill() : pActor->Respawn();
     }
 }
 
@@ -664,19 +664,13 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 
         if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
         {
-            const auto pWorldSpace = pActor->GetWorldSpace();
-            const auto pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+            spdlog::info("Remote Deleted {:X}", aFormId);
 
-            if (pWorldSpace != pPlayerWorldSpace)
-            {
-                spdlog::info("Remote Deleted {:X}", aFormId);
-
-                pActor->Delete();
-
-                aRegistry.remove_if_exists<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
-                                           RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
-            }
+            pActor->Delete();
         }
+
+        aRegistry.remove_if_exists<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
+                                   RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
 
         return;
     }
@@ -711,7 +705,6 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
 {
     auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
-    spdlog::critical("CreateCharacterForEntity {:x}", aEntity);
     auto* pInterpolationComponent = m_world.try_get<InterpolationComponent>(aEntity);
 
     if (!pRemoteComponent || !pInterpolationComponent)
@@ -866,6 +859,9 @@ void CharacterService::RunRemoteUpdates() const noexcept
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
         pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
 
+        if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
+            remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
+
         toRemove.push_back(entity);  
     }
 
@@ -969,7 +965,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
             float characterY = interpolationComponent.Position.y;
             const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
             const auto* pTES = TES::Get();
-            const auto playerCoords = GridCellCoords::CalculateGridCellCoords(pTES->centerGridX, pTES->centerGridY);
+            const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
             if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
             {
