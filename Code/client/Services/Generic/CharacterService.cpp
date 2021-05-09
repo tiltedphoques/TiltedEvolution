@@ -34,7 +34,6 @@
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
-#include <Messages/RemoveCharacterRequest.h>
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>

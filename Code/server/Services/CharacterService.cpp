@@ -22,7 +22,6 @@
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
-#include <Messages/RemoveCharacterRequest.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/RequestSpawnData.h>
 #include <Messages/NotifySpawnData.h>

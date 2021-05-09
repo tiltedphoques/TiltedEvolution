@@ -6,7 +6,6 @@
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/CancelAssignmentRequest.h>
-#include <Messages/RemoveCharacterRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterCellRequest.h>
 #include <Messages/ClientRpcCalls.h>
@@ -38,7 +37,7 @@ struct ClientMessageFactory
     static auto Visit(T&& func)
     {
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
-                                 RemoveCharacterRequest, ClientReferencesMoveRequest, EnterCellRequest, ClientRpcCalls,
+                                 ClientReferencesMoveRequest, EnterCellRequest, ClientRpcCalls,
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,

@@ -398,25 +398,6 @@ TEST_CASE("Packets", "[encoding.packets]")
         REQUIRE(sendMessage == recvMessage);
     }
 
-    SECTION("RemoveCharacterRequest")
-    {
-        Buffer buff(1000);
-
-        RemoveCharacterRequest sendMessage, recvMessage;
-        sendMessage.ServerId = 14523698;
-        Buffer::Writer writer(&buff);
-        sendMessage.Serialize(writer);
-
-        Buffer::Reader reader(&buff);
-
-        uint64_t trash;
-        reader.ReadBits(trash, 8); // pop opcode
-
-        recvMessage.DeserializeRaw(reader);
-
-        REQUIRE(sendMessage == recvMessage);
-    }
-
     SECTION("AssignCharacterRequest")
     {
         Buffer buff(1000);
