@@ -486,7 +486,6 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
 {
-    // pActor->Delete() should only be used on temporaries
     auto view = m_world.view<RemoteComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.ServerId, view](entt::entity entity) {
@@ -497,13 +496,15 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
     {
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
         {
-            spdlog::info("\tformid: {:X}", pFormIdComponent->Id);
-            
             const auto pActor = RTTI_CAST(TESForm::GetById(pFormIdComponent->Id), TESForm, Actor);
             if (!pActor)
                 return;
 
-            pActor->Delete();
+            if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
+            {
+                spdlog::info("\tDeleting {:X}", pFormIdComponent->Id);
+                pActor->Delete();
+            }
         }
 
         m_world.remove_if_exists<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
