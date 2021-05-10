@@ -11,6 +11,7 @@
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/CharacterRemoveEvent.h>
+#include <Events/OwnershipTransferEvent.h>
 #include <Scripts/Npc.h>
 
 #include <Messages/AssignCharacterRequest.h>
@@ -36,6 +37,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_exteriorCellChangeEventConnection(aDispatcher.sink<CharacterExteriorCellChangeEvent>().connect<&CharacterService::OnCharacterExteriorCellChange>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_transferOwnershipConnection(aDispatcher.sink<PacketEvent<RequestOwnershipTransfer>>().connect<&CharacterService::OnOwnershipTransferRequest>(this))
+    , m_ownershipTransferEventConnection(aDispatcher.sink<OwnershipTransferEvent>().connect<&CharacterService::OnOwnershipTransferEvent>(this))
     , m_claimOwnershipConnection(aDispatcher.sink<PacketEvent<RequestOwnershipClaim>>().connect<&CharacterService::OnOwnershipClaimRequest>(this))
     , m_removeCharacterConnection(aDispatcher.sink<CharacterRemoveEvent>().connect<&CharacterService::OnCharacterRemoveEvent>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
@@ -232,12 +234,20 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 
     characterOwnerComponent.InvalidOwners.push_back(acMessage.ConnectionId);
 
-    auto& characterCellIdComponent = view.get<CellIdComponent>(*it);
+    m_world.GetDispatcher().trigger(OwnershipTransferEvent(*it));
+}
+
+void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& acEvent) const noexcept
+{
+    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+
+    auto& characterOwnerComponent = view.get<OwnerComponent>(acEvent.Entity);
+    auto& characterCellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
 
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
     NotifyOwnershipTransfer response;
-    response.ServerId = World::ToInteger(*it);
+    response.ServerId = World::ToInteger(acEvent.Entity);
     
     bool foundOwner = false;
     for (auto entity : playerView)
@@ -277,7 +287,7 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     }
 
     if (!foundOwner)
-        m_world.GetDispatcher().trigger(CharacterRemoveEvent(message.ServerId));
+        m_world.GetDispatcher().trigger(CharacterRemoveEvent(response.ServerId));
 }
 
 void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEvent) const noexcept
