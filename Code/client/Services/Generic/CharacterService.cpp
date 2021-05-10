@@ -307,12 +307,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     }
 
     if (!pActor)
+    {
+        spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
-
-    spdlog::warn("Spawned actor {:x} at x {} y {}", acMessage.ServerId, acMessage.Position.x, acMessage.Position.y);
-
-    if (pActor->IsDead() != acMessage.IsDead)
-        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+    }
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
     remoteComponent.SpawnRequest = acMessage;
@@ -326,6 +324,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
+    pActor->SetActorValues(acMessage.InitialActorValues);
+
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
     m_world.emplace<WaitingFor3D>(*entity);
 
@@ -743,14 +745,14 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (!pActor)
         return nullptr;
 
-    if (pActor->IsDead() != acMessage.IsDead)
-        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
-
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
     m_world.emplace<WaitingFor3D>(aEntity);
 

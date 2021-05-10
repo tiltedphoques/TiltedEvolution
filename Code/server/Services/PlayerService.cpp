@@ -64,7 +64,6 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
         GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
-        spdlog::warn("Sent spawn message");
     }
 }
 
@@ -136,6 +135,8 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
             m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{*itor, *playerComponent.Character, pCellIdComponent->Cell, message.CellId});
 
             pCellIdComponent->Cell = message.CellId;
+            pCellIdComponent->WorldSpaceId = GameId{};
+            pCellIdComponent->CenterCoords = GridCellCoords{};
         }
         else
             m_world.emplace<CellIdComponent>(*playerComponent.Character, message.CellId);

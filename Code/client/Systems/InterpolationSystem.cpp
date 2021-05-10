@@ -47,6 +47,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     if (!apActor)
         return;
 
+    if (apActor && ((apActor->formID & 0xFF000000) == 0xFF000000))
+        spdlog::warn("updating player x {} y {}", position.x, position.y);
+
     apActor->ForcePosition(position);
     apActor->LoadAnimationVariables(second.Variables);
 
