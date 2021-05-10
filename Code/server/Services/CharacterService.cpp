@@ -112,9 +112,28 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
         auto& playerComponent = playerView.get<PlayerComponent>(entity);
         auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
 
-        if (acEvent.Owner == entity || cellIdComponent.WorldSpaceId != acEvent.WorldSpaceId)
+        if (acEvent.Owner == entity)
             continue;
 
+        if (cellIdComponent.WorldSpaceId != acEvent.WorldSpaceId || 
+            cellIdComponent.WorldSpaceId == acEvent.WorldSpaceId && !GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
+        {
+            spdlog::error("Grid cell shift removal ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
+                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
+            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
+        }
+        else if (cellIdComponent.WorldSpaceId == acEvent.WorldSpaceId &&
+                 GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
+        {
+            spdlog::warn("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
+                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
+            GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
+        }
+
+
+
+
+        /*
         if (GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
         {
             spdlog::error("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
@@ -127,6 +146,7 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
                          cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
         }
+        */
     }
 }
 

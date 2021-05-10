@@ -42,12 +42,15 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
         const auto worldSpaceId = pWorldSpace->formID;
 
         if (m_worldSpaceId != worldSpaceId || aForceTrigger)
+        {
             DetectGridCellChange(pWorldSpace, true);
+            aForceTrigger = true;
+        }
 
         if (m_centerGridX != pTES->centerGridX || m_centerGridY != pTES->centerGridY)
             DetectGridCellChange(pWorldSpace, false);
 
-        if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY)
+        if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY || aForceTrigger)
         {
             CellChangeEvent cellChangeEvent;
             uint32_t baseId = 0;
