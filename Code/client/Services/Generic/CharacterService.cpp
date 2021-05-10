@@ -48,6 +48,7 @@
 #include <Messages/NotifySpawnData.h>
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
+#include <Messages/RequestOwnershipClaim.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -470,22 +471,36 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
         return view.get<RemoteComponent>(entity).Id == acMessage.ServerId;
     });
 
-    // TODO: send back message to the server if actor not found
     if (itor != std::end(view))
     {
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
         auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         if (pActor)
+        {
             pActor->GetExtension()->SetRemote(false);
 
-        m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
-        m_world.emplace<LocalAnimationComponent>(*itor);
-        m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FaceGenComponent,
-                                 CacheComponent, WaitingFor3D>(*itor);
+            m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
+            m_world.emplace<LocalAnimationComponent>(*itor);
+            m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+                                     FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
+
+            RequestOwnershipClaim request;
+            request.ServerId = acMessage.ServerId;
+
+            m_transport.Send(request);
+            spdlog::info("Ownership claimed {:X}", request.ServerId);
+
+            return;
+        }
     }
-    else
-        spdlog::warn("Actor for ownership transfer not found {:X}", acMessage.ServerId);
+
+    spdlog::warn("Actor for ownership transfer not found {:X}", acMessage.ServerId);
+
+    RequestOwnershipTransfer request;
+    request.ServerId = acMessage.ServerId;
+
+    m_transport.Send(request);
 }
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
@@ -501,9 +516,6 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
         {
             const auto pActor = RTTI_CAST(TESForm::GetById(pFormIdComponent->Id), TESForm, Actor);
-            if (!pActor)
-                return;
-
             if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
             {
                 spdlog::info("\tDeleting {:X}", pFormIdComponent->Id);

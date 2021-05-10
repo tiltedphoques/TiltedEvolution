@@ -27,6 +27,7 @@
 #include <Messages/NotifySpawnData.h>
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
+#include <Messages/RequestOwnershipClaim.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -35,6 +36,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_exteriorCellChangeEventConnection(aDispatcher.sink<CharacterExteriorCellChangeEvent>().connect<&CharacterService::OnCharacterExteriorCellChange>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_transferOwnershipConnection(aDispatcher.sink<PacketEvent<RequestOwnershipTransfer>>().connect<&CharacterService::OnOwnershipTransferRequest>(this))
+    , m_claimOwnershipConnection(aDispatcher.sink<PacketEvent<RequestOwnershipClaim>>().connect<&CharacterService::OnOwnershipClaimRequest>(this))
     , m_removeCharacterConnection(aDispatcher.sink<CharacterRemoveEvent>().connect<&CharacterService::OnCharacterRemoveEvent>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
@@ -228,6 +230,8 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         return;
     }
 
+    characterOwnerComponent.InvalidOwners.push_back(acMessage.ConnectionId);
+
     auto& characterCellIdComponent = view.get<CellIdComponent>(*it);
 
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
@@ -240,7 +244,15 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     {
         auto& playerComponent = playerView.get<PlayerComponent>(entity);
 
-        if (characterOwnerComponent.ConnectionId == playerComponent.ConnectionId)
+        bool isPlayerInvalid = false;
+        for (const auto invalidOwner : characterOwnerComponent.InvalidOwners)
+        {
+            isPlayerInvalid = invalidOwner == playerComponent.ConnectionId;
+            if (isPlayerInvalid)
+                break;
+        }
+
+        if (isPlayerInvalid)
             continue;
 
         auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
@@ -290,6 +302,30 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     }
 
     m_world.destroy(*it);
+    spdlog::error("Character destroyed {:X}", acEvent.ServerId);
+}
+
+void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
+    if (it == view.end())
+    {
+        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.ConnectionId);
+        return;
+    }
+
+    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+    if (characterOwnerComponent.ConnectionId != acMessage.ConnectionId)
+    {
+        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.ConnectionId);
+        return;
+    }
+
+    characterOwnerComponent.InvalidOwners.clear();
+    spdlog::info("\t\tOwnership claimed {:X}", message.ServerId);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept

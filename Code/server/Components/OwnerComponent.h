@@ -11,4 +11,5 @@ struct OwnerComponent
     {}
 
     ConnectionId_t ConnectionId;
+    Vector<ConnectionId_t> InvalidOwners{};
 };

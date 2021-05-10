@@ -16,6 +16,7 @@ struct GridCellCoords;
 struct RequestOwnershipTransfer;
 struct CharacterRemoveEvent;
 struct CharacterExteriorCellChangeEvent;
+struct RequestOwnershipClaim;
 
 struct CharacterService
 {
@@ -33,6 +34,7 @@ protected:
     void OnCharacterInteriorCellChange(const CharacterInteriorCellChangeEvent& acEvent) const noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnOwnershipTransferRequest(const PacketEvent<RequestOwnershipTransfer>& acMessage) const noexcept;
+    void OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept;
     void OnCharacterRemoveEvent(const CharacterRemoveEvent& acEvent) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
@@ -61,4 +63,5 @@ private:
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_transferOwnershipConnection;
+    entt::scoped_connection m_claimOwnershipConnection;
 };
