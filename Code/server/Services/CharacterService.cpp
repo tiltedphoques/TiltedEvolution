@@ -129,24 +129,6 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
                          cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
         }
-
-
-
-
-        /*
-        if (GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
-        {
-            spdlog::error("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
-                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
-            GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
-        }
-        else
-        {
-            spdlog::warn("Grid cell shift removal ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
-                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
-            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
-        }
-        */
     }
 }
 
@@ -168,15 +150,15 @@ void CharacterService::OnCharacterInteriorCellChange(const CharacterInteriorCell
         if (acEvent.Owner == entity)
             continue;
 
-        if (acEvent.OldCell == cellIdComponent.Cell)
-        {
-            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
-            spdlog::error("\t\tRemove interior character");
-        }
-        else if (acEvent.NewCell == cellIdComponent.Cell)
+        if (acEvent.NewCell == cellIdComponent.Cell)
         {
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
             spdlog::info("\t\tSpawn interior character");
+        }
+        else
+        {
+            GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
+            spdlog::error("\t\tRemove interior character");
         }
     }
 }

@@ -132,7 +132,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{*itor, *playerComponent.Character, pCellIdComponent->Cell, message.CellId});
+            m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{*itor, *playerComponent.Character, message.CellId});
 
             pCellIdComponent->Cell = message.CellId;
             pCellIdComponent->WorldSpaceId = GameId{};

@@ -481,9 +481,11 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
 
         m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
         m_world.emplace<LocalAnimationComponent>(*itor);
-        m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent,
-                                 FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
+        m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FaceGenComponent,
+                                 CacheComponent, WaitingFor3D>(*itor);
     }
+    else
+        spdlog::warn("Actor for ownership transfer not found {:X}", acMessage.ServerId);
 }
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
