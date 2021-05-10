@@ -6,7 +6,6 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
-#include <Events/ExteriorCellChangeEvent.h>
 
 #include <Games/TES.h>
 #include <Games/References.h>
@@ -20,7 +19,7 @@
 #include <Messages/ServerMessageFactory.h>
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
-#include <Messages/EnterCellRequest.h>
+#include <Messages/EnterInteriorCellRequest.h>
 
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
@@ -36,7 +35,6 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
-    m_exteriorCellChangeConnection = m_dispatcher.sink<ExteriorCellChangeEvent>().connect<&TransportService::OnExteriorCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
@@ -177,26 +175,25 @@ void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent)
     }
 }
 
-void TransportService::OnExteriorCellChangeEvent(const ExteriorCellChangeEvent& acEvent) const noexcept
-{
-    EnterExteriorCellRequest message;
-    message.WorldSpaceId = acEvent.WorldSpaceId;
-    message.CellId = acEvent.CellId;
-    message.CurrentCoords = acEvent.CurrentCoords;
-
-    Send(message);
-}
-
 void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
 {
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-
-    if(m_world.GetModSystem().GetServerModId(acEvent.CellId, modId, baseId))
+    spdlog::error("OnCellChangeEvent");
+    if (acEvent.WorldSpaceId != GameId{})
     {
-        EnterCellRequest message;
-        message.CellId = GameId(modId, baseId);
+        EnterExteriorCellRequest message;
+        message.CellId = acEvent.CellId;
+        message.WorldSpaceId = acEvent.WorldSpaceId;
+        message.CurrentCoords = acEvent.CurrentCoords;
 
+        spdlog::warn("EnterExteriorCellRequest");
+        Send(message);
+    }
+    else
+    {
+        EnterInteriorCellRequest message;
+        message.CellId = acEvent.CellId;
+
+        spdlog::critical("EnterInteriorCellRequest");
         Send(message);
     }
 }

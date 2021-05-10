@@ -9,7 +9,7 @@ using TiltedPhoques::Map;
 
 struct EnterExteriorCellRequest final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kEnterCellRequest;
+    static constexpr ClientOpcode Opcode = kEnterExteriorCellRequest;
 
     EnterExteriorCellRequest() : ClientMessage(Opcode)
     {

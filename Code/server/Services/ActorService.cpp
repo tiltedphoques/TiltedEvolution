@@ -34,7 +34,7 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
 
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(actorValuesView) ||
+    if (itor != std::end(actorValuesView) &&
         actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
@@ -70,7 +70,7 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
 
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(actorValuesView) ||
+    if (itor != std::end(actorValuesView) &&
         actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
@@ -118,9 +118,23 @@ void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChange
 
 void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
 {
+    auto& message = acMessage.Packet;
+
+    auto characterView = m_world.view<CharacterComponent, OwnerComponent>();
+
+    auto itor = characterView.find(static_cast<entt::entity>(message.Id));
+
+    if (itor != std::end(characterView) && 
+        characterView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
+    {
+        auto& characterComponent = characterView.get<CharacterComponent>(*itor);
+        characterComponent.IsDead = message.IsDead;
+        spdlog::debug("Updating death state {:x}:{}", message.Id, message.IsDead);
+    }
+
     NotifyDeathStateChange notifyChange;
-    notifyChange.Id = acMessage.Packet.Id;
-    notifyChange.IsDead = acMessage.Packet.IsDead;
+    notifyChange.Id = message.Id;
+    notifyChange.IsDead = message.IsDead;
 
     auto view = m_world.view<PlayerComponent>();
     for (auto entity : view)

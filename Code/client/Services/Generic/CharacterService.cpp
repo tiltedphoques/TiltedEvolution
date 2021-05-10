@@ -486,6 +486,7 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
 {
+    // pActor->Delete() should only be used on temporaries
     auto view = m_world.view<RemoteComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.ServerId, view](entt::entity entity) {
@@ -657,13 +658,12 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 {
     if (aRegistry.all_of<RemoteComponent>(aEntity))
     {
-        // Do nothing, a system will detect a remote component missing a form id component later on and try to spawn it
         auto* const pForm = TESForm::GetById(aFormId);
         auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
         {
-            spdlog::info("Remote Deleted {:X}", aFormId);
+            spdlog::info("Temporary Remote Deleted {:X}", aFormId);
 
             pActor->Delete();
         }

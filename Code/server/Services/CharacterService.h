@@ -3,7 +3,7 @@
 #include <Events/PacketEvent.h>
 
 struct UpdateEvent;
-struct CharacterCellChangeEvent;
+struct CharacterInteriorCellChangeEvent;
 struct CharacterSpawnedEvent;
 struct World;
 struct AssignCharacterRequest;
@@ -30,7 +30,7 @@ protected:
 
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
     void OnCharacterExteriorCellChange(const CharacterExteriorCellChangeEvent& acEvent) const noexcept;
-    void OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept;
+    void OnCharacterInteriorCellChange(const CharacterInteriorCellChangeEvent& acEvent) const noexcept;
     void OnAssignCharacterRequest(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
     void OnOwnershipTransferRequest(const PacketEvent<RequestOwnershipTransfer>& acMessage) const noexcept;
     void OnCharacterRemoveEvent(const CharacterRemoveEvent& acEvent) const noexcept;
@@ -50,12 +50,9 @@ private:
 
     World& m_world;
 
-    // TODO: change this to be on player per player basis
-    int32_t m_gridsToLoad = 5;
-
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_exteriorCellChangeEventConnection;
-    entt::scoped_connection m_characterCellChangeEventConnection;
+    entt::scoped_connection m_interiorCellChangeEventConnection;
     entt::scoped_connection m_characterAssignRequestConnection;
     entt::scoped_connection m_removeCharacterConnection;
     entt::scoped_connection m_characterSpawnedConnection;

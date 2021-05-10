@@ -7,7 +7,7 @@
 
 #include <Events/CharacterSpawnedEvent.h>
 #include <Events/CharacterExteriorCellChangeEvent.h>
-#include <Events/CharacterCellChangeEvent.h>
+#include <Events/CharacterInteriorCellChangeEvent.h>
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/CharacterRemoveEvent.h>
@@ -31,7 +31,7 @@
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
-    , m_characterCellChangeEventConnection(aDispatcher.sink<CharacterCellChangeEvent>().connect<&CharacterService::OnCharacterCellChange>(this))
+    , m_interiorCellChangeEventConnection(aDispatcher.sink<CharacterInteriorCellChangeEvent>().connect<&CharacterService::OnCharacterInteriorCellChange>(this))
     , m_exteriorCellChangeEventConnection(aDispatcher.sink<CharacterExteriorCellChangeEvent>().connect<&CharacterService::OnCharacterExteriorCellChange>(this))
     , m_characterAssignRequestConnection(aDispatcher.sink<PacketEvent<AssignCharacterRequest>>().connect<&CharacterService::OnAssignCharacterRequest>(this))
     , m_transferOwnershipConnection(aDispatcher.sink<PacketEvent<RequestOwnershipTransfer>>().connect<&CharacterService::OnOwnershipTransferRequest>(this))
@@ -130,7 +130,7 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
     }
 }
 
-void CharacterService::OnCharacterCellChange(const CharacterCellChangeEvent& acEvent) const noexcept
+void CharacterService::OnCharacterInteriorCellChange(const CharacterInteriorCellChangeEvent& acEvent) const noexcept
 {
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
 
@@ -149,9 +149,15 @@ void CharacterService::OnCharacterCellChange(const CharacterCellChangeEvent& acE
             continue;
 
         if (acEvent.OldCell == cellIdComponent.Cell)
+        {
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
+            spdlog::error("\t\tRemove interior character");
+        }
         else if (acEvent.NewCell == cellIdComponent.Cell)
+        {
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
+            spdlog::info("\t\tSpawn interior character");
+        }
     }
 }
 

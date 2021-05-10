@@ -12,7 +12,6 @@
 #include <Events/ReferenceRemovedEvent.h>
 #include <Events/PreUpdateEvent.h>
 #include <Events/GridCellChangeEvent.h>
-#include <Events/ExteriorCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
@@ -50,7 +49,7 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 
         if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY)
         {
-            ExteriorCellChangeEvent cellChangeEvent;
+            CellChangeEvent cellChangeEvent;
             uint32_t baseId = 0;
             uint32_t modId = 0;
 
@@ -80,7 +79,14 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
         const auto cellId = pParentCell->formID;
         if (m_interiorCellId != cellId || aForceTrigger)
         {
-            m_dispatcher.trigger(CellChangeEvent(cellId));
+            CellChangeEvent cellChangeEvent;
+            uint32_t baseId = 0;
+            uint32_t modId = 0;
+
+            if (m_world.GetModSystem().GetServerModId(cellId, modId, baseId))
+                cellChangeEvent.CellId = GameId(modId, baseId);
+
+            m_dispatcher.trigger(cellChangeEvent);
             m_interiorCellId = cellId;
         }
     }
