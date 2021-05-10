@@ -256,7 +256,9 @@ void TestService::OnDraw() noexcept
     {
         if (fetchFormId)
         {
-            pFetchActor = RTTI_CAST(TESForm::GetById(fetchFormId), TESForm, Actor);
+            auto* pFetchForm = TESForm::GetById(fetchFormId);
+            if (pFetchForm)
+                pFetchActor = RTTI_CAST(pFetchForm, TESForm, Actor);
         }
     }
 

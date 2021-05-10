@@ -673,6 +673,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
 void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
+    spdlog::warn("Cancelling server assignment {:X}", aFormId);
     if (aRegistry.all_of<RemoteComponent>(aEntity))
     {
         auto* const pForm = TESForm::GetById(aFormId);
