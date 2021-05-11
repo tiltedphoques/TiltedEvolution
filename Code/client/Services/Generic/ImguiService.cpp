@@ -28,7 +28,7 @@ void ImguiService::Create(RenderSystemD3D11* apRenderSystem, HWND aHwnd)
     ImGui::CreateContext();
 
     auto& io = ImGui::GetIO();
-    //io.IniFilename = nullptr;
+    io.IniFilename = nullptr;
 
     auto& st = ImGui::GetStyle();
     st.FrameBorderSize = 1.0f;

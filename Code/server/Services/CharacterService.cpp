@@ -122,15 +122,11 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
         if (cellIdComponent.WorldSpaceId != acEvent.WorldSpaceId || 
             cellIdComponent.WorldSpaceId == acEvent.WorldSpaceId && !GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
         {
-            spdlog::error("Grid cell shift removal ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
-                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
         }
         else if (cellIdComponent.WorldSpaceId == acEvent.WorldSpaceId &&
                  GridCellCoords::IsCellInGridCell(&acEvent.CurrentCoords, &cellIdComponent.CenterCoords))
         {
-            spdlog::warn("Grid cell shift spawn ({}, {}) to ({}, {})", cellIdComponent.CenterCoords.X,
-                         cellIdComponent.CenterCoords.Y, acEvent.CurrentCoords.X, acEvent.CurrentCoords.Y);
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
         }
     }
@@ -155,15 +151,9 @@ void CharacterService::OnCharacterInteriorCellChange(const CharacterInteriorCell
             continue;
 
         if (acEvent.NewCell == cellIdComponent.Cell)
-        {
             GameServer::Get()->Send(playerComponent.ConnectionId, spawnMessage);
-            spdlog::info("\t\tSpawn interior character");
-        }
         else
-        {
             GameServer::Get()->Send(playerComponent.ConnectionId, removeMessage);
-            spdlog::error("\t\tRemove interior character");
-        }
     }
 }
 
@@ -312,7 +302,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     }
 
     m_world.destroy(*it);
-    spdlog::error("Character destroyed {:X}", acEvent.ServerId);
+    spdlog::info("Character destroyed {:X}", acEvent.ServerId);
 }
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
@@ -335,7 +325,7 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
     }
 
     characterOwnerComponent.InvalidOwners.clear();
-    spdlog::info("\t\tOwnership claimed {:X}", message.ServerId);
+    spdlog::info("\tOwnership claimed {:X}", message.ServerId);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
