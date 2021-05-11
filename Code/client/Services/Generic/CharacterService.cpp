@@ -243,8 +243,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
 void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept
 {
-    spdlog::critical("OnCharacterSpawn {:x} {:x} {:x}", acMessage.ServerId, acMessage.FormId.BaseId, acMessage.BaseId.BaseId);
-
     auto remoteView = m_world.view<RemoteComponent>();
     const auto remoteItor = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
     {
@@ -679,7 +677,6 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
 void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
-    spdlog::warn("Cancelling server assignment {:X}", aFormId);
     if (aRegistry.all_of<RemoteComponent>(aEntity))
     {
         auto* const pForm = TESForm::GetById(aFormId);
@@ -718,7 +715,6 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
         RequestOwnershipTransfer request;
         request.ServerId = localComponent.Id;
 
-        spdlog::critical("RequestOwnershipTransfer {:x}", localComponent.Id);
         m_transport.Send(request);
 
         aRegistry.remove_if_exists<LocalAnimationComponent, LocalComponent>(aEntity);
