@@ -106,6 +106,7 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
 
 void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept
 {
+    spdlog::warn("HandleInteriorCellEnter");
     auto playerView = m_world.view<PlayerComponent>();
 
     const auto itor = std::find_if(std::begin(playerView), std::end(playerView),

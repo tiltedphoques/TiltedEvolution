@@ -158,6 +158,7 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 
 void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept
 {
+    spdlog::error("OnGridCellChangeEvent");
     uint32_t baseId = 0;
     uint32_t modId = 0;
 
@@ -176,6 +177,7 @@ void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent)
 
 void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
 {
+    spdlog::error("OnCellChangeEvent");
     if (acEvent.WorldSpaceId != GameId{})
     {
         EnterExteriorCellRequest message;
@@ -183,6 +185,7 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
         message.WorldSpaceId = acEvent.WorldSpaceId;
         message.CurrentCoords = acEvent.CurrentCoords;
 
+        spdlog::warn("EnterExteriorCellRequest");
         Send(message);
     }
     else
@@ -190,6 +193,7 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
         EnterInteriorCellRequest message;
         message.CellId = acEvent.CellId;
 
+        spdlog::critical("EnterInteriorCellRequest");
         Send(message);
     }
 }

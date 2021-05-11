@@ -18,6 +18,8 @@
 
 #include <World.h>
 
+#include <cmath>
+
 
 DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -118,9 +120,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
             {
                 if (GridCellCoords::IsCellInGridCell(&GridCellCoords(m_centerGridX, m_centerGridY),
                                                      &GridCellCoords(startGridX + i, startGridY + j)))
-                {
                     continue;
-                }
             }
 
             const auto* pCell = ModManager::Get()->GetCellFromCoordinates(startGridX + i, startGridY + j, aWorldSpace, 0);
