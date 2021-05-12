@@ -232,6 +232,12 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+        const auto cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
+        const auto* pCellForm = TESForm::GetById(cCellId);
+        auto* pCell = RTTI_CAST(pCellForm, TESForm, TESObjectCELL);
+        if (pCell)
+            pActor->MoveTo(pCell, acMessage.Position);
     }
 }
 

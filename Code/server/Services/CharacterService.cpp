@@ -90,6 +90,12 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
         apSpawnRequest->Rotation.y = pMovementComponent->Rotation.z;
     }
 
+    const auto* pCellIdComponent = aRegistry.try_get<CellIdComponent>(aEntity);
+    if (pCellIdComponent)
+    {
+        apSpawnRequest->CellId = pCellIdComponent->Cell;
+    }
+
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
     apSpawnRequest->LatestAction = animationComponent.CurrentAction;
 }
@@ -178,7 +184,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
@@ -196,6 +202,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
             auto& characterComponent = view.get<CharacterComponent>(*itor);
+            auto& movementComponent = view.get<MovementComponent>(*itor);
+            auto& cellIdComponent = view.get<CellIdComponent>(*itor);
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
@@ -203,6 +211,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.Owner = false;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
             response.IsDead = characterComponent.IsDead;
+            response.Position = movementComponent.Position;
+            response.CellId = cellIdComponent.Cell;
 
             pServer->Send(acMessage.ConnectionId, response);
             return;
