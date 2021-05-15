@@ -10,6 +10,10 @@ struct CellIdComponent
         : Cell(aCellId)
     {}
 
+    CellIdComponent(GameId aCellId, GameId aWorldSpaceId, GridCellCoords aCenterCoords) 
+        : Cell(aCellId), WorldSpaceId(aWorldSpaceId), CenterCoords(aCenterCoords)
+    {}
+
     bool operator==(const CellIdComponent& acRhs) const noexcept
     {
         return Cell == acRhs.Cell ;
@@ -21,4 +25,6 @@ struct CellIdComponent
     }
 
     GameId Cell;
+    GameId WorldSpaceId{};
+    GridCellCoords CenterCoords{};
 };

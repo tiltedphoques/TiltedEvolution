@@ -4,6 +4,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 
 #include <Games/TES.h>
@@ -16,7 +17,9 @@
 #include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
-#include <Messages/EnterCellRequest.h>
+#include <Messages/ShiftGridCellRequest.h>
+#include <Messages/EnterExteriorCellRequest.h>
+#include <Messages/EnterInteriorCellRequest.h>
 
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
@@ -31,6 +34,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
+    m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
@@ -152,15 +156,39 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
     Update();
 }
 
-void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
+void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept
 {
     uint32_t baseId = 0;
     uint32_t modId = 0;
 
-    if(m_world.GetModSystem().GetServerModId(acEvent.CellId, modId, baseId))
+    if (m_world.GetModSystem().GetServerModId(acEvent.WorldSpaceId, modId, baseId))
     {
-        EnterCellRequest message;
-        message.CellId = GameId(modId, baseId);
+        ShiftGridCellRequest request;
+        request.WorldSpaceId = GameId(modId, baseId);
+        request.PlayerCell = acEvent.PlayerCell;
+        request.CenterCoords = acEvent.CenterCoords;
+        request.PlayerCoords = acEvent.PlayerCoords;
+        request.Cells = acEvent.Cells;
+
+        Send(request);
+    }
+}
+
+void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
+{
+    if (acEvent.WorldSpaceId != GameId{})
+    {
+        EnterExteriorCellRequest message;
+        message.CellId = acEvent.CellId;
+        message.WorldSpaceId = acEvent.WorldSpaceId;
+        message.CurrentCoords = acEvent.CurrentCoords;
+
+        Send(message);
+    }
+    else
+    {
+        EnterInteriorCellRequest message;
+        message.CellId = acEvent.CellId;
 
         Send(message);
     }

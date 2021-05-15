@@ -3,7 +3,9 @@
 #include <Events/PacketEvent.h>
 
 struct World;
-struct EnterCellRequest;
+struct ShiftGridCellRequest;
+struct EnterInteriorCellRequest;
+struct EnterExteriorCellRequest;
 
 struct PlayerService
 {
@@ -14,11 +16,15 @@ struct PlayerService
 
 protected:
 
-    void HandleCellEnter(const PacketEvent<EnterCellRequest>& acMessage) const noexcept;
+    void HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept;
+    void HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellRequest>& acMessage) const noexcept;
+    void HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept;
 
 private:
 
     World& m_world;
 
-    entt::scoped_connection m_cellEnterConnection;
+    entt::scoped_connection m_gridCellShiftConnection;
+    entt::scoped_connection m_exteriorCellEnterConnection;
+    entt::scoped_connection m_interiorCellEnterConnection;
 };

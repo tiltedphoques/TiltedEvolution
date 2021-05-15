@@ -218,9 +218,18 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (pEntity == std::end(view))
         return;
 
-    const auto localComponent = m_world.try_get<LocalComponent>(*pEntity);
-    const auto remoteComponent = m_world.try_get<RemoteComponent>(*pEntity);
-    request.ActivatorId = localComponent ? localComponent->Id : remoteComponent->Id;
+    const auto pLocalComponent = m_world.try_get<LocalComponent>(*pEntity);
+    const auto pRemoteComponent = m_world.try_get<RemoteComponent>(*pEntity);
+
+    if (pLocalComponent)
+        request.ActivatorId = pLocalComponent->Id;
+    else if (pRemoteComponent)
+        request.ActivatorId = pRemoteComponent->Id;
+    else
+    {
+        spdlog::error("No local or remote component attached to {:X}", acEvent.pObject->formID);
+        return;
+    }
 
     m_transport.Send(request);
 }

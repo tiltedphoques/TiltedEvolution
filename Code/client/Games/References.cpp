@@ -251,6 +251,7 @@ BSExtraDataList* TESObjectREFR::GetExtraDataList() noexcept
 #endif
 }
 
+// Delete() should only be used on temporaries
 void TESObjectREFR::Delete() const noexcept
 {
     using ObjectReference = TESObjectREFR;

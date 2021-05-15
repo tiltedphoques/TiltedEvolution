@@ -40,10 +40,14 @@ struct TES
     GridCellArray* cells;
 
 #if TP_FALLOUT4
-    uint8_t pad20[0x58 - 0x20];
+    uint8_t pad20[0x48 - 0x20];
 #elif TP_SKYRIM
-    uint8_t pad80[0xC0 - 0x80];
+    uint8_t pad80[0xB0 - 0x80];
 #endif
+    int32_t centerGridX;
+    int32_t centerGridY;
+    int32_t currentGridX;
+    int32_t currentGridY;
     TESObjectCELL* interiorCell;
 };
 
@@ -145,6 +149,7 @@ struct ModManager
 
     uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept;
     Mod* GetByName(const char* acpName) const noexcept;
+    TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 
 #if TP_FALLOUT4
     uint8_t pad0[0xFB0];

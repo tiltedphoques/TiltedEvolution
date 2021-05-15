@@ -4,6 +4,8 @@
 #error Include Components.h instead
 #endif
 
+#include <Structs/GridCellCoords.h>
+
 struct PlayerComponent
 {
     PlayerComponent(const ConnectionId_t aConnectionId)

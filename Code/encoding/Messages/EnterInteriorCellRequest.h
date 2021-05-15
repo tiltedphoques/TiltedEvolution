@@ -6,20 +6,20 @@
 using TiltedPhoques::String;
 using TiltedPhoques::Map;
 
-struct EnterCellRequest final : ClientMessage
+struct EnterInteriorCellRequest final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kEnterCellRequest;
+    static constexpr ClientOpcode Opcode = kEnterInteriorCellRequest;
 
-    EnterCellRequest() : ClientMessage(Opcode)
+    EnterInteriorCellRequest() : ClientMessage(Opcode)
     {
     }
 
-    virtual ~EnterCellRequest() = default;
+    virtual ~EnterInteriorCellRequest() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const EnterCellRequest& acRhs) const noexcept
+    bool operator==(const EnterInteriorCellRequest& acRhs) const noexcept
     {
         return CellId == acRhs.CellId &&
             GetOpcode() == acRhs.GetOpcode();

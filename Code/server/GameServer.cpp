@@ -7,6 +7,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
+#include <Events/OwnershipTransferEvent.h>
 
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
@@ -110,15 +111,9 @@ void GameServer::OnConnection(const ConnectionId_t aHandle)
 
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
 {
-    StackAllocator<1 << 14> allocator;
-    ScopedAllocator _{ allocator };
-
     spdlog::info("Connection ended {:x}", aConnectionId);
 
     m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
-
-    Vector<entt::entity> entitiesToDestroy;
-    entitiesToDestroy.reserve(500);
 
     // Find if a player is associated with this connection and delete it
     auto playerView = m_pWorld->view<PlayerComponent>();
@@ -129,7 +124,8 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         {
             m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(entity));
 
-            entitiesToDestroy.push_back(entity);
+            m_pWorld->remove_if_exists<ScriptsComponent>(entity);
+            m_pWorld->destroy(entity);
             break;
         }
     }
@@ -141,14 +137,8 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         const auto& [ownerComponent] = ownerView.get(entity);
         if (ownerComponent.ConnectionId == aConnectionId)
         {
-            entitiesToDestroy.push_back(entity);
+            m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
         }
-    }
-
-    for(auto entity : entitiesToDestroy)
-    {
-        m_pWorld->remove_if_exists<ScriptsComponent>(entity);
-        m_pWorld->destroy(entity);
     }
 
     SetTitle();
