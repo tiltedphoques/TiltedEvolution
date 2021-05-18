@@ -11,3 +11,7 @@ struct ExPlayerCharacter : PlayerCharacter, ActorExtension
 {
 };
 
+struct CRC32
+{
+    static uint32_t GenerateCRC(uint64_t aData) noexcept;
+};

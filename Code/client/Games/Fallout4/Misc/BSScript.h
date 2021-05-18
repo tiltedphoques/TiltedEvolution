@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Misc/BSFixedString.h>
+#include <Games/Fallout4/TESObjectREFR.h>
+#include <Games/Misc/SpinLock.h>
 
 struct BSScript
 {
@@ -11,6 +13,7 @@ struct BSScript
 
         void Reset() noexcept;
         void Clear() noexcept;
+        void ConvertToString(char* aBuffer, uint32_t aBufferSize, bool aQuoteStringType, bool aObjectHandleOnly) noexcept;
 
         template <class T> void Set(T aValue) noexcept
         {
@@ -46,6 +49,96 @@ struct BSScript
         uint8_t pad0[8];
         Variable* vars;
     };
+
+    struct IObjectHandlePolicy
+    {
+        virtual ~IObjectHandlePolicy() = 0;
+
+        virtual void sub_01();
+        virtual void sub_02();
+        virtual void sub_03();
+        virtual void sub_04();
+        virtual void sub_05();
+        virtual void sub_06();
+        virtual uint64_t GetHandle(FormType aFormType, TESObjectREFR* apObject);
+    };
+
+    struct ObjectTypeInfo
+    {
+        int64_t GetVariableIndex(BSFixedString* name) noexcept;
+
+        uint8_t pad0[0x10];
+        BSFixedString name;
+        uint8_t pad18[0x28];
+        uint64_t flags1;
+        uint8_t pad48[0x8];
+        void* data;
+    };
+    static_assert(sizeof(ObjectTypeInfo) == 0x58);
+
+    struct Object
+    {
+        void IncreaseRef() noexcept;
+
+        uint8_t pad0[0x8];
+        ObjectTypeInfo* typeInfo;
+        BSFixedString state;
+        uint8_t pad18[0x30 - 0x18];
+    };
+    static_assert(sizeof(Object) == 0x30);
+
+    struct Internal
+    {
+        struct AssociatedScript
+        {
+            void Cleanup(char aUnkFlag) noexcept;
+
+            uint64_t pointerOrFlags;
+        };
+    };
+
+    struct AssociatedScriptsTableEntry
+    {
+        struct EntryValue
+        {
+            uint32_t size;
+            BSScript::Internal::AssociatedScript* externalScript;
+        };
+
+        uint64_t key;
+        EntryValue value;
+        AssociatedScriptsTableEntry* next;
+    };
+    static_assert(sizeof(AssociatedScriptsTableEntry) == 0x20);
+
+    struct AssociatedScriptsHashMap
+    {
+        uint8_t pad0[0xC];
+        uint32_t size;
+        uint8_t pad8[0x8];
+        AssociatedScriptsTableEntry* terminator;
+        uint8_t pad18[0x8];
+        AssociatedScriptsTableEntry* table;
+
+        AssociatedScriptsTableEntry* GetEntry(uint32_t aHash, uint64_t aKey) noexcept
+        {
+            auto entry = &table[aHash & (size - 1)];
+            if (entry)
+            {
+                if (entry->next)
+                {
+                    while (entry->key != aKey)
+                    {
+                        entry = entry->next;
+                        if (!entry || entry == terminator)
+                            return nullptr;
+                    }
+                    return entry;
+                }
+            }
+        }
+    };
+    static_assert(sizeof(AssociatedScriptsHashMap) == 0x30);
 
     struct IVirtualMachine
     {
@@ -87,7 +180,7 @@ struct BSScript
         virtual void sub_22();
         virtual void sub_23();
         virtual void sub_24();
-        virtual void sub_25();
+        virtual bool GetVariable(BSScript::Object** aObject, uint32_t aIndex, BSScript::Variable* aVariable);
         virtual void sub_26();
         virtual void sub_27();
         virtual void sub_28();
@@ -97,6 +190,16 @@ struct BSScript
         virtual void sub_2C();
         virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName,
                                std::function<bool(Statement*)>& aFunctor) const noexcept;
+        virtual void sub_2E();
+        virtual void sub_2F();
+        virtual void sub_30();
+        virtual void sub_31();
+        virtual void sub_32();
+        virtual IObjectHandlePolicy* GetObjectHandlePolicy();
+
+        uint8_t pad0[0xBDF0];
+        SpinLock scriptsLock;
+        AssociatedScriptsHashMap scriptsMap;
     };
 };
 

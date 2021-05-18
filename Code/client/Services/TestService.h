@@ -5,8 +5,12 @@ struct ImguiService;
 struct UpdateEvent;
 
 struct TransportService;
-
 struct Actor;
+
+
+
+struct GetVariablesEvent;
+
 struct TestService
 {
     TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
@@ -15,6 +19,7 @@ struct TestService
     TP_NOCOPYMOVE(TestService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
+    void OnGetVariables(const GetVariablesEvent&) noexcept;
 
 protected:
 

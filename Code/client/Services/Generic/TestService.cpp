@@ -31,6 +31,9 @@
 #include <imgui.h>
 #include <inttypes.h>
 
+
+#include <Events/GetVariablesEvent.h>
+
 extern thread_local bool g_overrideFormId;
 
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
@@ -52,6 +55,7 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
+    m_dispatcher.sink<GetVariablesEvent>().connect<&TestService::OnGetVariables>(this);
 }
 
 void TestService::RunDiff()
@@ -125,6 +129,21 @@ void TestService::RunDiff()
 
 TestService::~TestService() noexcept = default;
 
+void TestService::OnGetVariables(const GetVariablesEvent& acEvent) noexcept
+{
+    #if TP_FALLOUT4
+    auto* pPapTestForm = TESForm::GetById(acEvent.formId);
+    if (pPapTestForm)
+    {
+        auto* pPapTestObj = RTTI_CAST(pPapTestForm, TESForm, TESObjectREFR);
+        if (pPapTestObj)
+        {
+            pPapTestObj->GetScriptVariables();
+        }
+    }
+    #endif
+}
+
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
@@ -149,7 +168,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+
+            m_dispatcher.trigger(GetVariablesEvent(0x10C977));
         }
     }
     else

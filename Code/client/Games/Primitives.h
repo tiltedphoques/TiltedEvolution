@@ -89,7 +89,6 @@ static_assert(offsetof(BSTSmallArray<int>, size) == 0x8);
 static_assert(sizeof(BSTSmallArray<int>) == 0xC);
 #endif
 
-
 template <class T>
 struct GameList
 {

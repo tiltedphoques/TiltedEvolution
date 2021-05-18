@@ -50,6 +50,19 @@ static TActorProcess* RealActorProcess = nullptr;
 static TActivate* RealActivate = nullptr;
 static TLockChange* RealLockChange = nullptr;
 
+uint32_t CRC32::GenerateCRC(uint64_t aData) noexcept
+{
+    using TGenerateCRC32 = void(uint32_t* aResult, uint64_t aData, uint32_t aInitValue);
+
+    POINTER_SKYRIMSE(TGenerateCRC32, s_generateCRC32, 0x141B10830 - 0x140000000);
+    POINTER_FALLOUT4(TGenerateCRC32, s_generateCRC32, 0x141B10830 - 0x140000000);
+
+    uint32_t result;
+    s_generateCRC32.Get()(&result, aData, 0);
+
+    return result;
+}
+
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
     TESObjectREFR* pResult = nullptr;
