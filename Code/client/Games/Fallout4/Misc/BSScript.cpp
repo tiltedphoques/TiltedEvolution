@@ -2,10 +2,6 @@
 
 #include <Misc/BSScript.h>
 
-BSScript::Variable::Variable()
-{
-}
-
 BSScript::Variable::~Variable() noexcept
 {
     Reset();

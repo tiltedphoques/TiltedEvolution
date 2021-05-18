@@ -170,7 +170,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             //PlaceActorInWorld();
 
-            m_dispatcher.trigger(GetVariablesEvent(0x10C977));
         }
     }
     else
@@ -181,6 +180,7 @@ void TestService::OnDraw() noexcept
 {
     static uint32_t fetchFormId;
     static Actor* pFetchActor = 0;
+    static uint32_t papFormId = 0;
 
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
@@ -263,6 +263,21 @@ void TestService::OnDraw() noexcept
 
             ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);
             ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
+        }
+    }
+
+    ImGui::End();
+
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Papyrus");
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &papFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
+    {
+        if (papFormId)
+        {
+            m_dispatcher.trigger(GetVariablesEvent(papFormId));
         }
     }
 

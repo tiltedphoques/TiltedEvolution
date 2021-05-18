@@ -45,7 +45,8 @@ ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
 
 void TESObjectREFR::GetScriptVariables() noexcept
 {
-    BSScript::Internal::AssociatedScript scripts[6];
+    BSScript::Internal::AssociatedScript* scripts = nullptr;
+    BSScript::Internal::AssociatedScript scriptsArray[6];
 
     auto* pVM = GameVM::Get()->virtualMachine;
 
@@ -71,7 +72,13 @@ void TESObjectREFR::GetScriptVariables() noexcept
         }
         */
 
-        scripts[0].pointerOrFlags = (uint64_t)pScriptTableEntry->value.externalScript;
+        if (pScriptTableEntry->value.size > 1)
+            scripts = pScriptTableEntry->value.externalScript;
+        else
+        {
+            scriptsArray[0].pointerOrFlags = (uint64_t)pScriptTableEntry->value.externalScript;
+            scripts = scriptsArray;
+        }
 
         for (uint32_t i = 0; i < pScriptTableEntry->value.size; ++i)
         {
@@ -103,12 +110,7 @@ void TESObjectREFR::GetScriptVariables() noexcept
             variables.push_back(currentVar);
             auto index = typeInfo->GetVariableIndex(currentVar);
 
-            BSScript::Variable variable;
-            variable.type = BSScript::Variable::Type::kEmpty;
-            variable.data.i = 0;
-            variable.data.s = nullptr;
-            variable.data.f = 0;
-            variable.data.b = 0;
+            BSScript::Variable variable{};
             
             pVM->GetVariable(&object, index, &variable);
 

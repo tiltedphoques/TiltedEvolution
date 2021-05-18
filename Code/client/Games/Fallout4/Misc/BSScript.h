@@ -8,7 +8,7 @@ struct BSScript
 {
     struct Variable
     {
-        Variable();
+        Variable() = default;
         ~Variable() noexcept;
 
         void Reset() noexcept;
