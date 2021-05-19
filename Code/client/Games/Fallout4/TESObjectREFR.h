@@ -153,6 +153,7 @@ struct TESObjectREFR : TESForm
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     String SerializeInventory() const noexcept;
+    void SetScriptVariable(const String aScriptName, const String aVariableName, int aNewValue) noexcept;
 
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
     void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;

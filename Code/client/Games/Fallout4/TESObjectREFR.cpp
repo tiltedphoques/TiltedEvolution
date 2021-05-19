@@ -1,5 +1,7 @@
 #include <TiltedOnlinePCH.h>
 #include <Games/References.h>
+#include <Forms/TESNPC.h>
+#include <Misc/BSScript.h>
 #include <Misc/GameVM.h>
 
 void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
@@ -45,55 +47,12 @@ ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
 
 void TESObjectREFR::GetScriptVariables() noexcept
 {
-    BSScript::Internal::AssociatedScript* scripts = nullptr;
-    BSScript::Internal::AssociatedScript scriptsArray[6];
-
     auto* pVM = GameVM::Get()->virtualMachine;
 
     pVM->scriptsLock.Lock();
-    auto* pObjectHandlePolicy = pVM->GetObjectHandlePolicy();
-    auto objectHandle = pObjectHandlePolicy->GetHandle(formType, this);
-
-    uint32_t crc = CRC32::GenerateCRC(objectHandle);
 
     Vector<BSScript::Object*> objects;
-
-    auto* pScriptTableEntry = pVM->scriptsMap.GetEntry(crc, objectHandle);
-    if (pScriptTableEntry)
-    {
-        /*
-        BSScript::Internal::AssociatedScript singularScript;
-        if (pScriptTableEntry->value.size == 1)
-        {
-            auto* pObject = (BSScript::Object*)((uint64_t)pScriptTableEntry->value.externalScript & 0xFFFFFFFFFFFFFFFE);
-            singularScript.pointerOrFlags = (uint64_t)pObject;
-            if (pObject)
-                pObject->IncreaseRef();
-        }
-        */
-
-        if (pScriptTableEntry->value.size > 1)
-            scripts = pScriptTableEntry->value.externalScript;
-        else
-        {
-            scriptsArray[0].pointerOrFlags = (uint64_t)pScriptTableEntry->value.externalScript;
-            scripts = scriptsArray;
-        }
-
-        for (uint32_t i = 0; i < pScriptTableEntry->value.size; ++i)
-        {
-            auto* pObject = (BSScript::Object*)(scripts[i].pointerOrFlags & 0xFFFFFFFFFFFFFFFE);
-            objects.push_back(pObject);
-        }
-
-        /*
-        if (pScriptTableEntry->value.size == 1)
-            singularScript.Cleanup(0);
-        */
-    }
-
-    if (&pVM->scriptsLock)
-        pVM->scriptsLock.Unlock();
+    BSScript::GetObjects(objects, this);
 
     for (auto object : objects)
     {
@@ -111,14 +70,93 @@ void TESObjectREFR::GetScriptVariables() noexcept
             auto index = typeInfo->GetVariableIndex(currentVar);
 
             BSScript::Variable variable{};
-            
+
             pVM->GetVariable(&object, index, &variable);
 
             char buffer[256];
             variable.ConvertToString(buffer, 256, true, true);
-            spdlog::info("\tVariable: {}: {}", currentVar->AsAscii(), buffer);
+            spdlog::info("\tVariable: {} at index {}: {}", currentVar->AsAscii(), index, buffer);
 
             currentVar += 3;
         }
     }
+
+    if (&pVM->scriptsLock)
+        pVM->scriptsLock.Unlock();
+}
+
+void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVariableName, int aNewValue) noexcept
+{
+    auto* pVM = GameVM::Get()->virtualMachine;
+
+    pVM->scriptsLock.Lock();
+
+    Vector<BSScript::Object*> objects;
+    BSScript::GetObjects(objects, this);
+
+    BSScript::Object* pObject = nullptr;
+
+    for (auto object : objects)
+    {
+        auto* typeInfo = object->typeInfo;
+        if (String(typeInfo->name.AsAscii()) == aScriptName)
+        {
+            spdlog::info("Found script {}", typeInfo->name.AsAscii());
+            pObject = object;
+            break;
+        }
+    }
+
+    if (!pObject)
+    {
+        spdlog::warn("SetScriptVariable: script not found: {}", aScriptName);
+        if (&pVM->scriptsLock)
+            pVM->scriptsLock.Unlock();
+        return;
+    }
+
+    auto* typeInfo = pObject->typeInfo;
+
+    bool foundVariable = false;
+
+    BSFixedString* currentVar = (BSFixedString*)((char*)typeInfo->data + 8 * ((typeInfo->flags1 >> 3) & 0x1F));
+    BSFixedString* endVar = &currentVar[3 * ((typeInfo->flags1 >> 8) & 0x3FF)];
+    while (currentVar != endVar)
+    {
+        auto index = typeInfo->GetVariableIndex(currentVar);
+
+        BSScript::Variable variable{};
+
+        pVM->GetVariable(&pObject, index, &variable);
+
+        if (String(currentVar->AsAscii()) == aVariableName)
+        {
+            foundVariable = true;
+            break;
+        }
+
+        currentVar += 3;
+    }
+
+    if (!foundVariable)
+    {
+        spdlog::warn("SetScriptVariable: variable not found: {}", aVariableName);
+        if (&pVM->scriptsLock)
+            pVM->scriptsLock.Unlock();
+        return;
+    }
+
+    BSFixedString variableName(aVariableName.c_str());
+    auto index = typeInfo->GetVariableIndex(&variableName);
+
+    int oldValue = pObject->variables[index].data.i;
+    pObject->variables[index].data.i = aNewValue;
+
+    spdlog::info("Successfully changed script {} variable {} from {} to {}", aScriptName, aVariableName, oldValue,
+                 aNewValue);
+
+    variableName.Release();
+
+    if (&pVM->scriptsLock)
+        pVM->scriptsLock.Unlock();
 }

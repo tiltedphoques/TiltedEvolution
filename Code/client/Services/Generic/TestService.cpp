@@ -33,6 +33,7 @@
 
 
 #include <Events/GetVariablesEvent.h>
+#include <Events/SetVariablesEvent.h>
 
 extern thread_local bool g_overrideFormId;
 
@@ -56,6 +57,7 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
     m_dispatcher.sink<GetVariablesEvent>().connect<&TestService::OnGetVariables>(this);
+    m_dispatcher.sink<SetVariablesEvent>().connect<&TestService::OnSetVariables>(this);
 }
 
 void TestService::RunDiff()
@@ -144,6 +146,21 @@ void TestService::OnGetVariables(const GetVariablesEvent& acEvent) noexcept
     #endif
 }
 
+void TestService::OnSetVariables(const SetVariablesEvent& acEvent) noexcept
+{
+    #if TP_FALLOUT4
+    auto* pPapTestForm = TESForm::GetById(acEvent.formId);
+    if (pPapTestForm)
+    {
+        auto* pPapTestObj = RTTI_CAST(pPapTestForm, TESForm, TESObjectREFR);
+        if (pPapTestObj)
+        {
+            pPapTestObj->SetScriptVariable(acEvent.scriptName, acEvent.variableName, acEvent.newValue);
+        }
+    }
+    #endif
+}
+
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
@@ -170,6 +187,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             //PlaceActorInWorld();
 
+            SetVariablesEvent setVarEvent(0x10C977, "OxygenTankScript", "FlyingLoopSoundID", 1);
+            m_dispatcher.trigger(std::move(setVarEvent));
         }
     }
     else

@@ -27,7 +27,9 @@ struct BSScript
             kString,
             kInteger,
             kFloat,
-            kBoolean
+            kBoolean,
+            kVariable,
+            kStruct
         };
 
         union Data 
@@ -65,7 +67,9 @@ struct BSScript
 
     struct ObjectTypeInfo
     {
-        int64_t GetVariableIndex(BSFixedString* name) noexcept;
+        bool HasVariable(const BSFixedString* aName, bool aCheckValid) noexcept;
+
+        int64_t GetVariableIndex(BSFixedString* aName) noexcept;
 
         uint8_t pad0[0x10];
         BSFixedString name;
@@ -78,14 +82,19 @@ struct BSScript
 
     struct Object
     {
+        Object();
+        ~Object() noexcept;
+
         void IncreaseRef() noexcept;
+        void DecreaseRef() noexcept;
 
         uint8_t pad0[0x8];
         ObjectTypeInfo* typeInfo;
         BSFixedString state;
         uint8_t pad18[0x30 - 0x18];
+        Variable variables[1]; // variables are stored like BSFixedString stores characters
     };
-    static_assert(sizeof(Object) == 0x30);
+    static_assert(sizeof(Object) == 0x40);
 
     struct Internal
     {
@@ -201,6 +210,8 @@ struct BSScript
         SpinLock scriptsLock;
         AssociatedScriptsHashMap scriptsMap;
     };
+
+    static void GetObjects(Vector<BSScript::Object*>& aObjects, TESObjectREFR* aObjectRefr) noexcept;
 };
 
 template <> void BSScript::Variable::Set(int32_t aValue) noexcept;

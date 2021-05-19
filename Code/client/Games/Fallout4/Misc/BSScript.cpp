@@ -2,6 +2,9 @@
 
 #include <Misc/BSScript.h>
 
+#include <Games/References.h>
+#include <Misc/GameVM.h>
+
 BSScript::Variable::~Variable() noexcept
 {
     Reset();
@@ -83,6 +86,33 @@ void BSScript::Object::IncreaseRef() noexcept
     ThisCall(s_increaseRef, this);
 }
 
+void BSScript::Object::DecreaseRef() noexcept
+{
+    TP_THIS_FUNCTION(TDecreaseRef, void, BSScript::Object);
+
+    POINTER_FALLOUT4(TDecreaseRef, s_decreaseRef, 0x1426ED210 - 0x140000000);
+
+    ThisCall(s_decreaseRef, this);
+}
+
+bool BSScript::ObjectTypeInfo::HasVariable(const BSFixedString* aName, bool aCheckValid) noexcept
+{
+    TP_THIS_FUNCTION(THasVariable, bool, BSScript::ObjectTypeInfo, const BSFixedString* aName, bool aCheckValid);
+
+    POINTER_FALLOUT4(THasVariable, s_hasVariable, 0x1426F38D0 - 0x140000000);
+
+    return ThisCall(s_hasVariable, this, aName, aCheckValid);
+}
+
+int64_t BSScript::ObjectTypeInfo::GetVariableIndex(BSFixedString* aName) noexcept
+{
+    TP_THIS_FUNCTION(TGetVariableIndex, int64_t, BSScript::ObjectTypeInfo, BSFixedString* aName);
+
+    POINTER_FALLOUT4(TGetVariableIndex, s_getVariableIndex, 0x1426F4780 - 0x140000000);
+
+    return ThisCall(s_getVariableIndex, this, aName);
+}
+
 void BSScript::Internal::AssociatedScript::Cleanup(char aUnkFlag) noexcept
 {
     TP_THIS_FUNCTION(TCleanup, void, BSScript::Internal::AssociatedScript);
@@ -92,11 +122,33 @@ void BSScript::Internal::AssociatedScript::Cleanup(char aUnkFlag) noexcept
     ThisCall(s_cleanup, this);
 }
 
-int64_t BSScript::ObjectTypeInfo::GetVariableIndex(BSFixedString* name) noexcept
+void BSScript::GetObjects(Vector<BSScript::Object*>& aObjects, TESObjectREFR* aObjectRefr) noexcept
 {
-    TP_THIS_FUNCTION(TGetVariableIndex, int64_t, BSScript::ObjectTypeInfo, BSFixedString* name);
+    BSScript::Internal::AssociatedScript* scripts = nullptr;
+    BSScript::Internal::AssociatedScript scriptsArray[6];
 
-    POINTER_FALLOUT4(TGetVariableIndex, s_getVariableIndex, 0x1426F4780 - 0x140000000);
+    auto* pVM = GameVM::Get()->virtualMachine;
 
-    return ThisCall(s_getVariableIndex, this, name);
+    auto* pObjectHandlePolicy = pVM->GetObjectHandlePolicy();
+    auto objectHandle = pObjectHandlePolicy->GetHandle(aObjectRefr->formType, aObjectRefr);
+
+    uint32_t crc = CRC32::GenerateCRC(objectHandle);
+
+    auto* pScriptTableEntry = pVM->scriptsMap.GetEntry(crc, objectHandle);
+    if (pScriptTableEntry)
+    {
+        if (pScriptTableEntry->value.size > 1)
+            scripts = pScriptTableEntry->value.externalScript;
+        else
+        {
+            scriptsArray[0].pointerOrFlags = (uint64_t)pScriptTableEntry->value.externalScript;
+            scripts = scriptsArray;
+        }
+
+        for (uint32_t i = 0; i < pScriptTableEntry->value.size; ++i)
+        {
+            auto* pObject = (BSScript::Object*)(scripts[i].pointerOrFlags & 0xFFFFFFFFFFFFFFFE);
+            aObjects.push_back(pObject);
+        }
+    }
 }
