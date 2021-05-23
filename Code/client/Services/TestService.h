@@ -11,6 +11,7 @@ struct Actor;
 
 struct GetVariablesEvent;
 struct SetVariablesEvent;
+struct SetStateEvent;
 
 struct TestService
 {
@@ -22,6 +23,7 @@ struct TestService
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnGetVariables(const GetVariablesEvent&) noexcept;
     void OnSetVariables(const SetVariablesEvent&) noexcept;
+    void OnSetState(const SetStateEvent&) noexcept;
 
 protected:
 

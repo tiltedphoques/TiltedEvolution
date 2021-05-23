@@ -148,12 +148,15 @@ struct TESObjectREFR : TESForm
     BSExtraDataList* GetExtraDataList() noexcept;
     ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
     Lock* GetLock() noexcept;
+
     void GetScriptVariables() noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     String SerializeInventory() const noexcept;
+
     void SetScriptVariable(const String aScriptName, const String aVariableName, int aNewValue) noexcept;
+    void SetScriptState(const String aScriptName, const String aState) noexcept;
 
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
     void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;

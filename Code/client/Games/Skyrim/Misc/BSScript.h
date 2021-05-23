@@ -57,6 +57,26 @@ struct BSScript
         virtual void Prepare(Statement* apUnk) noexcept = 0;
     };
 
+    struct ObjectTypeInfo
+    {
+        int64_t GetVariableIndex(BSFixedString* aName) noexcept;
+
+        uint8_t pad0[0x8];
+        BSFixedString name;
+    };
+
+    struct Object
+    {
+        void IncreaseRef() noexcept;
+        void DecreaseRef() noexcept;
+
+        uint8_t pad0[0x8];
+        ObjectTypeInfo* typeInfo;
+        BSFixedString state;
+        uint8_t pad18[0x30 - 0x18];
+    };
+    static_assert(sizeof(Object) == 0x30);
+
     struct IVirtualMachine
     {
         virtual ~IVirtualMachine() = 0;
@@ -97,6 +117,10 @@ struct BSScript
         virtual void sub_22();
         virtual void sub_23();
         virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName, IFunctionArguments* apArgs) const noexcept;
+
+        uint8_t pad0[0x9398];
+        SpinLock scriptsLock;
+        AssociatedScriptsHashMap scriptsMap;
     };
 
     template <class... T> struct EventArguments : IFunctionArguments

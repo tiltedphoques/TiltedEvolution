@@ -146,7 +146,9 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
         return;
     }
 
+    // TODO: remove this, just use currentVar
     BSFixedString variableName(aVariableName.c_str());
+
     auto index = typeInfo->GetVariableIndex(&variableName);
 
     int oldValue = pObject->variables[index].data.i;
@@ -156,6 +158,44 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
                  aNewValue);
 
     variableName.Release();
+
+    if (&pVM->scriptsLock)
+        pVM->scriptsLock.Unlock();
+}
+
+void TESObjectREFR::SetScriptState(const String aScriptName, const String aState) noexcept
+{
+    auto* pVM = GameVM::Get()->virtualMachine;
+
+    pVM->scriptsLock.Lock();
+
+    Vector<BSScript::Object*> objects;
+    BSScript::GetObjects(objects, this);
+
+    BSScript::Object* pObject = nullptr;
+
+    for (auto object : objects)
+    {
+        auto* typeInfo = object->typeInfo;
+        if (String(typeInfo->name.AsAscii()) == aScriptName)
+        {
+            spdlog::info("Found script {}", typeInfo->name.AsAscii());
+            pObject = object;
+            break;
+        }
+    }
+
+    if (!pObject)
+    {
+        spdlog::warn("SetScriptState: script not found: {}", aScriptName);
+        if (&pVM->scriptsLock)
+            pVM->scriptsLock.Unlock();
+        return;
+    }
+
+    pObject->state.Set(aState.c_str());
+
+    spdlog::info("Updated state of script {} to {}", aScriptName, pObject->state.AsAscii());
 
     if (&pVM->scriptsLock)
         pVM->scriptsLock.Unlock();

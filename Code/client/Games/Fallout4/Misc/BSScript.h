@@ -67,8 +67,6 @@ struct BSScript
 
     struct ObjectTypeInfo
     {
-        bool HasVariable(const BSFixedString* aName, bool aCheckValid) noexcept;
-
         int64_t GetVariableIndex(BSFixedString* aName) noexcept;
 
         uint8_t pad0[0x10];
@@ -82,9 +80,6 @@ struct BSScript
 
     struct Object
     {
-        Object();
-        ~Object() noexcept;
-
         void IncreaseRef() noexcept;
         void DecreaseRef() noexcept;
 

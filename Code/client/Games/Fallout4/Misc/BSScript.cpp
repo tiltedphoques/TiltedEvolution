@@ -95,15 +95,6 @@ void BSScript::Object::DecreaseRef() noexcept
     ThisCall(s_decreaseRef, this);
 }
 
-bool BSScript::ObjectTypeInfo::HasVariable(const BSFixedString* aName, bool aCheckValid) noexcept
-{
-    TP_THIS_FUNCTION(THasVariable, bool, BSScript::ObjectTypeInfo, const BSFixedString* aName, bool aCheckValid);
-
-    POINTER_FALLOUT4(THasVariable, s_hasVariable, 0x1426F38D0 - 0x140000000);
-
-    return ThisCall(s_hasVariable, this, aName, aCheckValid);
-}
-
 int64_t BSScript::ObjectTypeInfo::GetVariableIndex(BSFixedString* aName) noexcept
 {
     TP_THIS_FUNCTION(TGetVariableIndex, int64_t, BSScript::ObjectTypeInfo, BSFixedString* aName);
