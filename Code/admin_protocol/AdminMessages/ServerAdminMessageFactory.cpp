@@ -5,18 +5,18 @@
 #include "ServerAdminMessageFactory.h"
 
 static std::function<UniquePtr<ServerAdminMessage>(TiltedPhoques::Buffer::Reader& aReader)>
-    s_serverMessageExtractor[kServerAdminOpcodeMax];
+    s_serverAdminMessageExtractor[kServerAdminOpcodeMax];
 
 namespace details
 {
-struct S
+static struct S
 {
     S()
     {
         auto extractor = [](auto& x) {
             using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-            s_serverMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) {
+            s_serverAdminMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) {
                 auto ptr = TiltedPhoques::MakeUnique<T>();
                 ptr->DeserializeRaw(aReader);
                 return TiltedPhoques::CastUnique<ServerAdminMessage>(std::move(ptr));
@@ -39,5 +39,5 @@ UniquePtr<ServerAdminMessage> ServerAdminMessageFactory::Extract(TiltedPhoques::
         return {nullptr};
 
     const auto opcode = static_cast<ServerAdminOpcode>(data);
-    return s_serverMessageExtractor[opcode](aReader);
+    return s_serverAdminMessageExtractor[opcode](aReader);
 }

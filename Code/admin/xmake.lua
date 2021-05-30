@@ -16,14 +16,9 @@ target("Admin")
     add_files(
         "**.cpp",
         "admin.rc")
-    add_deps("Common", "AdminProtocol")
+    add_deps("Common", "AdminProtocol", "TiltedConnect")
 
-    if name == "SkyrimTogetherServer" then
-        add_deps("SkyrimEncoding")
-    end
-    if name == "FalloutTogetherServer" then
-        add_deps("FalloutEncoding")
-    end
+    add_deps("SkyrimEncoding")
 
     if is_plat("windows") then
         add_syslinks("opengl32", "Shell32", "Gdi32", "Winmm", "Ole32", "version", "OleAut32", "Setupapi")
@@ -31,7 +26,6 @@ target("Admin")
 
     add_packages(
         "tiltedcore",
-        "tiltedconnect",
         "spdlog",
         "hopscotch-map",
         "glm",
@@ -39,4 +33,5 @@ target("Admin")
         "vcpkg::magnum",
         "vcpkg::magnum-integration[imgui]",
         "imgui",
-        "vcpkg::sdl2")
+        "vcpkg::sdl2",
+        "gamenetworkingsockets")

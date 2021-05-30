@@ -7,7 +7,7 @@ static std::function<UniquePtr<ClientMessage>(TiltedPhoques::Buffer::Reader& aRe
 
 namespace details
 {
-    struct S
+    static struct S
     {
         S()
         {

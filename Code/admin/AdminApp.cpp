@@ -1,5 +1,7 @@
 #include "AdminApp.h"
 
+#include <AdminMessages/ServerAdminMessageFactory.h>
+
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Renderer.h>
 
@@ -8,6 +10,7 @@ AdminApp::AdminApp(const Arguments& arguments)
           arguments,
           Configuration{}.setTitle("TiltedOnline Server Admin").setWindowFlags(Configuration::WindowFlag::Resizable)}
 {
+    m_password.resize(1024);
     m_imgui = ImGuiIntegration::Context(Vector2{windowSize()} / dpiScaling(), windowSize(), framebufferSize());
 
     /* Set up proper blending to be used by ImGui. There's a great chance
@@ -16,6 +19,19 @@ AdminApp::AdminApp(const Arguments& arguments)
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add, GL::Renderer::BlendEquation::Add);
     GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha,
                                    GL::Renderer::BlendFunction::OneMinusSourceAlpha);
+
+    auto handlerGenerator = [this](auto& x) {
+        using T = typename std::remove_reference_t<decltype(x)>::Type;
+
+        m_messageHandlers[T::Opcode] = [this](UniquePtr<ServerAdminMessage>& apMessage) {
+            const auto pRealMessage = TiltedPhoques::CastUnique<T>(std::move(apMessage));
+            HandleMessage(*pRealMessage);
+        };
+
+        return false;
+    };
+
+    ServerAdminMessageFactory::Visit(handlerGenerator);
 
 #if !defined(MAGNUM_TARGET_WEBGL) && !defined(CORRADE_TARGET_ANDROID)
     /* Have some sane speed, please */
@@ -38,25 +54,36 @@ void AdminApp::drawEvent()
     /* 1. Show a simple window.
        Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appear in
        a window called "Debug" automatically */
+    if (m_state != ConnectionState::kConnected)
     {
-        ImGui::Text("Hello, world!");
-        ImGui::SliderFloat("Float", &m_floatValue, 0.0f, 1.0f);
-        if (ImGui::ColorEdit3("Clear Color", m_clearColor.data()))
-            GL::Renderer::setClearColor(m_clearColor);
-        if (ImGui::Button("Another Window"))
-            m_showAnotherWindow ^= true;
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / Double(ImGui::GetIO().Framerate),
-                    Double(ImGui::GetIO().Framerate));
-    }
+        ImGui::SetNextWindowSize(ImVec2(600, 150));
+        ImGui::SetNextWindowPos(ImVec2(this->windowSize().x() / 2, 200), 0, ImVec2(0.5f, 0.f));
+        ImGui::Begin("Online", nullptr,
+                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar |
+                         ImGuiWindowFlags_MenuBar);
 
-    /* 2. Show another simple window, now using an explicit Begin/End pair */
-    if (m_showAnotherWindow)
-    {
-        ImGui::SetNextWindowSize(ImVec2(500, 100), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Another Window", &m_showAnotherWindow);
-        ImGui::Text("Hello");
+        if (m_state == ConnectionState::kConnecting)
+            ImGui::Text("Please wait...");
+        else if (m_state == ConnectionState::kNone)
+        {
+            static char s_endpoint[1024] = "127.0.0.1:10578";
+
+            ImGui::InputText("Endpoint", s_endpoint, std::size(s_endpoint));
+            ImGui::InputText("Password", m_password.data(), std::size(m_password), ImGuiInputTextFlags_Password);
+
+            if (ImGui::Button("Connect"))
+            {
+                Connect(s_endpoint);
+                m_state = ConnectionState::kConnecting;
+            }
+        }
+
         ImGui::End();
     }
+
+    if (m_state == ConnectionState::kConnected)
+        drawServerUi();
 
     /* Update application cursor */
     m_imgui.updateApplicationCursor(*this);
@@ -83,9 +110,8 @@ void AdminApp::drawEvent()
 
 void AdminApp::tickEvent()
 {
-    
+    Update();
 }
-
 
 void AdminApp::viewportEvent(ViewportEvent& event)
 {
@@ -140,4 +166,33 @@ void AdminApp::textInputEvent(TextInputEvent& event)
         return;
 }
 
+
+void AdminApp::drawServerUi()
+{
+    ImGui::Begin("Danger zone");
+
+    if (ImGui::Button("Shutdown Server"))
+        ImGui::OpenPopup("Shutdown Server Dialog");
+
+    if (ImGui::BeginPopupModal("Shutdown Server Dialog"))
+    {
+        ImGui::Text("Are you sure you want to shutdown the server?");
+
+        if (ImGui::Button("Yes"))
+        {
+            SendShutdownRequest();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No"))
+            ImGui::CloseCurrentPopup();
+
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::End();
+}
 

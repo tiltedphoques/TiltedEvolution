@@ -9,7 +9,7 @@ static std::function<UniquePtr<ServerMessage>(TiltedPhoques::Buffer::Reader& aRe
 
 namespace details
 {
-struct S
+static struct S
 {
     S()
     {

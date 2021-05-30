@@ -1,13 +1,19 @@
+
+#include "AdminMessages/AdminSessionOpen.h"
+
 #include <stdafx.h>
 #include <GameServer.h>
 #include <Components.h>
 #include <Packet.hpp>
 
+#include <Events/AdminPacketEvent.h>
 #include <Events/PacketEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
+
+#include <AdminMessages/ClientAdminMessageFactory.h>
 
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
@@ -72,6 +78,20 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
         const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(apMessage));
         HandleAuthenticationRequest(aConnectionId, pRealMessage);
     };
+
+    auto adminHandlerGenerator = [this](auto& x) {
+        using T = typename std::remove_reference_t<decltype(x)>::Type;
+
+        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage, ConnectionId_t aConnectionId) {
+            
+            const auto pRealMessage = CastUnique<T>(std::move(apMessage));
+            m_pWorld->GetDispatcher().trigger(AdminPacketEvent<T>(pRealMessage.get(), aConnectionId));
+        };
+
+        return false;
+    };
+
+    ClientAdminMessageFactory::Visit(adminHandlerGenerator);
 }
 
 GameServer::~GameServer()
@@ -107,11 +127,19 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
 
     if (m_adminSessions.contains(aConnectionId)) [[unlikely]]
     {
+        const ClientAdminMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+        if (!pMessage)
+        {
+            spdlog::error("Couldn't parse packet from {:x}", aConnectionId);
+            return;
+        }
 
+        m_adminMessageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
     }
     else
     {
-        ClientMessageFactory factory;
+        const ClientMessageFactory factory;
         auto pMessage = factory.Extract(reader);
         if (!pMessage)
         {
@@ -186,6 +214,24 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
     s_allocator.Reset();
 }
 
+void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const
+{
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
+
+    TiltedPhoques::ScopedAllocator _(s_allocator);
+
+    Buffer buffer(1 << 16);
+    Buffer::Writer writer(&buffer);
+    writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
+
+    acServerMessage.Serialize(writer);
+
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    Server::Send(aConnectionId, &packet);
+
+    s_allocator.Reset();
+}
+
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
     auto playerView = m_pWorld->view<const PlayerComponent, const CellIdComponent>();
@@ -230,6 +276,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     char remoteAddress[48];
 
     info.m_addrRemote.ToString(remoteAddress, 48, false);
+
+    spdlog::error("{} {}", m_adminPassword, acRequest->Token);
 
     if(acRequest->Token == m_token)
     {
@@ -314,6 +362,9 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
     else if (acRequest->Token == m_adminPassword && !m_adminPassword.empty())
     {
+        AdminSessionOpen response;
+        Send(aConnectionId, response);
+
         m_adminSessions.insert(aConnectionId);
         spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
     }
