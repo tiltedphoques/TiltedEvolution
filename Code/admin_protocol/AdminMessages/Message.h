@@ -8,13 +8,13 @@
 using TiltedPhoques::String;
 using TiltedPhoques::Serialization;
 
-struct ClientMessage : TiltedPhoques::AllocatorCompatible
+struct ClientAdminMessage : TiltedPhoques::AllocatorCompatible
 {
-    ClientMessage(ClientOpcode aOpcode)
+    ClientAdminMessage(ClientAdminOpcode aOpcode)
         : m_opcode(aOpcode)
     {}
 
-    virtual ~ClientMessage() = default;
+    virtual ~ClientAdminMessage() = default;
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     // Serialize values that are not dependent on previous states
@@ -25,19 +25,19 @@ struct ClientMessage : TiltedPhoques::AllocatorCompatible
     virtual void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept;
     virtual void DeserializeDifferential(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    [[nodiscard]] ClientOpcode GetOpcode() const noexcept;
+    [[nodiscard]] ClientAdminOpcode GetOpcode() const noexcept;
 
 private:
-    ClientOpcode m_opcode;
+    ClientAdminOpcode m_opcode;
 };
 
-struct ServerMessage : TiltedPhoques::AllocatorCompatible
+struct ServerAdminMessage : TiltedPhoques::AllocatorCompatible
 {
-    ServerMessage(ServerOpcode aOpcode)
+    ServerAdminMessage(ServerAdminOpcode aOpcode)
         : m_opcode(aOpcode)
     {}
 
-    virtual ~ServerMessage() = default;
+    virtual ~ServerAdminMessage() = default;
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     virtual void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
@@ -45,8 +45,8 @@ struct ServerMessage : TiltedPhoques::AllocatorCompatible
     virtual void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept;
     virtual void DeserializeDifferential(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    [[nodiscard]] ServerOpcode GetOpcode() const noexcept;
+    [[nodiscard]] ServerAdminOpcode GetOpcode() const noexcept;
 
 private:
-    ServerOpcode m_opcode;
+    ServerAdminOpcode m_opcode;
 };

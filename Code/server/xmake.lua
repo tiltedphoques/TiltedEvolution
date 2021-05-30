@@ -15,17 +15,16 @@ target(name)
 
     if name == "SkyrimTogetherServer" then
         add_deps("SkyrimEncoding")
-        del_files("../encoding/Structs/Fallout4/**.cpp")
     end
     if name == "FalloutTogetherServer" then
         add_deps("FalloutEncoding")
-        del_files("../encoding/Structs/Skyrim/**.cpp")
     end
 
     add_deps(
         "Common",
         "TiltedScript",
-        "TiltedConnect")
+        "TiltedConnect",
+        "AdminProtocol")
     add_packages(
         "gamenetworkingsockets",
         "spdlog",
