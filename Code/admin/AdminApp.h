@@ -5,6 +5,7 @@
 #include <Magnum/Platform/Sdl2Application.h>
 #include <AdminMessages/Message.h>
 #include <Messages/Message.h>
+#include "Overlay.h"
 
 #include <Client.hpp>
 
@@ -19,6 +20,7 @@ enum class ConnectionState
 };
 
 struct AdminSessionOpen;
+struct ServerLogs;
 
 class AdminApp : public Platform::Application, public TiltedPhoques::Client
 {
@@ -44,15 +46,17 @@ class AdminApp : public Platform::Application, public TiltedPhoques::Client
     void OnDisconnected(EDisconnectReason aReason) override;
     void OnUpdate() override;
 
+    void SendShutdownRequest();
+
 protected:
 
     void drawServerUi();
 
     bool Send(const ClientAdminMessage& acMessage) const noexcept;
     bool Send(const ClientMessage& acMessage) const noexcept;
-    void SendShutdownRequest();
 
     void HandleMessage(const AdminSessionOpen& acMessage);
+    void HandleMessage(const ServerLogs& acMessage);
 
   private:
     ImGuiIntegration::Context m_imgui{NoCreate};
@@ -63,4 +67,5 @@ protected:
     ConnectionState m_state = ConnectionState::kNone;
     String m_password;
     std::function<void(TiltedPhoques::UniquePtr<ServerAdminMessage>&)> m_messageHandlers[kServerAdminOpcodeMax];
+    Overlay m_overlay;
 };

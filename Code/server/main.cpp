@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
 
     auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{ console, rotatingLogger });
-    spdlog::set_default_logger(logger);
+    set_default_logger(logger);
 
     cxxopts::Options options(argv[0], "Game server for "
 #if SKYRIM

@@ -33,7 +33,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         const auto& ownedComponent = characterView.get<OwnerComponent>(character);
         const auto& characterCellComponent = characterView.get<CellIdComponent>(character);
 
-        if (ownedComponent.ConnectionId == acMessage.PlayerComponent.ConnectionId)
+        if (ownedComponent.ConnectionId == acMessage.Player.ConnectionId)
             continue;
 
         const auto cellItor = std::find_if(std::begin(message.Cells), std::end(message.Cells),
@@ -48,7 +48,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        GameServer::Get()->Send(acMessage.PlayerComponent.ConnectionId, spawnMessage);
+        GameServer::Get()->Send(acMessage.Player.ConnectionId, spawnMessage);
     }
 }
 
@@ -56,7 +56,7 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
 {
     auto& message = acMessage.Packet;
 
-    auto& playerComponent = acMessage.PlayerComponent;
+    auto& playerComponent = acMessage.Player;
 
     if (playerComponent.Character)
     {
@@ -80,7 +80,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 
     m_world.emplace_or_replace<CellIdComponent>(acMessage.Entity, message.CellId);
 
-    auto& playerComponent = acMessage.PlayerComponent;
+    auto& playerComponent = acMessage.Player;
 
     if (playerComponent.Character)
     {
@@ -101,7 +101,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     {
         const auto& ownedComponent = characterView.get<OwnerComponent>(character);
 
-        if (ownedComponent.ConnectionId == acMessage.PlayerComponent.ConnectionId)
+        if (ownedComponent.ConnectionId == acMessage.Player.ConnectionId)
             continue;
 
         if (message.CellId != characterView.get<CellIdComponent>(character).Cell)
@@ -111,6 +111,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
         spdlog::critical("Sending interior character {:x}", spawnMessage.ServerId);
-        GameServer::Get()->Send(acMessage.PlayerComponent.ConnectionId, spawnMessage);
+        GameServer::Get()->Send(acMessage.Player.ConnectionId, spawnMessage);
     }
 }

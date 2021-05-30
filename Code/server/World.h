@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Services/AdminService.h"
+
 #include <Services/ScriptService.h>
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -31,5 +33,6 @@ struct World : entt::registry
 private:
     entt::dispatcher m_dispatcher;
 
+    std::shared_ptr<AdminService> m_spAdminService;
     std::unique_ptr<ScriptService> m_scriptService;
 };

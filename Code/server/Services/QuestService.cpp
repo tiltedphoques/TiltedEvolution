@@ -28,7 +28,7 @@ void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acM
     if (!pQuestLogComponent)
     {
         spdlog::error("Quest {:x} is not associated with connection {:x}", message.Id.BaseId,
-                      acMessage.PlayerComponent.ConnectionId);
+                      acMessage.Player.ConnectionId);
         return;
     }
 

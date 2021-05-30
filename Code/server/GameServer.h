@@ -36,6 +36,13 @@ struct GameServer final : Server
 
     static GameServer* Get() noexcept;
 
+    template<class T>
+    void ForEachAdmin(const T& aFunctor)
+    {
+        for (auto id : m_adminSessions)
+            aFunctor(id);
+    }
+
 protected:
 
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept;

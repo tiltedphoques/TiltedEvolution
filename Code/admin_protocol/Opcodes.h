@@ -10,6 +10,7 @@ enum ClientAdminOpcode : unsigned char
 enum ServerAdminOpcode : unsigned char
 {
     kAdminSessionOpen = 0,
+    kServerLogs,
 
     kServerAdminOpcodeMax
 };

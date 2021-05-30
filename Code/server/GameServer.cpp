@@ -277,8 +277,6 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
     info.m_addrRemote.ToString(remoteAddress, 48, false);
 
-    spdlog::error("{} {}", m_adminPassword, acRequest->Token);
-
     if(acRequest->Token == m_token)
     {
         auto& scripts = m_pWorld->GetScriptService();

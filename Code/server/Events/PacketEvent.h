@@ -9,7 +9,7 @@ template<class T>
 struct PacketEvent
 {
     PacketEvent(T* aPacket, PlayerComponent& aPlayerComponent, entt::entity aEntity)
-        : Packet(*aPacket), PlayerComponent(aPlayerComponent), Entity(aEntity)
+        : Packet(*aPacket), Player(aPlayerComponent), Entity(aEntity)
     {}
 
     constexpr PacketEvent(const PacketEvent& acRhs) = default;
@@ -17,13 +17,13 @@ struct PacketEvent
     constexpr PacketEvent& operator=(const PacketEvent& acRhs)
     {
         Packet = acRhs.Packet;
-        PlayerComponent = acRhs.PlayerComponent;
+        Player = acRhs.Player;
         Entity = acRhs.Entity;
 
         return *this;
     }
 
     T& Packet;
-    PlayerComponent& PlayerComponent;
+    PlayerComponent& Player;
     entt::entity Entity;
 };

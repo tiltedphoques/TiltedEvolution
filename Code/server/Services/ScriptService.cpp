@@ -195,7 +195,7 @@ void ScriptService::OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) no
     Buffer buff(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
     Buffer::Reader reader(&buff);
 
-    GetNetState()->ProcessCallRequest(reader, acRpcCalls.PlayerComponent.ConnectionId);
+    GetNetState()->ProcessCallRequest(reader, acRpcCalls.Player.ConnectionId);
 }
 
 void ScriptService::BindTypes(ScriptContext& aContext) noexcept

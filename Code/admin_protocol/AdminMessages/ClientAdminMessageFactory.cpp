@@ -9,9 +9,9 @@ static std::function<UniquePtr<ClientAdminMessage>(TiltedPhoques::Buffer::Reader
 
 namespace details
 {
-static struct S
+static struct ClientAdminMessageFactoryInit
 {
-    S()
+    ClientAdminMessageFactoryInit()
     {
         auto extractor = [](auto& x) {
             using T = typename std::remove_reference_t<decltype(x)>::Type;
@@ -27,7 +27,7 @@ static struct S
 
         ClientAdminMessageFactory::Visit(extractor);
     }
-} s;
+} s_ClientAdminMessageFactoryInit;
 } // namespace details
 
 UniquePtr<ClientAdminMessage> ClientAdminMessageFactory::Extract(TiltedPhoques::Buffer::Reader& aReader) const noexcept

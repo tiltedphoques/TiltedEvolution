@@ -57,7 +57,7 @@ void AdminApp::drawEvent()
     if (m_state != ConnectionState::kConnected)
     {
         ImGui::SetNextWindowSize(ImVec2(600, 150));
-        ImGui::SetNextWindowPos(ImVec2(this->windowSize().x() / 2, 200), 0, ImVec2(0.5f, 0.f));
+        ImGui::SetNextWindowPos(ImVec2(windowSize().x() / 2, 200), 0, ImVec2(0.5f, 0.f));
         ImGui::Begin("Online", nullptr,
                      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
                          ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar |
@@ -169,30 +169,6 @@ void AdminApp::textInputEvent(TextInputEvent& event)
 
 void AdminApp::drawServerUi()
 {
-    ImGui::Begin("Danger zone");
-
-    if (ImGui::Button("Shutdown Server"))
-        ImGui::OpenPopup("Shutdown Server Dialog");
-
-    if (ImGui::BeginPopupModal("Shutdown Server Dialog"))
-    {
-        ImGui::Text("Are you sure you want to shutdown the server?");
-
-        if (ImGui::Button("Yes"))
-        {
-            SendShutdownRequest();
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("No"))
-            ImGui::CloseCurrentPopup();
-
-
-        ImGui::EndPopup();
-    }
-
-    ImGui::End();
+    m_overlay.Update(*this);
 }
 

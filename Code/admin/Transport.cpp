@@ -1,6 +1,7 @@
 #include "AdminApp.h"
 #include "Packet.hpp"
 #include "AdminMessages/AdminShutdownRequest.h"
+#include "AdminMessages/ServerLogs.h"
 #include "AdminMessages/ServerAdminMessageFactory.h"
 
 #include <Messages/AuthenticationRequest.h>
@@ -114,4 +115,9 @@ void AdminApp::SendShutdownRequest()
 void AdminApp::HandleMessage(const AdminSessionOpen& acMessage)
 {
     m_state = ConnectionState::kConnected;
+}
+
+void AdminApp::HandleMessage(const ServerLogs& acMessage)
+{
+    m_overlay.GetConsole().Log(acMessage.Logs);
 }

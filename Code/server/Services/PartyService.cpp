@@ -84,7 +84,7 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
 
     // Get self
     const auto selfItor =
-        std::find_if(view.begin(), view.end(), [view, connectionId = acPacket.PlayerComponent.ConnectionId](auto entity) {
+        std::find_if(view.begin(), view.end(), [view, connectionId = acPacket.Player.ConnectionId](auto entity) {
             return view.get<PlayerComponent>(entity).ConnectionId == connectionId;
         });
 
@@ -120,7 +120,7 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
 
     // Get the inviter
     const auto inviterItor =
-        std::find_if(view.begin(), view.end(), [view, connectionId = acPacket.PlayerComponent.ConnectionId](auto entity) {
+        std::find_if(view.begin(), view.end(), [view, connectionId = acPacket.Player.ConnectionId](auto entity) {
             return view.get<PlayerComponent>(entity).ConnectionId == connectionId;
         });
 
