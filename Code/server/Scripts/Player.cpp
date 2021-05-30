@@ -8,8 +8,6 @@
 #include <World.h>
 #include <Components.h>
 
-#include <Services/PartyService.h>
-
 namespace Script
 {
     Player::Player(entt::entity aEntity, World& aWorld)

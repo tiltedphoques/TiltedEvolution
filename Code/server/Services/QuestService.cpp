@@ -21,23 +21,18 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher) : m_wor
 
 void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessage) noexcept
 {
-    auto view = m_world.view<PlayerComponent, QuestLogComponent>();
-    const auto it = std::find_if(view.begin(), view.end(),
-                           [view, connectionId = acMessage.ConnectionId](auto entity) 
-    {
-        return view.get<PlayerComponent>(entity).ConnectionId == connectionId;
-    });
-
     const auto& message = acMessage.Packet;
 
-    if (it == view.end())
+    const auto pQuestLogComponent = m_world.try_get<QuestLogComponent>(acMessage.Entity);
+
+    if (!pQuestLogComponent)
     {
         spdlog::error("Quest {:x} is not associated with connection {:x}", message.Id.BaseId,
-                      acMessage.ConnectionId);
+                      acMessage.PlayerComponent.ConnectionId);
         return;
     }
 
-    auto& questComponent = view.get<QuestLogComponent>(*it);
+    auto& questComponent = *pQuestLogComponent;
     auto& entries = questComponent.QuestContent.Entries;
 
     auto questIt = std::find_if(entries.begin(), entries.end(), [&message](const auto& e) 
@@ -62,7 +57,7 @@ void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acM
                 spdlog::info("Started Quest: {:x}:{}", message.Id.BaseId, message.Id.ModId);
 
                 // we only trigger that on remote quest start
-                const Script::Player scriptPlayer(*it, m_world);
+                const Script::Player scriptPlayer(acMessage.Entity, m_world);
                 const Script::Quest scriptQuest(message.Id.BaseId, message.Stage, m_world);
 
                 m_world.GetScriptService().HandleQuestStart(scriptPlayer, scriptQuest);
@@ -76,7 +71,7 @@ void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acM
             record.Id = message.Id;
             record.Stage = message.Stage;
 
-            const Script::Player scriptPlayer(*it, m_world);
+            const Script::Player scriptPlayer(acMessage.Entity, m_world);
             const Script::Quest scriptQuest(message.Id.BaseId, message.Stage, m_world);
 
             m_world.GetScriptService().HandleQuestStage(scriptPlayer, scriptQuest);
@@ -86,7 +81,7 @@ void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acM
     {
         spdlog::info("Stopped quest: {:x}", message.Id.BaseId);
 
-        const Script::Player player(*it, m_world);
+        const Script::Player player(acMessage.Entity, m_world);
         m_world.GetScriptService().HandleQuestStop(player, message.Id.BaseId);
 
         if (questIt != entries.end())

@@ -23,24 +23,9 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 
 void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept
 {
-    auto playerView = m_world.view<PlayerComponent>();
-
-    const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-        [playerView, connectionId = acMessage.ConnectionId](auto entity)
-    {
-        const auto& [playerComponent] = playerView.get(entity);
-        return playerComponent.ConnectionId == connectionId;
-    });
-
-    if(itor == std::end(playerView))
-    {
-        spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
-        return;
-    }
-
     auto& message = acMessage.Packet;
 
-    m_world.emplace_or_replace<CellIdComponent>(*itor, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
+    m_world.emplace_or_replace<CellIdComponent>(acMessage.Entity, message.PlayerCell, message.WorldSpaceId, message.CenterCoords);
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)
@@ -48,7 +33,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         const auto& ownedComponent = characterView.get<OwnerComponent>(character);
         const auto& characterCellComponent = characterView.get<CellIdComponent>(character);
 
-        if (ownedComponent.ConnectionId == acMessage.ConnectionId)
+        if (ownedComponent.ConnectionId == acMessage.PlayerComponent.ConnectionId)
             continue;
 
         const auto cellItor = std::find_if(std::begin(message.Cells), std::end(message.Cells),
@@ -63,36 +48,21 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
+        GameServer::Get()->Send(acMessage.PlayerComponent.ConnectionId, spawnMessage);
     }
 }
 
 void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellRequest>& acMessage) const noexcept
 {
-    auto playerView = m_world.view<PlayerComponent>();
-
-    const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-        [playerView, connectionId = acMessage.ConnectionId](auto entity)
-    {
-        const auto& [playerComponent] = playerView.get(entity);
-        return playerComponent.ConnectionId == connectionId;
-    });
-
-    if(itor == std::end(playerView))
-    {
-        spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
-        return;
-    }
-
     auto& message = acMessage.Packet;
 
-    auto& playerComponent = playerView.get<PlayerComponent>(*itor);
+    auto& playerComponent = acMessage.PlayerComponent;
 
     if (playerComponent.Character)
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            m_world.GetDispatcher().trigger(CharacterExteriorCellChangeEvent{*itor, *playerComponent.Character,
+            m_world.GetDispatcher().trigger(CharacterExteriorCellChangeEvent{acMessage.Entity, *playerComponent.Character,
                                                                              message.WorldSpaceId, message.CurrentCoords});
 
             pCellIdComponent->Cell = message.CellId;
@@ -106,32 +76,17 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
 
 void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept
 {
-    auto playerView = m_world.view<PlayerComponent>();
-
-    const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-   [playerView, connectionId = acMessage.ConnectionId](auto entity)
-    {
-        const auto& [playerComponent] = playerView.get(entity);
-        return playerComponent.ConnectionId == connectionId;
-    });
-
-    if(itor == std::end(playerView))
-    {
-        spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
-        return;
-    }
-
     auto& message = acMessage.Packet;
 
-    m_world.emplace_or_replace<CellIdComponent>(*itor, message.CellId);
+    m_world.emplace_or_replace<CellIdComponent>(acMessage.Entity, message.CellId);
 
-    auto& playerComponent = playerView.get<PlayerComponent>(*itor);
+    auto& playerComponent = acMessage.PlayerComponent;
 
     if (playerComponent.Character)
     {
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(*playerComponent.Character); pCellIdComponent)
         {
-            m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{*itor, *playerComponent.Character, message.CellId});
+            m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{acMessage.Entity, *playerComponent.Character, message.CellId});
 
             pCellIdComponent->Cell = message.CellId;
             pCellIdComponent->WorldSpaceId = GameId{};
@@ -146,7 +101,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     {
         const auto& ownedComponent = characterView.get<OwnerComponent>(character);
 
-        if (ownedComponent.ConnectionId == acMessage.ConnectionId)
+        if (ownedComponent.ConnectionId == acMessage.PlayerComponent.ConnectionId)
             continue;
 
         if (message.CellId != characterView.get<CellIdComponent>(character).Cell)
@@ -156,6 +111,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
         spdlog::critical("Sending interior character {:x}", spawnMessage.ServerId);
-        GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
+        GameServer::Get()->Send(acMessage.PlayerComponent.ConnectionId, spawnMessage);
     }
 }

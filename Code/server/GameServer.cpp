@@ -19,9 +19,10 @@
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToken) noexcept
+GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now())
     , m_name(std::move(aName)), m_token(std::move(aToken)),
+      m_adminPassword(std::move(aAdminPassword)),
       m_requestStop(false)
 {
     assert(s_pInstance == nullptr);
@@ -44,8 +45,21 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
         m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
+
+            const auto itor = m_connectionToEntity.find(aConnectionId);
+
+            if (itor == std::end(m_connectionToEntity))
+            {
+                spdlog::error("Connection {:x} is not associated with a player.", aConnectionId);
+                Kick(aConnectionId);
+                return;
+            }
+
+            auto entity = itor->second;
             const auto pRealMessage = CastUnique<T>(std::move(apMessage));
-            m_pWorld->GetDispatcher().trigger(PacketEvent<T>(pRealMessage.get(), aConnectionId));
+
+            m_pWorld->GetDispatcher().trigger(
+                PacketEvent<T>(pRealMessage.get(), m_pWorld->get<PlayerComponent>(entity), entity));
         };
 
         return false;
@@ -88,18 +102,25 @@ void GameServer::OnUpdate()
 
 void GameServer::OnConsume(const void* apData, const uint32_t aSize, const ConnectionId_t aConnectionId)
 {
-    ClientMessageFactory factory;
     ViewBuffer buf((uint8_t*)apData, aSize);
     Buffer::Reader reader(&buf);
 
-    auto pMessage = factory.Extract(reader);
-    if(!pMessage)
+    if (m_adminSessions.contains(aConnectionId)) [[unlikely]]
     {
-        spdlog::error("Couldn't parse packet from {:x}", aConnectionId);
-        return;
-    }
 
-    m_messageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
+    }
+    else
+    {
+        ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+        if (!pMessage)
+        {
+            spdlog::error("Couldn't parse packet from {:x}", aConnectionId);
+            return;
+        }
+
+        m_messageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
+    }
 }
 
 void GameServer::OnConnection(const ConnectionId_t aHandle)
@@ -112,6 +133,9 @@ void GameServer::OnConnection(const ConnectionId_t aHandle)
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
 {
     spdlog::info("Connection ended {:x}", aConnectionId);
+
+    m_adminSessions.erase(aConnectionId);
+    m_connectionToEntity.erase(aConnectionId);
 
     m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
 
@@ -201,15 +225,15 @@ GameServer* GameServer::Get() noexcept
 
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept
 {
+    const auto info = GetConnectionInfo(aConnectionId);
+
+    char remoteAddress[48];
+
+    info.m_addrRemote.ToString(remoteAddress, 48, false);
+
     if(acRequest->Token == m_token)
     {
         auto& scripts = m_pWorld->GetScriptService();
-
-        const auto info = GetConnectionInfo(aConnectionId);
-
-        char remoteAddress[48];
-
-        info.m_addrRemote.ToString(remoteAddress, 48, false);
 
         // TODO: Abort if a mod didn't accept the player
 
@@ -282,13 +306,20 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
 
+        m_connectionToEntity[aConnectionId] = cEntity;
+
         Send(aConnectionId, serverResponse);
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(cEntity));
     }
+    else if (acRequest->Token == m_adminPassword && !m_adminPassword.empty())
+    {
+        m_adminSessions.insert(aConnectionId);
+        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
+    }
     else
     {
-        spdlog::info("New player {:x} has a bad token, kicking.", aConnectionId);
+        spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);
 
         Kick(aConnectionId);
     }

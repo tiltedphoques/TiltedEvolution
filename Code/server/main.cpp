@@ -33,10 +33,11 @@ int main(int argc, char** argv)
 
     uint16_t port = 10578;
     bool premium = false;
-    std::string name, token, logLevel;
+    std::string name, token, logLevel, adminPassword;
 
     options.add_options()
         ("p,port", "port to run on", cxxopts::value<uint16_t>(port)->default_value("10578"), "N")
+        ("root_password", "Admin password", cxxopts::value<>(adminPassword)->default_value(""), "N")
         ("premium", "Use the premium tick rates", cxxopts::value<bool>(premium)->default_value("false"), "true/false")
         ("h,help", "Display the help message")
         ("n,name", "Name to advertise to the public server list", cxxopts::value<>(name))
@@ -57,10 +58,15 @@ int main(int argc, char** argv)
 
         if (!token.empty() && !name.empty())
         {
-            throw std::runtime_error("A named server cannot have a token set !");
+            throw std::runtime_error("A named server cannot have a token set!");
         }
 
-        GameServer server(port, premium, name.c_str(), token.c_str());
+        if (!token.empty() && token == adminPassword)
+        {
+            throw std::runtime_error("The root password cannot be the same as the token!");
+        }
+
+        GameServer server(port, premium, name.c_str(), token.c_str(), adminPassword.c_str());
         // things that need initialization post construction
         server.Initialize();
 

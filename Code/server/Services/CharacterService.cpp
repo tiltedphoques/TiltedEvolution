@@ -204,7 +204,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
 
-            pServer->Send(acMessage.ConnectionId, response);
+            pServer->Send(acMessage.PlayerComponent.ConnectionId, response);
             return;
         }
     }
@@ -221,18 +221,18 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.ConnectionId);
+        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.PlayerComponent.ConnectionId);
         return;
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.ConnectionId != acMessage.ConnectionId)
+    if (characterOwnerComponent.ConnectionId != acMessage.PlayerComponent.ConnectionId)
     {
-        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.ConnectionId);
+        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.PlayerComponent.ConnectionId);
         return;
     }
 
-    characterOwnerComponent.InvalidOwners.push_back(acMessage.ConnectionId);
+    characterOwnerComponent.InvalidOwners.push_back(acMessage.PlayerComponent.ConnectionId);
 
     m_world.GetDispatcher().trigger(OwnershipTransferEvent(*it));
 }
@@ -323,14 +323,14 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.ConnectionId);
+        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.PlayerComponent.ConnectionId);
         return;
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.ConnectionId != acMessage.ConnectionId)
+    if (characterOwnerComponent.ConnectionId != acMessage.PlayerComponent.ConnectionId)
     {
-        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.ConnectionId);
+        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.PlayerComponent.ConnectionId);
         return;
     }
 
@@ -410,7 +410,7 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
             notifySpawnData.IsDead = pCharacterComponent->IsDead;
         }
 
-        GameServer::Get()->Send(acMessage.ConnectionId, notifySpawnData);
+        GameServer::Get()->Send(acMessage.PlayerComponent.ConnectionId, notifySpawnData);
     }
 }
 
@@ -424,7 +424,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
     {
         auto itor = view.find(static_cast<entt::entity>(entry.first));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.PlayerComponent.ConnectionId)
             continue;
 
         Script::Npc npc(*itor, m_world);
@@ -462,7 +462,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         for (auto& action : update.ActionEvents)
         {
             //TODO: HandleAction
-            //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.ConnectionId, kvp.first);
+            //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.PlayerComponent.ConnectionId, kvp.first);
 
             animationComponent.CurrentAction = action;
 
@@ -483,7 +483,7 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     {
         auto itor = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.PlayerComponent.ConnectionId)
             continue;
 
         auto& inventoryComponent = view.get<InventoryComponent>(*itor);
@@ -502,7 +502,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
     {
         auto itor = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.ConnectionId)
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).ConnectionId != acMessage.PlayerComponent.ConnectionId)
             continue;
 
         auto& characterComponent = view.get<CharacterComponent>(*itor);
@@ -530,14 +530,14 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     }
     else if (baseId != GameId{} && !isTemporary)
     {
-        spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.ConnectionId);
+        spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.PlayerComponent.ConnectionId);
         return;
     }
 
     auto* const pServer = GameServer::Get();
 
     m_world.emplace<ScriptsComponent>(cEntity);
-    m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
+    m_world.emplace<OwnerComponent>(cEntity, acMessage.PlayerComponent.ConnectionId);
 
     auto& cellIdComponent = m_world.emplace<CellIdComponent>(cEntity, message.CellId);
     if (message.WorldSpaceId != GameId{})
@@ -561,7 +561,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
     actorValuesComponent.CurrentActorValues = message.AllActorValues;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.ConnectionId);
+    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.PlayerComponent.ConnectionId);
 
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
@@ -575,23 +575,9 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     // If this is a player character store a ref and trigger an event
     if (isPlayer)
     {
-        auto playerView = m_world.view<PlayerComponent>();
+        const auto cPlayer = acMessage.Entity;
 
-        const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-            [playerView, connectionId = acMessage.ConnectionId](auto entity)
-        {
-            return playerView.get<PlayerComponent>(entity).ConnectionId == connectionId;
-        });
-
-        if (itor == std::end(playerView))
-        {
-            spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
-            return;
-        }
-
-        const auto cPlayer = *itor;
-
-        auto& playerComponent = playerView.get<PlayerComponent>(cPlayer);
+        auto& playerComponent = acMessage.PlayerComponent;
         playerComponent.Character = cEntity;
 
         auto& questLogComponent = m_world.emplace<QuestLogComponent>(cPlayer);
@@ -607,7 +593,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.Owner = true;
     response.AllActorValues = message.AllActorValues;
 
-    pServer->Send(acMessage.ConnectionId, response);
+    pServer->Send(acMessage.PlayerComponent.ConnectionId, response);
 
     auto& dispatcher = m_world.GetDispatcher();
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));

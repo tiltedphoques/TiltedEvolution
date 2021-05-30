@@ -12,7 +12,7 @@ struct AuthenticationRequest;
 
 struct GameServer final : Server
 {
-    GameServer(uint16_t aPort, bool aPremium, String aName, String aToken) noexcept;
+    GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword = "") noexcept;
     virtual ~GameServer();
 
     TP_NOCOPYMOVE(GameServer);
@@ -47,8 +47,12 @@ private:
 
     String m_name;
     String m_token;
+    String m_adminPassword;
 
     std::unique_ptr<World> m_pWorld;
+
+    Set<ConnectionId_t> m_adminSessions;
+    Map<ConnectionId_t, entt::entity> m_connectionToEntity;
 
     bool m_requestStop;
 

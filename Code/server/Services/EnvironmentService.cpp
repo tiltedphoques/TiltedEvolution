@@ -64,7 +64,7 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
     }
 
     if (!response.Objects.empty())
-        GameServer::Get()->Send(acMessage.ConnectionId, response);
+        GameServer::Get()->Send(acMessage.PlayerComponent.ConnectionId, response);
 }
 
 void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
@@ -79,7 +79,7 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
         auto& player = view.get<PlayerComponent>(entity);
         auto& cell = view.get<CellIdComponent>(entity);
 
-        if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+        if (player.ConnectionId != acMessage.PlayerComponent.ConnectionId && cell.Cell == acMessage.Packet.CellId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyActivate);
         }
@@ -108,7 +108,7 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         auto& player = view.get<PlayerComponent>(entity);
         auto& cell = view.get<CellIdComponent>(entity);
 
-        if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+        if (player.ConnectionId != acMessage.PlayerComponent.ConnectionId && cell.Cell == acMessage.Packet.CellId)
         {
             GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
         }
