@@ -8,8 +8,7 @@ target(name)
     add_defines(def)
     add_includedirs(
         ".",
-        "../../Libraries/",
-        "../../Libraries/cpp-httplib")
+        "../../Libraries/")
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
     add_files("**.cpp")
@@ -36,6 +35,7 @@ target(name)
         "sol2",
         "glm",
         "entt",
+        "cpp-httplib",
         "tiltedcore")
 end
 

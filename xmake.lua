@@ -15,8 +15,6 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_requires("entt")
 
-option("vivox", {default = os.exists("Libraries/Vivox/SDK"), showmenu = true, description = "Enable Vivox"})
-
 if is_mode("debug") then
     add_defines("DEBUG")
 end
