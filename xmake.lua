@@ -13,7 +13,7 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
 
-add_requires("entt")
+add_requires("entt", "recastnavigation")
 
 if is_mode("debug") then
     add_defines("DEBUG")
