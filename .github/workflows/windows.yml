@@ -25,9 +25,8 @@ jobs:
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
-
-    - name: Temp xmake debug
-      run: xmake update -s github:xmake-io/xmake#test
+      with:
+        xmake-version: test@master
 
     #- name: Yeet xmake-repo
     #  run: |
@@ -35,7 +34,7 @@ jobs:
 
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository
-      run: xmake.exe repo --update -vD
+      run: xmake.exe repo --update
 
     # Cache xmake dependencies
     - uses: actions/cache@v2
