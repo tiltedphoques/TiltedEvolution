@@ -26,6 +26,9 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
 
+    - name: Temp xmake debug
+      run: xmake update -s github:xmake-io/xmake#test
+
     #- name: Yeet xmake-repo
     #  run: |
     #    xmake.exe repo -g -a tilted https://github.com/tiltedphoques/xmake-repo.git
