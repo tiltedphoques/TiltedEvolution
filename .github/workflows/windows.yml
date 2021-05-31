@@ -26,7 +26,7 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: test@master
+        xmake-version: branch@test
 
     #- name: Yeet xmake-repo
     #  run: |
