@@ -35,7 +35,7 @@ jobs:
 
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository
-      run: xmake.exe repo --update
+      run: xmake.exe repo --update -vD
 
     # Cache xmake dependencies
     - uses: actions/cache@v2
