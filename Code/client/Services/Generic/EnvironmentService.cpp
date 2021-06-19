@@ -182,7 +182,13 @@ void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
 void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 {
     if (acEvent.ActivateFlag)
-        acEvent.pObject->Activate(acEvent.pActivator, acEvent.unk1, acEvent.unk2, acEvent.unk3, acEvent.unk4);
+    {
+#if TP_FALLOUT4
+        acEvent.pObject->Activate(acEvent.pActivator, acEvent.pObjectToGet, acEvent.Count, acEvent.DefaultProcessing, acEvent.FromScript, acEvent.IsLooping);
+#elif TP_SKYRIM64
+        acEvent.pObject->Activate(acEvent.pActivator, acEvent.Unk1, acEvent.pObjectToGet, acEvent.Count, acEvent.DefaultProcessing);
+#endif
+    }
 
     if (!m_transport.IsConnected())
         return;
@@ -273,7 +279,11 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
             {
                 // unsure if these flags are the best, but these are passed with the papyrus Activate fn
                 // might be an idea to have the client send the flags through NotifyActivate
-                pObject->Activate(pActor, 0, 0, 1, 0);
+            #if TP_FALLOUT4
+                pObject->Activate(pActor, nullptr, 1, 0, 0, 0);
+            #elif TP_SKYRIM64
+                pObject->Activate(pActor, 0, nullptr, 1, 0);
+            #endif
                 return;
             }
         }

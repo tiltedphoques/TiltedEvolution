@@ -1,5 +1,10 @@
 #include <TiltedOnlinePCH.h>
 #include <Games/References.h>
+#include <World.h>
+#include <Events/ActivateEvent.h>
+
+TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping);
+static TActivate* RealActivate = nullptr;
 
 void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
 {
@@ -41,3 +46,25 @@ ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
 
     return actorValueInfoArray[aId];
 }
+
+void TESObjectREFR::Activate(TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping) noexcept
+{
+    return ThisCall(RealActivate, this, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
+}
+
+void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping)
+{
+    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    if (pActivator)
+        World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping));
+
+    return ThisCall(RealActivate, apThis, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
+}
+
+static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
+        POINTER_FALLOUT4(TActivate, s_activate, 0x14040C750 - 0x140000000);
+
+        RealActivate = s_activate.Get();
+
+        TP_HOOK(&RealActivate, HookActivate);
+});

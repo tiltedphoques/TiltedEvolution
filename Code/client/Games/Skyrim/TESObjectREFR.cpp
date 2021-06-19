@@ -5,6 +5,10 @@
 
 #include <World.h>
 #include <Services/PapyrusService.h>
+#include <Events/ActivateEvent.h>
+
+TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
+static TActivate* RealActivate = nullptr;
 
 #ifdef SAVE_STUFF
 
@@ -83,3 +87,25 @@ void TESObjectREFR::RemoveAllItems() noexcept
 
     s_pRemoveAllItems(this, nullptr, false, true);
 }
+
+void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
+{
+    return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
+}
+
+void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
+{
+    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    if (pActivator)
+        World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
+
+    return ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
+}
+
+static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
+        POINTER_SKYRIMSE(TActivate, s_activate, 0x140296C00 - 0x140000000);
+
+        RealActivate = s_activate.Get();
+
+        TP_HOOK(&RealActivate, HookActivate);
+});

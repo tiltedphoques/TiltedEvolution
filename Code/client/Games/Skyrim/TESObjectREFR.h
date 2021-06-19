@@ -10,6 +10,7 @@
 
 struct AnimationVariables;
 struct TESWorldSpace;
+struct TESBoundObject;
 
 struct TESObjectREFR : TESForm
 {
@@ -155,7 +156,7 @@ struct TESObjectREFR : TESForm
     void Enable() const noexcept;
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
 
-    void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4) noexcept;
+    void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
