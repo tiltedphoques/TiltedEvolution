@@ -74,14 +74,52 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
     notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
 
     auto view = m_world.view<PlayerComponent, CellIdComponent>();
-    for (auto entity : view)
-    {
-        auto& player = view.get<PlayerComponent>(entity);
-        auto& cell = view.get<CellIdComponent>(entity);
 
-        if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+    auto connectionId = acMessage.ConnectionId;
+
+    auto senderIter = std::find_if(std::begin(view), std::end(view), [view, connectionId](auto entity) 
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyActivate);
+            const auto& playerComponent = view.get<PlayerComponent>(entity);
+            return playerComponent.ConnectionId == connectionId;
+        });
+
+    if (senderIter == std::end(view))
+    {
+        spdlog::warn("Player with connection id {:X} doesn't exist.", connectionId);
+        return;
+    }
+
+    const auto& senderCellIdComponent = view.get<CellIdComponent>(*senderIter);
+
+    if (senderCellIdComponent.WorldSpaceId == GameId{})
+    {
+        for (auto entity : view)
+        {
+            auto& player = view.get<PlayerComponent>(entity);
+            auto& cell = view.get<CellIdComponent>(entity);
+
+            if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+            {
+                GameServer::Get()->Send(player.ConnectionId, notifyActivate);
+            }
+        }
+    }
+    else
+    {
+        for (auto entity : view)
+        {
+            auto& player = view.get<PlayerComponent>(entity);
+            auto& cell = view.get<CellIdComponent>(entity);
+
+            if (cell.WorldSpaceId == GameId{})
+                continue;
+
+            if (player.ConnectionId != acMessage.ConnectionId 
+                && cell.WorldSpaceId == senderCellIdComponent.WorldSpaceId
+                && GridCellCoords::IsCellInGridCell(&cell.CenterCoords, &senderCellIdComponent.CenterCoords))
+            {
+                GameServer::Get()->Send(player.ConnectionId, notifyActivate);
+            }
         }
     }
 }
@@ -103,14 +141,52 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
     }
 
     auto view = m_world.view<PlayerComponent, CellIdComponent>();
-    for (auto entity : view)
-    {
-        auto& player = view.get<PlayerComponent>(entity);
-        auto& cell = view.get<CellIdComponent>(entity);
 
-        if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+    auto connectionId = acMessage.ConnectionId;
+
+    auto senderIter = std::find_if(std::begin(view), std::end(view), [view, connectionId](auto entity) 
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
+            const auto& playerComponent = view.get<PlayerComponent>(entity);
+            return playerComponent.ConnectionId == connectionId;
+        });
+
+    if (senderIter == std::end(view))
+    {
+        spdlog::warn("Player with connection id {:X} doesn't exist.", connectionId);
+        return;
+    }
+
+    const auto& senderCellIdComponent = view.get<CellIdComponent>(*senderIter);
+
+    if (senderCellIdComponent.WorldSpaceId == GameId{})
+    {
+        for (auto entity : view)
+        {
+            auto& player = view.get<PlayerComponent>(entity);
+            auto& cell = view.get<CellIdComponent>(entity);
+
+            if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+            {
+                GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
+            }
+        }
+    }
+    else
+    {
+        for (auto entity : view)
+        {
+            auto& player = view.get<PlayerComponent>(entity);
+            auto& cell = view.get<CellIdComponent>(entity);
+
+            if (cell.WorldSpaceId == GameId{})
+                continue;
+
+            if (player.ConnectionId != acMessage.ConnectionId 
+                && cell.WorldSpaceId == senderCellIdComponent.WorldSpaceId
+                && GridCellCoords::IsCellInGridCell(&cell.CenterCoords, &senderCellIdComponent.CenterCoords))
+            {
+                GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
+            }
         }
     }
 }

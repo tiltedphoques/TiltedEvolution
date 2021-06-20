@@ -373,7 +373,9 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
 
             if (cellIdComponent.WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
               GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords, &characterCellIdComponent.CenterCoords))
+            {
                 GameServer::Get()->Send(playerComponent.ConnectionId, message);
+            }
         }
     }
 }
