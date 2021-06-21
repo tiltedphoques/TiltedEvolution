@@ -64,7 +64,7 @@ private:
 
     Set<uint32_t> m_charactersWithInventoryChanges;
 
-	 Map<uint32_t, Inventory> m_cachedInventoryChanges;
+    Map<uint32_t, Inventory> m_cachedInventoryChanges;
 
     entt::scoped_connection m_formIdAddedConnection;
     entt::scoped_connection m_formIdRemovedConnection;
