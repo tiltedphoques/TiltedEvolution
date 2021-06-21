@@ -27,23 +27,32 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunObjectInventoryUpdates();
-    RunCharacterInventoryUpdates();
+    //RunCharacterInventoryUpdates();
 
     ApplyCachedObjectInventoryChanges();
-    ApplyCachedCharacterInventoryChanges();
+    //ApplyCachedCharacterInventoryChanges();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
 {
+    spdlog::info("Inventory change event");
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
-        if (m_charactersWithInventoryChanges.find(acEvent.FormId) != std::end(m_charactersWithInventoryChanges))
+        if (m_charactersWithInventoryChanges.find(acEvent.FormId) == std::end(m_charactersWithInventoryChanges))
+        {
+            spdlog::error("Inventory change added to characters");
             m_charactersWithInventoryChanges.insert(acEvent.FormId);
+        }
     }
-
-    if (m_objectsWithInventoryChanges.find(acEvent.FormId) != std::end(m_objectsWithInventoryChanges))
-        m_objectsWithInventoryChanges.insert(acEvent.FormId);
+    else
+    {
+        if (m_objectsWithInventoryChanges.find(acEvent.FormId) == std::end(m_objectsWithInventoryChanges))
+        {
+            spdlog::critical("Inventory change added to objects");
+            m_objectsWithInventoryChanges.insert(acEvent.FormId);
+        }
+    }
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
@@ -94,6 +103,8 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
         m_transport.Send(message);
 
         m_objectsWithInventoryChanges.clear();
+
+        spdlog::error("Sent request for inventory change");
     }
 }
 
@@ -140,24 +151,31 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
+    if (m_cachedObjectInventoryChanges.empty())
+        return;
+
+    spdlog::warn("Applying object inventory changes");
+
     for (const auto& [id, inventory] : m_cachedObjectInventoryChanges)
     {
         const auto cObjectId = World::Get().GetModSystem().GetGameId(id);
         if (cObjectId == 0)
         {
             spdlog::error("Failed to retrieve object to sync inventory.");
-            return;
+            continue;
         }
 
         auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
         if (!pObject)
         {
             spdlog::error("Failed to retrieve object to sync inventory.");
-            return;
+            continue;
         }
 
         pObject->DeserializeInventory(inventory.Buffer);
     }
+
+    m_cachedObjectInventoryChanges.clear();
 }
 
 void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept

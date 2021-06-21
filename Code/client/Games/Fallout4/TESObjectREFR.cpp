@@ -71,12 +71,14 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, T
 void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObject, BSExtraDataList* apExtraData,
                       uint32_t aCount, TESObjectREFR* apOldContainer, void* apUnk1, void* apUnk2)
 {
+    spdlog::warn("Add inventory item");
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     ThisCall(RealAddInventoryItem, apThis, apObject, apExtraData, aCount, apOldContainer, apUnk1, apUnk2);
 }
 
 uint32_t* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, uint32_t* apUnk1, void* apUnk2)
 {
+    spdlog::error("Remove inventory item");
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealRemoveInventoryItem, apThis, apUnk1, apUnk2);
 }

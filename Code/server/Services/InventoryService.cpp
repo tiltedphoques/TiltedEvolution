@@ -10,6 +10,7 @@
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
 {
+    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
 }
 
@@ -26,6 +27,8 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
     {
         m_pendingObjectInventoryChanges[it.first] = it.second;
     }
+
+    spdlog::info("Inventory object change cached");
 
     /*
     auto view = m_world.view<InventoryComponent>();
@@ -55,22 +58,23 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
 
     lastSendTimePoint = now;
 
-    NotifyObjectInventoryChanges message;
-
     if (!m_pendingObjectInventoryChanges.empty())
     {
+        NotifyObjectInventoryChanges message;
         for (auto& [id, inventory] : m_pendingObjectInventoryChanges)
         {
             message.Changes[id] = inventory;
         }
 
         m_pendingObjectInventoryChanges.clear();
-    }
 
-    const auto playerView = m_world.view<PlayerComponent>();
-    for (const auto player : playerView)
-    {
-        const auto& playerComponent = playerView.get<PlayerComponent>(player);
-        GameServer::Get()->Send(playerComponent.ConnectionId, message);
+        const auto playerView = m_world.view<PlayerComponent>();
+        for (const auto player : playerView)
+        {
+            const auto& playerComponent = playerView.get<PlayerComponent>(player);
+            GameServer::Get()->Send(playerComponent.ConnectionId, message);
+        }
+
+        spdlog::warn("Pending objects inventories sent");
     }
 }

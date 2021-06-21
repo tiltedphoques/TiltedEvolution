@@ -27,4 +27,5 @@ private:
     Map<GameId, Inventory> m_pendingObjectInventoryChanges;
 
     entt::scoped_connection m_objectInventoryConnection;
+    entt::scoped_connection m_updateConnection;
 };
