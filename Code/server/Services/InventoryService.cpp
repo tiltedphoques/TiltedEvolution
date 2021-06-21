@@ -2,20 +2,33 @@
 
 #include <Components.h>
 #include <World.h>
+#include <GameServer.h>
 
-#include <Messages/RequestInventoryChanges.h>
+#include <Messages/RequestObjectInventoryChanges.h>
+#include <Messages/NotifyObjectInventoryChanges.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
 {
-    m_inventoryConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
+    m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
 }
 
-void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept
+void InventoryService::OnUpdate(const UpdateEvent&) noexcept
 {
-    auto view = m_world.view<InventoryComponent>();
+    ProcessObjectInventoryChanges();
+}
 
+void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept
+{
     auto& message = acMessage.Packet;
+
+    for (auto& it : message.Changes)
+    {
+        m_pendingObjectInventoryChanges[it.first] = it.second;
+    }
+
+    /*
+    auto view = m_world.view<InventoryComponent>();
 
     for (auto& [id, inventory] : message.Changes)
     {
@@ -27,5 +40,37 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
         auto& inventoryComponent = view.get<InventoryComponent>(*itor);
         inventoryComponent.Content = inventory;
         inventoryComponent.DirtyInventory = true;
+    }
+    */
+}
+
+void InventoryService::ProcessObjectInventoryChanges() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    NotifyObjectInventoryChanges message;
+
+    if (!m_pendingObjectInventoryChanges.empty())
+    {
+        for (auto& [id, inventory] : m_pendingObjectInventoryChanges)
+        {
+            message.Changes[id] = inventory;
+        }
+
+        m_pendingObjectInventoryChanges.clear();
+    }
+
+    const auto playerView = m_world.view<PlayerComponent>();
+    for (const auto player : playerView)
+    {
+        const auto& playerComponent = playerView.get<PlayerComponent>(player);
+        GameServer::Get()->Send(playerComponent.ConnectionId, message);
     }
 }

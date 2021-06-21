@@ -1,12 +1,14 @@
 #include <Services/InventoryService.h>
 
+#include <Messages/RequestObjectInventoryChanges.h>
 #include <Messages/RequestInventoryChanges.h>
-#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyObjectInventoryChanges.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/InventoryChangeEvent.h>
 
 #include <World.h>
+#include <Games/Misc/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Actor.h>
@@ -18,6 +20,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
+    m_objectInventoryChangeConnection = m_dispatcher.sink<NotifyObjectInventoryChanges>().connect<&InventoryService::OnObjectInventoryChanges>(this);
     // TODO: connections
 }
 
@@ -43,8 +46,14 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
         m_objectsWithInventoryChanges.insert(acEvent.FormId);
 }
 
-void InventoryService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept
+void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
 {
+    for (const auto& [id, inventory] : acMessage.Changes)
+    {
+        m_cachedObjectInventoryChanges[id] = inventory;
+    }
+
+    ApplyCachedObjectInventoryChanges();
 }
 
 void InventoryService::RunObjectInventoryUpdates() noexcept
@@ -60,7 +69,7 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
 
     if (!m_objectsWithInventoryChanges.empty())
     {
-        RequestInventoryChanges message;
+        RequestObjectInventoryChanges message;
 
         for (const auto objectId : m_objectsWithInventoryChanges)
         {
@@ -74,15 +83,12 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
             if (!m_world.GetModSystem().GetServerModId(pObject->formID, modId, baseId))
                 continue;
 
-            uint32_t cellBaseId = 0;
-            uint32_t cellModId = 0;
-            if (!m_world.GetModSystem().GetServerModId(pObject->parentCell->formID, cellModId, cellBaseId))
-                continue;
+            const auto gameId = GameId(modId, baseId);
 
             Inventory inventory;
             inventory.Buffer = pObject->SerializeInventory();
 
-            message.Changes[objectId] = inventory;
+            message.Changes[gameId] = inventory;
         }
 
         m_transport.Send(message);
@@ -131,7 +137,27 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
 
 void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
 {
+    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
+        return;
 
+    for (const auto& [id, inventory] : m_cachedObjectInventoryChanges)
+    {
+        const auto cObjectId = World::Get().GetModSystem().GetGameId(id);
+        if (cObjectId == 0)
+        {
+            spdlog::error("Failed to retrieve object to sync inventory.");
+            return;
+        }
+
+        auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+        if (!pObject)
+        {
+            spdlog::error("Failed to retrieve object to sync inventory.");
+            return;
+        }
+
+        pObject->DeserializeInventory(inventory.Buffer);
+    }
 }
 
 void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept

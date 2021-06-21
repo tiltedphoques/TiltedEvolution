@@ -27,6 +27,7 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/RequestObjectInventoryChanges.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -44,7 +45,7 @@ struct ClientMessageFactory
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
-                                 RequestOwnershipClaim>;
+                                 RequestOwnershipClaim, RequestObjectInventoryChanges>;
 
         return s_visitor(std::forward<T>(func));
     }

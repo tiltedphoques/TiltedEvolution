@@ -4,7 +4,7 @@ struct World;
 struct TransportService;
 
 struct UpdateEvent;
-struct NotifyInventoryChanges;
+struct NotifyObjectInventoryChanges;
 struct InventoryChangeEvent;
 
 struct InventoryService
@@ -16,7 +16,7 @@ struct InventoryService
 
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept;
-    void OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept;
+    void OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acEvent) noexcept;
 
 private:
     void RunObjectInventoryUpdates() noexcept;
@@ -36,5 +36,5 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_inventoryConnection;
-    entt::scoped_connection m_inventoryChangeConnection;
+    entt::scoped_connection m_objectInventoryChangeConnection;
 };
