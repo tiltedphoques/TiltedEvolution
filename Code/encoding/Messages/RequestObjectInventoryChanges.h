@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/Inventory.h>
+#include <Structs/ObjectData.h>
 
 using TiltedPhoques::Map;
 
@@ -24,5 +24,5 @@ struct RequestObjectInventoryChanges final : ClientMessage
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<GameId, Inventory> Changes;
+    Map<GameId, ObjectData> Changes;
 };

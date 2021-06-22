@@ -25,26 +25,36 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
 
     for (auto& it : message.Changes)
     {
-        m_pendingObjectInventoryChanges[it.first] = it.second;
+        auto view = m_world.view<FormIdComponent>();
+
+        auto formIdIt = std::find_if(std::begin(view), std::end(view), [view, id = it.first](auto entity) {
+            const auto& formIdComponent = view.get<FormIdComponent>(entity);
+            return formIdComponent.Id == id;
+        });
+
+        InventoryComponent inventoryComponent;
+
+        if (formIdIt == std::end(view))
+        {
+            const auto entity = m_world.create();
+            m_world.emplace<FormIdComponent>(entity, it.first.BaseId, it.first.ModId);
+            m_world.emplace<OwnerComponent>(entity, acMessage.ConnectionId);
+            m_world.emplace<CellIdComponent>(entity, it.second.CellId, it.second.WorldSpaceId, it.second.CurrentCoords);
+            inventoryComponent = m_world.emplace<InventoryComponent>(entity);
+        }
+        else
+        {
+            auto& ownerComponent = m_world.get<OwnerComponent>(*formIdIt);
+            ownerComponent.ConnectionId = acMessage.ConnectionId;
+            inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
+        }
+
+        inventoryComponent.Content = it.second.CurrentInventory;
+        inventoryComponent.DirtyInventory = true;
+        spdlog::warn("Inventory size: {}", inventoryComponent.Content.Buffer.size());
     }
 
     spdlog::info("Inventory object change cached");
-
-    /*
-    auto view = m_world.view<InventoryComponent>();
-
-    for (auto& [id, inventory] : message.Changes)
-    {
-        auto itor = view.find(static_cast<entt::entity>(id));
-
-        if (itor == std::end(view))
-            continue;
-
-        auto& inventoryComponent = view.get<InventoryComponent>(*itor);
-        inventoryComponent.Content = inventory;
-        inventoryComponent.DirtyInventory = true;
-    }
-    */
 }
 
 void InventoryService::ProcessObjectInventoryChanges() noexcept
@@ -58,23 +68,57 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
 
     lastSendTimePoint = now;
 
-    if (!m_pendingObjectInventoryChanges.empty())
+    const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
+    const auto objectView = m_world.view<FormIdComponent, InventoryComponent, CellIdComponent, OwnerComponent>(entt::exclude<CharacterComponent>);
+
+    Map<ConnectionId_t, NotifyObjectInventoryChanges> messages;
+
+    for (auto entity : objectView)
     {
-        NotifyObjectInventoryChanges message;
-        for (auto& [id, inventory] : m_pendingObjectInventoryChanges)
-        {
-            message.Changes[id] = inventory;
-        }
+        auto& formIdComponent = objectView.get<FormIdComponent>(entity);
+        auto& inventoryComponent = objectView.get<InventoryComponent>(entity);
+        auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
+        auto& ownerComponent = objectView.get<OwnerComponent>(entity);
 
-        m_pendingObjectInventoryChanges.clear();
+        // If we have nothing new to send skip this
+        if (inventoryComponent.DirtyInventory == false)
+            continue;
 
-        const auto playerView = m_world.view<PlayerComponent>();
-        for (const auto player : playerView)
+        for (auto player : playerView)
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
-            GameServer::Get()->Send(playerComponent.ConnectionId, message);
+
+            if (playerComponent.ConnectionId == ownerComponent.ConnectionId)
+                continue;
+
+            const auto& playerCellIdComponent = playerView.get<CellIdComponent>(player);
+            if (cellIdComponent.WorldSpaceId == GameId{})
+            {
+                if (playerCellIdComponent != cellIdComponent)
+                    continue;
+            }
+            else
+            {
+                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
+                    !GridCellCoords::IsCellInGridCell(&cellIdComponent.CenterCoords,
+                                                      &playerCellIdComponent.CenterCoords))
+                {
+                    continue;
+                }
+            }
+
+            auto& message = messages[playerComponent.ConnectionId];
+            auto& change = message.Changes[formIdComponent.Id];
+
+            change = inventoryComponent.Content;
         }
 
-        spdlog::warn("Pending objects inventories sent");
+        inventoryComponent.DirtyInventory = false;
+    }
+
+    for (auto [connectionId, message] : messages)
+    {
+        if (!message.Changes.empty())
+            GameServer::Get()->Send(connectionId, message);
     }
 }

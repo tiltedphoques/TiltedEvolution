@@ -12,6 +12,9 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Actor.h>
+#include <Structs/ObjectData.h>
+#include <Forms/TESWorldSpace.h>
+#include <Games/TES.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -35,7 +38,6 @@ void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
 {
-    spdlog::info("Inventory change event");
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
@@ -87,17 +89,33 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
             if (!pObject)
                 continue;
 
-            uint32_t baseId = 0;
-            uint32_t modId = 0;
-            if (!m_world.GetModSystem().GetServerModId(pObject->formID, modId, baseId))
+            ObjectData objectData;
+
+            GameId gameId(0, 0);
+            if (!m_world.GetModSystem().GetServerModId(pObject->formID, gameId.ModId, gameId.BaseId))
                 continue;
 
-            const auto gameId = GameId(modId, baseId);
+            if (const auto pWorldSpace = pObject->GetWorldSpace())
+            {
+                if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, objectData.WorldSpaceId.ModId, objectData.WorldSpaceId.BaseId))
+                    continue;
 
-            Inventory inventory;
-            inventory.Buffer = pObject->SerializeInventory();
+                const auto* pTES = TES::Get();
+                const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
+                if (!m_world.GetModSystem().GetServerModId(pCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
+                    continue;
 
-            message.Changes[gameId] = inventory;
+                objectData.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
+            }
+            else if (const auto pParentCell = pObject->GetParentCell())
+            {
+                if (!m_world.GetModSystem().GetServerModId(pParentCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
+                    continue;
+            }
+
+            objectData.CurrentInventory.Buffer = pObject->SerializeInventory();
+
+            message.Changes[gameId] = objectData;
         }
 
         m_transport.Send(message);

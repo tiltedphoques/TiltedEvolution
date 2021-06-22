@@ -155,7 +155,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        spdlog::critical("Sending interior character {:x}", spawnMessage.ServerId);
         GameServer::Get()->Send(acMessage.ConnectionId, spawnMessage);
     }
 }

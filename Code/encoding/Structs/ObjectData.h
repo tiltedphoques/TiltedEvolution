@@ -4,6 +4,8 @@
 #include <TiltedCore/Stl.hpp>
 #include <Structs/GameId.h>
 #include <Structs/LockData.h>
+#include <Structs/Inventory.h>
+#include <Structs/GridCellCoords.h>
 
 using TiltedPhoques::Map;
 
@@ -20,5 +22,8 @@ struct ObjectData
 
     GameId Id{};
     GameId CellId{};
+    GameId WorldSpaceId{};
+    GridCellCoords CurrentCoords{};
     LockData CurrentLockData{};
+    Inventory CurrentInventory{};
 };

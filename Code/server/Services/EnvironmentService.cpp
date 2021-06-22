@@ -60,6 +60,8 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
         m_world.emplace<FormIdComponent>(cEntity, object.Id);
         m_world.emplace<CellIdComponent>(cEntity, object.CellId);
         m_world.emplace<LockComponent>(cEntity, object.CurrentLockData);
+        m_world.emplace<InventoryComponent>(cEntity);
+        m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
         m_objectsWithLocks.insert({object.Id, cEntity});
     }
 
