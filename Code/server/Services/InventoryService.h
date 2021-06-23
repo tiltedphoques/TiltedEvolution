@@ -18,7 +18,6 @@ public:
     InventoryService(World& aWorld, entt::dispatcher& aDispatcher);
 
     void OnUpdate(const UpdateEvent&) noexcept;
-    void OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept;
     void OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept;
 
 private:
