@@ -2,6 +2,7 @@
 
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
+#include "Events/PlayerLeaveCellEvent.h"
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -36,6 +37,11 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
     {
         spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
         return;
+    }
+
+    if (const auto pCellIdComponent = m_world.try_get<CellIdComponent>(*itor))
+    {
+        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(pCellIdComponent->Cell));
     }
 
     auto& message = acMessage.Packet;
@@ -119,6 +125,11 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     {
         spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
         return;
+    }
+
+    if (const auto pCellIdComponent = m_world.try_get<CellIdComponent>(*itor))
+    {
+        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(pCellIdComponent->Cell));
     }
 
     auto& message = acMessage.Packet;

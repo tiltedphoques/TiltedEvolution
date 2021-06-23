@@ -477,7 +477,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
 void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept
 {
-    auto view = m_world.view<InventoryComponent, OwnerComponent>();
+    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
 
     auto& message = acMessage.Packet;
 
@@ -627,7 +627,7 @@ void CharacterService::ProcessInventoryChanges() const noexcept
     lastSendTimePoint = now;
 
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto characterView = m_world.view < CellIdComponent, InventoryComponent, OwnerComponent >();
+    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, InventoryComponent, OwnerComponent>();
 
     Map<ConnectionId_t, NotifyInventoryChanges> messages;
 

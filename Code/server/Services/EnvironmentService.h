@@ -7,6 +7,7 @@
 struct World;
 struct UpdateEvent;
 struct PlayerJoinEvent;
+struct PlayerLeaveCellEvent;
 struct ActivateRequest;
 struct LockChangeRequest;
 struct AssignObjectsRequest;
@@ -36,16 +37,17 @@ public:
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 
     void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
+    void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept;
     void OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>&) noexcept;
     void OnActivate(const PacketEvent<ActivateRequest>&) const noexcept;
     void OnLockChange(const PacketEvent<LockChangeRequest>&) const noexcept;
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
-    Map<GameId, entt::entity> m_objectsWithLocks;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
+    entt::scoped_connection m_leaveCellConnection;
     entt::scoped_connection m_assignObjectConnection;
     entt::scoped_connection m_activateConnection;
     entt::scoped_connection m_lockChangeConnection;

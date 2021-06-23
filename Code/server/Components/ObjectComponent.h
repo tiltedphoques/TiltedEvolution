@@ -6,11 +6,12 @@
 
 #include <Structs/LockData.h>
 
-struct LockComponent
+struct ObjectComponent
 {
-    LockComponent(const LockData& aLockData) noexcept
-        : CurrentLockData(aLockData)
+    ObjectComponent(const ConnectionId_t aConnectionId)
+        : LastSender(aConnectionId)
     {}
 
+    ConnectionId_t LastSender;
     LockData CurrentLockData{};
 };

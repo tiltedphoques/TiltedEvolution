@@ -8,6 +8,7 @@ struct World;
 struct UpdateEvent;
 struct RequestObjectInventoryChanges;
 struct UpdateEvent;
+struct PlayerLeaveCellEvent;
 
 using TiltedPhoques::Map;
 
@@ -17,13 +18,16 @@ public:
     InventoryService(World& aWorld, entt::dispatcher& aDispatcher);
 
     void OnUpdate(const UpdateEvent&) noexcept;
+    void OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept;
     void OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept;
-    void ProcessObjectInventoryChanges() noexcept;
 
 private:
 
+    void ProcessObjectInventoryChanges() noexcept;
+
     World& m_world;
 
-    entt::scoped_connection m_objectInventoryConnection;
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_leaveCellConnection;
+    entt::scoped_connection m_objectInventoryConnection;
 };
