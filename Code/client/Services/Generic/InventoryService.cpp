@@ -59,6 +59,8 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
 {
+    spdlog::info("OnObjectInventoryChanges");
+
     for (const auto& [id, inventory] : acMessage.Changes)
     {
         m_cachedObjectInventoryChanges[id] = inventory;

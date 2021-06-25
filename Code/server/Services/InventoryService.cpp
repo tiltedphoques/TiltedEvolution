@@ -4,6 +4,7 @@
 #include <World.h>
 #include <GameServer.h>
 
+#include <Events/UpdateEvent.h>
 #include <Events/PlayerLeaveCellEvent.h>
 
 #include <Messages/RequestObjectInventoryChanges.h>
@@ -14,7 +15,6 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
-    m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&InventoryService::OnPlayerLeaveCellEvent>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent&) noexcept
@@ -35,26 +35,30 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
             return formIdComponent.Id == id;
         });
 
-        InventoryComponent inventoryComponent;
-
         if (formIdIt == std::end(view))
         {
             const auto entity = m_world.create();
             m_world.emplace<FormIdComponent>(entity, it.first.BaseId, it.first.ModId);
             m_world.emplace<ObjectComponent>(entity, acMessage.ConnectionId);
             m_world.emplace<CellIdComponent>(entity, it.second.CellId, it.second.WorldSpaceId, it.second.CurrentCoords);
-            inventoryComponent = m_world.emplace<InventoryComponent>(entity);
+
+            auto& inventoryComponent = m_world.emplace<InventoryComponent>(entity);
+            inventoryComponent.Content = it.second.CurrentInventory;
+            inventoryComponent.DirtyInventory = true;
+
+            spdlog::warn("Inventory size: {} at {:x} {:x} ({}, {})", inventoryComponent.Content.Buffer.size(), it.second.WorldSpaceId.BaseId, it.second.CellId.BaseId, it.second.CurrentCoords.X, it.second.CurrentCoords.Y);
         }
         else
         {
             auto& objectComponent = m_world.get<ObjectComponent>(*formIdIt);
             objectComponent.LastSender = acMessage.ConnectionId;
-            inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
-        }
 
-        inventoryComponent.Content = it.second.CurrentInventory;
-        inventoryComponent.DirtyInventory = true;
-        spdlog::warn("Inventory size: {}", inventoryComponent.Content.Buffer.size());
+            auto& inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
+            inventoryComponent.Content = it.second.CurrentInventory;
+            inventoryComponent.DirtyInventory = true;
+
+            spdlog::warn("Inventory size: {} at {:x} {:x} ({}, {})", inventoryComponent.Content.Buffer.size(), it.second.WorldSpaceId.BaseId, it.second.CellId.BaseId, it.second.CurrentCoords.X, it.second.CurrentCoords.Y);
+        }
     }
 
     spdlog::info("Inventory object change cached");
@@ -72,7 +76,7 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
     lastSendTimePoint = now;
 
     const auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-    const auto objectView = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent, CellIdComponent, OwnerComponent>();
+    const auto objectView = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent, CellIdComponent>();
 
     Map<ConnectionId_t, NotifyObjectInventoryChanges> messages;
 
@@ -81,7 +85,7 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
         auto& formIdComponent = objectView.get<FormIdComponent>(entity);
         auto& inventoryComponent = objectView.get<InventoryComponent>(entity);
         auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
-        auto& ownerComponent = objectView.get<OwnerComponent>(entity);
+        auto& objectComponent = objectView.get<ObjectComponent>(entity);
 
         // If we have nothing new to send skip this
         if (inventoryComponent.DirtyInventory == false)
@@ -91,14 +95,16 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
         {
             const auto& playerComponent = playerView.get<PlayerComponent>(player);
 
-            if (playerComponent.ConnectionId == ownerComponent.ConnectionId)
+            if (playerComponent.ConnectionId == objectComponent.LastSender)
                 continue;
 
             const auto& playerCellIdComponent = playerView.get<CellIdComponent>(player);
             if (cellIdComponent.WorldSpaceId == GameId{})
             {
                 if (playerCellIdComponent != cellIdComponent)
+                {
                     continue;
+                }
             }
             else
             {
@@ -123,5 +129,7 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
     {
         if (!message.Changes.empty())
             GameServer::Get()->Send(connectionId, message);
+
+        spdlog::info("Sent inventory contents");
     }
 }

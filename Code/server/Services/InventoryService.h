@@ -27,6 +27,5 @@ private:
     World& m_world;
 
     entt::scoped_connection m_updateConnection;
-    entt::scoped_connection m_leaveCellConnection;
     entt::scoped_connection m_objectInventoryConnection;
 };
