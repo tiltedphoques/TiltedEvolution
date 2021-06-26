@@ -24,7 +24,7 @@
 #include <imgui.h>
 #include <inttypes.h>
 
-#define ENVIRONMENT_DEBUG 0
+#define ENVIRONMENT_DEBUG 1
 
 constexpr float kTransitionSpeed = 5.f;
 
@@ -55,6 +55,7 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
+    EventDispatcherManager::Get()->containerChangedEvent.RegisterSink(this);
 #else
     GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
 #endif
@@ -153,7 +154,7 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
     }
 }
 
-BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* dispatcher)
+BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
 {
 #if ENVIRONMENT_DEBUG
     auto view = m_world.view<InteractiveObjectComponent>();
@@ -171,6 +172,15 @@ BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, cons
 
     return BSTEventResult::kOk;
 }
+
+#if TP_SKYRIM64
+BSTEventResult EnvironmentService::OnEvent(const TESContainerChangedEvent* acEvent, const EventDispatcher<TESContainerChangedEvent>* aDispatcher)
+{
+    spdlog::warn("Old: {:X}, new: {:X}", acEvent->oldContainerID, acEvent->newContainerID);
+
+    return BSTEventResult::kOk;
+}
+#endif
 
 void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
 {

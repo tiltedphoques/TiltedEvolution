@@ -80,7 +80,9 @@ struct TESCombatEvent
 
 struct TESContainerChangedEvent
 {
-
+    uint32_t oldContainerID;
+    uint32_t newContainerID;
+    uint8_t pad8[0xC];
 };
 
 struct TESDeathEvent

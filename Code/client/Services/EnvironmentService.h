@@ -19,6 +19,9 @@ struct AssignObjectsResponse;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
+#if TP_SKYRIM64
+    , public BSTEventSink<TESContainerChangedEvent>
+#endif
 {
 public:
     EnvironmentService(World&, entt::dispatcher&, ImguiService&, TransportService&);
@@ -37,6 +40,9 @@ public:
     void OnDraw() noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
+#if TP_SKYRIM64
+    BSTEventResult OnEvent(const TESContainerChangedEvent*, const EventDispatcher<TESContainerChangedEvent>*) override;
+#endif
 
     void ToggleGameClock(bool aEnable);
     float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
