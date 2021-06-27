@@ -12,6 +12,7 @@
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
+#include <steam/isteamnetworkingutils.h>
 
 #include <AdminMessages/ClientAdminMessageFactory.h>
 
