@@ -8,7 +8,7 @@ struct Player
     Player(ConnectionId_t aConnectionId);
     ~Player() noexcept = default;
 
-    Player(Player&&) noexcept = default;
+    Player(Player&&) noexcept;
     Player& operator=(Player&&) noexcept = default;
 
     Player(const Player&) = delete;
