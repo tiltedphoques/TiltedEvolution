@@ -65,9 +65,6 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 {
-    // When a player joins give it a party component for later
-    m_world.emplace<PartyComponent>(acEvent.Entity);
-
     BroadcastPlayerList();
 }
 
@@ -75,35 +72,24 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
 {
     auto& message = acPacket.Packet;
 
-    const entt::entity entity{message.PlayerId};
-
-    auto view = m_world.view<PlayerComponent, PartyComponent>();
-
     // Make sure the player we invite exists
-    const auto otherItor = view.find(entity);
-
-    // Get self
-    const auto selfItor =
-        std::find_if(view.begin(), view.end(), [view, connectionId = acPacket.Player.ConnectionId](auto entity) {
-            return view.get<PlayerComponent>(entity).ConnectionId == connectionId;
-        });
+    const auto pOtherPlayer = m_world.GetPlayerManager().GetById(message.PlayerId);
+    const auto pSelf = acPacket.pPlayer;
 
     // If both players are available and they are different
-    if (otherItor != view.end() && selfItor != view.end() && *otherItor != *selfItor)
+    if (pOtherPlayer && pOtherPlayer != pSelf)
     {
-        auto& otherPartyComponent = view.get<PartyComponent>(*otherItor);
+        auto& otherPartyComponent = pOtherPlayer->GetParty();
 
         // Expire in 60 seconds
         const auto cExpiryTick = GameServer::Get()->GetTick() + 60000;
-        otherPartyComponent.Invitations[*selfItor] = cExpiryTick;
+        otherPartyComponent.Invitations[pSelf] = cExpiryTick;
 
         NotifyPartyInvite notification;
-        notification.InviterId = World::ToInteger(*selfItor);
+        notification.InviterId = pSelf->GetId();
         notification.ExpiryTick = cExpiryTick;
 
-        auto& playerComponent = view.get<PlayerComponent>(*otherItor);
-
-        GameServer::Get()->Send(playerComponent.ConnectionId, notification);
+        GameServer::Get()->Send(pOtherPlayer->GetConnectionId(), notification);
     }
 }
 
@@ -111,29 +97,19 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
 {
     auto& message = acPacket.Packet;
 
-    entt::entity entity{message.InviterId};
-
-    auto view = m_world.view<PlayerComponent, PartyComponent>();
-
-    // Make sure the player that accepted exists
-    const auto selfItor = view.find(entity);
-
-    // Get the inviter
-    const auto inviterItor =
-        std::find_if(view.begin(), view.end(), [view, connectionId = acPacket.Player.ConnectionId](auto entity) {
-            return view.get<PlayerComponent>(entity).ConnectionId == connectionId;
-        });
+    const auto pOtherPlayer = m_world.GetPlayerManager().GetById(message.InviterId);
+    auto pSelf = acPacket.pPlayer;
 
     // If both players are available and they are different
-    if (inviterItor != view.end() && selfItor != view.end() && *inviterItor != *selfItor)
+    if (pOtherPlayer && pOtherPlayer != pSelf)
     {
-        auto& inviterPartyComponent = view.get<PartyComponent>(*inviterItor);
-        auto& selfPartyComponent = view.get<PartyComponent>(*selfItor);
+        auto& inviterPartyComponent = pOtherPlayer->GetParty();
+        auto& selfPartyComponent = pSelf->GetParty();
 
         auto partyId = 0;
 
         // Check if we have this invitation so people don't invite themselves
-        if (selfPartyComponent.Invitations.count(*inviterItor) == 0)
+        if (selfPartyComponent.Invitations.count(pOtherPlayer) == 0)
             return;
 
         // If the inviter isn't in a party, create it
@@ -142,7 +118,7 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
             partyId = m_nextId++;
 
             auto& party = m_parties[partyId];
-            party.Members.push_back(*inviterItor);
+            party.Members.push_back(pOtherPlayer);
             inviterPartyComponent.JoinedPartyId = partyId;
         }
         else
@@ -151,7 +127,7 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
         }
 
         auto& party = m_parties[partyId];
-        party.Members.push_back(*selfItor);
+        party.Members.push_back(pSelf);
         selfPartyComponent.JoinedPartyId = partyId;
 
         BroadcastPartyInfo(partyId);
@@ -160,25 +136,18 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
 
 void PartyService::OnPartyLeave(const PacketEvent<PartyLeaveRequest>& acPacket) noexcept
 {
-    auto& message = acPacket.Packet;
-
-    auto view = m_world.view<PlayerComponent, PartyComponent>();
-
-    RemovePlayerFromParty(acPacket.Entity);
+    RemovePlayerFromParty(acPacket.pPlayer);
 }
 
 void PartyService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 {
-    RemovePlayerFromParty(acEvent.Entity);
-
-    BroadcastPlayerList(acEvent.Entity);
+    RemovePlayerFromParty(acEvent.pPlayer);
+    BroadcastPlayerList(acEvent.pPlayer);
 }
 
-void PartyService::RemovePlayerFromParty(entt::entity aEntity) noexcept
+void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
 {
-    auto* pPartyComponent = m_world.try_get<PartyComponent>(aEntity);
-    if (!pPartyComponent)
-        return;
+    auto* pPartyComponent = &apPlayer->GetParty();
 
     if (pPartyComponent->JoinedPartyId)
     {
@@ -187,7 +156,7 @@ void PartyService::RemovePlayerFromParty(entt::entity aEntity) noexcept
         auto& party = m_parties[id];
         auto& members = party.Members;
 
-        members.erase(std::find(std::begin(members), std::end(members), aEntity));
+        members.erase(std::find(std::begin(members), std::end(members), apPlayer));
 
         if (members.empty())
         {
@@ -202,34 +171,25 @@ void PartyService::RemovePlayerFromParty(entt::entity aEntity) noexcept
     }
 }
 
-void PartyService::BroadcastPlayerList(std::optional<entt::entity> aSkipEntity) const noexcept
+void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
 {
-    auto playerView = m_world.view<const PlayerComponent>();
-
-    for (auto player : playerView)
-    {
-        if (aSkipEntity && *aSkipEntity == player)
-            continue;
+    m_world.GetPlayerManager().ForEach([this, pIgnoredPlayer = apPlayer](Player* apPlayer) {
+        if (pIgnoredPlayer == apPlayer)
+            return;
 
         NotifyPlayerList playerList;
+        m_world.GetPlayerManager().ForEach([&playerList, pIgnoredPlayer, pSelf = apPlayer](Player* apPlayer) {
+            if (pSelf == apPlayer)
+                return;
 
-        auto& currentPlayerComponent = playerView.get<const PlayerComponent>(player);
+            if (pIgnoredPlayer == apPlayer)
+                return;
 
-        for (auto otherPlayer : playerView)
-        {
-            if (player == otherPlayer)
-                continue;
+            playerList.Players[apPlayer->GetId()] = apPlayer->GetUsername();
+        });
 
-            if (aSkipEntity && *aSkipEntity == otherPlayer)
-                continue;
-
-            auto& otherPlayerComponent = playerView.get<const PlayerComponent>(otherPlayer);
-
-            playerList.Players[World::ToInteger(otherPlayer)] = otherPlayerComponent.Username;
-        }
-
-        GameServer::Get()->Send(currentPlayerComponent.ConnectionId, playerList);
-    }    
+        GameServer::Get()->Send(apPlayer->GetConnectionId(), playerList);
+    });   
 }
 
 void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
@@ -242,17 +202,13 @@ void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
     auto& members = party.Members;
 
     NotifyPartyInfo message;
-    for (auto entity : members)
+    for (auto pPlayer : members)
     {
-        message.PlayerIds.push_back(World::ToInteger(entity));
+        message.PlayerIds.push_back(pPlayer->GetId());
     }
 
-    for (auto entity : members)
+    for (auto pPlayer : members)
     {
-        auto* pPlayerComponent = m_world.try_get<PlayerComponent>(entity);
-        if (!pPlayerComponent)
-            continue;
-
-        GameServer::Get()->Send(pPlayerComponent->ConnectionId, message);
+        GameServer::Get()->Send(pPlayer->GetConnectionId(), message);
     }
 }

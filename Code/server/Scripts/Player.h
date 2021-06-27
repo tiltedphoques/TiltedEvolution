@@ -29,11 +29,10 @@ namespace Script
             return *this;
         }
 
-        bool AddComponent(sol::object aObject) const override;
         bool HasMod(const std::string& aModName) const noexcept;
 
         bool RemoveQuest(uint32_t aformId);
-        sol::optional<Quest> AddQuest(const std::string aModName, uint32_t aformId);
+        sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
         sol::optional<Vector<Quest>> GetQuests() const noexcept;
         sol::optional<Party> GetParty() const noexcept;
 

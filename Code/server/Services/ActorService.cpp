@@ -35,7 +35,7 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.Player.ConnectionId)
+        actorValuesView.get<OwnerComponent>(*itor).pOwner == acMessage.pPlayer)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
         for (auto& [id, value] : message.Values)
@@ -50,16 +50,13 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     notifyChanges.Id = acMessage.Packet.Id;
     notifyChanges.Values = acMessage.Packet.Values;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
-    {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.Player.ConnectionId)
+    m_world.GetPlayerManager().ForEach([&notifyChanges, &acMessage](const Player* apPlayer) 
+    { 
+        if (acMessage.pPlayer != apPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyChanges);
+            apPlayer->Send(notifyChanges);
         }
-    }
+    });
 }
 
 void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -71,7 +68,7 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.Player.ConnectionId)
+        actorValuesView.get<OwnerComponent>(*itor).pOwner == acMessage.pPlayer)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
         for (auto& [id, value] : message.Values)
@@ -86,16 +83,13 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     notifyChanges.Id = message.Id;
     notifyChanges.Values = message.Values;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    m_world.GetPlayerManager().ForEach([&notifyChanges, &acMessage](const Player* apPlayer) 
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.Player.ConnectionId)
+        if (acMessage.pPlayer != apPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyChanges);
+            apPlayer->Send(notifyChanges);
         }
-    }
+    });
 }
 
 void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
@@ -104,16 +98,13 @@ void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChange
     notifyDamageEvent.Id = acMessage.Packet.Id;
     notifyDamageEvent.DeltaHealth = acMessage.Packet.DeltaHealth;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    m_world.GetPlayerManager().ForEach([&notifyDamageEvent, &acMessage](const Player* apPlayer) 
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.Player.ConnectionId)
+        if (acMessage.pPlayer != apPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyDamageEvent);
+            apPlayer->Send(notifyDamageEvent);
         }
-    }
+    });
 }
 
 void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -125,7 +116,7 @@ void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>
     const auto itor = characterView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(characterView) && 
-        characterView.get<OwnerComponent>(*itor).ConnectionId == acMessage.Player.ConnectionId)
+        characterView.get<OwnerComponent>(*itor).pOwner == acMessage.pPlayer)
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*itor);
         characterComponent.IsDead = message.IsDead;
@@ -136,15 +127,12 @@ void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>
     notifyChange.Id = message.Id;
     notifyChange.IsDead = message.IsDead;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    m_world.GetPlayerManager().ForEach([&notifyChange, &acMessage](const Player* apPlayer)
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.Player.ConnectionId)
+        if (acMessage.pPlayer != apPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyChange);
+            apPlayer->Send(notifyChange);
         }
-    }
+    });
 }
 

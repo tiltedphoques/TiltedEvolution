@@ -30,8 +30,7 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
     timeMsg.TimeScale = m_timeModel.TimeScale;
     timeMsg.Time = m_timeModel.Time;
 
-    const auto &playerComponent = m_world.get<PlayerComponent>(acEvent.Entity);
-    GameServer::Get()->Send(playerComponent.ConnectionId, timeMsg);
+    GameServer::Get()->Send(acEvent.pPlayer->GetConnectionId(), timeMsg);
 }
 
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
@@ -64,7 +63,7 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
     }
 
     if (!response.Objects.empty())
-        GameServer::Get()->Send(acMessage.Player.ConnectionId, response);
+        acMessage.pPlayer->Send(response);
 }
 
 void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
@@ -73,17 +72,13 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
     notifyActivate.Id = acMessage.Packet.Id;
     notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
 
-    auto view = m_world.view<PlayerComponent, CellIdComponent>();
-    for (auto entity : view)
+    m_world.GetPlayerManager().ForEach([&notifyActivate, &acMessage](const Player* apPlayer) 
     {
-        auto& player = view.get<PlayerComponent>(entity);
-        auto& cell = view.get<CellIdComponent>(entity);
-
-        if (player.ConnectionId != acMessage.Player.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+        if (apPlayer != acMessage.pPlayer && apPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyActivate);
+            apPlayer->Send(notifyActivate);
         }
-    }
+    });
 }
 
 void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
@@ -102,17 +97,13 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         lockComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    auto view = m_world.view<PlayerComponent, CellIdComponent>();
-    for (auto entity : view)
+    m_world.GetPlayerManager().ForEach([&notifyLockChange, &acMessage](const Player* apPlayer) 
     {
-        auto& player = view.get<PlayerComponent>(entity);
-        auto& cell = view.get<CellIdComponent>(entity);
-
-        if (player.ConnectionId != acMessage.Player.ConnectionId && cell.Cell == acMessage.Packet.CellId)
+        if (apPlayer != acMessage.pPlayer && apPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
+            GameServer::Get()->Send(apPlayer->GetConnectionId(), notifyLockChange);
         }
-    }
+    });
 }
 
 bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcept

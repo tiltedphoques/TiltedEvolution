@@ -14,8 +14,6 @@ namespace Script
 
         EntityHandle& operator=(const EntityHandle& acRhs);
 
-        virtual bool AddComponent(sol::object aObject) const;
-
     protected:
 
         entt::entity m_entity;

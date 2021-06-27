@@ -4,8 +4,13 @@
 #error Include Components.h instead
 #endif
 
+#include <Structs/GridCellCoords.h>
+
 struct CellIdComponent
 {
+    CellIdComponent()
+    {}
+
     CellIdComponent(GameId aCellId)
         : Cell(aCellId)
     {}
@@ -24,7 +29,12 @@ struct CellIdComponent
         return !operator==(acRhs);
     }
 
-    GameId Cell;
+    operator bool() const noexcept
+    {
+        return *this != CellIdComponent{};
+    }
+
+    GameId Cell{};
     GameId WorldSpaceId{};
     GridCellCoords CenterCoords{};
 };

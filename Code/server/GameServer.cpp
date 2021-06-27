@@ -52,20 +52,18 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
 
         m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
 
-            const auto itor = m_connectionToEntity.find(aConnectionId);
+            auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
-            if (itor == std::end(m_connectionToEntity))
+            if (!pPlayer)
             {
                 spdlog::error("Connection {:x} is not associated with a player.", aConnectionId);
                 Kick(aConnectionId);
                 return;
             }
 
-            auto entity = itor->second;
             const auto pRealMessage = CastUnique<T>(std::move(apMessage));
 
-            m_pWorld->GetDispatcher().trigger(
-                PacketEvent<T>(pRealMessage.get(), m_pWorld->get<PlayerComponent>(entity), entity));
+            m_pWorld->GetDispatcher().trigger(PacketEvent<T>(pRealMessage.get(), pPlayer));
         };
 
         return false;
@@ -163,23 +161,14 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
     spdlog::info("Connection ended {:x}", aConnectionId);
 
     m_adminSessions.erase(aConnectionId);
-    m_connectionToEntity.erase(aConnectionId);
+
+    auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
     m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
 
-    // Find if a player is associated with this connection and delete it
-    auto playerView = m_pWorld->view<PlayerComponent>();
-    for (auto entity : playerView)
+    if (pPlayer)
     {
-        const auto& [playerComponent] = playerView.get(entity);
-        if (playerComponent.ConnectionId == aConnectionId)
-        {
-            m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(entity));
-
-            m_pWorld->remove_if_exists<ScriptsComponent>(entity);
-            m_pWorld->destroy(entity);
-            break;
-        }
+        m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
     }
 
     // Cleanup all entities that we own
@@ -187,20 +176,22 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
     for (auto entity : ownerView)
     {
         const auto& [ownerComponent] = ownerView.get(entity);
-        if (ownerComponent.ConnectionId == aConnectionId)
+        if (ownerComponent.pOwner == pPlayer)
         {
             m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
         }
     }
+
+    m_pWorld->GetPlayerManager().Remove(pPlayer);
 
     SetTitle();
 }
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
-    static thread_local TiltedPhoques::ScratchAllocator s_allocator{ 1 << 18 };
+    static thread_local ScratchAllocator s_allocator{ 1 << 18 };
 
-    TiltedPhoques::ScopedAllocator _(s_allocator);
+    ScopedAllocator _(s_allocator);
 
     Buffer buffer(1 << 16);
     Buffer::Writer writer(&buffer);
@@ -208,7 +199,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -216,9 +207,9 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
 void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const
 {
-    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
+    static thread_local ScratchAllocator s_allocator{1 << 18};
 
-    TiltedPhoques::ScopedAllocator _(s_allocator);
+    ScopedAllocator _(s_allocator);
 
     Buffer buffer(1 << 16);
     Buffer::Writer writer(&buffer);
@@ -226,7 +217,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -234,24 +225,19 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    auto playerView = m_pWorld->view<const PlayerComponent, const CellIdComponent>();
-
-    for (auto player : playerView)
+    m_pWorld->GetPlayerManager().ForEach([&acServerMessage](const Player* apPlayer)
     {
-        const auto& playerComponent = playerView.get<const PlayerComponent>(player);
-        Send(playerComponent.ConnectionId, acServerMessage);
-    }
+        if (apPlayer->GetCellComponent())
+            apPlayer->Send(acServerMessage);
+    });
 }
 
 void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
 {
-    auto playerView = m_pWorld->view<const PlayerComponent>();
-
-    for (auto player : playerView)
+    m_pWorld->GetPlayerManager().ForEach([&acServerMessage](const Player* apPlayer)
     {
-        const auto& playerComponent = playerView.get<const PlayerComponent>(player);
-        Send(playerComponent.ConnectionId, acServerMessage);
-    }
+        apPlayer->Send(acServerMessage);
+    });
 }
 
 const String& GameServer::GetName() const noexcept
@@ -286,13 +272,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         auto& registry = *m_pWorld;
         auto& mods = registry.ctx<ModsComponent>();
 
-        const auto cEntity = registry.create();
-        registry.emplace<ScriptsComponent>(cEntity);
-        auto& playerComponent = registry.emplace<PlayerComponent>(cEntity, aConnectionId);
+        auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
 
-        playerComponent.Endpoint = remoteAddress;
-        playerComponent.DiscordId = acRequest->DiscordId;
-        playerComponent.Username = std::move(acRequest->Username);
+        pPlayer->SetEndpoint(remoteAddress);
+        pPlayer->SetDiscordId(acRequest->DiscordId);
+        pPlayer->SetUsername(std::move(acRequest->Username));
 
         AuthenticationResponse serverResponse;
 
@@ -301,6 +285,9 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null form id anyway
         std::ostringstream oss;
         oss << "New player {:x} connected with mods\n\t Standard: ";
+
+        Vector<String> playerMods;
+        Vector<uint16_t> playerModsIds;
         for (auto& standardMod : acRequest->UserMods.StandardMods)
         {
             oss << standardMod.Filename << ", ";
@@ -311,8 +298,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             entry.Filename = standardMod.Filename;
             entry.Id = static_cast<uint16_t>(id);
 
-            playerComponent.Mods.push_back(standardMod.Filename);
-            playerComponent.ModIds.push_back(entry.Id);
+            playerMods.push_back(standardMod.Filename);
+            playerModsIds.push_back(entry.Id);
 
             serverMods.StandardMods.push_back(entry);
         }
@@ -328,14 +315,17 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             entry.Filename = liteMod.Filename;
             entry.Id = static_cast<uint16_t>(id);
 
-            playerComponent.Mods.push_back(liteMod.Filename);
-            playerComponent.ModIds.push_back(entry.Id);
-
+            playerMods.push_back(liteMod.Filename);
+            playerModsIds.push_back(entry.Id);
 
             serverMods.LiteMods.push_back(entry);
         }
 
-        Script::Player player(cEntity, *m_pWorld);
+        pPlayer->SetMods(playerMods);
+        pPlayer->SetModIds(playerModsIds);
+
+        //TODO: Scripting
+        /*Script::Player player(cEntity, *m_pWorld);
         auto [canceled, reason] = scripts.HandlePlayerJoin(player);
 
         if (canceled)
@@ -345,18 +335,16 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Kick(aConnectionId);
             m_pWorld->destroy(cEntity);
             return;
-        }
+        }*/
 
         spdlog::info(oss.str(), aConnectionId);
 
         serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
 
-        m_connectionToEntity[aConnectionId] = cEntity;
-
         Send(aConnectionId, serverResponse);
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(cEntity));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
     else if (acRequest->Token == m_adminPassword && !m_adminPassword.empty())
     {

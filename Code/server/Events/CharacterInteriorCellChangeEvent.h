@@ -1,15 +1,16 @@
 #pragma once
 #include "Structs/GameId.h"
 
+struct Player;
 struct CharacterInteriorCellChangeEvent
 {
-    CharacterInteriorCellChangeEvent(const entt::entity aOwner, const entt::entity aEntity, const GameId& acNewCell)
-        : Owner(aOwner)
+    CharacterInteriorCellChangeEvent(Player* apOwner, const entt::entity aEntity, const GameId& acNewCell)
+        : Owner(apOwner)
         , Entity{aEntity}
         , NewCell(acNewCell)
     {}
 
-    entt::entity Owner;
+    Player* Owner;
     entt::entity Entity;
     GameId NewCell;
 };

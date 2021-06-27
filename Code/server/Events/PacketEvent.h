@@ -3,13 +3,12 @@
 
 using TiltedPhoques::ConnectionId_t;
 
-struct PlayerComponent;
+struct Player;
 
 template<class T>
 struct PacketEvent
 {
-    PacketEvent(T* aPacket, PlayerComponent& aPlayerComponent, entt::entity aEntity)
-        : Packet(*aPacket), Player(aPlayerComponent), Entity(aEntity)
+    PacketEvent(T* aPacket, Player* apPlayer) : Packet(*aPacket), pPlayer(apPlayer)
     {}
 
     constexpr PacketEvent(const PacketEvent& acRhs) = default;
@@ -17,13 +16,11 @@ struct PacketEvent
     constexpr PacketEvent& operator=(const PacketEvent& acRhs)
     {
         Packet = acRhs.Packet;
-        Player = acRhs.Player;
-        Entity = acRhs.Entity;
+        pPlayer = acRhs.pPlayer;
 
         return *this;
     }
 
     T& Packet;
-    PlayerComponent& Player;
-    entt::entity Entity;
+    Player* pPlayer;
 };
