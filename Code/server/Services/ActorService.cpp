@@ -50,13 +50,13 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     notifyChanges.Id = acMessage.Packet.Id;
     notifyChanges.Values = acMessage.Packet.Values;
 
-    m_world.GetPlayerManager().ForEach([&notifyChanges, &acMessage](const Player* apPlayer) 
+    for (auto pPlayer : m_world.GetPlayerManager())
     { 
-        if (acMessage.pPlayer != apPlayer)
+        if (acMessage.pPlayer != pPlayer)
         {
-            apPlayer->Send(notifyChanges);
+            pPlayer->Send(notifyChanges);
         }
-    });
+    }
 }
 
 void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -83,13 +83,13 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     notifyChanges.Id = message.Id;
     notifyChanges.Values = message.Values;
 
-    m_world.GetPlayerManager().ForEach([&notifyChanges, &acMessage](const Player* apPlayer) 
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (acMessage.pPlayer != apPlayer)
+        if (acMessage.pPlayer != pPlayer)
         {
-            apPlayer->Send(notifyChanges);
+            pPlayer->Send(notifyChanges);
         }
-    });
+    }
 }
 
 void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
@@ -98,13 +98,13 @@ void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChange
     notifyDamageEvent.Id = acMessage.Packet.Id;
     notifyDamageEvent.DeltaHealth = acMessage.Packet.DeltaHealth;
 
-    m_world.GetPlayerManager().ForEach([&notifyDamageEvent, &acMessage](const Player* apPlayer) 
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (acMessage.pPlayer != apPlayer)
+        if (acMessage.pPlayer != pPlayer)
         {
-            apPlayer->Send(notifyDamageEvent);
+            pPlayer->Send(notifyDamageEvent);
         }
-    });
+    }
 }
 
 void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -127,12 +127,12 @@ void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>
     notifyChange.Id = message.Id;
     notifyChange.IsDead = message.IsDead;
 
-    m_world.GetPlayerManager().ForEach([&notifyChange, &acMessage](const Player* apPlayer)
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (acMessage.pPlayer != apPlayer)
+        if (acMessage.pPlayer != pPlayer)
         {
-            apPlayer->Send(notifyChange);
+            pPlayer->Send(notifyChange);
         }
-    });
+    }
 }
 

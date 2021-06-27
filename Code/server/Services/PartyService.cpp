@@ -89,7 +89,7 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
         notification.InviterId = pSelf->GetId();
         notification.ExpiryTick = cExpiryTick;
 
-        GameServer::Get()->Send(pOtherPlayer->GetConnectionId(), notification);
+        pOtherPlayer->Send(notification);
     }
 }
 
@@ -173,23 +173,26 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
 
 void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
 {
-    m_world.GetPlayerManager().ForEach([this, pIgnoredPlayer = apPlayer](Player* apPlayer) {
-        if (pIgnoredPlayer == apPlayer)
+    auto pIgnoredPlayer = apPlayer;
+    for (auto pSelf : m_world.GetPlayerManager())
+    {
+        if (pIgnoredPlayer == pSelf)
             return;
 
         NotifyPlayerList playerList;
-        m_world.GetPlayerManager().ForEach([&playerList, pIgnoredPlayer, pSelf = apPlayer](Player* apPlayer) {
-            if (pSelf == apPlayer)
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (pSelf == pPlayer)
                 return;
 
-            if (pIgnoredPlayer == apPlayer)
+            if (pIgnoredPlayer == pPlayer)
                 return;
 
             playerList.Players[apPlayer->GetId()] = apPlayer->GetUsername();
-        });
+        }
 
         GameServer::Get()->Send(apPlayer->GetConnectionId(), playerList);
-    });   
+    }
 }
 
 void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
@@ -209,6 +212,6 @@ void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
 
     for (auto pPlayer : members)
     {
-        GameServer::Get()->Send(pPlayer->GetConnectionId(), message);
+        pPlayer->Send(message);
     }
 }

@@ -225,19 +225,19 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    m_pWorld->GetPlayerManager().ForEach([&acServerMessage](const Player* apPlayer)
+    for(auto pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (apPlayer->GetCellComponent())
-            apPlayer->Send(acServerMessage);
-    });
+        if (pPlayer->GetCellComponent())
+            pPlayer->Send(acServerMessage);
+    }
 }
 
 void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
 {
-    m_pWorld->GetPlayerManager().ForEach([&acServerMessage](const Player* apPlayer)
+    for (auto pPlayer : m_pWorld->GetPlayerManager())
     {
-        apPlayer->Send(acServerMessage);
-    });
+        pPlayer->Send(acServerMessage);
+    }
 }
 
 const String& GameServer::GetName() const noexcept

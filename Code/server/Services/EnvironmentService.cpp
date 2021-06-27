@@ -72,13 +72,13 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
     notifyActivate.Id = acMessage.Packet.Id;
     notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
 
-    m_world.GetPlayerManager().ForEach([&notifyActivate, &acMessage](const Player* apPlayer) 
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (apPlayer != acMessage.pPlayer && apPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
+        if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
-            apPlayer->Send(notifyActivate);
+            pPlayer->Send(notifyActivate);
         }
-    });
+    }
 }
 
 void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
@@ -97,13 +97,13 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         lockComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    m_world.GetPlayerManager().ForEach([&notifyLockChange, &acMessage](const Player* apPlayer) 
+    for(auto pPlayer : m_world.GetPlayerManager())
     {
-        if (apPlayer != acMessage.pPlayer && apPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
+        if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
-            GameServer::Get()->Send(apPlayer->GetConnectionId(), notifyLockChange);
+            pPlayer->Send(notifyLockChange);
         }
-    });
+    }
 }
 
 bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcept
