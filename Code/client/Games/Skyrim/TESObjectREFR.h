@@ -161,6 +161,11 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
+    void AddInventoryItem(TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount,
+                          TESObjectREFR* apOldOwner) noexcept;
+    void* RemoveInventoryItem(TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData,
+                             TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3) noexcept;
+
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
     IAnimationGraphManagerHolder animationGraphHolder;

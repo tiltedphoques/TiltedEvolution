@@ -1,13 +1,20 @@
 #pragma once
 
+#include <Events/EventDispatcher.h>
+#include <Games/Events.h>
+
 struct World;
 struct TransportService;
 
 struct UpdateEvent;
 struct NotifyObjectInventoryChanges;
+struct NotifyCharacterInventoryChanges;
 struct InventoryChangeEvent;
 
 struct InventoryService
+#if TP_SKYRIM64
+    : public BSTEventSink<TESContainerChangedEvent>
+#endif
 {
     InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~InventoryService() noexcept = default;
@@ -16,9 +23,16 @@ struct InventoryService
 
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept;
+
     void OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acEvent) noexcept;
+    void OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acEvent) noexcept;
 
 private:
+
+#if TP_SKYRIM64
+    BSTEventResult InventoryService::OnEvent(const TESContainerChangedEvent*, const EventDispatcher<TESContainerChangedEvent>*) override;
+#endif
+
     void RunObjectInventoryUpdates() noexcept;
     void RunCharacterInventoryUpdates() noexcept;
 
@@ -37,4 +51,5 @@ private:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_objectInventoryChangeConnection;
+    entt::scoped_connection m_characterInventoryChangeConnection;
 };

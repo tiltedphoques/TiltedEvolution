@@ -55,7 +55,6 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
-    EventDispatcherManager::Get()->containerChangedEvent.RegisterSink(this);
 #else
     GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
 #endif
@@ -172,15 +171,6 @@ BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, cons
 
     return BSTEventResult::kOk;
 }
-
-#if TP_SKYRIM64
-BSTEventResult EnvironmentService::OnEvent(const TESContainerChangedEvent* acEvent, const EventDispatcher<TESContainerChangedEvent>* aDispatcher)
-{
-    spdlog::warn("Old: {:X}, new: {:X}", acEvent->oldContainerID, acEvent->newContainerID);
-
-    return BSTEventResult::kOk;
-}
-#endif
 
 void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
 {

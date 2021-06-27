@@ -1,28 +1,27 @@
 #pragma once
 
 #include "Message.h"
+#include <TiltedCore/Buffer.hpp>
 #include <Structs/Inventory.h>
 
 using TiltedPhoques::Map;
 
-struct RequestInventoryChanges final : ClientMessage
+struct NotifyCharacterInventoryChanges final : ServerMessage
 {
-    static constexpr ClientOpcode Opcode = kRequestInventoryChanges;
+    static constexpr ServerOpcode Opcode = kNotifyCharacterInventoryChanges;
 
-    RequestInventoryChanges() : ClientMessage(Opcode)
+    NotifyCharacterInventoryChanges() : ServerMessage(Opcode)
     {
     }
-
-    virtual ~RequestInventoryChanges() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestInventoryChanges& acRhs) const noexcept
+    bool operator==(const NotifyCharacterInventoryChanges& acRhs) const noexcept
     {
         return Changes == acRhs.Changes &&
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<uint32_t, Inventory> Changes;
+    Map<uint32_t, Inventory> Changes{};
 };

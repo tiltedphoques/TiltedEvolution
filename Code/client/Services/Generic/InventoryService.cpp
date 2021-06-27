@@ -1,8 +1,9 @@
 #include <Services/InventoryService.h>
 
 #include <Messages/RequestObjectInventoryChanges.h>
-#include <Messages/RequestInventoryChanges.h>
 #include <Messages/NotifyObjectInventoryChanges.h>
+#include <Messages/RequestCharacterInventoryChanges.h>
+#include <Messages/NotifyCharacterInventoryChanges.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/InventoryChangeEvent.h>
@@ -24,36 +25,47 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
     m_objectInventoryChangeConnection = m_dispatcher.sink<NotifyObjectInventoryChanges>().connect<&InventoryService::OnObjectInventoryChanges>(this);
-    // TODO: connections
+    m_characterInventoryChangeConnection = m_dispatcher.sink<NotifyCharacterInventoryChanges>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
+#if TP_SKYRIM64
+    EventDispatcherManager::Get()->containerChangedEvent.RegisterSink(this);
+#endif
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunObjectInventoryUpdates();
-    //RunCharacterInventoryUpdates();
+    RunCharacterInventoryUpdates();
 
     ApplyCachedObjectInventoryChanges();
-    //ApplyCachedCharacterInventoryChanges();
+    ApplyCachedCharacterInventoryChanges();
 }
+
+#if TP_SKYRIM64
+BSTEventResult InventoryService::OnEvent(const TESContainerChangedEvent* acEvent, const EventDispatcher<TESContainerChangedEvent>* aDispatcher)
+{
+    spdlog::warn("Old: {:X}, new: {:X}", acEvent->oldContainerID, acEvent->newContainerID);
+
+    if (acEvent->newContainerID)
+        m_world.GetRunner().Trigger(InventoryChangeEvent(acEvent->newContainerID));
+    if (acEvent->oldContainerID)
+        m_world.GetRunner().Trigger(InventoryChangeEvent(acEvent->oldContainerID));
+
+    return BSTEventResult::kOk;
+}
+#endif
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
 {
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
-        if (m_charactersWithInventoryChanges.find(acEvent.FormId) == std::end(m_charactersWithInventoryChanges))
-        {
-            spdlog::error("Inventory change added to characters");
-            m_charactersWithInventoryChanges.insert(acEvent.FormId);
-        }
+        spdlog::error("Inventory change added to characters");
+        m_charactersWithInventoryChanges.insert(acEvent.FormId);
     }
     else
     {
-        if (m_objectsWithInventoryChanges.find(acEvent.FormId) == std::end(m_objectsWithInventoryChanges))
-        {
-            spdlog::critical("Inventory change added to objects");
-            m_objectsWithInventoryChanges.insert(acEvent.FormId);
-        }
+        spdlog::critical("Inventory change added to objects");
+        m_objectsWithInventoryChanges.insert(acEvent.FormId);
     }
 }
 
@@ -67,6 +79,18 @@ void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChang
     }
 
     ApplyCachedObjectInventoryChanges();
+}
+
+void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept
+{
+    spdlog::warn("OnCharacterInventoryChanges");
+
+    for (const auto& [id, inventory] : acMessage.Changes)
+    {
+        m_cachedCharacterInventoryChanges[id] = inventory;
+    }
+
+    ApplyCachedCharacterInventoryChanges();
 }
 
 void InventoryService::RunObjectInventoryUpdates() noexcept
@@ -141,7 +165,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
 
     if (!m_charactersWithInventoryChanges.empty())
     {
-        RequestInventoryChanges message;
+        RequestCharacterInventoryChanges message;
 
         auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
         for (auto entity : animatedLocalView)
@@ -192,6 +216,7 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
             continue;
         }
 
+        pObject->RemoveAllItems();
         pObject->DeserializeInventory(inventory.Buffer);
     }
 
@@ -200,4 +225,28 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
 
 void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
 {
+    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
+        return;
+
+    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+    for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
+    {
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) {
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+        if (itor != std::end(view))
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(*itor);
+            auto& remoteComponent = view.get<RemoteComponent>(*itor);
+
+            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            if (!pActor)
+                return;
+
+            remoteComponent.SpawnRequest.InventoryContent = inventory;
+            pActor->SetInventory(inventory);
+        }
+    }
+    m_cachedCharacterInventoryChanges.clear();
 }

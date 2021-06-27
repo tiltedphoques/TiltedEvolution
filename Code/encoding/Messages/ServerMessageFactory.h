@@ -10,7 +10,7 @@
 #include <Messages/ServerScriptUpdate.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/CharacterSpawnRequest.h>
-#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyCharacterInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/NotifyQuestUpdate.h>
@@ -38,7 +38,7 @@ struct ServerMessageFactory
     {
         auto s_visitor =
             CreateMessageVisitor<AuthenticationResponse, AssignCharacterResponse, ServerReferencesMoveRequest,
-                                 ServerScriptUpdate, ServerTimeSettings, CharacterSpawnRequest, NotifyInventoryChanges,
+                                 ServerScriptUpdate, ServerTimeSettings, CharacterSpawnRequest, NotifyCharacterInventoryChanges,
                                  NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,

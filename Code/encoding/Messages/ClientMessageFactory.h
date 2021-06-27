@@ -9,7 +9,7 @@
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/ClientRpcCalls.h>
-#include <Messages/RequestInventoryChanges.h>
+#include <Messages/RequestCharacterInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/PartyInviteRequest.h>
@@ -40,7 +40,7 @@ struct ClientMessageFactory
     {
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
                                  ClientReferencesMoveRequest, EnterInteriorCellRequest, ClientRpcCalls,
-                                 RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
+                                 RequestCharacterInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
