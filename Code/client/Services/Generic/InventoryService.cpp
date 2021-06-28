@@ -7,6 +7,7 @@
 
 #include <Events/UpdateEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <Events/EquipmentChangeEvent.h>
 
 #include <World.h>
 #include <Games/Misc/UI.h>
@@ -53,6 +54,11 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
         spdlog::critical("Inventory change added to objects");
         m_objectsWithInventoryChanges.insert(acEvent.FormId);
     }
+}
+
+void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
+{
+    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept

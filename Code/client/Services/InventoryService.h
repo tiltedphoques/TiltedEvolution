@@ -7,6 +7,7 @@ struct UpdateEvent;
 struct NotifyObjectInventoryChanges;
 struct NotifyCharacterInventoryChanges;
 struct InventoryChangeEvent;
+struct EquipmentChangeEvent;
 
 struct InventoryService
 {
@@ -17,6 +18,7 @@ struct InventoryService
 
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept;
+    void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
 
     void OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acEvent) noexcept;
     void OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acEvent) noexcept;
