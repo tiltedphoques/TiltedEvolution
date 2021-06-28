@@ -26,9 +26,6 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
     m_objectInventoryChangeConnection = m_dispatcher.sink<NotifyObjectInventoryChanges>().connect<&InventoryService::OnObjectInventoryChanges>(this);
     m_characterInventoryChangeConnection = m_dispatcher.sink<NotifyCharacterInventoryChanges>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
-#if TP_SKYRIM64
-    EventDispatcherManager::Get()->containerChangedEvent.RegisterSink(this);
-#endif
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -39,20 +36,6 @@ void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     ApplyCachedObjectInventoryChanges();
     ApplyCachedCharacterInventoryChanges();
 }
-
-#if TP_SKYRIM64
-BSTEventResult InventoryService::OnEvent(const TESContainerChangedEvent* acEvent, const EventDispatcher<TESContainerChangedEvent>* aDispatcher)
-{
-    spdlog::warn("Old: {:X}, new: {:X}", acEvent->oldContainerID, acEvent->newContainerID);
-
-    if (acEvent->newContainerID)
-        m_world.GetRunner().Trigger(InventoryChangeEvent(acEvent->newContainerID));
-    if (acEvent->oldContainerID)
-        m_world.GetRunner().Trigger(InventoryChangeEvent(acEvent->oldContainerID));
-
-    return BSTEventResult::kOk;
-}
-#endif
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
 {
