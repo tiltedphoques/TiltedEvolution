@@ -42,6 +42,7 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_inventoryConnection;
+    entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_objectInventoryChangeConnection;
     entt::scoped_connection m_characterInventoryChangeConnection;
 };
