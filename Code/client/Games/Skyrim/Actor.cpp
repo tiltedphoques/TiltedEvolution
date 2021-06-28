@@ -72,6 +72,8 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
+TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
 
 using TGetLocation = TESForm *(TESForm *);
 static TGetLocation *FUNC_GetActorLocation;
@@ -79,6 +81,9 @@ static TGetLocation *FUNC_GetActorLocation;
 TCharacterConstructor* RealCharacterConstructor;
 TCharacterConstructor2* RealCharacterConstructor2;
 TCharacterDestructor* RealCharacterDestructor;
+
+static TAddInventoryItem* RealAddInventoryItem = nullptr;
+static TPickUpItem* RealPickUpItem = nullptr;
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -510,6 +515,18 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
+void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+{
+    spdlog::info("Add inventory item actor");
+    ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
+}
+
+void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
+{
+    spdlog::info("Pick up inventory item actor");
+    return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
     {
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
@@ -521,6 +538,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TDamageActor, s_damageActor, 0x1405D6300 - 0x140000000);
         POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 0x140567A89 - 0x140000000);
         POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140620900 - 0x140000000);
+        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1405E6F20 - 0x140000000);
+        POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x1405E6580 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
@@ -530,6 +549,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         RealDamageActor = s_damageActor.Get();
         RealApplyActorEffect = s_applyActorEffect.Get();
         RealRegenAttributes = s_regenAttributes.Get();
+        RealAddInventoryItem = s_addInventoryItem.Get();
+        RealPickUpItem = s_pickUpItem.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -538,5 +559,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         TP_HOOK(&RealDamageActor, HookDamageActor);
         TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
         TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
+        TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
+        TP_HOOK(&RealPickUpItem, HookPickUpItem);
 
     });
