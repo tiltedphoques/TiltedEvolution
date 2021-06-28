@@ -153,21 +153,35 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
     {
         RequestCharacterInventoryChanges message;
 
-        auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
-        for (auto entity : animatedLocalView)
+        for (const auto formId : m_charactersWithInventoryChanges)
         {
-            auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
-            auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
+            auto view = m_world.view<FormIdComponent>();
 
-            if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
+            const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
+            {
+                return view.get<FormIdComponent>(entity).Id == formId;
+            });
+
+            if (iter == std::end(view))
                 continue;
 
-            const auto* pForm = TESForm::GetById(formIdComponent.Id);
+            uint32_t componentId;
+            const auto& cpLocalComponent = m_world.try_get<LocalComponent>(*iter);
+            const auto& cpRemoteComponent = m_world.try_get<RemoteComponent>(*iter);
+
+            if (cpLocalComponent)
+                componentId = cpLocalComponent->Id;
+            else if (cpRemoteComponent)
+                componentId = cpRemoteComponent->Id;
+            else
+                continue;
+
+            const auto* pForm = TESForm::GetById(formId);
             const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
             if (!pActor)
                 continue;
 
-            message.Changes[localComponent.Id] = pActor->GetInventory();
+            message.Changes[componentId] = pActor->GetInventory();
         }
 
         m_transport.Send(message);
@@ -219,27 +233,37 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     if (m_cachedCharacterInventoryChanges.empty())
         return;
 
-    spdlog::info("Applying object inventory changes");
+    spdlog::info("Applying character inventory changes");
 
-    auto view = m_world.view<RemoteComponent, FormIdComponent>();
-    for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
+    auto view = m_world.view<FormIdComponent>();
+    for (const auto entity : view)
     {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) {
-            return view.get<RemoteComponent>(entity).Id == id;
-        });
+        uint32_t componentId;
+        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
+        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
 
-        if (itor != std::end(view))
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(*itor);
-            auto& remoteComponent = view.get<RemoteComponent>(*itor);
+        if (cpLocalComponent)
+            componentId = cpLocalComponent->Id;
+        else if (cpRemoteComponent)
+            componentId = cpRemoteComponent->Id;
+        else
+            continue;
 
-            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-            if (!pActor)
-                return;
+        const auto change = m_cachedCharacterInventoryChanges.find(componentId);
 
-            remoteComponent.SpawnRequest.InventoryContent = inventory;
-            pActor->SetInventory(inventory);
-        }
+        if (change == m_cachedCharacterInventoryChanges.end())
+            continue;
+
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        if (!pActor)
+            return;
+
+        if (cpRemoteComponent)
+            cpRemoteComponent->SpawnRequest.InventoryContent = change.value();
+
+        spdlog::info("Setting inventory for actor");
+        pActor->SetInventory(change.value());
     }
 
     m_cachedCharacterInventoryChanges.clear();
