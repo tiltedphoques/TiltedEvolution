@@ -12,6 +12,7 @@
 #include <Games/Memory.h>
 
 #include <Events/HealthChangeEvent.h>
+#include <Events/InventoryChangeEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -518,12 +519,14 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
 void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
 {
     spdlog::info("Add inventory item actor");
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
     spdlog::info("Pick up inventory item actor");
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 

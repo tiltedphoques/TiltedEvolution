@@ -39,6 +39,9 @@ void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
@@ -178,6 +181,7 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
+    // TODO: remove this debug check
     if (m_cachedObjectInventoryChanges.empty())
         return;
 
@@ -211,6 +215,12 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
+    // TODO: remove this debug check
+    if (m_cachedCharacterInventoryChanges.empty())
+        return;
+
+    spdlog::info("Applying object inventory changes");
+
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
     for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
     {
@@ -231,5 +241,6 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
             pActor->SetInventory(inventory);
         }
     }
+
     m_cachedCharacterInventoryChanges.clear();
 }
