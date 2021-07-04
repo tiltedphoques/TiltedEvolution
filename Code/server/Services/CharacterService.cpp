@@ -241,6 +241,9 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
     bool foundOwner = false;
     for (auto pPlayer : m_world.GetPlayerManager())
     {
+        if (characterOwnerComponent.pOwner == pPlayer)
+            continue;
+
         bool isPlayerInvalid = false;
         for (const auto invalidOwner : characterOwnerComponent.InvalidOwners)
         {
@@ -250,17 +253,17 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
         }
 
         if (isPlayerInvalid)
-            break;
+            continue;
 
         if (pPlayer->GetCellComponent().WorldSpaceId == GameId{})
         {
             if (pPlayer->GetCellComponent().Cell != characterCellIdComponent.Cell)
-                return;
+                continue;
         }
         else
         {
             if (!GridCellCoords::IsCellInGridCell(characterCellIdComponent.CenterCoords, pPlayer->GetCellComponent().CenterCoords))
-                break;
+                continue;
         }
 
         characterOwnerComponent.pOwner = pPlayer;
@@ -269,7 +272,7 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
 
         foundOwner = true;
         break;
-    };
+    }
 
     if (!foundOwner)
         m_world.GetDispatcher().trigger(CharacterRemoveEvent(response.ServerId));
@@ -287,7 +290,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     for(auto pPlayer : m_world.GetPlayerManager())
     {
         if (characterOwnerComponent.pOwner == pPlayer)
-            return;
+            continue;
 
         pPlayer->Send(response);
     }

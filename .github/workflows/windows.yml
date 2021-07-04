@@ -25,8 +25,6 @@ jobs:
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: branch@dev
 
     #- name: Yeet xmake-repo
     #  run: |

@@ -177,16 +177,16 @@ void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
     for (auto pSelf : m_world.GetPlayerManager())
     {
         if (pIgnoredPlayer == pSelf)
-            return;
+            continue;
 
         NotifyPlayerList playerList;
         for (auto pPlayer : m_world.GetPlayerManager())
         {
             if (pSelf == pPlayer)
-                return;
+                continue;
 
             if (pIgnoredPlayer == pPlayer)
-                return;
+                continue;
 
             playerList.Players[apPlayer->GetId()] = apPlayer->GetUsername();
         }
