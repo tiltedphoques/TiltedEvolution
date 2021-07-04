@@ -7,6 +7,7 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
+#include <Misc/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -69,7 +70,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_59();
     virtual void sub_5A();
     virtual void sub_5B();
-    virtual struct ActorMagicCaster* CreateMagicCaster(uint32_t aId);
+    virtual struct MagicCaster* CreateMagicCaster(uint32_t aId);
     virtual void sub_5D();
     virtual void sub_5E();
     virtual void sub_5F();

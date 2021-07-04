@@ -3,6 +3,7 @@
 struct World;
 struct ImguiService;
 struct UpdateEvent;
+struct MagicSyncEvent;
 
 struct TransportService;
 
@@ -15,8 +16,13 @@ struct TestService
     TP_NOCOPYMOVE(TestService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
+    #if TP_SKYRIM64
+    void OnMagicSyncEvent(const MagicSyncEvent& acEvent) noexcept;
+    #endif
 
 protected:
+
+    void ControlTestActor() noexcept;
 
     void OnDraw() noexcept;
 

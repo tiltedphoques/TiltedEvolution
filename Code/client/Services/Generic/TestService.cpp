@@ -12,6 +12,7 @@
 #include <Services/TransportService.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/MagicSyncEvent.h>
 
 #include <Games/References.h>
 
@@ -52,6 +53,9 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
+    #if TP_SKYRIM64
+    m_dispatcher.sink<MagicSyncEvent>().connect<&TestService::OnMagicSyncEvent>(this);
+    #endif
 }
 
 void TestService::RunDiff()
@@ -91,8 +95,8 @@ void TestService::RunDiff()
                 {
                     for (auto i = 0u; i < pVariableSet->size; ++i)
                     {
-                        if (pVariableSet->data[i] != pActorVariableSet->data[i])
-                            spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i], pActorVariableSet->data[i]);
+                        //if (pVariableSet->data[i] != pActorVariableSet->data[i])
+                            //spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i], pActorVariableSet->data[i]);
 
                         /*auto itor = s_values.find(i);
                         if (itor == std::end(s_values))
@@ -156,6 +160,40 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
+#if TP_SKYRIM64
+void SpellDraw(Actor* apActor)
+{
+    using TSpellDraw = void(void* garbage, Actor* apActor);
+
+    POINTER_SKYRIMSE(TSpellDraw, s_spellDraw, 0x140720FB0 - 0x140000000);
+
+    s_spellDraw.Get()(nullptr, apActor);
+}
+
+void TestService::OnMagicSyncEvent(const MagicSyncEvent& acEvent) noexcept
+{
+    SpellDraw(acEvent.pActor);
+}
+
+void TestService::ControlTestActor() noexcept
+{
+    if (m_actors.empty())
+        return;
+
+    auto pActor = m_actors[0];
+
+    ImGui::Begin("Control test actor");
+
+    if (ImGui::Button("Set inventory"))
+        pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+
+    if (ImGui::Button("Draw"))
+        m_world.GetRunner().Trigger(MagicSyncEvent(PlayerCharacter::Get()));
+
+    ImGui::End();
+}
+#endif
+
 void TestService::OnDraw() noexcept
 {
     static uint32_t fetchFormId;
@@ -164,6 +202,10 @@ void TestService::OnDraw() noexcept
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
         return;
+
+#if TP_SKYRIM64
+    ControlTestActor();
+#endif
 
     ImGui::Begin("Server");
 

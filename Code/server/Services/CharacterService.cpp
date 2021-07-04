@@ -29,6 +29,8 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/RequestFireProjectile.h>
+#include <Messages/NotifyFireProjectile.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -45,6 +47,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
+    , m_fireProjectileConnection(aDispatcher.sink<PacketEvent<RequestFireProjectile>>().connect<&CharacterService::OnRequestFireProjectile>(this))
 {
 }
 
@@ -836,5 +839,23 @@ void CharacterService::ProcessMovementChanges() const noexcept
     {
         if (!message.Updates.empty())
             GameServer::Get()->Send(connectionId, message);
+    }
+}
+
+void CharacterService::OnRequestFireProjectile(const PacketEvent<RequestFireProjectile>& acMessage) const noexcept
+{
+    NotifyFireProjectile message;
+    message.Id = acMessage.Packet.Id;
+
+    auto view = m_world.view<PlayerComponent>();
+    for (auto entity : view)
+    {
+        auto& player = view.get<PlayerComponent>(entity);
+
+        if (player.ConnectionId != acMessage.ConnectionId)
+        {
+            spdlog::info("Sending fire projectile notify");
+            GameServer::Get()->Send(player.ConnectionId, message);
+        }
     }
 }

@@ -18,6 +18,7 @@ struct CharacterRemoveEvent;
 struct CharacterExteriorCellChangeEvent;
 struct RequestOwnershipClaim;
 struct OwnershipTransferEvent;
+struct RequestFireProjectile;
 
 struct CharacterService
 {
@@ -43,6 +44,7 @@ protected:
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
+    void OnRequestFireProjectile(const PacketEvent<RequestFireProjectile>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
@@ -67,4 +69,5 @@ private:
     entt::scoped_connection m_transferOwnershipConnection;
     entt::scoped_connection m_ownershipTransferEventConnection;
     entt::scoped_connection m_claimOwnershipConnection;
+    entt::scoped_connection m_fireProjectileConnection;
 };
