@@ -188,10 +188,10 @@ void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
             if (pIgnoredPlayer == pPlayer)
                 continue;
 
-            playerList.Players[apPlayer->GetId()] = apPlayer->GetUsername();
+            playerList.Players[pPlayer->GetId()] = pPlayer->GetUsername();
         }
 
-        GameServer::Get()->Send(apPlayer->GetConnectionId(), playerList);
+        pSelf->Send(playerList);
     }
 }
 
