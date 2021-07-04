@@ -926,7 +926,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
             const auto* pTES = TES::Get();
             const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
-            if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
+            if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
             {
                 auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
                 if (!pActor)

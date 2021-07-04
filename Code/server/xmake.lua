@@ -8,25 +8,23 @@ target(name)
     add_defines(def)
     add_includedirs(
         ".",
-        "../../Libraries/",
-        "../../Libraries/cpp-httplib")
+        "../../Libraries/")
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
     add_files("**.cpp")
 
     if name == "SkyrimTogetherServer" then
         add_deps("SkyrimEncoding")
-        del_files("../encoding/Structs/Fallout4/**.cpp")
     end
     if name == "FalloutTogetherServer" then
         add_deps("FalloutEncoding")
-        del_files("../encoding/Structs/Skyrim/**.cpp")
     end
 
     add_deps(
         "Common",
         "TiltedScript",
-        "TiltedConnect")
+        "TiltedConnect",
+        "AdminProtocol")
     add_packages(
         "gamenetworkingsockets",
         "spdlog",
@@ -36,6 +34,7 @@ target(name)
         "sol2",
         "glm",
         "entt",
+        "cpp-httplib",
         "tiltedcore")
 end
 

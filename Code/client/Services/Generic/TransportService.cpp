@@ -121,9 +121,9 @@ void TransportService::OnConnected()
         request.Username = "Some dragon boi";
     }
 
-    const auto cpModManager = ModManager::Get();
+    auto* const cpModManager = ModManager::Get();
 
-    for (auto pMod : cpModManager->mods)
+    for (auto* pMod : cpModManager->mods)
     {
         if (!pMod->IsLoaded())
             continue;

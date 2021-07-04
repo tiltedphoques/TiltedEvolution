@@ -5,7 +5,8 @@ directx_dir = lib_dir .. "/DXSDK"
 add_requires(
     "tiltedcore",
 	"cryptopp",
-    "spdlog")
+    "spdlog",
+    "cpp-httplib")
 
 -- all libraries listed here are under frequent change, and are thus not quired via
 -- the xmake package manager, we intend to change this in the future though.
@@ -22,4 +23,3 @@ end
 
 includes("./TiltedScript")
 includes("./TiltedConnect")
-includes("./Vivox")

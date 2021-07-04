@@ -12,7 +12,7 @@ class QuestService
 public:
     QuestService(World& aWorld, entt::dispatcher& aDispatcher);
 
-    bool StartStopQuest(entt::entity aRecipient, GameId aGameId, bool aStop) noexcept;
+    bool StartStopQuest(Player* apRecipient, GameId aGameId, bool aStop) noexcept;
 private:
     void HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& aChanges) noexcept;
 
