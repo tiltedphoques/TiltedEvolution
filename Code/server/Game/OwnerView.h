@@ -20,7 +20,7 @@ struct OwnerView
             do
             {
                 m_itor++;
-            } while (m_itor != m_end && m_view.get<OwnerComponent>(*m_itor).GetOwner() != m_pPlayer);
+            } while (m_itor != m_end && m_view.template get<OwnerComponent>(*m_itor).GetOwner() != m_pPlayer);
 
             return *this;
         }
@@ -87,7 +87,7 @@ template <class... T>
 decltype(auto) OwnerView<T...>::find(entt::entity aEntity) const
 {
     auto it = m_view.find(aEntity);
-    if (m_view.get<OwnerComponent>(*it).GetOwner() == m_pPlayer)
+    if (m_view.template get<OwnerComponent>(*it).GetOwner() == m_pPlayer)
         return iterator(m_pPlayer, it, std::end(m_view), m_view);
 
     return end();
@@ -109,12 +109,12 @@ template <class... T>
 template <class... Components> 
 decltype(auto) OwnerView<T...>::get(entt::entity aEntity)
 {
-    return m_view.get<Components...>(aEntity);
+    return m_view.template get<Components...>(aEntity);
 }
 
 template <class... T> 
 template <class... Components> 
 decltype(auto) OwnerView<T...>::get(entt::entity aEntity) const
 {
-    return m_view.get<Components...>(aEntity);
+    return m_view.template get<Components...>(aEntity);
 }
