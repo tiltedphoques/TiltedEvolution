@@ -14,6 +14,8 @@
 #include <Events/OwnershipTransferEvent.h>
 #include <Scripts/Npc.h>
 
+#include <Game/OwnerView.h>
+
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
@@ -208,7 +210,8 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 {
     auto& message = acMessage.Packet;
 
-    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+    OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
@@ -217,12 +220,6 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
-    {
-        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.pPlayer->GetConnectionId());
-        return;
-    }
-
     characterOwnerComponent.InvalidOwners.push_back(acMessage.pPlayer);
 
     m_world.GetDispatcher().trigger(OwnershipTransferEvent(*it));
@@ -303,7 +300,7 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
 {
     auto& message = acMessage.Packet;
 
-    const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
+    const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
@@ -392,14 +389,14 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
 
 void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
-    auto view = m_world.view<OwnerComponent, AnimationComponent, MovementComponent, CellIdComponent>();
+    OwnerView<AnimationComponent, MovementComponent, CellIdComponent> view(m_world, acMessage.GetSender());
 
     auto& message = acMessage.Packet;
 
     for (auto& entry : message.Updates)
     {
         auto itor = view.find(static_cast<entt::entity>(entry.first));
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
+        if (itor == std::end(view))
         {
             spdlog::debug("{:x} requested move of {:x} but does not exist", acMessage.pPlayer->GetConnectionId(), World::ToInteger(*itor));
             continue;
@@ -453,7 +450,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
 void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept
 {
-    auto view = m_world.view<InventoryComponent, OwnerComponent>();
+    OwnerView<InventoryComponent> view(m_world, acMessage.GetSender());
 
     auto& message = acMessage.Packet;
 
@@ -461,7 +458,7 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     {
         auto itor = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
+        if (itor == std::end(view))
             continue;
 
         auto& inventoryComponent = view.get<InventoryComponent>(*itor);
@@ -472,7 +469,7 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
 void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept
 {
-    auto view = m_world.view<CharacterComponent, OwnerComponent>();
+    OwnerView<CharacterComponent> view(m_world, acMessage.GetSender());
 
     auto& message = acMessage.Packet;
 
@@ -771,19 +768,19 @@ void CharacterService::ProcessMovementChanges() const noexcept
     }
 
     m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent)
-        {
-            if (!animationComponent.Actions.empty())
-                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+    {
+        if (!animationComponent.Actions.empty())
+            animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
 
-            animationComponent.Actions.clear();
-        });
+        animationComponent.Actions.clear();
+    });
 
     m_world.view<MovementComponent>().each([](MovementComponent& movementComponent)
-        {
-            movementComponent.Sent = true;
-        });
+    {
+        movementComponent.Sent = true;
+    });
 
-    for (auto [pPlayer, message] : messages)
+    for (auto& [pPlayer, message] : messages)
     {
         if (!message.Updates.empty())
             pPlayer->Send(message);
