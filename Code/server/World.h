@@ -8,6 +8,8 @@
 #include <Services/EnvironmentService.h>
 #include <Services/QuestService.h>
 
+#include "Game/PlayerManager.h"
+
 struct World : entt::registry
 {
     World();
@@ -27,6 +29,8 @@ struct World : entt::registry
     const EnvironmentService& GetEnvironmentService() const noexcept { return ctx<const EnvironmentService>(); }
     QuestService& GetQuestService() noexcept { return ctx<QuestService>(); }
     const QuestService& GetQuestService() const noexcept { return ctx<const QuestService>(); }
+    PlayerManager& GetPlayerManager() noexcept { return m_playerManager; }
+    const PlayerManager& GetPlayerManager() const noexcept { return m_playerManager; }
 
     [[nodiscard]] static uint32_t ToInteger(entt::entity aEntity) { return to_integral(aEntity); }
 
@@ -35,4 +39,5 @@ private:
 
     std::shared_ptr<AdminService> m_spAdminService;
     std::unique_ptr<ScriptService> m_scriptService;
+    PlayerManager m_playerManager;
 };

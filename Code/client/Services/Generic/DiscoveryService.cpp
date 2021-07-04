@@ -116,8 +116,8 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         {
             if (!aNewGridCell)
             {
-                if (GridCellCoords::IsCellInGridCell(&GridCellCoords(m_centerGridX, m_centerGridY),
-                                                     &GridCellCoords(startGridX + i, startGridY + j)))
+                if (GridCellCoords::IsCellInGridCell(GridCellCoords(m_centerGridX, m_centerGridY),
+                                                     GridCellCoords(startGridX + i, startGridY + j)))
                 {
                     continue;
                 }

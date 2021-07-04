@@ -4,12 +4,24 @@
 #error Include Components.h instead
 #endif
 
+struct Player;
 struct OwnerComponent
 {
-    OwnerComponent(const ConnectionId_t aConnectionId)
-        : ConnectionId(aConnectionId)
+    OwnerComponent(Player* apPlayer) : pOwner(apPlayer)
     {}
 
-    ConnectionId_t ConnectionId;
-    Vector<ConnectionId_t> InvalidOwners{};
+
+    Player* GetOwner() const
+    {
+        return reinterpret_cast<Player*>(pOwner);    
+    }
+
+    void SetOwner(Player* apPlayer)
+    {
+        pOwner = apPlayer;
+    }
+
+    Player* pOwner;
+    Vector<const Player*> InvalidOwners{};
+    
 };

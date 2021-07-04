@@ -3,8 +3,6 @@
 
 using TiltedPhoques::ConnectionId_t;
 
-struct PlayerComponent;
-
 template<class T>
 struct AdminPacketEvent
 {
