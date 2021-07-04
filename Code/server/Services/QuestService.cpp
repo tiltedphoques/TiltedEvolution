@@ -98,7 +98,7 @@ bool QuestService::StartStopQuest(Player* apRecipient, GameId aGameId, bool aSto
     questMsg.Id = aGameId;
     questMsg.Stage = 0;
 
-    GameServer::Get()->Send(apRecipient->GetConnectionId(), questMsg);
+    apRecipient->Send(questMsg);
 
     return true;
 }

@@ -51,7 +51,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        GameServer::Get()->Send(pPlayer->GetConnectionId(), spawnMessage);
+        pPlayer->Send(spawnMessage);
     }
 }
 
@@ -109,6 +109,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
         spdlog::critical("Sending interior character {:x}", spawnMessage.ServerId);
-        GameServer::Get()->Send(pPlayer->GetConnectionId(), spawnMessage);
+        pPlayer->Send(spawnMessage);
     }
 }
