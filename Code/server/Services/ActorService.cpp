@@ -35,7 +35,7 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).pOwner == acMessage.pPlayer)
+        actorValuesView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
         for (auto& [id, value] : message.Values)
@@ -68,7 +68,7 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).pOwner == acMessage.pPlayer)
+        actorValuesView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
         for (auto& [id, value] : message.Values)
@@ -116,7 +116,7 @@ void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>
     const auto itor = characterView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(characterView) && 
-        characterView.get<OwnerComponent>(*itor).pOwner == acMessage.pPlayer)
+        characterView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*itor);
         characterComponent.IsDead = message.IsDead;

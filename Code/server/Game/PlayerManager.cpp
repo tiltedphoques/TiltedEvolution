@@ -12,10 +12,10 @@ Player* PlayerManager::Create(ConnectionId_t aConnectionId) noexcept
     const auto itor = m_players.find(aConnectionId);
     if (itor == std::end(m_players))
     {
-        const auto [insertedItor, inserted] = m_players.emplace(aConnectionId, aConnectionId);
+        const auto [insertedItor, inserted] = m_players.emplace(aConnectionId, MakeUnique<Player>(aConnectionId));
         if (inserted)
         {
-            return &insertedItor.value();
+            return insertedItor.value().get();
         }
     }
 
@@ -32,7 +32,7 @@ Player* PlayerManager::GetByConnectionId(ConnectionId_t aConnectionId) noexcept
     const auto itor = m_players.find(aConnectionId);
     if (itor != std::end(m_players))
     {
-        return &itor.value();
+        return itor.value().get();
     }
 
     return nullptr;
@@ -43,7 +43,7 @@ Player const* PlayerManager::GetByConnectionId(ConnectionId_t aConnectionId) con
     const auto itor = m_players.find(aConnectionId);
     if (itor != std::end(m_players))
     {
-        return &itor.value();
+        return itor.value().get();
     }
 
     return nullptr;
@@ -55,8 +55,8 @@ Player* PlayerManager::GetById(uint32_t aId) noexcept
     const auto end = std::end(m_players);
 
     for (; itor != end; ++itor)
-        if (itor.value().GetId() == aId)
-            return &itor.value();
+        if (itor.value()->GetId() == aId)
+            return itor.value().get();
 
     return nullptr;
 }
@@ -67,8 +67,8 @@ Player const* PlayerManager::GetById(uint32_t aId) const noexcept
     const auto end = std::end(m_players);
 
     for (; itor != end; ++itor)
-        if (itor.value().GetId() == aId)
-            return &itor.value();
+        if (itor.value()->GetId() == aId)
+            return itor.value().get();
 
     return nullptr;
 }

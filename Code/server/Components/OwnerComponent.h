@@ -7,9 +7,21 @@
 struct Player;
 struct OwnerComponent
 {
-    OwnerComponent(const Player* apPlayer) : pOwner(apPlayer)
+    OwnerComponent(Player* apPlayer) : pOwner(apPlayer)
     {}
 
-    const Player* pOwner;
+
+    Player* GetOwner() const
+    {
+        return reinterpret_cast<Player*>(pOwner);    
+    }
+
+    void SetOwner(Player* apPlayer)
+    {
+        pOwner = apPlayer;
+    }
+
+    Player* pOwner;
     Vector<const Player*> InvalidOwners{};
+    
 };

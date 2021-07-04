@@ -36,7 +36,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         const auto& ownedComponent = characterView.get<OwnerComponent>(character);
         const auto& characterCellComponent = characterView.get<CellIdComponent>(character);
 
-        if (ownedComponent.pOwner == pPlayer)
+        if (ownedComponent.GetOwner() == pPlayer)
             continue;
 
         const auto cellItor = std::find_if(std::begin(message.Cells), std::end(message.Cells),
@@ -99,7 +99,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     {
         const auto& ownedComponent = characterView.get<OwnerComponent>(character);
 
-        if (ownedComponent.pOwner == pPlayer)
+        if (ownedComponent.GetOwner() == pPlayer)
             continue;
 
         if (message.CellId != characterView.get<CellIdComponent>(character).Cell)

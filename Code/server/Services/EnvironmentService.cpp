@@ -30,7 +30,7 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
     timeMsg.TimeScale = m_timeModel.TimeScale;
     timeMsg.Time = m_timeModel.Time;
 
-    GameServer::Get()->Send(acEvent.pPlayer->GetConnectionId(), timeMsg);
+    acEvent.pPlayer->Send(timeMsg);
 }
 
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept

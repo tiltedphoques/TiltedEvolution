@@ -217,7 +217,7 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.pOwner != acMessage.pPlayer)
+    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
     {
         spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.pPlayer->GetConnectionId());
         return;
@@ -241,7 +241,7 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
     bool foundOwner = false;
     for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (characterOwnerComponent.pOwner == pPlayer)
+        if (characterOwnerComponent.GetOwner() == pPlayer)
             continue;
 
         bool isPlayerInvalid = false;
@@ -266,7 +266,7 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
                 continue;
         }
 
-        characterOwnerComponent.pOwner = pPlayer;
+        characterOwnerComponent.SetOwner(pPlayer);
 
         pPlayer->Send(response);
 
@@ -289,7 +289,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
 
     for(auto pPlayer : m_world.GetPlayerManager())
     {
-        if (characterOwnerComponent.pOwner == pPlayer)
+        if (characterOwnerComponent.GetOwner() == pPlayer)
             continue;
 
         pPlayer->Send(response);
@@ -312,7 +312,7 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.pOwner != acMessage.pPlayer)
+    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
     {
         spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.pPlayer->GetConnectionId());
         return;
@@ -334,7 +334,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     {
         for (auto pPlayer : m_world.GetPlayerManager())
         {
-            if (characterOwnerComponent.pOwner == pPlayer || characterCellIdComponent.Cell != pPlayer->GetCellComponent().Cell)
+            if (characterOwnerComponent.GetOwner() == pPlayer || characterCellIdComponent.Cell != pPlayer->GetCellComponent().Cell)
                 continue;
 
             pPlayer->Send(message);
@@ -344,7 +344,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     {
         for (auto pPlayer : m_world.GetPlayerManager())
         {
-            if (characterOwnerComponent.pOwner == pPlayer)
+            if (characterOwnerComponent.GetOwner() == pPlayer)
                 continue;
 
             if (pPlayer->GetCellComponent().WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
@@ -399,9 +399,11 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
     for (auto& entry : message.Updates)
     {
         auto itor = view.find(static_cast<entt::entity>(entry.first));
-
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).pOwner != acMessage.pPlayer)
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
+        {
+            spdlog::debug("{:x} requested move of {:x} but does not exist", acMessage.pPlayer->GetConnectionId(), World::ToInteger(*itor));
             continue;
+        }
 
         Script::Npc npc(*itor, m_world);
 
@@ -459,7 +461,7 @@ void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     {
         auto itor = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).pOwner != acMessage.pPlayer)
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
             continue;
 
         auto& inventoryComponent = view.get<InventoryComponent>(*itor);
@@ -478,7 +480,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
     {
         auto itor = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).pOwner != acMessage.pPlayer)
+        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
             continue;
 
         auto& characterComponent = view.get<CharacterComponent>(*itor);
@@ -506,6 +508,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     }
     else if (baseId != GameId{} && !isTemporary)
     {
+        m_world.destroy(cEntity);
         spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.pPlayer->GetConnectionId());
         return;
     }
@@ -600,7 +603,7 @@ void CharacterService::ProcessInventoryChanges() const noexcept
 
         for(auto pPlayer : playerManager)
         {
-            if (pPlayer == ownerComponent.pOwner)
+            if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
             const auto& playerCellIdComponent = pPlayer->GetCellComponent();
@@ -662,7 +665,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
 
         for (auto pPlayer : m_world.GetPlayerManager())
         {
-            if (pPlayer == ownerComponent.pOwner)
+            if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
             const auto& playerCellIdComponent = pPlayer->GetCellComponent();
@@ -732,7 +735,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
         for (auto pPlayer : m_world.GetPlayerManager())
         {
-            if (pPlayer == ownerComponent.pOwner)
+            if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
             const auto& playerCellIdComponent = pPlayer->GetCellComponent();

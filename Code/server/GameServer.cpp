@@ -177,7 +177,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
     for (auto entity : ownerView)
     {
         const auto& [ownerComponent] = ownerView.get(entity);
-        if (ownerComponent.pOwner == pPlayer)
+        if (ownerComponent.GetOwner() == pPlayer)
         {
             m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
         }
@@ -270,8 +270,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         // TODO: Abort if a mod didn't accept the player
 
-        auto& registry = *m_pWorld;
-        auto& mods = registry.ctx<ModsComponent>();
+        auto& mods = m_pWorld->ctx<ModsComponent>();
 
         auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
 

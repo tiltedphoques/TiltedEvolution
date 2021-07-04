@@ -4,15 +4,15 @@
 
 struct PlayerManager
 {
-    using TMap = Map<ConnectionId_t, Player>;
+    using TMap = Map<ConnectionId_t, UniquePtr<Player>>;
 
     struct Iterator
     {
         Iterator(TMap::iterator aItor) : m_itor(aItor){}
         Iterator operator++() { m_itor++; return *this; }
         bool operator!=(const Iterator& acRhs){ return m_itor != acRhs.m_itor; }
-        const Player* operator*() const { return &m_itor->second; }
-        Player* operator*() { return &m_itor.value(); }
+        const Player* operator*() const { return m_itor->second.get(); }
+        Player* operator*() { return m_itor.value().get(); }
 
     private:
         TMap::iterator m_itor;
@@ -43,13 +43,11 @@ struct PlayerManager
         auto end = std::end(m_players);
         for (; itor != end; ++itor)
         {
-            acFunctor(&itor.value());
+            acFunctor(itor.value().get());
         }
     }
 
-
-
 private:
 
-    Map<ConnectionId_t, Player> m_players;
+    TMap m_players;
 };
