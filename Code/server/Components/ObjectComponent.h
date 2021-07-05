@@ -5,13 +5,14 @@
 #endif
 
 #include <Structs/LockData.h>
+#include <Game/Player.h>
 
 struct ObjectComponent
 {
-    ObjectComponent(const ConnectionId_t aConnectionId)
-        : LastSender(aConnectionId)
+    ObjectComponent(Player* apLastSender)
+        : pLastSender(apLastSender)
     {}
 
-    ConnectionId_t LastSender;
+    Player* pLastSender;
     LockData CurrentLockData{};
 };

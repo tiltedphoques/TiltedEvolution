@@ -2,6 +2,7 @@
 
 
 #include <GameServer.h>
+#include <World.h>
 
 #include <Services/EnvironmentService.h>
 #include <Events/UpdateEvent.h>
@@ -37,28 +38,21 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 
 void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
-    auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-
-    const auto playerInCellIt = std::find_if(std::begin(playerView), std::end(playerView),
-        [playerView, oldCell = acEvent.OldCell](auto entity)
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        const auto& cellIdComponent = playerView.get<CellIdComponent>(entity);
-        return cellIdComponent.Cell == oldCell;
-    });
+        if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
+            return;
+    }
 
-    if (playerInCellIt != std::end(playerView))
+    auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
+    for (auto entity : objectView)
     {
-        auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
+        const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
 
-        for (auto entity : objectView)
-        {
-            const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
+        if (cellIdComponent.Cell != acEvent.OldCell)
+            continue;
 
-            if (cellIdComponent.Cell != acEvent.OldCell)
-                continue;
-
-            m_world.destroy(entity);
-        }
+        m_world.destroy(entity);
     }
 }
 
@@ -97,12 +91,11 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
 
             m_world.emplace<FormIdComponent>(cEntity, object.Id);
 
-            auto& objectComponent = m_world.emplace<ObjectComponent>(cEntity, acMessage.ConnectionId);
+            auto& objectComponent = m_world.emplace<ObjectComponent>(cEntity, acMessage.pPlayer);
             objectComponent.CurrentLockData = object.CurrentLockData;
 
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
             m_world.emplace<InventoryComponent>(cEntity);
-            m_world.emplace<OwnerComponent>(cEntity, acMessage.ConnectionId);
         }
     }
 
@@ -145,22 +138,6 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         auto& objectComponent = objectView.get<ObjectComponent>(*iter);
         objectComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
         objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
-    }
-
-    auto playerView = m_world.view<PlayerComponent, CellIdComponent>();
-
-    auto connectionId = acMessage.ConnectionId;
-
-    auto senderIter = std::find_if(std::begin(playerView), std::end(playerView), [playerView, connectionId](auto entity) 
-        {
-            const auto& playerComponent = playerView.get<PlayerComponent>(entity);
-            return playerComponent.ConnectionId == connectionId;
-        });
-
-    if (senderIter == std::end(playerView))
-    {
-        spdlog::warn("Player with connection id {:X} doesn't exist.", connectionId);
-        return;
     }
 
     for(auto pPlayer : m_world.GetPlayerManager())

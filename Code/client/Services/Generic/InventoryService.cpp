@@ -264,7 +264,7 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
         auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         if (!pActor)
-            return;
+            continue;
 
         if (cpRemoteComponent)
             cpRemoteComponent->SpawnRequest.InventoryContent = change.value();

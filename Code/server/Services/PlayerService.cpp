@@ -24,29 +24,12 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 
 void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept
 {
-    auto playerView = m_world.view<PlayerComponent>();
+    auto* pPlayer = acMessage.pPlayer;
 
-    const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-        [playerView, connectionId = acMessage.ConnectionId](auto entity)
-    {
-        const auto& [playerComponent] = playerView.get(entity);
-        return playerComponent.ConnectionId == connectionId;
-    });
-
-    if(itor == std::end(playerView))
-    {
-        spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
-        return;
-    }
-
-    if (const auto pCellIdComponent = m_world.try_get<CellIdComponent>(*itor))
-    {
-        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(pCellIdComponent->Cell));
-    }
+    if (const auto cell = pPlayer->GetCellComponent())
+        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
 
     auto& message = acMessage.Packet;
-
-    auto* pPlayer = acMessage.pPlayer;
 
     auto cell = CellIdComponent{message.PlayerCell, message.WorldSpaceId, message.CenterCoords};
     pPlayer->SetCellComponent(cell);
@@ -98,28 +81,14 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
 
 void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept
 {
-    auto playerView = m_world.view<PlayerComponent>();
+    auto* pPlayer = acMessage.pPlayer;
 
-    const auto itor = std::find_if(std::begin(playerView), std::end(playerView),
-   [playerView, connectionId = acMessage.ConnectionId](auto entity)
+    if (const auto cell = pPlayer->GetCellComponent())
     {
-        const auto& [playerComponent] = playerView.get(entity);
-        return playerComponent.ConnectionId == connectionId;
-    });
-
-    if(itor == std::end(playerView))
-    {
-        spdlog::error("Connection {:x} is not associated with a player.", acMessage.ConnectionId);
-        return;
-    }
-
-    if (const auto pCellIdComponent = m_world.try_get<CellIdComponent>(*itor))
-    {
-        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(pCellIdComponent->Cell));
+        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
     }
 
     auto& message = acMessage.Packet;
-    auto* pPlayer = acMessage.pPlayer;
 
     if (pPlayer->GetCharacter())
     {
