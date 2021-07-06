@@ -48,8 +48,6 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
             auto& inventoryComponent = m_world.emplace<InventoryComponent>(entity);
             inventoryComponent.Content = it.second.CurrentInventory;
             inventoryComponent.DirtyInventory = true;
-
-            spdlog::warn("Inventory size: {} at {:x} {:x} ({}, {})", inventoryComponent.Content.Buffer.size(), it.second.WorldSpaceId.BaseId, it.second.CellId.BaseId, it.second.CurrentCoords.X, it.second.CurrentCoords.Y);
         }
         else
         {
@@ -59,12 +57,8 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
             auto& inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
             inventoryComponent.Content = it.second.CurrentInventory;
             inventoryComponent.DirtyInventory = true;
-
-            spdlog::warn("Inventory size: {} at {:x} {:x} ({}, {})", inventoryComponent.Content.Buffer.size(), it.second.WorldSpaceId.BaseId, it.second.CellId.BaseId, it.second.CurrentCoords.X, it.second.CurrentCoords.Y);
         }
     }
-
-    spdlog::info("Inventory object change cached");
 }
 
 void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestCharacterInventoryChanges>& acMessage) noexcept
@@ -79,8 +73,6 @@ void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestChar
 
         if (iter == std::end(view))
             continue;
-
-        spdlog::critical("Character inventory size: {}", inventory.Buffer.size());
 
         auto& inventoryComponent = view.get<InventoryComponent>(*iter);
         inventoryComponent.Content = inventory;
@@ -149,8 +141,6 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
     {
         if (!message.Changes.empty())
             pPlayer->Send(message);
-
-        spdlog::info("Sent inventory contents");
     }
 }
 
@@ -212,7 +202,5 @@ void InventoryService::ProcessCharacterInventoryChanges() noexcept
     {
         if (!message.Changes.empty())
             pPlayer->Send(message);
-
-        spdlog::error("Character inventory sent");
     }
 }

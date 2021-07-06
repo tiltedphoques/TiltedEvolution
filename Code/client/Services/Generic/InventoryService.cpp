@@ -47,12 +47,10 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
-        spdlog::error("Inventory change added to characters");
         m_charactersWithInventoryChanges.insert(acEvent.FormId);
     }
     else
     {
-        spdlog::critical("Inventory change added to objects");
         m_objectsWithInventoryChanges.insert(acEvent.FormId);
     }
 }
@@ -64,8 +62,6 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
 {
-    spdlog::info("OnObjectInventoryChanges");
-
     for (const auto& [id, inventory] : acMessage.Changes)
     {
         m_cachedObjectInventoryChanges[id] = inventory;
@@ -76,8 +72,6 @@ void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChang
 
 void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept
 {
-    spdlog::warn("OnCharacterInventoryChanges");
-
     for (const auto& [id, inventory] : acMessage.Changes)
     {
         m_cachedCharacterInventoryChanges[id] = inventory;
@@ -140,8 +134,6 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
         m_transport.Send(message);
 
         m_objectsWithInventoryChanges.clear();
-
-        spdlog::error("Sent request for inventory change");
     }
 }
 
@@ -202,12 +194,6 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
-    // TODO: remove this debug check
-    if (m_cachedObjectInventoryChanges.empty())
-        return;
-
-    spdlog::warn("Applying object inventory changes");
-
     for (const auto& [id, inventory] : m_cachedObjectInventoryChanges)
     {
         const auto cObjectId = World::Get().GetModSystem().GetGameId(id);
@@ -236,12 +222,6 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
-    // TODO: remove this debug check
-    if (m_cachedCharacterInventoryChanges.empty())
-        return;
-
-    spdlog::info("Applying character inventory changes");
-
     auto view = m_world.view<FormIdComponent>();
     for (const auto entity : view)
     {
@@ -269,7 +249,6 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
         if (cpRemoteComponent)
             cpRemoteComponent->SpawnRequest.InventoryContent = change.value();
 
-        spdlog::info("Setting inventory for actor");
         pActor->SetInventory(change.value());
     }
 

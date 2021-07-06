@@ -12,7 +12,6 @@ static TPickUpItem* RealPickUpItem = nullptr;
 
 char TP_MAKE_THISCALL(HookPickUpItem, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
-    spdlog::info("Pick up inventory item PlayerCharacter");
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
