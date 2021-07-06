@@ -24,7 +24,7 @@
 #include <imgui.h>
 #include <inttypes.h>
 
-#define ENVIRONMENT_DEBUG 1
+#define ENVIRONMENT_DEBUG 0
 
 constexpr float kTransitionSpeed = 5.f;
 
