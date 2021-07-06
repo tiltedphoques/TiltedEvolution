@@ -45,7 +45,6 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
             m_world.emplace<ObjectComponent>(entity, acMessage.pPlayer);
             m_world.emplace<CellIdComponent>(entity, it.second.CellId, it.second.WorldSpaceId, it.second.CurrentCoords);
 
-            // TODO: emplace or replace
             auto& inventoryComponent = m_world.emplace<InventoryComponent>(entity);
             inventoryComponent.Content = it.second.CurrentInventory;
             inventoryComponent.DirtyInventory = true;
@@ -57,7 +56,6 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
             auto& objectComponent = m_world.get<ObjectComponent>(*formIdIt);
             objectComponent.pLastSender = acMessage.pPlayer;
 
-            // TODO: emplace or replace
             auto& inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
             inventoryComponent.Content = it.second.CurrentInventory;
             inventoryComponent.DirtyInventory = true;
