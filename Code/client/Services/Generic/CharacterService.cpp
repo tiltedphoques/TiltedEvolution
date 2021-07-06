@@ -312,14 +312,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         return;
     }
 
-    auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
-    remoteComponent.SpawnRequest = acMessage;
-
-    auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
-    interpolationComponent.Position = acMessage.Position;
-
-    AnimationSystem::Setup(m_world, *entity);
-
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
@@ -328,6 +320,14 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
+    remoteComponent.SpawnRequest = acMessage;
+
+    auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
+    interpolationComponent.Position = acMessage.Position;
+
+    AnimationSystem::Setup(m_world, *entity);
 
     m_world.emplace<WaitingFor3D>(*entity);
 

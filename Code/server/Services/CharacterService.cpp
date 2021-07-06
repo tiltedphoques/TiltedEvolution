@@ -419,12 +419,9 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         movementComponent.Variables = movement.Variables;
         movementComponent.Direction = movement.Direction;
 
-        if (cellIdComponent.WorldSpaceId != GameId{})
-        {
-            auto coords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
-            if (coords != cellIdComponent.CenterCoords)
-                cellIdComponent.CenterCoords = coords;
-        }
+        cellIdComponent.Cell = movement.CellId;
+        cellIdComponent.WorldSpaceId = movement.WorldSpaceId;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -656,7 +653,9 @@ void CharacterService::ProcessMovementChanges() const noexcept
             if (cellIdComponent.WorldSpaceId == GameId{})
             {
                 if (playerCellIdComponent != cellIdComponent)
+                {
                     continue;
+                }
             }
             else
             {

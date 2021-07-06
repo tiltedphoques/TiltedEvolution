@@ -26,7 +26,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
 {
     auto* pPlayer = acMessage.pPlayer;
 
-    if (const auto cell = pPlayer->GetCellComponent())
+    if (const auto& cell = pPlayer->GetCellComponent())
         m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
 
     auto& message = acMessage.Packet;
@@ -50,7 +50,9 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         });
 
         if (cellItor == std::end(message.Cells))
+        {
             continue;
+        }
 
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
@@ -83,25 +85,24 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 {
     auto* pPlayer = acMessage.pPlayer;
 
-    if (const auto cell = pPlayer->GetCellComponent())
+    if (const auto& cell = pPlayer->GetCellComponent())
     {
         m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
     }
 
     auto& message = acMessage.Packet;
 
+    auto cell = CellIdComponent{message.CellId, {}, {}};
+    pPlayer->SetCellComponent(cell);
+
     if (pPlayer->GetCharacter())
     {
         auto entity = *pPlayer->GetCharacter();
-
-        auto cell = CellIdComponent{message.CellId, {}, {}};
 
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(entity); pCellIdComponent)
         {
             m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{pPlayer, entity, message.CellId});
         }
-        
-        pPlayer->SetCellComponent(cell);
     }
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
@@ -118,7 +119,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        spdlog::critical("Sending interior character {:x}", spawnMessage.ServerId);
         GameServer::Get()->Send(pPlayer->GetConnectionId(), spawnMessage);
     }
 }

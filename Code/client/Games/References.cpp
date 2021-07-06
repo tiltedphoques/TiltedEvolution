@@ -275,6 +275,7 @@ void TESObjectREFR::Enable() const noexcept
     s_pEnable(this, true);
 }
 
+// Skyrim: MoveTo() can fail, causing the object to be deleted
 void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept
 {
     ScopedReferencesOverride recursionGuard;
