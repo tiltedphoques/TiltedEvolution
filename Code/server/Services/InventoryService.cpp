@@ -69,7 +69,6 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
 
 void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestCharacterInventoryChanges>& acMessage) noexcept
 {
-    // TODO: change this to new OwnerView
     auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
 
     auto& message = acMessage.Packet;
@@ -111,7 +110,6 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
         auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
         auto& objectComponent = objectView.get<ObjectComponent>(entity);
 
-        // If we have nothing new to send skip this
         if (inventoryComponent.DirtyInventory == false)
             continue;
 
@@ -177,7 +175,6 @@ void InventoryService::ProcessCharacterInventoryChanges() noexcept
         auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
 
-        // If we have nothing new to send skip this
         if (inventoryComponent.DirtyInventory == false)
             continue;
 

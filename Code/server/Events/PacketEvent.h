@@ -21,6 +21,11 @@ struct PacketEvent
         return *this;
     }
 
+    Player* GetSender() const
+    {
+        return pPlayer;
+    }
+
     T& Packet;
     Player* pPlayer;
 };

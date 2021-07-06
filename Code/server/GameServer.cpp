@@ -11,6 +11,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
+#include <Events/PlayerLeaveCellEvent.h>
 #include <Events/OwnershipTransferEvent.h>
 #include <steam/isteamnetworkingutils.h>
 
@@ -169,6 +170,8 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     if (pPlayer)
     {
+        if (const auto& cell = pPlayer->GetCellComponent())
+            m_pWorld->GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
         m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
     }
 

@@ -26,13 +26,14 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
 {
     auto* pPlayer = acMessage.pPlayer;
 
-    if (const auto& cell = pPlayer->GetCellComponent())
-        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
-
     auto& message = acMessage.Packet;
+
+    const auto oldCell = pPlayer->GetCellComponent().Cell;
 
     auto cell = CellIdComponent{message.PlayerCell, message.WorldSpaceId, message.CenterCoords};
     pPlayer->SetCellComponent(cell);
+
+    m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)
@@ -57,7 +58,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        GameServer::Get()->Send(pPlayer->GetConnectionId(), spawnMessage);
+        pPlayer->Send(spawnMessage);
     }
 }
 
@@ -85,15 +86,14 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 {
     auto* pPlayer = acMessage.pPlayer;
 
-    if (const auto& cell = pPlayer->GetCellComponent())
-    {
-        m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(cell.Cell));
-    }
-
     auto& message = acMessage.Packet;
+
+    const auto oldCell = pPlayer->GetCellComponent().Cell;
 
     auto cell = CellIdComponent{message.CellId, {}, {}};
     pPlayer->SetCellComponent(cell);
+
+    m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
 
     if (pPlayer->GetCharacter())
     {
@@ -119,6 +119,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        GameServer::Get()->Send(pPlayer->GetConnectionId(), spawnMessage);
+        pPlayer->Send(spawnMessage);
     }
 }
