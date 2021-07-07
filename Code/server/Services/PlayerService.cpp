@@ -2,6 +2,7 @@
 
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
+#include "Events/PlayerLeaveCellEvent.h"
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -23,12 +24,16 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 
 void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept
 {
+    auto* pPlayer = acMessage.pPlayer;
+
     auto& message = acMessage.Packet;
 
-    auto* pPlayer = acMessage.pPlayer;
+    const auto oldCell = pPlayer->GetCellComponent().Cell;
 
     auto cell = CellIdComponent{message.PlayerCell, message.WorldSpaceId, message.CenterCoords};
     pPlayer->SetCellComponent(cell);
+
+    m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
     for (auto character : characterView)
@@ -46,7 +51,9 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         });
 
         if (cellItor == std::end(message.Cells))
+        {
             continue;
+        }
 
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
@@ -77,21 +84,25 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
 
 void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept
 {
-    auto& message = acMessage.Packet;
     auto* pPlayer = acMessage.pPlayer;
+
+    auto& message = acMessage.Packet;
+
+    const auto oldCell = pPlayer->GetCellComponent().Cell;
+
+    auto cell = CellIdComponent{message.CellId, {}, {}};
+    pPlayer->SetCellComponent(cell);
+
+    m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
 
     if (pPlayer->GetCharacter())
     {
         auto entity = *pPlayer->GetCharacter();
 
-        auto cell = CellIdComponent{message.CellId, {}, {}};
-
         if (auto pCellIdComponent = m_world.try_get<CellIdComponent>(entity); pCellIdComponent)
         {
             m_world.GetDispatcher().trigger(CharacterInteriorCellChangeEvent{pPlayer, entity, message.CellId});
         }
-        
-        pPlayer->SetCellComponent(cell);
     }
 
     auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
@@ -108,7 +119,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterSpawnRequest spawnMessage;
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
-        spdlog::critical("Sending interior character {:x}", spawnMessage.ServerId);
         pPlayer->Send(spawnMessage);
     }
 }

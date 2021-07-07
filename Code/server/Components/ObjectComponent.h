@@ -5,12 +5,14 @@
 #endif
 
 #include <Structs/LockData.h>
+#include <Game/Player.h>
 
-struct LockComponent
+struct ObjectComponent
 {
-    LockComponent(const LockData& aLockData) noexcept
-        : CurrentLockData(aLockData)
+    ObjectComponent(Player* apLastSender)
+        : pLastSender(apLastSender)
     {}
 
+    Player* pLastSender;
     LockData CurrentLockData{};
 };

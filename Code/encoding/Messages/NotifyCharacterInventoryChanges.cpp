@@ -1,7 +1,7 @@
-#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyCharacterInventoryChanges.h>
 #include <TiltedCore/Serialization.hpp>
 
-void NotifyInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+void NotifyCharacterInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, Changes.size());
 
@@ -12,7 +12,7 @@ void NotifyInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     }
 }
 
-void NotifyInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void NotifyCharacterInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ServerMessage::DeserializeRaw(aReader);
 
