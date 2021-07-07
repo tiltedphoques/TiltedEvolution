@@ -20,9 +20,8 @@ void RequestObjectInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader
 
     for (auto i = 0u; i < count; ++i)
     {
-        const uint32_t baseId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-        const uint32_t modId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-        const auto gameId = GameId(modId, baseId);
+        GameId gameId;
+        gameId.Deserialize(aReader);
 
         auto& change = Changes[gameId];
         change.Deserialize(aReader);

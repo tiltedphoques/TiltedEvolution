@@ -29,11 +29,11 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
 {
     auto& message = acMessage.Packet;
 
-    for (auto& it : message.Changes)
+    for (auto& [id, objectData] : message.Changes)
     {
         auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
-        auto formIdIt = std::find_if(std::begin(view), std::end(view), [view, id = it.first](auto entity) {
+        auto formIdIt = std::find_if(std::begin(view), std::end(view), [view, id = id](auto entity) {
             const auto& formIdComponent = view.get<FormIdComponent>(entity);
             return formIdComponent.Id == id;
         });
@@ -41,12 +41,12 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
         if (formIdIt == std::end(view))
         {
             const auto entity = m_world.create();
-            m_world.emplace<FormIdComponent>(entity, it.first.BaseId, it.first.ModId);
+            m_world.emplace<FormIdComponent>(entity, id.BaseId, id.ModId);
             m_world.emplace<ObjectComponent>(entity, acMessage.pPlayer);
-            m_world.emplace<CellIdComponent>(entity, it.second.CellId, it.second.WorldSpaceId, it.second.CurrentCoords);
+            m_world.emplace<CellIdComponent>(entity, objectData.CellId, objectData.WorldSpaceId, objectData.CurrentCoords);
 
             auto& inventoryComponent = m_world.emplace<InventoryComponent>(entity);
-            inventoryComponent.Content = it.second.CurrentInventory;
+            inventoryComponent.Content = objectData.CurrentInventory;
             inventoryComponent.DirtyInventory = true;
         }
         else
@@ -55,7 +55,7 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
             objectComponent.pLastSender = acMessage.pPlayer;
 
             auto& inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
-            inventoryComponent.Content = it.second.CurrentInventory;
+            inventoryComponent.Content = objectData.CurrentInventory;
             inventoryComponent.DirtyInventory = true;
         }
     }
