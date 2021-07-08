@@ -175,6 +175,7 @@ struct TESObjectREFR : TESForm
     uint16_t scale;
     uint16_t referenceFlags;
 };
+constexpr size_t t = offsetof(TESObjectREFR, extraData);
 
 POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141EBEABC - 0x140000000);
 

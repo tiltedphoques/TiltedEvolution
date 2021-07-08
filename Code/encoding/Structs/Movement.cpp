@@ -5,7 +5,9 @@ using TiltedPhoques::Serialization;
 
 bool Movement::operator==(const Movement& acRhs) const noexcept
 {
-    return Position == acRhs.Position &&
+    return CellId == acRhs.CellId &&
+        WorldSpaceId == acRhs.WorldSpaceId &&
+        Position == acRhs.Position &&
         Rotation == acRhs.Rotation &&
         Variables == acRhs.Variables &&
         Direction == acRhs.Direction;
@@ -18,6 +20,8 @@ bool Movement::operator!=(const Movement& acRhs) const noexcept
 
 void Movement::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
+    CellId.Serialize(aWriter);
+    WorldSpaceId.Serialize(aWriter);
     Position.Serialize(aWriter);
     Rotation.Serialize(aWriter);
     Variables.GenerateDiff(AnimationVariables{}, aWriter);
@@ -26,6 +30,8 @@ void Movement::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
 void Movement::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
+    CellId.Deserialize(aReader);
+    WorldSpaceId.Deserialize(aReader);
     Position.Deserialize(aReader);
     Rotation.Deserialize(aReader);
     Variables = AnimationVariables{};

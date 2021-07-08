@@ -10,7 +10,7 @@
 #include <Messages/ServerScriptUpdate.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/CharacterSpawnRequest.h>
-#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyCharacterInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/NotifyQuestUpdate.h>
@@ -26,6 +26,7 @@
 #include <Messages/AssignObjectsResponse.h>
 #include <Messages/NotifyDeathStateChange.h>
 #include <Messages/NotifyOwnershipTransfer.h>
+#include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/NotifyFireProjectile.h>
 
 using TiltedPhoques::UniquePtr;
@@ -38,12 +39,12 @@ struct ServerMessageFactory
     {
         auto s_visitor =
             CreateMessageVisitor<AuthenticationResponse, AssignCharacterResponse, ServerReferencesMoveRequest,
-                                 ServerScriptUpdate, ServerTimeSettings, CharacterSpawnRequest, NotifyInventoryChanges,
+                                 ServerScriptUpdate, ServerTimeSettings, CharacterSpawnRequest, NotifyCharacterInventoryChanges,
                                  NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
                                  NotifyLockChange, AssignObjectsResponse, NotifyDeathStateChange, NotifyOwnershipTransfer,
-                                 NotifyFireProjectile>;
+                                 NotifyObjectInventoryChanges, NotifyFireProjectile>;
 
         return s_visitor(std::forward<T>(func));
     }

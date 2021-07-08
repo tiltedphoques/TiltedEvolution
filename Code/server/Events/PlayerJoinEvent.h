@@ -1,10 +1,12 @@
 #pragma once
 
+struct Player;
+
 struct PlayerJoinEvent
 {
-    PlayerJoinEvent(const entt::entity aEntity) : Entity{aEntity}
+    PlayerJoinEvent(Player* apPlayer) : pPlayer{apPlayer}
     {
     }
 
-    entt::entity Entity;
+    Player* pPlayer;
 };

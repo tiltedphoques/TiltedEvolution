@@ -26,6 +26,8 @@ enum ClientOpcode : unsigned char
     kShiftGridCellRequest,
     kRequestOwnershipTransfer,
     kRequestOwnershipClaim,
+    kRequestObjectInventoryChanges,
+    kRequestCharacterInventoryChanges,
     kRequestFireProjectile,
     kClientOpcodeMax
 };
@@ -54,6 +56,8 @@ enum ServerOpcode : unsigned char
     kAssignObjectsResponse,
     kNotifyDeathStateChange,
     kNotifyOwnershipTransfer,
+    kNotifyObjectInventoryChanges,
+    kNotifyCharacterInventoryChanges,
     kNotifyFireProjectile,
     kServerOpcodeMax
 };

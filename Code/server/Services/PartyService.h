@@ -14,7 +14,7 @@ struct PartyService
 {
     struct Party
     {
-        Vector<entt::entity> Members;
+        Vector<Player*> Members;
     };
 
     PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -33,9 +33,9 @@ protected:
     void OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteRequest>& acPacket) noexcept;
     void OnPartyLeave(const PacketEvent<PartyLeaveRequest>& acPacket) noexcept;
 
-    void RemovePlayerFromParty(entt::entity aEntity) noexcept;
+    void RemovePlayerFromParty(Player* apPlayer) noexcept;
 
-    void BroadcastPlayerList(std::optional<entt::entity> aSkipEntity = std::nullopt) const noexcept;
+    void BroadcastPlayerList(Player* apPlayer = nullptr) const noexcept;
     void BroadcastPartyInfo(uint32_t aPartyId) const noexcept;
 
 private:

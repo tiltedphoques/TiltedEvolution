@@ -6,9 +6,15 @@
 #include <World.h>
 #include <Services/PapyrusService.h>
 #include <Events/ActivateEvent.h>
+#include <Events/InventoryChangeEvent.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
+TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TRemoveInventoryItem, void*, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3);
+
 static TActivate* RealActivate = nullptr;
+static TAddInventoryItem* RealAddInventoryItem = nullptr;
+static TRemoveInventoryItem* RealRemoveInventoryItem = nullptr;
 
 #ifdef SAVE_STUFF
 
@@ -102,10 +108,28 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
     return ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
 }
 
+void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+{
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
+}
+
+void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
+{
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    return ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
+}
+
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
         POINTER_SKYRIMSE(TActivate, s_activate, 0x140296C00 - 0x140000000);
+        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x14028E680 - 0x140000000);
+        POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14028D9E0 - 0x140000000);
 
         RealActivate = s_activate.Get();
+        RealAddInventoryItem = s_addInventoryItem.Get();
+        RealRemoveInventoryItem = s_removeInventoryItem.Get();
 
         TP_HOOK(&RealActivate, HookActivate);
+        TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
+        TP_HOOK(&RealRemoveInventoryItem, HookRemoveInventoryItem);
 });

@@ -35,7 +35,7 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
+        actorValuesView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
         for (auto& [id, value] : message.Values)
@@ -50,14 +50,11 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     notifyChanges.Id = acMessage.Packet.Id;
     notifyChanges.Values = acMessage.Packet.Values;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
-    {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.ConnectionId)
+    for (auto pPlayer : m_world.GetPlayerManager())
+    { 
+        if (acMessage.pPlayer != pPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyChanges);
+            pPlayer->Send(notifyChanges);
         }
     }
 }
@@ -71,7 +68,7 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
+        actorValuesView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
         for (auto& [id, value] : message.Values)
@@ -86,14 +83,11 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     notifyChanges.Id = message.Id;
     notifyChanges.Values = message.Values;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.ConnectionId)
+        if (acMessage.pPlayer != pPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyChanges);
+            pPlayer->Send(notifyChanges);
         }
     }
 }
@@ -104,14 +98,11 @@ void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChange
     notifyDamageEvent.Id = acMessage.Packet.Id;
     notifyDamageEvent.DeltaHealth = acMessage.Packet.DeltaHealth;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.ConnectionId)
+        if (acMessage.pPlayer != pPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyDamageEvent);
+            pPlayer->Send(notifyDamageEvent);
         }
     }
 }
@@ -122,10 +113,10 @@ void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>
 
     auto characterView = m_world.view<CharacterComponent, OwnerComponent>();
 
-    auto itor = characterView.find(static_cast<entt::entity>(message.Id));
+    const auto itor = characterView.find(static_cast<entt::entity>(message.Id));
 
     if (itor != std::end(characterView) && 
-        characterView.get<OwnerComponent>(*itor).ConnectionId == acMessage.ConnectionId)
+        characterView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*itor);
         characterComponent.IsDead = message.IsDead;
@@ -136,14 +127,11 @@ void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>
     notifyChange.Id = message.Id;
     notifyChange.IsDead = message.IsDead;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.ConnectionId)
+        if (acMessage.pPlayer != pPlayer)
         {
-            GameServer::Get()->Send(player.ConnectionId, notifyChange);
+            pPlayer->Send(notifyChange);
         }
     }
 }

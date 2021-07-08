@@ -2,10 +2,12 @@
 
 
 #include <GameServer.h>
+#include <World.h>
 
 #include <Services/EnvironmentService.h>
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
+#include <Events/PlayerLeaveCellEvent.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
@@ -19,6 +21,7 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
+    m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&EnvironmentService::OnPlayerLeaveCellEvent>(this);
     m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&EnvironmentService::OnAssignObjectsRequest>(this);
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
     m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
@@ -30,41 +33,74 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
     timeMsg.TimeScale = m_timeModel.TimeScale;
     timeMsg.Time = m_timeModel.Time;
 
-    const auto &playerComponent = m_world.get<PlayerComponent>(acEvent.Entity);
-    GameServer::Get()->Send(playerComponent.ConnectionId, timeMsg);
+    acEvent.pPlayer->Send(timeMsg);
+}
+
+void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
+{
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
+            return;
+    }
+
+    auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
+    for (auto entity : objectView)
+    {
+        const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
+
+        if (cellIdComponent.Cell != acEvent.OldCell)
+            continue;
+
+        m_world.destroy(entity);
+    }
 }
 
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
-    auto view = m_world.view<FormIdComponent, LockComponent>();
+    auto view = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent>();
+
     AssignObjectsResponse response;
 
     for (const auto& object : acMessage.Packet.Objects)
     {
-        auto itor = m_objectsWithLocks.find(object.Id);
-        if (itor != m_objectsWithLocks.end())
+        const auto iter = std::find_if(std::begin(view), std::end(view), [view, id = object.Id](auto entity)
+        {
+            const auto formIdComponent = view.get<FormIdComponent>(entity);
+            return formIdComponent.Id == id;
+        });
+
+        if (iter != std::end(view))
         {
             ObjectData objectData;
 
-            auto& formIdComponent = view.get<FormIdComponent>(itor->second);
+            auto& formIdComponent = view.get<FormIdComponent>(*iter);
             objectData.Id = formIdComponent.Id;
 
-            auto& lockComponent = view.get<LockComponent>(itor->second);
-            objectData.CurrentLockData = lockComponent.CurrentLockData;
+            auto& objectComponent = view.get<ObjectComponent>(*iter);
+            objectData.CurrentLockData = objectComponent.CurrentLockData;
+
+            auto& inventoryComponent = view.get<InventoryComponent>(*iter);
+            objectData.CurrentInventory.Buffer = inventoryComponent.Content.Buffer;
 
             response.Objects.push_back(objectData);
-            continue;
         }
+        else
+        {
+            const auto cEntity = m_world.create();
 
-        const auto cEntity = m_world.create();
-        m_world.emplace<FormIdComponent>(cEntity, object.Id);
-        m_world.emplace<CellIdComponent>(cEntity, object.CellId);
-        m_world.emplace<LockComponent>(cEntity, object.CurrentLockData);
-        m_objectsWithLocks.insert({object.Id, cEntity});
+            m_world.emplace<FormIdComponent>(cEntity, object.Id);
+
+            auto& objectComponent = m_world.emplace<ObjectComponent>(cEntity, acMessage.pPlayer);
+            objectComponent.CurrentLockData = object.CurrentLockData;
+
+            m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
+            m_world.emplace<InventoryComponent>(cEntity);
+        }
     }
 
     if (!response.Objects.empty())
-        GameServer::Get()->Send(acMessage.ConnectionId, response);
+        acMessage.pPlayer->Send(response);
 }
 
 void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
@@ -73,53 +109,11 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
     notifyActivate.Id = acMessage.Packet.Id;
     notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
 
-    auto view = m_world.view<PlayerComponent, CellIdComponent>();
-
-    auto connectionId = acMessage.ConnectionId;
-
-    auto senderIter = std::find_if(std::begin(view), std::end(view), [view, connectionId](auto entity) 
-        {
-            const auto& playerComponent = view.get<PlayerComponent>(entity);
-            return playerComponent.ConnectionId == connectionId;
-        });
-
-    if (senderIter == std::end(view))
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        spdlog::warn("Player with connection id {:X} doesn't exist.", connectionId);
-        return;
-    }
-
-    const auto& senderCellIdComponent = view.get<CellIdComponent>(*senderIter);
-
-    if (senderCellIdComponent.WorldSpaceId == GameId{})
-    {
-        for (auto entity : view)
+        if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
-            auto& player = view.get<PlayerComponent>(entity);
-            auto& cell = view.get<CellIdComponent>(entity);
-
-            if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
-            {
-                GameServer::Get()->Send(player.ConnectionId, notifyActivate);
-            }
-        }
-    }
-    else
-    {
-        for (auto entity : view)
-        {
-            auto& player = view.get<PlayerComponent>(entity);
-            auto& cell = view.get<CellIdComponent>(entity);
-
-            if (cell.WorldSpaceId == GameId{})
-                continue;
-
-            if (player.ConnectionId != acMessage.ConnectionId 
-                && cell.WorldSpaceId == senderCellIdComponent.WorldSpaceId
-                && GridCellCoords::IsCellInGridCell(&cell.CenterCoords, &senderCellIdComponent.CenterCoords))
-            {
-                GameServer::Get()->Send(player.ConnectionId, notifyActivate);
-            }
+            pPlayer->Send(notifyActivate);
         }
     }
 }
@@ -131,62 +125,26 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
     notifyLockChange.IsLocked = acMessage.Packet.IsLocked;
     notifyLockChange.LockLevel = acMessage.Packet.LockLevel;
 
-    auto itor = m_objectsWithLocks.find(acMessage.Packet.Id);
-    if (itor != m_objectsWithLocks.end())
+    auto objectView = m_world.view<FormIdComponent, ObjectComponent>();
+
+    const auto iter = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id = acMessage.Packet.Id](auto entity)
     {
-        auto objectView = m_world.view<LockComponent>();
-        auto& lockComponent = objectView.get<LockComponent>(itor->second);
-        lockComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
-        lockComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
+        const auto formIdComponent = objectView.get<FormIdComponent>(entity);
+        return formIdComponent.Id == id;
+    });
+
+    if (iter != std::end(objectView))
+    {
+        auto& objectComponent = objectView.get<ObjectComponent>(*iter);
+        objectComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
+        objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    auto view = m_world.view<PlayerComponent, CellIdComponent>();
-
-    auto connectionId = acMessage.ConnectionId;
-
-    auto senderIter = std::find_if(std::begin(view), std::end(view), [view, connectionId](auto entity) 
-        {
-            const auto& playerComponent = view.get<PlayerComponent>(entity);
-            return playerComponent.ConnectionId == connectionId;
-        });
-
-    if (senderIter == std::end(view))
+    for(auto pPlayer : m_world.GetPlayerManager())
     {
-        spdlog::warn("Player with connection id {:X} doesn't exist.", connectionId);
-        return;
-    }
-
-    const auto& senderCellIdComponent = view.get<CellIdComponent>(*senderIter);
-
-    if (senderCellIdComponent.WorldSpaceId == GameId{})
-    {
-        for (auto entity : view)
+        if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
-            auto& player = view.get<PlayerComponent>(entity);
-            auto& cell = view.get<CellIdComponent>(entity);
-
-            if (player.ConnectionId != acMessage.ConnectionId && cell.Cell == acMessage.Packet.CellId)
-            {
-                GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
-            }
-        }
-    }
-    else
-    {
-        for (auto entity : view)
-        {
-            auto& player = view.get<PlayerComponent>(entity);
-            auto& cell = view.get<CellIdComponent>(entity);
-
-            if (cell.WorldSpaceId == GameId{})
-                continue;
-
-            if (player.ConnectionId != acMessage.ConnectionId 
-                && cell.WorldSpaceId == senderCellIdComponent.WorldSpaceId
-                && GridCellCoords::IsCellInGridCell(&cell.CenterCoords, &senderCellIdComponent.CenterCoords))
-            {
-                GameServer::Get()->Send(player.ConnectionId, notifyLockChange);
-            }
+            pPlayer->Send(notifyLockChange);
         }
     }
 }

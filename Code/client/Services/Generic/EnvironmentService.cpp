@@ -153,7 +153,7 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
     }
 }
 
-BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* dispatcher)
+BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
 {
 #if ENVIRONMENT_DEBUG
     auto view = m_world.view<InteractiveObjectComponent>();

@@ -40,9 +40,7 @@
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
-#include <Messages/RequestInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
-#include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
 #include <Messages/RequestSpawnData.h>
@@ -76,8 +74,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
     m_characterSpawnConnection = m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
     m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
-    m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&CharacterService::OnEquipmentChangeEvent>(this);
-    m_inventoryConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&CharacterService::OnInventoryChanges>(this);
     m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
     m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
@@ -144,7 +140,6 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunSpawnUpdates();
     RunLocalUpdates();
-    RunInventoryUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
 }
@@ -323,14 +318,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         return;
     }
 
-    auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
-    remoteComponent.SpawnRequest = acMessage;
-
-    auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
-    interpolationComponent.Position = acMessage.Position;
-
-    AnimationSystem::Setup(m_world, *entity);
-
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
@@ -339,6 +326,14 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
+    remoteComponent.SpawnRequest = acMessage;
+
+    auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
+    interpolationComponent.Position = acMessage.Position;
+
+    AnimationSystem::Setup(m_world, *entity);
 
     m_world.emplace<WaitingFor3D>(*entity);
 
@@ -429,21 +424,6 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 
         localComponent.Append(acActionEvent);
     }
-}
-
-void CharacterService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
-{
-    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
-}
-
-void CharacterService::OnInventoryChanges(const NotifyInventoryChanges& acEvent) noexcept
-{
-    for (const auto& [id, inventory] : acEvent.Changes)
-    {
-        m_cachedInventoryChanges[id] = inventory;
-    }
-
-    ApplyCachedInventoryChanges();
 }
 
 void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept
@@ -894,46 +874,6 @@ void CharacterService::RunRemoteUpdates() const noexcept
         m_world.remove<WaitingFor3D>(entity);
 }
 
-void CharacterService::RunInventoryUpdates() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 250ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    if (!m_charactersWithInventoryChanges.empty())
-    {
-        RequestInventoryChanges message;
-
-        auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
-        for (auto entity : animatedLocalView)
-        {
-            auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
-            auto& localComponent = animatedLocalView.get<LocalComponent>(entity);
-
-            if (m_charactersWithInventoryChanges.find(formIdComponent.Id) == std::end(m_charactersWithInventoryChanges))
-                continue;
-
-            const auto* pForm = TESForm::GetById(formIdComponent.Id);
-            const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                continue;
-
-            message.Changes[localComponent.Id] = pActor->GetInventory();
-        }
-
-        m_transport.Send(message);
-
-        m_charactersWithInventoryChanges.clear();
-    }
-
-    ApplyCachedInventoryChanges();
-}
-
 void CharacterService::RunFactionsUpdates() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -992,7 +932,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
             const auto* pTES = TES::Get();
             const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
-            if (GridCellCoords::IsCellInGridCell(&characterCoords, &playerCoords))
+            if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
             {
                 auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
                 if (!pActor)
@@ -1010,34 +950,6 @@ void CharacterService::RunSpawnUpdates() const noexcept
             }
         }
     }
-}
-
-void CharacterService::ApplyCachedInventoryChanges() noexcept
-{
-    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
-        return;
-
-    auto view = m_world.view<RemoteComponent, FormIdComponent>();
-    for (const auto& [id, inventory] : m_cachedInventoryChanges)
-    {
-        const auto itor = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) {
-            return view.get<RemoteComponent>(entity).Id == id;
-        });
-
-        if (itor != std::end(view))
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(*itor);
-            auto& remoteComponent = view.get<RemoteComponent>(*itor);
-
-            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-            if (!pActor)
-                return;
-
-            remoteComponent.SpawnRequest.InventoryContent = inventory;
-            pActor->SetInventory(inventory);
-        }
-    }
-    m_cachedInventoryChanges.clear();
 }
 
 void CharacterService::OnFireProjectileEvent(const FireProjectileEvent& acEvent) const noexcept

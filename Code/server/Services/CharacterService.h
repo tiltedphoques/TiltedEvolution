@@ -9,7 +9,6 @@ struct World;
 struct AssignCharacterRequest;
 struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
-struct RequestInventoryChanges;
 struct RequestFactionsChanges;
 struct RequestSpawnData;
 struct GridCellCoords;
@@ -41,14 +40,12 @@ protected:
     void OnCharacterRemoveEvent(const CharacterRemoveEvent& acEvent) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
-    void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
     void OnRequestFireProjectile(const PacketEvent<RequestFireProjectile>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
-    void ProcessInventoryChanges() const noexcept;
     void ProcessFactionsChanges() const noexcept;
     void ProcessMovementChanges() const noexcept;
 
@@ -60,14 +57,13 @@ private:
     entt::scoped_connection m_exteriorCellChangeEventConnection;
     entt::scoped_connection m_interiorCellChangeEventConnection;
     entt::scoped_connection m_characterAssignRequestConnection;
-    entt::scoped_connection m_removeCharacterConnection;
-    entt::scoped_connection m_characterSpawnedConnection;
-    entt::scoped_connection m_referenceMovementSnapshotConnection;
-    entt::scoped_connection m_inventoryChangesConnection;
-    entt::scoped_connection m_factionsChangesConnection;
-    entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_transferOwnershipConnection;
     entt::scoped_connection m_ownershipTransferEventConnection;
     entt::scoped_connection m_claimOwnershipConnection;
+    entt::scoped_connection m_removeCharacterConnection;
+    entt::scoped_connection m_characterSpawnedConnection;
+    entt::scoped_connection m_referenceMovementSnapshotConnection;
+    entt::scoped_connection m_factionsChangesConnection;
+    entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_fireProjectileConnection;
 };
