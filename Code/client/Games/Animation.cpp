@@ -39,6 +39,10 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         const auto res = ThisCall(RealPerformAction, apThis, apAction);
 
+        spdlog::warn("Animation event: {}, action: {}, form id: {:X}", apAction->eventName.AsAscii(), apAction->action->keyword.AsAscii(), apAction->action->formID);
+
+        spdlog::warn("\t{}", res);
+
         // This is a weird case where it gets spammed and doesn't do much, not sure if it still needs to be sent over the network
         if (apAction->someFlag == 1)
             return res;

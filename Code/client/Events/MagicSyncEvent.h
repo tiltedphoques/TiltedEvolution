@@ -4,9 +4,10 @@ struct Actor;
 
 struct MagicSyncEvent
 {
-    MagicSyncEvent(Actor* apActor) : pActor(apActor)
+    MagicSyncEvent(Actor* apActor, bool aFlag) : pActor(apActor), Flag(aFlag)
     {
     }
 
     Actor* pActor;
+    bool Flag;
 };

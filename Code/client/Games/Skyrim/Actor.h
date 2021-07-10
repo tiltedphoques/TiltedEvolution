@@ -39,7 +39,7 @@ struct Actor : TESObjectREFR
     virtual void sub_A3();
     virtual void sub_A4();
     virtual void sub_A5();
-    virtual void sub_A6();
+    virtual void SetWeaponDrawn(bool aDraw);
     virtual void sub_A7();
     virtual void sub_A8();
     virtual void SetPosition(const NiPoint3& acPoint, bool aSyncHavok = true);
@@ -203,6 +203,9 @@ struct Actor : TESObjectREFR
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
+
+    // TODO: delete this debug stuff
+    void DrawWeapon(bool aDraw) noexcept;
 
 public:
 

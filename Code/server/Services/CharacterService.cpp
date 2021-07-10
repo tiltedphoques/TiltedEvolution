@@ -708,15 +708,12 @@ void CharacterService::OnRequestFireProjectile(const PacketEvent<RequestFireProj
     NotifyFireProjectile message;
     message.Id = acMessage.Packet.Id;
 
-    auto view = m_world.view<PlayerComponent>();
-    for (auto entity : view)
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
-        auto& player = view.get<PlayerComponent>(entity);
-
-        if (player.ConnectionId != acMessage.ConnectionId)
+        if (acMessage.pPlayer != pPlayer)
         {
             spdlog::info("Sending fire projectile notify");
-            GameServer::Get()->Send(player.ConnectionId, message);
+            pPlayer->Send(message);
         }
     }
 }
