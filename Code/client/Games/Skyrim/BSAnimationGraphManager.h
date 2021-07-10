@@ -30,7 +30,7 @@ struct BSAnimationGraphManager
 
     uint32_t animationGraphIndex; // A8 - 5C
 
-    void DumpAnimationVariables();
+    void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, std::tuple<const char*, uint32_t>>& variables);
     uint32_t ReSendEvent(BSFixedString* apEventName);
 };
 

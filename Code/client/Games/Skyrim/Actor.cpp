@@ -533,8 +533,8 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
 // TODO: delete this debug stuff
 void TP_MAKE_THISCALL(HookDrawWeapon, Actor, bool aDraw)
 {
-    if (apThis->formID & 0xFF000000)
-        return;
+    //if (apThis->formID & 0xFF000000)
+        //return;
 
     ThisCall(RealDrawWeapon, apThis, aDraw);
 }

@@ -7,7 +7,7 @@
 
 #include <map>
 
-void BSAnimationGraphManager::DumpAnimationVariables()
+void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, std::tuple<const char*, uint32_t>>& variables)
 {
     if (animationGraphIndex < animationGraphs.size)
     {
@@ -20,8 +20,6 @@ void BSAnimationGraphManager::DumpAnimationVariables()
 
             if(pBuckets && pVariableSet)
             {
-                std::map<uint32_t, std::tuple<const char*, uint32_t> > variables;
-
                 for(decltype(pDb->animationVariables.bucketCount) i = 0; i < pDb->animationVariables.bucketCount; ++i)
                 {
                     auto pBucket = &pBuckets[i];
