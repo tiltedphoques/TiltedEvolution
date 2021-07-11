@@ -399,7 +399,7 @@ enum WolfVariables
 
 };
 
-static AnimationGraphDescriptorManager::Builder s_wolfBuilder("WolfBehavior", AnimationGraphDescriptor{
+static AnimationGraphDescriptorManager::Builder s_wolfBuilder("WolfRootBehavior", AnimationGraphDescriptor{
     {999},
     {999},
     {999}});
@@ -537,7 +537,7 @@ void TestService::AnimationDebugging() noexcept
     static Map<uint32_t, uint32_t> s_values;
     static Map<uint32_t, uint32_t> s_reusedValues;
     static Vector<uint32_t> s_blacklist{};
-    static Map<uint32_t, const char*> s_varMap{};
+    static std::map<uint32_t, const char*> s_varMap{};
 
     ImGui::SetNextWindowSize(ImVec2(250, 450), ImGuiCond_FirstUseEver);
     ImGui::Begin("Animation debugging");
@@ -615,7 +615,7 @@ void TestService::AnimationDebugging() noexcept
                     continue;
                 }
 
-                const auto varName = s_varMap[blacklistedVar];
+                const auto* varName = s_varMap[blacklistedVar];
 
                 char name[256];
                 sprintf_s(name, std::size(name), "k%s (%d)", varName, blacklistedVar);
@@ -703,7 +703,7 @@ void TestService::AnimationDebugging() noexcept
             {
                 for (auto& [key, value] : s_reusedValues)
                 {
-                    const auto varName = s_varMap[key];
+                    const auto* varName = s_varMap[key];
                     spdlog::warn("Variable: k{}, id: {}, f: {}, i: {}", varName, key, *(float*)&pVariableSet->data[key],
                                  *(int32_t*)&pVariableSet->data[key]);
                 }

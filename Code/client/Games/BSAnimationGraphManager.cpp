@@ -7,7 +7,7 @@
 
 #include <map>
 
-void BSAnimationGraphManager::DumpAnimationVariables(Map<uint32_t, const char*>& variables, bool aPrintVariables)
+void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, const char*>& variables, bool aPrintVariables)
 {
     if (animationGraphIndex < animationGraphs.size)
     {
@@ -31,8 +31,6 @@ void BSAnimationGraphManager::DumpAnimationVariables(Map<uint32_t, const char*>&
                         const auto variableIndex = pBucket->value;
                         if(pVariableSet->size > static_cast<uint32_t>(variableIndex))
                         {
-                            const auto value = pVariableSet->data[variableIndex];
-
                             variables[variableIndex] = pBucket->key.AsAscii();
                         }
 
