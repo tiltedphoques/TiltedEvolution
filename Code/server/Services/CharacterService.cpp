@@ -21,8 +21,6 @@
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
-#include <Messages/RequestInventoryChanges.h>
-#include <Messages/NotifyInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
@@ -44,7 +42,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_removeCharacterConnection(aDispatcher.sink<CharacterRemoveEvent>().connect<&CharacterService::OnCharacterRemoveEvent>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
-    , m_inventoryChangesConnection(aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&CharacterService::OnInventoryChanges>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
 {
@@ -104,7 +101,6 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
 
 void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
 {
-    ProcessInventoryChanges();
     ProcessFactionsChanges();
     ProcessMovementChanges();
 }
@@ -420,12 +416,9 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         movementComponent.Variables = movement.Variables;
         movementComponent.Direction = movement.Direction;
 
-        if (cellIdComponent.WorldSpaceId != GameId{})
-        {
-            auto coords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
-            if (coords != cellIdComponent.CenterCoords)
-                cellIdComponent.CenterCoords = coords;
-        }
+        cellIdComponent.Cell = movement.CellId;
+        cellIdComponent.WorldSpaceId = movement.WorldSpaceId;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
 
         auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
 
@@ -445,25 +438,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         }
 
         movementComponent.Sent = false;
-    }
-}
-
-void CharacterService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept
-{
-    OwnerView<InventoryComponent> view(m_world, acMessage.GetSender());
-
-    auto& message = acMessage.Packet;
-
-    for (auto& [id, inventory] : message.Changes)
-    {
-        auto itor = view.find(static_cast<entt::entity>(id));
-
-        if (itor == std::end(view))
-            continue;
-
-        auto& inventoryComponent = view.get<InventoryComponent>(*itor);
-        inventoryComponent.Content = inventory;
-        inventoryComponent.DirtyInventory = true;
     }
 }
 
@@ -571,69 +545,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
 }
 
-void CharacterService::ProcessInventoryChanges() const noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    const auto characterView = m_world.view < CellIdComponent, InventoryComponent, OwnerComponent >();
-
-    Map<Player*, NotifyInventoryChanges> messages;
-
-    for (auto entity : characterView)
-    {
-        auto& inventoryComponent = characterView.get<InventoryComponent>(entity);
-        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
-        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
-
-        auto& playerManager = m_world.GetPlayerManager();
-
-        // If we have nothing new to send skip this
-        if (inventoryComponent.DirtyInventory == false)
-            continue;
-
-        for(auto pPlayer : playerManager)
-        {
-            if (pPlayer == ownerComponent.GetOwner())
-                continue;
-
-            const auto& playerCellIdComponent = pPlayer->GetCellComponent();
-            if (cellIdComponent.WorldSpaceId == GameId{})
-            {
-                if (playerCellIdComponent != cellIdComponent)
-                    continue;
-            }
-            else
-            {
-                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
-                    !GridCellCoords::IsCellInGridCell(cellIdComponent.CenterCoords,
-                                                      playerCellIdComponent.CenterCoords))
-                {
-                    continue;
-                }
-            }
-
-            auto& message = messages[pPlayer];
-            auto& change = message.Changes[World::ToInteger(entity)];
-
-            change = inventoryComponent.Content;
-        }
-
-        inventoryComponent.DirtyInventory = false;
-    }
-
-    for (auto [pPlayer, message] : messages)
-    {
-        if (!message.Changes.empty())
-            pPlayer->Send(message);
-    }
-}
 
 void CharacterService::ProcessFactionsChanges() const noexcept
 {
@@ -739,7 +650,9 @@ void CharacterService::ProcessMovementChanges() const noexcept
             if (cellIdComponent.WorldSpaceId == GameId{})
             {
                 if (playerCellIdComponent != cellIdComponent)
+                {
                     continue;
+                }
             }
             else
             {
