@@ -1,11 +1,9 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <mutex>
 
-#if TP_FALLOUT4
-#include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
-#else
+//#include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
-#endif
+#include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -13,6 +11,7 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
     std::call_once(s_initOnce, [this]() 
     {
         AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
+        AnimationGraphDescriptor_BHR_Master initAnimationGraphDescriptor_BHR_Master(*this);
     });
 }
 

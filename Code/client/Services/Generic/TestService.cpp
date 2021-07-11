@@ -686,11 +686,15 @@ void TestService::AnimationDebugging() noexcept
                     {
                         s_values[i] = pVariableSet->data[i];
 
-                        spdlog::info("Variable {} initialized to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
+                        const auto* varName = s_varMap[i];
+
+                        spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
                     }
                     else if (iter->second != pVariableSet->data[i] && !pDescriptor->IsSynced(i))
                     {
+                        const auto* varName = s_varMap[i];
+
                         spdlog::warn("Variable {} changed to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
 
