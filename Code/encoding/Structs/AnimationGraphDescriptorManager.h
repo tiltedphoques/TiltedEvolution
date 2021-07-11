@@ -13,7 +13,8 @@ struct AnimationGraphDescriptorManager
 
     struct Builder
     {
-        Builder(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept;
+        Builder(AnimationGraphDescriptorManager& aManager, const char* acpName,
+                AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept;
     };
 
 protected:

@@ -1,4 +1,5 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
+#include <mutex>
 
 #if TP_FALLOUT4
 #include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
@@ -8,12 +9,17 @@
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
-    AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior;
 }
 
 AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
 {
     static AnimationGraphDescriptorManager s_manager;
+    static std::once_flag s_initOnce;
+    std::call_once(s_initOnce, []() 
+    {
+        AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(s_manager);
+    });
+
     return s_manager;
 }
 
@@ -26,9 +32,10 @@ const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(c
     return nullptr;
 }
 
-AnimationGraphDescriptorManager::Builder::Builder(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, const char* acpName,
+                                                  AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    Get().Register(acpName, std::move(aAnimationGraphDescriptor));
+    aManager.Register(acpName, std::move(aAnimationGraphDescriptor));
 }
 
 void AnimationGraphDescriptorManager::Register(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
