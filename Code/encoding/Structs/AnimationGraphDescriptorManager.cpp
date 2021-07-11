@@ -9,17 +9,16 @@
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
+    static std::once_flag s_initOnce;
+    std::call_once(s_initOnce, [this]() 
+    {
+        AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
+    });
 }
 
 AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
 {
     static AnimationGraphDescriptorManager s_manager;
-    static std::once_flag s_initOnce;
-    std::call_once(s_initOnce, []() 
-    {
-        AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(s_manager);
-    });
-
     return s_manager;
 }
 
