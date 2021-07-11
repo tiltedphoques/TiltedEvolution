@@ -38,6 +38,8 @@
 #include <imgui.h>
 #include <inttypes.h>
 
+/*
+
 enum Flags
 {
     kSpeed = 0,
@@ -361,7 +363,6 @@ enum Actions
     kTurnStop = 0x959FE
 };
 
-/*
 enum FloatVariables
 {
     kSpeed = 0,
@@ -382,7 +383,6 @@ enum IntegerVariables
     kiRightHandType = 35,
     kIntegerCount = 8
 };
-*/
 
 static AnimationGraphDescriptorManager::Builder s_masterBuilder("Master_Behavior", AnimationGraphDescriptor{
         {129, 41, 120, 76,  67,  68,  52,  21,  25,  51,  70,  71,  72,
@@ -404,6 +404,7 @@ static AnimationGraphDescriptorManager::Builder s_wolfBuilder("WolfRootBehavior"
     {999},
     {999}});
 
+*/
 extern thread_local bool g_overrideFormId;
 
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept

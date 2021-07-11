@@ -34,8 +34,8 @@ const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(c
 AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, const char* acpName,
                                                   AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    aManager.Register(acpName, std::move(aAnimationGraphDescriptor));
     printf("\t\tGraph descriptor: %s\n", acpName);
+    aManager.Register(acpName, std::move(aAnimationGraphDescriptor));
 }
 
 void AnimationGraphDescriptorManager::Register(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
