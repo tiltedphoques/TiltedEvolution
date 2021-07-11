@@ -384,6 +384,7 @@ enum IntegerVariables
 };
 */
 
+/*
 static AnimationGraphDescriptorManager::Builder s_masterBuilder("Master_Behavior", AnimationGraphDescriptor{
         {129, 41, 120, 76,  67,  68,  52,  21,  25,  51,  70,  71,  72,
                                  73,  75,  80,  81,  82,  89,  90,  92,  93,  98,  108, 116, 121, 123, 125, 126,
@@ -404,6 +405,7 @@ static AnimationGraphDescriptorManager::Builder s_wolfBuilder("WolfRootBehavior"
     {999},
     {999}});
 
+*/
 extern thread_local bool g_overrideFormId;
 
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
