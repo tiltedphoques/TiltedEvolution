@@ -7,7 +7,7 @@
 
 #include <map>
 
-void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, std::tuple<const char*, uint32_t>>& variables)
+void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, std::tuple<const char*, uint32_t>>& variables, bool aPrintVariables)
 {
     if (animationGraphIndex < animationGraphs.size)
     {
@@ -40,12 +40,15 @@ void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, std::tup
                     }
                 }
 
-                for(auto& [id, name] : variables)
+                if (aPrintVariables)
                 {
-                    auto val = std::get<1>(name);
-                    std::cout << "k" << std::get<0>(name) << " = " << id << "," << std::endl;
+                    for(auto& [id, name] : variables)
+                    {
+                        auto val = std::get<1>(name);
+                        std::cout << "k" << std::get<0>(name) << " = " << id << "," << std::endl;
 
-                    //spdlog::info("{} {} f: {}, i: {}", var.first, std::get<0>(var.second), *(float*)&val, *(int32_t*)&val);
+                        //spdlog::info("{} {} f: {}, i: {}", var.first, std::get<0>(var.second), *(float*)&val, *(int32_t*)&val);
+                    }
                 }
             }
         }

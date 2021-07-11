@@ -204,9 +204,6 @@ struct Actor : TESObjectREFR
     void Reset() noexcept;
     void Respawn() noexcept;
 
-    // TODO: delete this debug stuff
-    void DrawWeapon(bool aDraw) noexcept;
-
 public:
 
     enum ChangeFlags : uint32_t

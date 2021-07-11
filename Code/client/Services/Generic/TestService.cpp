@@ -404,10 +404,6 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     auto pActor = Actor::Create(pPlayerBaseForm);
 
     pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
-    /*
-    auto pExtendedActor = pActor->GetExtension();
-    pExtendedActor->SetRemote(false);
-    */
 
     m_actors.emplace_back(pActor);
 }
@@ -419,10 +415,6 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
-#if TP_SKYRIM64
-    m_dispatcher.sink<MagicSyncEvent>().connect<&TestService::OnMagicSyncEvent>(this);
-    m_dispatcher.sink<ActionEvent>().connect<&TestService::OnActionEvent>(this);
-#endif
 }
 
 void TestService::RunDiff()
@@ -499,18 +491,6 @@ TestService::~TestService() noexcept = default;
 
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-#if TP_SKYRIM64
-    if (!m_actions.empty())
-    {
-        for (const auto action : m_actions)
-        {
-            //ExecuteAction(action);
-        }
-
-        m_actions.clear();
-    }
-#endif
-
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
 
@@ -540,71 +520,17 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
-#if TP_SKYRIM64
-void TestService::OnActionEvent(const ActionEvent& acEvent) noexcept
-{
-    m_actions.push_back(acEvent);
-}
-
-void TestService::ExecuteAction(const ActionEvent& acEvent) noexcept
-{
-    if (m_actors.empty())
-        return;
-
-    auto pActor = m_actors[0];
-
-    const auto actionId = acEvent.ActionId;
-    const auto targetId = acEvent.TargetId;
-
-    const auto pAction = RTTI_CAST(TESForm::GetById(actionId), TESForm, BGSAction);
-    const auto pTarget = RTTI_CAST(TESForm::GetById(targetId), TESForm, TESObjectREFR);
-
-    pActor->actorState.flags1 = acEvent.State1;
-    pActor->actorState.flags2 = acEvent.State2;
-
-    pActor->LoadAnimationVariables(acEvent.Variables);
-
-    // Play the animation
-    TESActionData actionData(acEvent.Type & 0x3, pActor, pAction, pTarget);
-    actionData.eventName = BSFixedString(acEvent.EventName.c_str());
-    actionData.idleForm = RTTI_CAST(TESForm::GetById(acEvent.IdleId), TESForm, TESIdleForm);
-    actionData.someFlag = ((acEvent.Type & 0x4) != 0) ? 1 : 0;
-
-    //if (actionData.action)
-        //spdlog::info("Animation event: {}, action: {}, form id: {:X}", actionData.eventName.AsAscii(), actionData.action->keyword.AsAscii(), actionData.action->formID);
-
-    const auto result = ActorMediator::Get()->ForceAction(&actionData);
-
-    //spdlog::info("\t{}", result);
-}
-
-void SpellDraw(Actor* apActor)
-{
-    using TSpellDraw = void(void* garbage, Actor* apActor);
-
-    POINTER_SKYRIMSE(TSpellDraw, s_spellDraw, 0x140720FB0 - 0x140000000);
-
-    s_spellDraw.Get()(nullptr, apActor);
-}
-
-void WeaponDraw(Actor* apActor, bool aDraw)
-{
-    apActor->DrawWeapon(aDraw);
-}
-
-void TestService::OnMagicSyncEvent(const MagicSyncEvent& acEvent) noexcept
-{
-    //SpellDraw(acEvent.pActor);
-    WeaponDraw(acEvent.pActor, acEvent.Flag);
-}
-
-void TestService::ControlTestActor() noexcept
+void TestService::AnimationDebugging() noexcept
 {
     static uint32_t fetchFormId = 0;
-    static Actor* pFetchActor = 0;
+    static Actor* pActor = nullptr;
+    static Map<uint32_t, uint32_t> s_values;
+    static Map<uint32_t, uint32_t> s_reusedValues;
+    static Vector<uint32_t> s_blacklist{};
+    static std::map<uint32_t, std::tuple<const char*, uint32_t>> s_varMap{};
 
-    ImGui::SetNextWindowSize(ImVec2(250, 250), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Control test actor");
+    ImGui::SetNextWindowSize(ImVec2(250, 450), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Animation debugging");
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
@@ -614,42 +540,101 @@ void TestService::ControlTestActor() noexcept
         {
             auto* pFetchForm = TESForm::GetById(fetchFormId);
             if (pFetchForm)
-                pFetchActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+                pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
         }
     }
 
-    if (!pFetchActor)
+    if (!pActor)
     {
         ImGui::End();
+        s_varMap.clear();
         return;
     }
 
-    if (ImGui::Button("Set inventory"))
-        pFetchActor->SetInventory(PlayerCharacter::Get()->GetInventory());
-
-    if (ImGui::Button("Draw"))
-        m_world.GetRunner().Trigger(MagicSyncEvent(pFetchActor, true));
-
-    if (ImGui::Button("Sheath"))
-        m_world.GetRunner().Trigger(MagicSyncEvent(pFetchActor, false));
-
-
-    static Map<uint32_t, uint32_t> s_values;
-    static Map<uint32_t, uint32_t> s_reusedValues;
-    static Vector<uint32_t> s_blacklist{ kTimeDelta, kiSyncSprintState, kBlendJump, kPitchOffset, kPitch, kVelocityZ, kIsSprinting };
-
     BSAnimationGraphManager* pManager = nullptr;
+    pActor->animationGraphHolder.GetBSAnimationGraph(&pManager);
 
-    pFetchActor->animationGraphHolder.GetBSAnimationGraph(&pManager);
-
-    if (pManager)
+    if (!pManager)
     {
-        ImGui::InputInt("Animation graph count", (int*)&pManager->animationGraphs.size, 0, 0, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputInt("Animation graph index", (int*)&pManager->animationGraphIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
+        ImGui::End();
+        s_varMap.clear();
+        return;
+    }
 
-        const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-        if (pGraph)
+    const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+
+    if (!pGraph)
+    {
+        ImGui::End();
+        s_varMap.clear();
+        return;
+    }
+
+    if (s_varMap.empty())
+        pManager->DumpAnimationVariables(s_varMap, true);
+
+    if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+    {
+        if (ImGui::BeginTabItem("Blacklist"))
         {
+            static uint32_t s_selectedBlacklistVar = 0;
+            static uint32_t s_selected = 0;
+
+            ImGui::BeginChild("Blacklisted variables");
+
+            int i = 0;
+            for (auto blacklistedVar : s_blacklist)
+            {
+                if (blacklistedVar >= pGraph->behaviorGraph->animationVariables->size)
+                {
+                    ++i;
+                    continue;
+                }
+
+                const auto varKey = s_varMap[blacklistedVar];
+                const auto* varName = std::get<0>(varKey);
+
+                char name[256];
+                sprintf_s(name, std::size(name), "k%s (%d)", varName, blacklistedVar);
+
+                if (ImGui::Selectable(name, s_selectedBlacklistVar == blacklistedVar))
+                {
+                    s_selectedBlacklistVar = blacklistedVar;
+                }
+
+                if (s_selectedBlacklistVar == blacklistedVar)
+                {
+                    s_selected = i;
+                }
+
+                ++i;
+            }
+
+            ImGui::EndChild();
+
+            if (s_selected < s_blacklist.size())
+            {
+                if (ImGui::Button("Delete"))
+                {
+                    s_blacklist.erase(s_blacklist.begin() + s_selected);
+                }
+            }
+
+            static uint32_t s_blacklistVar = 0;
+            ImGui::InputInt("New blacklist var:", (int*)&s_blacklistVar, 0, 0);
+
+            if (ImGui::Button("Add"))
+            {
+                s_blacklist.push_back(s_blacklistVar);
+            }
+
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Control"))
+        {
+            ImGui::InputInt("Animation graph count", (int*)&pManager->animationGraphs.size, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt("Animation graph index", (int*)&pManager->animationGraphIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
             char name[256];
             sprintf_s(name, std::size(name), "%s", pGraph->behaviorGraph->stateMachine->name);
             ImGui::InputText("Graph state machine name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
@@ -693,25 +678,20 @@ void TestService::ControlTestActor() noexcept
 
             if (ImGui::Button("Dump variables") && pVariableSet)
             {
-                std::map<uint32_t, std::tuple<const char*, uint32_t>> varMap;
-                pManager->DumpAnimationVariables(varMap);
                 for (auto& [key, value] : s_reusedValues)
                 {
-                    const auto varKey = varMap[key];
+                    const auto varKey = s_varMap[key];
                     const auto* varName = std::get<0>(varKey);
                     spdlog::warn("Variable: k{}, id: {}, f: {}, i: {}", varName, key, *(float*)&pVariableSet->data[key],
                                  *(int32_t*)&pVariableSet->data[key]);
                 }
             }
+
+            ImGui::EndTabItem();
         }
     }
 
     ImGui::End();
-}
-#endif
-
-void TestService::AnimationDebugging() noexcept
-{
 }
 
 void TestService::OnDraw() noexcept
@@ -723,10 +703,7 @@ void TestService::OnDraw() noexcept
     if (view.empty())
         return;
 
-#if TP_SKYRIM64
-    ControlTestActor();
     AnimationDebugging();
-#endif
 
     ImGui::Begin("Server");
 

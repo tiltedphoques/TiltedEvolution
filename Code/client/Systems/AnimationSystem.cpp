@@ -49,14 +49,7 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
         actionData.idleForm = RTTI_CAST(TESForm::GetById(first.IdleId), TESForm, TESIdleForm);
         actionData.someFlag = ((first.Type & 0x4) != 0) ? 1 : 0;
 
-        /*
-        if (actionData.action)
-            spdlog::info("Animation event: {}, action: {}, form id: {:X}", actionData.eventName.AsAscii(), actionData.action->keyword.AsAscii(), actionData.action->formID);
-        */
-
         const auto result = ActorMediator::Get()->ForceAction(&actionData);
-
-        //spdlog::info("\t{}", result);
 
         actions.pop_front();
     }

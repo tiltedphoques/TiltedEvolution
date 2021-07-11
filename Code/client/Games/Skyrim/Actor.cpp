@@ -75,7 +75,6 @@ TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
 TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
-TP_THIS_FUNCTION(TDrawWeapon, void, Actor, bool aDraw);
 
 using TGetLocation = TESForm *(TESForm *);
 static TGetLocation *FUNC_GetActorLocation;
@@ -86,7 +85,6 @@ TCharacterDestructor* RealCharacterDestructor;
 
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TPickUpItem* RealPickUpItem = nullptr;
-static TDrawWeapon* RealDrawWeapon = nullptr;
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -530,20 +528,6 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
-// TODO: delete this debug stuff
-void TP_MAKE_THISCALL(HookDrawWeapon, Actor, bool aDraw)
-{
-    //if (apThis->formID & 0xFF000000)
-        //return;
-
-    ThisCall(RealDrawWeapon, apThis, aDraw);
-}
-
-void Actor::DrawWeapon(bool aDraw) noexcept
-{
-    ThisCall(RealDrawWeapon, this, aDraw);
-}
-
 static TiltedPhoques::Initializer s_actorHooks([]()
     {
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
@@ -557,7 +541,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140620900 - 0x140000000);
         POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1405E6F20 - 0x140000000);
         POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x1405E6580 - 0x140000000);
-        POINTER_SKYRIMSE(TDrawWeapon, s_drawWeapon, 0x1405D27A0 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
@@ -569,7 +552,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         RealRegenAttributes = s_regenAttributes.Get();
         RealAddInventoryItem = s_addInventoryItem.Get();
         RealPickUpItem = s_pickUpItem.Get();
-        RealDrawWeapon = s_drawWeapon.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -580,6 +562,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
         TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
         TP_HOOK(&RealPickUpItem, HookPickUpItem);
-        TP_HOOK(&RealDrawWeapon, HookDrawWeapon);
 
     });

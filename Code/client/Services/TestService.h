@@ -3,8 +3,6 @@
 struct World;
 struct ImguiService;
 struct UpdateEvent;
-struct MagicSyncEvent;
-struct ActionEvent;
 
 struct TransportService;
 
@@ -17,15 +15,9 @@ struct TestService
     TP_NOCOPYMOVE(TestService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
-#if TP_SKYRIM64
-    void OnMagicSyncEvent(const MagicSyncEvent& acEvent) noexcept;
-    void OnActionEvent(const ActionEvent& acEvent) noexcept;
-    void ExecuteAction(const ActionEvent& acEvent) noexcept;
-#endif
 
 protected:
 
-    void ControlTestActor() noexcept;
     void AnimationDebugging() noexcept;
 
     void OnDraw() noexcept;
@@ -40,7 +32,6 @@ private:
     World& m_world;
 
     Vector<GamePtr<Actor>> m_actors;
-    Vector<ActionEvent> m_actions;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
