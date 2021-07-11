@@ -384,8 +384,8 @@ enum IntegerVariables
 };
 */
 
-static AnimationGraphDescriptorManager::Builder s_builder("Master_Behavior", AnimationGraphDescriptor{
-        {129, 41,  205, 186, 130, 120, 76,  67,  68,  52,  21,  25,  51,  70,  71,  72,
+static AnimationGraphDescriptorManager::Builder s_masterBuilder("Master_Behavior", AnimationGraphDescriptor{
+        {129, 41, 120, 76,  67,  68,  52,  21,  25,  51,  70,  71,  72,
                                  73,  75,  80,  81,  82,  89,  90,  92,  93,  98,  108, 116, 121, 123, 125, 126,
                                  137, 151, 152, 164, 169, 177, 185, 198, 200, 202, 206, 210, 211, 212, 214, 215,
                                  85,  36,  128, 83,  84,  110, 111, 291, 165, 3,   255, 48,  112, 37,  171, 204,
@@ -393,6 +393,16 @@ static AnimationGraphDescriptorManager::Builder s_builder("Master_Behavior", Ani
         {kDirection, kSpeedSampled, kweapAdj, kSpeed, kCastBlendDamped, kCastBlend, kSpeedDamped},
         {kTurnDelta, kiRightHandEquipped, kiLeftHandEquipped, ki1HMState, kiState, kiLeftHandType, kiRightHandType, ktestint, kcurrentDefaultState}
     });
+
+enum WolfVariables
+{
+
+};
+
+static AnimationGraphDescriptorManager::Builder s_wolfBuilder("WolfBehavior", AnimationGraphDescriptor{
+    {999},
+    {999},
+    {999}});
 
 extern thread_local bool g_overrideFormId;
 
@@ -527,7 +537,7 @@ void TestService::AnimationDebugging() noexcept
     static Map<uint32_t, uint32_t> s_values;
     static Map<uint32_t, uint32_t> s_reusedValues;
     static Vector<uint32_t> s_blacklist{};
-    static std::map<uint32_t, std::tuple<const char*, uint32_t>> s_varMap{};
+    static Map<uint32_t, const char*> s_varMap{};
 
     ImGui::SetNextWindowSize(ImVec2(250, 450), ImGuiCond_FirstUseEver);
     ImGui::Begin("Animation debugging");
@@ -548,7 +558,17 @@ void TestService::AnimationDebugging() noexcept
     {
         ImGui::End();
         s_varMap.clear();
+        s_values.clear();
+        s_reusedValues.clear();
         return;
+    }
+
+    if (ImGui::Button("Clear all"))
+    {
+        s_varMap.clear();
+        s_values.clear();
+        s_reusedValues.clear();
+        s_blacklist.clear();
     }
 
     BSAnimationGraphManager* pManager = nullptr;
@@ -558,6 +578,8 @@ void TestService::AnimationDebugging() noexcept
     {
         ImGui::End();
         s_varMap.clear();
+        s_values.clear();
+        s_reusedValues.clear();
         return;
     }
 
@@ -567,6 +589,8 @@ void TestService::AnimationDebugging() noexcept
     {
         ImGui::End();
         s_varMap.clear();
+        s_values.clear();
+        s_reusedValues.clear();
         return;
     }
 
@@ -591,8 +615,7 @@ void TestService::AnimationDebugging() noexcept
                     continue;
                 }
 
-                const auto varKey = s_varMap[blacklistedVar];
-                const auto* varName = std::get<0>(varKey);
+                const auto varName = s_varMap[blacklistedVar];
 
                 char name[256];
                 sprintf_s(name, std::size(name), "k%s (%d)", varName, blacklistedVar);
@@ -643,29 +666,29 @@ void TestService::AnimationDebugging() noexcept
             auto pDescriptor =
                 AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
 
-            static bool toggleVariableCount = false;
-            if (ImGui::Button("Toggle variable counting"))
+            static bool toggleVariableRecord = false;
+            if (ImGui::Button("Toggle variable recording"))
             {
-                toggleVariableCount = !toggleVariableCount;
-                spdlog::info("Toggle variable count: {}", toggleVariableCount);
+                toggleVariableRecord = !toggleVariableRecord;
+                spdlog::info("Toggle variable recording: {}", toggleVariableRecord);
             }
 
-            if (pDescriptor && pVariableSet && toggleVariableCount)
+            if (pDescriptor && pVariableSet && toggleVariableRecord)
             {
                 for (auto i = 0u; i < pVariableSet->size; ++i)
                 {
                     if (std::find(s_blacklist.begin(), s_blacklist.end(), i) != s_blacklist.end())
                         continue;
 
-                    auto itor = s_values.find(i);
-                    if (itor == std::end(s_values) && !pDescriptor->IsSynced(i))
+                    auto iter = s_values.find(i);
+                    if (iter == std::end(s_values) && !pDescriptor->IsSynced(i))
                     {
                         s_values[i] = pVariableSet->data[i];
 
                         spdlog::info("Variable {} initialized to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
                     }
-                    else if (itor->second != pVariableSet->data[i] && !pDescriptor->IsSynced(i))
+                    else if (iter->second != pVariableSet->data[i] && !pDescriptor->IsSynced(i))
                     {
                         spdlog::warn("Variable {} changed to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
@@ -680,11 +703,17 @@ void TestService::AnimationDebugging() noexcept
             {
                 for (auto& [key, value] : s_reusedValues)
                 {
-                    const auto varKey = s_varMap[key];
-                    const auto* varName = std::get<0>(varKey);
+                    const auto varName = s_varMap[key];
                     spdlog::warn("Variable: k{}, id: {}, f: {}, i: {}", varName, key, *(float*)&pVariableSet->data[key],
                                  *(int32_t*)&pVariableSet->data[key]);
                 }
+            }
+
+            if (ImGui::Button("Reset recording"))
+            {
+                s_values.clear();
+                s_reusedValues.clear();
+                spdlog::info("Variable recording has been reset");
             }
 
             ImGui::EndTabItem();
