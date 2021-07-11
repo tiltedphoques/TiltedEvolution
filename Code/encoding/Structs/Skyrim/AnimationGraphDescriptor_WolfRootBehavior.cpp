@@ -100,9 +100,29 @@ enum Variables
 
 AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "BHR_Master",
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, "WolfRootBehavior",
         AnimationGraphDescriptor(
-        {9999},
-        {9999},
-        {9999}));
+        {kbHeadTrackingOn,
+            kbAnimationDriven,
+            kbAllowRotation,
+            kbHeadTracking,
+            kbDisableHeadTrack,
+            kIsRecoiling,
+            kIsStaggering,
+            kIsAttacking,
+            kbSkeeverLunge,
+            kbFootIKEnable,
+            kisMoving},
+        {kSpeed,
+            kTurnDelta,
+            kturnSpeedMult,
+            kDirection,
+            kTurnDeltaDamped,
+            kSpeedSampled,
+            kwalkBackSpeedMult},
+        {kiSyncIdleLocomotion,
+            kiSyncTurnState,
+            kiSyncForwardState,
+            kiCombatStance,
+            kiMovementSpeed}));
 }
