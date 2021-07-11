@@ -1,8 +1,14 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 
+#if TP_FALLOUT4
+#include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
+#else
+#include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
+#endif
+
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
-    
+    AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior;
 }
 
 AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
