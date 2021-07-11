@@ -304,10 +304,10 @@ enum Variables
     kstaggerDirection = 298,
 };
 
-AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior()
+AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    AnimationGraphDescriptorManager::Builder s_builder(
-        "RootBehavior", AnimationGraphDescriptor({km_bEnablePitchTwistModifier,
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, "RootBehavior",
+        AnimationGraphDescriptor({km_bEnablePitchTwistModifier,
                                                   kIsSprinting,
                                                   kisFiring,
                                                   kisReloading,

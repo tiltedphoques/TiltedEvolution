@@ -416,9 +416,10 @@ enum IntegerVariables
 };
 */
 
-AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior()
+AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    AnimationGraphDescriptorManager::Builder s_builder("Master_Behavior",
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, "Master_Behavior",
         AnimationGraphDescriptor{{129, 41,  205, 186, 130, 120, 76,  67,  68,  52,  21,  25,  51,  70,  71,  72,
                                   73,  75,  80,  81,  82,  89,  90,  92,  93,  98,  108, 116, 121, 123, 125, 126,
                                   137, 151, 152, 164, 169, 177, 185, 198, 200, 202, 206, 210, 211, 212, 214, 215,
