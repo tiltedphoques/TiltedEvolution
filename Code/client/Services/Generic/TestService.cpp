@@ -695,7 +695,7 @@ void TestService::AnimationDebugging() noexcept
                     {
                         const auto* varName = s_varMap[i];
 
-                        spdlog::warn("Variable {} changed to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
+                        spdlog::warn("Variable k{} ({}) changed to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
 
                         s_values[i] = pVariableSet->data[i];
