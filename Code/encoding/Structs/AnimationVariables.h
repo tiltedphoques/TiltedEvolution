@@ -8,8 +8,7 @@ using TiltedPhoques::Vector;
 
 struct AnimationVariables
 {
-    uint64_t Booleans1{ 0 };
-    uint64_t Booleans2{ 0 };
+    uint64_t Booleans{ 0 };
     Vector<uint32_t> Integers{};
     Vector<float> Floats{};
 

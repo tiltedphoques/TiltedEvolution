@@ -4,8 +4,7 @@
 
 bool AnimationVariables::operator==(const AnimationVariables& acRhs) const noexcept
 {
-    return Booleans1 == acRhs.Booleans1 &&
-        Booleans2 == acRhs.Booleans2 &&
+    return Booleans == acRhs.Booleans &&
         Integers == acRhs.Integers &&
         Floats == acRhs.Floats;
 }
@@ -17,16 +16,14 @@ bool AnimationVariables::operator!=(const AnimationVariables& acRhs) const noexc
 
 void AnimationVariables::Load(std::istream& aInput)
 {
-    aInput.read(reinterpret_cast<char*>(&Booleans1), sizeof(Booleans1));
-    aInput.read(reinterpret_cast<char*>(&Booleans2), sizeof(Booleans2));
+    aInput.read(reinterpret_cast<char*>(&Booleans), sizeof(Booleans));
     aInput.read(reinterpret_cast<char*>(Integers.data()), Integers.size() * sizeof(uint32_t));
     aInput.read(reinterpret_cast<char*>(Floats.data()), Floats.size() * sizeof(float));
 }
 
 void AnimationVariables::Save(std::ostream& aOutput) const
 {
-    aOutput.write(reinterpret_cast<const char*>(&Booleans1), sizeof(Booleans1));
-    aOutput.write(reinterpret_cast<const char*>(&Booleans2), sizeof(Booleans2));
+    aOutput.write(reinterpret_cast<const char*>(&Booleans), sizeof(Booleans));
     aOutput.write(reinterpret_cast<const char*>(Integers.data()), Integers.size() * sizeof(uint32_t));
     aOutput.write(reinterpret_cast<const char*>(Floats.data()), Floats.size() * sizeof(float));
 }
@@ -36,13 +33,7 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     uint64_t changes = 0;
     uint32_t idx = 0;
 
-    if(Booleans1 != aPrevious.Booleans1)
-    {
-        changes |= (1ull << idx);
-    }
-    ++idx;
-
-    if(Booleans2 != aPrevious.Booleans2)
+    if(Booleans != aPrevious.Booleans)
     {
         changes |= (1ull << idx);
     }
@@ -84,13 +75,7 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     idx = 0;
     if (changes & (1ull << idx))
     {
-        aWriter.WriteBits(Booleans1, 64);
-    }
-    ++idx;
-
-    if (changes & (1ull << idx))
-    {
-        aWriter.WriteBits(Booleans2, 64);
+        aWriter.WriteBits(Booleans, 64);
     }
     ++idx;
 
@@ -142,13 +127,7 @@ void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader)
 
     if (changes & (1ull << idx))
     {
-        aReader.ReadBits(Booleans1, 64);
-    }
-    ++idx;
-
-    if (changes & (1ull << idx))
-    {
-        aReader.ReadBits(Booleans2, 64);
+        aReader.ReadBits(Booleans, 64);
     }
     ++idx;
 

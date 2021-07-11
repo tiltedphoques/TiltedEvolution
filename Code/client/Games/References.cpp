@@ -101,8 +101,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             if (!pVariableSet)
                 return;
             
-            aVariables.Booleans1 = 0;
-            aVariables.Booleans2 = 0;
+            aVariables.Booleans = 0;
 
             aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
             aVariables.Integers.resize(pDescriptor->IntegerLookupTable.size());
@@ -112,12 +111,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
 
                 if (pVariableSet->data[idx] != 0)
-                {
-                    if (i < 64)
-                        aVariables.Booleans1 |= (1ull << i);
-                    else
-                        aVariables.Booleans2 |= (1ull << i - 64);
-                }
+                    aVariables.Booleans |= (1ull << i);
             }
 
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
@@ -176,10 +170,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
                 if (pVariableSet->size > idx)
                 {
-                    if (i < 64)
-                        pVariableSet->data[idx] = (aVariables.Booleans1 & (1ull << i)) != 0;
-                    else
-                        pVariableSet->data[idx] = (aVariables.Booleans2 & (1ull << i - 64)) != 0;
+                    pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
                 }
             }
 
