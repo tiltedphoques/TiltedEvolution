@@ -13,6 +13,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_GoatRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_HorseRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_AtronachFrostRootBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_AtronachStormBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -30,5 +31,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_CowRootBehavior initAnimationGraphDescriptor_CowRootBehavior(*this);
         AnimationGraphDescriptor_HorseRootBehavior initAnimationGraphDescriptor_HorseRootBehavior(*this);
         AnimationGraphDescriptor_AtronachFrostRootBehavior initAnimationGraphDescriptor_AtronachFrostRootBehavior(*this);
+        AnimationGraphDescriptor_AtronachStormBehavior initAnimationGraphDescriptor_AtronachStormBehavior(*this);
     });
 }
