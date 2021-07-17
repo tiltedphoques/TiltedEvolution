@@ -18,6 +18,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_Falmer_Master_Behavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_HagravenMasterBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_ScribRootBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_BearRootBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -41,5 +42,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_Falmer_Master_Behavior initAnimationGraphDescriptor_Falmer_Master_Behavior(*this);
         AnimationGraphDescriptor_HagravenMasterBehavior initAnimationGraphDescriptor_HagravenMasterBehavior(*this);
         AnimationGraphDescriptor_ScribRootBehavior initAnimationGraphDescriptor_ScribRootBehavior(*this);
+        AnimationGraphDescriptor_BearRootBehavior initAnimationGraphDescriptor_BearRootBehavior(*this);
     });
 }
