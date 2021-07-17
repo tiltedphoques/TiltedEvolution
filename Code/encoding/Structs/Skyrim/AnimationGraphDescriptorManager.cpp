@@ -15,6 +15,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_AtronachFrostRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_AtronachStormBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_SteamBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Falmer_Master_Behavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -34,5 +35,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_AtronachFrostRootBehavior initAnimationGraphDescriptor_AtronachFrostRootBehavior(*this);
         AnimationGraphDescriptor_AtronachStormBehavior initAnimationGraphDescriptor_AtronachStormBehavior(*this);
         AnimationGraphDescriptor_SteamBehavior initAnimationGraphDescriptor_SteamBehavior(*this);
+        AnimationGraphDescriptor_Falmer_Master_Behavior initAnimationGraphDescriptor_Falmer_Master_Behavior(*this);
     });
 }
