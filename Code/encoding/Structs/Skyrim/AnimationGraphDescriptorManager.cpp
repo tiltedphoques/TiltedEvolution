@@ -4,6 +4,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WolfRootBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Root.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -13,5 +14,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
         AnimationGraphDescriptor_BHR_Master initAnimationGraphDescriptor_BHR_Master(*this);
         AnimationGraphDescriptor_WolfRootBehavior initAnimationGraphDescriptor_WolfRootBehavior(*this);
+        //AnimationGraphDescriptor_Root initAnimationGraphDescriptor_Root(*this);
     });
 }
