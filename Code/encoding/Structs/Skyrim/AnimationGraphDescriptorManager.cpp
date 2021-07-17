@@ -23,6 +23,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_SkeeverRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_HorkerRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_MammothRootBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -51,5 +52,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_SkeeverRootBehavior initAnimationGraphDescriptor_SkeeverRootBehavior(*this);
         AnimationGraphDescriptor_HorkerRootBehavior initAnimationGraphDescriptor_HorkerRootBehavior(*this);
         AnimationGraphDescriptor_WerewolfBehavior initAnimationGraphDescriptor_WerewolfBehavior(*this);
+        AnimationGraphDescriptor_MammothRootBehavior initAnimationGraphDescriptor_MammothRootBehavior(*this);
     });
 }
