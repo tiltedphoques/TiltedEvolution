@@ -17,6 +17,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_SteamBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Falmer_Master_Behavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_HagravenMasterBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_ScribRootBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -32,11 +33,13 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_GiantRootBehavior initAnimationGraphDescriptor_GiantRootBehavior(*this);
         AnimationGraphDescriptor_DogRootBehavior initAnimationGraphDescriptor_DogRootBehavior(*this);
         AnimationGraphDescriptor_CowRootBehavior initAnimationGraphDescriptor_CowRootBehavior(*this);
+        AnimationGraphDescriptor_GoatRootBehavior initAnimationGraphDescriptor_GoatRootBehavior(*this);
         AnimationGraphDescriptor_HorseRootBehavior initAnimationGraphDescriptor_HorseRootBehavior(*this);
         AnimationGraphDescriptor_AtronachFrostRootBehavior initAnimationGraphDescriptor_AtronachFrostRootBehavior(*this);
         AnimationGraphDescriptor_AtronachStormBehavior initAnimationGraphDescriptor_AtronachStormBehavior(*this);
         AnimationGraphDescriptor_SteamBehavior initAnimationGraphDescriptor_SteamBehavior(*this);
         AnimationGraphDescriptor_Falmer_Master_Behavior initAnimationGraphDescriptor_Falmer_Master_Behavior(*this);
         AnimationGraphDescriptor_HagravenMasterBehavior initAnimationGraphDescriptor_HagravenMasterBehavior(*this);
+        AnimationGraphDescriptor_ScribRootBehavior initAnimationGraphDescriptor_ScribRootBehavior(*this);
     });
 }
