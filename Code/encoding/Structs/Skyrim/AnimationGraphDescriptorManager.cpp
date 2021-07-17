@@ -6,6 +6,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_WolfRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Root.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_TrollBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_DraugrBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -17,5 +18,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_WolfRootBehavior initAnimationGraphDescriptor_WolfRootBehavior(*this);
         //AnimationGraphDescriptor_Root initAnimationGraphDescriptor_Root(*this);
         AnimationGraphDescriptor_TrollBehavior initAnimationGraphDescriptor_TrollBehavior(*this);
+        AnimationGraphDescriptor_DraugrBehavior initAnimationGraphDescriptor_DraugrBehavior(*this);
     });
 }
