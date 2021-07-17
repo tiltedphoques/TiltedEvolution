@@ -9,6 +9,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_DraugrBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_GiantRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_DogRootBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_CowRootBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -23,5 +24,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_DraugrBehavior initAnimationGraphDescriptor_DraugrBehavior(*this);
         AnimationGraphDescriptor_GiantRootBehavior initAnimationGraphDescriptor_GiantRootBehavior(*this);
         AnimationGraphDescriptor_DogRootBehavior initAnimationGraphDescriptor_DogRootBehavior(*this);
+        AnimationGraphDescriptor_CowRootBehavior initAnimationGraphDescriptor_CowRootBehavior(*this);
     });
 }
