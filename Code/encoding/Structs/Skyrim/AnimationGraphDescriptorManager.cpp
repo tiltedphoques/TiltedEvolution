@@ -20,6 +20,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_ScribRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_BearRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_SabreCatRootBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_SkeeverRootBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -45,5 +46,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_ScribRootBehavior initAnimationGraphDescriptor_ScribRootBehavior(*this);
         AnimationGraphDescriptor_BearRootBehavior initAnimationGraphDescriptor_BearRootBehavior(*this);
         AnimationGraphDescriptor_SabreCatRootBehavior initAnimationGraphDescriptor_SabreCatRootBehavior(*this);
+        AnimationGraphDescriptor_SkeeverRootBehavior initAnimationGraphDescriptor_SkeeverRootBehavior(*this);
     });
 }
