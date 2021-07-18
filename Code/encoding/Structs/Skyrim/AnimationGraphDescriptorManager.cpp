@@ -24,6 +24,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_HorkerRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_MammothRootBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_DeerRootBehavior.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -53,5 +54,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_HorkerRootBehavior initAnimationGraphDescriptor_HorkerRootBehavior(*this);
         AnimationGraphDescriptor_WerewolfBehavior initAnimationGraphDescriptor_WerewolfBehavior(*this);
         AnimationGraphDescriptor_MammothRootBehavior initAnimationGraphDescriptor_MammothRootBehavior(*this);
+        AnimationGraphDescriptor_DeerRootBehavior initAnimationGraphDescriptor_DeerRootBehavior(*this);
     });
 }
