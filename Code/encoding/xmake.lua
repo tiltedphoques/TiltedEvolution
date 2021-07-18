@@ -4,8 +4,20 @@ target(name)
     set_group("common")
     add_defines(def)
     add_includedirs(".", "../", {public = true})
-    add_headerfiles("**.h", {prefixdir = "Encoding"})
-    add_files("**.cpp")
+    add_headerfiles("**.h|Structs/Fallout4/**|Structs/Skyrim/**", {prefixdir = "Encoding"})
+    add_files("**.cpp|Structs/Fallout4/**|Structs/Skyrim/**")
+
+    if name == "SkyrimEncoding" then
+        add_files("Structs/Skyrim/**.cpp")
+        add_headerfiles("Structs/Skyrim/**.h")
+        add_includedirs("Structs/Skyrim")
+    end
+    if name == "FalloutEncoding" then
+        add_files("Structs/Fallout4/**.cpp")
+        add_headerfiles("Structs/Fallout4/**.h")
+        add_includedirs("Structs/Fallout4")
+    end
+
     add_packages("hopscotch-map", "glm", "tiltedcore")
 end
 
