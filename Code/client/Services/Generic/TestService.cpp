@@ -242,6 +242,15 @@ void TestService::AnimationDebugging() noexcept
     if (s_varMap.empty())
         pManager->DumpAnimationVariables(s_varMap, true);
 
+    if (ImGui::Button("Generate variable name key"))
+    {
+        for (auto& [key, value] : s_varMap)
+        {
+            printf("%s", value);
+        }
+        printf("\n");
+    }
+
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
     {
         if (ImGui::BeginTabItem("Blacklist"))

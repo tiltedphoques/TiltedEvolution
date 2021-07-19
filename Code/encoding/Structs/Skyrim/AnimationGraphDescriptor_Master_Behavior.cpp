@@ -324,7 +324,7 @@ enum Actions
     kTurnStop = 0x959FE
 };
 
-static const char* s_master_BehaviorKey =
+static const char* s_variableNames =
     "SpeedDirectionTurnDeltaiSyncIdleLocomotionSpeedWalkSpeedRunfSpeedMinuseShielduseMLhblendMoveStartblendMoveStopblen"
     "dDefaultWalkSpeedMultTurnDeltaDampedTurnMinIsFirstPersonPitchPitchLookblendAttackPowerFastblendAttackPowerSlowblen"
     "dFastIsPlayerattackPowerStartTimeblendMove1stPIntVariableIsNPCblendSlowPitchDefaultPitchOverridestaggerMagnitudebl"
@@ -371,9 +371,7 @@ static const char* s_master_BehaviorKey =
 
 AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key;
-    key.first = 301;
-    key.second = strlen(s_master_BehaviorKey);
+    std::pair<size_t, size_t> key{301, strlen(s_variableNames)};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
