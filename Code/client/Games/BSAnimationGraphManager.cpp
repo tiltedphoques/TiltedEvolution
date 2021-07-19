@@ -50,10 +50,12 @@ void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, const ch
     }
 }
 
-void BSAnimationGraphManager::GetDescriptorKey(std::pair<size_t, size_t>& aKey)
+std::pair<size_t,size_t> BSAnimationGraphManager::GetDescriptorKey()
 {
+    std::pair<size_t, size_t> key;
+    key.first = key.second = 0;
+
     std::map<uint32_t, const char*> variables;
-    aKey.first = aKey.second = 0;
 
     if (animationGraphIndex < animationGraphs.size)
     {
@@ -86,11 +88,13 @@ void BSAnimationGraphManager::GetDescriptorKey(std::pair<size_t, size_t>& aKey)
 
                 for(auto& [id, name] : variables)
                 {
-                    aKey.second += strlen(name);
+                    key.second += strlen(name);
                 }
             }
         }
     }
 
-    aKey.first = variables.size();
+    key.first = variables.size();
+
+    return key;
 }

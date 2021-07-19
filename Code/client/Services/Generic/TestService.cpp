@@ -219,11 +219,13 @@ void TestService::AnimationDebugging() noexcept
 
     if (ImGui::Button("Display key"))
     {
-        std::pair<size_t, size_t> key{};
-        pManager->GetDescriptorKey(key);
+        auto key = pManager->GetDescriptorKey();
         auto pDescriptor =
             AnimationGraphDescriptorManager::Get().GetDescriptor(key);
-        spdlog::error("Key: {} {}", key.first, key.second);
+        if (pDescriptor)
+            spdlog::info("Key: {} {}", key.first, key.second);
+        else
+            spdlog::error("Descriptor key not found");
     }
 
     const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
@@ -307,10 +309,8 @@ void TestService::AnimationDebugging() noexcept
 
             const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
 
-            std::pair<size_t, size_t> key{};
-            pManager->GetDescriptorKey(key);
             auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(key);
+                AnimationGraphDescriptorManager::Get().GetDescriptor(pManager->GetDescriptorKey());
 
             static bool toggleVariableRecord = false;
             if (ImGui::Button("Toggle variable recording"))

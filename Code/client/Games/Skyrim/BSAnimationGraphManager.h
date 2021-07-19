@@ -31,7 +31,7 @@ struct BSAnimationGraphManager
     uint32_t animationGraphIndex; // A8 - 5C
 
     void DumpAnimationVariables(std::map<uint32_t, const char*>& variables, bool aPrintVariables);
-    void GetDescriptorKey(std::pair<size_t, size_t>& aKey);
+    std::pair<size_t, size_t> GetDescriptorKey();
     uint32_t ReSendEvent(BSFixedString* apEventName);
 };
 
