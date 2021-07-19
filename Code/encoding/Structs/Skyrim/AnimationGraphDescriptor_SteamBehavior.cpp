@@ -48,6 +48,7 @@ enum Variables
 
 AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "SteamBehavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -72,4 +73,5 @@ AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(A
             kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
+    */
 }

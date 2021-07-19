@@ -67,6 +67,7 @@ enum Variables
 
 AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_VampireBruteRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "VampireBruteRootBehavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -89,4 +90,5 @@ AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_Vamp
             kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
+    */
 }

@@ -86,6 +86,7 @@ enum Variables
 
 AnimationGraphDescriptor_Root::AnimationGraphDescriptor_Root(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "Root",
         AnimationGraphDescriptor(
         {kIsAttackReady,
@@ -104,4 +105,5 @@ AnimationGraphDescriptor_Root::AnimationGraphDescriptor_Root(AnimationGraphDescr
             kspeedMultForward},
         {kiSyncTurnState,
             kiSyncIdleLocomotion}));
+    */
 }

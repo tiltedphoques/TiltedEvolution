@@ -34,6 +34,7 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
     std::call_once(s_initOnce, [this]() 
     {
         AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
+        /*
         AnimationGraphDescriptor_BHR_Master initAnimationGraphDescriptor_BHR_Master(*this);
         AnimationGraphDescriptor_WolfRootBehavior initAnimationGraphDescriptor_WolfRootBehavior(*this);
         //AnimationGraphDescriptor_Root initAnimationGraphDescriptor_Root(*this);
@@ -59,5 +60,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_DeerRootBehavior initAnimationGraphDescriptor_DeerRootBehavior(*this);
         AnimationGraphDescriptor_VampireBruteRootBehavior initAnimationGraphDescriptor_VampireBruteRootBehavior(*this);
         AnimationGraphDescriptor_VampireLordBehavior initAnimationGraphDescriptor_VampireLordBehavior(*this);
+        */
     });
 }

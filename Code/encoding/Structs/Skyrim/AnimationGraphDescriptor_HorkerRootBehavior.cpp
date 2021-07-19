@@ -97,6 +97,7 @@ enum Variables
 
 AnimationGraphDescriptor_HorkerRootBehavior::AnimationGraphDescriptor_HorkerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "HorkerRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -127,4 +128,5 @@ AnimationGraphDescriptor_HorkerRootBehavior::AnimationGraphDescriptor_HorkerRoot
             kiCombatStance,
             kiState,
             }));
+    */
 }

@@ -81,6 +81,7 @@ enum Variables
 
 AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "Falmer_Master_Behavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -105,4 +106,5 @@ AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer
             kiSyncTurnState,
             kiCombatState,
             }));
+    */
 }

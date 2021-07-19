@@ -81,6 +81,7 @@ enum Variables
 
 AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLordBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "VampireLordBehavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -120,4 +121,5 @@ AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLo
             kiSyncSprintState,
             kiState,
             }));
+    */
 }

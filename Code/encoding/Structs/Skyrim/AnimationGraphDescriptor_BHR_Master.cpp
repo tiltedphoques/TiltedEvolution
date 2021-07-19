@@ -160,6 +160,7 @@ enum Variables
 
 AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "BHR_Master",
         AnimationGraphDescriptor(
             // Bools
@@ -220,4 +221,5 @@ AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(Animati
             {kiSyncIdleLocomotion,
             kiSyncTurnState,
             kiState}));
+    */
 }

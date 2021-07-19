@@ -99,6 +99,7 @@ enum Variables
 
 AnimationGraphDescriptor_SkeeverRootBehavior::AnimationGraphDescriptor_SkeeverRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "SkeeverRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -129,4 +130,5 @@ AnimationGraphDescriptor_SkeeverRootBehavior::AnimationGraphDescriptor_SkeeverRo
             kiCombatStance,
             kiState,
             }));
+    */
 }

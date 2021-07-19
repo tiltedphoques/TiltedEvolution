@@ -83,6 +83,7 @@ enum Variables
 
 AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "HorseRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -108,4 +109,5 @@ AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBe
             kiCombatStance,
             kiState,
             kiSyncSprintState,}));
+    */
 }

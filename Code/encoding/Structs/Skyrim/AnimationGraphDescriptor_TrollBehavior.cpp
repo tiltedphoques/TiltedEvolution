@@ -55,6 +55,7 @@ enum Variables
 
 AnimationGraphDescriptor_TrollBehavior::AnimationGraphDescriptor_TrollBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "TrollBehavior",
         AnimationGraphDescriptor(
         {kbAnimationDriven,
@@ -71,4 +72,5 @@ AnimationGraphDescriptor_TrollBehavior::AnimationGraphDescriptor_TrollBehavior(A
             kDirectionBlendA},
         {kiSyncTurnState,
             kiSyncIdleLocomotion}));
+    */
 }

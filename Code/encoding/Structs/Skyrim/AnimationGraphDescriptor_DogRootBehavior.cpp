@@ -100,6 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "DogRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -125,4 +126,5 @@ AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavi
             kiSyncForwardState,
             kiCombatStance,
             kiMovementSpeed}));
+    */
 }

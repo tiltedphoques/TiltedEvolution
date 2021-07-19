@@ -162,6 +162,7 @@ enum Variables
 
 AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_HagravenMasterBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "HagravenMasterBehavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -189,4 +190,5 @@ AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_Hagrav
             kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
+    */
 }

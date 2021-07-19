@@ -99,6 +99,7 @@ enum Variables
 
 AnimationGraphDescriptor_GoatRootBehavior::AnimationGraphDescriptor_GoatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "GoatRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -123,4 +124,5 @@ AnimationGraphDescriptor_GoatRootBehavior::AnimationGraphDescriptor_GoatRootBeha
             kiSyncTurnState,
             kiSyncForwardState,
             kiMovementSpeed,}));
+    */
 }

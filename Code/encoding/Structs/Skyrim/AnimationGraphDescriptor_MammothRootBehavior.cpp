@@ -115,6 +115,7 @@ enum Variables
 
 AnimationGraphDescriptor_MammothRootBehavior::AnimationGraphDescriptor_MammothRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "MammothRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -145,4 +146,5 @@ AnimationGraphDescriptor_MammothRootBehavior::AnimationGraphDescriptor_MammothRo
             kiCombatStance,
             kiState,
             }));
+    */
 }

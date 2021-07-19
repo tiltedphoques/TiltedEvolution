@@ -113,6 +113,7 @@ enum Variables
 
 AnimationGraphDescriptor_BearRootBehavior::AnimationGraphDescriptor_BearRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "BearRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -142,4 +143,5 @@ AnimationGraphDescriptor_BearRootBehavior::AnimationGraphDescriptor_BearRootBeha
             kiMovementSpeed,
             kiCombatStance,
             }));
+    */
 }

@@ -95,6 +95,7 @@ enum Variables
 
 AnimationGraphDescriptor_ScribRootBehavior::AnimationGraphDescriptor_ScribRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "ScribRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -123,4 +124,5 @@ AnimationGraphDescriptor_ScribRootBehavior::AnimationGraphDescriptor_ScribRootBe
             kiMovementSpeed,
             kiCombatStance,
             }));
+    */
 }

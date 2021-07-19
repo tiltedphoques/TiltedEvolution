@@ -217,6 +217,15 @@ void TestService::AnimationDebugging() noexcept
         return;
     }
 
+    if (ImGui::Button("Display key"))
+    {
+        std::pair<size_t, size_t> key{};
+        pManager->GetDescriptorKey(key);
+        auto pDescriptor =
+            AnimationGraphDescriptorManager::Get().GetDescriptor(key);
+        spdlog::error("Key: {} {}", key.first, key.second);
+    }
+
     const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
 
     if (!pGraph)
@@ -297,8 +306,11 @@ void TestService::AnimationDebugging() noexcept
             ImGui::InputText("Graph state machine name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
 
             const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
+
+            std::pair<size_t, size_t> key{};
+            pManager->GetDescriptorKey(key);
             auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+                AnimationGraphDescriptorManager::Get().GetDescriptor(key);
 
             static bool toggleVariableRecord = false;
             if (ImGui::Button("Toggle variable recording"))

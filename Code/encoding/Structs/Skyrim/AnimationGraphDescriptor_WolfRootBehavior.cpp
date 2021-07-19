@@ -100,6 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "WolfRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -125,4 +126,5 @@ AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBeha
             kiSyncForwardState,
             kiCombatStance,
             kiMovementSpeed}));
+    */
 }

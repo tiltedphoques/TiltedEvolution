@@ -39,6 +39,7 @@ enum Variables
 
 AnimationGraphDescriptor_AtronachStormBehavior::AnimationGraphDescriptor_AtronachStormBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "AtronachStormBehavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -60,4 +61,5 @@ AnimationGraphDescriptor_AtronachStormBehavior::AnimationGraphDescriptor_Atronac
             kiSyncDefaultState,
             kiCombatStateID,
             }));
+    */
 }

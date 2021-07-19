@@ -68,6 +68,7 @@ enum Variables
 
 AnimationGraphDescriptor_GiantRootBehavior::AnimationGraphDescriptor_GiantRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "GiantRootBehavior",
         AnimationGraphDescriptor(
         {kbAnimationDriven,
@@ -85,4 +86,5 @@ AnimationGraphDescriptor_GiantRootBehavior::AnimationGraphDescriptor_GiantRootBe
             kiSyncTurnState,
             kiState,
             kiStateCurrent}));
+    */
 }

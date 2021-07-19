@@ -55,6 +55,7 @@ enum Variables
 
 AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_AtronachFrostRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "AtronachFrostRootBehavior",
         AnimationGraphDescriptor(
         {kbEquipOk,
@@ -73,4 +74,5 @@ AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_Atr
         {kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
+    */
 }

@@ -98,6 +98,7 @@ enum Variables
 
 AnimationGraphDescriptor_SabreCatRootBehavior::AnimationGraphDescriptor_SabreCatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "SabreCatRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -127,4 +128,5 @@ AnimationGraphDescriptor_SabreCatRootBehavior::AnimationGraphDescriptor_SabreCat
             kiMovementSpeed,
             kiCombatStance,
             }));
+    */
 }

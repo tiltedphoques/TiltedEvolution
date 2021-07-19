@@ -90,8 +90,10 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            const auto* pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+            std::pair<size_t, size_t> key{};
+            pManager->GetDescriptorKey(key);
+            auto pDescriptor =
+                AnimationGraphDescriptorManager::Get().GetDescriptor(key);
 
             if (!pDescriptor)
                 return;
@@ -149,8 +151,10 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            const auto* pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+            std::pair<size_t, size_t> key{};
+            pManager->GetDescriptorKey(key);
+            auto pDescriptor =
+                AnimationGraphDescriptorManager::Get().GetDescriptor(key);
 
             if (!pDescriptor)
             {

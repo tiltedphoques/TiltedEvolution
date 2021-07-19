@@ -84,6 +84,7 @@ enum Variables
 
 AnimationGraphDescriptor_DraugrBehavior::AnimationGraphDescriptor_DraugrBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "DraugrBehavior",
         AnimationGraphDescriptor(
         {kbAnimationDriven,
@@ -108,4 +109,5 @@ AnimationGraphDescriptor_DraugrBehavior::AnimationGraphDescriptor_DraugrBehavior
             kiSyncIdleLocomotion,
             kcurrentDefaultState,
             kiState}));
+    */
 }

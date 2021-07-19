@@ -100,6 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_DeerRootBehavior::AnimationGraphDescriptor_DeerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "DeerRootBehavior",
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
@@ -130,4 +131,5 @@ AnimationGraphDescriptor_DeerRootBehavior::AnimationGraphDescriptor_DeerRootBeha
             kiCombatStance,
             kiState,
             }));
+    */
 }
