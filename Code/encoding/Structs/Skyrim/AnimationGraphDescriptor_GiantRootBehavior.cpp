@@ -66,22 +66,9 @@ enum Variables
     kIsBleedingOutTransition = 60,
 };
 
-static const char* s_variableNames =
-    "iSyncIdleLocomotionSpeedDirectionbAnimationDrivenblendDefaultIsAttackingblendFastTurnDeltaiSyncTurnStateIsAttackRe"
-    "adyIsRecoilingIsStaggeringstaggerMagnitudeTargetLocationIsBleedingOutblendSlowFootIKEnablem_onOffGainm_"
-    "groundAscendingGainm_groundDescendingGainm_footPlantedGainm_footRaisedGainm_footUnlockGainm_"
-    "worldFromModelFeedbackGainm_errorUpDownBiasm_alignWorldFromModelGainm_hipOrientationGainm_"
-    "footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
-    "minAnkleHeightMSbEquipOkiSyncDefaultStatebHeadTrackingOnbCanHeadTrackfMinSpeedfMinTurnSpeediStateiState_"
-    "GiantDefaultm_footEndLSSpeedSampledIsBashingiState_"
-    "GiantCombatRuncamerafromxcamerafromycamerafromzDirectionDampedDirectionGainIsRootingm_raycastDistanceUpm_"
-    "raycastDistanceDownstaggerDirectionm_"
-    "errorOutTranslationbAllowRotationiGetUpTypebHeadTrackingbIsSyncediStateRunWalkiState_"
-    "GiantCombatWalkiStateCurrentIsBleedingOutTransition";
-
 AnimationGraphDescriptor_GiantRootBehavior::AnimationGraphDescriptor_GiantRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{61, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{61, 901};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

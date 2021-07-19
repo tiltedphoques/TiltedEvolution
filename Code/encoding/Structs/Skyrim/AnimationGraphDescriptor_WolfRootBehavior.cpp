@@ -98,25 +98,9 @@ enum Variables
     kiState_DeerDefaultRun = 92,
 };
 
-static const char* s_variableNames =
-    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
-    "mbatStancetestbHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
-    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
-    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
-    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
-    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
-    "iState_"
-    "WolfDefaultbSkeeverLungeiCharacterSelectorfMinMoveSpeedDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDamped"
-    "SpeedSampledIsBashingwalkBackRateiMovementSpeedstaggerDirectionbFootIKDisableiGetUpTypeiState_WolfRuniState_"
-    "CowDefaultiState_DogDefaultiState_SabreCatDefaultiState_SkeeverDefaultiState_SkeeverLungeiState_"
-    "HorseDefaultiState_BearDefaultiState_DeerDefaultiState_GoatDefaultiState_HorkerDefaultiState_MammothDefaultiState_"
-    "HorseSprintiSyncSprintStatefTwistDirectionOldDirectionbNoHeadTrackcamerafromxcamerafromycamerafromzwalkBackSpeedMu"
-    "ltIsSideAttackingisIdleLaybFootIKEnableiState_CowSwimDefaultiState_HorkerSwimDefaultiState_"
-    "BearSwimDefaultisSwimmingisMovingbForceIdleStopiState_DeerDefaultRun";
-
 AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{93, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{93, 1373};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -18,7 +18,8 @@ const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(s
 AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, std::pair<size_t,size_t> aKey,
                                                   AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    printf("\t\tGraph descriptor key: %d %d\n", aKey.first, aKey.second);
+    auto keyHash = std::hash<std::pair<size_t, size_t>>{}(aKey);
+    printf("\t\tGraph descriptor key: %d %d, hash %u\n", aKey.first, aKey.second, keyHash);
     aManager.Register(aKey, std::move(aAnimationGraphDescriptor));
 }
 

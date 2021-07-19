@@ -224,6 +224,7 @@ void TestService::AnimationDebugging() noexcept
             AnimationGraphDescriptorManager::Get().GetDescriptor(key);
 
         spdlog::info("Key: {} {}", key.first, key.second);
+        printf("std::pair<size_t, size_t> key{%u, %u};\n", key.first, key.second);
         if (!pDescriptor)
             spdlog::error("Descriptor key not found");
     }

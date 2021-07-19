@@ -53,17 +53,9 @@ enum Variables
     kbForceIdleStop = 47,
 };
 
-static const char* s_variableNames =
-    "iSyncTurnStateTurnDeltaDirectionSpeedbAnimationDrivenbIsSyncedIsRecoilingIsStaggeringSpeedStartVarTurnDeltaDampedT"
-    "urnMinIsAttackReadyIntDirectionSpeedDampedIsAttackingbAllowRotationFootIKEnablebHeadTrackingOffstaggerMagnitudebEq"
-    "uipOkcurrentDefaultStateiStateiState_"
-    "TrollDefaultSampledSpeedIsCrouchingiSyncIdleLocomotionblendShortblendNormalisMovingDirectionOffsetDirDampedTimeDel"
-    "taDirAccDirectionBlendADirectionBlendBActiveBlendbDirBlendAbDirBlendBblendThreshblendAttackbHeadTrackingTargetLoca"
-    "tioncamerafromxcamerafromycamerafromziGetUpTypestaggerDirectionbForceIdleStop";
-
 AnimationGraphDescriptor_TrollBehavior::AnimationGraphDescriptor_TrollBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{48, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{48, 570};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

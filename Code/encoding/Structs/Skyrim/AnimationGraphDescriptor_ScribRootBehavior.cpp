@@ -93,24 +93,9 @@ enum Variables
     kdefaultBlend = 87,
 };
 
-static const char* s_variableNames =
-    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
-    "mbatStancebHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
-    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
-    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
-    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
-    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
-    "bSkeeverLungeiCharacterSelectorfMinMoveSpeedDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDampedIsBashingbN"
-    "oHeadTrackcamerafromxcamerafromycamerafromzwalkBackRatem_footPlantedAnkleHeightMS_Frontm_footRaisedAnkleHeightMS_"
-    "Frontm_maxAnkleHeightMS_Frontm_footPlantedAnkleHeightMS_Rearm_footRaisedAnkleHeightMS_Rearm_maxAnkleHeightMS_"
-    "Rearm_minCharControllerSeparationm_maxCharControllerSeparationm_errorOutm_hitSomething_0m_hitSomething_1m_"
-    "hitSomething_2m_hitSomething_"
-    "3bLegCastResultsIsSideAttackingiGetUpTypeiGetUpType00iMovementSpeedisMovingbForceIdleStopbFootIKEnableisIdleLayisS"
-    "wimming00iState_ScribDefaultwalkBackSpeedMultstaggerDirectionSpeedSampledSlowBlendDefaultBlend";
-
 AnimationGraphDescriptor_ScribRootBehavior::AnimationGraphDescriptor_ScribRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{88, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{88, 1336};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

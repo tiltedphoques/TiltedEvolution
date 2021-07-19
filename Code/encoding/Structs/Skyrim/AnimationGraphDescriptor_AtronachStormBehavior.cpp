@@ -37,16 +37,9 @@ enum Variables
     kiGetUpType = 31,
 };
 
-static const char* s_variableNames =
-    "blendDefaultiSyncIdleLocomotionblendSlowSpeedDirectionIsStaggeringIsRecoilingbEquipOkiStateiState_"
-    "AtronachStormDefaultIsAttackReadybHeadTrackingblendFastCombatSpeedMultIsAttackingiSyncDefaultStateDirectionDampedS"
-    "peedAccTimeDeltabAllowRotationstaggerMagnitudebAnimationDrivenbMLh_"
-    "ReadyisCastingbWantCastLeftiLeftHandTypeIsSummonedIsBashingIsPowerAttackingstaggerDirectioniCombatStateIDiGetUpTyp"
-    "e";
-
 AnimationGraphDescriptor_AtronachStormBehavior::AnimationGraphDescriptor_AtronachStormBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{32, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{32, 394};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

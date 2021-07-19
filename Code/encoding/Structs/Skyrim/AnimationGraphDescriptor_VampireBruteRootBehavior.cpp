@@ -65,22 +65,9 @@ enum Variables
     kIsBleedingOutTransition = 59,
 };
 
-static const char* s_variableNames =
-    "iSyncIdleLocomotionSpeedDirectionbAnimationDrivenblendNormalIsAttackingblendFastTurnDeltaiSyncTurnStateIsAttackRea"
-    "dyIsRecoilingIsStaggeringstaggerMagnitudeTargetLocationIsBleedingOutblendSlowFootIKEnablem_onOffGainm_"
-    "groundAscendingGainm_groundDescendingGainm_footPlantedGainm_footRaisedGainm_footUnlockGainm_"
-    "worldFromModelFeedbackGainm_errorUpDownBiasm_alignWorldFromModelGainm_hipOrientationGainm_"
-    "footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
-    "minAnkleHeightMSbEquipOkiSyncDefaultStatebHeadTrackingOnbCanHeadTrackfMinSpeedfMinTurnSpeediStateiState_"
-    "GargoyleDefaultm_footEndLSSpeedSampledIsBashingiState_"
-    "GargoyleCombatRuncamerafromxcamerafromycamerafromzDirectionDampedDirectionGainm_raycastDistanceUpm_"
-    "raycastDistanceDownstaggerDirectionm_"
-    "errorOutTranslationbAllowRotationiGetUpTypebHeadTrackingbIsSyncediStateRunWalkiState_"
-    "GargoyleCombatWalkiStateCurrentIsBleedingOutTransition";
-
 AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_VampireBruteRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{60, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{60, 900};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

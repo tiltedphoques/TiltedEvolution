@@ -82,22 +82,9 @@ enum Variables
     ktest = 76,
 };
 
-static const char* s_variableNames =
-    "blendMoveStartblendMove1stPblendMoveStopTurnDeltablendDefaultDirectionSpeediWantSprintiSyncTurnStateiRightHandType"
-    "iLeftHandTypebIsSyncedbAnimationDrivenIsStaggeringiSyncIdleLocomotionblendFastIsAttackReadybAllowRotationIsBlockin"
-    "gIsPlayerPitchIsFiringBowBowZoomBoolVariableIsEquippingIsUnequippingbWeapReadystaggerMagnitudecurrentDefaultStateb"
-    "EquipOkiWantBlocki1HMStateIsBashingiStateiState_DraugrDefaultiState_"
-    "DraugrBlockingSampledSpeediEquippedItemStatebMLh_"
-    "ReadyIsCastingLeftIsCastingRightInDualMagicStateIsCastingDualIsInCastStateDampedIsBlockHitbWantCastLeftIsInCastSta"
-    "teBlendAccbInMoveStateIsPowerAttackingbCastReadybVoiceReadybWantCastVoiceTimeDeltaiState_DraugrRangediState_"
-    "Draugr1HMiState_DraugrBattleAxeiState_DraugrGreatSwordiState_DraugrH2HiState_DraugrBowiState_DraugrBowDrawniState_"
-    "Draugr2GSBlockingiState_"
-    "Draugr2HMBlockingbHeadTrackingOnTargetLocationcamerafromxcamerafromycamerafromzbCanHeadTrackIsBleedingOutbHeadTrac"
-    "kingiState_DraugrShieldBlockingblendCyclicstaggerDirectionbInFurnitureiGetUpTypetest";
-
 AnimationGraphDescriptor_DraugrBehavior::AnimationGraphDescriptor_DraugrBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{76, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{77, 1017};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

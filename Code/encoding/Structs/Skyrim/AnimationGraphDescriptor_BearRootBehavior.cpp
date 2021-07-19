@@ -111,27 +111,9 @@ enum Variables
     kiState_DeerDefaultRun = 105,
 };
 
-static const char* s_variableNames =
-    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
-    "mbatStancetestbHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
-    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
-    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
-    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
-    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
-    "bSkeeverLungeiCharacterSelectorfMinMoveSpeedDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDampedIsBashingbN"
-    "oHeadTrackcamerafromxcamerafromycamerafromzwalkBackRateiState_BearDefaultm_footPlantedAnkleHeightMS_Frontm_"
-    "footRaisedAnkleHeightMS_Frontm_maxAnkleHeightMS_Frontm_footPlantedAnkleHeightMS_Rearm_footRaisedAnkleHeightMS_"
-    "Rearm_maxAnkleHeightMS_Rearm_minCharControllerSeparationm_maxCharControllerSeparationm_errorOutm_hitSomething_0m_"
-    "hitSomething_1m_hitSomething_2m_hitSomething_3bLegCastResultsIsSideAttackingiState_"
-    "BearSwimDefaultiGetUpTypeiGetUpType00iMovementSpeedisMovingbForceIdleStopbFootIKEnableisIdleLayiState_"
-    "CowDefaultiState_DogDefaultiState_WolfDefaultiState_SabreCatDefaultiState_SkeeverDefaultiState_SkeeverLungeiState_"
-    "HorseDefaultiState_DeerDefaultiState_GoatDefaultiState_HorkerDefaultiState_MammothDefaultiState_"
-    "HorseSprintiSyncSprintStatefTwistDirectionOldDirectionSpeedSampledwalkBackSpeedMultstaggerDirectioniState_"
-    "CowSwimDefaultiState_HorkerSwimDefaultisSwimmingiState_DeerDefaultRun";
-
 AnimationGraphDescriptor_BearRootBehavior::AnimationGraphDescriptor_BearRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{106, strlen(s_variableNames)};
+    std::pair<size_t, size_t> key{106, 1675};
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
