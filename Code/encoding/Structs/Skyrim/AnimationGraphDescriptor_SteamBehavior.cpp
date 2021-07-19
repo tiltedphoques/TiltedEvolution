@@ -46,10 +46,19 @@ enum Variables
     kbIsSynced = 40,
 };
 
+static const char* s_variableNames =
+    "currentDefaultStateiSyncIdleLocomotioniSyncTurnStateTurnDeltaiStateiState_"
+    "SteamDefaultDirectionSampledSpeedSpeediLeftHandTypeiRightHandTypebAnimationDrivenIsRecoilingIsStaggeringIsAttackin"
+    "gbAllowRotationbEquipOkIsEquippingIsUnequippingbWeapReadyIsAttackReadyiState_"
+    "SteamCombatIsBlockingstaggerMagnitudeIsBashingbAttachedisCastingbWantCastVoicebMLh_"
+    "ReadyInt32VariablestaggerDirectionIsShoutingiGetUpTypebVoiceReadybHeadTrackingOnTargetLocationcamerafromxcamerafro"
+    "mycamerafromzbCastReadybIsSynced";
+
 AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "SteamBehavior",
+    std::pair<size_t, size_t> key{41, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbEquipOk,
             kbAnimationDriven,
@@ -73,5 +82,4 @@ AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(A
             kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
-    */
 }

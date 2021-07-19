@@ -79,10 +79,23 @@ enum Variables
     kbMRh_Ready = 73,
 };
 
+static const char* s_variableNames =
+    "iSyncIdleLocomotioniSyncTurnStateSpeedblendDefaultDirectionbEquipOkiRightHandTypeiWantBlockiLeftHandTypeiEquippedI"
+    "temStateIsAttackReadyIsRecoilingIsStaggeringbWeapReadyIsAttackingcurrentDefaultStateblendFastbAnimationDrivenstagg"
+    "erMagnitudebAllowRotationbHeadTrackingTargetLocationbHeadTrackingOnbCanHeadTrackIsBlockingiBlockStateiSyncAttackSt"
+    "anceIsBashingFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_footPlantedGainm_footRaisedGainm_"
+    "footUnlockGainm_worldFromModeFeedbackGainm_errorUpDownBiasm_alignWorldFromModelGainm_hipOrientationGainm_"
+    "footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_minAnkleHeightMSm_"
+    "footEndLSiStateSpeedDampedTurnDeltaIsFiringBowPitchSpeedSampledisCastingbWantCastLeftbMLh_ReadyiState_"
+    "FalmerDefaultturnSpeedMultIsUnequippingIsBleedingOutcamerafromxcamerafromycamerafromziGetUpTypebIsSyncedstaggerDir"
+    "ectioniState_FalmerBowDrawnIsSquattingiCombatStateiLeftHandEquippediStateRunWalkiStateCurrentiState_"
+    "Falmer1HMRuniState_Falmer1HMWalkInt8VariablebWantCastRightbMRh_Ready";
+
 AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "Falmer_Master_Behavior",
+    std::pair<size_t, size_t> key{74, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbEquipOk,
             kbAnimationDriven,
@@ -106,5 +119,4 @@ AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer
             kiSyncTurnState,
             kiCombatState,
             }));
-    */
 }

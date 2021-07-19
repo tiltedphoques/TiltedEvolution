@@ -160,10 +160,37 @@ enum Variables
     kLipThDamped = 154,
 };
 
+static const char* s_variableNames =
+    "SpeedIsStaggeringIsAttackingIsRecoilingDirectionSpeedSamplediSyncDefaultStateiSyncIdleLocomotioniStateiState_"
+    "HagravenDefaultTurnDeltaturnSpeedMultiSyncTurnStateiRightHandTypebWeapReadyiEquippedItemStateIsAttackReadybMLh_"
+    "ReadybMRh_"
+    "ReadyIntDirectionblendFastblendDefaultisCastingbWantCastRightbWantCastLeftbHeadTrackingOnTargetLocationcamerafromx"
+    "camerafromycamerafromzbCanHeadTrackbHeadTrackingbEquipOkbAnimationDrivenstaggerMagnitudebIsSyncediGetUpTypestagger"
+    "DirectionTimeStepbFullyMotionDrivenDirectionDampedbFootIKbNoFootIKIsShoutingIsBusyIsIdlebVoiceReadybWantCastVoicei"
+    "CombatTweenEntryDirectioniDirectionForwardPhonemeBlendTargetLipBigAahLipDSTLipEeeLipFVLipKLipLLipRLipThPhonemeBlen"
+    "dLipAccInvPhonemeBlendbLookAtTargetbCanLookAtTargetm_worldFromModelFeedbackGainm_alignWorldFromModelGainm_"
+    "ankeOrientationGainm_frontFootPlantedAnkleHeightMSm_frontFootRaisedAnkleHeightMSm_frontMaxAnkleHeightMSm_"
+    "frontMinAnkleHeightMSm_rearFootPlantedAnkleHeightMSm_rearFootRaisedAnkleHeightMSm_rearMaxAnkleHeightMSm_"
+    "rearMinAnkleHeightMSm_rearMaxAnkleAngleDegreesm_raycastDistanceUpm_raycastDistanceDownm_errorOutm_"
+    "errorOutTranslationm_alignWithGroundRotationBSLookAtModifier_m_onGainBSLookAtModifier_m_"
+    "offGainLookAtHeadingMaxAngleBSLookAtModifier_"
+    "CanLookOutsideLimitLookAtOutOfRangebSpeedSyncedDefaultBlendHasTweenSpeedTweenSpeedDistToGoalTurnDeltaDampedPitchDe"
+    "ltaDampedFlightPitchBlendPathAngleMovementDirectionMoveDirZBSLookAtModifier_m_onGain_ShoutingBSLookAtModifier_m_"
+    "onGain_CombatBSLookAtModifier_m_offGain_ShoutingBSLookAtModifier_m_offGain_"
+    "CombatPitchDeltaMaxSpeedCurrentMaxSpeedMinSpeedMaxSpeedDampedPathAngleThresholdTargetSpeedDampedTargetSpeedTweenSp"
+    "eedDampedTweenSpeedMinMaxAccTargetSpeedMaxScaleMaxDecDragTargetSpeedThresholdMinTargetSpeedThresholdMaxIsFeatherin"
+    "gTurnDeltaTargetTurnDeltaScaleTurnDeltaDampedGainPitchDeltaTargetPitchDeltaDampedGainFlightPitchBlendTargetFlightP"
+    "itchBlendGainPickNewIdleTimeFlightHitInjuredSpeedMinFlightHitInjuredDecGainTurnMinIsTurningLeftIsTurningRightfMinS"
+    "peedisMovingIsMovingForwardIsMovingBackwardBSLookAtModifier_m_onGain_DefaultBSLookAtModifier_m_offGain_"
+    "DefaultTweenRotationbAllowRotationTweenPositionConstraintOffsetbTweenUpdateTweenEntryDirectionFlightKillGrabTweenE"
+    "ntryDirectionPrevTweenEntryDirectionCurLipBigAahDampedLipGainLipDSTDampedLipEeeDampedLipFVDampedLipKDampedLipLDamp"
+    "edLipRDampedLipThDamped";
+
 AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_HagravenMasterBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "HagravenMasterBehavior",
+    std::pair<size_t, size_t> key{155, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbEquipOk,
             kbAnimationDriven,
@@ -190,5 +217,4 @@ AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_Hagrav
             kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
-    */
 }

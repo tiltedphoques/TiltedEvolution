@@ -98,10 +98,27 @@ enum Variables
     kiState_DeerDefaultRun = 92,
 };
 
+static const char* s_variableNames =
+    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
+    "mbatStancetestbHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
+    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
+    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
+    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
+    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
+    "iState_"
+    "DogDefaultbSkeeverLungeiCharacterSelectorfMinMoveSpeedDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDampedS"
+    "peedSampledIsBashingwalkBackRateiMovementSpeedisIdleLaystaggerDirectionbFootIKDisableiGetUpTypebForceIdleStopiStat"
+    "e_DogRuniState_CowDefaultiState_WolfDefaultiState_SabreCatDefaultiState_SkeeverDefaultiState_SkeeverLungeiState_"
+    "HorseDefaultiState_BearDefaultiState_DeerDefaultiState_GoatDefaultiState_HorkerDefaultiState_MammothDefaultiState_"
+    "HorseSprintiSyncSprintStatefTwistDirectionOldDirectionbNoHeadTrackcamerafromxcamerafromycamerafromzwalkBackSpeedMu"
+    "ltIsSideAttackingbFootIKEnableiState_CowSwimDefaultiState_HorkerSwimDefaultiState_"
+    "BearSwimDefaultisSwimmingisMovingiState_DeerDefaultRun";
+
 AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "DogRootBehavior",
+    std::pair<size_t, size_t> key{93, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
             kbAnimationDriven,
@@ -126,5 +143,4 @@ AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavi
             kiSyncForwardState,
             kiCombatStance,
             kiMovementSpeed}));
-    */
 }

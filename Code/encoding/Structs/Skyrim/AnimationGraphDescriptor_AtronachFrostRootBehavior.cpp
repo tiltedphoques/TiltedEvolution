@@ -53,10 +53,21 @@ enum Variables
     kiGetUpType = 47,
 };
 
+static const char* s_variableNames =
+    "DefaultBlendDirectioniSyncIdleLocomotionSpeedIsStaggeringbEquipOkIsRecoilingbAnimationDrivenIsAttackReadyIsAttacki"
+    "ngbAllowRotationfMinSpeedstaggerMagnitudeiSyncDefaultStateFastBlendIsBlockingIsBashingiWantBlockiState_"
+    "AtronachFrostBlockingiStateiState_"
+    "AtronachFrostDefaultTurnDeltaiSyncTurnStateTurnDampedSpeedAccTimeDeltaIsSummonedm_onOffGainm_groundAscendingGainm_"
+    "groundDescendingGainm_footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_"
+    "errorUpDownBiasm_alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_"
+    "maxAnkleHeightMSm_"
+    "minAnkleHeightMSFootIKEnableSpeedDampedIsBlockHitiWantBlockFalseSpeedSampledstaggerDirectioniGetUpType";
+
 AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_AtronachFrostRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "AtronachFrostRootBehavior",
+    std::pair<size_t, size_t> key{48, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbEquipOk,
             kbAnimationDriven,
@@ -74,5 +85,4 @@ AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_Atr
         {kiSyncIdleLocomotion,
             kiSyncTurnState,
             }));
-    */
 }

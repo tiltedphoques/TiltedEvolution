@@ -98,10 +98,28 @@ enum Variables
     kSlowBlend = 92,
 };
 
+
+static const char* s_variableNames =
+    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
+    "mbatStancetestbHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
+    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
+    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
+    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
+    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
+    "iState_"
+    "CowDefaultbSkeeverLungeiCharacterSelectorfMinMoveSpeedDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDampedS"
+    "peedSampledIsBashingbNoHeadTrackwalkBackRateiState_CowSiwmDefaultiGetUpTypeiState_DogDefaultiState_"
+    "WolfDefaultiState_SabreCatDefaultiState_SkeeverDefaultiState_SkeeverLungeiState_HorseDefaultiState_"
+    "BearDefaultiState_DeerDefaultiState_GoatDefaultiState_HorkerDefaultiState_MammothDefaultiState_"
+    "HorseSprintiSyncSprintStatefTwistDirectionOldDirectioncamerafromxcamerafromycamerafromzwalkBackSpeedMultiMovementS"
+    "peedIsSideAttackingisIdleLaystaggerDirectionbFootIKEnableiState_CowSwimDefaultiState_HorkerSwimDefaultiState_"
+    "BearSwimDefaultisSwimmingisMovingbForceIdleStopiState_DeerDefaultRunSlowBlend";
+
 AnimationGraphDescriptor_CowRootBehavior::AnimationGraphDescriptor_CowRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "CowRootBehavior",
+    std::pair<size_t, size_t> key{93, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
             kbAnimationDriven,
@@ -124,5 +142,4 @@ AnimationGraphDescriptor_CowRootBehavior::AnimationGraphDescriptor_CowRootBehavi
             kiSyncTurnState,
             kiSyncForwardState,
             kiMovementSpeed}));
-    */
 }

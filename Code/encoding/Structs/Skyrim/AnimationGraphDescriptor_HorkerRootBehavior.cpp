@@ -95,10 +95,27 @@ enum Variables
     kiState_DeerDefaultRun = 89,
 };
 
+static const char* s_variableNames =
+    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
+    "mbatStancetestbHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
+    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
+    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
+    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
+    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
+    "iState_"
+    "HorkerDefaultbSkeeverLungeiCharacterSelectorDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDampedIsBashingwa"
+    "lkBackRateiState_HorkerSwimDefaultiGetUpTypeiState_CowDefaultiState_DogDefaultiState_WolfDefaultiState_"
+    "SabreCatDefaultiState_SkeeverDefaultiState_SkeeverLungeiState_HorseDefaultiState_BearDefaultiState_"
+    "DeerDefaultiState_GoatDefaultiState_MammothDefaultiState_"
+    "HorseSprintiSyncSprintStatefTwistDirectionOldDirectionSpeedSampledbNoHeadTrackcamerafromxcamerafromycamerafromzwal"
+    "kBackSpeedMultiMovementSpeedIsSideAttackingisIdleLaystaggerDirectionbFootIKEnableiState_CowSwimDefaultiState_"
+    "BearSwimDefaultisSwimmingisMovingbForceIdleStopiState_DeerDefaultRun";
+
 AnimationGraphDescriptor_HorkerRootBehavior::AnimationGraphDescriptor_HorkerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "HorkerRootBehavior",
+    std::pair<size_t, size_t> key{90, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
             kbAnimationDriven,
@@ -128,5 +145,4 @@ AnimationGraphDescriptor_HorkerRootBehavior::AnimationGraphDescriptor_HorkerRoot
             kiCombatStance,
             kiState,
             }));
-    */
 }

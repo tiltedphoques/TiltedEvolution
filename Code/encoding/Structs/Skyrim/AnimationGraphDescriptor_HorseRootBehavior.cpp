@@ -81,10 +81,24 @@ enum Variables
     kisMoving = 75,
 };
 
+static const char* s_variableNames =
+    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnDirectioniSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMul"
+    "tiCombatStancebHeadTrackingOnTargetLocationm_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
+    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
+    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
+    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
+    "ckingstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendVerySlowisIdleSittingbMirroredAttackiStateiCh"
+    "aracterSelectorfMinMoveSpeedDirectionIsAttackReadyiState_HorseDefaultTurnDeltaDampediSyncSprintStateiState_"
+    "HorseSprintfTwistDirectionIsSprintingHorseSpeedSampledDirectionDampedDirectionRangeDirectionRangeDampedIsBashingIs"
+    "DismountingblendFromAnimDrivenwalkBackRatewalkBackSpeedMultcamerafromxcamerafromycamerafromzbInJumpStateiState_"
+    "HorseFalliGetUpTypebInSwimStateiState_"
+    "HorseSwimstaggerDirectionblendSlowbForceIdleStopbHorseFootIKEnablebNoHeadTrackisMoving";
+
 AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "HorseRootBehavior",
+    std::pair<size_t, size_t> key{76, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
             kbAnimationDriven,
@@ -109,5 +123,4 @@ AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBe
             kiCombatStance,
             kiState,
             kiSyncSprintState,}));
-    */
 }

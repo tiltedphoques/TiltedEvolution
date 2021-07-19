@@ -158,10 +158,37 @@ enum Variables
     kfPhonemeDefaultWeight = 152,
 };
 
+static const char* s_variableNames =
+    "PitchTurnDeltaiSyncIdleLocomotionDefaultBlendbHeadTrackingDirectionfMinSpeedSpeedTargetSpeedTurnMinMaxAccMaxDecPit"
+    "chDeltaDampedGainTargetSpeedThresholdMaxTargetSpeedThresholdMinDragTargetSpeedMaxScaleTurnDeltaDampedPitchDeltaDam"
+    "pedTurnDeltaDampedGainMinSpeedMaxSpeedPathAngleThresholdTargetSpeedDampedMaxSpeedDampedbAnimationDrivenbVoiceReady"
+    "iInjuredInjuredbWantCastVoiceInjuredScaleInjuredScaleCurrentMaxSpeedCurrentIsAttackReadyIsShoutingiCombatLookAtHea"
+    "dingMaxAngleIsIdleisMovingbSpeedSyncediSyncTurnStateiDirectionForwardIsOnGroundbAllowRotationm_errorOutm_"
+    "worldFromModelFeedbackGainFlightPitchBlendTargetLocationiStateiState_DragonDefaultiState_DragonFlyingiState_"
+    "DragonHoveringbLookAtTargetbCanLookAtTargetTweenEntryDirectionFlightHitInjuredSpeedMinFlightHitInjuredDecGainm_"
+    "rearMinAnkleHeightMSm_rearMaxAnkleHeightMSm_frontMinAnkleHeightMSm_frontMaxAnkleHeightMSm_"
+    "frontFootRaisedAnkleHeightMSm_frontFootPlantedAnkleHeightMSm_rearFootRaisedAnkleHeightMSm_"
+    "rearFootPlantedAnkleHeightMSbEquipOkLipBigAahLipDSTLipEeeLipFVLipKLipLLipRLipThPhonemeBlendInvPhonemeBlendIsBusyca"
+    "merafromxcamerafromycamerafromzLipAccLipBigAahDampedLipDSTDampedLipEeeDampedLipFVDampedLipKDampedLipLDampedLipRDam"
+    "pedLipThDampediState_"
+    "DragonPerchingbIsSyncedPitchDeltaMovementDirectionIsFeatheringIsFlappingIsGlidingTweenPositionTweenRotationDistToG"
+    "oalTweenSpeedHasTweenSpeedTweenSpeedMinTweenSpeedDampedIsTurningLeftIsTurningRightIsMovingBackwardIsMovingForwardP"
+    "athAngleBSLookAtModifier_m_onGain_CombatBSLookAtModifier_m_offGain_CombatBSLookAtModifier_m_onGain_"
+    "DefaultBSLookAtModifier_m_offGain_DefaultBSLookAtModifier_m_onGainBSLookAtModifier_m_offGainBSLookAtModifier_"
+    "CanLookOutsideLimitTurnDeltaScalePickNewIdleTimerPickNewIdleTimeBSLookAtModifier_m_onGain_"
+    "ShoutingBSLookAtModifier_m_offGain_ShoutingTimeStepMoveDirZFlightPitchBlendGainm_raycastDistanceDownm_"
+    "raycastDistanceUpm_errorOutTranslationm_alignWithGroundRotationbFullyMotionDrivenDirectionDampedbNoFootIKbFootIKm_"
+    "ankeOrientationGainm_alignWorldFromModelGainm_rearMaxAnkleAngleDegreesm_"
+    "useAlignWithGroundRotationIsTrailerLookAtOutOfRangeTurnDeltaTargetPitchDeltaTargetFlightPitchBlendTargetbFlightKil"
+    "lGrabActionbAllowFlightKillGrabTweenbAllowFlightGrabTweenDefaultiGetUpTypeTweenEntryDirectionPrevTweenEntryDirecti"
+    "onFlightKillGrabConstraintOffsetTweenEntryDirectionCurbTweenUpdateLipGainPhonemeBlendTargetbDisableInterpfPhonemeD"
+    "efaultWeight";
+
 AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "BHR_Master",
+    std::pair<size_t, size_t> key{153, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             // Bools
             {kbAnimationDriven,
@@ -221,5 +248,4 @@ AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(Animati
             {kiSyncIdleLocomotion,
             kiSyncTurnState,
             kiState}));
-    */
 }

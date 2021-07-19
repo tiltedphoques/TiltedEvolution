@@ -113,10 +113,31 @@ enum Variables
     kDefaultBlend = 107,
 };
 
+static const char* s_variableNames =
+    "iSyncIdleLocomotionblendDefaultfMinSpeedSpeediSyncTurnStateiSyncForwardStateTurnDeltafMinTurnDeltaturnSpeedMultiCo"
+    "mbatStancetestbHeadTrackingOnTargetLocationFootIKEnablem_onOffGainm_groundAscendingGainm_groundDescendingGainm_"
+    "footPlantedGainm_footRaisedGainm_footUnlockGainm_worldFromModelFeedbackGainm_errorUpDownBiasm_"
+    "alignWorldFromModelGainm_hipOrientationGainm_footPlantedAnkleHeightMSm_footRaisedAnkleHeightMSm_maxAnkleHeightMSm_"
+    "minAnkleHeightMSblendFastbAnimationDrivenbAllowRotationbHeadTrackingbDisableHeadTrackIsRecoilingIsStaggeringIsAtta"
+    "ckingbIsWolfstaggerMagnitudeIsBleedingOutbIsSyncedbEquipOkbCanHeadTrackblendSlowisIdleSittingbMirroredAttackiState"
+    "iState_"
+    "MammothDefaultbSkeeverLungeiCharacterSelectorfMinMoveSpeedDirectioniIsCanineiTurnMirroredIsAttackReadyTurnDeltaDam"
+    "pedIsBashingbNoHeadTrackcamerafromxcamerafromycamerafromzwalkBackRatestaggerDirectionm_footPlantedAnkleHeightMS_"
+    "Frontm_footRaisedAnkleHeightMS_Frontm_maxAnkleHeightMS_Frontm_hitSomething_0m_hitSomething_1m_"
+    "footPlantedAnkleHeightMS_Rearm_footRaisedAnkleHeightMS_Rearm_maxAnkleHeightMS_Rearm_hitSomething_2m_errorOutm_"
+    "hitSomething_3bLegCastResultsiGetUpTypem_velocityGainm_positionGainm_positionMaxLinearVelocitym_"
+    "snapMaxLinearVelocityiState_CowDefaultiState_DogDefaultiState_WolfDefaultiState_SabreCatDefaultiState_"
+    "SkeeverDefaultiState_SkeeverLungeiState_HorseDefaultiState_BearDefaultiState_DeerDefaultiState_GoatDefaultiState_"
+    "HorkerDefaultiState_"
+    "HorseSprintiSyncSprintStatefTwistDirectionOldDirectionSpeedSampledwalkBackSpeedMultiMovementSpeedIsSideAttackingis"
+    "IdleLaybFootIKEnableiState_CowSwimDefaultiState_HorkerSwimDefaultiState_"
+    "BearSwimDefaultisSwimmingisMovingbForceIdleStopiState_DeerDefaultRunDefaultBlend";
+
 AnimationGraphDescriptor_MammothRootBehavior::AnimationGraphDescriptor_MammothRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "MammothRootBehavior",
+    std::pair<size_t, size_t> key{108, strlen(s_variableNames)};
+    
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kbHeadTrackingOn,
             kbAnimationDriven,
@@ -146,5 +167,4 @@ AnimationGraphDescriptor_MammothRootBehavior::AnimationGraphDescriptor_MammothRo
             kiCombatStance,
             kiState,
             }));
-    */
 }

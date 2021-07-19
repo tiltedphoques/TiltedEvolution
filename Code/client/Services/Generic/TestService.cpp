@@ -222,9 +222,9 @@ void TestService::AnimationDebugging() noexcept
         auto key = pManager->GetDescriptorKey();
         auto pDescriptor =
             AnimationGraphDescriptorManager::Get().GetDescriptor(key);
-        if (pDescriptor)
-            spdlog::info("Key: {} {}", key.first, key.second);
-        else
+
+        spdlog::info("Key: {} {}", key.first, key.second);
+        if (!pDescriptor)
             spdlog::error("Descriptor key not found");
     }
 
