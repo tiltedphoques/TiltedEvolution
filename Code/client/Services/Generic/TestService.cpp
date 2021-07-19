@@ -173,7 +173,7 @@ void TestService::AnimationDebugging() noexcept
     static Vector<uint32_t> s_blacklist{};
     static std::map<uint32_t, const char*> s_varMap{};
 
-    ImGui::SetNextWindowSize(ImVec2(250, 450), ImGuiCond_FirstUseEver);
+    //ImGui::SetNextWindowSize(ImVec2(250, 450), ImGuiCond_FirstUseEver);
     ImGui::Begin("Animation debugging");
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
