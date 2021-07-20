@@ -4,7 +4,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WolfRootBehavior.h>
-#include <Structs/Skyrim/AnimationGraphDescriptor_Root.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Chaurus.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_TrollBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_DraugrBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_GiantRootBehavior.h>
@@ -27,6 +27,9 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_DeerRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireBruteRootBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Chicken.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_DwarvenSpider.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_FrostbiteSpider.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -36,7 +39,7 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
         AnimationGraphDescriptor_BHR_Master initAnimationGraphDescriptor_BHR_Master(*this);
         AnimationGraphDescriptor_WolfRootBehavior initAnimationGraphDescriptor_WolfRootBehavior(*this);
-        //AnimationGraphDescriptor_Root initAnimationGraphDescriptor_Root(*this);
+        AnimationGraphDescriptor_Chaurus initAnimationGraphDescriptor_Chaurus(*this);
         AnimationGraphDescriptor_TrollBehavior initAnimationGraphDescriptor_TrollBehavior(*this);
         AnimationGraphDescriptor_DraugrBehavior initAnimationGraphDescriptor_DraugrBehavior(*this);
         AnimationGraphDescriptor_GiantRootBehavior initAnimationGraphDescriptor_GiantRootBehavior(*this);
@@ -59,5 +62,8 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_DeerRootBehavior initAnimationGraphDescriptor_DeerRootBehavior(*this);
         AnimationGraphDescriptor_VampireBruteRootBehavior initAnimationGraphDescriptor_VampireBruteRootBehavior(*this);
         AnimationGraphDescriptor_VampireLordBehavior initAnimationGraphDescriptor_VampireLordBehavior(*this);
+        AnimationGraphDescriptor_Chicken initAnimationGraphDescriptor_Chicken(*this);
+        AnimationGraphDescriptor_DwarvenSpider initAnimationGraphDescriptor_DwarvenSpider(*this);
+        AnimationGraphDescriptor_FrostbiteSpider initAnimationGraphDescriptor_FrostbiteSpider(*this);
     });
 }

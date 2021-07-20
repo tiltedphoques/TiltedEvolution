@@ -1,4 +1,5 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
+#include <iostream>
 
 AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
 {
@@ -18,7 +19,7 @@ const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(s
 AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, size_t aKey,
                                                   AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    printf("\t\tGraph descriptor key: %d\n", aKey);
+    std::cout << "\t\tNew graph descriptor key: " << aKey << std::endl;
     aManager.Register(aKey, std::move(aAnimationGraphDescriptor));
 }
 
@@ -26,7 +27,7 @@ void AnimationGraphDescriptorManager::Register(size_t aKey, AnimationGraphDescri
 {
     if (m_descriptors.count(aKey))
     {
-        printf("\tGraph descriptor with key %d already registered!", aKey);
+        std::cout << "\tGraph descriptor with key " << aKey << " is already registered!" << std::endl;
         return;
     }
 

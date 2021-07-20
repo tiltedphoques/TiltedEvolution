@@ -75,8 +75,7 @@ enum Variables
 
 AnimationGraphDescriptor_WerewolfBehavior::AnimationGraphDescriptor_WerewolfBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    std::pair<size_t, size_t> key{68, 813};
+    size_t key = 8646055854439061678;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
@@ -103,5 +102,4 @@ AnimationGraphDescriptor_WerewolfBehavior::AnimationGraphDescriptor_WerewolfBeha
             kiSyncTurnState,
             kiAttackState,
             }));
-    */
 }

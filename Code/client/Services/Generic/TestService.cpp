@@ -333,15 +333,18 @@ void TestService::AnimationDebugging() noexcept
                 spdlog::info("Toggle variable recording: {}", toggleVariableRecord);
             }
 
-            if (pDescriptor && pVariableSet && toggleVariableRecord)
+            if (pVariableSet && toggleVariableRecord)
             {
                 for (auto i = 0u; i < pVariableSet->size; ++i)
                 {
                     if (std::find(s_blacklist.begin(), s_blacklist.end(), i) != s_blacklist.end())
                         continue;
 
+                    if (pDescriptor && !pDescriptor->IsSynced(i))
+                        continue;
+
                     auto iter = s_values.find(i);
-                    if (iter == std::end(s_values) && !pDescriptor->IsSynced(i))
+                    if (iter == std::end(s_values))
                     {
                         s_values[i] = pVariableSet->data[i];
 
@@ -350,7 +353,7 @@ void TestService::AnimationDebugging() noexcept
                         spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
                     }
-                    else if (iter->second != pVariableSet->data[i] && !pDescriptor->IsSynced(i))
+                    else if (iter->second != pVariableSet->data[i])
                     {
                         const auto* varName = s_varMap[i];
 

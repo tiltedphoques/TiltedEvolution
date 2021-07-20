@@ -1,5 +1,5 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
-#include <Structs/Skyrim/AnimationGraphDescriptor_Root.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Chaurus.h>
 
 enum Variables
 {
@@ -84,10 +84,11 @@ enum Variables
     kspeedMultForward = 78,
 };
 
-AnimationGraphDescriptor_Root::AnimationGraphDescriptor_Root(AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Chaurus::AnimationGraphDescriptor_Chaurus(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "Root",
+    size_t key = 11600521953862647199;
+
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {kIsAttackReady,
             kbAllowRotation,
@@ -105,5 +106,4 @@ AnimationGraphDescriptor_Root::AnimationGraphDescriptor_Root(AnimationGraphDescr
             kspeedMultForward},
         {kiSyncTurnState,
             kiSyncIdleLocomotion}));
-    */
 }
