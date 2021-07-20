@@ -219,12 +219,11 @@ void TestService::AnimationDebugging() noexcept
 
     if (ImGui::Button("Display key"))
     {
-        auto key = pManager->GetDescriptorKey();
+        auto hash = pManager->GetDescriptorKey();
         auto pDescriptor =
-            AnimationGraphDescriptorManager::Get().GetDescriptor(key);
+            AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
 
-        spdlog::info("Key: {} {}", key.first, key.second);
-        printf("std::pair<size_t, size_t> key{%u, %u};\n", key.first, key.second);
+        spdlog::info("Key: {}", hash);
         if (!pDescriptor)
             spdlog::error("Descriptor key not found");
     }

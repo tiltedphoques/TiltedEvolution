@@ -50,10 +50,9 @@ void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, const ch
     }
 }
 
-std::pair<size_t,size_t> BSAnimationGraphManager::GetDescriptorKey()
+size_t BSAnimationGraphManager::GetDescriptorKey()
 {
-    std::pair<size_t, size_t> key;
-    key.first = key.second = 0;
+    String variableNames{};
 
     std::map<uint32_t, const char*> variables;
 
@@ -88,13 +87,11 @@ std::pair<size_t,size_t> BSAnimationGraphManager::GetDescriptorKey()
 
                 for(auto& [id, name] : variables)
                 {
-                    key.second += strlen(name);
+                    variableNames += name;
                 }
             }
         }
     }
 
-    key.first = variables.size();
-
-    return key;
+    return std::hash<const char*>{}(variableNames.c_str());
 }
