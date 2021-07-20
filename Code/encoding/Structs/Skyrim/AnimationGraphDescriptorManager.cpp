@@ -30,6 +30,9 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_Chicken.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_DwarvenSpider.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_FrostbiteSpider.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Spriggan.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Mudcrab.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_Rabbit.h>
 
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
@@ -65,5 +68,8 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_Chicken initAnimationGraphDescriptor_Chicken(*this);
         AnimationGraphDescriptor_DwarvenSpider initAnimationGraphDescriptor_DwarvenSpider(*this);
         AnimationGraphDescriptor_FrostbiteSpider initAnimationGraphDescriptor_FrostbiteSpider(*this);
+        AnimationGraphDescriptor_Spriggan initAnimationGraphDescriptor_Spriggan(*this);
+        AnimationGraphDescriptor_Mudcrab initAnimationGraphDescriptor_Mudcrab(*this);
+        AnimationGraphDescriptor_Rabbit initAnimationGraphDescriptor_Rabbit(*this);
     });
 }
