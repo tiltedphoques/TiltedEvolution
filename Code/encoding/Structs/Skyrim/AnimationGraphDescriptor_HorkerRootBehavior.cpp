@@ -97,7 +97,7 @@ enum Variables
 
 AnimationGraphDescriptor_HorkerRootBehavior::AnimationGraphDescriptor_HorkerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{90, 1332};
+    size_t key = 206294590283185566;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

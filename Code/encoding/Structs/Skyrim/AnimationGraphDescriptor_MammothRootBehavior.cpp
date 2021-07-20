@@ -115,7 +115,7 @@ enum Variables
 
 AnimationGraphDescriptor_MammothRootBehavior::AnimationGraphDescriptor_MammothRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{108, 1695};
+    size_t key = 2226158213544576233;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

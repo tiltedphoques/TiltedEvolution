@@ -81,6 +81,7 @@ enum Variables
 
 AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLordBehavior(AnimationGraphDescriptorManager& aManager)
 {
+    /*
     std::pair<size_t, size_t> key{74, 911};
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
@@ -122,4 +123,5 @@ AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLo
             kiSyncSprintState,
             kiState,
             }));
+    */
 }

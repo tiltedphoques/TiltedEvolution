@@ -100,7 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{93, 1373};
+    size_t key = 2356128610923280356;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -98,7 +98,7 @@ enum Variables
 
 AnimationGraphDescriptor_SabreCatRootBehavior::AnimationGraphDescriptor_SabreCatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{91, 1350};
+    size_t key = 14666002180784768379;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

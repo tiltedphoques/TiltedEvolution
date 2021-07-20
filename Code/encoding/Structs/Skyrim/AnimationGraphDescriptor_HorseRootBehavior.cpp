@@ -83,7 +83,7 @@ enum Variables
 
 AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{76, 1105};
+    size_t key = 4616574314944110052;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

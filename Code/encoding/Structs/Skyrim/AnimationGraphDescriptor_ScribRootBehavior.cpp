@@ -95,7 +95,7 @@ enum Variables
 
 AnimationGraphDescriptor_ScribRootBehavior::AnimationGraphDescriptor_ScribRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{88, 1336};
+    size_t key = 239282684701094071;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

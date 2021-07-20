@@ -100,7 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_DeerRootBehavior::AnimationGraphDescriptor_DeerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{93, 1366};
+    size_t key = 4435399794654920912;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -99,7 +99,7 @@ enum Variables
 
 AnimationGraphDescriptor_GoatRootBehavior::AnimationGraphDescriptor_GoatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{92, 1354};
+    size_t key = 524549390872984118;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

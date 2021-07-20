@@ -113,7 +113,7 @@ enum Variables
 
 AnimationGraphDescriptor_BearRootBehavior::AnimationGraphDescriptor_BearRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{106, 1675};
+    size_t key = 12564274145698974918;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

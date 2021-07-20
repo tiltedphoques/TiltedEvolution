@@ -186,6 +186,10 @@ void TestService::AnimationDebugging() noexcept
             if (pFetchForm)
                 pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
         }
+
+        s_varMap.clear();
+        s_values.clear();
+        s_reusedValues.clear();
     }
 
     if (!pActor)
@@ -224,6 +228,7 @@ void TestService::AnimationDebugging() noexcept
             AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
 
         spdlog::info("Key: {}", hash);
+        std::cout << "size_t key = " << hash << ";" << std::endl;
         if (!pDescriptor)
             spdlog::error("Descriptor key not found");
     }

@@ -39,7 +39,7 @@ enum Variables
 
 AnimationGraphDescriptor_AtronachStormBehavior::AnimationGraphDescriptor_AtronachStormBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{32, 394};
+    size_t key = 9469784390871384438;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

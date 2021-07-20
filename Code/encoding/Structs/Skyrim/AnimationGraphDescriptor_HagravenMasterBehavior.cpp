@@ -162,7 +162,7 @@ enum Variables
 
 AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_HagravenMasterBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{155, 2343};
+    size_t key = 7836622747669674970;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

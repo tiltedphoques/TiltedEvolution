@@ -67,7 +67,7 @@ enum Variables
 
 AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_VampireBruteRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{60, 900};
+    size_t key = 4166119880806628953;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

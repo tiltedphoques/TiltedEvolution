@@ -93,5 +93,5 @@ size_t BSAnimationGraphManager::GetDescriptorKey()
         }
     }
 
-    return std::hash<const char*>{}(variableNames.c_str());
+    return std::hash<String>{}(variableNames);
 }

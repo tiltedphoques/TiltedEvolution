@@ -55,7 +55,7 @@ enum Variables
 
 AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_AtronachFrostRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{48, 697};
+    size_t key = 88642903739948350;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -48,7 +48,7 @@ enum Variables
 
 AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{41, 494};
+    size_t key = 9595392420864589408;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

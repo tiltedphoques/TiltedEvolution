@@ -100,7 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    std::pair<size_t, size_t> key{93, 1372};
+    size_t key = 13925526866463749886;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
