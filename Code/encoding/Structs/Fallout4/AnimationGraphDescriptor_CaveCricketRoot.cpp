@@ -51,14 +51,29 @@ AnimationGraphDescriptor_CaveCricketRoot::AnimationGraphDescriptor_CaveCricketRo
     AnimationGraphDescriptorManager& aManager)
 {
     AnimationGraphDescriptorManager::Builder s_builder(aManager, "CaveCricketRoot",
-                                                       AnimationGraphDescriptor(
-                                                           {
-                                                               9999,
-                                                           },
-                                                           {
-                                                               9999,
-                                                           },
-                                                           {
-                                                               9999,
-                                                           }));
+        AnimationGraphDescriptor(
+            {
+                kbManualGraphChange,
+                kbEquipOk,
+                kIsAttackReady,
+                kbAnimationDriven,
+            },
+            {
+                krunForwardSlowSpeedMult,
+                kTurnDelta,
+                kSpeed,
+                kWalkBackSpeedMult,
+                kTurnDeltaSmoothed,
+                krunForwardSpeedMult,
+                kWalkForwardSpeedMult,
+                kDirection,
+            },
+            {
+                kiSyncTurnState,
+                kiSyncIdleLocomotion,
+                kiCombatState,
+                kcHitReactionBodyPart,
+                kiLocomotionSpeed,
+                kiSyncForwardState,
+            }));
 }

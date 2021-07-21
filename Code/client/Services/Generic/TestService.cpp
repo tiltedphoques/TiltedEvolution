@@ -170,6 +170,7 @@ void TestService::AnimationDebugging() noexcept
     static Actor* pActor = nullptr;
     static Map<uint32_t, uint32_t> s_values;
     static Map<uint32_t, uint32_t> s_reusedValues;
+    static Map<uint32_t, short> s_valueTypes; //0 for bool, 1 for float, 2 for int
     static Vector<uint32_t> s_blacklist{};
     static std::map<uint32_t, const char*> s_varMap{};
 
@@ -194,6 +195,7 @@ void TestService::AnimationDebugging() noexcept
         s_varMap.clear();
         s_values.clear();
         s_reusedValues.clear();
+        s_valueTypes.clear();
         return;
     }
 
@@ -202,6 +204,7 @@ void TestService::AnimationDebugging() noexcept
         s_varMap.clear();
         s_values.clear();
         s_reusedValues.clear();
+        s_valueTypes.clear();
         s_blacklist.clear();
     }
 
@@ -214,6 +217,7 @@ void TestService::AnimationDebugging() noexcept
         s_varMap.clear();
         s_values.clear();
         s_reusedValues.clear();
+        s_valueTypes.clear();
         return;
     }
 
@@ -225,6 +229,7 @@ void TestService::AnimationDebugging() noexcept
         s_varMap.clear();
         s_values.clear();
         s_reusedValues.clear();
+        s_valueTypes.clear();
         return;
     }
 
@@ -328,23 +333,77 @@ void TestService::AnimationDebugging() noexcept
                     {
                         const auto* varName = s_varMap[i];
 
-                        spdlog::warn("Variable k{} ({}) changed to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
-                                     *(int32_t*)&pVariableSet->data[i]);
+                        float floatCast = *(float*)&pVariableSet->data[i];
+                        int intCast = *(int32_t*)&pVariableSet->data[i];
+                        spdlog::warn("Variable k{} ({}) changed to f: {} i: {}", varName, i, floatCast,
+                                     intCast);
 
                         s_values[i] = pVariableSet->data[i];
                         s_reusedValues[i] = pVariableSet->data[i];
+
+                        char varTypeChar = varName[0]; //for guessing type, to see if u can find type char (i, f, b)
+                        if (varTypeChar == 'f')
+                        {
+                            s_valueTypes[i] = 1;
+                        }
+                        else if (varTypeChar == 'i' && varName[1] != 's')
+                        {
+                            s_valueTypes[i] = 2;
+                        }
+                        else if (varTypeChar != 'b' && s_valueTypes[i] != 1) // no char hint to go off of and not assuming float
+                        {
+                            if (intCast > 1000 || intCast < -1000) // arbitrary int threshold
+                            {
+                                s_valueTypes[i] = 1; // assume float
+                            }
+                            else
+                            {
+                                if (intCast > 1 || intCast < 0)
+                                {
+                                    s_valueTypes[i] = 2; // assume int
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             if (ImGui::Button("Dump variables") && pVariableSet)
             {
+                //kinda ugly to iterate 3 times but idc cuz its just for debugging and its a small collection
+                // BOOLS
+                std::cout << "{" << std::endl;
                 for (auto& [key, value] : s_reusedValues)
                 {
-                    const auto* varName = s_varMap[key];
-                    spdlog::warn("Variable: k{}, id: {}, f: {}, i: {}", varName, key, *(float*)&pVariableSet->data[key],
-                                 *(int32_t*)&pVariableSet->data[key]);
+                    if (s_valueTypes[key] == 0)
+                    {
+                        const auto* varName = s_varMap[key];
+                        std::cout << "k" << varName << "," << std::endl;
+                    }
                 }
+                // FLOATS
+                std::cout << "}," << std::endl
+                          << "{" << std::endl;
+                for (auto& [key, value] : s_reusedValues)
+                {
+                    if (s_valueTypes[key] == 1)
+                    {
+                        const auto* varName = s_varMap[key];
+                        std::cout << "k" << varName << "," << std::endl;
+                    }
+                }
+                // INTS
+                std::cout << "}," << std::endl
+                          << "{" << std::endl;
+                for (auto& [key, value] : s_reusedValues)
+                {
+                    if (s_valueTypes[key] == 2)
+                    {
+                        const auto* varName = s_varMap[key];
+                        std::cout << "k" << varName << "," << std::endl;
+                    }
+                }
+                std::cout << "}" << std::endl;
             }
 
             if (ImGui::Button("Reset recording"))
