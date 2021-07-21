@@ -5,6 +5,7 @@ struct ImguiService;
 struct UpdateEvent;
 
 struct TransportService;
+struct BSAnimationGraphManager;
 
 struct Actor;
 struct TestService
@@ -26,6 +27,8 @@ private:
 
     void PlaceActorInWorld() noexcept;
     void RunDiff();
+
+    void DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;

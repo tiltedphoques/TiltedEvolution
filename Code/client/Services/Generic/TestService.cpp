@@ -164,6 +164,18 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
+void TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
+{
+    auto hash = pManager->GetDescriptorKey();
+    auto pDescriptor =
+        AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+
+    spdlog::info("Key: {}", hash);
+    std::cout << "size_t key = " << hash << ";" << std::endl;
+    if (!pDescriptor)
+        spdlog::error("Descriptor key not found");
+}
+
 void TestService::AnimationDebugging() noexcept
 {
     static uint32_t fetchFormId = 0;
@@ -227,14 +239,7 @@ void TestService::AnimationDebugging() noexcept
 
     if (ImGui::Button("Display key"))
     {
-        auto hash = pManager->GetDescriptorKey();
-        auto pDescriptor =
-            AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
-
-        spdlog::info("Key: {}", hash);
-        std::cout << "size_t key = " << hash << ";" << std::endl;
-        if (!pDescriptor)
-            spdlog::error("Descriptor key not found");
+        DisplayGraphDescriptorKey(pManager);
     }
 
     const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
@@ -250,7 +255,10 @@ void TestService::AnimationDebugging() noexcept
     }
 
     if (s_varMap.empty())
+    {
         pManager->DumpAnimationVariables(s_varMap, true);
+        DisplayGraphDescriptorKey(pManager);
+    }
 
     if (ImGui::Button("Generate variable name key"))
     {
