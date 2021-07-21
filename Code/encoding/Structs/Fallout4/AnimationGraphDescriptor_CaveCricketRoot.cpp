@@ -50,7 +50,9 @@ enum Variables
 AnimationGraphDescriptor_CaveCricketRoot::AnimationGraphDescriptor_CaveCricketRoot(
     AnimationGraphDescriptorManager& aManager)
 {
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "CaveCricketRoot",
+    size_t key = 2852218639496266058;
+
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
                 kbManualGraphChange,

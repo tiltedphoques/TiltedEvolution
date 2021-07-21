@@ -62,7 +62,9 @@ enum Variables
 AnimationGraphDescriptor_RootState::AnimationGraphDescriptor_RootState(
     AnimationGraphDescriptorManager& aManager)
 {
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "RootState",
+    size_t key = 5822185292726855210;
+
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAnimationDriven,

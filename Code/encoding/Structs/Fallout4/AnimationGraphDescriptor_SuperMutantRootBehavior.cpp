@@ -213,7 +213,9 @@ enum Variables
 AnimationGraphDescriptor_SuperMutantRootBehavior::AnimationGraphDescriptor_SuperMutantRootBehavior(
     AnimationGraphDescriptorManager& aManager)
 {
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "SuperMutantRootBehavior",
+    size_t key = 11991499654641303072;
+
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
                 kisReloading,

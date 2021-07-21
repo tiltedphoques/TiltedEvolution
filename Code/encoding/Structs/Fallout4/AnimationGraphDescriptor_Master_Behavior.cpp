@@ -306,8 +306,9 @@ enum Variables
 
 AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    /*
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, "RootBehavior",
+    size_t key = 12425853799496587643;
+
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
         {km_bEnablePitchTwistModifier,
             kIsSprinting,
@@ -421,5 +422,4 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kiSyncReadyAlertRelaxed,
             kiIsPlayer,
             }));
-    */
 }
