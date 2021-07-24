@@ -7,7 +7,7 @@ enum Variables
     kiSyncIdleLocomotion = 1,
     kiLocomotionState = 2,
     kSpeed = 3,
-    kRunSpeedMult = 4,
+    krunSpeedMult = 4,
     kWalkSpeedMult = 5,
     kTurnDelta = 6,
     kbGraphDriven = 7,
@@ -17,17 +17,24 @@ enum Variables
 AnimationGraphDescriptor_RabbitChicken::AnimationGraphDescriptor_RabbitChicken(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 7023479494570496715;
+    size_t key = 2036755078842276651;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbGraphDriven
             },
             {
-                9999
+                kSpeed,
+                kTurnDelta,
+                kWalkSpeedMult,
+                krunSpeedMult,
+                kTurnDeltaSmoothed,
             },
             {
-                9999
-            }));
+                kiLocomotionState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+            }
+        ));
 }

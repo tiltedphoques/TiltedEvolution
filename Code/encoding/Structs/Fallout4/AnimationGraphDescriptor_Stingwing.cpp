@@ -90,12 +90,26 @@ AnimationGraphDescriptor_Stingwing::AnimationGraphDescriptor_Stingwing(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbSupportedDeathAnim,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbEquipOk,
+                kbManualGraphChange,
             },
             {
-                9999
+                kSpeed,
+                kTurnDelta,
+                kTurnDeltaSmoothed,
+                kSpeedSmoothed,
+                kstaggerMagnitude,
+                kstaggerDirection,
+                kDirection,
             },
             {
-                9999
-            }));
+                kiCombatState,
+                kiSyncTurnState,
+                kiSyncIdleLocomotion,
+                kiRecoilSelector,
+            }
+        ));
 }

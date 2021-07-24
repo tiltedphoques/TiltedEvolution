@@ -119,12 +119,42 @@ AnimationGraphDescriptor_Alien::AnimationGraphDescriptor_Alien(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbAnimationDriven,
+                kIsAttackReady,
+                kLookAtOutOfRange,
+                kbAimActive,
+                kbAimEnabled,
+                kbGraphWantsHeadTracking,
+                kbEquipOk,
             },
             {
-                9999
+                kSpeed,
+                kstaggerDirection,
+                kfRunSpeed,
+                kDirection,
+                kHeadZTwist,
+                kfHeadTwistGainAdj,
+                kSpineZTwist,
+                kfSpineTwistGainAdj,
+                kfWalkSpeed,
+                kfDirectAtSavedGain,
+                kAimHeadingCurrent,
+                kTurnDeltaSmoothed,
+                kHeadYTwist,
+                kSpeedSmoothed,
+                kSpineYTwist,
+                kfTimeStep,
+                kAimPitchCurrent,
+                kHeadXTwist,
+                kSpineXTwist,
+                kTurnDelta,
+                kstaggerMagnitude,
             },
             {
-                9999
-            }));
+                kiSyncTurnState,
+                kiSyncIdleLocomotion,
+                kiCombatState,
+                kiMovementSpeed,
+            }
+        ));
 }

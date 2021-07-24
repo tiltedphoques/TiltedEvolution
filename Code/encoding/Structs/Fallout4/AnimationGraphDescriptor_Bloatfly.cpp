@@ -81,12 +81,25 @@ AnimationGraphDescriptor_Bloatfly::AnimationGraphDescriptor_Bloatfly(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbAnimationDriven,
+                kbEquipOk,
+                kLookAtOutOfRange,
+                kIsAttackReady,
+                kbGraphWantsHeadTracking,
             },
             {
-                9999
+                kstaggerDirection,
+                kDirection,
+                kTurnDeltaSmoothed,
+                kSpeedSmoothed,
+                kSpeed,
+                kTurnDelta,
+                kstaggerMagnitude,
             },
             {
-                9999
-            }));
+                kiCombatState,
+                kiSyncTurnState,
+                kiSyncIdleLocomotion,
+            }
+        ));
 }

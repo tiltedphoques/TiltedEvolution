@@ -202,9 +202,11 @@ void TestService::AnimationDebugging() noexcept
                 pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
         }
 
-        s_varMap.clear();
         s_values.clear();
         s_reusedValues.clear();
+        s_valueTypes.clear();
+        s_blacklist.clear();
+        s_varMap.clear();
     }
 
     if (!pActor)
@@ -214,6 +216,7 @@ void TestService::AnimationDebugging() noexcept
         s_values.clear();
         s_reusedValues.clear();
         s_valueTypes.clear();
+        s_blacklist.clear();
         return;
     }
 
@@ -236,6 +239,7 @@ void TestService::AnimationDebugging() noexcept
         s_values.clear();
         s_reusedValues.clear();
         s_valueTypes.clear();
+        s_blacklist.clear();
         return;
     }
 
@@ -248,6 +252,7 @@ void TestService::AnimationDebugging() noexcept
         s_values.clear();
         s_reusedValues.clear();
         s_valueTypes.clear();
+        s_blacklist.clear();
         return;
     }
 
@@ -346,7 +351,7 @@ void TestService::AnimationDebugging() noexcept
                     if (std::find(s_blacklist.begin(), s_blacklist.end(), i) != s_blacklist.end())
                         continue;
 
-                    if (pDescriptor && !pDescriptor->IsSynced(i))
+                    if (pDescriptor && pDescriptor->IsSynced(i))
                         continue;
 
                     auto iter = s_values.find(i);

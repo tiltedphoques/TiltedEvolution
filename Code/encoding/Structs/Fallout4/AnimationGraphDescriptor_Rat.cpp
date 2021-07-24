@@ -106,12 +106,35 @@ AnimationGraphDescriptor_Rat::AnimationGraphDescriptor_Rat(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kcHitReactionBodyPart,
+                kbEquipOk,
+                kbGraphWantsHeadTracking,
+                kLookAtOutOfRange,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbSupportedDeathAnim,
             },
             {
-                9999
+                kstaggerDirection,
+                kfLocomotionWalkSpeedMult,
+                kSpineXTwist,
+                kDirection,
+                kSpeedSmoothed,
+                kTurnDelta,
+                kSpeed,
+                kSpineZTwist,
+                kTurnDeltaSmoothed,
+                kfLocomotionRunSpeedMult,
+                kSpineYTwist,
             },
             {
-                9999
-            }));
+                kiDynamicAnimSelector,
+                kiRecoilSelector,
+                kiSyncTurnState,
+                kiSyncLocomotionSpeed,
+                kiCombatState,
+                kiSyncForwardState,
+                kiSyncIdleLocomotion,
+            }
+        ));
 }

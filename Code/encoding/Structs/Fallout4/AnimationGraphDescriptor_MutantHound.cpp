@@ -69,7 +69,7 @@ enum Variables
     kiLocomotionState = 63,
     kwalkForwardSpeedMult = 64,
     ktrotSpeedMult = 65,
-    kRunSpeedMult = 66,
+    krunSpeedMult = 66,
     kiSyncForwardState = 67,
     kDirection = 68,
     kwalkBackwardSpeedMult = 69,
@@ -119,17 +119,47 @@ enum Variables
 AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 7147618088446737805;
+    size_t key = 10683968682414752301;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kLookAtOutOfRange,
+                kbAnimationDriven,
+                kbGraphWantsHeadTracking,
+                kbEquipOk,
+                kcHitReactionDir,
+                kIsAttackReady,
             },
             {
-                9999
+                kHeadXTwist,
+                kHeadZTwist,
+                kTurnDelta,
+                kSpeedSmoothed,
+                kSpineXTwist,
+                kstaggerDirection,
+                kTurnDeltaSmoothed,
+                kHeadYTwist,
+                kSpeed,
+                krunSpeedMult,
+                kSpineZTwist,
+                kfHitReactionEndTimer,
+                ktrotSpeedMult,
+                kfTimeStep,
+                kfHeadTwistGainAdj,
+                kSpineYTwist,
+                kfSpineTwistGainAdj,
+                kDirection,
+                kwalkForwardSpeedMult,
             },
             {
-                9999
-            }));
+                kiDynamicAnimSelector,
+                kiSyncTurnState,
+                kiRecoilSelector,
+                kcHitReactionBodyPart,
+                kiSyncIdleLocomotion,
+                kiCombatState,
+                kiLocomotionState,
+            }
+        ));
 }

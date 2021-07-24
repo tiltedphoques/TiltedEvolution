@@ -97,12 +97,33 @@ AnimationGraphDescriptor_Bloodbug::AnimationGraphDescriptor_Bloodbug(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbGraphDrivenRotation,
+                kbManualGraphChange,
+                kbIsSynced,
+                kIsAttackReady,
+                kbGraphDriven,
+                kbAnimationDriven,
+                kbEquipOk,
+                kLookAtOutOfRange,
             },
             {
-                9999
+                kstaggerDirection,
+                kSpineZTwist,
+                kTurnDeltaSmoothed,
+                kTurnDelta,
+                kSpineYTwist,
+                kSpeedSmoothed,
+                kDirection,
+                kSpeed,
+                kstaggerMagnitude,
             },
             {
-                9999
-            }));
+                kiSyncIdleLocomotion,
+                kcHitReactionBodyPart,
+                kiRecoilSelector,
+                kiCombatState,
+                kiSyncTurnState,
+                kiSyncDirectionState,
+            }
+        ));
 }

@@ -82,12 +82,23 @@ AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbEquipOk,
             },
             {
-                9999
+                kDirection,
+                kstaggerDirection,
+                kTurnDeltaSmoothed,
+                kSpeedSmoothed,
+                kTurnDelta,
+                kSpeed,
             },
             {
-                9999
-            }));
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiCombatState,
+                kiRecoilSelector,
+            }
+        ));
 }

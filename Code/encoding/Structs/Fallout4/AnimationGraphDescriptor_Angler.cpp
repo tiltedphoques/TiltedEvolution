@@ -99,12 +99,33 @@ AnimationGraphDescriptor_Angler::AnimationGraphDescriptor_Angler(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbAllowRotation,
+                kbAnimationDriven,
+                kLookAtOutOfRange,
+                kbInCombat,
+                kbGraphWantsHeadTracking,
+                kIsEquipping,
+                kisAttacking,
+                kbIsAttackStanding,
             },
             {
-                9999
+                kSpeedSmoothed,
+                kfTimeStep,
+                kHitReactionTimer_Interp,
+                kSpeedSampled,
+                kSpineZTwist,
+                kfSpineTwistGainAdj,
+                kTurnDeltaSmoothed,
+                kSpeed,
+                kSpineYTwist,
+                kfHeadTwistGainAdj,
+                kDirection,
+                kSpineXTwist,
             },
             {
-                9999
-            }));
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kcHitReactionBodyPart,
+            }
+        ));
 }

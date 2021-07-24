@@ -81,7 +81,7 @@ enum Variables
     kiIsInSneak = 75,
     kWalkSpeedMult = 76,
     kJogSpeedMult = 77,
-    kRunSpeedMult = 78,
+    krunSpeedMult = 78,
     kiSyncLocomotionSpeed = 79,
     kbAllowRotation = 80,
     kIsNPC = 81,
@@ -213,7 +213,7 @@ enum Variables
 AnimationGraphDescriptor_SuperMutantRootBehavior::AnimationGraphDescriptor_SuperMutantRootBehavior(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 11991499654641303072;
+    size_t key = 16271608434450581376;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

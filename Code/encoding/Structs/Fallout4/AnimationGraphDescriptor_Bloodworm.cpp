@@ -69,12 +69,32 @@ AnimationGraphDescriptor_Bloodworm::AnimationGraphDescriptor_Bloodworm(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kIsAttackReady,
+                kbAnimationDriven,
+                kbGraphWantsHeadTracking,
+                kbEquipOk,
+                kbIsTunneling,
             },
             {
-                9999
+                kDirection,
+                kSpineYTwist,
+                kwalkBackSpeedMult,
+                kSpineXTwist,
+                kTurnDeltaSmoothed,
+                kTurnDelta,
+                kSpeed,
+                krunForwardSpeedMult,
+                kSpineZTwist,
+                kwalkForwardSpeedMult,
             },
             {
-                9999
-            }));
+                kiSyncTurnState,
+                kiCombatState,
+                kiLocomotionSpeed,
+                kiDynamicAnimSelector,
+                kcHitReactionBodyPart,
+                kiSyncIdleLocomotion,
+                kiSyncForwardState,
+            }
+        ));
 }

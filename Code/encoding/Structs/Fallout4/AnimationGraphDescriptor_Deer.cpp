@@ -127,12 +127,24 @@ AnimationGraphDescriptor_Deer::AnimationGraphDescriptor_Deer(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kIsSprinting,
+                kbEquipOk,
+                kbGraphWantsHeadTracking_Right,
+                kbGraphWantsHeadTracking_Left,
+                kIsAttackReady,
             },
             {
-                9999
+                kTurnDelta,
+                kSpeed,
+                kTurnDeltaSmoothed,
+                kSpeedSmoothed,
+                kDirection,
             },
             {
-                9999
-            }));
+                kiCombatState,
+                kiSyncTurnState,
+                kiSyncIdleLocomotion,
+                kiSyncSprintState,
+            }
+        ));
 }

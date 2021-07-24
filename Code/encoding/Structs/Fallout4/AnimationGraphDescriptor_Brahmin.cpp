@@ -65,7 +65,7 @@ enum Variables
     kiLocomotionSpeed = 59,
     kiSyncForwardState = 60,
     kDirection = 61,
-    kRunSpeedMult = 62,
+    krunSpeedMult = 62,
     ktrotSpeedMult = 63,
     kwalkForwardSpeedMult = 64,
     kwalkBackwardSpeedMult = 65,
@@ -116,17 +116,35 @@ enum Variables
 AnimationGraphDescriptor_Brahmin::AnimationGraphDescriptor_Brahmin(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 16585303364030699232;
+    size_t key = 4466171123874741248;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbAnimationDriven,
+                kbSupportedDeathAnim,
+                kbGraphWantsHeadTrackingLeft,
+                kIsAttackReady,
+                kbGraphWantsHeadTrackingRight,
             },
             {
-                9999
+                kTurnDelta,
+                kstaggerDirection,
+                kSpeed,
+                krunSpeedMult,
+                kSpeedSmoothed,
+                kwalkForwardSpeedMult,
+                kDirection,
+                ktrotSpeedMult,
+                kTurnDeltaSmoothed,
             },
             {
-                9999
-            }));
+                kcHitReactionBodyPart,
+                kiSyncIdleLocomotion,
+                kcHitReactionDir,
+                kiSyncTurnState,
+                kiLocomotionSpeed,
+                kiCombatState,
+            }
+        ));
 }

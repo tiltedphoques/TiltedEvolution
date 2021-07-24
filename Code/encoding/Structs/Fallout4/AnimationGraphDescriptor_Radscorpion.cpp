@@ -54,7 +54,7 @@ enum Variables
     kbIsTunneling = 48,
     kiDynamicAnimSelector = 49,
     kWalkSpeedMult = 50,
-    kRunSpeedMult = 51,
+    krunSpeedMult = 51,
     kiLocomotionSpeed = 52,
     kLookAtOutOfRange = 53,
     kcamerafromx = 54,
@@ -102,17 +102,41 @@ enum Variables
 AnimationGraphDescriptor_Radscorpion::AnimationGraphDescriptor_Radscorpion(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 12003654900184648593;
+    size_t key = 12058114821752656881;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kIsAttackReady,
+                kbEquipOk,
+                kbAnimationDriven,
+                kbIsTunneling,
             },
             {
-                9999
+                kstaggerDirection,
+                kWalkSpeedMult,
+                kTurnDeltaSmoothed,
+                kfHitReactionEndTimer,
+                kfRArmTwistGainAdj,
+                kTurnDelta,
+                kLArmXTwist,
+                kLArmYTwist,
+                kSpeed,
+                kSpeedSmoothed,
+                kfSpineTwistGainAdj,
+                kLArmZTwist,
+                kDirection,
+                kfTimeStep,
+                krunSpeedMult,
+                kfLArmTwistGainAdj,
             },
             {
-                9999
-            }));
+                kcHitReactionBodyPart,
+                kiCombatState,
+                kiRecoilSelector,
+                kiSyncIdleLocomotion,
+                kiLocomotionSpeed,
+                kiSyncTurnState,
+            }
+        ));
 }

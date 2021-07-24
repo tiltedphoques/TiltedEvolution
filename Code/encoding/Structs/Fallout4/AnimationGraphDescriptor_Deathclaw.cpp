@@ -117,12 +117,49 @@ AnimationGraphDescriptor_Deathclaw::AnimationGraphDescriptor_Deathclaw(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kLookAtOutOfRange,
+                kbEquipOk,
+                kbGraphDrivenRotation,
+                kbEnableFootIK,
+                kbAnimationDriven,
+                kbCCSupport,
+                kIsSprinting,
+                kbInCombat,
+                kbGraphDriven,
+                kbInJumpState,
+                kisAttacking,
+                kbIsAttackStanding,
+                kbIsSynced,
+                kbGraphWantsHeadTracking,
+                kbAllowRotation,
+                kIsEquipping,
             },
             {
-                9999
+                kHeadYTwist,
+                kTurnDeltaSmoothed,
+                kfTimeStep,
+                kSpineZTwist,
+                kHeadXTwist,
+                kSpeed,
+                kfSpineTwistGainAdj,
+                kSpineYTwist,
+                kTurnDelta,
+                kSpineXTwist,
+                kDirection,
+                kstaggerDirection,
+                kHitReactionTimer_Interp,
+                kHeadZTwist,
+                kSpeedSampled,
+                kSpeedSmoothed,
+                kfHeadTwistGainAdj,
             },
             {
-                9999
-            }));
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiSyncFootState,
+                kcHitReactionBodyPart,
+                kiState,
+                kiSyncSprintState,
+            }
+        ));
 }

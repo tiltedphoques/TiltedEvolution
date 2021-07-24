@@ -306,7 +306,7 @@ enum Variables
 
 AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 12425853799496587643;
+    size_t key = 6252079209869287675;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
@@ -421,5 +421,6 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kiSyncJumpState,
             kiSyncReadyAlertRelaxed,
             kiIsPlayer,
-            }));
+        }
+    ));
 }

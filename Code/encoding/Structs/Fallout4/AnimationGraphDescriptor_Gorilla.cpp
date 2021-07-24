@@ -100,12 +100,35 @@ AnimationGraphDescriptor_Gorilla::AnimationGraphDescriptor_Gorilla(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kLookAtOutOfRange,
+                kbGraphWantsHeadTracking,
             },
             {
-                9999
+                kSpeedSmoothed,
+                kstaggerDirection,
+                kfHeadTwistGainAdj,
+                kSpeed,
+                kSpineZTwist,
+                kfSpineTwistGainAdj,
+                kfHitReactionEndTimer,
+                kSpineYTwist,
+                kDirection,
+                kfTimeStep,
+                kfLocomotionWalkMult,
+                kTurnDeltaSmoothed,
+                kSpineXTwist,
+                kTurnDelta,
+                kfLocomotionRunMult,
             },
             {
-                9999
-            }));
+                kiRecoilSelector,
+                kiSyncTurnState,
+                kiCombatState,
+                kiSyncIdleLocomotion,
+                kcHitReactionBodyPart,
+            }
+        ));
 }

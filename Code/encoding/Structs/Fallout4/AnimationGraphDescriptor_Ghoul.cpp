@@ -141,12 +141,41 @@ AnimationGraphDescriptor_Ghoul::AnimationGraphDescriptor_Ghoul(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbEquipOk,
+                kbAllowHeadTracking,
+                kbAnimationDriven,
+                kLookAtOutOfRange,
+                kbManualGraphChange,
+                kIsAttackReady,
+                kIsSprinting,
             },
             {
-                9999
+                kfHeadTwistGainAdj,
+                kfSpineTwistGainAdj,
+                kstaggerMagnitude,
+                kfRunSpeedPlaybackMult,
+                kSpineZTwist,
+                kfik_footplantedgain,
+                kstaggerDirection,
+                kfTimeStep,
+                kfHitReactionEndTimer,
+                kTurnDeltaSmoothed,
+                kfWalkPlaybackSpeedMult,
+                kSpeedSmoothed,
+                kDirection,
+                kSpineYTwist,
+                kSpineXTwist,
+                kTurnDelta,
+                kSpeed,
             },
             {
-                9999
-            }));
+                kiCombatState,
+                kiSyncTurnState,
+                kiState,
+                kiSyncSprintState,
+                kiSyncIdleLocomotion,
+                kiRecoilSelector,
+                kcHitReactionBodyPart,
+            }
+        ));
 }

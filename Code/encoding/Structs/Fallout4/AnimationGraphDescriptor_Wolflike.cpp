@@ -149,12 +149,51 @@ AnimationGraphDescriptor_Wolflike::AnimationGraphDescriptor_Wolflike(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbIsMoving,
+                kIsAttackReady,
+                kbGraphWantsHeadTracking,
+                kbWalkForwardRandomize,
+                kbSupportedDeathAnim,
+                kLookAtOutOfRange,
+                kcHitReactionDir,
+                kbAnimationDriven,
+                kbUpdateSpineTwistTarget,
+                kcHitReactionBodyPart,
             },
             {
-                9999
+                kTurnDelta,
+                kfBodyPartBlendDamped,
+                kSpineXTwist,
+                kfTurnDeltaTarget,
+                kfHeadBlendDampedClamped,
+                kTurnDeltaSmoothed,
+                kfEarBlendDampedClamped,
+                kfTrotFastClipMult,
+                kSpineZTwist,
+                kfEarBlendDamped,
+                kHeadXTwist,
+                kfAccelOrDecel,
+                kfRunClipMult,
+                kSpineYTwist,
+                kfHeadBlendDamped,
+                kfRoll,
+                kfTrotClipMult,
+                kfHitReactionEndTimer,
+                kfTimeStep,
+                kTurnDeltaDamped,
+                kSpeed,
+                kfBodyPartBlendDampedClamped,
+                kfRollTarget,
+                kfWalkClipMult,
+                kHeadTwistGainAdj,
             },
             {
-                9999
-            }));
+                kiSyncLocomotionRangeID,
+                kiSyncIdleLocomotion,
+                kiRecoilSelection,
+                kiSyncCombatState,
+                kiSyncTurnState,
+                kiSyncWalkPose,
+            }
+        ));
 }

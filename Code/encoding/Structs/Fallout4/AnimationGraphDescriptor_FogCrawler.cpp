@@ -81,12 +81,31 @@ AnimationGraphDescriptor_FogCrawler::AnimationGraphDescriptor_FogCrawler(
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kIsAttackReady,
+                kbEquipOk,
+                kbGraphWantsHeadTracking,
+                kbAnimationDriven,
+                kLookAtOutOfRange,
             },
             {
-                9999
+                kSpineYTwist,
+                kwalkForwardSpeedMult,
+                kwalkBackSpeedMult,
+                kSpineXTwist,
+                kDirection,
+                kSpeed,
+                kTurnDeltaSmoothed,
+                kSpineZTwist,
+                krunForwardSpeedMult,
             },
             {
-                9999
-            }));
+                kcHitReactionDir,
+                kiCombatState,
+                kiLocomotionSpeed,
+                kcHitReactionBodyPart,
+                kiDynamicAnimSelector,
+                kiSyncIdleLocomotion,
+                kiSyncForwardState,
+            }
+        ));
 }

@@ -28,7 +28,7 @@ enum Variables
     kbHeadTrackingEnabled = 22,
     kbHeadTrackingDebug = 23,
     kbSupportedDeathAnim = 24,
-    kfTEST = 25,
+    kfTest = 25,
     kfHitReactionEndTimer = 26,
     kHeadTwistMinMax = 27,
     kiSyncTurnState = 28,
@@ -98,17 +98,41 @@ enum Variables
 AnimationGraphDescriptor_YaoGuai::AnimationGraphDescriptor_YaoGuai(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 10509978299402756838;
+    size_t key = 15741762240888384710;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
             {
-                9999
+                kbGraphWantsHeadTracking,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kLookAtOutOfRange,
+                kbEquipOk,
             },
             {
-                9999
+                kDirection,
+                kSpineYTwist,
+                kfTimeStep,
+                kTurnDelta,
+                kSpeedSmoothed,
+                kSpineXTwist,
+                kSpeed,
+                kTurnDeltaSmoothed,
+                krunForwardSpeedMult,
+                kstaggerDirection,
+                kwalkForwardSpeedMult,
+                kfHitReactionEndTimer,
+                kfSpineTwistGainAdj,
+                kSpineZTwist,
             },
             {
-                9999
-            }));
+                kiLocomotionSpeed,
+                kiSyncTurnState,
+                kiDynamicAnimSelector,
+                kiCombatState,
+                kiSyncIdleLocomotion,
+                kcHitReactionBodyPart,
+                kiRecoilSelector,
+            }
+        ));
 }
