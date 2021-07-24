@@ -31,7 +31,6 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/EquipmentChangeEvent.h>
 #include <Events/UpdateEvent.h>
-#include <Events/FireProjectileEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -48,8 +47,6 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
-#include <Messages/RequestFireProjectile.h>
-#include <Messages/NotifyFireProjectile.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -78,9 +75,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
-
-    m_fireProjectileConnection = m_dispatcher.sink<FireProjectileEvent>().connect<&CharacterService::OnFireProjectileEvent>(this);
-    m_notifyFireProjectileConnection = m_dispatcher.sink<NotifyFireProjectile>().connect<&CharacterService::OnNotifyFireProjectile>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -950,66 +944,4 @@ void CharacterService::RunSpawnUpdates() const noexcept
             }
         }
     }
-}
-
-void CharacterService::OnFireProjectileEvent(const FireProjectileEvent& acEvent) const noexcept
-{
-    if (acEvent.pCastingActor == nullptr)
-    {
-        spdlog::error("Actor not found for fire projecitle");
-        return;
-    }
-
-    const auto view = m_world.view<FormIdComponent>();
-
-    const auto iter = std::find_if(std::begin(view), std::end(view), [id = acEvent.pCastingActor->formID, view](entt::entity entity) 
-    {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
-
-    if (iter == std::end(view))
-        return;
-
-    const auto& pLocalComponent = m_world.try_get<LocalComponent>(*iter);
-    if (pLocalComponent == nullptr)
-        return;
-
-    RequestFireProjectile request;
-    request.Id = pLocalComponent->Id;
-
-    m_transport.Send(request);
-    spdlog::info("Sent fire projectile request");
-}
-
-void CharacterService::OnNotifyFireProjectile(const NotifyFireProjectile& acMessage) const noexcept
-{
-#if TP_SKYRIM64
-    spdlog::info("Received notify fire projectile");
-    auto view = m_world.view<FormIdComponent, RemoteComponent>();
-
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) 
-    {
-        return view.get<RemoteComponent>(entity).Id == id;
-    });
-
-    if (itor == std::end(view))
-    {
-        spdlog::error("Could not find remote component");
-        return;
-    }
-
-    auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-
-    if (!pActor)
-    {
-        spdlog::error("Could not find actor");
-        return;
-    }
-
-    auto* caster = pActor->CreateMagicCaster(1);
-
-    spdlog::info("Firing projectile");
-    caster->FireProjectile();
-#endif
 }

@@ -5,7 +5,6 @@ struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
 struct EquipmentChangeEvent;
-struct FireProjectileEvent;
 struct FormIdComponent;
 struct ActionEvent;
 struct AssignCharacterResponse;
@@ -16,7 +15,6 @@ struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
 struct NotifySpawnData;
 struct NotifyOwnershipTransfer;
-struct NotifyFireProjectile;
 
 struct Actor;
 struct World;
@@ -42,8 +40,6 @@ struct CharacterService
     void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
-    void OnFireProjectileEvent(const FireProjectileEvent& acEvent) const noexcept;
-    void OnNotifyFireProjectile(const NotifyFireProjectile& acMessage) const noexcept;
 
 private:
 
@@ -75,5 +71,4 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
     entt::scoped_connection m_fireProjectileConnection;
-    entt::scoped_connection m_notifyFireProjectileConnection;
 };

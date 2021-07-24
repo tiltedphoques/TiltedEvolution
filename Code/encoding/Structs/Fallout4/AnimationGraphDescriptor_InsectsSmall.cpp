@@ -1,5 +1,5 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
-#include <Structs/Fallout4/AnimationGraphDescriptor_HermitCrab.h>
+#include <Structs/Fallout4/AnimationGraphDescriptor_InsectsSmall.h>
 
 enum Variables
 {
@@ -74,7 +74,7 @@ enum Variables
     kbIsInFlavor = 68,
 };
 
-AnimationGraphDescriptor_HermitCrab::AnimationGraphDescriptor_HermitCrab(
+AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(
     AnimationGraphDescriptorManager& aManager)
 {
     size_t key = 619129195670969668;

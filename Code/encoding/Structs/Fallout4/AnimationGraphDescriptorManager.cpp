@@ -7,7 +7,7 @@
 #include <Structs/Fallout4/AnimationGraphDescriptor_SuperMutantRootBehavior.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Alien.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Angler.h>
-#include <Structs/Fallout4/AnimationGraphDescriptor_AntRadroach.h>
+#include <Structs/Fallout4/AnimationGraphDescriptor_InsectsSmall.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Bloatfly.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Bloodbug.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Bloodworm.h>
@@ -17,8 +17,6 @@
 #include <Structs/Fallout4/AnimationGraphDescriptor_FogCrawler.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Ghoul.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Gorilla.h>
-#include <Structs/Fallout4/AnimationGraphDescriptor_HermitCrab.h>
-#include <Structs/Fallout4/AnimationGraphDescriptor_Mirelurk.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_MutantHound.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_RabbitChicken.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Radscorpion.h>
@@ -37,7 +35,7 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_SuperMutantRootBehavior initAnimationGraphDescriptor_SuperMutantRootBehavior(*this);
         AnimationGraphDescriptor_Alien initAnimationGraphDescriptor_Alien(*this);
         AnimationGraphDescriptor_Angler initAnimationGraphDescriptor_Angler(*this);
-        AnimationGraphDescriptor_AntRadroach initAnimationGraphDescriptor_AntRadroach(*this);
+        AnimationGraphDescriptor_InsectsSmall initAnimationGraphDescriptor_InsectsSmall(*this);
         AnimationGraphDescriptor_Bloatfly initAnimationGraphDescriptor_Bloatfly(*this);
         AnimationGraphDescriptor_Bloodbug initAnimationGraphDescriptor_Bloodbug(*this);
         AnimationGraphDescriptor_Bloodworm initAnimationGraphDescriptor_Bloodworm(*this);
@@ -47,8 +45,6 @@ AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
         AnimationGraphDescriptor_FogCrawler initAnimationGraphDescriptor_FogCrawler(*this);
         AnimationGraphDescriptor_Ghoul initAnimationGraphDescriptor_Ghoul(*this);
         AnimationGraphDescriptor_Gorilla initAnimationGraphDescriptor_Gorilla(*this);
-        AnimationGraphDescriptor_HermitCrab initAnimationGraphDescriptor_HermitCrab(*this);
-        AnimationGraphDescriptor_Mirelurk initAnimationGraphDescriptor_Mirelurk(*this);
         AnimationGraphDescriptor_MutantHound initAnimationGraphDescriptor_MutantHound(*this);
         AnimationGraphDescriptor_RabbitChicken initAnimationGraphDescriptor_RabbitChicken(*this);
         AnimationGraphDescriptor_Radscorpion initAnimationGraphDescriptor_Radscorpion(*this);
