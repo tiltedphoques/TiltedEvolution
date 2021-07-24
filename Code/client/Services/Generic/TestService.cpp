@@ -164,7 +164,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
-void TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
+size_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
     auto hash = pManager->GetDescriptorKey();
     auto pDescriptor =
@@ -174,6 +174,8 @@ void TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) n
     std::cout << "size_t key = " << hash << ";" << std::endl;
     if (!pDescriptor)
         spdlog::error("Descriptor key not found");
+
+    return hash;
 }
 
 void TestService::AnimationDebugging() noexcept
@@ -185,8 +187,8 @@ void TestService::AnimationDebugging() noexcept
     static Map<uint32_t, short> s_valueTypes; //0 for bool, 1 for float, 2 for int
     static Vector<uint32_t> s_blacklist{};
     static std::map<uint32_t, const char*> s_varMap{};
+    static Map<size_t, uint32_t> s_cachedKeys{};
 
-    //ImGui::SetNextWindowSize(ImVec2(250, 450), ImGuiCond_FirstUseEver);
     ImGui::Begin("Animation debugging");
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
@@ -237,11 +239,6 @@ void TestService::AnimationDebugging() noexcept
         return;
     }
 
-    if (ImGui::Button("Display key"))
-    {
-        DisplayGraphDescriptorKey(pManager);
-    }
-
     const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
 
     if (!pGraph)
@@ -257,16 +254,12 @@ void TestService::AnimationDebugging() noexcept
     if (s_varMap.empty())
     {
         pManager->DumpAnimationVariables(s_varMap, true);
-        DisplayGraphDescriptorKey(pManager);
-    }
 
-    if (ImGui::Button("Generate variable name key"))
-    {
-        for (auto& [key, value] : s_varMap)
-        {
-            printf("%s", value);
-        }
-        printf("\n");
+        auto hash = DisplayGraphDescriptorKey(pManager);
+
+        if (s_cachedKeys.find(hash) != std::end(s_cachedKeys))
+            spdlog::warn("Key was detected before! Form ID of last detected actor: {:X}", s_cachedKeys[hash]);
+        s_cachedKeys[hash] = pActor->formID;
     }
 
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))

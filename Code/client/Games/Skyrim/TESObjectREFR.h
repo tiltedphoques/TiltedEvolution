@@ -7,7 +7,6 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
-#include <Misc/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
