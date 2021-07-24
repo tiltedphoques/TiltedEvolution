@@ -50,7 +50,7 @@ void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, const ch
     }
 }
 
-size_t BSAnimationGraphManager::GetDescriptorKey()
+size_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
 {
     String variableNames{};
 
@@ -58,7 +58,8 @@ size_t BSAnimationGraphManager::GetDescriptorKey()
 
     if (animationGraphIndex < animationGraphs.size)
     {
-        const auto pGraph = animationGraphs.Get(animationGraphIndex);
+        const auto pGraph = aForceIndex == -1 ? animationGraphs.Get(animationGraphIndex) : animationGraphs.Get(aForceIndex);
+
         if(pGraph)
         {
             const auto pDb = pGraph->hkxDB;
