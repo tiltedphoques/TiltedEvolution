@@ -6,6 +6,8 @@
 #include "utils/Registry.h"
 #include "utils/Error.h"
 
+using TiltedPhoques::WString;
+
 constexpr wchar_t kRegistryPath[] = LR"(Software\TiltedPhoques\TiltedOnline\)";
 
 WString ToClientName(TitleId aTid) noexcept
@@ -125,8 +127,8 @@ bool FindTitlePath(TitleId aTid, bool aForceReselect, fs::path& aTitlePath, fs::
 
         if (!GetOpenFileNameW(&file))
         {
-            FatalError(L"Failed to select path. Cannot launch!\nTry reselecting the path by launching TiltedOnline "
-                       L"with the '-r' parameter.");
+            FatalError("Failed to select path. Cannot launch!\nTry reselecting the path by launching TiltedOnline "
+                       "with the '-r' parameter.");
             return false;
         }
 
