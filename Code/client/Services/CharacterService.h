@@ -70,4 +70,5 @@ private:
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
+    entt::scoped_connection m_fireProjectileConnection;
 };

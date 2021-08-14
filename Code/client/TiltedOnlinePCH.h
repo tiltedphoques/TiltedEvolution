@@ -79,6 +79,7 @@ using TiltedPhoques::AutoPtr;
 using TiltedPhoques::Set;
 using TiltedPhoques::List;
 using TiltedPhoques::Map;
+using TiltedPhoques::SortedMap;
 using TiltedPhoques::Vector;
 using TiltedPhoques::String;
 using TiltedPhoques::UniquePtr;

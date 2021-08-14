@@ -28,6 +28,7 @@ enum ClientOpcode : unsigned char
     kRequestOwnershipClaim,
     kRequestObjectInventoryChanges,
     kRequestCharacterInventoryChanges,
+    kRequestFireProjectile,
     kClientOpcodeMax
 };
 
@@ -57,5 +58,6 @@ enum ServerOpcode : unsigned char
     kNotifyOwnershipTransfer,
     kNotifyObjectInventoryChanges,
     kNotifyCharacterInventoryChanges,
+    kNotifyFireProjectile,
     kServerOpcodeMax
 };

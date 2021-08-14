@@ -81,7 +81,17 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
-            const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
+            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            if (!pActor)
+                return;
+
+            const BShkbAnimationGraph* pGraph = nullptr;
+
+            if (pActor->formID == 0x14)
+                pGraph = pManager->animationGraphs.Get(0);
+            else
+                pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
 
             if (!pGraph)
                 return;
@@ -90,8 +100,17 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            const auto* pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+            auto* pExtendedActor = pActor->GetExtension();
+            if (pExtendedActor->GraphDescriptorHash == 0)
+            {
+                if (pActor->formID == 0x14)
+                    pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey(0);
+                else
+                    pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
+            }
+
+            auto pDescriptor =
+                AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
                 return;
@@ -149,8 +168,17 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            const auto* pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
+            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
+            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            if (!pActor)
+                return;
+
+            auto* pExtendedActor = pActor->GetExtension();
+            if (pExtendedActor->GraphDescriptorHash == 0)
+                pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
+
+            auto pDescriptor =
+                AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
             {
