@@ -86,7 +86,7 @@ enum Variables
 
 AnimationGraphDescriptor_Chaurus::AnimationGraphDescriptor_Chaurus(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 11600521953862647199;
+    uint64_t key = 6627526323896812639;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

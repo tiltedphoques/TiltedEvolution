@@ -116,7 +116,7 @@ enum Variables
 AnimationGraphDescriptor_Brahmin::AnimationGraphDescriptor_Brahmin(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 4466171123874741248;
+    uint64_t key = 4466171123874741248;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

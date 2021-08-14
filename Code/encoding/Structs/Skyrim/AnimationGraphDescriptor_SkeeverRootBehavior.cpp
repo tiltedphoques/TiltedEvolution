@@ -99,7 +99,7 @@ enum Variables
 
 AnimationGraphDescriptor_SkeeverRootBehavior::AnimationGraphDescriptor_SkeeverRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 1291231388598518124;
+    uint64_t key = 9040851203584208508;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -43,7 +43,7 @@ enum Variables
 
 AnimationGraphDescriptor_FrostbiteSpider::AnimationGraphDescriptor_FrostbiteSpider(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 3197996998240283056;
+    uint64_t key = 18106802390550414428;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

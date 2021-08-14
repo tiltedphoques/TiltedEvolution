@@ -76,7 +76,7 @@ enum Variables
 AnimationGraphDescriptor_FogCrawler::AnimationGraphDescriptor_FogCrawler(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 1058347873633281151;
+    uint64_t key = 1058347873633281151;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

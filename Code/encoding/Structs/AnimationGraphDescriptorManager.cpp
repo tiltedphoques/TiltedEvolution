@@ -7,7 +7,7 @@ AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
     return s_manager;
 }
 
-const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(size_t aKey) const noexcept
+const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(uint64_t aKey) const noexcept
 {
     const auto it = m_descriptors.find(aKey);
     if (it != std::end(m_descriptors))
@@ -16,20 +16,16 @@ const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(s
     return nullptr;
 }
 
-AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, size_t aKey,
+AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, uint64_t aKey,
                                                   AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    std::cout << "\t\tNew graph descriptor key: " << aKey << std::endl;
     aManager.Register(aKey, std::move(aAnimationGraphDescriptor));
 }
 
-void AnimationGraphDescriptorManager::Register(size_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+void AnimationGraphDescriptorManager::Register(uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
     if (m_descriptors.count(aKey))
-    {
-        std::cout << "\tGraph descriptor with key " << aKey << " is already registered!" << std::endl;
         return;
-    }
 
     m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
 }

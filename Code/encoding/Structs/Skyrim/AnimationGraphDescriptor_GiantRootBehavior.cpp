@@ -68,7 +68,7 @@ enum Variables
 
 AnimationGraphDescriptor_GiantRootBehavior::AnimationGraphDescriptor_GiantRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 9929374137076095142;
+    uint64_t key = 4930707599828140634;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

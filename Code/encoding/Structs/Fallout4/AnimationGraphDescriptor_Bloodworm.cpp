@@ -64,7 +64,7 @@ enum Variables
 AnimationGraphDescriptor_Bloodworm::AnimationGraphDescriptor_Bloodworm(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 10066806873320352183;
+    uint64_t key = 10066806873320352183;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

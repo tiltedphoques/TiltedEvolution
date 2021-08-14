@@ -51,7 +51,7 @@ enum Variables
 
 AnimationGraphDescriptor_Spriggan::AnimationGraphDescriptor_Spriggan(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 11030663352276154483;
+    uint64_t key = 7399861463695733511;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

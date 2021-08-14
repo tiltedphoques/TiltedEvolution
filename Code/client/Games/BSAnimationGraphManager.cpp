@@ -5,10 +5,12 @@
 #include <Havok/BShkbHkxDB.h>
 #include <Havok/hkbBehaviorGraph.h>
 
-#include <map>
+#include <TiltedCore/Hash.hpp>
 
-void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, const char*>& variables, bool aPrintVariables)
+SortedMap<uint32_t, const char*> BSAnimationGraphManager::DumpAnimationVariables(bool aPrintVariables)
 {
+    SortedMap<uint32_t, const char*> variables;
+
     if (animationGraphIndex < animationGraphs.size)
     {
         const auto pGraph = animationGraphs.Get(animationGraphIndex);
@@ -48,12 +50,15 @@ void BSAnimationGraphManager::DumpAnimationVariables(std::map<uint32_t, const ch
             }
         }
     }
+
+    return variables;
 }
 
-size_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
+uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
 {
-    String variableNames{};
+    using TiltedPhoques::FHash::Crc64;
 
+    String variableNames{};
     std::map<uint32_t, const char*> variables;
 
     if (animationGraphIndex < animationGraphs.size)
@@ -94,5 +99,5 @@ size_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
         }
     }
 
-    return std::hash<String>{}(variableNames);
+    return Crc64(reinterpret_cast<const unsigned char*>(variableNames.c_str()), variableNames.size());
 }

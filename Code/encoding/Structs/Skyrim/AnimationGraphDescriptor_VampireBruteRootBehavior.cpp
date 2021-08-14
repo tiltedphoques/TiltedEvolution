@@ -67,7 +67,7 @@ enum Variables
 
 AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_VampireBruteRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 4166119880806628953;
+    uint64_t key = 13120111469259220074;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

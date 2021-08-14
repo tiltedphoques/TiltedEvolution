@@ -160,7 +160,7 @@ enum Variables
 
 AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 698817568483985262;
+    uint64_t key = 1747276833342497979;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

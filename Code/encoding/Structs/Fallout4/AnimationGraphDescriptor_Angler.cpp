@@ -94,7 +94,7 @@ enum Variables
 AnimationGraphDescriptor_Angler::AnimationGraphDescriptor_Angler(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 766407925146866662;
+    uint64_t key = 766407925146866662;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

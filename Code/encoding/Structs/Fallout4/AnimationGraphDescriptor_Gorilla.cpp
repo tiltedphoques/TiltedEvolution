@@ -95,7 +95,7 @@ enum Variables
 AnimationGraphDescriptor_Gorilla::AnimationGraphDescriptor_Gorilla(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 6300528841859302718;
+    uint64_t key = 6300528841859302718;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

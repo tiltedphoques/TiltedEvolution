@@ -28,7 +28,7 @@ private:
     void PlaceActorInWorld() noexcept;
     void RunDiff();
 
-    size_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
+    uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;

@@ -48,7 +48,7 @@ enum Variables
 
 AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 9595392420864589408;
+    uint64_t key = 6588905977879005482;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -55,7 +55,7 @@ enum Variables
 
 AnimationGraphDescriptor_TrollBehavior::AnimationGraphDescriptor_TrollBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 66999562818264835;
+    uint64_t key = 12339004350691069281;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

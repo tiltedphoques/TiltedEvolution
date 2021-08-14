@@ -136,7 +136,7 @@ enum Variables
 AnimationGraphDescriptor_Ghoul::AnimationGraphDescriptor_Ghoul(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 17719331834481516112;
+    uint64_t key = 17719331834481516112;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

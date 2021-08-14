@@ -164,14 +164,14 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
-size_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
+uint64_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
     auto hash = pManager->GetDescriptorKey();
     auto pDescriptor =
         AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
 
     spdlog::info("Key: {}", hash);
-    std::cout << "size_t key = " << hash << ";" << std::endl;
+    std::cout << "uint64_t key = " << hash << ";" << std::endl;
     if (!pDescriptor)
         spdlog::error("Descriptor key not found");
 
@@ -186,8 +186,8 @@ void TestService::AnimationDebugging() noexcept
     static Map<uint32_t, uint32_t> s_reusedValues;
     static Map<uint32_t, short> s_valueTypes; //0 for bool, 1 for float, 2 for int
     static Vector<uint32_t> s_blacklist{};
-    static std::map<uint32_t, const char*> s_varMap{};
-    static Map<size_t, uint32_t> s_cachedKeys{};
+    static SortedMap<uint32_t, const char*> s_varMap{};
+    static Map<uint64_t, uint32_t> s_cachedKeys{};
 
     ImGui::Begin("Animation debugging");
 
@@ -258,7 +258,7 @@ void TestService::AnimationDebugging() noexcept
 
     if (s_varMap.empty())
     {
-        pManager->DumpAnimationVariables(s_varMap, true);
+        s_varMap = pManager->DumpAnimationVariables(true);
 
         auto hash = DisplayGraphDescriptorKey(pManager);
 

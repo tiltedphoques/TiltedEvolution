@@ -112,7 +112,7 @@ enum Variables
 AnimationGraphDescriptor_Deathclaw::AnimationGraphDescriptor_Deathclaw(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 5450435137172003153;
+    uint64_t key = 5450435137172003153;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

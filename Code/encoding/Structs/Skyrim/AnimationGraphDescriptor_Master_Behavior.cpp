@@ -326,7 +326,7 @@ enum Actions
 
 AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 5022389170408856351;
+    uint64_t key = 16506788379142006504;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

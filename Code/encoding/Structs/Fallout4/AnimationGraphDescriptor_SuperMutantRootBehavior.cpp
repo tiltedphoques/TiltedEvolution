@@ -213,7 +213,7 @@ enum Variables
 AnimationGraphDescriptor_SuperMutantRootBehavior::AnimationGraphDescriptor_SuperMutantRootBehavior(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 16271608434450581376;
+    uint64_t key = 16271608434450581376;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

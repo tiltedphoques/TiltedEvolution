@@ -98,7 +98,7 @@ enum Variables
 AnimationGraphDescriptor_YaoGuai::AnimationGraphDescriptor_YaoGuai(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 15741762240888384710;
+    uint64_t key = 15741762240888384710;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

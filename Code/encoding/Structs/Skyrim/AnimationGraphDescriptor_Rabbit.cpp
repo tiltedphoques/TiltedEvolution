@@ -53,7 +53,7 @@ enum Variables
 
 AnimationGraphDescriptor_Rabbit::AnimationGraphDescriptor_Rabbit(AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 16784909740467232364;
+    uint64_t key = 16337012448348421761;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -114,7 +114,7 @@ enum Variables
 AnimationGraphDescriptor_Alien::AnimationGraphDescriptor_Alien(
     AnimationGraphDescriptorManager& aManager)
 {
-    size_t key = 5696878930311543713;
+    uint64_t key = 5696878930311543713;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
