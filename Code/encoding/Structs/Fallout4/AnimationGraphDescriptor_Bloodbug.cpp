@@ -92,7 +92,7 @@ enum Variables
 AnimationGraphDescriptor_Bloodbug::AnimationGraphDescriptor_Bloodbug(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 2494616162267432625;
+    uint64_t key = 3820381772516143057;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

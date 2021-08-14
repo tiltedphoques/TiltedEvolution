@@ -101,7 +101,7 @@ enum Variables
 AnimationGraphDescriptor_Rat::AnimationGraphDescriptor_Rat(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 5389296125638299835;
+    uint64_t key = 386881303167217426;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

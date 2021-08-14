@@ -62,7 +62,7 @@ enum Variables
 AnimationGraphDescriptor_RootState::AnimationGraphDescriptor_RootState(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 5822185292726855210;
+    uint64_t key = 7833307116537293397;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -144,7 +144,7 @@ enum Variables
 AnimationGraphDescriptor_Wolflike::AnimationGraphDescriptor_Wolflike(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 8042668663022388977;
+    uint64_t key = 17260065444063514255;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

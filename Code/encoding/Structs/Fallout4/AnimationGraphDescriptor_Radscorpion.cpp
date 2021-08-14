@@ -102,7 +102,7 @@ enum Variables
 AnimationGraphDescriptor_Radscorpion::AnimationGraphDescriptor_Radscorpion(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 12058114821752656881;
+    uint64_t key = 12261798980303402671;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

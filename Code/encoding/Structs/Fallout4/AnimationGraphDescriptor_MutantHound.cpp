@@ -119,7 +119,7 @@ enum Variables
 AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 10683968682414752301;
+    uint64_t key = 15451840368309933743;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
