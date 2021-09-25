@@ -23,6 +23,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
+#include <Games/Skyrim/Misc/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
 
@@ -393,9 +394,9 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     pActor->ForcePosition(position);
 
 #if TP_SKYRIM
-    pActor->CreateMagicCaster(0);
-    pActor->CreateMagicCaster(1);
-    pActor->CreateMagicCaster(2);
+    pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
+    pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+    pActor->GetMagicCaster(MagicSystem::CastingSource::OTHER);
 #endif
 
     pActor->flags &= 0xFFDFFFFF;
