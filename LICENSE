@@ -1,7 +1,95 @@
-Tilted Online is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation at https://www.gnu.de/documents/gpl-3.0.en.html, 
-either version 3 of the License, or (at your option) any later version.
+  TILTED PHOQUES SHARED SOURCE LICENSE
+		 version 1.0, 02 June 2021
+
+ Copyright (c) 2021 Tilted Phoques SRL.
+ Everyone is permitted to copy and distribute verbatim
+ copies of this license document, but changing it is
+ not allowed.
+
+         TERMS AND CONDITIONS
+
+  0. Definitions.
+
+ "This License" refers to version 1.0 of Tilted Phoques
+ Shared Source License.
+
+ "The program", "the source", "the source code", "these
+ files", "this file" refers to any copyrightable work
+ licensed under this License.
+
+ "You" refers to the Licensee. The licensee could be a
+ person or a organisation.
+
+ "personal use" refers to usage by, only and only, the
+ licensee, and not by any other person or organisation
+ related in any way to the licensee.
+
+  1. Usage
+
+ You are free to download, copy, compile, study, and
+ refer to the source code for any personal use of yours.
+
+ Usage by you of any work covered by this license should
+ not, directly or indirectly, enable its usage by any
+ other individual or organisation.
+
+  2. Modifications
+
+ You are free to make any modifications to the source
+ covered by this license. You are also free to compile
+ the source after modifying it and using the compiled
+ product obtained thereafter in compliance with this
+ License.
+
+  3. Redistribution
+
+ You may NOT under any circumstance copy, redistribute
+ and/or republish the source or a work based on it (which
+ includes binary or object code compiled from it) in part
+ or whole.
+
+  4. Non-compliance
+
+ You may not copy, modify, sublicense, or distribute the
+ Program except as expressly provided under this License.
+ Any attempt otherwise to copy, modify, sublicense or
+ distribute the Program is void, and will automatically
+ terminate your rights under this License.
+
+  5. Acceptance of License
+
+ You are not required to accept this License, since you have
+ not signed it. However, nothing else grants you permission
+ to modify or use the source. These actions are prohibited
+ by law if you do not accept this License. Therefore, by
+ modifying or using the source (or any work based on the
+ source), you indicate your acceptance of this License to do
+ so, and all its terms and conditions for copying,
+ redistributing or modifying the source or works based on it.
+
+  6. Permissions
+
+ If you intend to incorporate the source code, in part or whole,
+ into any free or proprietary program, you need to explicitly
+ write to the original author(s) to ask for permission.
+
+  7. No Warranty
+
+ The source code licensed under this license is shared "as is".
+ Since it is intended for sharing as reference, there is no
+ warranty, of either the source code, or the program compiled
+ from it. The entire risk of quality or performance of the
+ program is with you.
+
+ THE ORIGINAL AUTHOR OF THE PROGRAM IS NOT LIABLE TO YOU FOR
+ DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR
+ CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO
+ USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+ DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR
+ THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY
+ OTHER PROGRAMS)
+
+         END OF TERMS AND CONDITIONS
 
 The following component(s) are licensed under the LGPLv2 (https://www.gnu.de/documents/lgpl-2.1.en.html) as
 in point 21) of the FiveM Platform Service Agreement (https://fivem.net/terms), as of the time of this writing as they use 
