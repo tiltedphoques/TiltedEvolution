@@ -471,7 +471,7 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
 
             m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
             m_world.emplace<LocalAnimationComponent>(*itor);
-            m_world.remove_if_exists<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+            m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
                                      FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
 
             RequestOwnershipClaim request;
@@ -512,7 +512,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
             }
         }
 
-        m_world.remove_if_exists<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
+        m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
 }
 
@@ -674,7 +674,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             pActor->Delete();
         }
 
-        aRegistry.remove_if_exists<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
+        aRegistry.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
                                    RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
 
         return;
@@ -690,7 +690,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 
         m_transport.Send(message);
 
-        aRegistry.remove_if_exists<WaitingForAssignmentComponent>(aEntity);
+        aRegistry.remove<WaitingForAssignmentComponent>(aEntity);
     }
 
     if (aRegistry.all_of<LocalComponent>(aEntity))
@@ -702,7 +702,7 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 
         m_transport.Send(request);
 
-        aRegistry.remove_if_exists<LocalAnimationComponent, LocalComponent>(aEntity);
+        aRegistry.remove<LocalAnimationComponent, LocalComponent>(aEntity);
     }
 }
 
@@ -975,11 +975,13 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
     SpellCastRequest request;
     request.CasterId = localComponent.Id;
 
+
     m_transport.Send(request);
 }
 
 void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept
 {
+#if TP_SKYRIM64
     auto remoteView = m_world.view<RemoteComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
     {
@@ -992,5 +994,16 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
         return;
     }
 
+    auto remoteComponent = remoteView.get<RemoteComponent>(*remoteIt);
 
+    auto* pForm = TESForm::GetById(remoteComponent.Id);
+    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+    if (!pActor->leftHandCaster)
+        pActor->leftHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
+    if (!pActor->rightHandCaster)
+        pActor->rightHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+
+
+#endif
 }

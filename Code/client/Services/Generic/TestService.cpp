@@ -27,6 +27,7 @@
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>
 #include <Misc/BSFixedString.h>
+#include <Games/Skyrim/Misc/ActorMagicCaster.h>
 
 #include <Components.h>
 #include <World.h>
@@ -506,7 +507,33 @@ void TestService::OnDraw() noexcept
         ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
         ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
 
-#if TP_SKYRIM
+#if TP_SKYRIM64
+        auto* leftHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
+        auto* rightHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+        auto* otherHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::OTHER);
+        auto* instantHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::INSTANT);
+
+        ImGui::InputScalar("leftHandCaster", ImGuiDataType_U64, (void*)&leftHandCaster, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("rightHandCaster", ImGuiDataType_U64, (void*)&rightHandCaster, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("otherHandCaster", ImGuiDataType_U64, (void*)&otherHandCaster, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("instantHandCaster", ImGuiDataType_U64, (void*)&instantHandCaster, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+
+
+        ImGui::InputScalar("leftHandCasterSpell", ImGuiDataType_U64, (void*)&(leftHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("rightHandCasterSpell", ImGuiDataType_U64, (void*)&(rightHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("otherHandCasterSpell", ImGuiDataType_U64, (void*)&(otherHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("instantHandCasterSpell", ImGuiDataType_U64, (void*)&(instantHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+#endif
+
+#if TP_SKYRIM64
         uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
 
         ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);

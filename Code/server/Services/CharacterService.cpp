@@ -709,6 +709,8 @@ void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& a
 
     NotifySpellCast notify;
     notify.CasterId = message.CasterId;
+    notify.CastingSource = message.CastingSource;
+    notify.IsDualCasting = message.IsDualCasting;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {

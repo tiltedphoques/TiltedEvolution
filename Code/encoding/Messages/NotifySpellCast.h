@@ -16,8 +16,12 @@ struct NotifySpellCast final : ServerMessage
     bool operator==(const NotifySpellCast& acRhs) const noexcept
     {
         return CasterId == acRhs.CasterId && 
+               CastingSource == acRhs.CastingSource &&
+               IsDualCasting == acRhs.IsDualCasting &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
     uint32_t CasterId;
+    int32_t CastingSource;
+    bool IsDualCasting;
 };

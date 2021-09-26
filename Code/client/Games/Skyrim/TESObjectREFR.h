@@ -8,6 +8,7 @@
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
 #include <Games/Skyrim/Misc/MagicSystem.h>
+#include <Games/Skyrim/Misc/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -70,7 +71,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_59();
     virtual void sub_5A();
     virtual void sub_5B();
-    virtual struct MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
+    virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual void sub_5D();
     virtual void sub_5E();
     virtual void sub_5F();

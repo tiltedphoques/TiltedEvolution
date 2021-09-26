@@ -8,6 +8,7 @@
 #include <Misc/ActorState.h>
 #include <Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Forms/MagicItem.h>
+#include <Games/Skyrim/Misc/ActorMagicCaster.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
@@ -268,9 +269,9 @@ public:
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<void*> addedSpells;
-    struct ActorMagicCaster* leftHandCaster;
-    struct ActorMagicCaster* rightHandCaster;
-    struct ActorMagicCaster* shoutCaster;
+    ActorMagicCaster* leftHandCaster;
+    ActorMagicCaster* rightHandCaster;
+    ActorMagicCaster* shoutCaster;
     uintptr_t unk114;
     MagicItem* magicItems[4];
     TESForm* equippedShout;
