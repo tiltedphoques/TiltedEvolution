@@ -4,6 +4,10 @@
 
 struct ActiveEffect;
 struct MagicItem;
+struct TESObjectREFR;
+struct Actor;
+struct BGSSaveFormBuffer;
+struct BGSLoadFormBuffer;
 
 struct MagicCaster
 {

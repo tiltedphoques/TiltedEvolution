@@ -29,6 +29,8 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/SpellCastRequest.h>
+#include <Messages/NotifySpellCast.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -44,6 +46,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
+    , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
 {
 }
 
@@ -697,5 +700,19 @@ void CharacterService::ProcessMovementChanges() const noexcept
     {
         if (!message.Updates.empty())
             pPlayer->Send(message);
+    }
+}
+
+void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifySpellCast notify;
+    notify.CasterId = message.CasterId;
+
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+            pPlayer->Send(notify);
     }
 }

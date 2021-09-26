@@ -11,6 +11,8 @@ struct WeaponEnchantmentController;
 
 struct ActorMagicCaster : MagicCaster
 {
+    virtual uint64_t SpellCast(bool abSuccess, uint32_t auiTargetCount, MagicItem* apSpell) override;
+
     virtual void sub_1D(float aUnk1);
 
     uint8_t unk48[0x70];

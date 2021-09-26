@@ -31,6 +31,7 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/EquipmentChangeEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Events/SpellCastEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -47,6 +48,8 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/SpellCastRequest.h>
+#include <Messages/NotifySpellCast.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -75,6 +78,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
+    m_spellCastEventConnection = m_dispatcher.sink<SpellCastEvent>().connect<&CharacterService::OnSpellCastEvent>(this);
+    m_notifySpellCastConnection = m_dispatcher.sink<NotifySpellCast>().connect<&CharacterService::OnNotifySpellCast>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -944,4 +949,48 @@ void CharacterService::RunSpawnUpdates() const noexcept
             }
         }
     }
+}
+
+void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
+{
+    if (!acSpellCastEvent.pActor || !acSpellCastEvent.pActor->GetNiNode())
+    {
+        spdlog::warn("Spell cast event has no actor or actor is not loaded");
+        return;
+    }
+
+    uint32_t formId = acSpellCastEvent.pActor->formID;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (casterEntityIt == std::end(view))
+        return;
+
+    auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
+
+    SpellCastRequest request;
+    request.CasterId = localComponent.Id;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt != std::end(remoteView))
+    {
+        spdlog::warn("Caster with remote id {:X} not found.", acMessage.CasterId);
+        return;
+    }
+
+
 }

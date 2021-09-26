@@ -17,6 +17,7 @@ struct CharacterRemoveEvent;
 struct CharacterExteriorCellChangeEvent;
 struct RequestOwnershipClaim;
 struct OwnershipTransferEvent;
+struct SpellCastRequest;
 
 struct CharacterService
 {
@@ -41,6 +42,7 @@ protected:
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
+    void OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
@@ -63,4 +65,5 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_spawnDataConnection;
+    entt::scoped_connection m_spellCastConnection;
 };
