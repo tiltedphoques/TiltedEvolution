@@ -953,6 +953,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
 
 void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
+#if TP_SKYRIM64
     if (!acSpellCastEvent.pCaster->pCasterActor || !acSpellCastEvent.pCaster->pCasterActor->GetNiNode())
     {
         spdlog::warn("Spell cast event has no actor or actor is not loaded");
@@ -982,6 +983,7 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
                  request.CastingSource, request.IsDualCasting);
 
     m_transport.Send(request);
+#endif
 }
 
 void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept

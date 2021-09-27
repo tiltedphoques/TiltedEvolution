@@ -1,5 +1,7 @@
 #pragma once
 
+struct ActorMagicCaster;
+
 struct SpellCastEvent
 {
     SpellCastEvent(ActorMagicCaster* apCaster)
