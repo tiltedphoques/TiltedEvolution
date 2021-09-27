@@ -1010,6 +1010,8 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
         pActor->leftHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
     if (!pActor->rightHandCaster)
         pActor->rightHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+    if (!pActor->shoutCaster)
+        pActor->shoutCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::OTHER);
 
     // Only left hand casters need dual casting (?)
     pActor->leftHandCaster->SetDualCasting(acMessage.IsDualCasting);
@@ -1019,12 +1021,16 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     switch (acMessage.CastingSource)
     {
     case MagicSystem::CastingSource::LEFT_HAND:
-        //pActor->leftHandCaster->CastSpellImmediate(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
-        pActor->leftHandCaster->CastSpell(pActor->magicItems[0], nullptr, false);
+        //pActor->leftHandCaster->CastSpell(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
+        pActor->leftHandCaster->CastSpellImmediate(pActor->magicItems[0], false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
+        //pActor->rightHandCaster->CastSpell(pActor->magicItems[1], nullptr, false);
+        pActor->rightHandCaster->CastSpellImmediate(pActor->magicItems[1], false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::OTHER:
+        //pActor->shoutCaster->CastSpell(pActor->magicItems[2], nullptr, false);
+        pActor->shoutCaster->CastSpellImmediate(pActor->magicItems[2], false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::INSTANT:
         break;

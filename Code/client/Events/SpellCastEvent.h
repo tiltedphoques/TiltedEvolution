@@ -9,4 +9,5 @@ struct SpellCastEvent
     {}
 
     ActorMagicCaster* pCaster;
+    // TODO: bool interrupt
 };
