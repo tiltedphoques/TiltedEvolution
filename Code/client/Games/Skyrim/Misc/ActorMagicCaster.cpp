@@ -2,6 +2,9 @@
 
 #include <Events/SpellCastEvent.h>
 
+#include <Games/Skyrim/Actor.h>
+#include <Games/ActorExtension.h>
+
 #include <World.h>
 
 TP_THIS_FUNCTION(TSpellCast, void, ActorMagicCaster, bool sbSuccess, int32_t auiTargetCount, MagicItem* apSpell);
@@ -10,6 +13,11 @@ static TSpellCast* RealSpellCast = nullptr;
 
 void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t auiTargetCount, MagicItem* apSpell)
 {
+    auto* pActor = apThis->pCasterActor;
+
+    if (pActor->GetExtension()->IsRemote())
+        return;
+
     World::Get().GetRunner().Trigger(SpellCastEvent(apThis->pCasterActor));
 
     ThisCall(RealSpellCast, apThis, abSuccess, auiTargetCount, apSpell);

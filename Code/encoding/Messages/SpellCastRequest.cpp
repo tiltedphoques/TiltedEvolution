@@ -5,6 +5,7 @@ void SpellCastRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) cons
     Serialization::WriteVarInt(aWriter, CasterId);
     Serialization::WriteVarInt(aWriter, CastingSource);
     Serialization::WriteBool(aWriter, IsDualCasting);
+    Serialization::WriteVarInt(aWriter, DesiredTarget);
 }
 
 void SpellCastRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -14,4 +15,5 @@ void SpellCastRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
     CasterId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     CastingSource = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     IsDualCasting = Serialization::ReadBool(aReader);
+    DesiredTarget = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }

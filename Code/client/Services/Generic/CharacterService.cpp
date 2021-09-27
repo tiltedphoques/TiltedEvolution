@@ -953,13 +953,13 @@ void CharacterService::RunSpawnUpdates() const noexcept
 
 void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
-    if (!acSpellCastEvent.pActor || !acSpellCastEvent.pActor->GetNiNode())
+    if (!acSpellCastEvent.pCaster->pCasterActor || !acSpellCastEvent.pCaster->pCasterActor->GetNiNode())
     {
         spdlog::warn("Spell cast event has no actor or actor is not loaded");
         return;
     }
 
-    uint32_t formId = acSpellCastEvent.pActor->formID;
+    uint32_t formId = acSpellCastEvent.pCaster->pCasterActor->formID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
     const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
@@ -974,7 +974,12 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
 
     SpellCastRequest request;
     request.CasterId = localComponent.Id;
+    request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
+    request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
+    //acSpellCastEvent.pCaster->pCasterActor->magicTarget;
 
+    spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}", request.CasterId,
+                 request.CastingSource, request.IsDualCasting);
 
     m_transport.Send(request);
 }
@@ -1004,6 +1009,22 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     if (!pActor->rightHandCaster)
         pActor->rightHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
 
+    // Only left hand casters need dual casting (?)
+    pActor->leftHandCaster->SetDualCasting(acMessage.IsDualCasting);
 
+    // TODO: should form id be sent with and applied? In theory, equipped spells should already be synced
+
+    switch (acMessage.CastingSource)
+    {
+    case MagicSystem::CastingSource::LEFT_HAND:
+        //pActor->leftHandCaster->CastSpellImmediate(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
+        break;
+    case MagicSystem::CastingSource::RIGHT_HAND:
+        break;
+    case MagicSystem::CastingSource::OTHER:
+        break;
+    case MagicSystem::CastingSource::INSTANT:
+        break;
+    }
 #endif
 }

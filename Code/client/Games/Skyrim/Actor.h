@@ -171,6 +171,9 @@ struct Actor : TESObjectREFR
     virtual void sub_126();
     virtual void sub_127();
 
+    // Real functions
+    void DualCastSpell(TESObjectREFR* apDesiredTarget);
+
     // Casting
     ActorExtension* GetExtension() noexcept;
     ExActor* AsExActor() noexcept;

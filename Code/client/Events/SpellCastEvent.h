@@ -1,12 +1,10 @@
 #pragma once
 
-struct Actor;
-
 struct SpellCastEvent
 {
-    SpellCastEvent(Actor* apActor)
-        : pActor(apActor)
+    SpellCastEvent(ActorMagicCaster* apCaster)
+        : pCaster(apCaster)
     {}
 
-    Actor* pActor;
+    ActorMagicCaster* pCaster;
 };

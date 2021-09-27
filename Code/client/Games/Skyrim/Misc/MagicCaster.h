@@ -35,8 +35,8 @@ struct MagicCaster
     virtual uint64_t DeselectSpellImpl();
     virtual void SetSkipCheckCast();
     virtual void SetCastingTimerForCharge();
-    virtual uint64_t GetCastingSource();
-    virtual uint64_t GetIsDualCasting();
+    virtual MagicSystem::CastingSource GetCastingSource();
+    virtual bool GetIsDualCasting();
     virtual void SetDualCasting(bool abValue);
     virtual void* SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual uint64_t LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);

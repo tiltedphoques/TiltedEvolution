@@ -18,10 +18,12 @@ struct NotifySpellCast final : ServerMessage
         return CasterId == acRhs.CasterId && 
                CastingSource == acRhs.CastingSource &&
                IsDualCasting == acRhs.IsDualCasting &&
+               DesiredTarget == acRhs.DesiredTarget &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
     uint32_t CasterId;
     int32_t CastingSource;
     bool IsDualCasting;
+    uint32_t DesiredTarget;
 };
