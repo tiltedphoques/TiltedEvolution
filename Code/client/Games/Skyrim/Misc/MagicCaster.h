@@ -45,6 +45,8 @@ struct MagicCaster
     virtual uint64_t AdjustActiveEffect(ActiveEffect* apActiveEffect, float afEffectStrength,
                                        bool abAdjustOnlyHostileEffectiveness);
 
+    bool CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, bool abLoadCast) noexcept;
+
     enum State
     {
         DERIVED_ATTRIBUTE = 0x0,

@@ -388,11 +388,24 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kisInFurniture,
             kbNeutralState,
             kbBowDrawn,
+            // TODO: this was added extra for spell cast sync
+            kPitchOverride,
+            kNotCasting
         },
         {kDirection,
             kSpeedSampled,
             kweapAdj,
             kSpeed,
+            // TODO: this was added extra for spell cast sync
+            kTimeDelta,
+            kCastBlend,
+            kPitchOffset,
+            kSpeedDamped,
+            kPitch,
+            kVelocityZ,
+            k1stPRot,
+            k1stPRotDamped,
+            kCastBlendDamped
         },
         {kTurnDelta,
             kiRightHandEquipped,
@@ -407,5 +420,8 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kiIsInSneak,
             kiWantBlock,
             kiRegularAttack,
+            // TODO: this was added extra for spell cast sync
+            ktestint,
+            kcurrentDefaultState
         }));
 }

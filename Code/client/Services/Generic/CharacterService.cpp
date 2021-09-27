@@ -989,21 +989,21 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
 void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept
 {
 #if TP_SKYRIM64
-    auto remoteView = m_world.view<RemoteComponent>();
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
     {
         return remoteView.get<RemoteComponent>(entity).Id == Id;
     });
 
-    if (remoteIt != std::end(remoteView))
+    if (remoteIt == std::end(remoteView))
     {
         spdlog::warn("Caster with remote id {:X} not found.", acMessage.CasterId);
         return;
     }
 
-    auto remoteComponent = remoteView.get<RemoteComponent>(*remoteIt);
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
-    auto* pForm = TESForm::GetById(remoteComponent.Id);
+    auto* pForm = TESForm::GetById(formIdComponent.Id);
     auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
     if (!pActor->leftHandCaster)
@@ -1020,6 +1020,7 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     {
     case MagicSystem::CastingSource::LEFT_HAND:
         //pActor->leftHandCaster->CastSpellImmediate(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
+        pActor->leftHandCaster->CastSpell(pActor->magicItems[0], nullptr, false);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
         break;
