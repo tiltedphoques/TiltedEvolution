@@ -977,6 +977,10 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
     request.CasterId = localComponent.Id;
     request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
     request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
+    if (acSpellCastEvent.pCaster->pCurrentSpell)
+        request.SpellFormId = acSpellCastEvent.pCaster->pCurrentSpell->formID;
+    else
+        spdlog::warn("Current spell not set");
     //acSpellCastEvent.pCaster->pCasterActor->magicTarget;
 
     spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}", request.CasterId,
@@ -1017,6 +1021,28 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     pActor->leftHandCaster->SetDualCasting(acMessage.IsDualCasting);
 
     // TODO: should form id be sent with and applied? In theory, equipped spells should already be synced
+
+    MagicItem* pSpell = nullptr;
+
+    if (acMessage.CastingSource >= 4)
+    {
+        spdlog::warn("Casting source out of bounds, trying form id");
+    }
+    else
+    {
+        pSpell = pActor->magicItems[acMessage.CastingSource];
+    }
+
+    if (!pSpell)
+    {
+        auto* pSpellForm = TESForm::GetById(acMessage.SpellFormId);
+        if (!pSpellForm)
+        {
+            spdlog::error("Cannot find spell form");
+            return;
+        }
+        pSpell = RTTI_CAST(pSpellForm, TESForm, MagicItem);
+    }
 
     switch (acMessage.CastingSource)
     {

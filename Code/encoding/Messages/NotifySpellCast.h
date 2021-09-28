@@ -16,6 +16,7 @@ struct NotifySpellCast final : ServerMessage
     bool operator==(const NotifySpellCast& acRhs) const noexcept
     {
         return CasterId == acRhs.CasterId && 
+               SpellFormId == acRhs.SpellFormId &&
                CastingSource == acRhs.CastingSource &&
                IsDualCasting == acRhs.IsDualCasting &&
                DesiredTarget == acRhs.DesiredTarget &&
@@ -23,6 +24,7 @@ struct NotifySpellCast final : ServerMessage
     }
 
     uint32_t CasterId;
+    uint32_t SpellFormId;
     int32_t CastingSource;
     bool IsDualCasting;
     uint32_t DesiredTarget;

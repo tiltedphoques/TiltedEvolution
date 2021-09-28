@@ -709,6 +709,7 @@ void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& a
 
     NotifySpellCast notify;
     notify.CasterId = message.CasterId;
+    notify.SpellFormId = message.SpellFormId;
     notify.CastingSource = message.CastingSource;
     notify.IsDualCasting = message.IsDualCasting;
 
