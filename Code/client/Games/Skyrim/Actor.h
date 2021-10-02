@@ -79,7 +79,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CA();
     virtual void sub_CB();
     virtual void sub_CC();
-    virtual void sub_CD();
+    virtual void AttachArrow();
     virtual void sub_CE();
     virtual void sub_CF();
     virtual void sub_D0();

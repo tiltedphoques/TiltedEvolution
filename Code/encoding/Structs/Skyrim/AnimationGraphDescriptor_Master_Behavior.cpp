@@ -390,7 +390,7 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kbBowDrawn,
             // TODO: this was added extra for spell cast sync
             kPitchOverride,
-            kNotCasting
+            kNotCasting,
         },
         {kDirection,
             kSpeedSampled,
@@ -405,7 +405,7 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kVelocityZ,
             k1stPRot,
             k1stPRotDamped,
-            kCastBlendDamped
+            kCastBlendDamped,
         },
         {kTurnDelta,
             kiRightHandEquipped,
@@ -422,6 +422,6 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kiRegularAttack,
             // TODO: this was added extra for spell cast sync
             ktestint,
-            kcurrentDefaultState
+            kcurrentDefaultState,
         }));
 }
