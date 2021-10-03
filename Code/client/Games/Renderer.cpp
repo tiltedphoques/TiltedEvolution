@@ -1,7 +1,7 @@
 #include <TiltedOnlinePCH.h>
 
 
-#include <ProcessMemory.hpp>
+#include <MemoryVP.h>
 
 #include <Renderer.h>
 
@@ -101,10 +101,10 @@ static TiltedPhoques::Initializer s_viewportHooks([]()
 
 #if TP_SKYRIM64
     // change window mode style to have a close button
-    TiltedPhoques::Write<DWORD>(0xD71FA9 + 1, WS_OVERLAPPEDWINDOW);
+    TiltedPhoques::vp::ScopedContext(0xD71FA9 + 1, WS_OVERLAPPEDWINDOW);
 
     // don't let the game steal the media keys in windowed mode
-    TiltedPhoques::Write<BYTE>(0xC1A0B5 + 2, /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
+    TiltedPhoques::vp::ScopedContext(0xC1A0B5 + 2, /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
 #else
     TiltedPhoques::Write<DWORD>(0x1D17EE7 + 1, WS_OVERLAPPEDWINDOW);
 #endif
