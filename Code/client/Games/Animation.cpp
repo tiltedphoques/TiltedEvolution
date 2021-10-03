@@ -47,9 +47,11 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         action.TargetEventName = apAction->targetEventName.AsAscii();
         action.IdleId = apAction->idleForm ? apAction->idleForm->formID : 0;
 
+        /*
         if (apAction->eventName.AsAscii() != String("") || apAction->targetEventName.AsAscii() != String(""))
             spdlog::info("Animation triggered, eventName: '{}', targetEventName: '{}'", apAction->eventName.AsAscii(),
                          apAction->targetEventName.AsAscii());
+        */
 
         // Save for later
         if (res)

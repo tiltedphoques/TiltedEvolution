@@ -17,6 +17,8 @@ struct NotifySpawnData;
 struct NotifyOwnershipTransfer;
 struct SpellCastEvent;
 struct NotifySpellCast;
+struct ArrowAttachedEvent;
+struct NotifyAttachArrow;
 
 struct Actor;
 struct World;
@@ -44,6 +46,8 @@ struct CharacterService
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
     void OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept;
     void OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept;
+    void OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept;
+    void OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) const noexcept;
 
 private:
 
@@ -76,4 +80,6 @@ private:
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
     entt::scoped_connection m_spellCastEventConnection;
     entt::scoped_connection m_notifySpellCastConnection;
+    entt::scoped_connection m_arrowAttachedEvent;
+    entt::scoped_connection m_notifyAttachArrowConnection;
 };
