@@ -982,8 +982,8 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
     request.CasterId = localComponent.Id;
     request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
     request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
-    if (acSpellCastEvent.pCaster->pCurrentSpell)
-        request.SpellFormId = acSpellCastEvent.pCaster->pCurrentSpell->formID;
+    if (acSpellCastEvent.pSpell)
+        request.SpellFormId = acSpellCastEvent.pSpell->formID;
     else
         spdlog::warn("Current spell not set");
     //acSpellCastEvent.pCaster->pCasterActor->magicTarget;
@@ -1025,8 +1025,6 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     // Only left hand casters need dual casting (?)
     pActor->leftHandCaster->SetDualCasting(acMessage.IsDualCasting);
 
-    // TODO: should form id be sent with and applied? In theory, equipped spells should already be synced
-
     MagicItem* pSpell = nullptr;
 
     if (acMessage.CastingSource >= 4)
@@ -1044,24 +1042,24 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
         if (!pSpellForm)
         {
             spdlog::error("Cannot find spell form");
-            return;
         }
-        pSpell = RTTI_CAST(pSpellForm, TESForm, MagicItem);
+        else
+            pSpell = RTTI_CAST(pSpellForm, TESForm, MagicItem);
     }
 
     switch (acMessage.CastingSource)
     {
     case MagicSystem::CastingSource::LEFT_HAND:
         //pActor->leftHandCaster->CastSpell(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
-        pActor->leftHandCaster->CastSpellImmediate(pActor->magicItems[0], false, nullptr, 1.0f, false, 0.0f);
+        pActor->leftHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
         //pActor->rightHandCaster->CastSpell(pActor->magicItems[1], nullptr, false);
-        pActor->rightHandCaster->CastSpellImmediate(pActor->magicItems[1], false, nullptr, 1.0f, false, 0.0f);
+        pActor->rightHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::OTHER:
         //pActor->shoutCaster->CastSpell(pActor->magicItems[2], nullptr, false);
-        pActor->shoutCaster->CastSpellImmediate(pActor->magicItems[2], false, nullptr, 1.0f, false, 0.0f);
+        pActor->shoutCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::INSTANT:
         break;
