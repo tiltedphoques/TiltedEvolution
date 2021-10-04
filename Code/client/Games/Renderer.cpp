@@ -106,6 +106,6 @@ static TiltedPhoques::Initializer s_viewportHooks([]()
     // don't let the game steal the media keys in windowed mode
     TiltedPhoques::vp::ScopedContext(0xC1A0B5 + 2, /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
 #else
-    TiltedPhoques::Write<DWORD>(0x1D17EE7 + 1, WS_OVERLAPPEDWINDOW);
+    TiltedPhoques::vp::ScopedContext(0x1D17EE7 + 1, WS_OVERLAPPEDWINDOW);
 #endif
 });
