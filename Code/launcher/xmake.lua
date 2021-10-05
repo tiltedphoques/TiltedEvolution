@@ -42,5 +42,4 @@ target("Launcher")
         "hopscotch-map",
         "cryptopp",
         "glm",
-        "cef",
-        "mem")
+        "cef")
