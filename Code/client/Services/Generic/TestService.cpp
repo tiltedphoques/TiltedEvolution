@@ -35,6 +35,8 @@
 #include <Games/TES.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -626,6 +628,16 @@ void TestService::OnDraw() noexcept
             ImGui::InputScalar("Actor Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32,
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
+
+    #if TP_SKYRIM64
+        auto* pAmmo = pFetchActor->processManager->middleProcess->pAmmo;
+        ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        if (pAmmo)
+        {
+            ImGui::InputInt("Ammo form Id", (int*)&pAmmo->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+    #endif
     }
 
     ImGui::End();
