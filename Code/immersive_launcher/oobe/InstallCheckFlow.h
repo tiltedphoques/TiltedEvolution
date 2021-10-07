@@ -4,12 +4,6 @@
 
 namespace oobe
 {
-enum class Policy
-{
-    kLax,
-    kRecommended,
-    kTesting
-};
-
-bool TestPlatformViability(Policy);
-} // namespace oobe
+    // CheckInstallFlow.
+bool CheckInstall();
+}

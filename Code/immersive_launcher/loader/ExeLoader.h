@@ -22,7 +22,11 @@ class ExeLoader
     explicit ExeLoader(uintptr_t aLoadLimit, TFuncHandler aFuncPtr);
 
     bool Load(const std::filesystem::path& aSourcePath);
-    TEntryPoint GetEntryPoint() const;
+
+    TEntryPoint GetEntryPoint() const
+    {
+        return static_cast<TEntryPoint>(m_pEntryPoint);
+    }
 
   private:
     void LoadSections(const IMAGE_NT_HEADERS* apNtHeader);

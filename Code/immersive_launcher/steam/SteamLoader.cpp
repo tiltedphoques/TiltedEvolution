@@ -8,7 +8,6 @@
 namespace steam
 {
 constexpr wchar_t kSteamDllName[] = L"steamclient64.dll";
-constexpr wchar_t kSteamCrashHandlerDllName[] = L"crashhandler64.dll";
 
 void Load(const fs::path& aGameDir)
 {
@@ -34,9 +33,6 @@ void Load(const fs::path& aGameDir)
     AddDllDirectory(steamPath.c_str());
 
     fs::path clientPath = steamPath / kSteamDllName;
-    fs::path crashHandlerPath = steamPath / kSteamCrashHandlerDllName;
-
     LoadLibraryW(clientPath.c_str());
-    LoadLibraryW(crashHandlerPath.c_str());
 }
 } // namespace steam

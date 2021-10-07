@@ -23,7 +23,7 @@ TiltedPhoques::String WinErrorToStringA(uint32_t aErrorCode)
     return message;
 }
 
-void FatalError(const char* aText)
+void Die(const char* aText)
 {
     auto fmt = fmt::format("{}\nError: {} = {}", aText, GetLastError(), WinErrorToStringA(GetLastError()).c_str());
 

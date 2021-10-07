@@ -25,10 +25,10 @@ static uint32_t SteamXor(uint8_t* data, uint32_t size, uint32_t key)
 }
 
 // Just don't touch it, its evil
-void CrackCEGInPlace(const uint8_t* apStart, const mem::region acText)
+uintptr_t CrackCEGInPlace(const CEGLocationInfo& acInfo)
 {
     SteamStubHeaderV31 stub{};
-    std::memcpy(&stub, apStart - sizeof(SteamStubHeaderV31), sizeof(SteamStubHeaderV31));
+    std::memcpy(&stub, acInfo.start - sizeof(SteamStubHeaderV31), sizeof(SteamStubHeaderV31));
     SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31), stub.XorKey);
     assert(stub.Signature == 0xC0DEC0DF);
 
@@ -38,11 +38,13 @@ void CrackCEGInPlace(const uint8_t* apStart, const mem::region acText)
 
     constexpr auto kCodeSize = sizeof(SteamStubHeaderV31::CodeSectionStolenData);
 
-    uint8_t* pText = acText.start.as<uint8_t*>();
-    std::memmove(pText + kCodeSize, pText, acText.size - kCodeSize);
+    uint8_t* pText = acInfo.textSeg.start.as<uint8_t*>();
+    std::memmove(pText + kCodeSize, pText, acInfo.textSeg.size - kCodeSize);
     std::memcpy(pText, stub.CodeSectionStolenData, kCodeSize);
 
     CBC_Mode<AES>::Decryption cbcDec(stub.AES_Key, sizeof(stub.AES_Key), stub.AES_IV);
-    cbcDec.ProcessData(pText, pText, acText.size);
+    cbcDec.ProcessData(pText, pText, acInfo.textSeg.size);
+
+    return stub.OriginalEntryPoint;
 }
 } // namespace steam

@@ -2,7 +2,8 @@
 #include <Windows.h>
 #include "Launcher.h"
 #include "Utils/Error.h"
-#include "Utils/RipZone.h"
+
+#include "script_extender/SEMemoryBlock.h"
 
 extern void CoreStubsInit();
 
@@ -12,14 +13,14 @@ extern "C"
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
-struct ComInitializer
+struct ComScope
 {
-    ComInitializer()
+    ComScope()
     {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         TP_UNUSED(hr);
     }
-    ~ComInitializer()
+    ~ComScope()
     {
         CoUninitialize();
     }
@@ -28,21 +29,18 @@ struct ComInitializer
 int main(int argc, char** argv)
 {
     CoreStubsInit();
-    if (!LowRipZoneInit())
+
+    // memory block for Script Extender reserved as early as we can
+    script_extender::SEMemoryBlock b;
+    if (!b.Good())
     {
-        FatalError("Failed to initialize rip zone.\nCannot continue!");
+        Die("Failed to initialize SE block zone.\nCannot continue!");
         return -1;
     }
 
-    ComInitializer comInit;
-    TP_UNUSED(comInit);
+    ComScope cs;
+    TP_UNUSED(cs);
 
-    auto launcher = TiltedPhoques::MakeUnique<Launcher>(argc, argv);
-
-    if (!launcher->Initialize())
-    {
-        return -2;
-    }
-
-    return launcher->Exec();
+    Bootstrap();
+    return 0;
 }

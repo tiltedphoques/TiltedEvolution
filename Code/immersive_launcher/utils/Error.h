@@ -4,4 +4,4 @@
 
 TiltedPhoques::String WinErrorToStringA(uint32_t aErrorCode);
 
-void FatalError(const char* aText);
+void Die(const char* aText);

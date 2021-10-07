@@ -8,10 +8,12 @@ struct GameConfig
 {
     const wchar_t* dllClientName;
     const wchar_t* fullGameName;
+    const wchar_t* shortGameName;
     uint32_t steamAppId;
     uint32_t loadLimit;
 };
 
 #if (1)
-static const GameConfig kGame{L"SkyrimTogether.dll", L"Skyrim Special Edition", 489830, kGenericLoadLimit};
+#define IS_SKYRIM_TYPE
+static const GameConfig kGame{L"SkyrimTogether.dll", L"Skyrim Special Edition", L"Skyrim Special Edition", 489830, kGenericLoadLimit};
 #endif

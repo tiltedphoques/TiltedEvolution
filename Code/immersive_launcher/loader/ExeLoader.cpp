@@ -10,7 +10,7 @@
 // - 2021/2/25: Implemented CEG decryption method.
 
 #include "ExeLoader.h"
-#include "utils/SteamCrypto.h"
+#include "steam/SteamCeg.h"
 #include <TiltedCore/Filesystem.hpp>
 
 #include "steam/SteamCeg.h"
@@ -156,8 +156,6 @@ uint32_t ExeLoader::Rva2Offset(uint32_t aRva) noexcept
 
 void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
 {
-    using namespace CryptoPP;
-
     auto entry = apSourceNt->OptionalHeader.AddressOfEntryPoint;
     // analyze executable sections if the entry point is already protected
     if (*GetOffset<uint32_t>(entry) != 0x000000e8)
@@ -172,11 +170,13 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
         }
     }
 
-    steam::CrackCEGInPlace(GetOffset<uint8_t>(entry),
-                           {GetOffset<uint8_t>(section->VirtualAddress), section->SizeOfRawData});
+    steam::CEGLocationInfo info{GetOffset<uint8_t>(entry),
+                                {GetOffset<uint8_t>(section->VirtualAddress), section->SizeOfRawData}};
+
+    auto realEntry = steam::CrackCEGInPlace(info);
 
     apSourceNt->FileHeader.NumberOfSections--;
-    apSourceNt->OptionalHeader.AddressOfEntryPoint = static_cast<uint32_t>(stub.OriginalEntryPoint);
+    apSourceNt->OptionalHeader.AddressOfEntryPoint = static_cast<uint32_t>(realEntry);
 }
 
 bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
@@ -219,9 +219,4 @@ bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
 
     m_pBinary = nullptr;
     return true;
-}
-
-ExeLoader::TEntryPoint ExeLoader::GetEntryPoint() const
-{
-    return static_cast<TEntryPoint>(m_pEntryPoint);
 }

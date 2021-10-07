@@ -11,7 +11,7 @@ void TP_GetStartupInfoW(LPSTARTUPINFOW apInfo) noexcept
 {
     std::call_once(s_initGuard, []() 
     { 
-        GetLauncher()->LoadClient();
+        RunClient();
     });
 
     GetStartupInfoW(apInfo);
@@ -21,7 +21,7 @@ uint16_t TP_crtGetShowWindowMode()
 {
     std::call_once(s_initGuard, []() 
     { 
-         GetLauncher()->LoadClient(); 
+         RunClient();
     });
 
     return Real_crtGetShowWindowMode();

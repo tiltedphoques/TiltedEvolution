@@ -51,9 +51,9 @@ static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, D
     if (aModule == nullptr || aModule == NtInternal::ThePeb()->pImageBase)
     {
         void* rbp = _ReturnAddress(); 
-        if (!IsLocalModulePath(rbp) && GetLauncher())
+        if (!IsLocalModulePath(rbp) && GetLaunchContext())
         {
-            auto& aExePath = GetLauncher()->GetExePath();
+            auto& aExePath = GetLaunchContext()->exePath;
             StringCchCopyW(alpFilename, aSize, aExePath.c_str());
 
             return static_cast<DWORD>(std::wcslen(alpFilename));
@@ -71,10 +71,9 @@ static DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, LPSTR alpFileName, DW
     {
         void* rbp = _ReturnAddress();
 
-        if (!IsLocalModulePath(rbp) && GetLauncher())
+        if (!IsLocalModulePath(rbp) && GetLaunchContext())
         {
-
-            auto aExePath = GetLauncher()->GetExePath().u8string();
+            auto aExePath = GetLaunchContext()->exePath.u8string();
             StringCchCopyA(alpFileName, aSize, aExePath.c_str());
 
             return static_cast<DWORD>(std::strlen(alpFileName));
@@ -147,7 +146,9 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
     {
         if (stubs::IsDllBlocked(&fileName[pos + 1]))
         {
-            return STATUS_DLL_NOT_FOUND;
+            // invalid image hash
+            // this signals windows to *NOT TRY* loading it again at a later time.
+            return 0xC0000428;
         }
     }
 

@@ -1,9 +1,15 @@
 #pragma once
 
-#include <mem/mem.h>
 #include "SteamCrypto.h"
+#include <mem/mem.h>
 
 namespace steam
 {
-void CrackCEGInPlace(const uint8_t* apStart, const mem::region acText);
-}
+struct CEGLocationInfo
+{
+    uint8_t* start;
+    mem::region textSeg;
+};
+
+uintptr_t CrackCEGInPlace(const CEGLocationInfo&);
+} // namespace steam
