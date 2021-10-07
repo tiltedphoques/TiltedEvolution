@@ -32,7 +32,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
         M.ClientPointers = 0;
 
         std::ostringstream oss;
-        oss << "crash_" << SerializeTimePoint(std::chrono::system_clock::now(), "UTC: %Y-%m-%d %H:%M:%S") 
+        oss << "crash_" << SerializeTimePoint(std::chrono::system_clock::now(), "UTC_%Y-%m-%d_%H-%M-%S") 
             << ".dmp";
 
         GetModuleFileNameA(NULL, dumpPath, sizeof(dumpPath));
