@@ -7,7 +7,6 @@
 
 #include "Launcher.h"
 #include "SteamSupport.h"
-#include "CrashHandler.h"
 
 #include "loader/ExeLoader.h"
 #include <BuildInfo.h>
@@ -135,8 +134,6 @@ void Launcher::StartGame(TitleId aTid)
     // this shouldn't happen
     if (m_titleId == TitleId::kUnknown)
         m_titleId = aTid;
-
-    CrashHandler handler;
 
     ExeLoader::TEntryPoint start = nullptr;
     {

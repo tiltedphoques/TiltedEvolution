@@ -71,7 +71,9 @@ target(name)
     end
 
     add_syslinks(
-        "version")
+        "version",
+        "dbghelp",
+        "kernel32")
 end
 
 build_client("SkyrimTogether", "TP_SKYRIM=1")
