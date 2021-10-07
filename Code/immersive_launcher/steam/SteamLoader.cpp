@@ -1,6 +1,6 @@
 
 #include "SteamLoader.h"
-#include "GameConfig.h"
+#include "TargetConfig.h"
 
 #include "Utils/Registry.h"
 #include <cstdio>
@@ -11,7 +11,7 @@ constexpr wchar_t kSteamDllName[] = L"steamclient64.dll";
 
 void Load(const fs::path& aGameDir)
 {
-    auto appId = std::to_wstring(kGame.steamAppId);
+    auto appId = std::to_wstring(CurrentTarget.steamAppId);
     SetEnvironmentVariableW(L"SteamAppId", appId.c_str());
 
     auto path = aGameDir / "steam_appid.txt";
@@ -20,7 +20,7 @@ void Load(const fs::path& aGameDir)
     _wfopen_s(&f, path.c_str(), L"w");
     if (f)
     {
-        fprintf(f, "%d", kGame.steamAppId);
+        fprintf(f, "%d", CurrentTarget.steamAppId);
         fclose(f);
     }
 

@@ -5,7 +5,7 @@
 #include <TiltedCore/Stl.hpp>
 #include <TiltedCore/Filesystem.hpp>
 
-#include "GameConfig.h"
+#include "TargetConfig.h"
 
 #include "utils/Registry.h"
 #include "utils/Error.h"
@@ -19,7 +19,7 @@ constexpr wchar_t kRegistryPath[] = LR"(Software\TiltedPhoques\TiltedEvolution\)
 
 static std::wstring SuggestTitlePath()
 {
-    auto path = WString(LR"(Software\Wow6432Node\Bethesda Softworks\)") + kGame.shortGameName;
+    auto path = WString(LR"(Software\Wow6432Node\Bethesda Softworks\)") + CurrentTarget.shortGameName;
 
     const wchar_t* subName =
 #if defined(IS_SKYRIM_TYPE)
@@ -55,7 +55,7 @@ static std::optional<std::wstring> OpenPathSelectionPromt(const std::wstring &aS
 
 bool SelectInstall(bool aForceSelect)
 {
-    const WString regPath = WString(kRegistryPath) + kGame.shortGameName;
+    const WString regPath = WString(kRegistryPath) + CurrentTarget.shortGameName;
 
     // separate, so a custom executable can be chosen for TP
     auto titlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, regPath.c_str(), L"TitlePath");

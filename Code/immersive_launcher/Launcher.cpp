@@ -3,16 +3,13 @@
 #include <TiltedCore/Initializer.hpp>
 
 #include "Launcher.h"
+#include "TargetConfig.h"
 #include "loader/ExeLoader.h"
 
 #include "oobe/InstallCheckFlow.h"
 #include "oobe/ViabilityChecks.h"
 #include "steam/SteamLoader.h"
-
 #include "Utils/Error.h"
-
-// How much memory may the loader use during start at the most
-constexpr uintptr_t kGameLoadLimit = 0x140000000 + 0x70000000;
 
 static LaunchContext* g_context = nullptr;
 
@@ -64,7 +61,7 @@ void Bootstrap()
     steam::Load(g_context->gamePath);
 
     {
-        ExeLoader loader(kGameLoadLimit, GetProcAddress);
+        ExeLoader loader(CurrentTarget.loadLimit, GetProcAddress);
         if (!loader.Load(g_context->exePath))
             return;
 
@@ -77,5 +74,5 @@ void Bootstrap()
 
 void RunClient()
 {
-
+    // LdrLoadDll at fixed address
 }

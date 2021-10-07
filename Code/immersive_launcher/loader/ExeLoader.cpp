@@ -47,7 +47,6 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
 
         if (!descriptor->OriginalFirstThunk)
         {
-
             nameTableEntry = GetTargetRVA<uintptr_t>(descriptor->FirstThunk);
         }
 
@@ -114,7 +113,6 @@ void ExeLoader::LoadSections(const IMAGE_NT_HEADERS* apNtHeader)
 
 void ExeLoader::LoadTLS(const IMAGE_NT_HEADERS* apNtHeader, const IMAGE_NT_HEADERS* apSourceNt)
 {
-
     if (apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].Size)
     {
         const auto* sourceTls = GetTargetRVA<IMAGE_TLS_DIRECTORY>(
