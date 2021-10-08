@@ -1,5 +1,6 @@
 #include "winuser.h"
 #include "BuildInfo.h"
+#include "BranchInfo.h"
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L
@@ -30,4 +31,13 @@ BEGIN
 END
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "launcher.manifest"
-102 ICON "launcher.ico"
+
+#if (IS_MASTER)
+102 ICON "st_logo.ico"
+#elif (IS_BRANCH_BETA)
+102 ICON "st_logo_beta.ico"
+#elif (IS_BRANCH_PREREL)
+102 ICON "st_logo_pre.ico"
+#else
+102 ICON "st_logo_dev.ico"
+#endif

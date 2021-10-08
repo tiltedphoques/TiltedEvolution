@@ -22,7 +22,7 @@ target("ImmersiveLauncher")
         "**.cpp",
         "resources/launcher.rc")
     add_defines(
-        "TARGET_Fallout",
+        "TARGET_Fallout"
     )
     add_deps(
         "TiltedReverse",

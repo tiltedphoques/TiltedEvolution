@@ -18,6 +18,9 @@ struct TargetConfig
 
 // clang-format off
 
+#include <BranchInfo.h>
+
+
 #if (1)
 #define IS_SKYRIM_TYPE
 static const TargetConfig CurrentTarget{
