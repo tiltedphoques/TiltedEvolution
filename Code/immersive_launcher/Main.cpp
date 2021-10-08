@@ -28,15 +28,14 @@ struct ComScope
 
 int main(int argc, char** argv)
 {
-    CoreStubsInit();
-
     // memory block for Script Extender reserved as early as we can
     script_extender::SEMemoryBlock b;
     if (!b.Good())
     {
-        Die("Failed to initialize SE block zone.\nCannot continue!");
+        Die("Failed to pre-reserve script extender zone.\nCannot continue!");
         return -1;
     }
+    CoreStubsInit();
 
     ComScope cs;
     TP_UNUSED(cs);

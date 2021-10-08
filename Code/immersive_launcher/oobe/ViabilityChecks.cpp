@@ -9,13 +9,17 @@
 
 namespace oobe
 {
+    // D3D11 Test
+
 bool TestPlatformViability(Policy apolicyLevel)
 {
     // Test hardware
-    if (!IsWindows8OrGreater())
+    if (!IsWindows8OrGreater() && apolicyLevel != Policy::kLax)
     {
         return false;
     }
+
+    // TODO: should also query hardware support for AES
 
     // Test install
     auto cefDll = TiltedPhoques::GetPath() / L"libcef.dll";

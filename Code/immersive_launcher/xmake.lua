@@ -1,8 +1,7 @@
 
-target("ImmersiveLauncher")
+local function build_launcher()
     set_kind("binary")
     set_group("Client")
-    set_basename("TiltedOnline")
     set_symbols("debug", "hidden")
     add_ldflags(
         "/IGNORE:4254",
@@ -21,14 +20,13 @@ target("ImmersiveLauncher")
     add_files(
         "**.cpp",
         "resources/launcher.rc")
-    add_defines(
-        "TARGET_Fallout"
-    )
     add_deps(
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
         "Common")
+    add_links("ntdll_x64")
+    add_linkdirs(".")
     add_syslinks(
         "user32",
         "shell32",
@@ -47,3 +45,18 @@ target("ImmersiveLauncher")
         "glm",
         "cef",
         "mem")
+end
+
+target("ImmersiveLauncher-ST")
+    set_basename("SkyrimTogether")
+    add_defines(
+        "TARGET_ST",
+        "TARGET_PREFIX=\"st\"")
+    build_launcher()
+
+target("ImmersiveLauncher-FT")
+    set_basename("FalloutTogether")
+    add_defines(
+        "TARGET_FT",
+        "TARGET_PREFIX=\"ft\"")
+    build_launcher()

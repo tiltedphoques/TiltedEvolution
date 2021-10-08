@@ -1,15 +1,18 @@
 
 #include <BuildInfo.h>
+#include <MinHook.h>
 #include <TiltedCore/Initializer.hpp>
 
 #include "Launcher.h"
 #include "TargetConfig.h"
-#include "loader/ExeLoader.h"
 
+#include "loader/ExeLoader.h"
+#include "loader/PathRerouting.h"
+
+#include "Utils/Error.h"
 #include "oobe/InstallCheckFlow.h"
 #include "oobe/ViabilityChecks.h"
 #include "steam/SteamLoader.h"
-#include "Utils/Error.h"
 
 static LaunchContext* g_context = nullptr;
 
@@ -21,27 +24,11 @@ LaunchContext* GetLaunchContext()
     return g_context;
 }
 
-static void InitEnvironment()
-{
-    auto& gamePath = g_context->gamePath;
-    auto appPath = TiltedPhoques::GetPath();
-
-    SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_USER_DIRS);
-    AddDllDirectory(appPath.c_str());
-    AddDllDirectory(gamePath.c_str());
-    SetCurrentDirectoryW(gamePath.c_str());
-
-    std::wstring pathBuf;
-    pathBuf.resize(32768);
-    GetEnvironmentVariableW(L"PATH", pathBuf.data(), static_cast<DWORD>(pathBuf.length()));
-
-    // append bin & game directories
-    std::wstring newPath = appPath.native() + L";" + gamePath.native() + L";" + pathBuf;
-    SetEnvironmentVariableW(L"PATH", newPath.c_str());
-}
-
 void Bootstrap()
 {
+    //LdrGetKnownDllSectionHandle = reinterpret_cast<decltype(LdrGetKnownDllSectionHandle)>(
+    //    GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "LdrGetKnownDllSectionHandle"));
+
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();
 
@@ -57,22 +44,30 @@ void Bootstrap()
     }
 
     // Bind path environment.
-    InitEnvironment();
-    steam::Load(g_context->gamePath);
+    loader::InstallPathRouting(LC->gamePath);
+    steam::Load(LC->gamePath);
 
     {
         ExeLoader loader(CurrentTarget.loadLimit, GetProcAddress);
-        if (!loader.Load(g_context->exePath))
+        if (!loader.Load(LC->exePath))
             return;
 
-        g_context->gameMain = loader.GetEntryPoint();
+        LC->gameMain = loader.GetEntryPoint();
     }
 
     TiltedPhoques::Initializer::RunAll();
-    g_context->gameMain();
+    LC->gameMain();
 }
 
 void RunClient()
 {
-    // LdrLoadDll at fixed address
+    LoadLibraryA(
+        R"(C:\Users\vince\Documents\Development\Tilted\TiltedEvolution\build\windows\x64\debug\SkyrimTogether.dll)");
+
+    #if 0
+    __debugbreak();
+    LoadLibraryA(
+        R"(C:\Users\vince\Documents\Development\Tilted\TiltedEvolution\build\windows\x64\debug\SkyrimTogether.dll)");
+        __debugbreak();
+        #endif
 }

@@ -20,14 +20,18 @@ struct TargetConfig
 
 #include <BranchInfo.h>
 
-
-#if (1)
-#define IS_SKYRIM_TYPE
-static const TargetConfig CurrentTarget{
+#if defined(TARGET_ST)
+static constexpr TargetConfig CurrentTarget{
     L"SkyrimTogether.dll", 
     L"Skyrim Special Edition", 
     L"Skyrim Special Edition", 
     489830, kGenericLoadLimit};
+#elif defined(TARGET_FT)
+static constexpr TargetConfig CurrentTarget{
+    L"FalloutTogether.dll", 
+    L"Fallout4", 
+    L"Fallout4", 
+    377160, kGenericLoadLimit};
 #endif
 
 // clang-format on

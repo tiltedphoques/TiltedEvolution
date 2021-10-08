@@ -2,6 +2,8 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
+#include <cstdint>
+
 namespace script_extender
 {
     class SEMemoryBlock final 
@@ -14,8 +16,14 @@ namespace script_extender
         {
             return m_pBlock;
         }
+
+        inline uintptr_t LastRip() const
+        {
+            return m_lastCanidate;
+        }
     
     private:
       void* m_pBlock = nullptr;
+      uintptr_t m_lastCanidate = 0;
     };
 }
