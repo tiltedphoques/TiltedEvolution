@@ -105,35 +105,13 @@ TESObjectCELL* ModManager::GetCellFromCoordinates(int32_t aX, int32_t aY, TESWor
     return ThisCall(getCell, this, aX, aY, aWorldSpace, aSpawnCell);
 }
 
-TP_THIS_FUNCTION(TCreateProjectileAtLocation, uint32_t*, ModManager, uint32_t*, TESBoundObject*, const NiPoint3*,
-                 const NiPoint3*, TESObjectCELL*, TESWorldSpace*);
-static TCreateProjectileAtLocation* RealCreateProjectileAtLocation = nullptr;
-
-uint32_t* ModManager::CreateProjectileAtLocation(uint32_t* aResultHandle, TESBoundObject* apObject, const NiPoint3* aLocation,
-                                         const NiPoint3* aDirection, TESObjectCELL* apInterior, TESWorldSpace* apWorld) noexcept
-{
-    return ThisCall(RealCreateProjectileAtLocation, this, aResultHandle, apObject, aLocation, aDirection, apInterior, apWorld);
-}
-
-uint32_t* TP_MAKE_THISCALL(HookCreateProjectileAtLocation, ModManager, uint32_t* aResultHandle, TESBoundObject* apObject, const NiPoint3* aLocation, const NiPoint3* aDirection, TESObjectCELL* apInterior, TESWorldSpace* apWorld)
-{
-    spdlog::info("Creating projectile...");
-    return ThisCall(RealCreateProjectileAtLocation, apThis, aResultHandle, apObject, aLocation, aDirection, apInterior,
-                    apWorld);
-}
-
 static TiltedPhoques::Initializer s_tesHooks([]()
 {
     POINTER_FALLOUT4(TSpawnNewREFR, s_realSpawnNewREFR, 0x1401140B0 - 0x140000000);
     POINTER_SKYRIMSE(TSpawnNewREFR, s_realSpawnNewREFR, 0x14016C210 - 0x140000000);
-    // TODO: fallout 4 ptr is here just to have it compile
-    POINTER_FALLOUT4(TCreateProjectileAtLocation, s_createProjectile, 0x14016CCA0 - 0x140000000);
-    POINTER_SKYRIMSE(TCreateProjectileAtLocation, s_createProjectile, 0x14016CCA0 - 0x140000000);
 
     RealSpawnNewREFR = s_realSpawnNewREFR.Get();
-    RealCreateProjectileAtLocation = s_createProjectile.Get();
 
     //TP_HOOK(&RealSpawnNewREFR, SpawnNewREFR);
-    TP_HOOK(&RealCreateProjectileAtLocation, HookCreateProjectileAtLocation);
 });
 
