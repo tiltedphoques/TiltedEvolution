@@ -60,6 +60,10 @@ struct TESActivateEvent
     TESObjectREFR* object;
 };
 
+struct TESLoadGameEvent
+{
+};
+
 #define DECLARE_DISPATCHER(name, address) \
 inline EventDispatcher<name>* GetEventDispatcher_##name() \
     { \
@@ -72,3 +76,4 @@ DECLARE_DISPATCHER(TESQuestStartStopEvent, 0x1404438B0);
 DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 0x140443810);
 DECLARE_DISPATCHER(TESQuestStageEvent, 0x140443770);
 DECLARE_DISPATCHER(TESActivateEvent, 0x140441C90);
+DECLARE_DISPATCHER(TESLoadGameEvent, 0x140442EA0)

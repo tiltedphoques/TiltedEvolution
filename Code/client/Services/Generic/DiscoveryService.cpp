@@ -25,6 +25,12 @@ DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher)
 {
     m_preUpdateConnection = m_dispatcher.sink<PreUpdateEvent>().connect<&DiscoveryService::OnUpdate>(this);
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&DiscoveryService::OnConnected>(this);
+
+#if TP_SKYRIM64
+    EventDispatcherManager::Get()->loadGameEvent.RegisterSink(this);
+#else
+    GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
+#endif
 }
 
 void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
@@ -125,13 +131,17 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
 
             const auto* pCell = ModManager::Get()->GetCellFromCoordinates(startGridX + i, startGridY + j, aWorldSpace, 0);
 
-            if (pCell)
+            if (!pCell)
             {
-                uint32_t baseId = 0;
-                uint32_t modId = 0;
-                if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
-                    changeEvent.Cells.push_back(GameId(modId, baseId));
+                spdlog::warn("Cell not found at coordinates ({}, {}) in worldspace {:X}", startGridX + i,
+                             startGridY + j, aWorldSpace->formID);
+                continue;
             }
+
+            uint32_t baseId = 0;
+            uint32_t modId = 0;
+            if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
+                changeEvent.Cells.push_back(GameId(modId, baseId));
         }
     }
 
@@ -214,3 +224,11 @@ void DiscoveryService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
     VisitCell(true);
 }
+
+BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDispatcher<TESLoadGameEvent>*)
+{
+    spdlog::info("Finished loading, triggering visit cell");
+    VisitCell(true);
+    return BSTEventResult::kOk;
+}
+
