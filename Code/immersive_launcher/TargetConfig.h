@@ -24,12 +24,14 @@ static constexpr TargetConfig CurrentTarget{
     L"Skyrim Special Edition", 
     L"Skyrim Special Edition", 
     489830, 0x40000000};
+#define TARGET_NAME = "SkyrimSE";
 #elif defined(TARGET_FT)
 static constexpr TargetConfig CurrentTarget{
     L"FalloutTogether.dll", 
     L"Fallout4", 
     L"Fallout4", 
     377160, 0x70000000};
+#define TARGET_NAME "Fallout4";
 #endif
 
 // clang-format on

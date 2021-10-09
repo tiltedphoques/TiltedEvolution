@@ -70,15 +70,6 @@ int StartUp(int argc, char** argv)
 
 void InitClient()
 {
-    LoadLibraryA(
-        R"(C:\Users\vince\Documents\Development\Tilted\TiltedEvolution\build\windows\x64\debug\SkyrimTogether.dll)");
 
-#if 0
-    __debugbreak();
-    LoadLibraryA(
-        R"(C:\Users\vince\Documents\Development\Tilted\TiltedEvolution\build\windows\x64\debug\SkyrimTogether.dll)");
-        __debugbreak();
-#endif
 }
-
 } // namespace launcher
