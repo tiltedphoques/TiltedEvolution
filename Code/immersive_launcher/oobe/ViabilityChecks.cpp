@@ -21,6 +21,8 @@ bool TestPlatformViability(Policy apolicyLevel)
 
     // TODO: should also query hardware support for AES
 
+    // Mainly to prevent idiocy of force
+#if (CLIENT_DLL)
     // Test install
     auto cefDll = TiltedPhoques::GetPath() / L"libcef.dll";
     if (!std::filesystem::exists(cefDll))
@@ -28,6 +30,7 @@ bool TestPlatformViability(Policy apolicyLevel)
         __debugbreak();
         return false;
     }
+#endif
 
     return true;
 }

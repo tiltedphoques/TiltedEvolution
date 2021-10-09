@@ -52,6 +52,8 @@ target("Immersivelauncher-ST")
     add_defines(
         "TARGET_ST",
         "TARGET_PREFIX=\"st\"")
+    add_deps("SkyrimTogetherClient")
+    add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
     build_launcher()
 
 target("Immersivelauncher-FT")
@@ -59,4 +61,6 @@ target("Immersivelauncher-FT")
     add_defines(
         "TARGET_FT",
         "TARGET_PREFIX=\"ft\"")
+    add_deps("FalloutTogetherClient")
+    add_ldflags("/WHOLEARCHIVE:FalloutTogetherClient", { force = true })
     build_launcher()

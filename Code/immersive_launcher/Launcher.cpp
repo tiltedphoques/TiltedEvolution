@@ -14,6 +14,11 @@
 #include "oobe/ViabilityChecks.h"
 #include "steam/SteamLoader.h"
 
+extern void InstallStartHook();
+
+extern void RunTiltedApp();
+extern TiltedPhoques::Initializer& GetClientInitializer();
+
 namespace launcher
 {
 static LaunchContext* g_context = nullptr;
@@ -62,14 +67,17 @@ int StartUp(int argc, char** argv)
         LC->gameMain = loader.GetEntryPoint();
     }
 
+    InstallStartHook();
+    // Initialize all hooks before calling game init
     TiltedPhoques::Initializer::RunAll();
-    LC->gameMain();
 
+    // This shouldn't return until the game is killed
+    LC->gameMain();
     return 0;
 }
 
 void InitClient()
 {
-
+    RunTiltedApp();
 }
 } // namespace launcher

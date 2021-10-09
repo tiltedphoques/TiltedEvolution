@@ -37,7 +37,7 @@ void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWO
     RaiseException(dwExceptionCode, dwExceptionFlags, nNumberOfArguments, lpArguments);
 }
 
-static TiltedPhoques::Initializer s_Init([] {
+void InstallStartHook() {
     TP_HOOK_IAT2("Kernel32.dll", "GetStartupInfoW", TP_GetStartupInfoW);
     TP_HOOK_IAT2("Kernel32.dll", "RaiseException", TP_RaiseException);
 
@@ -52,4 +52,4 @@ static TiltedPhoques::Initializer s_Init([] {
             GetProcAddress(hMsvCrt, "__crtGetShowWindowMode"));
         TP_HOOK_IAT2("MSVCR110.dll", "__crtGetShowWindowMode", TP_crtGetShowWindowMode);
     }
-});
+};

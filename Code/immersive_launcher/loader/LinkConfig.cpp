@@ -24,5 +24,5 @@ char game_seg[CurrentTarget.exeSize];
 // guaranteed to always be there.
 char highrip[0x100000];
 
-#pragma data_seg(".code")
+#pragma data_seg(".xcode")
 char zdata[200] = { 1 };

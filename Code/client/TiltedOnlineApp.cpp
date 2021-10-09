@@ -97,7 +97,7 @@ bool TiltedOnlineApp::Detach()
 
 void TiltedOnlineApp::InstallHooks()
 {
-    TiltedPhoques::Initializer::RunAll();
+    //TiltedPhoques::Initializer::RunAll();
 
     TiltedPhoques::DInputHook::Install();
     TiltedPhoques::WindowsHook::Install();
