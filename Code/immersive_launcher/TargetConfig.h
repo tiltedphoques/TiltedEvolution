@@ -3,9 +3,9 @@
 #pragma once
 
 #include <cstdint>
-// How much memory the target may consume during load
-// see ExeLoader for more details.
-constexpr uintptr_t kGenericLoadLimit = 0x140000000 + 0x70000000;
+#include <BranchInfo.h>
+
+#define CLIENT_DLL 0
 
 struct TargetConfig
 {
@@ -13,25 +13,23 @@ struct TargetConfig
     const wchar_t* fullGameName;
     const wchar_t* shortGameName;
     uint32_t steamAppId;
-    uintptr_t loadLimit;
+    uint32_t exeSize;
 };
 
 // clang-format off
-
-#include <BranchInfo.h>
 
 #if defined(TARGET_ST)
 static constexpr TargetConfig CurrentTarget{
     L"SkyrimTogether.dll", 
     L"Skyrim Special Edition", 
     L"Skyrim Special Edition", 
-    489830, kGenericLoadLimit};
+    489830, 0x40000000};
 #elif defined(TARGET_FT)
 static constexpr TargetConfig CurrentTarget{
     L"FalloutTogether.dll", 
     L"Fallout4", 
     L"Fallout4", 
-    377160, kGenericLoadLimit};
+    377160, 0x70000000};
 #endif
 
 // clang-format on

@@ -2,12 +2,21 @@
 
 #include <spdlog/spdlog.h>
 
-#include <TiltedCore/Stl.hpp>
+#include "Loader/ExeLoader.h"
 #include <TiltedCore/Filesystem.hpp>
 #include <TiltedCore/Platform.hpp>
-#include "Loader/ExeLoader.h"
+#include <TiltedCore/Stl.hpp>
 
+namespace launcher
+{
 namespace fs = std::filesystem;
+
+enum class Result
+{
+    kSuccess,
+    kBadPlatform,
+    kBadInstall
+};
 
 // stays alive through the entire duration of the game.
 struct LaunchContext
@@ -19,5 +28,7 @@ struct LaunchContext
 
 LaunchContext* GetLaunchContext();
 
-void Bootstrap();
-void RunClient();
+int StartUp(int argc, char** argv);
+
+void InitClient();
+} // namespace launcher

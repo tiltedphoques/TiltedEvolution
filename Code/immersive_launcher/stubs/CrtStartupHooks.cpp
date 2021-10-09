@@ -1,5 +1,5 @@
 
-#include "Launcher.h"
+#include "launcher.h"
 #include <FunctionHook.hpp>
 #include <TiltedCore/Meta.hpp>
 #include <TiltedCore/Initializer.hpp>
@@ -11,7 +11,7 @@ void TP_GetStartupInfoW(LPSTARTUPINFOW apInfo) noexcept
 {
     std::call_once(s_initGuard, []() 
     { 
-        RunClient();
+        launcher::InitClient();
     });
 
     GetStartupInfoW(apInfo);
@@ -21,7 +21,7 @@ uint16_t TP_crtGetShowWindowMode()
 {
     std::call_once(s_initGuard, []() 
     { 
-         RunClient();
+         launcher::InitClient();
     });
 
     return Real_crtGetShowWindowMode();

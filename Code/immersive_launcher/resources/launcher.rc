@@ -20,7 +20,7 @@ BEGIN
             VALUE "CompanyName", "Tilted Phoques SRL"
             VALUE "ProductName", "TiltedOnline"
             VALUE "FileDescription", "Multiplayer mod for Bethesda games."
-            VALUE "OriginalFilename", "Launcher.exe"
+            VALUE "OriginalFilename", "launcher.exe"
             VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
         END
     END

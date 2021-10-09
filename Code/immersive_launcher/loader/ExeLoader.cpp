@@ -15,7 +15,8 @@
 
 #include "steam/SteamCeg.h"
 
-ExeLoader::ExeLoader(uintptr_t aLoadLimit, TFuncHandler aFuncHandler) : 
+ExeLoader::ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncHandler)
+    : 
     m_loadLimit(aLoadLimit), m_pFuncHandler(aFuncHandler)
 {}
 
@@ -89,10 +90,10 @@ void ExeLoader::LoadSections(const IMAGE_NT_HEADERS* apNtHeader)
     auto* section = IMAGE_FIRST_SECTION(apNtHeader);
     for (int i = 0; i < apNtHeader->FileHeader.NumberOfSections; i++)
     {
-        void* targetAddress = GetTargetRVA<uint8_t>(section->VirtualAddress);
+        uint8_t* targetAddress = GetTargetRVA<uint8_t>(section->VirtualAddress);
         const void* sourceAddress = m_pBinary + section->PointerToRawData;
 
-        if ((uintptr_t)targetAddress >= m_loadLimit)
+        if (targetAddress >= (reinterpret_cast<uint8_t*>(m_moduleHandle) + m_loadLimit))
         {
             return;
         }

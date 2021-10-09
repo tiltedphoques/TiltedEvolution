@@ -9,7 +9,7 @@
 
 #include "utils/Registry.h"
 #include "utils/Error.h"
-#include "Launcher.h"
+#include "launcher.h"
 
 namespace oobe
 {
@@ -77,14 +77,15 @@ bool SelectInstall(bool aForceSelect)
             result = Registry::WriteString(HKEY_CURRENT_USER, regPath.c_str(), L"TitlePath", titlePath) &&
                      Registry::WriteString(HKEY_CURRENT_USER, regPath.c_str(), L"TitleExe", exePath);
         }
-
-        result = false;
+        else
+            result = false;
     }
 
     if (result) 
     {
-        GetLaunchContext()->gamePath = titlePath;
-        GetLaunchContext()->exePath = exePath;
+        auto* apContext = launcher::GetLaunchContext();
+        apContext->gamePath = titlePath;
+        apContext->exePath = exePath;
     }
 
     return result;

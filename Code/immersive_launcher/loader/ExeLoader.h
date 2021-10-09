@@ -19,7 +19,7 @@ class ExeLoader
     using TEntryPoint = void(*)();
     using TFuncHandler = FARPROC(*)(HMODULE, const char*);
 
-    explicit ExeLoader(uintptr_t aLoadLimit, TFuncHandler aFuncPtr);
+    explicit ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncPtr);
 
     bool Load(const std::filesystem::path& aSourcePath);
 
@@ -55,7 +55,7 @@ class ExeLoader
     const uint8_t* m_pBinary = nullptr;
     const TFuncHandler m_pFuncHandler = nullptr;
 
-    uintptr_t m_loadLimit;
+    uint32_t m_loadLimit;
     HMODULE m_moduleHandle = nullptr;
     void* m_pEntryPoint = nullptr;
 };

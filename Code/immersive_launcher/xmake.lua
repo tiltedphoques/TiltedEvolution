@@ -47,14 +47,14 @@ local function build_launcher()
         "mem")
 end
 
-target("ImmersiveLauncher-ST")
+target("Immersivelauncher-ST")
     set_basename("SkyrimTogether")
     add_defines(
         "TARGET_ST",
         "TARGET_PREFIX=\"st\"")
     build_launcher()
 
-target("ImmersiveLauncher-FT")
+target("Immersivelauncher-FT")
     set_basename("FalloutTogether")
     add_defines(
         "TARGET_FT",

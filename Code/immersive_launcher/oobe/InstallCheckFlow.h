@@ -2,8 +2,9 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
+#include <launcher.h>
+
 namespace oobe
 {
-    // CheckInstallFlow.
-bool CheckInstall();
+bool CheckInstall(launcher::LaunchContext& LC, bool doReselect);
 }

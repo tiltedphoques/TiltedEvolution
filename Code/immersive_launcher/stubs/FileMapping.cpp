@@ -7,11 +7,11 @@
 #include <FunctionHook.hpp>
 #include <TiltedCore/Initializer.hpp>
 
-#include "Launcher.h"
+#include "launcher.h"
 #include "DllBlocklist.h"
 #include "Utils/NtInternal.h"
 
-static fs::path s_OverridePath;
+static std::filesystem::path s_OverridePath;
 
 static DWORD(WINAPI* RealGetModuleFileNameW)(HMODULE, LPWSTR, DWORD) = nullptr;
 static DWORD(WINAPI* RealGetModuleFileNameA)(HMODULE, LPSTR, DWORD) = nullptr;
@@ -51,9 +51,9 @@ static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, D
     if (aModule == nullptr || aModule == NtInternal::ThePeb()->pImageBase)
     {
         void* rbp = _ReturnAddress(); 
-        if (!IsLocalModulePath(rbp) && GetLaunchContext())
+        if (!IsLocalModulePath(rbp) && launcher::GetLaunchContext())
         {
-            auto& aExePath = GetLaunchContext()->exePath;
+            auto& aExePath = launcher::GetLaunchContext()->exePath;
             StringCchCopyW(alpFilename, aSize, aExePath.c_str());
 
             return static_cast<DWORD>(std::wcslen(alpFilename));
@@ -71,9 +71,9 @@ static DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, LPSTR alpFileName, DW
     {
         void* rbp = _ReturnAddress();
 
-        if (!IsLocalModulePath(rbp) && GetLaunchContext())
+        if (!IsLocalModulePath(rbp) && launcher::GetLaunchContext())
         {
-            auto aExePath = GetLaunchContext()->exePath.u8string();
+            auto aExePath = launcher::GetLaunchContext()->exePath.u8string();
             StringCchCopyA(alpFileName, aSize, aExePath.c_str());
 
             return static_cast<DWORD>(std::strlen(alpFileName));

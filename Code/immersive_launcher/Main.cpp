@@ -1,6 +1,6 @@
 
 #include <Windows.h>
-#include "Launcher.h"
+#include "launcher.h"
 #include "Utils/Error.h"
 
 #include "script_extender/SEMemoryBlock.h"
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     script_extender::SEMemoryBlock b;
     if (!b.Good())
     {
-        Die("Failed to pre-reserve script extender zone.\nCannot continue!");
+        Die("Failed to pre-reserve script extender zone.\nAsk Force!");
         return -1;
     }
     CoreStubsInit();
@@ -40,6 +40,5 @@ int main(int argc, char** argv)
     ComScope cs;
     TP_UNUSED(cs);
 
-    Bootstrap();
-    return 0;
+    return launcher::StartUp(argc, argv);
 }
