@@ -1,10 +1,12 @@
 
 #include <BuildInfo.h>
 #include <MinHook.h>
-#include <TiltedCore/Initializer.hpp>
 
-#include "launcher.h"
+#include <TiltedCore/Initializer.hpp>
+#include <TiltedReverse/Code/reverse/include/Debug.hpp>
+
 #include "TargetConfig.h"
+#include "launcher.h"
 
 #include "loader/ExeLoader.h"
 #include "loader/PathRerouting.h"
@@ -40,6 +42,12 @@ int StartUp(int argc, char** argv)
         if (std::strcmp(argv[i], "-r") == 0)
             askSelect = true;
     }
+
+#if (!IS_MASTER)
+    TiltedPhoques::Debug::CreateConsole();
+#endif
+
+    auto r = GetLastError();
 
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();
@@ -78,6 +86,7 @@ int StartUp(int argc, char** argv)
 
 void InitClient()
 {
+    // Jump into client code.
     RunTiltedApp();
 }
 } // namespace launcher

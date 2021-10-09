@@ -2,7 +2,7 @@
 #include <TiltedOnlinePCH.h>
 #include <TiltedOnlineApp.h>
 
-static std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
+std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 
 void RunTiltedApp()
 {

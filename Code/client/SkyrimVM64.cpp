@@ -1,6 +1,9 @@
 #include <TiltedOnlinePCH.h>
+#include "TiltedOnlineApp.h"
 
 #if TP_SKYRIM64
+
+extern std::unique_ptr<TiltedOnlineApp> g_appInstance;
 
 #include <GameVM.h>
 
@@ -22,7 +25,7 @@ static TVMDestructor* VMDestructor = nullptr;
 int TP_MAKE_THISCALL(HookVMUpdate, VMContext, float a2)
 {
     if (apThis->inactive == 0)
-        TiltedPhoques::App::GetInstance().Update();
+        g_appInstance->Update();
 
     return ThisCall(VMUpdate, apThis, a2);
 }
