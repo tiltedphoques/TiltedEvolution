@@ -185,6 +185,7 @@ struct Actor : TESObjectREFR
     // Getters
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
+    TESForm* GetEquippedAmmo() const noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
 

@@ -150,6 +150,15 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
     return nullptr;
 }
 
+TESForm* Actor::GetEquippedAmmo() const noexcept
+{
+    if (processManager && processManager->middleProcess && processManager->middleProcess->pAmmo)
+    {
+        return *(processManager->middleProcess->pAmmo);
+    }
+
+    return nullptr;
+}
 
 TESForm *Actor::GetCurrentLocation()
 {
@@ -181,6 +190,11 @@ Inventory Actor::GetInventory() const noexcept
 
     uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
     modSystem.GetServerModId(shoutId, inventory.Shout);
+
+    // TODO: get ammo id, share across server
+    auto pAmmo = GetEquippedAmmo();
+    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
+    modSystem.GetServerModId(ammoId, inventory.Ammo);
 
     return inventory;
 }
@@ -275,6 +289,13 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if (shoutId)
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+
+    uint32_t ammoId = modSystem.GetGameId(acInventory.Ammo);
+
+    /*
+    if (ammoId)
+        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+    */
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept

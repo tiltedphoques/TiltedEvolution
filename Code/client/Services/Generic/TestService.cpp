@@ -37,6 +37,10 @@
 #include <Forms/TESObjectCELL.h>
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#if TP_SKYRIM64
+#include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/DefaultObjectManager.h>
+#endif
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -630,7 +634,11 @@ void TestService::OnDraw() noexcept
         }
 
     #if TP_SKYRIM64
-        auto* pAmmo = pFetchActor->processManager->middleProcess->pAmmo;
+        #if 0
+        if (pFetchActor->processManager->middleProcess->pAmmo)
+        {
+        
+        auto* pAmmo = *(pFetchActor->processManager->middleProcess->pAmmo);
         ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
@@ -640,8 +648,26 @@ void TestService::OnDraw() noexcept
 
         if (pAmmo)
         {
-            ImGui::InputInt("Ammo form Id", (int*)&pAmmo->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            auto ammoFormId = pAmmo->formID;
+            ImGui::InputScalar("Ammo form Id", ImGuiDataType_U32, (void*)&ammoFormId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+            /*
+            auto pAmmoCast = RTTI_CAST(pAmmo, TESForm, TESAmmo);
+            if (pAmmoCast)
+            {
+                int isTESAmmo = int(pAmmoCast ? true : false);
+                ImGui::InputInt("Is TESAmmo?", &isTESAmmo, 0, 0,
+                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            }
+            */
         }
+        }
+    #endif
+
+        auto pManager = DefaultObjectManager::Get();
+        ImGui::InputScalar("Default object manager", ImGuiDataType_U64, (void*)&pManager, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
     #endif
     }
 
