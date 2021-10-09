@@ -11,6 +11,7 @@ local function build_launcher()
         "/INCREMENTAL:NO",
         "/MANIFEST:NO",
         "/LAST:.zdata",
+        "/SUBSYSTEM:WINDOWS",
         "/ENTRY:mainCRTStartup", { force = true })
     add_includedirs(
         ".",
