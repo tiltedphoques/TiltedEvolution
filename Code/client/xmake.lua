@@ -58,8 +58,7 @@ target(name)
         "sol2",
         "minhook",
         "entt",
-        "glm",
-        "mem")
+        "glm")
 
     if has_config("vivox") then
         add_files("Services/Vivox/**.cpp")
@@ -72,7 +71,9 @@ target(name)
     end
 
     add_syslinks(
-        "version")
+        "version",
+        "dbghelp",
+        "kernel32")
 end
 
 build_client("SkyrimTogetherClient", "TP_SKYRIM=1")

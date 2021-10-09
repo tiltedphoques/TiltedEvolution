@@ -1,4 +1,4 @@
-set_xmakever("2.5.7")
+set_xmakever("2.5.5")
 
 -- c code will use c99,
 -- cxx code will use cxx17 currently, cxx20 soon
