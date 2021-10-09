@@ -52,6 +52,7 @@ bool TiltedOnlineApp::BeginMain()
     InstallHooks();
 
     World::Create();
+    __debugbreak();
     World::Get().ctx<DiscordService>().Init();
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
 
@@ -97,7 +98,7 @@ bool TiltedOnlineApp::Detach()
 
 void TiltedOnlineApp::InstallHooks()
 {
-    //TiltedPhoques::Initializer::RunAll();
+    TiltedPhoques::Initializer::RunAll();
 
     TiltedPhoques::DInputHook::Install();
     TiltedPhoques::WindowsHook::Install();

@@ -19,7 +19,7 @@
 extern void InstallStartHook();
 
 extern void RunTiltedApp();
-extern TiltedPhoques::Initializer& GetClientInitializer();
+extern void RunTiltedInit();
 
 namespace launcher
 {
@@ -77,7 +77,8 @@ int StartUp(int argc, char** argv)
 
     InstallStartHook();
     // Initialize all hooks before calling game init
-    TiltedPhoques::Initializer::RunAll();
+    //TiltedPhoques::Initializer::RunAll();
+    RunTiltedInit();
 
     // This shouldn't return until the game is killed
     LC->gameMain();
