@@ -49,10 +49,9 @@ void* TiltedOnlineApp::GetMainAddress() const
 
 bool TiltedOnlineApp::BeginMain()
 {
-    InstallHooks();
+    //InstallHooks();
 
     World::Create();
-    __debugbreak();
     World::Get().ctx<DiscordService>().Init();
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
 
@@ -96,7 +95,7 @@ bool TiltedOnlineApp::Detach()
     return true;
 }
 
-void TiltedOnlineApp::InstallHooks()
+void TiltedOnlineApp::InstallHooks2()
 {
     TiltedPhoques::Initializer::RunAll();
 

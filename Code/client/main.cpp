@@ -8,6 +8,7 @@ void RunTiltedInit()
 {
     g_appInstance = std::make_unique<TiltedOnlineApp>();
 
+    TiltedOnlineApp::InstallHooks2();
     TP_HOOK_COMMIT;
 }
 

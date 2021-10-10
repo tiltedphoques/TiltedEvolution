@@ -22,6 +22,8 @@ struct TiltedOnlineApp final : App
     bool Attach() override;
     bool Detach() override;
 
+    static void InstallHooks2();
+
 protected:
 
     void InstallHooks();
