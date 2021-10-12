@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Misc/BSFixedString.h>
+#include <Games/Misc/SpinLock.h>
 #include <tuple>
 
 struct BSScript
@@ -71,8 +72,8 @@ struct BSScript
         void DecreaseRef() noexcept;
 
         uint8_t pad0[0x8];
-        ObjectTypeInfo* typeInfo;
-        BSFixedString state;
+        ObjectTypeInfo* pType;
+        BSFixedString sCurrentState;
         uint8_t pad18[0x30 - 0x18];
     };
     static_assert(sizeof(Object) == 0x30);
@@ -118,9 +119,11 @@ struct BSScript
         virtual void sub_23();
         virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName, IFunctionArguments* apArgs) const noexcept;
 
+        // TODO: move members outside of interface
         uint8_t pad0[0x9398];
         SpinLock scriptsLock;
-        AssociatedScriptsHashMap scriptsMap;
+        // TODO: ?
+        //AssociatedScriptsHashMap scriptsMap;
     };
 
     template <class... T> struct EventArguments : IFunctionArguments

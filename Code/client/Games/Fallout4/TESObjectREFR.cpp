@@ -96,18 +96,18 @@ void TESObjectREFR::GetScriptVariables() noexcept
 
     for (auto object : objects)
     {
-        spdlog::info("Script: {}", object->typeInfo->name.AsAscii());
+        spdlog::info("Script: {}", object->pType->name.AsAscii());
 
         Vector<BSFixedString*> variables;
 
-        auto* typeInfo = object->typeInfo;
+        auto* pType = object->pType;
 
-        BSFixedString* currentVar = (BSFixedString*)((char*)typeInfo->data + 8 * ((typeInfo->flags1 >> 3) & 0x1F));
-        BSFixedString* endVar = &currentVar[3 * ((typeInfo->flags1 >> 8) & 0x3FF)];
+        BSFixedString* currentVar = (BSFixedString*)((char*)pType->data + 8 * ((pType->flags1 >> 3) & 0x1F));
+        BSFixedString* endVar = &currentVar[3 * ((pType->flags1 >> 8) & 0x3FF)];
         while (currentVar != endVar)
         {
             variables.push_back(currentVar);
-            auto index = typeInfo->GetVariableIndex(currentVar);
+            auto index = pType->GetVariableIndex(currentVar);
 
             BSScript::Variable variable{};
 
@@ -138,10 +138,10 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
 
     for (auto object : objects)
     {
-        auto* typeInfo = object->typeInfo;
-        if (String(typeInfo->name.AsAscii()) == aScriptName)
+        auto* pType = object->pType;
+        if (String(pType->name.AsAscii()) == aScriptName)
         {
-            spdlog::info("Found script {}", typeInfo->name.AsAscii());
+            spdlog::info("Found script {}", pType->name.AsAscii());
             pObject = object;
             break;
         }
@@ -155,15 +155,15 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
         return;
     }
 
-    auto* typeInfo = pObject->typeInfo;
+    auto* pType = pObject->pType;
 
     bool foundVariable = false;
 
-    BSFixedString* currentVar = (BSFixedString*)((char*)typeInfo->data + 8 * ((typeInfo->flags1 >> 3) & 0x1F));
-    BSFixedString* endVar = &currentVar[3 * ((typeInfo->flags1 >> 8) & 0x3FF)];
+    BSFixedString* currentVar = (BSFixedString*)((char*)pType->data + 8 * ((pType->flags1 >> 3) & 0x1F));
+    BSFixedString* endVar = &currentVar[3 * ((pType->flags1 >> 8) & 0x3FF)];
     while (currentVar != endVar)
     {
-        auto index = typeInfo->GetVariableIndex(currentVar);
+        auto index = pType->GetVariableIndex(currentVar);
 
         BSScript::Variable variable{};
 
@@ -189,10 +189,10 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
     // TODO: remove this, just use currentVar
     BSFixedString variableName(aVariableName.c_str());
 
-    auto index = typeInfo->GetVariableIndex(&variableName);
+    auto index = pType->GetVariableIndex(&variableName);
 
-    int oldValue = pObject->variables[index].data.i;
-    pObject->variables[index].data.i = aNewValue;
+    int oldValue = pObject->variables[index].uiValue.i;
+    pObject->variables[index].uiValue.i = aNewValue;
 
     spdlog::info("Successfully changed script {} variable {} from {} to {}", aScriptName, aVariableName, oldValue,
                  aNewValue);
@@ -216,10 +216,10 @@ void TESObjectREFR::SetScriptState(const String aScriptName, const String aState
 
     for (auto object : objects)
     {
-        auto* typeInfo = object->typeInfo;
-        if (String(typeInfo->name.AsAscii()) == aScriptName)
+        auto* pType = object->pType;
+        if (String(pType->name.AsAscii()) == aScriptName)
         {
-            spdlog::info("Found script {}", typeInfo->name.AsAscii());
+            spdlog::info("Found script {}", pType->name.AsAscii());
             pObject = object;
             break;
         }
@@ -233,9 +233,9 @@ void TESObjectREFR::SetScriptState(const String aScriptName, const String aState
         return;
     }
 
-    pObject->state.Set(aState.c_str());
+    pObject->sCurrentState.Set(aState.c_str());
 
-    spdlog::info("Updated state of script {} to {}", aScriptName, pObject->state.AsAscii());
+    spdlog::info("Updated state of script {} to {}", aScriptName, pObject->sCurrentState.AsAscii());
 
     if (&pVM->scriptsLock)
         pVM->scriptsLock.Unlock();

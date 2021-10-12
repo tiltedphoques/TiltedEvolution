@@ -4,8 +4,80 @@
 #include <Games/Fallout4/TESObjectREFR.h>
 #include <Games/Misc/SpinLock.h>
 
-struct BSScript
+namespace BSScript
 {
+    struct PropertyGroupInfo : BSIntrusiveRefCounted
+    {
+        BSFixedString sGroupName;
+        BSFixedString sDocStrings;
+        uint32_t uiUserFlags;
+        GameArray<BSFixedString> kPropertyNames;
+    };
+    static_assert(sizeof(BSScript::PropertyGroupInfo) == 0x38);
+
+    struct IComplexType : BSIntrusiveRefCounted
+    {
+        virtual ~IComplexType();
+        virtual BSScript::TypeInfo::RawType GetRawType();
+    };
+    static_assert(sizeof(IComplexType) == 0x10);
+
+    struct ObjectTypeInfo : IComplexType
+    {
+        int64_t GetVariableIndex(BSFixedString* aName) noexcept;
+
+        BSFixedString sName;
+        ObjectTypeInfo* pParentTypeInfo;
+        BSFixedString sDocString;
+        GameArray<PropertyGroupInfo*> kPropertyGroups;
+        int32_t eLinkedValid : 2;
+        int32_t bConst : 1;
+        int32_t uiUserFlagCount : 5;
+        int32_t uiVariableCount : 10;
+        int32_t uiVariableUserFlagCount : 6;
+        int32_t uiInitialValueCount : 10;
+        int32_t uiPropertyCount : 10;
+        int32_t uiStaticFunctionCount : 9;
+        int32_t uiEmptyStateMemberFunctionCount : 11;
+        int32_t uiNamedStateCount : 7;
+        int32_t uiInitialState : 7;
+        void *pData;
+    };
+    static_assert(sizeof(BSScript::ObjectTypeInfo) == 0x58);
+
+    struct TypeInfo
+    {
+        enum RawType : int32_t
+        {
+            NONE = 0x0,                         // kEmpty
+            OBJECT = 0x1,                       // kHandle
+            STRING = 0x2,                       // kString
+            INT = 0x3,                          // kInteger
+            FLOAT = 0x4,                        // kFloat
+            BOOL = 0x5,                         // kBoolean
+            VAR = 0x6,
+            STRUCT = 0x7,
+            TYPE_MAX = 0x8,
+            ARRAY_TYPE_START = 0xA,
+            ARRAY_OBJECT = 0xB,
+            ARRAY_STRING = 0xC,
+            ARRAY_INT = 0xD,
+            ARRAY_FLOAT = 0xE,
+            ARRAY_BOOL = 0xF,
+            ARRAY_VAR = 0x10,
+            ARRAY_STRUCT = 0x11,
+            ARRAY_TYPE_MAX = 0x12,
+            RAWTYPE_FORCE_UINT32_SIZE = -1,
+        };
+
+        union
+        {
+            RawType eRawType;
+            IComplexType* pComplexTypeInfo;
+        } uData;
+    };
+    static_assert(sizeof(BSScript::TypeInfo) == 0x8);
+
     struct Variable
     {
         Variable() = default;
@@ -13,24 +85,13 @@ struct BSScript
 
         void Reset() noexcept;
         void Clear() noexcept;
-        void ConvertToString(char* aBuffer, uint32_t aBufferSize, bool aQuoteStringType, bool aObjectHandleOnly) noexcept;
+        void ConvertToString(char* aBuffer, uint32_t aBufferSize, bool aQuoteStringType,
+                             bool aObjectHandleOnly) noexcept;
 
-        template <class T> void Set(T aValue) noexcept
+        template<class T> void Set(T aValue) noexcept
         {
             static_assert(false);
         }
-
-        enum Type : uint64_t
-        {
-            kEmpty,
-            kHandle,
-            kString,
-            kInteger,
-            kFloat,
-            kBoolean,
-            kVariable,
-            kStruct
-        };
 
         union Data 
         {
@@ -40,9 +101,10 @@ struct BSScript
             bool b;
         };
 
-        Type type;
-        Data data;
+        TypeInfo VarType;
+        Data uiValue;
     };
+    static_assert(sizeof(BSScript::Variable) == 0x10);
 
     struct Statement
     {
@@ -65,28 +127,20 @@ struct BSScript
         virtual uint64_t GetHandle(FormType aFormType, TESObjectREFR* apObject);
     };
 
-    struct ObjectTypeInfo
-    {
-        int64_t GetVariableIndex(BSFixedString* aName) noexcept;
-
-        uint8_t pad0[0x10];
-        BSFixedString name;
-        uint8_t pad18[0x28];
-        uint64_t flags1;
-        uint8_t pad48[0x8];
-        void* data;
-    };
-    static_assert(sizeof(ObjectTypeInfo) == 0x58);
-
     struct Object
     {
         void IncreaseRef() noexcept;
         void DecreaseRef() noexcept;
 
-        uint8_t pad0[0x8];
-        ObjectTypeInfo* typeInfo;
-        BSFixedString state;
-        uint8_t pad18[0x30 - 0x18];
+        uint32_t bConstructed : 1;
+        uint32_t bInitialized : 1;
+        uint32_t bValid : 1;
+        uint32_t uiRemainingPropsToInit : 29;
+        ObjectTypeInfo* pType;
+        BSFixedString sCurrentState;
+        void* pLockStructure;
+        uint64_t hHandle;
+        uint32_t uiRefCountAndHandleLock;
         Variable variables[1]; // variables are stored like BSFixedString stores characters
     };
     static_assert(sizeof(Object) == 0x40);
@@ -101,6 +155,7 @@ struct BSScript
         };
     };
 
+    // BSTScatterTableEntry
     struct AssociatedScriptsTableEntry
     {
         struct EntryValue
@@ -115,6 +170,7 @@ struct BSScript
     };
     static_assert(sizeof(AssociatedScriptsTableEntry) == 0x20);
 
+    // BSTScatterTable
     struct AssociatedScriptsHashMap
     {
         uint8_t pad0[0xC];
@@ -201,6 +257,7 @@ struct BSScript
         virtual void sub_32();
         virtual IObjectHandlePolicy* GetObjectHandlePolicy();
 
+        // TODO: move members outside of interface
         uint8_t pad0[0xBDF0];
         SpinLock scriptsLock;
         AssociatedScriptsHashMap scriptsMap;

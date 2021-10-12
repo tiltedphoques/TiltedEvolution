@@ -23,39 +23,39 @@ void BSScript::Variable::Clear() noexcept
 {
     Reset();
 
-    type = kEmpty;
+    VarType.uData.eRawType = TypeInfo::NONE;
 }
 
 template <> void BSScript::Variable::Set(int32_t aValue) noexcept
 {
     Reset();
 
-    type = kInteger;
-    data.i = aValue;
+    VarType.uData.eRawType = TypeInfo::INT;
+    uiValue.i = aValue;
 }
 
 template <> void BSScript::Variable::Set(float aValue) noexcept
 {
     Reset();
 
-    type = kFloat;
-    data.f = aValue;
+    VarType.uData.eRawType = TypeInfo::FLOAT;
+    uiValue.f = aValue;
 }
 
 template <> void BSScript::Variable::Set(bool aValue) noexcept
 {
     Reset();
 
-    type = kBoolean;
-    data.b = aValue;
+    VarType.uData.eRawType = TypeInfo::BOOL;
+    uiValue.b = aValue;
 }
 
 template <> void BSScript::Variable::Set(const char* acpValue) noexcept
 {
     Reset();
 
-    type = kString;
-    auto pStr = reinterpret_cast<BSFixedString*>(&data.s);
+    VarType.uData.eRawType = TypeInfo::STRING;
+    auto pStr = reinterpret_cast<BSFixedString*>(&uiValue.s);
     pStr->Set(acpValue);
 }
 
@@ -68,6 +68,7 @@ void BSScript::Variable::ConvertToString(char* aBuffer, uint32_t aBufferSize, bo
     ThisCall(s_toString, this, aBuffer, aBufferSize, aQuoteStringType, aObjectHandleOnly);
 }
 
+// This is just BSTArray::SetSize
 void BSScript::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::Statement, uint32_t aCount);
@@ -121,7 +122,7 @@ void BSScript::GetObjects(Vector<BSScript::Object*>& aObjects, TESObjectREFR* aO
     auto* pVM = GameVM::Get()->virtualMachine;
 
     auto* pObjectHandlePolicy = pVM->GetObjectHandlePolicy();
-    auto objectHandle = pObjectHandlePolicy->GetHandle(aObjectRefr->formType, aObjectRefr);
+    uint64_t objectHandle = pObjectHandlePolicy->GetHandle(aObjectRefr->formType, aObjectRefr);
 
     uint32_t crc = CRC32::GenerateCRC(objectHandle);
 
