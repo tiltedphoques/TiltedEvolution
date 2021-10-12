@@ -6,44 +6,7 @@
 
 namespace BSScript
 {
-    struct PropertyGroupInfo : BSIntrusiveRefCounted
-    {
-        BSFixedString sGroupName;
-        BSFixedString sDocStrings;
-        uint32_t uiUserFlags;
-        GameArray<BSFixedString> kPropertyNames;
-    };
-    static_assert(sizeof(BSScript::PropertyGroupInfo) == 0x38);
-
-    struct IComplexType : BSIntrusiveRefCounted
-    {
-        virtual ~IComplexType();
-        virtual BSScript::TypeInfo::RawType GetRawType();
-    };
-    static_assert(sizeof(IComplexType) == 0x10);
-
-    struct ObjectTypeInfo : IComplexType
-    {
-        int64_t GetVariableIndex(BSFixedString* aName) noexcept;
-
-        BSFixedString sName;
-        ObjectTypeInfo* pParentTypeInfo;
-        BSFixedString sDocString;
-        GameArray<PropertyGroupInfo*> kPropertyGroups;
-        int32_t eLinkedValid : 2;
-        int32_t bConst : 1;
-        int32_t uiUserFlagCount : 5;
-        int32_t uiVariableCount : 10;
-        int32_t uiVariableUserFlagCount : 6;
-        int32_t uiInitialValueCount : 10;
-        int32_t uiPropertyCount : 10;
-        int32_t uiStaticFunctionCount : 9;
-        int32_t uiEmptyStateMemberFunctionCount : 11;
-        int32_t uiNamedStateCount : 7;
-        int32_t uiInitialState : 7;
-        void *pData;
-    };
-    static_assert(sizeof(BSScript::ObjectTypeInfo) == 0x58);
+    struct IComplexType;
 
     struct TypeInfo
     {
@@ -105,6 +68,52 @@ namespace BSScript
         Data uiValue;
     };
     static_assert(sizeof(BSScript::Variable) == 0x10);
+
+    struct PropertyGroupInfo : BSIntrusiveRefCounted
+    {
+        BSFixedString sGroupName;
+        BSFixedString sDocStrings;
+        uint32_t uiUserFlags;
+        GameArray<BSFixedString> kPropertyNames;
+    };
+    static_assert(sizeof(BSScript::PropertyGroupInfo) == 0x38);
+
+    struct IComplexType : BSIntrusiveRefCounted
+    {
+        virtual ~IComplexType();
+        virtual TypeInfo::RawType GetRawType();
+    };
+    static_assert(sizeof(IComplexType) == 0x10);
+
+    struct ObjectTypeInfo : IComplexType
+    {
+        int64_t GetVariableIndex(BSFixedString* aName) noexcept;
+
+        BSFixedString sName;
+        ObjectTypeInfo* pParentTypeInfo;
+        BSFixedString sDocString;
+        GameArray<PropertyGroupInfo*> kPropertyGroups;
+        // flag int 1
+        int32_t eLinkedValid : 2; // 0x0 - 0x1
+        int32_t bConst : 1; // 0x2
+        int32_t uiUserFlagCount : 5; // 0x3 - 0x7
+        int32_t uiVariableCount : 10; // 0x8 - 0x11
+        int32_t uiVariableUserFlagCount : 6; // 0x12 - 0x17
+        // padding: 0x18 - 0x20
+        // flag int 2
+        int32_t uiInitialValueCount : 10; // 0x0 - 0x9
+        int32_t uiPropertyCount : 10; // 0xA - 0x13
+        int32_t uiStaticFunctionCount : 9; // 0x14 - 0x1C
+        // padding: 0x1D - 0x20
+        // flag int 3
+        int32_t uiEmptyStateMemberFunctionCount : 11; // 0x0 - 0xA
+        int32_t uiNamedStateCount : 7; // 0xB - 0x11
+        int32_t uiInitialState : 7; // 0x12 - 0x18
+        // padding: 0x19 - 0x20
+        void *pData;
+    };
+    static_assert(sizeof(BSScript::ObjectTypeInfo) == 0x58);
+    static_assert(offsetof(BSScript::ObjectTypeInfo, kPropertyGroups) == 0x28);
 
     struct Statement
     {
@@ -263,7 +272,7 @@ namespace BSScript
         AssociatedScriptsHashMap scriptsMap;
     };
 
-    static void GetObjects(Vector<BSScript::Object*>& aObjects, TESObjectREFR* aObjectRefr) noexcept;
+    void GetObjects(Vector<BSScript::Object*>& aObjects, TESObjectREFR* aObjectRefr) noexcept;
 };
 
 template <> void BSScript::Variable::Set(int32_t aValue) noexcept;

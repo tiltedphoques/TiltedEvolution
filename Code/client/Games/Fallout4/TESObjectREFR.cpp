@@ -96,14 +96,15 @@ void TESObjectREFR::GetScriptVariables() noexcept
 
     for (auto object : objects)
     {
-        spdlog::info("Script: {}", object->pType->name.AsAscii());
+        spdlog::info("Script: {}", object->pType->sName.AsAscii());
 
         Vector<BSFixedString*> variables;
 
         auto* pType = object->pType;
 
-        BSFixedString* currentVar = (BSFixedString*)((char*)pType->data + 8 * ((pType->flags1 >> 3) & 0x1F));
-        BSFixedString* endVar = &currentVar[3 * ((pType->flags1 >> 8) & 0x3FF)];
+        // TODO: this can be cleaned up further
+        BSFixedString* currentVar = (BSFixedString*)((char*)pType->pData + 8 * pType->uiUserFlagCount);
+        BSFixedString* endVar = &currentVar[3 * pType->uiVariableCount];
         while (currentVar != endVar)
         {
             variables.push_back(currentVar);
@@ -139,9 +140,9 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
     for (auto object : objects)
     {
         auto* pType = object->pType;
-        if (String(pType->name.AsAscii()) == aScriptName)
+        if (String(pType->sName.AsAscii()) == aScriptName)
         {
-            spdlog::info("Found script {}", pType->name.AsAscii());
+            spdlog::info("Found script {}", pType->sName.AsAscii());
             pObject = object;
             break;
         }
@@ -159,8 +160,8 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
 
     bool foundVariable = false;
 
-    BSFixedString* currentVar = (BSFixedString*)((char*)pType->data + 8 * ((pType->flags1 >> 3) & 0x1F));
-    BSFixedString* endVar = &currentVar[3 * ((pType->flags1 >> 8) & 0x3FF)];
+    BSFixedString* currentVar = (BSFixedString*)((char*)pType->pData + 8 * pType->uiUserFlagCount);
+    BSFixedString* endVar = &currentVar[3 * pType->uiVariableCount];
     while (currentVar != endVar)
     {
         auto index = pType->GetVariableIndex(currentVar);
@@ -217,9 +218,9 @@ void TESObjectREFR::SetScriptState(const String aScriptName, const String aState
     for (auto object : objects)
     {
         auto* pType = object->pType;
-        if (String(pType->name.AsAscii()) == aScriptName)
+        if (String(pType->sName.AsAscii()) == aScriptName)
         {
-            spdlog::info("Found script {}", pType->name.AsAscii());
+            spdlog::info("Found script {}", pType->sName.AsAscii());
             pObject = object;
             break;
         }
