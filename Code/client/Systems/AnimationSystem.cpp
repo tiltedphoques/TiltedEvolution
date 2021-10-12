@@ -16,6 +16,9 @@
 #include <Components.h>
 #include <World.h>
 
+#include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
+
 extern thread_local const char* g_animErrorCode;
 
 void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationComponent& aAnimationComponent, const uint64_t aTick) noexcept
@@ -86,6 +89,13 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
 
     auto& update = aMovementSnapshot.Updates[localComponent.Id];
     auto& movement = update.UpdatedMovement;
+
+    if (const auto pCell = pActor->parentCell)
+        World::Get().GetModSystem().GetServerModId(pCell->formID, movement.CellId.ModId, movement.CellId.BaseId);
+
+    if (const auto pWorldSpace = pActor->GetWorldSpace())
+        World::Get().GetModSystem().GetServerModId(pWorldSpace->formID, movement.WorldSpaceId.ModId,
+                                                   movement.WorldSpaceId.BaseId);
 
     movement.Position = pActor->position;
 

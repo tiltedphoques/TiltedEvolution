@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Structs/GameId.h>
 #include <TiltedCore/Buffer.hpp>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
@@ -18,6 +19,8 @@ struct Movement
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
+    GameId CellId{};
+    GameId WorldSpaceId{};
     Vector3_NetQuantize Position{};
     Rotator2_NetQuantize Rotation{};
     AnimationVariables Variables{};

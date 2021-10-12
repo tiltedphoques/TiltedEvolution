@@ -34,7 +34,9 @@ target("Launcher")
         "ole32",
         "dxgi",
         "d3d11",
-        "gdi32")
+        "gdi32",
+        "kernel32",
+        "DbgHelp")
     add_packages(
         "tiltedcore",
         "spdlog",
@@ -42,4 +44,5 @@ target("Launcher")
         "hopscotch-map",
         "cryptopp",
         "glm",
-        "cef")
+        "cef",
+        "mem")

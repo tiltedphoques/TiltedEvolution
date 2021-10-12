@@ -54,7 +54,7 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    uint32_t playerCount = m_world.view<PlayerComponent>().size() & 0xFFFFFFFF;
+    uint32_t playerCount = m_world.GetPlayerManager().Count() & 0xFFFFFFFF;
     uint16_t port = GameServer::Get()->GetPort();
     const auto& cName = GameServer::Get()->GetName();
 

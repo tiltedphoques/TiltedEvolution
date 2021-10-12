@@ -2,6 +2,6 @@
 
 #include <TiltedCore/Stl.hpp>
 
-TiltedPhoques::WString WinErrorToString(uint32_t aErrorCode);
+TiltedPhoques::String WinErrorToStringA(uint32_t aErrorCode);
 
-void FatalError(const wchar_t* aText);
+void FatalError(const char* aText);

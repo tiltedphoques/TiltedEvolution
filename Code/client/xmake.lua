@@ -1,9 +1,8 @@
 
 local function build_client(name, def)
 target(name)
-    set_kind("shared")
+    set_kind("static")
     set_group("Client")
-    --set_basename(name .. "RebornClient")
     add_defines(def)
     add_includedirs(".")
     set_pcxxheader("TiltedOnlinePCH.h")
@@ -23,14 +22,14 @@ target(name)
     end)
 
     -- only include selected files
-    if name == "SkyrimTogether" then
+    if name == "SkyrimTogetherClient" then
         add_files("Games/Skyrim/**.cpp")
         add_headerfiles("Games/Skyrim/**.h")
         -- rather hacky:
         add_includedirs("Games/Skyrim")
         add_deps("SkyrimEncoding")
     end
-    if name == "FalloutTogether" then
+    if name == "FalloutTogetherClient" then
         add_files("Games/Fallout4/**.cpp")
         add_headerfiles("Games/Fallout4/**.h")
         -- rather hacky:
@@ -58,7 +57,8 @@ target(name)
         "sol2",
         "minhook",
         "entt",
-        "glm")
+        "glm",
+        "mem")
 
     if has_config("vivox") then
         add_files("Services/Vivox/**.cpp")
@@ -71,8 +71,10 @@ target(name)
     end
 
     add_syslinks(
-        "version")
+        "version",
+        "dbghelp",
+        "kernel32")
 end
 
-build_client("SkyrimTogether", "TP_SKYRIM=1")
-build_client("FalloutTogether", "TP_FALLOUT=1")
+build_client("SkyrimTogetherClient", "TP_SKYRIM=1")
+build_client("FalloutTogetherClient", "TP_FALLOUT=1")

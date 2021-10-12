@@ -164,13 +164,13 @@ void Launcher::LoadClient() noexcept
     {
         if (!fs::exists(cefDll))
         {
-            auto msg = fmt::format(L"Failed to load client\nLooks like CEF dlls are missing!\nPath: {}\nSuggested fix: "
-                                   L"Run xmake install -o package", clientDll.native());
+            auto msg = fmt::format("Failed to load client\nLooks like CEF dlls are missing!\nPath: {}\nSuggested fix: "
+                                   "Run xmake install -o package", clientDll.string());
             FatalError(msg.c_str());
         }
         else
         {
-            auto msg = fmt::format(L"Failed to load client\nPath: {}", clientDll.native());
+            auto msg = fmt::format("Failed to load client\nPath: {}", clientDll.string());
             FatalError(msg.c_str());
         }
 

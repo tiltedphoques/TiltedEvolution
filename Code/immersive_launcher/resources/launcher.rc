@@ -1,0 +1,57 @@
+#include "winuser.h"
+#include "BuildInfo.h"
+#include "BranchInfo.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+FILEFLAGS 0x1L
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS 0x4L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Tilted Phoques SRL"
+            VALUE "ProductName", "TiltedOnline"
+            VALUE "FileDescription", "Multiplayer mod for Bethesda games."
+            VALUE "OriginalFilename", "launcher.exe"
+            VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "launcher.manifest"
+
+// THERE IS NO NICER WAY
+
+#if defined(TARGET_ST)
+#if (IS_MASTER)
+102 ICON "st_logo.ico"
+#elif (IS_BRANCH_BETA)
+102 ICON "st_logo_beta.ico"
+#elif (IS_BRANCH_PREREL)
+102 ICON "st_logo_pre.ico"
+#else
+102 ICON "st_logo_dev.ico"
+#endif
+#elif defined(TARGET_FT)
+#if (IS_MASTER)
+102 ICON "ft_logo.ico"
+#elif (IS_BRANCH_BETA)
+102 ICON "ft_logo_beta.ico"
+#elif (IS_BRANCH_PREREL)
+102 ICON "ft_logo_pre.ico"
+#else
+102 ICON "ft_logo_dev.ico"
+#endif
+#endif

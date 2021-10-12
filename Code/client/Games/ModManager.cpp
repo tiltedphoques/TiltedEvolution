@@ -3,6 +3,7 @@
 #include <Games/TES.h>
 
 #include <Actor.h>
+#include <Forms/TESBoundObject.h>
 
 #if TP_FALLOUT
 #include <Misc/NEW_REFR_DATA.h>
@@ -103,7 +104,6 @@ TESObjectCELL* ModManager::GetCellFromCoordinates(int32_t aX, int32_t aY, TESWor
 
     return ThisCall(getCell, this, aX, aY, aWorldSpace, aSpawnCell);
 }
-
 
 static TiltedPhoques::Initializer s_tesHooks([]()
 {

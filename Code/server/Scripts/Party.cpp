@@ -24,10 +24,11 @@ namespace Script
         auto* pParty = partyService.GetById(m_partyId);
         if (pParty)
         {
-            for (auto entity : pParty->Members)
+            //TODO: Fix script 
+            /* for (auto entity : pParty->Members)
             {
                 players.emplace_back(entity, *m_pWorld);
-            }
+            }*/
         }
         
         return players;

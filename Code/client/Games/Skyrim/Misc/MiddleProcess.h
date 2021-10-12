@@ -9,6 +9,7 @@ struct MiddleProcess
     TESForm** leftEquippedObject;
     uint8_t pad228[0x260 - 0x228];
     TESForm** rightEquippedObject;
+    TESForm* pAmmo; // TESAmmo* pAmmo;
     // 0xB8 - direction
     //
     // 0x326 - bool lookat 

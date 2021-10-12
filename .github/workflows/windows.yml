@@ -3,6 +3,8 @@ name: Build windows
 on:
   pull_request:
   push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -42,7 +44,7 @@ jobs:
 
     # Setup compilation mode and install project dependencies
     - name: Configure xmake and install dependencies
-      run: xmake.exe config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --vs_sdkver=10.0.19041.0
+      run: xmake.exe config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --vs_sdkver=10.0.19041.0 -vD
 
     # Build the game
     - name: Build

@@ -1,10 +1,10 @@
 #pragma once
 
+struct Player;
 struct PlayerEnterWorldEvent
 {
-    PlayerEnterWorldEvent(const entt::entity aEntity)
-        : Entity{aEntity}
+    PlayerEnterWorldEvent(const Player* apPlayer) : pPlayer{apPlayer}
     {}
 
-    entt::entity Entity;
+    const Player* pPlayer;
 };

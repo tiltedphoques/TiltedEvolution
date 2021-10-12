@@ -8,6 +8,7 @@
 #include <Misc/ActorState.h>
 #include <Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Forms/MagicItem.h>
+#include <Games/Skyrim/Misc/ActorMagicCaster.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
@@ -39,7 +40,7 @@ struct Actor : TESObjectREFR
     virtual void sub_A3();
     virtual void sub_A4();
     virtual void sub_A5();
-    virtual void sub_A6();
+    virtual void SetWeaponDrawn(bool aDraw);
     virtual void sub_A7();
     virtual void sub_A8();
     virtual void SetPosition(const NiPoint3& acPoint, bool aSyncHavok = true);
@@ -78,7 +79,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CA();
     virtual void sub_CB();
     virtual void sub_CC();
-    virtual void sub_CD();
+    virtual void AttachArrow(void* apBiped);
     virtual void sub_CE();
     virtual void sub_CF();
     virtual void sub_D0();
@@ -169,6 +170,12 @@ struct Actor : TESObjectREFR
     virtual void sub_125();
     virtual void sub_126();
     virtual void sub_127();
+    
+    // Should be virtual
+    //void* GetBiped() const noexcept;
+
+    // Real functions
+    void DualCastSpell(TESObjectREFR* apDesiredTarget);
 
     // Casting
     ActorExtension* GetExtension() noexcept;
@@ -268,9 +275,9 @@ public:
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<void*> addedSpells;
-    struct ActorMagicCaster* leftHandCaster;
-    struct ActorMagicCaster* rightHandCaster;
-    struct ActorMagicCaster* shoutCaster;
+    ActorMagicCaster* leftHandCaster;
+    ActorMagicCaster* rightHandCaster;
+    ActorMagicCaster* shoutCaster;
     uintptr_t unk114;
     MagicItem* magicItems[4];
     TESForm* equippedShout;

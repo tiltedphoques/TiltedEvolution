@@ -1,9 +1,5 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
-
-AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
-{
-    
-}
+#include <iostream>
 
 AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
 {
@@ -11,25 +7,26 @@ AnimationGraphDescriptorManager& AnimationGraphDescriptorManager::Get() noexcept
     return s_manager;
 }
 
-const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(const char* acpName) const noexcept
+const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(uint64_t aKey) const noexcept
 {
-    const auto itor = m_descriptors.find(acpName);
-    if (itor != std::end(m_descriptors))
-        return &itor->second;
+    const auto it = m_descriptors.find(aKey);
+    if (it != std::end(m_descriptors))
+        return &it->second;
 
     return nullptr;
 }
 
-AnimationGraphDescriptorManager::Builder::Builder(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, uint64_t aKey,
+                                                  AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    Get().Register(acpName, std::move(aAnimationGraphDescriptor));
+    aManager.Register(aKey, std::move(aAnimationGraphDescriptor));
 }
 
-void AnimationGraphDescriptorManager::Register(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+void AnimationGraphDescriptorManager::Register(uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
-    if (m_descriptors.count(acpName))
+    if (m_descriptors.count(aKey))
         return;
 
-    m_descriptors[acpName] = std::move(aAnimationGraphDescriptor);
+    m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
 }
 

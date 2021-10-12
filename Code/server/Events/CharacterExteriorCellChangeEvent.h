@@ -2,17 +2,18 @@
 #include <Structs/GameId.h>
 #include <Structs/GridCellCoords.h>
 
+struct Player;
 struct CharacterExteriorCellChangeEvent
 {
-    CharacterExteriorCellChangeEvent(const entt::entity aOwner, const entt::entity aEntity,
+    CharacterExteriorCellChangeEvent(Player* apOwner, const entt::entity aEntity,
                                      const GameId aWorldSpaceId, const GridCellCoords aCurrentCoords)
-        : Owner(aOwner)
+        : Owner(apOwner)
         , Entity{aEntity}
         , WorldSpaceId(aWorldSpaceId)
         , CurrentCoords(aCurrentCoords)
     {}
 
-    entt::entity Owner;
+    Player* Owner;
     entt::entity Entity;
     GameId WorldSpaceId;
     GridCellCoords CurrentCoords;

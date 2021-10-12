@@ -2,18 +2,31 @@
 
 struct TESObjectREFR;
 struct Actor;
+struct TESBoundObject;
 
 struct ActivateEvent
 {
-    ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4, bool aActivateFlag = false)
-        : pObject(apObject), pActivator(apActivator), unk1(aUnk1), unk2(aUnk2), unk3(aUnk3), unk4(aUnk4), ActivateFlag(aActivateFlag)
+#if TP_FALLOUT4
+    ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping, bool aActivateFlag = false)
+        : pObject(apObject), pActivator(apActivator), pObjectToGet(apObjectToGet), Count(aCount), DefaultProcessing(aDefaultProcessing), FromScript(aFromScript), IsLooping(aIsLooping), ActivateFlag(aActivateFlag)
     {}
+#elif TP_SKYRIM64
+    ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, uint8_t aUnk1, bool aActivateFlag = false)
+        : pObject(apObject), pActivator(apActivator), pObjectToGet(apObjectToGet), Count(aCount), DefaultProcessing(aDefaultProcessing), Unk1(aUnk1), ActivateFlag(aActivateFlag)
+    {}
+#endif
 
     TESObjectREFR* pObject;
     Actor* pActivator;
-    uint8_t unk1;
-    int64_t unk2;
-    int unk3;
-    char unk4;
+    TESBoundObject* pObjectToGet;
+    int32_t Count;
+    bool DefaultProcessing;
+#if TP_FALLOUT4
+    bool FromScript;
+    bool IsLooping;
+#elif TP_SKYRIM64
+    uint8_t Unk1;
+#endif
+
     bool ActivateFlag;
 };

@@ -7,9 +7,12 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
+#include <Games/Skyrim/Misc/MagicSystem.h>
+#include <Games/Skyrim/Misc/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
+struct TESBoundObject;
 
 struct TESObjectREFR : TESForm
 {
@@ -68,7 +71,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_59();
     virtual void sub_5A();
     virtual void sub_5B();
-    virtual struct ActorMagicCaster* CreateMagicCaster(uint32_t aId);
+    virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual void sub_5D();
     virtual void sub_5E();
     virtual void sub_5F();
@@ -103,7 +106,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_7C();
     virtual void sub_7D();
     virtual void* sub_7E(bool aUnk);
-    virtual void sub_7F();
+    virtual void* GetBiped();
     virtual void sub_80();
     virtual void sub_81();
     virtual void sub_82();
@@ -155,7 +158,7 @@ struct TESObjectREFR : TESForm
     void Enable() const noexcept;
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
 
-    void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, int64_t aUnk2, int aUnk3, char aUnk4) noexcept;
+    void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
@@ -173,6 +176,7 @@ struct TESObjectREFR : TESForm
     uint16_t scale;
     uint16_t referenceFlags;
 };
+constexpr size_t t = offsetof(TESObjectREFR, extraData);
 
 POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141EBEABC - 0x140000000);
 

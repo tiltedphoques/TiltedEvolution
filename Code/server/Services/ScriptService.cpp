@@ -32,11 +32,11 @@ Vector<Script::Player> ScriptService::GetPlayers() const
 {
     Vector<Script::Player> players;
 
-    auto playerView = m_world.view<PlayerComponent>();
+    /* auto playerView = m_world.view<PlayerComponent>();
     for(auto entity : playerView)
     {
         players.push_back(Script::Player(entity, m_world));
-    }
+    }*/
 
     return players;
 }
@@ -45,11 +45,12 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
 {
     Vector<Script::Npc> npcs;
 
-    auto npcView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(entt::exclude<PlayerComponent>);
+    /* auto npcView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(
+        entt::exclude<PlayerComponent>);
     for (auto entity : npcView)
     {
         npcs.push_back(Script::Npc(entity, m_world));
-    }
+    }*/
 
     return npcs;
 }
@@ -183,9 +184,9 @@ void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void ScriptService::OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noexcept
 {
-    const Script::Player cPlayer(acEvent.Entity, m_world);
+    /* const Script::Player cPlayer(acEvent.Entity, m_world);
 
-    CallEvent("onPlayerEnterWorld", cPlayer);
+    CallEvent("onPlayerEnterWorld", cPlayer);*/
 }
 
 void ScriptService::OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept
@@ -195,7 +196,7 @@ void ScriptService::OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) no
     Buffer buff(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
     Buffer::Reader reader(&buff);
 
-    GetNetState()->ProcessCallRequest(reader, acRpcCalls.ConnectionId);
+    GetNetState()->ProcessCallRequest(reader, acRpcCalls.pPlayer->GetConnectionId());
 }
 
 void ScriptService::BindTypes(ScriptContext& aContext) noexcept
@@ -210,7 +211,6 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     npcType["position"] = sol::readonly_property(&Npc::GetPosition);
     npcType["rotation"] = sol::readonly_property(&Npc::GetRotation);
     npcType["speed"] = sol::readonly_property(&Npc::GetSpeed);
-    npcType["AddComponent"] = &Npc::AddComponent;
 
     auto playerType = aContext.new_usertype<Player>("Player", sol::no_constructor);
     playerType["id"] = sol::readonly_property(&Player::GetId);
@@ -218,7 +218,6 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     playerType["ip"] = sol::readonly_property(&Player::GetIp);
     playerType["party"] = sol::readonly_property(&Player::GetParty);
     playerType["discordid"] = sol::readonly_property(&Player::GetDiscordId);
-    playerType["AddComponent"] = &Player::AddComponent;
     playerType["AddQuest"] = &Player::AddQuest;
     playerType["GetQuests"] = &Player::GetQuests;
     playerType["RemoveQuest"] = &Player::RemoveQuest; 

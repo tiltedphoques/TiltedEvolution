@@ -9,20 +9,21 @@ struct AnimationGraphDescriptorManager
     TP_NOCOPYMOVE(AnimationGraphDescriptorManager);
 
     static AnimationGraphDescriptorManager& Get() noexcept;
-    const AnimationGraphDescriptor* GetDescriptor(const char* acpName) const noexcept;
+    const AnimationGraphDescriptor* GetDescriptor(uint64_t aKey) const noexcept;
 
     struct Builder
     {
-        Builder(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept;
+        Builder(AnimationGraphDescriptorManager& aManager, uint64_t aKey,
+                AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept;
     };
 
 protected:
 
-    void Register(const char* acpName, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept;
+    void Register(uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept;
 
 private:
 
     AnimationGraphDescriptorManager() noexcept;
 
-    Map<TiltedPhoques::String, AnimationGraphDescriptor> m_descriptors;
+    Map<uint64_t, AnimationGraphDescriptor> m_descriptors;
 };

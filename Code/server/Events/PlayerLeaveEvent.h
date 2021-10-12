@@ -1,10 +1,11 @@
 #pragma once
 
+struct Player;
 struct PlayerLeaveEvent
 {
-    PlayerLeaveEvent(const entt::entity aEntity) : Entity{aEntity}
+    PlayerLeaveEvent(Player* apPlayer) : pPlayer{apPlayer}
     {
     }
 
-    entt::entity Entity;
+    Player* pPlayer;
 };

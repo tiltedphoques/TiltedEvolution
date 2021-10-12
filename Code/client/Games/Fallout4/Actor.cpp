@@ -5,6 +5,7 @@
 #include <Games/Memory.h>
 #include <Games/References.h>
 #include <PlayerCharacter.h>
+#include <Games/Fallout4/EquipManager.h>
 
 #include <Services/PapyrusService.h>
 #include <World.h>
@@ -140,6 +141,17 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if (!acInventory.Buffer.empty())
         DeserializeInventory(acInventory.Buffer);
+
+    /*
+    auto* pEquipManager = EquipManager::Get();
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
+
+    if (mainHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), 0, 1, nullptr, false, true, false, false);
+    */
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept

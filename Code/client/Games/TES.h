@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Forms/TESBoundObject.h>
+
 struct NEW_REFR_DATA;
 struct TESObjectCELL;
 struct TESWorldSpace;

@@ -39,17 +39,17 @@ GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const flo
     return GridCellCoords(x, y);
 }
 
-bool GridCellCoords::AreGridCellsOverlapping(const GridCellCoords* aCoords1, const GridCellCoords* aCoords2) noexcept
+bool GridCellCoords::AreGridCellsOverlapping(const GridCellCoords& aCoords1, const GridCellCoords& aCoords2) noexcept
 {
-    if ((abs(aCoords1->X - aCoords2->X) < m_gridsToLoad) && (abs(aCoords1->Y - aCoords2->Y) < m_gridsToLoad))
+    if ((abs(aCoords1.X - aCoords2.X) < m_gridsToLoad) && (abs(aCoords1.Y - aCoords2.Y) < m_gridsToLoad))
         return true;
     return false;
 }
 
-bool GridCellCoords::IsCellInGridCell(const GridCellCoords* aCell, const GridCellCoords* aGridCell) noexcept
+bool GridCellCoords::IsCellInGridCell(const GridCellCoords& aCell, const GridCellCoords& aGridCell) noexcept
 {
     int32_t distanceToBorder = m_gridsToLoad / 2;
-    if ((abs(aCell->X - aGridCell->X) <= distanceToBorder) && abs(aCell->Y - aGridCell->Y) <= distanceToBorder)
+    if ((abs(aCell.X - aGridCell.X) <= distanceToBorder) && abs(aCell.Y - aGridCell.Y) <= distanceToBorder)
         return true;
     return false;
 }

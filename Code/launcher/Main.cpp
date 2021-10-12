@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     CoreStubsInit();
     if (!LowRipZoneInit())
     {
-        FatalError(L"Failed to initialize rip zone.\nCannot continue!");
+        FatalError("Failed to initialize rip zone.\nCannot continue!");
         return -1;
     }
 

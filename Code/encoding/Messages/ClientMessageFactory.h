@@ -9,7 +9,7 @@
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/ClientRpcCalls.h>
-#include <Messages/RequestInventoryChanges.h>
+#include <Messages/RequestCharacterInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/PartyInviteRequest.h>
@@ -27,6 +27,9 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/RequestObjectInventoryChanges.h>
+#include <Messages/SpellCastRequest.h>
+#include <Messages/AttachArrowRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -39,12 +42,12 @@ struct ClientMessageFactory
     {
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
                                  ClientReferencesMoveRequest, EnterInteriorCellRequest, ClientRpcCalls,
-                                 RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
+                                 RequestCharacterInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
-                                 RequestOwnershipClaim>;
+                                 RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, AttachArrowRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

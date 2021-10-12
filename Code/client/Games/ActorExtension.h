@@ -14,6 +14,7 @@ struct ActorExtension
     void SetRemote(bool aSet) noexcept;
 
     ActionEvent LatestAnimation{};
+    size_t GraphDescriptorHash = 0;
 
 private:
 
