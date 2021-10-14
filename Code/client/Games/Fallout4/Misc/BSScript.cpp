@@ -122,7 +122,7 @@ void BSScript::GetObjects(Vector<BSScript::Object*>& aObjects, TESObjectREFR* aO
     auto* pVM = GameVM::Get()->virtualMachine;
 
     auto* pObjectHandlePolicy = pVM->GetObjectHandlePolicy();
-    uint64_t objectHandle = pObjectHandlePolicy->GetHandle(aObjectRefr->formType, aObjectRefr);
+    uint64_t objectHandle = pObjectHandlePolicy->GetHandleForObject(aObjectRefr->formType, aObjectRefr);
 
     uint32_t crc = CRC32::GenerateCRC(objectHandle);
 

@@ -133,7 +133,7 @@ namespace BSScript
         virtual void sub_04();
         virtual void sub_05();
         virtual void sub_06();
-        virtual uint64_t GetHandle(FormType aFormType, TESObjectREFR* apObject);
+        virtual uint64_t GetHandleForObject(FormType aFormType, TESObjectREFR* apObject);
     };
 
     struct Object
@@ -249,7 +249,7 @@ namespace BSScript
         virtual void sub_22();
         virtual void sub_23();
         virtual void sub_24();
-        virtual bool GetVariable(BSScript::Object** aObject, uint32_t aIndex, BSScript::Variable* aVariable);
+        virtual bool GetVariableValue(BSScript::Object** aObject, uint32_t aIndex, BSScript::Variable* aVariable);
         virtual void sub_26();
         virtual void sub_27();
         virtual void sub_28();

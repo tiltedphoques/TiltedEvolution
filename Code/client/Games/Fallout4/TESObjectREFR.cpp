@@ -112,7 +112,7 @@ void TESObjectREFR::GetScriptVariables() noexcept
 
             BSScript::Variable variable{};
 
-            pVM->GetVariable(&object, index, &variable);
+            pVM->GetVariableValue(&object, index, &variable);
 
             char buffer[256];
             variable.ConvertToString(buffer, 256, true, true);
@@ -168,7 +168,7 @@ void TESObjectREFR::SetScriptVariable(const String aScriptName, const String aVa
 
         BSScript::Variable variable{};
 
-        pVM->GetVariable(&pObject, index, &variable);
+        pVM->GetVariableValue(&pObject, index, &variable);
 
         if (String(currentVar->AsAscii()) == aVariableName)
         {

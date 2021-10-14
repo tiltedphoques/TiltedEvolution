@@ -146,7 +146,7 @@ TestService::~TestService() noexcept = default;
 
 void TestService::OnGetVariables(const GetVariablesEvent& acEvent) noexcept
 {
-    #if TP_FALLOUT4
+#if TP_FALLOUT4
     auto* pPapTestForm = TESForm::GetById(acEvent.formId);
     if (pPapTestForm)
     {
@@ -156,12 +156,12 @@ void TestService::OnGetVariables(const GetVariablesEvent& acEvent) noexcept
             pPapTestObj->GetScriptVariables();
         }
     }
-    #endif
+#endif
 }
 
 void TestService::OnSetVariables(const SetVariablesEvent& acEvent) noexcept
 {
-    #if TP_FALLOUT4
+#if TP_FALLOUT4
     auto* pPapTestForm = TESForm::GetById(acEvent.formId);
     if (pPapTestForm)
     {
@@ -171,12 +171,12 @@ void TestService::OnSetVariables(const SetVariablesEvent& acEvent) noexcept
             pPapTestObj->SetScriptVariable(acEvent.scriptName, acEvent.variableName, acEvent.newValue);
         }
     }
-    #endif
+#endif
 }
 
 void TestService::OnSetState(const SetStateEvent& acEvent) noexcept
 {
-    #if TP_FALLOUT4
+#if TP_FALLOUT4
     auto* pPapTestForm = TESForm::GetById(acEvent.formId);
     if (pPapTestForm)
     {
@@ -186,7 +186,7 @@ void TestService::OnSetState(const SetStateEvent& acEvent) noexcept
             pPapTestObj->SetScriptState(acEvent.scriptName, acEvent.state);
         }
     }
-    #endif
+#endif
 }
 
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
