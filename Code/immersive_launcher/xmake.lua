@@ -1,8 +1,7 @@
 
-target("Launcher")
+local function build_launcher()
     set_kind("binary")
     set_group("Client")
-    set_basename("TiltedOnline")
     set_symbols("debug", "hidden")
     add_ldflags(
         "/IGNORE:4254",
@@ -12,6 +11,7 @@ target("Launcher")
         "/INCREMENTAL:NO",
         "/MANIFEST:NO",
         "/LAST:.zdata",
+        "/SUBSYSTEM:WINDOWS",
         "/ENTRY:mainCRTStartup", { force = true })
     add_includedirs(
         ".",
@@ -20,12 +20,14 @@ target("Launcher")
     add_headerfiles("**.h")
     add_files(
         "**.cpp",
-        "launcher.rc")
+        "resources/launcher.rc")
     add_deps(
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
         "Common")
+    add_links("ntdll_x64")
+    add_linkdirs(".")
     add_syslinks(
         "user32",
         "shell32",
@@ -34,9 +36,7 @@ target("Launcher")
         "ole32",
         "dxgi",
         "d3d11",
-        "gdi32",
-        "kernel32",
-        "DbgHelp")
+        "gdi32")
     add_packages(
         "tiltedcore",
         "spdlog",
@@ -46,3 +46,22 @@ target("Launcher")
         "glm",
         "cef",
         "mem")
+end
+
+target("Immersivelauncher-ST")
+    set_basename("SkyrimTogether")
+    add_defines(
+        "TARGET_ST",
+        "TARGET_PREFIX=\"st\"")
+    add_deps("SkyrimTogetherClient")
+    add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
+    build_launcher()
+
+target("Immersivelauncher-FT")
+    set_basename("FalloutTogether")
+    add_defines(
+        "TARGET_FT",
+        "TARGET_PREFIX=\"ft\"")
+    add_deps("FalloutTogetherClient")
+    add_ldflags("/WHOLEARCHIVE:FalloutTogetherClient", { force = true })
+    build_launcher()
