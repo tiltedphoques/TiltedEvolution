@@ -160,9 +160,13 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
-            TESObjectREFR* ref = nullptr;
-            ref->SaveInventory(0);
+            PlaceActorInWorld();
+
+            const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
+
+            //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
+            auto pActor = Actor::Create(pPlayerBaseForm);
+            pActor->SaveInventory(0);
         }
     }
     else

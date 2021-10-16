@@ -38,6 +38,9 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
         GetModuleFileNameA(NULL, dumpPath, sizeof(dumpPath));
         std::filesystem::path modulePath(dumpPath);
         auto subPath = modulePath.parent_path();
+
+        CrashHandler::RemovePreviousDump(subPath);
+
         subPath /= oss.str();
 
         auto hDumpFile = CreateFileA(subPath.string().c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -76,6 +79,18 @@ CrashHandler::CrashHandler()
 CrashHandler::~CrashHandler()
 {
 
+}
+
+void CrashHandler::RemovePreviousDump(std::filesystem::path path)
+{
+    for (auto& entry : std::filesystem::directory_iterator(path))
+    {
+        if (entry.path().string().find("crash") != std::string::npos)
+        {
+            DeleteFileA(entry.path().string().c_str());
+            break;
+        }
+    }
 }
 
 
