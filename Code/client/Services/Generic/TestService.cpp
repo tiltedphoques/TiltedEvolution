@@ -160,7 +160,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+            TESObjectREFR* ref = nullptr;
+            ref->SaveInventory(0);
         }
     }
     else
