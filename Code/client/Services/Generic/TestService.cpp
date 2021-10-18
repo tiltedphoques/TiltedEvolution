@@ -161,6 +161,12 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             PlaceActorInWorld();
+
+            const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
+
+            //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
+            auto pActor = Actor::Create(pPlayerBaseForm);
+            pActor->SaveInventory(0);
         }
     }
     else
@@ -633,6 +639,11 @@ void TestService::OnDraw() noexcept
         auto* pAmmo = pFetchActor->processManager->middleProcess->pAmmo;
         ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+
+        auto* pAmmoLoc = (void*)(((uint64_t)(pFetchActor->processManager->middleProcess)) + 0x268);
+        ImGui::InputScalar("AmmoLoc memory address", ImGuiDataType_U64, (void*)&pAmmoLoc, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+
         if (pAmmo)
         {
             ImGui::InputInt("Ammo form Id", (int*)&pAmmo->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);

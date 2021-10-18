@@ -1,8 +1,11 @@
 #include <TiltedOnlinePCH.h>
+#include "TiltedOnlineApp.h"
 
 #if TP_FALLOUT4
 
 #include <GameVM.h>
+
+extern std::unique_ptr<TiltedOnlineApp> g_appInstance;
 
 struct Main;
 struct VMContext
@@ -22,7 +25,7 @@ static TVMDestructor* VMDestructor = nullptr;
 int TP_MAKE_THISCALL(HookVMUpdate, VMContext)
 {
     if (apThis->inactive == 0)
-        TiltedPhoques::App::GetInstance().Update();
+        g_appInstance->Update();
 
     return ThisCall(VMUpdate, apThis);
 }

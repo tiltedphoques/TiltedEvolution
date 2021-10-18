@@ -517,6 +517,9 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
             }
         }
 
+        auto remoteComponent = view.get<RemoteComponent>(*itor);
+
+        spdlog::warn("Deleting {}", remoteComponent.Id);
         m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
 }

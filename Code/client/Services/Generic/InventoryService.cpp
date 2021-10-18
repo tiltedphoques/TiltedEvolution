@@ -115,6 +115,12 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
 
                 const auto* pTES = TES::Get();
                 const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
+                if (!pCell)
+                {
+                    spdlog::warn("Cell not found for coordinates ({}, {}) in worldspace {:X}", pTES->currentGridX, pTES->currentGridY, pWorldSpace->formID);
+                    continue;
+                }
+
                 if (!m_world.GetModSystem().GetServerModId(pCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
                     continue;
 

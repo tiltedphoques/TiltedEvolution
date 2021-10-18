@@ -49,7 +49,7 @@ void* TiltedOnlineApp::GetMainAddress() const
 
 bool TiltedOnlineApp::BeginMain()
 {
-    InstallHooks();
+    //InstallHooks();
 
     World::Create();
     World::Get().ctx<DiscordService>().Init();
@@ -95,7 +95,7 @@ bool TiltedOnlineApp::Detach()
     return true;
 }
 
-void TiltedOnlineApp::InstallHooks()
+void TiltedOnlineApp::InstallHooks2()
 {
     TiltedPhoques::Initializer::RunAll();
 

@@ -8,6 +8,10 @@
 
 #include <World.h>
 
+#include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
+
 struct EquipData
 {
     BSExtraDataList* extraDataList; // 0
@@ -112,6 +116,13 @@ void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apEx
     ScopedEquipOverride equipOverride;
 
     const auto result = ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, aSlot, aUnk1, aPreventEquip, aUnk2, aUnk3);
+
+    // TODO: hacky as fuck, pls fix
+    auto* pAmmo = RTTI_CAST(apItem, TESForm, TESAmmo);
+    if (pAmmo)
+    {
+        apActor->processManager->middleProcess->pAmmo = pAmmo;
+    }
 
     return result;
 }
