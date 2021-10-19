@@ -117,13 +117,6 @@ void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apEx
 
     const auto result = ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, aSlot, aUnk1, aPreventEquip, aUnk2, aUnk3);
 
-    // TODO: hacky as fuck, pls fix
-    auto* pAmmo = RTTI_CAST(apItem, TESForm, TESAmmo);
-    if (pAmmo)
-    {
-        apActor->processManager->middleProcess->pAmmo = pAmmo;
-    }
-
     return result;
 }
 
