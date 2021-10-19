@@ -194,6 +194,7 @@ Inventory Actor::GetInventory() const noexcept
     // TODO: get ammo id, share across server
     auto pAmmo = GetEquippedAmmo();
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
+    spdlog::warn("Ammo id sent: {:X}", ammoId);
     modSystem.GetServerModId(ammoId, inventory.Ammo);
 
     return inventory;
@@ -294,8 +295,20 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     /*
     if (ammoId)
-        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+    {
+        spdlog::critical("Ammo id received: {:X}", ammoId);
+        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, 1, DefaultObjectManager::Get().unkEquipSlot4, false, true, false, false);
+    }
     */
+
+    // yes im aware, it's late, give me some slack, i'll fix this, its just for testing
+    static TESForm* ammoForm = nullptr;
+    ammoForm = TESForm::GetById(ammoId);
+    if (ammoForm)
+    {
+        spdlog::info("Setting ammoform forcefully");
+        processManager->middleProcess->pAmmo = &ammoForm;
+    }
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept

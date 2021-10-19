@@ -1073,6 +1073,9 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 void CharacterService::OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
+    return;
+
+    /*
     uint32_t formId = acEvent.FormID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
@@ -1092,6 +1095,7 @@ void CharacterService::OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) c
     spdlog::info("Sending attach arrow request for {:X}", localComponent.Id);
 
     m_transport.Send(request);
+    */
 #endif
 }
 
