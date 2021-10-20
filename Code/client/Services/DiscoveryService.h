@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Events/EventDispatcher.h>
+#include <Games/Events.h>
+
 struct World;
 
 struct ConnectedEvent;
@@ -12,6 +15,7 @@ struct TESObjectREFR;
 struct TESWorldSpace;
 
 struct DiscoveryService final
+    : BSTEventSink<TESLoadGameEvent>
 {
     DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
     ~DiscoveryService() noexcept = default;
@@ -28,6 +32,8 @@ protected:
 
     void OnConnected(const ConnectedEvent& acEvent) noexcept;
 
+    BSTEventResult OnEvent(const TESLoadGameEvent*, const EventDispatcher<TESLoadGameEvent>*) override;
+
 private:
 
     World& m_world;
@@ -41,6 +47,8 @@ private:
     uint32_t m_worldSpaceId = 0;
     uint32_t m_interiorCellId = 0;
     struct TESForm *m_pLocation = nullptr;
+
+    bool m_loadGame = false;
 
     entt::scoped_connection m_preUpdateConnection;
     entt::scoped_connection m_connectedConnection;
