@@ -45,6 +45,10 @@
 #include <imgui.h>
 #include <inttypes.h>
 
+#if TP_SKYRIM64
+#include <DefaultObjectManager.h>
+#endif
+
 extern thread_local bool g_overrideFormId;
 
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
@@ -164,7 +168,22 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            /*
             PlaceActorInWorld();
+
+            const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
+
+            //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
+            auto pActor = Actor::Create(pPlayerBaseForm);
+            pActor->SaveInventory(0);
+
+        #if TP_SKYRIM64
+            auto& objManager = DefaultObjectManager::Get();
+            spdlog::info(objManager.isSomeActionReady);
+        #endif
+
+            TP_ASSERT(0, "{}", 5)
+            */
         }
     }
     else
