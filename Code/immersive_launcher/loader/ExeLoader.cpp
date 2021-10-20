@@ -180,6 +180,7 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
 
 bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
 {
+    // Load the target from disk into memory
     auto content = TiltedPhoques::LoadFile(aSourcePath);
     if (content.empty())
         return false;
@@ -187,20 +188,29 @@ bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
     m_pBinary = reinterpret_cast<uint8_t*>(content.data());
     m_moduleHandle = GetModuleHandleW(nullptr);
 
-    // the target module
+    // validate the target
     const auto* dosHeader = GetRVA<const IMAGE_DOS_HEADER>(0);
     if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
     {
         return false;
     }
 
+    // remove protections
     auto* ntHeader = GetRVA<IMAGE_NT_HEADERS>(dosHeader->e_lfanew);
     DecryptCeg(ntHeader);
 
+    // these point to launcher.exe's headers
     auto* sourceHeader = GetTargetRVA<IMAGE_DOS_HEADER>(0);
     auto* sourceNtHeader = GetTargetRVA<IMAGE_NT_HEADERS>(sourceHeader->e_lfanew);
 
+    // store EP
     m_pEntryPoint = GetTargetRVA<void>(ntHeader->OptionalHeader.AddressOfEntryPoint);
+
+    // store these as they will get overridden by the target's header
+    // but we really need them in order to not break debugging for cosi.
+    auto sourceChecksum= sourceNtHeader->OptionalHeader.CheckSum;
+    auto sourceTimestamp = sourceNtHeader->FileHeader.TimeDateStamp;
+    auto sourceDebugDir = sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG];
 
     LoadSections(ntHeader);
     LoadImports(ntHeader);
@@ -210,11 +220,21 @@ bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
     DWORD oldProtect;
     VirtualProtect(sourceNtHeader, 0x1000, PAGE_EXECUTE_READWRITE, &oldProtect);
 
+    // re-target the import directory to the target's; ours isn't needed anymore.
     sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT] =
         ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 
-    std::memcpy(sourceNtHeader, ntHeader,
-           sizeof(IMAGE_NT_HEADERS) + (ntHeader->FileHeader.NumberOfSections * (sizeof(IMAGE_SECTION_HEADER))));
+    const size_t ntCompleteHeaderSize =
+        sizeof(IMAGE_NT_HEADERS) + (ntHeader->FileHeader.NumberOfSections * (sizeof(IMAGE_SECTION_HEADER)));
+
+    // overwrite our headers with the target headers
+    std::memcpy(sourceNtHeader, ntHeader, ntCompleteHeaderSize);
+
+    // good old switcheroo
+    // TODO: consider making this optional to allow loading the game's pdb.
+    sourceNtHeader->OptionalHeader.CheckSum = sourceChecksum;
+    sourceNtHeader->FileHeader.TimeDateStamp = sourceTimestamp;
+    sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG] = sourceDebugDir;
 
     m_pBinary = nullptr;
     return true;
