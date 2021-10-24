@@ -2,9 +2,13 @@
 
 struct TESForm;
 struct MiddleProcess;
+struct TESAmmo;
 
+// AIProcess
 struct ActorProcessManager
 {
+    bool SetCurrentAmmo(TESAmmo* apAmmo) noexcept;
+
     void* unk0;
     MiddleProcess* middleProcess;
     void* unk8;

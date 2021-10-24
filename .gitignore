@@ -2,6 +2,7 @@
 *.ilk
 *.sym
 
+vs2019
 vsxmake2019
 .xmake
 

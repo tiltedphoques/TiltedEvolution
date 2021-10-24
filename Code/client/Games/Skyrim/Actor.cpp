@@ -20,6 +20,7 @@
 
 #include <Effects/ValueModifierEffect.h>
 #include <Forms/ActorValueInfo.h>
+#include <Games/Skyrim/Misc/InventoryEntry.h>
 
 #ifdef SAVE_STUFF
 
@@ -140,10 +141,10 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
         auto pMiddleProcess = processManager->middleProcess;
 
         if (aSlotId == 0 && pMiddleProcess->leftEquippedObject)
-            return *(pMiddleProcess->leftEquippedObject);
+            return pMiddleProcess->leftEquippedObject->pObject;
 
         else if (aSlotId == 1 && pMiddleProcess->rightEquippedObject)
-            return *(pMiddleProcess->rightEquippedObject);
+            return pMiddleProcess->rightEquippedObject->pObject;
 
     }
 
@@ -152,9 +153,10 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 
 TESForm* Actor::GetEquippedAmmo() const noexcept
 {
-    if (processManager && processManager->middleProcess && processManager->middleProcess->pAmmo)
+    if (processManager && processManager->middleProcess && processManager->middleProcess->ammoEquippedObject)
     {
-        return *(processManager->middleProcess->pAmmo);
+        // TODO: rtti cast to check if is ammo object? or actually, just call AIProcess::GetCurrentAmmo()
+        return processManager->middleProcess->ammoEquippedObject->pObject;
     }
 
     return nullptr;
@@ -293,22 +295,47 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     uint32_t ammoId = modSystem.GetGameId(acInventory.Ammo);
 
-    /*
     if (ammoId)
     {
         spdlog::critical("Ammo id received: {:X}", ammoId);
-        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, 1, DefaultObjectManager::Get().unkEquipSlot4, false, true, false, false);
+        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+
+        /*
+        TESForm* pAmmoForm = TESForm::GetById(ammoId);
+        static TESAmmo* pAmmo = nullptr;
+        pAmmo = RTTI_CAST(pAmmoForm, TESForm, TESAmmo);
+
+        if (!pAmmo)
+        {
+            spdlog::error("pAmmo invalid");
+        }
+        else
+        {
+            spdlog::info("Set current ammo");
+            processManager->SetCurrentAmmo(pAmmo);
+        }
+        */
+    }
+
+    /*
+    static TESForm* ammoForm = nullptr;
+    TESForm* pAmmoForm = TESForm::GetById(ammoId);
+    if (pAmmoForm)
+    {
+        //spdlog::info("Setting ammoform forcefully");
+        //processManager->middleProcess->pAmmo = &ammoForm;
+        TESAmmo* pAmmo = RTTI_CAST(pAmmoForm, TESForm, TESAmmo);
+        if (!pAmmo)
+        {
+            spdlog::error("pAmmo invalid");
+        }
+        else
+        {
+            spdlog::info("Set current ammo");
+            processManager->SetCurrentAmmo(pAmmo);
+        }
     }
     */
-
-    // yes im aware, it's late, give me some slack, i'll fix this, its just for testing
-    static TESForm* ammoForm = nullptr;
-    ammoForm = TESForm::GetById(ammoId);
-    if (ammoForm)
-    {
-        spdlog::info("Setting ammoform forcefully");
-        processManager->middleProcess->pAmmo = &ammoForm;
-    }
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -370,12 +397,17 @@ void Actor::UnEquipAll() noexcept
     {
         if (pChange && pChange->form && pChange->dataList)
         {
+            spdlog::warn("Change form: {:X}", pChange->form->formID);
+
             // Parse all extra data lists
             const auto pDataLists = pChange->dataList;
             for (auto* pDataList : *pDataLists)
             {
                 if (pDataList)
                 {
+                    for (auto pExtraData = pDataList->data; pExtraData; pExtraData = pExtraData->next)
+                        spdlog::error("Form: {:X}, extra data types: {:X}", pChange->form->formID, (uint32_t)pExtraData->GetType());
+
                     BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                     // Right slot

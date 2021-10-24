@@ -1,15 +1,17 @@
 #pragma once
 
+struct InventoryEntry;
+
 struct MiddleProcess
 {
     // 0xB0 - pitch
     uint8_t pad0[0xB8];
     float direction; // B8
     uint8_t padBC[0x220 - 0xBC];
-    TESForm** leftEquippedObject;
+    InventoryEntry* leftEquippedObject;
     uint8_t pad228[0x260 - 0x228];
-    TESForm** rightEquippedObject;
-    TESForm** pAmmo;
+    InventoryEntry* rightEquippedObject;
+    InventoryEntry* ammoEquippedObject; // could be more than just ammo
     // 0xB8 - direction
     //
     // 0x326 - bool lookat 
