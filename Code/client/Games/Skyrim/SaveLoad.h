@@ -55,6 +55,64 @@ struct BGSSaveFormBuffer
 static_assert(offsetof(BGSSaveFormBuffer, formId) == 0x18);
 static_assert(offsetof(BGSSaveFormBuffer, changeFlags) == 0x1B);
 
+struct BGSSaveLoadBuffer
+{
+    char* pBuffer;
+};
+
+static_assert(sizeof(BGSSaveLoadBuffer) == 0x8);
+
+struct BGSSaveGameBuffer
+{
+    virtual ~BGSSaveGameBuffer();
+
+    BGSSaveLoadBuffer Buffer;
+    uint32_t iBufferSize;
+    uint32_t iBufferPosition;
+};
+
+static_assert(sizeof(BGSSaveGameBuffer) == 0x18);
+
+struct BGSChangeFlags
+{
+    int32_t iFlags;
+};
+
+static_assert(sizeof(BGSChangeFlags) == 0x4);
+
+struct BGSSaveLoadFormInfo
+{
+    uint8_t cData;
+};
+
+static_assert(sizeof(BGSSaveLoadFormInfo) == 0x1);
+
+struct BGSNumericIDIndex
+{
+    uint8_t cData1;
+    uint8_t cData2;
+    uint8_t cData3;
+};
+
+struct BGSSaveLoadFormHeader
+{
+    BGSNumericIDIndex FormIDIndex;
+    BGSChangeFlags iChangeFlags;
+    BGSSaveLoadFormInfo FormInfo;
+    uint8_t cVersion;
+};
+
+static_assert(sizeof(BGSSaveLoadFormHeader) == 0x9);
+
+struct BGSSaveFormBufferReal : BGSSaveGameBuffer
+{
+    BGSSaveLoadFormHeader Header;
+    uint8_t pad21[0x7];
+    TESForm* pForm;
+};
+
+static_assert(sizeof(BGSSaveFormBufferReal) == 0x30);
+
 struct BGSLoadFormBuffer
 {
     BGSLoadFormBuffer(uint32_t aChangeFlags);
