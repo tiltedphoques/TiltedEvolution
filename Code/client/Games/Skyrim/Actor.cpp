@@ -397,7 +397,7 @@ void Actor::UnEquipAll() noexcept
     {
         if (pChange && pChange->form && pChange->dataList)
         {
-            spdlog::warn("Change form: {:X}", pChange->form->formID);
+            //spdlog::warn("Change form: {:X}", pChange->form->formID);
 
             // Parse all extra data lists
             const auto pDataLists = pChange->dataList;
@@ -405,8 +405,10 @@ void Actor::UnEquipAll() noexcept
             {
                 if (pDataList)
                 {
+                    /*
                     for (auto pExtraData = pDataList->data; pExtraData; pExtraData = pExtraData->next)
                         spdlog::error("Form: {:X}, extra data types: {:X}", pChange->form->formID, (uint32_t)pExtraData->GetType());
+                    */
 
                     BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 

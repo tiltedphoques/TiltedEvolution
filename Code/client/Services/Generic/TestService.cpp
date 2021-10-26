@@ -40,14 +40,11 @@
 #if TP_SKYRIM64
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
+#include <Games/Skyrim/Misc/InventoryEntry.h>
 #endif
 
 #include <imgui.h>
 #include <inttypes.h>
-
-#if TP_SKYRIM64
-#include <DefaultObjectManager.h>
-#endif
 
 extern thread_local bool g_overrideFormId;
 
@@ -653,11 +650,10 @@ void TestService::OnDraw() noexcept
         }
 
     #if TP_SKYRIM64
-        #if 0
-        if (pFetchActor->processManager->middleProcess->pAmmo)
+        if (pFetchActor->processManager->middleProcess->ammoEquippedObject)
         {
         
-        auto* pAmmo = *(pFetchActor->processManager->middleProcess->pAmmo);
+        auto* pAmmo = pFetchActor->processManager->middleProcess->ammoEquippedObject->pObject;
         ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
@@ -682,11 +678,6 @@ void TestService::OnDraw() noexcept
             */
         }
         }
-    #endif
-
-        auto pManager = DefaultObjectManager::Get();
-        ImGui::InputScalar("Default object manager", ImGuiDataType_U64, (void*)&pManager, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
     #endif
     }
 
