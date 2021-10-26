@@ -193,7 +193,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (change.second != String{})
             {
                 spdlog::warn("Using cached inventory snapshot for {:X} ({:X})", formId, componentId);
-                inventory.Buffer = change.second;
+                //inventory.Buffer = change.second;
             }
             else
             {

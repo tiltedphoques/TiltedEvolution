@@ -145,6 +145,7 @@ struct TESObjectREFR : TESForm
     BSExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
+    int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;

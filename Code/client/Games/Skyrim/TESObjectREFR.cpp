@@ -103,6 +103,26 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
     return ThisCall(s_getContainer, this);
 }
 
+int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
+{
+    int64_t count = GetContainer()->GetItemCount(apItem);
+
+    auto* pContainerChanges = GetContainerChanges()->entries;
+    for (auto pChange : *pContainerChanges)
+    {
+        if (pChange && pChange->form)
+        {
+            if (pChange->form->formID == apItem->formID)
+            {
+                count += pChange->count;
+                break;
+            }
+        }
+    }
+
+    return count;
+}
+
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);

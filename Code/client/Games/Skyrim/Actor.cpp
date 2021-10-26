@@ -298,62 +298,27 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
     if (ammoId)
     {
         auto* pAmmo = TESForm::GetById(ammoId);
-        auto* pContainer = GetContainer();
-        auto count = pContainer->GetItemCount(pAmmo);
 
-        auto* pContainerChanges = GetContainerChanges()->entries;
+        auto count = GetItemCountInInventory(pAmmo);
+
+        spdlog::critical("Ammo id received: {:X}, count: {}", ammoId, count);
+
+        const auto pContainerChanges = GetContainerChanges()->entries;
         for (auto pChange : *pContainerChanges)
         {
-            if (pChange && pChange->form)
+            if (pChange && pChange->form && pChange->form->formID == ammoId)
             {
-                if (pChange->form->formID == ammoId)
+                const auto pDataLists = pChange->dataList;
+                if (pDataLists)
                 {
-                    count += pChange->count;
-                    break;
+                    pDataLists->entry.data = nullptr;
+                    pDataLists->entry.next = nullptr;
                 }
             }
         }
 
-        spdlog::critical("Ammo id received: {:X}, count: {}", ammoId, count);
-
-        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-
-        /*
-        TESForm* pAmmoForm = TESForm::GetById(ammoId);
-        static TESAmmo* pAmmo = nullptr;
-        pAmmo = RTTI_CAST(pAmmoForm, TESForm, TESAmmo);
-
-        if (!pAmmo)
-        {
-            spdlog::error("pAmmo invalid");
-        }
-        else
-        {
-            spdlog::info("Set current ammo");
-            processManager->SetCurrentAmmo(pAmmo);
-        }
-        */
+        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
-
-    /*
-    static TESForm* ammoForm = nullptr;
-    TESForm* pAmmoForm = TESForm::GetById(ammoId);
-    if (pAmmoForm)
-    {
-        //spdlog::info("Setting ammoform forcefully");
-        //processManager->middleProcess->pAmmo = &ammoForm;
-        TESAmmo* pAmmo = RTTI_CAST(pAmmoForm, TESForm, TESAmmo);
-        if (!pAmmo)
-        {
-            spdlog::error("pAmmo invalid");
-        }
-        else
-        {
-            spdlog::info("Set current ammo");
-            processManager->SetCurrentAmmo(pAmmo);
-        }
-    }
-    */
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
