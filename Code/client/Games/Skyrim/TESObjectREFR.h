@@ -13,6 +13,7 @@
 struct AnimationVariables;
 struct TESWorldSpace;
 struct TESBoundObject;
+struct TESContainer;
 
 struct TESObjectREFR : TESForm
 {
@@ -143,6 +144,7 @@ struct TESObjectREFR : TESForm
     ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() noexcept;
+    TESContainer* GetContainer() const noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;

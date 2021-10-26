@@ -13,6 +13,8 @@ struct TESContainer : BaseFormComponent
         void* data;
     };
 
+    int64_t GetItemCount(TESForm* apItem) const noexcept;
+
     Entry** entries;
     uint32_t count;
 };

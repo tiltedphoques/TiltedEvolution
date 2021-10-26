@@ -94,6 +94,15 @@ void TESObjectREFR::RemoveAllItems() noexcept
     s_pRemoveAllItems(this, nullptr, false, true);
 }
 
+TESContainer* TESObjectREFR::GetContainer() const noexcept
+{
+    TP_THIS_FUNCTION(TGetContainer, TESContainer*, const TESObjectREFR);
+
+    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 0x14028E390 - 0x140000000);
+
+    return ThisCall(s_getContainer, this);
+}
+
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);

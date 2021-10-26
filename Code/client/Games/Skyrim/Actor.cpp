@@ -297,8 +297,26 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if (ammoId)
     {
-        spdlog::critical("Ammo id received: {:X}", ammoId);
-        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        auto* pAmmo = TESForm::GetById(ammoId);
+        auto* pContainer = GetContainer();
+        auto count = pContainer->GetItemCount(pAmmo);
+
+        auto* pContainerChanges = GetContainerChanges()->entries;
+        for (auto pChange : *pContainerChanges)
+        {
+            if (pChange && pChange->form)
+            {
+                if (pChange->form->formID == ammoId)
+                {
+                    count += pChange->count;
+                    break;
+                }
+            }
+        }
+
+        spdlog::critical("Ammo id received: {:X}, count: {}", ammoId, count);
+
+        pEquipManager->Equip(this, TESForm::GetById(ammoId), nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
 
         /*
         TESForm* pAmmoForm = TESForm::GetById(ammoId);
