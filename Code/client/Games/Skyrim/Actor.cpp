@@ -169,12 +169,11 @@ TESForm *Actor::GetCurrentLocation()
     return FUNC_GetActorLocation(this);
 }
 
-Inventory Actor::GetInventory() const noexcept
+Inventory Actor::GetInventory() noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
 
     Inventory inventory;
-    inventory.Buffer = SerializeInventory();
 
     auto pMainHandWeapon = GetEquippedWeapon(0);
     uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
@@ -198,6 +197,10 @@ Inventory Actor::GetInventory() const noexcept
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
     spdlog::warn("Ammo id sent: {:X}", ammoId);
     modSystem.GetServerModId(ammoId, inventory.Ammo);
+
+    UnEquipAll();
+    inventory.Buffer = SerializeInventory();
+    SetInventory(inventory);
 
     return inventory;
 }
@@ -260,6 +263,7 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     UnEquipAll();
+    RemoveAllItems();
 
     auto* pEquipManager = EquipManager::Get();
 
@@ -410,8 +414,6 @@ void Actor::UnEquipAll() noexcept
             }
         }
     }
-
-    RemoveAllItems();
 
     // Taken from skyrim's code shouts can be two form types apparently
     if (equippedShout && (equippedShout->formType - 41) <= 1)

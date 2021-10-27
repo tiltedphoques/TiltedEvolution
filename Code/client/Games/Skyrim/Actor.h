@@ -189,7 +189,7 @@ struct Actor : TESObjectREFR
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
 
-    Inventory GetInventory() const noexcept;
+    Inventory GetInventory() noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
 
