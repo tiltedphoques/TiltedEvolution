@@ -141,8 +141,61 @@ struct BGSLoadFormBuffer
     uint8_t unk4A;
     uint8_t loadFlag;
 };
+constexpr size_t t = sizeof(BGSLoadFormBuffer);
 
 static_assert(offsetof(BGSLoadFormBuffer, changeFlags) == 0x40);
 static_assert(offsetof(BGSLoadFormBuffer, loadFlag) == 0x4B);
+
+struct ScrapHeap;
+
+// TODO: mostly copied from fallout 4, needs to be validated
+struct __declspec(align(8)) BGSSaveLoadScrapBuffer
+{
+    char* pBuffer;
+    ScrapHeap* pScrapHeap;
+    uint32_t uiSize;
+};
+constexpr size_t t = sizeof(BGSSaveLoadScrapBuffer);
+
+static_assert(sizeof(BGSSaveLoadScrapBuffer) == 0x18);
+
+struct BGSLoadGameBuffer
+{
+    virtual ~BGSLoadGameBuffer();
+
+    BGSSaveLoadScrapBuffer Buffer;
+    uint32_t iBufferSize;
+    uint32_t iBufferPosition;
+};
+
+static_assert(sizeof(BGSLoadGameBuffer) == 0x28);
+
+struct BGSSaveLoadFormInfo
+{
+    uint8_t cData;
+};
+
+static_assert(sizeof(BGSSaveLoadFormInfo) == 0x1);
+
+struct __declspec(align(8)) BGSLoadFormData
+{
+    uint32_t iFormID;
+    uint32_t uiDataSize;
+    uint32_t uiUncompressedSize;
+    TESForm* pForm;
+    BGSChangeFlags iChangeFlags;
+    BGSChangeFlags iOldChangeFlags;
+    uint16_t usFlags;
+    BGSSaveLoadFormInfo FormInfo;
+    uint8_t cVersion;
+};
+
+static_assert(sizeof(BGSLoadFormData) == 0x28);
+
+struct BGSLoadFormBufferReal : BGSLoadGameBuffer, BGSLoadFormData
+{
+};
+
+static_assert(sizeof(BGSLoadFormBufferReal) == 0x50);
 
 #pragma pack(pop)
