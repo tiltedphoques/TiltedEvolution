@@ -29,6 +29,7 @@
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/NotifySpellCast.h>
 #include <Messages/NotifyAttachArrow.h>
+#include <Messages/NotifyInterruptCast.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -45,7 +46,7 @@ struct ServerMessageFactory
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
                                  NotifyLockChange, AssignObjectsResponse, NotifyDeathStateChange, NotifyOwnershipTransfer,
-                                 NotifyObjectInventoryChanges, NotifySpellCast, NotifyAttachArrow>;
+                                 NotifyObjectInventoryChanges, NotifySpellCast, NotifyAttachArrow, NotifyInterruptCast>;
 
         return s_visitor(std::forward<T>(func));
     }

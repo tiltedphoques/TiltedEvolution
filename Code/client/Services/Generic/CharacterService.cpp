@@ -33,6 +33,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/SpellCastEvent.h>
 #include <Events/ArrowAttachedEvent.h>
+#include <Events/InterruptCastEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -53,6 +54,8 @@
 #include <Messages/NotifySpellCast.h>
 #include <Messages/AttachArrowRequest.h>
 #include <Messages/NotifyAttachArrow.h>
+#include <Messages/InterruptCastRequest.h>
+#include <Messages/NotifyInterruptCast.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -85,6 +88,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_notifySpellCastConnection = m_dispatcher.sink<NotifySpellCast>().connect<&CharacterService::OnNotifySpellCast>(this);
     m_arrowAttachedEvent = m_dispatcher.sink<ArrowAttachedEvent>().connect<&CharacterService::OnArrowAttachedEvent>(this);
     m_notifyAttachArrowConnection = m_dispatcher.sink<NotifyAttachArrow>().connect<&CharacterService::OnNotifyAttachArrow>(this);
+    m_interruptCastEventConnection = m_dispatcher.sink<InterruptCastEvent>().connect<&CharacterService::OnInterruptCast>(this);
+    m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&CharacterService::OnNotifyInterruptCast>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1124,4 +1129,48 @@ void CharacterService::OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) c
 
     spdlog::info("Attached arrow");
 #endif
+}
+
+void CharacterService::OnInterruptCast(const InterruptCastEvent& acEvent) const noexcept
+{
+    auto formId = acEvent.CasterFormID;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (casterEntityIt == std::end(view))
+        return;
+
+    auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
+
+    InterruptCastRequest request;
+    request.CasterId = localComponent.Id;
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Caster with remote id {:X} not found.", acMessage.CasterId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+
+    auto* pForm = TESForm::GetById(formIdComponent.Id);
+    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+    pActor->InterruptCast(false);
+
+    spdlog::info("Interrupt remote cast successful");
 }

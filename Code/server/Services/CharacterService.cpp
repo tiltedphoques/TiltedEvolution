@@ -33,6 +33,8 @@
 #include <Messages/NotifySpellCast.h>
 #include <Messages/AttachArrowRequest.h>
 #include <Messages/NotifyAttachArrow.h>
+#include <Messages/InterruptCastRequest.h>
+#include <Messages/NotifyInterruptCast.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -50,6 +52,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
     , m_attachArrowConnection(aDispatcher.sink<PacketEvent<AttachArrowRequest>>().connect<&CharacterService::OnAttachArrowRequest>(this))
+    , m_interruptCastConnection(aDispatcher.sink<PacketEvent<InterruptCastRequest>>().connect<&CharacterService::OnInterruptCastRequest>(this))
 {
 }
 
@@ -727,6 +730,20 @@ void CharacterService::OnAttachArrowRequest(const PacketEvent<AttachArrowRequest
 {
     NotifyAttachArrow notify;
     notify.ShooterId = acMessage.Packet.ShooterId;
+
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+            pPlayer->Send(notify);
+    }
+}
+
+void CharacterService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyInterruptCast notify;
+    notify.CasterId = message.CasterId;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {

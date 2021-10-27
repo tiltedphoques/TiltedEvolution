@@ -19,6 +19,8 @@ struct SpellCastEvent;
 struct NotifySpellCast;
 struct ArrowAttachedEvent;
 struct NotifyAttachArrow;
+struct InterruptCastEvent;
+struct NotifyInterruptCast;
 
 struct Actor;
 struct World;
@@ -48,6 +50,8 @@ struct CharacterService
     void OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept;
     void OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept;
     void OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) const noexcept;
+    void OnInterruptCast(const InterruptCastEvent& acEvent) const noexcept;
+    void OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept;
 
 private:
 
@@ -82,4 +86,6 @@ private:
     entt::scoped_connection m_notifySpellCastConnection;
     entt::scoped_connection m_arrowAttachedEvent;
     entt::scoped_connection m_notifyAttachArrowConnection;
+    entt::scoped_connection m_interruptCastEventConnection;
+    entt::scoped_connection m_notifyInterruptCastConnection;
 };
