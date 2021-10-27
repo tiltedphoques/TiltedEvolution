@@ -1,0 +1,624 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Messages">
+      <UniqueIdentifier>{3AE000F5-A62F-4BEA-B82C-05AB69968329}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Structs">
+      <UniqueIdentifier>{E320A74D-1655-4187-A8D1-070D8BE6FC0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Structs\Fallout4">
+      <UniqueIdentifier>{42527C11-7DE7-4DC8-A9D0-F1C2619FB369}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Code\encoding\Messages\ActivateRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignCharacterRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignCharacterResponse.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignObjectsRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignObjectsResponse.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AttachArrowRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AuthenticationRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AuthenticationResponse.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\CancelAssignmentRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\CharacterSpawnRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ClientMessageFactory.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ClientReferencesMoveRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ClientRpcCalls.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\EnterExteriorCellRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\EnterInteriorCellRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\LockChangeRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\Message.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyActivate.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyActorMaxValueChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyActorValueChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyAttachArrow.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyCharacterInventoryChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyDeathStateChange.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyFactionsChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyHealthChangeBroadcast.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyLockChange.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyObjectInventoryChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyOwnershipTransfer.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyPartyInfo.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyPartyInvite.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyPlayerList.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyQuestUpdate.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyRemoveCharacter.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifySpawnData.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifySpellCast.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\PartyAcceptInviteRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\PartyInviteRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\PartyLeaveRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestActorMaxValueChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestActorValueChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestCharacterInventoryChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestDeathStateChange.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestFactionsChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestHealthChangeBroadcast.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestObjectInventoryChanges.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestOwnershipClaim.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestOwnershipTransfer.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestQuestUpdate.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestSpawnData.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerMessageFactory.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerReferencesMoveRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerScriptUpdate.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerTimeSettings.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ShiftGridCellRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\SpellCastRequest.cpp">
+      <Filter>Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ActionEvent.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ActorValues.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\AnimationGraphDescriptorManager.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\AnimationVariables.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Faction.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Factions.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\FullObjects.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\GameId.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\GridCellCoords.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Inventory.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\LockData.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Mods.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Movement.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ObjectData.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Objects.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\QuestLog.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ReferenceUpdate.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Rotator2_NetQuantize.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Scripts.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Tints.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Vector2_NetQuantize.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Vector3_NetQuantize.cpp">
+      <Filter>Structs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptorManager.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Alien.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Angler.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Bloatfly.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Bloodbug.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Bloodworm.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Brahmin.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_CaveCricketRoot.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Deathclaw.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Deer.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_FogCrawler.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Ghoul.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Gorilla.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_InsectsSmall.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Master_Behavior.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_MutantHound.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_RabbitChicken.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Radscorpion.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Rat.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_RootState.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Stingwing.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_SuperMutantRootBehavior.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Wolflike.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_YaoGuai.cpp">
+      <Filter>Structs\Fallout4</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Code\encoding\Messages\ActivateRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignCharacterRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignCharacterResponse.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignObjectsRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignObjectsResponse.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AttachArrowRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AuthenticationRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\AuthenticationResponse.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\CancelAssignmentRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\CharacterSpawnRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ClientMessageFactory.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ClientReferencesMoveRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ClientRpcCalls.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\EnterExteriorCellRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\EnterInteriorCellRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\LockChangeRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\Message.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyActivate.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyActorMaxValueChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyActorValueChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyAttachArrow.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyCharacterInventoryChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyDeathStateChange.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyFactionsChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyHealthChangeBroadcast.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyLockChange.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyObjectInventoryChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyOwnershipTransfer.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyPartyInfo.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyPartyInvite.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyPlayerList.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyQuestUpdate.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyRemoveCharacter.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifySpawnData.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifySpellCast.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\PartyAcceptInviteRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\PartyInviteRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\PartyLeaveRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestActorMaxValueChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestActorValueChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestCharacterInventoryChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestDeathStateChange.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestFactionsChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestHealthChangeBroadcast.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestObjectInventoryChanges.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestOwnershipClaim.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestOwnershipTransfer.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestQuestUpdate.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestSpawnData.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerMessageFactory.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerReferencesMoveRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerScriptUpdate.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerTimeSettings.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\ShiftGridCellRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Messages\SpellCastRequest.h">
+      <Filter>Messages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\ActionEvent.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\ActorValues.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\AnimationGraphDescriptor.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\AnimationGraphDescriptorManager.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\AnimationVariables.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Faction.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Factions.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\FullObjects.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\GameId.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\GridCellCoords.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Inventory.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\LockData.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Mods.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Movement.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\ObjectData.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Objects.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\QuestLog.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\ReferenceUpdate.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Rotator2_NetQuantize.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Scripts.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Tints.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Vector2_NetQuantize.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Vector3_NetQuantize.h">
+      <Filter>Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Alien.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Angler.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Bloatfly.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Bloodbug.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Bloodworm.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Brahmin.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_CaveCricketRoot.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Deathclaw.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Deer.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_FogCrawler.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Ghoul.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Gorilla.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_InsectsSmall.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Master_Behavior.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_MutantHound.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_RabbitChicken.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Radscorpion.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Rat.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_RootState.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Stingwing.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_SuperMutantRootBehavior.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_Wolflike.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\encoding\Structs\Fallout4\AnimationGraphDescriptor_YaoGuai.h">
+      <Filter>Structs\Fallout4</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

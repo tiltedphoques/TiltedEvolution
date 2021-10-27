@@ -132,6 +132,14 @@ GamePtr<Actor> Actor::New() noexcept
     return {pActor};
 }
 
+void Actor::InterruptCast(bool abRefund) noexcept
+{
+    TP_THIS_FUNCTION(TInterruptCast, void, Actor, bool abRefund);
+
+    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x140631C80 - 0x140000000);
+
+    ThisCall(s_interruptCast, this, abRefund);
+}
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {

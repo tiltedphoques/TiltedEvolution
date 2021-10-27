@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="releasedbg|x64">
+      <Configuration>releasedbg</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AAA66ED6-A4B3-4FDD-8C3B-3202C245C7DA}</ProjectGuid>
+    <RootNamespace>TiltedHooks</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <OutDir>..\..\build\windows\x64\debug\</OutDir>
+    <IntDir>..\..\build\.objs\TiltedHooks\windows\x64\debug\</IntDir>
+    <TargetName>TiltedHooks</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">
+    <OutDir>..\..\build\windows\x64\releasedbg\</OutDir>
+    <IntDir>..\..\build\.objs\TiltedHooks\windows\x64\releasedbg\</IntDir>
+    <TargetName>TiltedHooks</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <OutDir>..\..\build\windows\x64\release\</OutDir>
+    <IntDir>..\..\build\.objs\TiltedHooks\windows\x64\release\</IntDir>
+    <TargetName>TiltedHooks</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Lib>
+      <AdditionalOptions>-nologo %(AdditionalOptions)</AdditionalOptions>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>DEBUG;NOMINMAX;__config_debug__;__config_x64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\Libraries\TiltedHooks\Code\hooks\include;..\..\Libraries\TiltedReverse\Code\reverse\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/EHsc -nologo -FS -std:c++17 -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\t\tiltedcore\v0.2.3\6957e066ad9d40ba905dc031de564be1\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mimalloc\2.0.2\40b653371da74a6481d1e46bb6dd988e\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\h\hopscotch-map\v2.3.0\d4554c45a705442e980434a39e58e38c\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mem\1.0.0\a76df8377a3749d2aa63e1e7745c6d31\include %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">
+    <Lib>
+      <AdditionalOptions>-nologo /opt:ref /opt:icf %(AdditionalOptions)</AdditionalOptions>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NOMINMAX;NDEBUG;__config_releasedbg__;__config_x64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\Libraries\TiltedHooks\Code\hooks\include;..\..\Libraries\TiltedReverse\Code\reverse\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/EHsc -nologo -FS -std:c++17 -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\t\tiltedcore\v0.2.3\6957e066ad9d40ba905dc031de564be1\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mimalloc\2.0.2\40b653371da74a6481d1e46bb6dd988e\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\h\hopscotch-map\v2.3.0\d4554c45a705442e980434a39e58e38c\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mem\1.0.0\a76df8377a3749d2aa63e1e7745c6d31\include %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <Lib>
+      <AdditionalOptions>-nologo /opt:ref /opt:icf %(AdditionalOptions)</AdditionalOptions>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NOMINMAX;NDEBUG;__config_release__;__config_x64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\Libraries\TiltedHooks\Code\hooks\include;..\..\Libraries\TiltedReverse\Code\reverse\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/EHsc -nologo -std:c++17 -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\t\tiltedcore\v0.2.3\6957e066ad9d40ba905dc031de564be1\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mimalloc\2.0.2\40b653371da74a6481d1e46bb6dd988e\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\h\hopscotch-map\v2.3.0\d4554c45a705442e980434a39e58e38c\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mem\1.0.0\a76df8377a3749d2aa63e1e7745c6d31\include /Ob2 /Oi %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Libraries\TiltedHooks\Code\hooks\src\D3D11Hook.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedHooks\Code\hooks\src\DInputHook.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedHooks\Code\hooks\src\WindowsHook.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Libraries\TiltedHooks\Code\hooks\include\D3D11Hook.hpp" />
+    <ClInclude Include="..\..\Libraries\TiltedHooks\Code\hooks\include\DInputHook.hpp" />
+    <ClInclude Include="..\..\Libraries\TiltedHooks\Code\hooks\include\WindowsHook.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

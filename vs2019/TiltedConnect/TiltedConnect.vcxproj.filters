@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Code\connect\src">
+      <UniqueIdentifier>{A822D9F0-1A90-45A8-A925-FA3572640D17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\connect">
+      <UniqueIdentifier>{ED2E6456-B157-4696-8C54-A51DCCE0518D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code">
+      <UniqueIdentifier>{F8FAC738-2EEE-43D4-821A-B3009966E6BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\connect\include">
+      <UniqueIdentifier>{79BFE43E-4130-410E-B65A-BE85D225A41F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Libraries\TiltedConnect\Code\connect\src\Client.cpp">
+      <Filter>Code\connect\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedConnect\Code\connect\src\Packet.cpp">
+      <Filter>Code\connect\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedConnect\Code\connect\src\Server.cpp">
+      <Filter>Code\connect\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedConnect\Code\connect\src\SteamInterface.cpp">
+      <Filter>Code\connect\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedConnect\Code\connect\src\SynchronizedClock.cpp">
+      <Filter>Code\connect\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Libraries\TiltedConnect\Code\connect\include\Client.hpp">
+      <Filter>Code\connect\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedConnect\Code\connect\include\Packet.hpp">
+      <Filter>Code\connect\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedConnect\Code\connect\include\Server.hpp">
+      <Filter>Code\connect\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedConnect\Code\connect\include\SteamInterface.hpp">
+      <Filter>Code\connect\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedConnect\Code\connect\include\SynchronizedClock.hpp">
+      <Filter>Code\connect\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

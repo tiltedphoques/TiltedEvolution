@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Code\tests\src">
+      <UniqueIdentifier>{556874B9-EA49-4D67-823F-771CE40939EF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\tests">
+      <UniqueIdentifier>{4DA7D73A-A7E9-4C10-946C-11B9F4980C62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code">
+      <UniqueIdentifier>{F8FAC738-2EEE-43D4-821A-B3009966E6BC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Libraries\TiltedReverse\Code\tests\src\main.cpp">
+      <Filter>Code\tests\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedReverse\Code\tests\src\reverse.cpp">
+      <Filter>Code\tests\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+</Project>

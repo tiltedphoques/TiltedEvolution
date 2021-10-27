@@ -175,7 +175,8 @@ struct Actor : TESObjectREFR
     //void* GetBiped() const noexcept;
 
     // Real functions
-    void DualCastSpell(TESObjectREFR* apDesiredTarget);
+    void DualCastSpell(TESObjectREFR* apDesiredTarget) noexcept;
+    void InterruptCast(bool abRefund) noexcept;
 
     // Casting
     ActorExtension* GetExtension() noexcept;

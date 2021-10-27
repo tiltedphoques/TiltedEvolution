@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Code\ui_process\src">
+      <UniqueIdentifier>{3044AAC9-ABE3-4185-9E3E-9D602029455F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\ui_process">
+      <UniqueIdentifier>{89795DE3-C1B4-464D-9FEB-D3E19F863940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code">
+      <UniqueIdentifier>{F8FAC738-2EEE-43D4-821A-B3009966E6BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\ui_process\include">
+      <UniqueIdentifier>{4B3F375C-8749-4E41-BA54-88274559FB3D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui_process\src\EventsV8Handler.cpp">
+      <Filter>Code\ui_process\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui_process\src\OverlayApp.cpp">
+      <Filter>Code\ui_process\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui_process\src\OverlayRenderProcessHandler.cpp">
+      <Filter>Code\ui_process\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui_process\src\OverlayV8Handler.cpp">
+      <Filter>Code\ui_process\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui_process\include\EventsV8Handler.hpp">
+      <Filter>Code\ui_process\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui_process\include\OverlayApp.hpp">
+      <Filter>Code\ui_process\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui_process\include\OverlayRenderProcessHandler.hpp">
+      <Filter>Code\ui_process\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui_process\include\OverlayV8Handler.hpp">
+      <Filter>Code\ui_process\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

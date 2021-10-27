@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Code\ui\src">
+      <UniqueIdentifier>{FF4DFE95-B3D9-4477-8DB1-BA00DDC481E1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\ui">
+      <UniqueIdentifier>{9B6AE170-D24C-4F6E-81FB-5BEF2734B51A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code">
+      <UniqueIdentifier>{F8FAC738-2EEE-43D4-821A-B3009966E6BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\ui\include">
+      <UniqueIdentifier>{670B1778-CA3B-412C-87B6-B4FEDE7FE065}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui\src\OverlayApp.cpp">
+      <Filter>Code\ui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui\src\OverlayBrowserProcessHandler.cpp">
+      <Filter>Code\ui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui\src\OverlayClient.cpp">
+      <Filter>Code\ui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui\src\OverlayContextHandler.cpp">
+      <Filter>Code\ui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui\src\OverlayLoadHandler.cpp">
+      <Filter>Code\ui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Libraries\TiltedUI\Code\ui\src\OverlayRenderHandlerD3D11.cpp">
+      <Filter>Code\ui\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayApp.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayBrowserProcessHandler.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayClient.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayContextHandler.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayLoadHandler.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayRenderHandler.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Libraries\TiltedUI\Code\ui\include\OverlayRenderHandlerD3D11.hpp">
+      <Filter>Code\ui\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

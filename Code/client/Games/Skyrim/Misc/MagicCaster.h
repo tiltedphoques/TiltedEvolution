@@ -46,6 +46,7 @@ struct MagicCaster
                                        bool abAdjustOnlyHostileEffectiveness);
 
     bool CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, bool abLoadCast) noexcept;
+    void InterruptCast(bool abRefund) noexcept;
 
     enum State
     {

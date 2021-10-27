@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="loader">
+      <UniqueIdentifier>{560533A3-471D-408F-A4A0-F5E67AC13BEB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="oobe">
+      <UniqueIdentifier>{4D784C5A-2178-4C12-BF1F-08803DAB6920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="script_extender">
+      <UniqueIdentifier>{609C5A1F-3640-48EC-9C8B-0436151079CF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="steam">
+      <UniqueIdentifier>{F00BC28A-11BB-44AA-A91D-1CDC81AF0972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stubs">
+      <UniqueIdentifier>{0C0E6122-A7FB-476D-AE1C-7C376D875800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="update">
+      <UniqueIdentifier>{383A92B2-6CC0-4B75-94DC-9B2CB0C088B6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{16923C6D-22D9-4285-BB83-39256F11D177}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{B09AAC72-B9D0-44CF-98DD-44C28B1EFB1A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Code\immersive_launcher\loader\ExeCache.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\loader\ExeLoader.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\loader\LinkConfig.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\loader\PathRerouting.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\loader\TlsMemory.cpp">
+      <Filter>loader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\oobe\InstallCheckFlow.cpp">
+      <Filter>oobe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\oobe\SmartPathSelection.cpp">
+      <Filter>oobe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\oobe\ViabilityChecks.cpp">
+      <Filter>oobe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\script_extender\SEMemoryBlock.cpp">
+      <Filter>script_extender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\steam\SteamCeg.cpp">
+      <Filter>steam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\steam\SteamLoader.cpp">
+      <Filter>steam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\stubs\CrtStartupHooks.cpp">
+      <Filter>stubs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\stubs\DllBlocklist.cpp">
+      <Filter>stubs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\stubs\FileMapping.cpp">
+      <Filter>stubs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\update\Update.cpp">
+      <Filter>update</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\utils\Error.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\immersive_launcher\resources\launcher.rc">
+      <Filter>resources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Code\immersive_launcher\loader\ExeCache.h">
+      <Filter>loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\loader\ExeLoader.h">
+      <Filter>loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\loader\PathRerouting.h">
+      <Filter>loader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\oobe\InstallCheckFlow.h">
+      <Filter>oobe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\oobe\SmartPathSelection.h">
+      <Filter>oobe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\oobe\ViabilityChecks.h">
+      <Filter>oobe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\script_extender\SEMemoryBlock.h">
+      <Filter>script_extender</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\steam\SteamCeg.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\steam\SteamCrypto.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\steam\SteamLoader.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\stubs\DllBlocklist.h">
+      <Filter>stubs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\update\Update.h">
+      <Filter>update</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\utils\Error.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\utils\NtInternal.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\immersive_launcher\utils\Registry.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

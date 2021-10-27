@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="AdminMessages">
+      <UniqueIdentifier>{16A11E7B-E2DD-4FE5-844B-8510ADC88D97}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Code\admin_protocol\AdminMessages\AdminSessionOpen.cpp">
+      <Filter>AdminMessages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\admin_protocol\AdminMessages\AdminShutdownRequest.cpp">
+      <Filter>AdminMessages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\admin_protocol\AdminMessages\ClientAdminMessageFactory.cpp">
+      <Filter>AdminMessages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\admin_protocol\AdminMessages\Message.cpp">
+      <Filter>AdminMessages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\admin_protocol\AdminMessages\ServerAdminMessageFactory.cpp">
+      <Filter>AdminMessages</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\admin_protocol\AdminMessages\ServerLogs.cpp">
+      <Filter>AdminMessages</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Code\admin_protocol\AdminMessages\AdminSessionOpen.h">
+      <Filter>AdminMessages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\admin_protocol\AdminMessages\AdminShutdownRequest.h">
+      <Filter>AdminMessages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\admin_protocol\AdminMessages\ClientAdminMessageFactory.h">
+      <Filter>AdminMessages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\admin_protocol\AdminMessages\Message.h">
+      <Filter>AdminMessages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\admin_protocol\AdminMessages\ServerAdminMessageFactory.h">
+      <Filter>AdminMessages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\admin_protocol\AdminMessages\ServerLogs.h">
+      <Filter>AdminMessages</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

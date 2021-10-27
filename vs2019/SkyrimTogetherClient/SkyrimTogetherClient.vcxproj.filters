@@ -1,0 +1,903 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Games">
+      <UniqueIdentifier>{96DFC344-0BE7-469C-987E-396C547B659B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Misc">
+      <UniqueIdentifier>{80790AAC-2053-4813-AAC7-340EA5801FC7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Services\Generic">
+      <UniqueIdentifier>{D622BB0D-85AC-4575-A9AF-D157448C0228}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Services">
+      <UniqueIdentifier>{54883E3A-D631-4372-8292-8C3B2CCC2AE6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Systems">
+      <UniqueIdentifier>{8D32F513-26DB-4862-8261-76B50C4BA840}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim">
+      <UniqueIdentifier>{4FBB5D0F-BB96-474A-8826-6F4D35A84B28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\Components">
+      <UniqueIdentifier>{9D2C97DD-BF07-4CA4-8C5E-41379244EA08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\Events">
+      <UniqueIdentifier>{C6AC68FF-312E-42A0-A99F-D800D4F6D64C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\ExtraData">
+      <UniqueIdentifier>{70583DC3-89C4-46F7-9B21-472BCBCB52D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\Forms">
+      <UniqueIdentifier>{38A16A91-2724-4F04-ABFD-FEE7500F7A65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\Misc">
+      <UniqueIdentifier>{4C9A6C65-8BC0-4AAE-B7FD-BF90146290BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Components">
+      <UniqueIdentifier>{FF49CA1F-D6CC-4892-AF08-D94BEFFE46B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Events">
+      <UniqueIdentifier>{076F8A71-FB48-47F6-84C0-8F4B07C7E906}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Animation">
+      <UniqueIdentifier>{5A44E92F-B1CC-444C-9973-951A2BFFAA5C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\Effects">
+      <UniqueIdentifier>{F9334988-0686-4E24-942E-DCC50196FC8B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\Havok">
+      <UniqueIdentifier>{778CBB15-0681-4102-8AA1-10E4AC59B136}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Skyrim\NetImmerse">
+      <UniqueIdentifier>{842031F9-0FF9-48E5-8D03-BCA83334076E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Code\client\Games\ActorExtension.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Animation.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\BSAnimationGraphManager.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\ExtraData.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\FormFactory.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Forms.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\IAnimationGraphManagerHolder.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\INISettingCollection.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Memory.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Misc\BSScript.cpp">
+      <Filter>Games\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Misc\Lock.cpp">
+      <Filter>Games\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Misc\QuestCallbackManager.cpp">
+      <Filter>Games\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Misc\UI.cpp">
+      <Filter>Games\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\ModManager.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Overrides.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Primitives.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\References.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Renderer.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\SaveLoad.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\System.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\TES.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\TimeManager.cpp">
+      <Filter>Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\ActorService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\CharacterService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\DiscordService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\DiscoveryService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\EntityService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\EnvironmentService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\ImguiService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\imgui_impl_dx11.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\imgui_impl_win32.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\InputService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\InventoryService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\OverlayClient.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\OverlayService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\PapyrusService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\PartyService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\QuestService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\RunnerService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\ScriptService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\StringCacheService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\TestService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Services\Generic\TransportService.cpp">
+      <Filter>Services\Generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Systems\AnimationSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Systems\CacheSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Systems\FaceGenSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Systems\InterpolationSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Systems\ModSystem.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Systems\RenderSystemD3D11.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Actor.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\AnimationExperiments.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Components\TESContainer.cpp">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Components\TESSpellList.cpp">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Components\TESTexture.cpp">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\DefaultObjectManager.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\DefaultStringManager.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\EquipManager.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Events\EventDispacther.cpp">
+      <Filter>Games\Skyrim\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\ExtraData\ExtraContainerChanges.cpp">
+      <Filter>Games\Skyrim\ExtraData</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\FormManager.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Forms\ActorValueInfo.cpp">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Forms\TESNPC.cpp">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Forms\TESObjectCELL.cpp">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Forms\TESQuest.cpp">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\LoadingScreen.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\ActorMagicCaster.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\ActorProcessManager.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\BSFixedString.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\BSScript.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\GameVM.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\MagicCaster.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\Misc\WeatherManager.cpp">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\PlayerCharacter.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\RTTI.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\SaveLoad.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\client\Games\Skyrim\TESObjectREFR.cpp">
+      <Filter>Games\Skyrim</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Code\client\Components\ActorValuesComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\CacheComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\FaceGenComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\FormIdComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\InteractiveObjectComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\InterpolationComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\LocalAnimationComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\LocalComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\RemoteAnimationComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\RemoteComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\WaitingFor3D.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Components\WaitingForAssignmentComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\ActivateEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\ArrowAttachedEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\CellChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\ConnectedEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\DisconnectedEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\EquipmentChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\GridCellChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\HealthChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\InventoryChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\LocationChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\LockChangeEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\MagicSyncEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\PapyrusFunctionRegisterEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\PreUpdateEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\ReferenceAddedEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\ReferenceRemovedEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\ReferenceSpawnedEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\SpellCastEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Events\UpdateEvent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\ActorExtension.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\ActionInput.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\ActionOutput.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\ActorMediator.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\BGSActionData.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\BSAnimationGraphChannel.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\IAnimationGraphManagerHolder.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Animation\TESActionData.h">
+      <Filter>Games\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Events.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\ExtraData.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\IFormFactory.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Memory.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Misc\Lock.h">
+      <Filter>Games\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Misc\QuestCallbackManager.h">
+      <Filter>Games\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Misc\UI.h">
+      <Filter>Games\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Overrides.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Papyrus.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Primitives.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\References.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\System.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\TES.h">
+      <Filter>Games</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\ActorService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\CharacterService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\DiscordService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\DiscoveryService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\EntityService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\EnvironmentService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\Generic\imgui_impl_dx11.h">
+      <Filter>Services\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\Generic\imgui_impl_win32.h">
+      <Filter>Services\Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\ImguiService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\InputService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\InventoryService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\OverlayClient.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\OverlayService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\PapyrusService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\PartyService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\QuestService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\RunnerService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\ScriptService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\StringCacheService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\TestService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Services\TransportService.h">
+      <Filter>Services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Systems\AnimationSystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Systems\CacheSystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Systems\FaceGenSystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Systems\InterpolationSystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Systems\ModSystem.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Systems\RenderSystemD3D11.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Actor.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\BSAnimationGraphManager.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BaseFormComponent.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSAttackDataForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSBipedObjectForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSDestructibleObjectForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSEquipType.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSKeywordForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSMenuDisplayObject.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSOverridePackCollection.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSPerkRankArray.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\BGSSkinForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESActorBaseData.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESAIForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESContainer.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESDescription.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESFullName.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESLeveledList.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESModel.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESModelTextureSwap.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESModelTri.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESRaceForm.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESSpellList.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Components\TESTexture.h">
+      <Filter>Games\Skyrim\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\DefaultObjectManager.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\DefaultStringManager.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Effects\ActiveEffect.h">
+      <Filter>Games\Skyrim\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Effects\ValueModifierEffect.h">
+      <Filter>Games\Skyrim\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\EquipManager.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Events\EventDispatcher.h">
+      <Filter>Games\Skyrim\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\ExtraData\ExtraContainerChanges.h">
+      <Filter>Games\Skyrim\ExtraData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\ExtraData\ExtraFactionChanges.h">
+      <Filter>Games\Skyrim\ExtraData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\ExtraData\ExtraLeveledCreature.h">
+      <Filter>Games\Skyrim\ExtraData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\ExtraData.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\FormManager.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\ActorValueInfo.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSAction.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSColorForm.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSHeadPart.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSKeyword.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSOutfit.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSStoryManagerTree.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSTextureSet.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\BGSVoiceType.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\EffectSetting.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\MagicItem.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\SpellItem.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESActorBase.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESAmmo.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESBoundAnimObject.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESBoundObject.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESClass.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESCombatStyle.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESFaction.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESForm.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESGlobal.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESIdleForm.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESLevCharacter.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESNPC.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESObject.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESObjectARMO.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESObjectCELL.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESObjectCONT.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESObjectWEAP.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESQuest.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESRace.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESShout.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESWeather.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Forms\TESWorldSpace.h">
+      <Filter>Games\Skyrim\Forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\ahkpWorld.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\bhkWorldM.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\BShkbAnimationGraph.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\BShkbHkxDB.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\CharacterContext.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbBehaviorGraph.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbCharacter.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbGenerator.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbModifier.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbStateMachine.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbSymbolIdMap.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkbVariableValueSet.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkEventContext.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkEventType.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Havok\hkHashTable.h">
+      <Filter>Games\Skyrim\Havok</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\ActorMagicCaster.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\ActorProcessManager.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\ActorState.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\ActorValueOwner.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\BSFixedString.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\BSScript.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\BSString.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\GameVM.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\IMovementInterface.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\IMovementState.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\InventoryEntry.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\IPostAnimationChannelUpdateFunctor.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\MagicCaster.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\MagicSystem.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\MagicTarget.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\MiddleProcess.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\NativeFunction.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\TintMask.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Misc\WeatherManager.h">
+      <Filter>Games\Skyrim\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\BSFaceGenNiNode.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\BSLightingShaderProperty.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\BSMaskedShaderMaterial.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\BSShaderProperty.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\Ni2DBuffer.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiAVObject.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiGeometry.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiNode.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiObject.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiObjectNET.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiPointer.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiProperty.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiRenderedTexture.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiRTTI.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiShadeProperty.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiTexture.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\NetImmerse\NiTriBasedGeom.h">
+      <Filter>Games\Skyrim\NetImmerse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\PlayerCharacter.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\Renderer.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\RTTI.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\SaveLoad.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\TESObjectREFR.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\client\Games\Skyrim\TimeManager.h">
+      <Filter>Games\Skyrim</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

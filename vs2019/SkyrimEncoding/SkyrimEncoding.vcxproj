@@ -1,0 +1,789 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="releasedbg|x64">
+      <Configuration>releasedbg</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{25430703-8C0B-4D20-8242-A4891A50F0A5}</ProjectGuid>
+    <RootNamespace>SkyrimEncoding</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <OutDir>..\..\build\windows\x64\debug\</OutDir>
+    <IntDir>..\..\build\.objs\SkyrimEncoding\windows\x64\debug\</IntDir>
+    <TargetName>SkyrimEncoding</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">
+    <OutDir>..\..\build\windows\x64\releasedbg\</OutDir>
+    <IntDir>..\..\build\.objs\SkyrimEncoding\windows\x64\releasedbg\</IntDir>
+    <TargetName>SkyrimEncoding</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <OutDir>..\..\build\windows\x64\release\</OutDir>
+    <IntDir>..\..\build\.objs\SkyrimEncoding\windows\x64\release\</IntDir>
+    <TargetName>SkyrimEncoding</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <Lib>
+      <AdditionalOptions>-nologo %(AdditionalOptions)</AdditionalOptions>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>DEBUG;NOMINMAX;TP_SKYRIM=1;__config_debug__;__config_x64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\Code\encoding;..\..\Code;..\..\Code\encoding\Structs\Skyrim</AdditionalIncludeDirectories>
+      <AdditionalOptions>/EHsc -nologo -FS -std:c++17 -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\h\hopscotch-map\v2.3.0\d4554c45a705442e980434a39e58e38c\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\g\glm\0.9.9+8\8335bab7c0314ab9921440de58961aac\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\t\tiltedcore\v0.2.3\6957e066ad9d40ba905dc031de564be1\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mimalloc\2.0.2\40b653371da74a6481d1e46bb6dd988e\include %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">
+    <Lib>
+      <AdditionalOptions>-nologo /opt:ref /opt:icf %(AdditionalOptions)</AdditionalOptions>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NOMINMAX;TP_SKYRIM=1;NDEBUG;__config_releasedbg__;__config_x64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\Code\encoding;..\..\Code;..\..\Code\encoding\Structs\Skyrim</AdditionalIncludeDirectories>
+      <AdditionalOptions>/EHsc -nologo -FS -std:c++17 -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\h\hopscotch-map\v2.3.0\d4554c45a705442e980434a39e58e38c\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\g\glm\0.9.9+8\8335bab7c0314ab9921440de58961aac\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\t\tiltedcore\v0.2.3\6957e066ad9d40ba905dc031de564be1\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mimalloc\2.0.2\40b653371da74a6481d1e46bb6dd988e\include %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <Lib>
+      <AdditionalOptions>-nologo /opt:ref /opt:icf %(AdditionalOptions)</AdditionalOptions>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NOMINMAX;TP_SKYRIM=1;NDEBUG;__config_release__;__config_x64__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\..\Code\encoding;..\..\Code;..\..\Code\encoding\Structs\Skyrim</AdditionalIncludeDirectories>
+      <AdditionalOptions>/EHsc -nologo -std:c++17 -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\h\hopscotch-map\v2.3.0\d4554c45a705442e980434a39e58e38c\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\g\glm\0.9.9+8\8335bab7c0314ab9921440de58961aac\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\t\tiltedcore\v0.2.3\6957e066ad9d40ba905dc031de564be1\include -external:IC:\Users\Robbe\AppData\Local\.xmake\packages\m\mimalloc\2.0.2\40b653371da74a6481d1e46bb6dd988e\include %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_AtronachFrostRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyPartyInvite.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_AtronachStormBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyPlayerList.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_BearRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyQuestUpdate.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_BHR_Master.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyRemoveCharacter.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Chaurus.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifySpawnData.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Chicken.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifySpellCast.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_CowRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\PartyAcceptInviteRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DeerRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\PartyInviteRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DogRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\PartyLeaveRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DraugrBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestActorMaxValueChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DwarvenSpider.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestActorValueChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Falmer_Master_Behavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestCharacterInventoryChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_FrostbiteSpider.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestDeathStateChange.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_GiantRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestFactionsChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_GoatRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestHealthChangeBroadcast.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_HagravenMasterBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestObjectInventoryChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_HorkerRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestOwnershipClaim.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_HorseRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestOwnershipTransfer.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_MammothRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_WolfRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestQuestUpdate.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Master_Behavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_WerewolfBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\RequestSpawnData.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Mudcrab.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_VampireLordBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerMessageFactory.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignObjectsResponse.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_VampireBruteRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerReferencesMoveRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AttachArrowRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_TrollBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerScriptUpdate.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AuthenticationRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_SteamBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ServerTimeSettings.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AuthenticationResponse.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Spriggan.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ShiftGridCellRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\CancelAssignmentRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_SkeeverRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\SpellCastRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\CharacterSpawnRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_ScribRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignCharacterRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ClientMessageFactory.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ActionEvent.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignCharacterResponse.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ClientReferencesMoveRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ActorValues.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\AssignObjectsRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\FullObjects.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\LockChangeRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\AnimationGraphDescriptorManager.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\GameId.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\Message.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\AnimationVariables.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\GridCellCoords.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyActivate.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Faction.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Inventory.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyActorMaxValueChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Factions.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\LockData.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyActorValueChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_SabreCatRootBehavior.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Mods.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyAttachArrow.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Rabbit.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Movement.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyCharacterInventoryChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\EnterExteriorCellRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ObjectData.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyDeathStateChange.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Vector3_NetQuantize.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Objects.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyFactionsChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Vector2_NetQuantize.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\QuestLog.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyHealthChangeBroadcast.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Tints.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\ReferenceUpdate.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyLockChange.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyObjectInventoryChanges.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Rotator2_NetQuantize.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ActivateRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\ClientRpcCalls.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Scripts.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyOwnershipTransfer.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\EnterInteriorCellRequest.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptorManager.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\encoding\Messages\NotifyPartyInfo.cpp">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='debug|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='releasedbg|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='release|x64'">-experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 -experimental:external -external:W0 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Code\encoding\Differential.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ActivateRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignCharacterRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignCharacterResponse.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignObjectsRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AssignObjectsResponse.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AttachArrowRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AuthenticationRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\AuthenticationResponse.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\CancelAssignmentRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\CharacterSpawnRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ClientMessageFactory.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ClientReferencesMoveRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ClientRpcCalls.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\EnterExteriorCellRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\EnterInteriorCellRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\LockChangeRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\Message.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyActivate.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyActorMaxValueChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyActorValueChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyAttachArrow.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyCharacterInventoryChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyDeathStateChange.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyFactionsChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyHealthChangeBroadcast.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyLockChange.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyObjectInventoryChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyOwnershipTransfer.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyPartyInfo.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyPartyInvite.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyPlayerList.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyQuestUpdate.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifyRemoveCharacter.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifySpawnData.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\NotifySpellCast.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\PartyAcceptInviteRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\PartyInviteRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\PartyLeaveRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestActorMaxValueChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestActorValueChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestCharacterInventoryChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestDeathStateChange.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestFactionsChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestHealthChangeBroadcast.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestObjectInventoryChanges.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestOwnershipClaim.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestOwnershipTransfer.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestQuestUpdate.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\RequestSpawnData.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerMessageFactory.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerReferencesMoveRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerScriptUpdate.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ServerTimeSettings.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\ShiftGridCellRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\Messages\SpellCastRequest.h" />
+    <ClInclude Include="..\..\Code\encoding\MetaMessage.h" />
+    <ClInclude Include="..\..\Code\encoding\Opcodes.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\ActionEvent.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\ActorValues.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\AnimationGraphDescriptor.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\AnimationGraphDescriptorManager.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\AnimationVariables.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Faction.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Factions.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\FullObjects.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\GameId.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\GridCellCoords.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Inventory.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\LockData.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Mods.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Movement.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\ObjectData.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Objects.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\QuestLog.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\ReferenceUpdate.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Rotator2_NetQuantize.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Scripts.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Tints.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Vector2_NetQuantize.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Vector3_NetQuantize.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_AtronachFrostRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_AtronachStormBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_BearRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_BHR_Master.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Chaurus.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Chicken.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_CowRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DeerRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DogRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DraugrBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_DwarvenSpider.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Falmer_Master_Behavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_FrostbiteSpider.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_GiantRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_GoatRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_HagravenMasterBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_HorkerRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_HorseRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_MammothRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Master_Behavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Mudcrab.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Rabbit.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_SabreCatRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_ScribRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_SkeeverRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_Spriggan.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_SteamBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_TrollBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_VampireBruteRootBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_VampireLordBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_WerewolfBehavior.h" />
+    <ClInclude Include="..\..\Code\encoding\Structs\Skyrim\AnimationGraphDescriptor_WolfRootBehavior.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
