@@ -533,7 +533,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
 
-    auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
     if (!pActor)
         return;
 

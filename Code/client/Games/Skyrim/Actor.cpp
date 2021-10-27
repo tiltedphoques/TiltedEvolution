@@ -307,6 +307,7 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         spdlog::critical("Ammo id received: {:X}, count: {}", ammoId, count);
 
+        /*
         const auto pContainerChanges = GetContainerChanges()->entries;
         for (auto pChange : *pContainerChanges)
         {
@@ -320,6 +321,7 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
                 }
             }
         }
+        */
 
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }

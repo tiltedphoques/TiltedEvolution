@@ -184,7 +184,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
                 continue;
 
             const auto* pForm = TESForm::GetById(formId);
-            const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
             if (!pActor)
                 continue;
 
