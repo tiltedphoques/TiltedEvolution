@@ -6,6 +6,7 @@ enum class ExtraData : uint32_t
     Worn = 0x16,
     WornLeft = 0x17,
     ReferenceHandle = 0x1C,
+    Count = 0x24,
     Teleport = 0x2B,
     LeveledCreature = 0x2D,
     CannotWear = 0x3D,

@@ -20,7 +20,9 @@
 
 #include <Effects/ValueModifierEffect.h>
 #include <Forms/ActorValueInfo.h>
+
 #include <Games/Skyrim/Misc/InventoryEntry.h>
+#include <Games/Skyrim/ExtraData/ExtraCount.h>
 
 #ifdef SAVE_STUFF
 
@@ -303,21 +305,32 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         spdlog::critical("Ammo id received: {:X}, count: {}", ammoId, count);
 
-        /*
         const auto pContainerChanges = GetContainerChanges()->entries;
         for (auto pChange : *pContainerChanges)
         {
             if (pChange && pChange->form && pChange->form->formID == ammoId)
             {
+                if (pChange->form->formID != ammoId)
+                    continue;
+
                 const auto pDataLists = pChange->dataList;
-                if (pDataLists)
+                for (auto* pDataList : *pDataLists)
                 {
-                    pDataLists->entry.data = nullptr;
-                    pDataLists->entry.next = nullptr;
+                    if (pDataList)
+                    {
+                        if (pDataList->Contains(ExtraData::Count))
+                        {
+                            BSExtraData* pExtraData = pDataList->GetByType(ExtraData::Count);
+                            ExtraCount* pExtraCount = RTTI_CAST(pExtraData, BSExtraData, ExtraCount);
+                            if (pExtraCount)
+                            {
+                                pExtraCount->count = 0;
+                            }
+                        }
+                    }
                 }
             }
         }
-        */
 
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
