@@ -266,7 +266,7 @@ public:
     void* pad138[2];
     struct IMovementDrivenControl* movementDrivenControl; // MovementControllerNPC
     uint32_t unk0D4;
-    void* unkD8;
+    CombatController* pCombatController;
     void* unkDC;
     uint32_t unkE0;
     uint32_t unkE4;
@@ -308,6 +308,7 @@ public:
 
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
+constexpr size_t t = offsetof(Actor, unkD8);
 
 static_assert(offsetof(Actor, processManager) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);
