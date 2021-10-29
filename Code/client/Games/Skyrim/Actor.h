@@ -20,6 +20,7 @@ struct ExActor;
 struct ExPlayerCharacter;
 struct ActorExtension;
 struct ActorProcessManager;
+struct CombatController;
 
 struct Actor : TESObjectREFR
 {
@@ -308,7 +309,6 @@ public:
 
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
-constexpr size_t t = offsetof(Actor, unkD8);
 
 static_assert(offsetof(Actor, processManager) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);
@@ -319,7 +319,7 @@ static_assert(offsetof(Actor, unk194) == 0x270);
 static_assert(offsetof(Actor, unk9C) == 0x108);
 static_assert(offsetof(Actor, unk84) == 0xE8);
 static_assert(offsetof(Actor, unk17C) == 0x17C);
-static_assert(offsetof(Actor, unkD8) == 0x158);
+static_assert(offsetof(Actor, pCombatController) == 0x158);
 static_assert(offsetof(Actor, magicItems) == 0x1C0);
 static_assert(offsetof(Actor, equippedShout) == 0x1E0);
 static_assert(offsetof(Actor, actorLock) == 0x27C);

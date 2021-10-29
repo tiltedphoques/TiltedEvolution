@@ -33,6 +33,8 @@
 #include <Messages/NotifySpellCast.h>
 #include <Messages/AttachArrowRequest.h>
 #include <Messages/NotifyAttachArrow.h>
+#include <Messages/ProjectileLaunchRequest.h>
+#include <Messages/NotifyProjectileLaunch.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -50,6 +52,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
     , m_attachArrowConnection(aDispatcher.sink<PacketEvent<AttachArrowRequest>>().connect<&CharacterService::OnAttachArrowRequest>(this))
+    , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
 {
 }
 
@@ -727,6 +730,52 @@ void CharacterService::OnAttachArrowRequest(const PacketEvent<AttachArrowRequest
 {
     NotifyAttachArrow notify;
     notify.ShooterId = acMessage.Packet.ShooterId;
+
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+            pPlayer->Send(notify);
+    }
+}
+
+void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
+{
+    auto packet = acMessage.Packet;
+
+    NotifyProjectileLaunch notify;
+    notify.OriginX = packet.OriginX;
+    notify.OriginY = packet.OriginY;
+    notify.OriginZ = packet.OriginZ;
+    notify.ContactNormalX = packet.ContactNormalX;
+    notify.ContactNormalY = packet.ContactNormalY;
+    notify.ContactNormalZ = packet.ContactNormalZ;
+
+    notify.ProjectileBaseID = packet.ProjectileBaseID;
+    notify.ShooterID = packet.ShooterID;
+    notify.WeaponID = packet.WeaponID;
+    notify.AmmoID = packet.AmmoID;
+
+    notify.ZAngle = packet.ZAngle;
+    notify.XAngle = packet.XAngle;
+    notify.YAngle = packet.YAngle;
+
+    spdlog::info("ammo id: {:X}", packet.AmmoID);
+
+    notify.ParentCellID = packet.ParentCellID;
+
+    notify.unkBool1 = packet.unkBool1;
+
+    notify.Area = packet.Area;
+    notify.Power = packet.Power;
+    notify.Scale = packet.Scale;
+
+    notify.AlwaysHit = packet.AlwaysHit;
+    notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
+    notify.AutoAim = packet.AutoAim;
+    notify.UseOrigin = packet.UseOrigin;
+    notify.DeferInitialization = packet.DeferInitialization;
+    notify.Tracer = packet.Tracer;
+    notify.ForceConeOfFire = packet.ForceConeOfFire;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {

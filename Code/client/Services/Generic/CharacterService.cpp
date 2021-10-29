@@ -33,6 +33,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/SpellCastEvent.h>
 #include <Events/ArrowAttachedEvent.h>
+#include <Events/ProjectileLaunchedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -53,9 +54,13 @@
 #include <Messages/NotifySpellCast.h>
 #include <Messages/AttachArrowRequest.h>
 #include <Messages/NotifyAttachArrow.h>
+#include <Messages/ProjectileLaunchRequest.h>
+#include <Messages/NotifyProjectileLaunch.h>
 
 #include <World.h>
 #include <Games/TES.h>
+
+#include <Games/Skyrim/Projectiles/Projectile.h>
 
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -85,6 +90,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_notifySpellCastConnection = m_dispatcher.sink<NotifySpellCast>().connect<&CharacterService::OnNotifySpellCast>(this);
     m_arrowAttachedEvent = m_dispatcher.sink<ArrowAttachedEvent>().connect<&CharacterService::OnArrowAttachedEvent>(this);
     m_notifyAttachArrowConnection = m_dispatcher.sink<NotifyAttachArrow>().connect<&CharacterService::OnNotifyAttachArrow>(this);
+    m_projectileLaunchedConnection = m_dispatcher.sink<ProjectileLaunchedEvent>().connect<&CharacterService::OnProjectileLaunchedEvent>(this);
+    m_projectileLaunchConnection = m_dispatcher.sink<NotifyProjectileLaunch>().connect<&CharacterService::OnNotifyProjectileLaunch>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1128,4 +1135,138 @@ void CharacterService::OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) c
 
     spdlog::info("Attached arrow");
 #endif
+}
+
+void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
+{
+    /*
+    auto& modSystem = World::Get().GetModSystem();
+
+    GameId projectileBaseID{};
+    modSystem.GetServerModId(acEvent.ProjectileBaseID, projectileBaseID);
+    
+    GameId shooterID{};
+    modSystem.GetServerModId(acEvent.ShooterID, shooterID);
+
+    GameId weaponID{};
+    modSystem.GetServerModId(acEvent.WeaponID, weaponID);
+
+    GameId ammoID{};
+    modSystem.GetServerModId(acEvent.AmmoID, ammoID);
+    */
+
+    auto formId = acEvent.ShooterID;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (casterEntityIt == std::end(view))
+        return;
+
+    auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
+
+    ProjectileLaunchRequest request;
+    request.OriginX = acEvent.Origin.x;
+    request.OriginY = acEvent.Origin.y;
+    request.OriginZ = acEvent.Origin.z;
+    request.ContactNormalX = acEvent.ContactNormal.x;
+    request.ContactNormalY = acEvent.ContactNormal.y;
+    request.ContactNormalZ = acEvent.ContactNormal.z;
+
+    request.ProjectileBaseID = acEvent.ProjectileBaseID;
+    request.ShooterID = localComponent.Id;
+    request.WeaponID = acEvent.WeaponID;
+    request.AmmoID = acEvent.AmmoID;
+
+    request.ZAngle = acEvent.ZAngle;
+    request.XAngle = acEvent.XAngle;
+    request.YAngle = acEvent.YAngle;
+
+    request.ParentCellID = acEvent.ParentCellID;
+
+    request.unkBool1 = acEvent.unkBool1;
+
+    request.Area = acEvent.Area;
+    request.Power = acEvent.Power;
+    request.Scale = acEvent.Scale;
+
+    request.AlwaysHit = acEvent.AlwaysHit;
+    request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
+    request.AutoAim = acEvent.AutoAim;
+    request.UseOrigin = acEvent.UseOrigin;
+    request.DeferInitialization = acEvent.DeferInitialization;
+    request.Tracer = acEvent.Tracer;
+    request.ForceConeOfFire = acEvent.ForceConeOfFire;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterID);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+
+    auto* pForm = TESForm::GetById(formIdComponent.Id);
+
+    uint8_t resultBuffer[100];
+
+    Projectile::LaunchData launchData;
+
+    // null init
+    launchData.pCombatController = nullptr;
+    launchData.pSpell = nullptr;
+    launchData.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+    launchData.pPoison = nullptr;
+    // null init end
+
+    launchData.Origin.x = acMessage.OriginX;
+    launchData.Origin.y = acMessage.OriginY;
+    launchData.Origin.z = acMessage.OriginZ;
+    launchData.ContactNormal.x = acMessage.ContactNormalX;
+    launchData.ContactNormal.y = acMessage.ContactNormalY;
+    launchData.ContactNormal.z = acMessage.ContactNormalZ;
+
+    // TODO: fix this
+    launchData.pProjectileBase = TESForm::GetById(acMessage.ProjectileBaseID);
+    launchData.pShooter = (TESObjectREFR*)pForm;
+    launchData.pFromWeapon = (TESObjectWEAP*)TESForm::GetById(acMessage.WeaponID);
+    launchData.pFromAmmo = (TESAmmo*)TESForm::GetById(acMessage.AmmoID);
+
+    launchData.fZAngle = acMessage.ZAngle;
+    launchData.fXAngle = acMessage.XAngle;
+    launchData.fYAngle = acMessage.YAngle;
+
+    launchData.pParentCell = PlayerCharacter::Get()->parentCell;
+
+    launchData.unkBool1 = acMessage.unkBool1;
+
+    launchData.iArea = acMessage.Area;
+    launchData.fPower = acMessage.Power;
+    launchData.fScale = acMessage.Scale;
+
+    launchData.bAlwaysHit = acMessage.AlwaysHit;
+    launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
+    launchData.bAutoAim = acMessage.AutoAim;
+    launchData.bUseOrigin = acMessage.UseOrigin;
+    launchData.bDeferInitialization = acMessage.DeferInitialization;
+    launchData.bTracer = acMessage.Tracer;
+    launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
+
+    Projectile::Launch(resultBuffer, &launchData);
+
+    spdlog::warn("Launched");
 }
