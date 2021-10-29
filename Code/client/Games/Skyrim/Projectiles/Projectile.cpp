@@ -71,9 +71,7 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData* arData)
 
 void* Projectile::Launch(void* apResult, LaunchData* apLaunchData) noexcept
 {
-    POINTER_SKYRIMSE(TLaunch, s_launch, 0x14074B170 - 0x140000000);
-
-    return ThisCall(s_launch, apResult, apLaunchData);
+    return ThisCall(RealLaunch, apResult, apLaunchData);
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
