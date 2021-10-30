@@ -370,6 +370,15 @@ void Actor::UnEquipAll() noexcept
     }
 }
 
+void Actor::SetLookAt(TESObjectREFR* apTarget, bool abPathingLookAt) noexcept
+{
+    spdlog::info("Setting headtrack target");
+
+    PAPYRUS_FUNCTION(void, Actor, SetLookAt, TESObjectREFR*, bool);
+
+    s_pSetLookAt(this, apTarget, abPathingLookAt);
+}
+
 void Actor::RemoveFromAllFactions() noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);

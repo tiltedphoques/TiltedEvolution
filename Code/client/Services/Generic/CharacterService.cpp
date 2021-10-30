@@ -643,6 +643,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     message.InventoryContent = pActor->GetInventory();
     message.FactionsContent = pActor->GetFactions();
+    spdlog::warn("Factions count: {:x}", message.FactionsContent.NpcFactions.size());
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
 

@@ -201,6 +201,8 @@ struct Actor : TESObjectREFR
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
 
+    void SetLookAt(TESObjectREFR* apTarget, bool abPathingLookAt) noexcept;
+
     // Actions
     void UnEquipAll() noexcept;
     void RemoveFromAllFactions() noexcept;

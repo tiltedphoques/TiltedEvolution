@@ -5,6 +5,16 @@ struct MiddleProcess;
 
 struct ActorProcessManager
 {
+    enum HEAD_TRACK_TYPE
+    {
+        HEAD_TRACK_TYPE_DEFAULT = 0,
+        HEAD_TRACK_TYPE_UNK1,
+        HEAD_TRACK_TYPE_SCRIPT,
+        HEAD_TRACK_TYPE_UNK3,
+        HEAD_TRACK_TYPE_DIALOG,
+        HEAD_TRACK_TYPE_UNK5,
+    };
+
     void* unk0;
     MiddleProcess* middleProcess;
     void* unk8;

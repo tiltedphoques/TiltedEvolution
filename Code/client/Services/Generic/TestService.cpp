@@ -766,6 +766,44 @@ void TestService::OnDraw() noexcept
     }
 
     ImGui::End();
+
+    #if TP_SKYRIM64
+    ImGui::Begin("Headtracking debug");
+
+    static Actor* pHeadtrackingActor = nullptr;
+    static uint32_t headTrackingId = 0;
+    ImGui::InputScalar("Head tracking ID", ImGuiDataType_U32, &headTrackingId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+    static Actor* pHeadtrackingTarget = nullptr;
+    static uint32_t headTrackingTargetId = 0;
+    ImGui::InputScalar("Head tracking target ID", ImGuiDataType_U32, &headTrackingTargetId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
+    {
+        if (headTrackingId)
+        {
+            auto* pFetchForm = TESForm::GetById(headTrackingId);
+            if (pFetchForm)
+                pHeadtrackingActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+        }
+
+        if (headTrackingTargetId)
+        {
+            auto* pFetchForm = TESForm::GetById(headTrackingTargetId);
+            if (pFetchForm)
+                pHeadtrackingTarget = RTTI_CAST(pFetchForm, TESForm, Actor);
+        }
+
+        if (pHeadtrackingActor && pHeadtrackingTarget)
+        {
+            spdlog::info("tracking actor: {:X}, tracking target: {:X}", pHeadtrackingActor->formID,
+                         pHeadtrackingTarget->formID);
+            pHeadtrackingActor->SetLookAt(pHeadtrackingTarget, true);
+        }
+    }
+
+    ImGui::End();
+    #endif
 }
 
 
