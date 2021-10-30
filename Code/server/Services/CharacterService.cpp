@@ -744,9 +744,10 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.XAngle = packet.XAngle;
     notify.YAngle = packet.YAngle;
 
-    spdlog::info("ammo id: {:X}", packet.AmmoID);
-
     notify.ParentCellID = packet.ParentCellID;
+
+    notify.SpellID = packet.SpellID;
+    notify.CastingSource = packet.CastingSource;
 
     notify.unkBool1 = packet.unkBool1;
 

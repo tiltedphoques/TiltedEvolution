@@ -1123,6 +1123,9 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
 
     request.ParentCellID = acEvent.ParentCellID;
 
+    request.SpellID = acEvent.SpellID;
+    request.CastingSource = acEvent.CastingSource;
+
     request.unkBool1 = acEvent.unkBool1;
 
     request.Area = acEvent.Area;
@@ -1162,13 +1165,6 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
 
     Projectile::LaunchData launchData;
 
-    // null init
-    launchData.pCombatController = nullptr;
-    launchData.pSpell = nullptr;
-    launchData.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-    launchData.pPoison = nullptr;
-    // null init end
-
     launchData.Origin.x = acMessage.OriginX;
     launchData.Origin.y = acMessage.OriginY;
     launchData.Origin.z = acMessage.OriginZ;
@@ -1186,7 +1182,10 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
 
-    launchData.pParentCell = PlayerCharacter::Get()->parentCell;
+    launchData.pParentCell = (TESObjectCELL*)TESForm::GetById(acMessage.ParentCellID);
+
+    launchData.pSpell = (MagicItem*)TESForm::GetById(acMessage.SpellID);
+    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
 
     launchData.unkBool1 = acMessage.unkBool1;
 

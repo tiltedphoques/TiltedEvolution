@@ -15,6 +15,8 @@ struct ProjectileLaunchedEvent
     float XAngle;
     float YAngle;
     uint32_t ParentCellID;
+    uint32_t SpellID;
+    int32_t CastingSource;
     bool unkBool1;
     int32_t Area;
     float Power;

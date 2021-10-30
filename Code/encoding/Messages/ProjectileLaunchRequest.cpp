@@ -16,6 +16,8 @@ void ProjectileLaunchRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteFloat(aWriter, XAngle);
     Serialization::WriteFloat(aWriter, YAngle);
     Serialization::WriteVarInt(aWriter, ParentCellID);
+    Serialization::WriteVarInt(aWriter, SpellID);
+    Serialization::WriteVarInt(aWriter, CastingSource);
     Serialization::WriteBool(aWriter, unkBool1);
     Serialization::WriteVarInt(aWriter, Area);
     Serialization::WriteFloat(aWriter, Power);
@@ -47,6 +49,8 @@ void ProjectileLaunchRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     XAngle = Serialization::ReadFloat(aReader);
     YAngle = Serialization::ReadFloat(aReader);
     ParentCellID = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    SpellID = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    CastingSource = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     unkBool1 = Serialization::ReadBool(aReader);
     Area = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Power = Serialization::ReadFloat(aReader);

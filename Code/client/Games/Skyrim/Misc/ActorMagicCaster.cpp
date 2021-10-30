@@ -21,7 +21,7 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
     if (pActor->GetExtension()->IsRemote())
         return;
 
-    World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell));
+    //World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell));
 
     spdlog::info("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell);
 

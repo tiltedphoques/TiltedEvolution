@@ -14,11 +14,6 @@ static TLaunch* RealLaunch = nullptr;
 
 void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData* arData)
 {
-    if (!arData->pFromAmmo)
-    {
-        return ThisCall(RealLaunch, apThis, arData);
-    }
-
     if (arData->pShooter)
     {
         auto* pActor = RTTI_CAST(arData->pShooter, TESObjectREFR, Actor);
@@ -44,14 +39,22 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData* arData)
     ProjectileLaunchedEvent Event;
     Event.Origin = arData->Origin;
     Event.ContactNormal = arData->ContactNormal;
-    Event.ProjectileBaseID = arData->pProjectileBase->formID;
-    Event.ShooterID = arData->pShooter->formID;
-    Event.WeaponID = arData->pFromWeapon->formID;
-    Event.AmmoID = arData->pFromAmmo->formID;
+    if (arData->pProjectileBase)
+        Event.ProjectileBaseID = arData->pProjectileBase->formID;
+    if (arData->pShooter)
+        Event.ShooterID = arData->pShooter->formID;
+    if (arData->pFromWeapon)
+        Event.WeaponID = arData->pFromWeapon->formID;
+    if (arData->pFromAmmo)
+        Event.AmmoID = arData->pFromAmmo->formID;
     Event.ZAngle = arData->fZAngle;
     Event.XAngle = arData->fXAngle;
     Event.YAngle = arData->fYAngle;
-    Event.ParentCellID = arData->pParentCell->formID;
+    if (arData->pParentCell)
+        Event.ParentCellID = arData->pParentCell->formID;
+    if (arData->pSpell)
+        Event.SpellID = arData->pSpell->formID;
+    Event.CastingSource = arData->eCastingSource;
     Event.unkBool1 = arData->unkBool1;
     Event.Area = arData->iArea;
     Event.Power = arData->fPower;
