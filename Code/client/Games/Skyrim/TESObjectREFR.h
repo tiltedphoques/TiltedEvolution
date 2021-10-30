@@ -107,7 +107,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_7C();
     virtual void sub_7D();
     virtual void* sub_7E(bool aUnk);
-    virtual void* GetBiped();
+    virtual void sub_7F();
     virtual void sub_80();
     virtual void sub_81();
     virtual void sub_82();

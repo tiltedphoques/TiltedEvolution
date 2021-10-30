@@ -31,8 +31,6 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/NotifySpellCast.h>
-#include <Messages/AttachArrowRequest.h>
-#include <Messages/NotifyAttachArrow.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
 
@@ -51,7 +49,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
-    , m_attachArrowConnection(aDispatcher.sink<PacketEvent<AttachArrowRequest>>().connect<&CharacterService::OnAttachArrowRequest>(this))
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
 {
 }
@@ -718,18 +715,6 @@ void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& a
     notify.SpellFormId = message.SpellFormId;
     notify.CastingSource = message.CastingSource;
     notify.IsDualCasting = message.IsDualCasting;
-
-    for (auto pPlayer : m_world.GetPlayerManager())
-    {
-        if (acMessage.pPlayer != pPlayer)
-            pPlayer->Send(notify);
-    }
-}
-
-void CharacterService::OnAttachArrowRequest(const PacketEvent<AttachArrowRequest>& acMessage) const noexcept
-{
-    NotifyAttachArrow notify;
-    notify.ShooterId = acMessage.Packet.ShooterId;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {

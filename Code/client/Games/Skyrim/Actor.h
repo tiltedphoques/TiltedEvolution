@@ -80,7 +80,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CA();
     virtual void sub_CB();
     virtual void sub_CC();
-    virtual void AttachArrow(void* apBiped);
+    virtual void AttachArrow();
     virtual void sub_CE();
     virtual void sub_CF();
     virtual void sub_D0();
@@ -171,9 +171,6 @@ struct Actor : TESObjectREFR
     virtual void sub_125();
     virtual void sub_126();
     virtual void sub_127();
-    
-    // Should be virtual
-    //void* GetBiped() const noexcept;
 
     // Real functions
     void DualCastSpell(TESObjectREFR* apDesiredTarget);

@@ -17,8 +17,6 @@ struct NotifySpawnData;
 struct NotifyOwnershipTransfer;
 struct SpellCastEvent;
 struct NotifySpellCast;
-struct ArrowAttachedEvent;
-struct NotifyAttachArrow;
 struct ProjectileLaunchedEvent;
 struct NotifyProjectileLaunch;
 
@@ -48,8 +46,6 @@ struct CharacterService
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
     void OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept;
     void OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept;
-    void OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept;
-    void OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) const noexcept;
     void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
     void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
 
@@ -84,8 +80,6 @@ private:
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
     entt::scoped_connection m_spellCastEventConnection;
     entt::scoped_connection m_notifySpellCastConnection;
-    entt::scoped_connection m_arrowAttachedEvent;
-    entt::scoped_connection m_notifyAttachArrowConnection;
     entt::scoped_connection m_projectileLaunchedConnection;
     entt::scoped_connection m_projectileLaunchConnection;
 };

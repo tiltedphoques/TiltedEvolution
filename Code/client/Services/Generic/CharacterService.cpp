@@ -32,7 +32,6 @@
 #include <Events/EquipmentChangeEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/SpellCastEvent.h>
-#include <Events/ArrowAttachedEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
 
 #include <Structs/ActionEvent.h>
@@ -52,8 +51,6 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/NotifySpellCast.h>
-#include <Messages/AttachArrowRequest.h>
-#include <Messages/NotifyAttachArrow.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
 
@@ -88,8 +85,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
     m_spellCastEventConnection = m_dispatcher.sink<SpellCastEvent>().connect<&CharacterService::OnSpellCastEvent>(this);
     m_notifySpellCastConnection = m_dispatcher.sink<NotifySpellCast>().connect<&CharacterService::OnNotifySpellCast>(this);
-    m_arrowAttachedEvent = m_dispatcher.sink<ArrowAttachedEvent>().connect<&CharacterService::OnArrowAttachedEvent>(this);
-    m_notifyAttachArrowConnection = m_dispatcher.sink<NotifyAttachArrow>().connect<&CharacterService::OnNotifyAttachArrow>(this);
     m_projectileLaunchedConnection = m_dispatcher.sink<ProjectileLaunchedEvent>().connect<&CharacterService::OnProjectileLaunchedEvent>(this);
     m_projectileLaunchConnection = m_dispatcher.sink<NotifyProjectileLaunch>().connect<&CharacterService::OnNotifyProjectileLaunch>(this);
 }
@@ -1077,65 +1072,6 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 #endif
 }
 
-void CharacterService::OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept
-{
-#if TP_SKYRIM64
-    return;
-
-    /*
-    uint32_t formId = acEvent.FormID;
-
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
-
-    if (shooterEntityIt == std::end(view))
-        return;
-
-    auto& localComponent = view.get<LocalComponent>(*shooterEntityIt);
-
-    AttachArrowRequest request;
-    request.ShooterId = localComponent.Id;
-
-    spdlog::info("Sending attach arrow request for {:X}", localComponent.Id);
-
-    m_transport.Send(request);
-    */
-#endif
-}
-
-void CharacterService::OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) const noexcept
-{
-#if TP_SKYRIM64
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-
-    auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-    void* pBiped = pActor->GetBiped();
-    pActor->AttachArrow(pBiped);
-
-    // TODO: set attack state flags when attaching arrow? look at ArrowAttachHandler
-    pActor->actorState.flags1 &= 0xFFFFFFFu;
-    pActor->actorState.flags1 |= 0x90000000;
-
-    spdlog::info("Attached arrow");
-#endif
-}
 
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
