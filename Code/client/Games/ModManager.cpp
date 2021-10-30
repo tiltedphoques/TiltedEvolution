@@ -3,7 +3,6 @@
 #include <Games/TES.h>
 
 #include <Actor.h>
-#include <Forms/TESBoundObject.h>
 
 #if TP_FALLOUT
 #include <Misc/NEW_REFR_DATA.h>
