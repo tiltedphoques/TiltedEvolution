@@ -59,6 +59,10 @@
 
 #include <Games/Skyrim/Projectiles/Projectile.h>
 
+// TODO: delete includes (debug)
+#include <Games/Skyrim/Forms/TESObjectWEAP.h>
+#include <Games/Skyrim/Forms/TESAmmo.h>
+
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -1200,6 +1204,17 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bDeferInitialization = acMessage.DeferInitialization;
     launchData.bTracer = acMessage.Tracer;
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
+
+    spdlog::info("Projectile launched, data:");
+    spdlog::info("\tOrigin: {}, {}, {}", launchData.Origin.x, launchData.Origin.y, launchData.Origin.z);
+    spdlog::info("\tContactNormal: {}, {}, {}", launchData.ContactNormal.x, launchData.ContactNormal.y, launchData.ContactNormal.z);
+    spdlog::info("\tShooter form id: {:X}", launchData.pShooter ? launchData.pShooter->formID : 0);
+    spdlog::info("\tWeapon form id: {:X}", launchData.pFromWeapon ? launchData.pFromWeapon->formID : 0);
+    spdlog::info("\tAmmo form id: {:X}", launchData.pFromAmmo ? launchData.pFromAmmo->formID : 0);
+    spdlog::info("\tAngles: z: {}, x: {}, y: {}", launchData.fZAngle, launchData.fXAngle, launchData.fYAngle);
+    spdlog::info("\tSpell form id: {:X}", launchData.pSpell ? launchData.pSpell->formID : 0);
+    spdlog::info("\tUse origin: {}", launchData.bUseOrigin);
+    spdlog::info("\tProjectile base form id: {:X}", launchData.pProjectileBase ? launchData.pProjectileBase->formID : 0);
 
     Projectile::Launch(resultBuffer, &launchData);
 

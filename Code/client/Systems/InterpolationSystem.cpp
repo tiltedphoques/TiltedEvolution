@@ -65,7 +65,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 #if TP_FALLOUT4
     const auto finalX = 0.f;
 #else
-    const auto finalX = TiltedPhoques::Mod(rotA.x + deltaX, float(TiltedPhoques::Pi * 2));
+    auto finalX = TiltedPhoques::Mod(rotA.x + deltaX, float(TiltedPhoques::Pi * 2));
+    if (finalX > 0.f && finalX > float(TiltedPhoques::Pi / 2))
+        finalX -= TiltedPhoques::Pi * 2;
 #endif
 
     const auto finalY = TiltedPhoques::Mod(rotA.y + deltaY, float(TiltedPhoques::Pi * 2));
