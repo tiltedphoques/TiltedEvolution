@@ -4,6 +4,7 @@
 
 vsxmake2019
 .xmake
+vs2019
 
 Build
 Build/*.log
