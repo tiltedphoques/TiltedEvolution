@@ -3,6 +3,7 @@
 #include <Actor.h>
 #include <Games/ActorExtension.h>
 #include <Events/ProjectileLaunchedEvent.h>
+#include <Forms/TESObjectCELL.h>
 
 TP_THIS_FUNCTION(TLaunch, void*, void, ProjectileLaunchData& arData);
 
@@ -31,9 +32,26 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.ContactNormal = arData.ContactNormal;
     if (arData.pProjectileBase)
         Event.ProjectileBaseID = arData.pProjectileBase->formID;
-    if (arData.pShooter)
-        Event.ShooterID = arData.pShooter->formID;
-    //if (arData.pFromWeapon)
+    Event.ZAngle = arData.fZAngle;
+    Event.XAngle = arData.fXAngle;
+    Event.YAngle = arData.fYAngle;
+    if (arData.pParentCell)
+        Event.ParentCellID = arData.pParentCell->formID;
+    Event.Area = arData.iArea;
+    Event.Power = arData.fPower;
+    Event.Scale = arData.fScale;
+    Event.AlwaysHit = arData.bAlwaysHit;
+    Event.ConeOfFireRadiusMult = arData.fConeOfFireRadiusMult;
+    Event.NoDamageOutsideCombat = arData.bNoDamageOutsideCombat;
+    Event.AutoAim = arData.bAutoAim;
+    Event.UseOrigin = arData.bUseOrigin;
+    Event.DeferInitialization = arData.bDeferInitialization;
+    Event.Tracer = arData.bTracer;
+    Event.ForceConeOfFire = arData.bForceConeOfFire;
+    Event.IntentionalMiss = arData.bIntentionalMiss;
+    Event.Allow3D = arData.bAllow3D;
+    Event.Penetrates = arData.bPenetrates;
+    Event.IgnoreNearCollisions = arData.bIgnoreNearCollisions;
 
     World::Get().GetRunner().Trigger(Event);
 
