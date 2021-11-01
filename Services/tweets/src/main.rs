@@ -22,7 +22,6 @@ pub async fn main() {
 
     task::spawn(async move {
         loop {
-            println!("Refreshing tweets!");
             task_ctx.lock().await.update().await;
             // every half hour we will refresh the tweets list
             sleep(Duration::from_secs(60 * 30)).await;

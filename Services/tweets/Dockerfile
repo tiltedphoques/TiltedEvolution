@@ -7,6 +7,6 @@ RUN cargo build --release
 
 FROM scratch
 
-COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/server_manager /server_manager
+COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/tweet_provider /tweet_provider
 
-ENTRYPOINT ["/server_manager"]
+ENTRYPOINT ["/tweet_provider"]

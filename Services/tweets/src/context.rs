@@ -22,8 +22,9 @@ impl Context {
 
     pub async fn update(&mut self) {
         // kindly ask twitter to provide some tweets for us
+        // &tweet_mode=extended
         let req = Request::builder()
-            .uri("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=Skyrim_Together&count=2")
+            .uri("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=Skyrim_Together&include_entities=true&tweet_mode=extended&count=25")
             .header("authorization", "Bearer AAAAAAAAAAAAAAAAAAAAAOtDUwEAAAAAbBRyDZVZ8vgvvDUa6RrxJcQNbTs%3DOXZXUbDqn0VvpSBHEnDt0TlOgrZ6sAr08jki8THWA2iwHcT4DV")
             .body(Body::empty())
             .unwrap();
