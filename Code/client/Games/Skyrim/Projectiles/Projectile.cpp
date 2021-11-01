@@ -12,6 +12,11 @@ TP_THIS_FUNCTION(TLaunch, void*, void, Projectile::LaunchData* arData);
 
 static TLaunch* RealLaunch = nullptr;
 
+void* Projectile::Launch(void* apResult, LaunchData* apLaunchData) noexcept
+{
+    return ThisCall(RealLaunch, apResult, apLaunchData);
+}
+
 void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData* arData)
 {
     if (arData->pShooter)
@@ -70,11 +75,6 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData* arData)
     World::Get().GetRunner().Trigger(Event);
 
     return ThisCall(RealLaunch, apThis, arData);
-}
-
-void* Projectile::Launch(void* apResult, LaunchData* apLaunchData) noexcept
-{
-    return ThisCall(RealLaunch, apResult, apLaunchData);
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
