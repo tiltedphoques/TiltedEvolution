@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MagicSystem.h"
+#include <Games/Misc/MagicSystem.h>
 
 struct ActiveEffect;
 struct MagicItem;

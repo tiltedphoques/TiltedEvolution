@@ -133,6 +133,16 @@ ActorValues Actor::GetEssentialActorValues() noexcept
     return actorValues;
 }
 
+// use this for fallout 4 projectile launching
+void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
+{
+    TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
+
+    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFCF0 - 0x140000000);
+
+    return ThisCall(this, apResult, aEquipIndex);
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());

@@ -3,6 +3,8 @@
 struct TESForm;
 struct TESObjectREFR;
 
+// TODO: is it even necessary to send all this?
+// why not just send origin, contactnormal, homingtarget, angle, projectile base, bools, cell id, and floats?
 struct ProjectileLaunchedEvent
 {
     NiPoint3 Origin;

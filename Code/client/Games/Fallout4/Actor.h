@@ -46,6 +46,7 @@ struct Actor : TESObjectREFR
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
+    void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;

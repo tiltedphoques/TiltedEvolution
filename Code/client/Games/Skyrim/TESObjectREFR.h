@@ -7,7 +7,7 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Skyrim/Misc/MagicSystem.h>
+#include <Games/Misc/MagicSystem.h>
 #include <Games/Skyrim/Misc/MagicCaster.h>
 
 struct AnimationVariables;
