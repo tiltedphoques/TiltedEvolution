@@ -35,9 +35,10 @@
 #include <Games/TES.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
+
+#if TP_SKYRIM64
 #include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
-#if TP_SKYRIM64
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
@@ -783,20 +784,5 @@ void TestService::OnDraw() noexcept
     }
 
     ImGui::End();
-
-    ImGui::Begin("Player container changes");
-
-    pPlayer = PlayerCharacter::Get();
-    ExtraContainerChanges::Data* pContainerChanges = pPlayer->GetContainerChanges();
-
-    auto changeCount = 0;
-    for (auto pChange : *pContainerChanges->entries)
-    {
-        changeCount++;
-    }
-    ImGui::InputInt("Change count", &changeCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
-
-    ImGui::End();
 }
-
 

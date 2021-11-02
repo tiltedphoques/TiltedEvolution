@@ -16,6 +16,10 @@ void* Projectile::Launch(void* apResult, ProjectileLaunchData& arData)
 
 void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
 {
+    static uint64_t s_launchCount = 0;
+    s_launchCount++;
+    spdlog::warn("Launch count: {}", s_launchCount);
+
     if (arData.pShooter)
     {
         auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
@@ -26,6 +30,9 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
                 return nullptr;
         }
     }
+
+    spdlog::info("\tOrigin: {}, {}, {}", arData.Origin.x, arData.Origin.y, arData.Origin.z);
+    spdlog::info("\tContactNormal: {}, {}, {}", arData.ContactNormal.x, arData.ContactNormal.y, arData.ContactNormal.z);
 
     ProjectileLaunchedEvent Event;
     Event.Origin = arData.Origin;
@@ -53,13 +60,13 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.Penetrates = arData.bPenetrates;
     Event.IgnoreNearCollisions = arData.bIgnoreNearCollisions;
 
-    World::Get().GetRunner().Trigger(Event);
+    //World::Get().GetRunner().Trigger(Event);
 
     return ThisCall(RealLaunch, apThis, arData);
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_FALLOUT4(TLaunch, s_launch, 0x140FCA250 - 0x140000000);
+    POINTER_FALLOUT4(TLaunch, s_launch, 0x140FCA260 - 0x140000000);
 
     RealLaunch = s_launch.Get();
 

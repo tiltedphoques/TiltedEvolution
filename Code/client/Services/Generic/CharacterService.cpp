@@ -57,16 +57,7 @@
 #include <World.h>
 #include <Games/TES.h>
 
-#if TP_SKYRIM64
-#include <Games/Skyrim/Projectiles/Projectile.h>
-#else
-#include <Games/Fallout4/Projectiles/Projectile.h>
-#endif
-
-// TODO: delete includes (debug)
-#include <Games/Skyrim/Forms/TESObjectWEAP.h>
-#include <Games/Skyrim/Forms/TESAmmo.h>
-
+#include <Projectiles/Projectile.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -1099,7 +1090,6 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     modSystem.GetServerModId(acEvent.AmmoID, ammoID);
     */
 
-    /*
     auto formId = acEvent.ShooterID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
@@ -1112,7 +1102,6 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
         return;
 
     auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
-    */
 
     ProjectileLaunchRequest request;
     request.OriginX = acEvent.Origin.x;
@@ -1123,9 +1112,9 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     request.ContactNormalZ = acEvent.ContactNormal.z;
 
     request.ProjectileBaseID = acEvent.ProjectileBaseID;
-    //request.ShooterID = localComponent.Id;
-    //request.WeaponID = acEvent.WeaponID;
-    //request.AmmoID = acEvent.AmmoID;
+    request.ShooterID = localComponent.Id;
+    request.WeaponID = acEvent.WeaponID;
+    request.AmmoID = acEvent.AmmoID;
 
     request.ZAngle = acEvent.ZAngle;
     request.XAngle = acEvent.XAngle;
@@ -1133,8 +1122,8 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
 
     request.ParentCellID = acEvent.ParentCellID;
 
-    //request.SpellID = acEvent.SpellID;
-    //request.CastingSource = acEvent.CastingSource;
+    request.SpellID = acEvent.SpellID;
+    request.CastingSource = acEvent.CastingSource;
 
 #if TP_SKYRIM64
     request.unkBool1 = acEvent.unkBool1;
@@ -1153,12 +1142,13 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     request.Tracer = acEvent.Tracer;
     request.ForceConeOfFire = acEvent.ForceConeOfFire;
 
+    spdlog::critical("Ammo event id: {}, request id: {}", acEvent.AmmoID, request.AmmoID);
+
     m_transport.Send(request);
 }
 
 void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
 {
-    /*
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
     {
@@ -1174,7 +1164,6 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
     auto* pForm = TESForm::GetById(formIdComponent.Id);
-    */
 
     uint8_t resultBuffer[100];
 
@@ -1187,15 +1176,19 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.Origin.x = acMessage.OriginX;
     launchData.Origin.y = acMessage.OriginY;
     launchData.Origin.z = acMessage.OriginZ;
+    /*
     launchData.ContactNormal.x = acMessage.ContactNormalX;
     launchData.ContactNormal.y = acMessage.ContactNormalY;
     launchData.ContactNormal.z = acMessage.ContactNormalZ;
+    */
+
+    spdlog::critical("Ammo id: {}", acMessage.AmmoID);
 
     // TODO: fix this
     launchData.pProjectileBase = TESForm::GetById(acMessage.ProjectileBaseID);
-    //launchData.pShooter = (TESObjectREFR*)pForm;
-    //launchData.pFromWeapon = (TESObjectWEAP*)TESForm::GetById(acMessage.WeaponID);
-    //launchData.pFromAmmo = (TESAmmo*)TESForm::GetById(acMessage.AmmoID);
+    launchData.pShooter = (TESObjectREFR*)pForm;
+    launchData.pFromWeapon = (TESObjectWEAP*)TESForm::GetById(acMessage.WeaponID);
+    launchData.pFromAmmo = (TESAmmo*)TESForm::GetById(acMessage.AmmoID);
 
     launchData.fZAngle = acMessage.ZAngle;
     launchData.fXAngle = acMessage.XAngle;
@@ -1203,11 +1196,11 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
 
     launchData.pParentCell = (TESObjectCELL*)TESForm::GetById(acMessage.ParentCellID);
 
-    //launchData.pSpell = (MagicItem*)TESForm::GetById(acMessage.SpellID);
-    //launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
+    launchData.pSpell = (MagicItem*)TESForm::GetById(acMessage.SpellID);
+    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
 
 #if TP_SKYRIM64
-    launchData.unkBool1 = acMessage.unkBool1;
+    //launchData.unkBool1 = acMessage.unkBool1;
 #else
 #endif
 
@@ -1215,6 +1208,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.fPower = acMessage.Power;
     launchData.fScale = acMessage.Scale;
 
+    /*
     launchData.bAlwaysHit = acMessage.AlwaysHit;
     launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
     launchData.bAutoAim = acMessage.AutoAim;
@@ -1222,6 +1216,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bDeferInitialization = acMessage.DeferInitialization;
     launchData.bTracer = acMessage.Tracer;
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
+    */
 
     spdlog::info("Projectile launched, data:");
     spdlog::info("\tOrigin: {}, {}, {}", launchData.Origin.x, launchData.Origin.y, launchData.Origin.z);
@@ -1233,6 +1228,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     //spdlog::info("\tSpell form id: {:X}", launchData.pSpell ? launchData.pSpell->formID : 0);
     spdlog::info("\tUse origin: {}", launchData.bUseOrigin);
     spdlog::info("\tProjectile base form id: {:X}", launchData.pProjectileBase ? launchData.pProjectileBase->formID : 0);
+    spdlog::info("\tArea: {}, Power: {}, Scale: {}", launchData.iArea, launchData.fPower, launchData.fScale);
 
 #if TP_SKYRIM64
     Projectile::Launch(resultBuffer, &launchData);
