@@ -1133,6 +1133,7 @@ void CharacterService::OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) c
 
 void CharacterService::OnInterruptCast(const InterruptCastEvent& acEvent) const noexcept
 {
+#if TP_SKYRIM64
     auto formId = acEvent.CasterFormID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
@@ -1149,10 +1150,12 @@ void CharacterService::OnInterruptCast(const InterruptCastEvent& acEvent) const 
     InterruptCastRequest request;
     request.CasterId = localComponent.Id;
     m_transport.Send(request);
+#endif
 }
 
 void CharacterService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept
 {
+#if TP_SKYRIM64
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
     {
@@ -1173,4 +1176,5 @@ void CharacterService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessag
     pActor->InterruptCast(false);
 
     spdlog::info("Interrupt remote cast successful");
+#endif
 }
