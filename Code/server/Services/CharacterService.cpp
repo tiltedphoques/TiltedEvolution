@@ -727,7 +727,7 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
 {
     auto packet = acMessage.Packet;
 
-    NotifyProjectileLaunch notify;
+    NotifyProjectileLaunch notify{};
     notify.OriginX = packet.OriginX;
     notify.OriginY = packet.OriginY;
     notify.OriginZ = packet.OriginZ;

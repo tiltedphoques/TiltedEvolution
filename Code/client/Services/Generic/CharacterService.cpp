@@ -1103,7 +1103,7 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
 
     auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
 
-    ProjectileLaunchRequest request;
+    ProjectileLaunchRequest request{};
     request.OriginX = acEvent.Origin.x;
     request.OriginY = acEvent.Origin.y;
     request.OriginZ = acEvent.Origin.z;
@@ -1168,9 +1168,9 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     uint8_t resultBuffer[100];
 
 #if TP_SKYRIM64
-    Projectile::LaunchData launchData;
+    Projectile::LaunchData launchData{};
 #else
-    ProjectileLaunchData launchData;
+    ProjectileLaunchData launchData{};
 #endif
 
     launchData.Origin.x = acMessage.OriginX;
@@ -1200,7 +1200,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
 
 #if TP_SKYRIM64
-    //launchData.unkBool1 = acMessage.unkBool1;
+    launchData.unkBool1 = acMessage.unkBool1;
 #else
 #endif
 
@@ -1208,7 +1208,6 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.fPower = acMessage.Power;
     launchData.fScale = acMessage.Scale;
 
-    /*
     launchData.bAlwaysHit = acMessage.AlwaysHit;
     launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
     launchData.bAutoAim = acMessage.AutoAim;
@@ -1216,7 +1215,6 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bDeferInitialization = acMessage.DeferInitialization;
     launchData.bTracer = acMessage.Tracer;
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
-    */
 
     spdlog::info("Projectile launched, data:");
     spdlog::info("\tOrigin: {}, {}, {}", launchData.Origin.x, launchData.Origin.y, launchData.Origin.z);

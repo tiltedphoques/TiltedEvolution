@@ -15,7 +15,7 @@ struct ProjectileLaunchData
 {
     NiPoint3 Origin;
     NiPoint3 ContactNormal;
-    TESForm* pProjectileBase{}; // is actually BGSProjectile*
+    TESForm* pProjectileBase; // is actually BGSProjectile*
     TESObjectREFR* pShooter;
     CombatController* pShooterCombatController;
     //BGSObjectInstanceT<TESObjectWEAP> FromWeapon; // length: 0x10
