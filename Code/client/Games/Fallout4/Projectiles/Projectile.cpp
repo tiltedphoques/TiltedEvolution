@@ -14,12 +14,11 @@ void* Projectile::Launch(void* apResult, ProjectileLaunchData& arData)
     return ThisCall(RealLaunch, apResult, arData);
 }
 
+// For now, don't use this hook, let anims sync projectiles.
+// TODO: make issue for more precise projectile sync.
 void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
 {
-    static uint64_t s_launchCount = 0;
-    s_launchCount++;
-    spdlog::warn("Launch count: {}", s_launchCount);
-
+#if 0
     if (arData.pShooter)
     {
         auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
@@ -61,6 +60,7 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.IgnoreNearCollisions = arData.bIgnoreNearCollisions;
 
     //World::Get().GetRunner().Trigger(Event);
+#endif
 
     return ThisCall(RealLaunch, apThis, arData);
 }

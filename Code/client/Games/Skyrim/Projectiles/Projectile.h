@@ -50,7 +50,7 @@ struct Projectile : TESObjectREFR
         bool bForceConeOfFire{}; // unsure // init to false
     };
 
-    static void* Launch(void* apResult, LaunchData* arData) noexcept;
+    static void* Launch(void* apResult, LaunchData& arData) noexcept;
 };
 
 static_assert(sizeof(Projectile::LaunchData) == 0xA8);
