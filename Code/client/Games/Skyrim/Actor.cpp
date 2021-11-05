@@ -21,7 +21,6 @@
 #include <Forms/ActorValueInfo.h>
 
 #include <Effects/ValueModifierEffect.h>
-#include <Effects/SummonCreatureEffect.h>
 
 #ifdef SAVE_STUFF
 
@@ -501,18 +500,6 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1)
 {
-    const auto* pSummonCreatureEffect = RTTI_CAST(apThis, ActiveEffect, SummonCreatureEffect);
-    if (pSummonCreatureEffect)
-    {
-        spdlog::warn("SummonCreatureEffect triggered, actor id: {:X}, effect value: {}", apTarget ? apTarget->formID : 0, aEffectValue);
-        if (apTarget)
-        {
-            const auto* pExtendedActor = apTarget->GetExtension();
-            if (pExtendedActor->IsLocal())
-                return;
-        }
-    }
-
     const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
 
     if (pValueModEffect)

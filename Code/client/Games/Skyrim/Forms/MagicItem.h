@@ -11,9 +11,9 @@ struct MagicItem : TESBoundObject
 {
     TESFullName fullName;
     BGSKeywordForm keyword;
-    GameArray<void*> unk34;
-    uint32_t unk40;
-    EffectSetting* unk44;
+    GameArray<EffectSetting*> listOfEffects;
+    int32_t iHostileCount;
+    EffectSetting* pAVEffectSetting;
     uint32_t unk48;
     uint32_t unk4C;
 };

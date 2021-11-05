@@ -1,7 +1,17 @@
 #pragma once
 
+#include <Misc/MagicSystem.h>
+
+struct MagicTarget;
+struct EffectItem;
+
 struct ActiveEffect
 {
+    // this ctor is used by seemingly all ActiveEffect child classes' Instantiate() methods
+    // can be used to find individual Instantiate() methods
+    // address: 0x140C4E350
+    ActiveEffect::ActiveEffect(Actor* apCaster, MagicItem* apSpell, EffectItem* apEffect);
+
     virtual void sub_0();
     virtual void sub_1();
     virtual void sub_2();
@@ -22,14 +32,25 @@ struct ActiveEffect
     virtual void sub_11();
     virtual void sub_12();
     virtual void sub_13();
-    virtual void sub_14();
+    virtual void Start();
     virtual void sub_15();
     virtual void sub_16();
     virtual void sub_17();
     virtual void sub_18();
 
-    char pad_0008[112];
+    static ActiveEffect* Instantiate(Actor* apCaster, MagicItem* apSpell, EffectItem* apEffect);
+
+    uint8_t pad8[0x48];
+    MagicTarget* pTarget;
+    uint8_t pad58[0x20];
     float effectValue;
-    char pad_007C[4];
+    uint8_t pad_007C[4];
 };
 static_assert(sizeof(ActiveEffect) == 0x80);
+
+namespace ActiveEffectFactory
+{
+    ActiveEffect* Activate(Actor* apCaster, MagicSystem::CastingSource aeCastingSource, MagicItem* apSpell,
+                           EffectItem* apEffectItem, TESBoundObject* apSource, bool abWornEnchantment);
+};
+

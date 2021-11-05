@@ -661,6 +661,31 @@ void TestService::OnDraw() noexcept
         {
             ImGui::InputInt("Ammo form Id", (int*)&pAmmo->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
+
+        if (ImGui::Button("Apply active effect"))
+        {
+            auto pEffectSpell = (MagicItem*)TESForm::GetById(0x5AD5F);
+            auto activeEffects = pEffectSpell->listOfEffects;
+            for (auto effect : activeEffects)
+            {
+                MagicTarget::AddTargetData data{};
+
+                data.pCaster = PlayerCharacter::Get();
+                data.pSpell = pEffectSpell;
+                data.pEffectSetting = effect;
+                data.pSource = nullptr;
+                data.ExplosionLocation.x = -11891.820f;
+                data.ExplosionLocation.y = -56157.960f;
+                data.ExplosionLocation.z = 665.110f;
+                data.fMagnitude = 0.0f;
+                data.fUnkFloat1 = 1.0f;
+                data.eCastingSource = MagicSystem::CastingSource::RIGHT_HAND;
+                data.bAreaTarget = true;
+                data.bDualCast = false;
+
+                pFetchActor->magicTarget.AddTarget(data);
+            }
+        }
     #endif
     }
 
