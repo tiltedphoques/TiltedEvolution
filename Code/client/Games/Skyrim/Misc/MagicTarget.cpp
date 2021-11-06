@@ -2,6 +2,10 @@
 
 #include <Actor.h>
 #include <Games/ActorExtension.h>
+#include <World.h>
+#include <Games/ActorExtension.h>
+
+#include <Events/AddTargetEvent.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffect, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
@@ -19,8 +23,27 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
     return result;
 }
 
+// TODO: don't send continuous, value modifying effects like burning from flames concentration spell
+// can't cancel all ValueModifierEffects though
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
+    // TODO: barf
+    Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
+    ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
+
+    auto factions = pTargetActor->GetFactions();
+    for (const auto& faction : factions.NpcFactions)
+    {
+        if (faction.Id.BaseId == 0x00000DB1)
+        {
+            if (pTargetActorEx->IsRemote())
+                return false;
+
+            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            return ThisCall(RealAddTarget, apThis, arData);
+        }
+    }
+
     if (arData.pCaster)
     {
         if (auto pExtension = arData.pCaster->GetExtension())
@@ -30,6 +53,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         }
     }
 
+    World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
     return ThisCall(RealAddTarget, apThis, arData);
 }
 

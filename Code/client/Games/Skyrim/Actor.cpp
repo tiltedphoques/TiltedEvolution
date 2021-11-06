@@ -476,7 +476,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     {
         if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
         {
-            return 0;
+            return false;
         }
         else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
         {
@@ -492,7 +492,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
 
-    return 0;
+    return false;
 }
 
 TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1);

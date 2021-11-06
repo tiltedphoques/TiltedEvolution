@@ -2,9 +2,9 @@
 
 #include <Misc/MagicSystem.h>
 
-struct EffectSetting;
 struct Actor;
 struct MagicItem;
+struct EffectSetting;
 struct TESBoundObject;
 
 struct MagicTarget

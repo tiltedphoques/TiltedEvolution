@@ -2,10 +2,9 @@
 
 
 #include <Forms/TESBoundObject.h>
+#include <Forms/EffectSetting.h>
 #include <Components/BGSKeywordForm.h>
 #include <Components/TESFullName.h>
-
-struct EffectSetting;
 
 struct MagicItem : TESBoundObject
 {
