@@ -8,10 +8,10 @@
 #include <Events/AddTargetEvent.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
-TP_THIS_FUNCTION(TCheckAddEffect, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
+TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
 
 static TAddTarget* RealAddTarget = nullptr;
-static TCheckAddEffect* RealCheckAddEffect = nullptr;
+static TCheckAddEffectTargetData* RealCheckAddEffectTargetData = nullptr;
 
 static thread_local bool s_autoSucceedEffectCheck = false;
 
@@ -30,6 +30,8 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 * The conjuration visuals script effect is not being applied because, while we don't
     cancel that one, only the summon effect, the form id component is not created yet
     at the time of dispatching this event.
+
+* Maybe batch effects.
 */
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
@@ -68,22 +70,22 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     return result;
 }
 
-bool TP_MAKE_THISCALL(HookCheckAddEffect, MagicTarget::AddTargetData, void* arArgs, float afResistance)
+bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, void* arArgs, float afResistance)
 {
     if (s_autoSucceedEffectCheck)
         return true;
 
-    return ThisCall(RealCheckAddEffect, apThis, arArgs, afResistance);
+    return ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
 }
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     POINTER_SKYRIMSE(TAddTarget, addTarget, 0x140633090 - 0x140000000);
-    POINTER_SKYRIMSE(TCheckAddEffect, checkAddEffect, 0x1405535C0 - 0x140000000);
+    POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 0x1405535C0 - 0x140000000);
 
     RealAddTarget = addTarget.Get();
-    RealCheckAddEffect = checkAddEffect.Get();
+    RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
 
     TP_HOOK(&RealAddTarget, HookAddTarget);
-    TP_HOOK(&RealCheckAddEffect, HookCheckAddEffect);
+    TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
 });
 
