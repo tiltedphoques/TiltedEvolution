@@ -4,7 +4,7 @@
 #include <Components/TESFullName.h>
 #include <Components/BGSKeywordForm.h>
 #include <Components/BGSMenuDisplayObject.h>
-#include <Misc/MagicSystem.h>
+#include <Games/Misc/MagicSystem.h>
 
 
 struct EffectSetting : TESForm

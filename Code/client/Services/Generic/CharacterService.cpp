@@ -64,6 +64,7 @@
 #include <Games/TES.h>
 
 #include <Projectiles/Projectile.h>
+#include <Forms/TESObjectWEAP.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -1087,6 +1088,7 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
+#if TP_SKYRIM64
     /*
     auto& modSystem = World::Get().GetModSystem();
 
@@ -1158,10 +1160,12 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     spdlog::critical("Ammo event id: {}, request id: {}", acEvent.AmmoID, request.AmmoID);
 
     m_transport.Send(request);
+#endif
 }
 
 void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
 {
+#if TP_SKYRIM64
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
     {
@@ -1242,12 +1246,13 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     spdlog::info("\tArea: {}, Power: {}, Scale: {}", launchData.iArea, launchData.fPower, launchData.fScale);
 
 #if TP_SKYRIM64
-    Projectile::Launch(resultBuffer, &launchData);
+    Projectile::Launch(resultBuffer, launchData);
 #else
     Projectile::Launch(resultBuffer, launchData);
 #endif
 
     spdlog::warn("Launched");
+#endif
 }
 
 void CharacterService::OnInterruptCast(const InterruptCastEvent& acEvent) const noexcept

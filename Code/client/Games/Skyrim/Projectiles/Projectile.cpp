@@ -22,16 +22,10 @@ void* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
 // TODO: sync projectiles other than arrows, and make arrows work with half drawn bows.
 void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
 {
-<<<<<<< Updated upstream
     if (!arData.pFromAmmo || !arData.pFromWeapon || arData.pSpell)
         return ThisCall(RealLaunch, apThis, arData);
 
     if (arData.pShooter)
-=======
-
-
-    if (arData->pShooter)
->>>>>>> Stashed changes
     {
         auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
         if (pActor)
@@ -53,7 +47,6 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
     spdlog::info("\tUse origin: {}", arData.bUseOrigin);
     spdlog::info("\tProjectile base form id: {:X}", arData.pProjectileBase ? arData.pProjectileBase->formID : 0);
 
-<<<<<<< Updated upstream
     ProjectileLaunchedEvent Event;
     Event.Origin = arData.Origin;
     Event.ContactNormal = arData.ContactNormal;
@@ -84,38 +77,6 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
     Event.DeferInitialization = arData.bDeferInitialization;
     Event.Tracer = arData.bTracer;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
-=======
-    ProjectileLaunchedEvent Event{};
-    Event.Origin = arData->Origin;
-    Event.ContactNormal = arData->ContactNormal;
-    if (arData->pProjectileBase)
-        Event.ProjectileBaseID = arData->pProjectileBase->formID;
-    if (arData->pShooter)
-        Event.ShooterID = arData->pShooter->formID;
-    if (arData->pFromWeapon)
-        Event.WeaponID = arData->pFromWeapon->formID;
-    if (arData->pFromAmmo)
-        Event.AmmoID = arData->pFromAmmo->formID;
-    Event.ZAngle = arData->fZAngle;
-    Event.XAngle = arData->fXAngle;
-    Event.YAngle = arData->fYAngle;
-    if (arData->pParentCell)
-        Event.ParentCellID = arData->pParentCell->formID;
-    if (arData->pSpell)
-        Event.SpellID = arData->pSpell->formID;
-    Event.CastingSource = arData->eCastingSource;
-    Event.unkBool1 = arData->unkBool1;
-    Event.Area = arData->iArea;
-    Event.Power = arData->fPower;
-    Event.Scale = arData->fScale;
-    Event.AlwaysHit = arData->bAlwaysHit;
-    Event.NoDamageOutsideCombat = arData->bNoDamageOutsideCombat;
-    Event.AutoAim = arData->bAutoAim;
-    Event.UseOrigin = arData->bUseOrigin;
-    Event.DeferInitialization = arData->bDeferInitialization;
-    Event.Tracer = arData->bTracer;
-    Event.ForceConeOfFire = arData->bForceConeOfFire;
->>>>>>> Stashed changes
 
     World::Get().GetRunner().Trigger(Event);
 

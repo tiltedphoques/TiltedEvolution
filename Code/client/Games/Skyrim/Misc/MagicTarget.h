@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Misc/MagicSystem.h>
+#include <Games/Misc/MagicSystem.h>
 
 struct Actor;
 struct MagicItem;
