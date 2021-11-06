@@ -13,7 +13,7 @@ bool MagicCaster::CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, 
 
 void MagicCaster::InterruptCast(bool abRefund) noexcept
 {
-    spdlog::info("Interrupint spell cast");
+    spdlog::info("Interrupt spell cast");
 
     TP_THIS_FUNCTION(TInterruptCast, void, MagicCaster, bool);
 

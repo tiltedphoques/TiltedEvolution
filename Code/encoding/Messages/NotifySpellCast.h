@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Message.h"
+#include <Structs/GameId.h>
 
 struct NotifySpellCast final : ServerMessage
 {
@@ -24,7 +25,7 @@ struct NotifySpellCast final : ServerMessage
     }
 
     uint32_t CasterId;
-    uint32_t SpellFormId;
+    GameId SpellFormId{};
     int32_t CastingSource;
     bool IsDualCasting;
     uint32_t DesiredTarget;

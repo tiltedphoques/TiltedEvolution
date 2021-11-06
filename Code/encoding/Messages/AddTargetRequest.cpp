@@ -3,7 +3,7 @@
 void AddTargetRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, TargetId);
-    Serialization::WriteVarInt(aWriter, SpellId);
+    SpellId.Serialize(aWriter);
 }
 
 void AddTargetRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -11,5 +11,5 @@ void AddTargetRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
     ClientMessage::DeserializeRaw(aReader);
 
     TargetId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    SpellId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    SpellId.Deserialize(aReader);
 }

@@ -37,7 +37,6 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 {
     // TODO: this can be fixed by properly implementing multiple inheritance
     Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
-    spdlog::info("pTargetActor: {:X}", pTargetActor->formID);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     bool triggerLocal = false;

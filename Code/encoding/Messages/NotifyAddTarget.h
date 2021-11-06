@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Message.h"
+#include <Structs/GameId.h>
 
 struct NotifyAddTarget final : ServerMessage
 {
@@ -21,5 +22,5 @@ struct NotifyAddTarget final : ServerMessage
     }
 
     uint32_t TargetId;
-    uint32_t SpellId;
+    GameId SpellId{};
 };

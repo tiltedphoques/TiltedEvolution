@@ -972,6 +972,8 @@ void CharacterService::RunSpawnUpdates() const noexcept
 void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
 #if TP_SKYRIM64
+    TP_ASSERT(acSpellCastEvent.pSpell, "SpellCastEvent has no spell");
+
     if (!acSpellCastEvent.pCaster->pCasterActor || !acSpellCastEvent.pCaster->pCasterActor->GetNiNode())
     {
         spdlog::warn("Spell cast event has no actor or actor is not loaded");
@@ -995,11 +997,8 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
     request.CasterId = localComponent.Id;
     request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
     request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
-    if (acSpellCastEvent.pSpell)
-        request.SpellFormId = acSpellCastEvent.pSpell->formID;
-    else
-        spdlog::warn("Current spell not set");
-    //acSpellCastEvent.pCaster->pCasterActor->magicTarget;
+    m_world.GetModSystem().GetServerModId(acSpellCastEvent.pSpell->formID, request.SpellFormId.ModId,
+                                          request.SpellFormId.BaseId);
 
     spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}", request.CasterId,
                  request.CastingSource, request.IsDualCasting);
@@ -1051,7 +1050,14 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 
     if (!pSpell)
     {
-        auto* pSpellForm = TESForm::GetById(acMessage.SpellFormId);
+        const uint32_t cSpellFormId = World::Get().GetModSystem().GetGameId(acMessage.SpellFormId);
+        if (cSpellFormId == 0)
+        {
+            spdlog::error("Could not find spell form id for GameId base {:X}, mod {:X}", acMessage.SpellFormId.BaseId,
+                          acMessage.SpellFormId.ModId);
+            return;
+        }
+        auto* pSpellForm = TESForm::GetById(cSpellFormId);
         if (!pSpellForm)
         {
             spdlog::error("Cannot find spell form");
@@ -1063,15 +1069,12 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     switch (acMessage.CastingSource)
     {
     case MagicSystem::CastingSource::LEFT_HAND:
-        //pActor->leftHandCaster->CastSpell(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
         pActor->leftHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
-        //pActor->rightHandCaster->CastSpell(pActor->magicItems[1], nullptr, false);
         pActor->rightHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::OTHER:
-        //pActor->shoutCaster->CastSpell(pActor->magicItems[2], nullptr, false);
         pActor->shoutCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::INSTANT:
@@ -1207,7 +1210,11 @@ void CharacterService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noe
 
         TP_ASSERT(request.TargetId, "AddTargetRequest must have a target id.");
 
-        request.SpellId = acEvent.SpellID;
+        if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
+        {
+            spdlog::error("{}: Could not find spell with from {:X}", __FUNCTION__, acEvent.SpellID);
+            return;
+        }
 
         m_transport.Send(request);
 
@@ -1244,7 +1251,20 @@ void CharacterService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const
 
             if (pActor)
             {
-                auto pSpell = (MagicItem*)TESForm::GetById(acMessage.SpellId);
+                const auto cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+                if (cSpellId == 0)
+                {
+                    spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                                  acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+                    return;
+                }
+
+                auto* pSpell = static_cast<MagicItem*>(TESForm::GetById(cSpellId));
+                if (!pSpell)
+                {
+                    spdlog::error("{}: Failed to retrieve spell by id {:X}", cSpellId);
+                    return;
+                }
 
                 // TODO: AddTarget gets notified for every effect, but we loop through the effects here again
                 for (auto effect : pSpell->listOfEffects)
