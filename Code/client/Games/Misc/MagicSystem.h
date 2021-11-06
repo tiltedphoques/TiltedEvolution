@@ -39,3 +39,63 @@ enum CannotCastReason : int32_t
 };
 
 }
+
+namespace EffectArchetypes
+{
+// These are from fallout 4, need to be validated for skyrim
+enum ArchetypeID : int32_t
+{
+    ARCHETYPE_NONE = -1,
+    VALUE_MODIFIER = 0x0,
+    SCRIPT = 0x1,
+    DISPEL = 0x2,
+    CURE_DISEASE = 0x3,
+    ABSORB = 0x4,
+    DUAL_VALUE_MODIFIER = 0x5,
+    CALM = 0x6,
+    DEMORALIZE = 0x7,
+    FRENZY = 0x8,
+    DISARM = 0x9,
+    COMMAND_SUMMONED = 0xA,
+    INVISIBILITY = 0xB,
+    LIGHT = 0xC,
+    DARKNESS = 0xD,
+    NIGHT_EYE = 0xE,
+    LOCK = 0xF,
+    OPEN = 0x10,
+    BOUND_WEAPON = 0x11,
+    SUMMON_CREATURE = 0x12,
+    DETECT_LIFE = 0x13,
+    TELEKINESIS = 0x14,
+    PARALYZE = 0x15,
+    REANIMATE = 0x16,
+    SOUL_TRAP = 0x17,
+    TURN_UNDEAD = 0x18,
+    GUIDE = 0x19,
+    UNUSED_01 = 0x1A,
+    CURE_PARALYSIS = 0x1B,
+    CURE_ADDICTION = 0x1C,
+    CURE_POISON = 0x1D,
+    CONCUSSION = 0x1E,
+    STIMPAK = 0x1F,
+    ACCUMULATING_MAGNITUDE = 0x20,
+    STAGGER = 0x21,
+    PEAK_VALUE_MODIFIER = 0x22,
+    CLOAK = 0x23,
+    UNUSED_02 = 0x24,
+    SLOW_TIME = 0x25,
+    RALLY = 0x26,
+    ENHANCE_WEAPON = 0x27,
+    SPAWN_HAZARD = 0x28,
+    ETHEREALIZE = 0x29,
+    BANISH = 0x2A,
+    SPAWN_SCRIPTED_REF = 0x2B,
+    DISGUISE = 0x2C,
+    DAMAGE = 0x2D,
+    IMMUNITY = 0x2E,
+    PERMANENT_REANIMATE = 0x2F,
+    JETPACK = 0x30,
+    CHAMELEON = 0x31,
+    ARCHETYPE_COUNT = 0x32,
+};
+}

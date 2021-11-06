@@ -31,6 +31,10 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/NotifySpellCast.h>
+#include <Messages/InterruptCastRequest.h>
+#include <Messages/NotifyInterruptCast.h>
+#include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
 
@@ -49,6 +53,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
+    , m_interruptCastConnection(aDispatcher.sink<PacketEvent<InterruptCastRequest>>().connect<&CharacterService::OnInterruptCastRequest>(this))
+    , m_addTargetConnection(aDispatcher.sink<PacketEvent<AddTargetRequest>>().connect<&CharacterService::OnAddTargetRequest>(this))
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
 {
 }
@@ -769,3 +775,33 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
             pPlayer->Send(notify);
     }
 }
+
+void CharacterService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyInterruptCast notify;
+    notify.CasterId = message.CasterId;
+
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+            pPlayer->Send(notify);
+    }
+}
+
+void CharacterService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyAddTarget notify;
+    notify.TargetId = message.TargetId;
+    notify.SpellId = message.SpellId;
+
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+            pPlayer->Send(notify);
+    }
+}
+

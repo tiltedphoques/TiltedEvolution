@@ -173,7 +173,8 @@ struct Actor : TESObjectREFR
     virtual void sub_127();
 
     // Real functions
-    void DualCastSpell(TESObjectREFR* apDesiredTarget);
+    void DualCastSpell(TESObjectREFR* apDesiredTarget) noexcept;
+    void InterruptCast(bool abRefund) noexcept;
 
     // Casting
     ActorExtension* GetExtension() noexcept;

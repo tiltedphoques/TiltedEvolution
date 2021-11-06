@@ -17,8 +17,9 @@
 #include <World.h>
 #include <Services/PapyrusService.h>
 
-#include <Effects/ValueModifierEffect.h>
 #include <Forms/ActorValueInfo.h>
+
+#include <Effects/ValueModifierEffect.h>
 
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
@@ -132,6 +133,14 @@ GamePtr<Actor> Actor::New() noexcept
     return {pActor};
 }
 
+void Actor::InterruptCast(bool abRefund) noexcept
+{
+    TP_THIS_FUNCTION(TInterruptCast, void, Actor, bool abRefund);
+
+    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x140631C80 - 0x140000000);
+
+    ThisCall(s_interruptCast, this, abRefund);
+}
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
@@ -519,7 +528,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     {
         if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
         {
-            return 0;
+            return false;
         }
         else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
         {
@@ -535,7 +544,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
 
-    return 0;
+    return false;
 }
 
 TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1);

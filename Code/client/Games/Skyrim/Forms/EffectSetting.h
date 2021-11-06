@@ -4,6 +4,7 @@
 #include <Components/TESFullName.h>
 #include <Components/BGSKeywordForm.h>
 #include <Components/BGSMenuDisplayObject.h>
+#include <Misc/MagicSystem.h>
 
 
 struct EffectSetting : TESForm
@@ -24,9 +25,12 @@ struct EffectSetting : TESForm
     uint32_t unk54;
     void* unk58;
     void* unk5C;
-    uint32_t unk60[8];
+    uint8_t unk60[0x18];
+    EffectArchetypes::ArchetypeID eArchetype;
     void* unk80[2];
     uint32_t castType;
     uint32_t deliveryType;
     // more stuff
 };
+
+static_assert(offsetof(EffectSetting, eArchetype) == 0xC0);

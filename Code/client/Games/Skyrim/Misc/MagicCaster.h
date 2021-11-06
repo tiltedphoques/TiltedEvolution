@@ -8,6 +8,7 @@ struct TESObjectREFR;
 struct Actor;
 struct BGSSaveFormBuffer;
 struct BGSLoadFormBuffer;
+struct Projectile;
 
 struct MagicCaster
 {
@@ -46,6 +47,9 @@ struct MagicCaster
                                        bool abAdjustOnlyHostileEffectiveness);
 
     bool CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, bool abLoadCast) noexcept;
+    void InterruptCast(bool abRefund) noexcept;
+    void FindTargets(const NiPoint3& arLocation, Projectile* apProjectile, TESObjectREFR* apCollidee,
+                     float afPowerScale, float afAreaOverride, bool abAreaOverrideInWorldUnits, bool abApplyAll);
 
     enum State
     {
