@@ -104,6 +104,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             auto* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->GraphDescriptorHash == 0)
             {
+                // Force first person graph to be used on player
                 if (pActor->formID == 0x14)
                     pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey(0);
                 else

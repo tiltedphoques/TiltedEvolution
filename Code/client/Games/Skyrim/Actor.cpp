@@ -201,10 +201,8 @@ Inventory Actor::GetInventory() const noexcept
     uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
     modSystem.GetServerModId(shoutId, inventory.Shout);
 
-    // TODO: get ammo id, share across server
     auto pAmmo = GetEquippedAmmo();
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
-    spdlog::warn("Ammo id sent: {:X}", ammoId);
     modSystem.GetServerModId(ammoId, inventory.Ammo);
 
     return inventory;
@@ -309,8 +307,6 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         auto count = GetItemCountInInventory(pAmmo);
 
-        spdlog::critical("Ammo id received: {:X}, count: {}", ammoId, count);
-
         const auto pContainerChanges = GetContainerChanges()->entries;
         for (auto pChange : *pContainerChanges)
         {
@@ -401,19 +397,12 @@ void Actor::UnEquipAll() noexcept
     {
         if (pChange && pChange->form && pChange->dataList)
         {
-            //spdlog::warn("Change form: {:X}", pChange->form->formID);
-
             // Parse all extra data lists
             const auto pDataLists = pChange->dataList;
             for (auto* pDataList : *pDataLists)
             {
                 if (pDataList)
                 {
-                    /*
-                    for (auto pExtraData = pDataList->data; pExtraData; pExtraData = pExtraData->next)
-                        spdlog::error("Form: {:X}, extra data types: {:X}", pChange->form->formID, (uint32_t)pExtraData->GetType());
-                    */
-
                     BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                     // Right slot
