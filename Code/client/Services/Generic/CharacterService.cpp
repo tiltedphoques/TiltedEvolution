@@ -34,6 +34,7 @@
 #include <Events/SpellCastEvent.h>
 #include <Events/ArrowAttachedEvent.h>
 #include <Events/InterruptCastEvent.h>
+#include <Events/AddTargetEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -56,6 +57,8 @@
 #include <Messages/NotifyAttachArrow.h>
 #include <Messages/InterruptCastRequest.h>
 #include <Messages/NotifyInterruptCast.h>
+#include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -90,6 +93,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_notifyAttachArrowConnection = m_dispatcher.sink<NotifyAttachArrow>().connect<&CharacterService::OnNotifyAttachArrow>(this);
     m_interruptCastEventConnection = m_dispatcher.sink<InterruptCastEvent>().connect<&CharacterService::OnInterruptCast>(this);
     m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&CharacterService::OnNotifyInterruptCast>(this);
+    m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&CharacterService::OnAddTargetEvent>(this);
+    m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&CharacterService::OnNotifyAddTarget>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1176,5 +1181,89 @@ void CharacterService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessag
     pActor->InterruptCast(false);
 
     spdlog::info("Interrupt remote cast successful");
+#endif
+}
+
+void CharacterService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcept
+{
+#if TP_SKYRIM64
+    auto view = m_world.view<FormIdComponent>();
+    for (auto entity : view)
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(entity);
+        if (formIdComponent.Id != acEvent.TargetID)
+            continue;
+
+        AddTargetRequest request;
+
+        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(entity))
+        {
+            request.TargetId = pLocalComponent->Id;
+        }
+        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(entity))
+        {
+            request.TargetId = pRemoteComponent->Id;
+        }
+
+        TP_ASSERT(request.TargetId, "AddTargetRequest must have a target id.");
+
+        request.SpellId = acEvent.SpellID;
+
+        m_transport.Send(request);
+
+        break;
+    }
+#endif
+}
+
+void CharacterService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
+{
+#if TP_SKYRIM64
+    auto view = m_world.view<FormIdComponent>();
+
+    for (auto entity : view)
+    {
+        uint32_t componentId;
+        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
+        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+
+        if (cpLocalComponent)
+            componentId = cpLocalComponent->Id;
+        else if (cpRemoteComponent)
+            componentId = cpRemoteComponent->Id;
+        else
+            continue;
+
+        if (componentId == acMessage.TargetId)
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(entity);
+            auto* pForm = TESForm::GetById(formIdComponent.Id);
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+            TP_ASSERT(pActor, "Actor should exist, form id: {:X}", formIdComponent.Id);
+
+            if (pActor)
+            {
+                auto pSpell = (MagicItem*)TESForm::GetById(acMessage.SpellId);
+
+                // TODO: AddTarget gets notified for every effect, but we loop through the effects here again
+                for (auto effect : pSpell->listOfEffects)
+                {
+                    MagicTarget::AddTargetData data{};
+                    data.pSpell = pSpell;
+                    data.pEffectSetting = effect;
+                    data.fMagnitude = 0.0f;
+                    data.fUnkFloat1 = 1.0f;
+                    data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+
+                    pActor->magicTarget.AddTarget(data);
+                }
+
+                spdlog::info("Interrupt remote cast successful");
+
+                break;
+            }
+        }
+    }
 #endif
 }

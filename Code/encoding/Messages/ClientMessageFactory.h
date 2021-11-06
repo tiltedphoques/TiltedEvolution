@@ -31,6 +31,7 @@
 #include <Messages/SpellCastRequest.h>
 #include <Messages/AttachArrowRequest.h>
 #include <Messages/InterruptCastRequest.h>
+#include <Messages/AddTargetRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -48,7 +49,8 @@ struct ClientMessageFactory
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
-                                 RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, AttachArrowRequest, InterruptCastRequest>;
+                                 RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, AttachArrowRequest, InterruptCastRequest,
+                                 AddTargetRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

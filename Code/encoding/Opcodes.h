@@ -31,6 +31,7 @@ enum ClientOpcode : unsigned char
     kSpellCastRequest,
     kAttachArrowRequest,
     kInterruptCastRequest,
+    kAddTargetRequest,
     kClientOpcodeMax
 };
 
@@ -63,5 +64,6 @@ enum ServerOpcode : unsigned char
     kNotifySpellCast,
     kNotifyAttachArrow,
     kNotifyInterruptCast,
+    kNotifyAddTarget,
     kServerOpcodeMax
 };

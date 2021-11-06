@@ -35,6 +35,8 @@
 #include <Messages/NotifyAttachArrow.h>
 #include <Messages/InterruptCastRequest.h>
 #include <Messages/NotifyInterruptCast.h>
+#include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -53,6 +55,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
     , m_attachArrowConnection(aDispatcher.sink<PacketEvent<AttachArrowRequest>>().connect<&CharacterService::OnAttachArrowRequest>(this))
     , m_interruptCastConnection(aDispatcher.sink<PacketEvent<InterruptCastRequest>>().connect<&CharacterService::OnInterruptCastRequest>(this))
+    , m_addTargetConnection(aDispatcher.sink<PacketEvent<AddTargetRequest>>().connect<&CharacterService::OnAddTargetRequest>(this))
 {
 }
 
@@ -751,3 +754,19 @@ void CharacterService::OnInterruptCastRequest(const PacketEvent<InterruptCastReq
             pPlayer->Send(notify);
     }
 }
+
+void CharacterService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyAddTarget notify;
+    notify.TargetId = message.TargetId;
+    notify.SpellId = message.SpellId;
+
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+            pPlayer->Send(notify);
+    }
+}
+

@@ -20,6 +20,7 @@ struct OwnershipTransferEvent;
 struct SpellCastRequest;
 struct AttachArrowRequest;
 struct InterruptCastRequest;
+struct AddTargetRequest;
 
 struct CharacterService
 {
@@ -47,6 +48,7 @@ protected:
     void OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept;
     void OnAttachArrowRequest(const PacketEvent<AttachArrowRequest>& acMessage) const noexcept;
     void OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept;
+    void OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
@@ -72,4 +74,5 @@ private:
     entt::scoped_connection m_spellCastConnection;
     entt::scoped_connection m_attachArrowConnection;
     entt::scoped_connection m_interruptCastConnection;
+    entt::scoped_connection m_addTargetConnection;
 };

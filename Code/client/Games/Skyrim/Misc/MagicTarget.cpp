@@ -27,9 +27,11 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 // can't cancel all ValueModifierEffects though
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
-    // TODO: barf
+    // TODO: this can be fixed by properly implementing multiple inheritance
     Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
+
+    bool triggerLocal = false;
 
     auto factions = pTargetActor->GetFactions();
     for (const auto& faction : factions.NpcFactions)
@@ -39,12 +41,12 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
             if (pTargetActorEx->IsRemote())
                 return false;
 
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
-            return ThisCall(RealAddTarget, apThis, arData);
+            triggerLocal = true;
+            break;
         }
     }
 
-    if (arData.pCaster)
+    if (arData.pCaster && !triggerLocal)
     {
         if (auto pExtension = arData.pCaster->GetExtension())
         {
@@ -53,8 +55,10 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         }
     }
 
-    World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
-    return ThisCall(RealAddTarget, apThis, arData);
+    bool result = ThisCall(RealAddTarget, apThis, arData);
+    if (result)
+        World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+    return result;
 }
 
 bool TP_MAKE_THISCALL(HookCheckAddEffect, MagicTarget::AddTargetData, void* arArgs, float afResistance)
