@@ -20,27 +20,52 @@ struct ProjectileLaunchRequest final : ClientMessage
     // TODO: operator==
     bool operator==(const ProjectileLaunchRequest& acRhs) const noexcept
     {
-        return 
+        return ShooterID == acRhs.ShooterID &&
+               OriginX == acRhs.OriginX &&
+               OriginY == acRhs.OriginY &&
+               OriginZ == acRhs.OriginZ &&
+               ContactNormalX == acRhs.ContactNormalX &&
+               ContactNormalY == acRhs.ContactNormalY &&
+               ContactNormalZ == acRhs.ContactNormalZ &&
+               ProjectileBaseID == acRhs.ProjectileBaseID &&
+               WeaponID == acRhs.WeaponID &&
+               AmmoID == acRhs.AmmoID &&
+               ZAngle == acRhs.ZAngle &&
+               XAngle == acRhs.XAngle &&
+               YAngle == acRhs.YAngle &&
+               ParentCellID == acRhs.ParentCellID &&
+               SpellID == acRhs.SpellID &&
+               CastingSource == acRhs.CastingSource &&
+               unkBool1 == acRhs.unkBool1 &&
+               Area == acRhs.Area &&
+               Power == acRhs.Power &&
+               Scale == acRhs.Scale &&
+               AlwaysHit == acRhs.AlwaysHit &&
+               NoDamageOutsideCombat == acRhs.NoDamageOutsideCombat &&
+               AutoAim == acRhs.AutoAim &&
+               UseOrigin == acRhs.UseOrigin &&
+               DeferInitialization == acRhs.DeferInitialization &&
+               Tracer == acRhs.Tracer &&
+               ForceConeOfFire == acRhs.ForceConeOfFire &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
+    uint32_t ShooterID{};
     float OriginX{};
     float OriginY{};
     float OriginZ{};
     float ContactNormalX{};
     float ContactNormalY{};
     float ContactNormalZ{};
-    // TODO: gameid
-    uint32_t ProjectileBaseID{};
-    uint32_t ShooterID{};
-    uint32_t WeaponID{};
-    uint32_t AmmoID{};
+    GameId ProjectileBaseID{};
+    GameId WeaponID{};
+    GameId AmmoID{};
     float ZAngle{};
     float XAngle{};
     float YAngle{};
-    uint32_t ParentCellID{};
-    uint32_t SpellID{};
-    uint32_t CastingSource{};
+    GameId ParentCellID{};
+    GameId SpellID{};
+    int32_t CastingSource{};
     bool unkBool1{};
     int32_t Area{};
     float Power{};

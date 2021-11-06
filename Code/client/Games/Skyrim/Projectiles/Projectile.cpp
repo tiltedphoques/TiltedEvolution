@@ -36,20 +36,8 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
         }
     }
 
-    spdlog::info("Projectile launched, data:");
-    spdlog::info("\tOrigin: {}, {}, {}", arData.Origin.x, arData.Origin.y, arData.Origin.z);
-    spdlog::info("\tContactNormal: {}, {}, {}", arData.ContactNormal.x, arData.ContactNormal.y, arData.ContactNormal.z);
-    spdlog::info("\tShooter form id: {:X}", arData.pShooter ? arData.pShooter->formID : 0);
-    spdlog::info("\tWeapon form id: {:X}", arData.pFromWeapon ? arData.pFromWeapon->formID : 0);
-    spdlog::info("\tAmmo form id: {:X}", arData.pFromAmmo ? arData.pFromAmmo->formID : 0);
-    spdlog::info("\tAngles: z: {}, x: {}, y: {}", arData.fZAngle, arData.fXAngle, arData.fYAngle);
-    spdlog::info("\tSpell form id: {:X}", arData.pSpell ? arData.pSpell->formID : 0);
-    spdlog::info("\tUse origin: {}", arData.bUseOrigin);
-    spdlog::info("\tProjectile base form id: {:X}", arData.pProjectileBase ? arData.pProjectileBase->formID : 0);
-
-    ProjectileLaunchedEvent Event;
+    ProjectileLaunchedEvent Event{};
     Event.Origin = arData.Origin;
-    Event.ContactNormal = arData.ContactNormal;
     if (arData.pProjectileBase)
         Event.ProjectileBaseID = arData.pProjectileBase->formID;
     if (arData.pShooter)

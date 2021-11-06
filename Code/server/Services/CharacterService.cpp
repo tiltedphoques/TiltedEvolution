@@ -712,6 +712,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
     }
 }
 
+// TODO: all below methods need to check for same cell
 void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
@@ -734,6 +735,9 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     auto packet = acMessage.Packet;
 
     NotifyProjectileLaunch notify{};
+
+    notify.ShooterID = packet.ShooterID;
+
     notify.OriginX = packet.OriginX;
     notify.OriginY = packet.OriginY;
     notify.OriginZ = packet.OriginZ;
@@ -742,7 +746,6 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.ContactNormalZ = packet.ContactNormalZ;
 
     notify.ProjectileBaseID = packet.ProjectileBaseID;
-    notify.ShooterID = packet.ShooterID;
     notify.WeaponID = packet.WeaponID;
     notify.AmmoID = packet.AmmoID;
 

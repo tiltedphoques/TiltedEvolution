@@ -65,6 +65,7 @@
 
 #include <Projectiles/Projectile.h>
 #include <Forms/TESObjectWEAP.h>
+#include <Forms/TESAmmo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -1089,55 +1090,40 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
-    /*
-    auto& modSystem = World::Get().GetModSystem();
+    auto& modSystem = m_world.Get().GetModSystem();
 
-    GameId projectileBaseID{};
-    modSystem.GetServerModId(acEvent.ProjectileBaseID, projectileBaseID);
-    
-    GameId shooterID{};
-    modSystem.GetServerModId(acEvent.ShooterID, shooterID);
 
-    GameId weaponID{};
-    modSystem.GetServerModId(acEvent.WeaponID, weaponID);
-
-    GameId ammoID{};
-    modSystem.GetServerModId(acEvent.AmmoID, ammoID);
-    */
-
-    auto formId = acEvent.ShooterID;
-
+    auto shooterFormId = acEvent.ShooterID;
     auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
+    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
     {
-        return view.get<FormIdComponent>(entity).Id == formId;
+        return view.get<FormIdComponent>(entity).Id == shooterFormId;
     });
 
-    if (casterEntityIt == std::end(view))
+    if (shooterEntityIt == std::end(view))
         return;
 
-    auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
+    auto& localComponent = view.get<LocalComponent>(*shooterEntityIt);
 
     ProjectileLaunchRequest request{};
+
+    request.ShooterID = localComponent.Id;
+
     request.OriginX = acEvent.Origin.x;
     request.OriginY = acEvent.Origin.y;
     request.OriginZ = acEvent.Origin.z;
-    request.ContactNormalX = acEvent.ContactNormal.x;
-    request.ContactNormalY = acEvent.ContactNormal.y;
-    request.ContactNormalZ = acEvent.ContactNormal.z;
 
-    request.ProjectileBaseID = acEvent.ProjectileBaseID;
-    request.ShooterID = localComponent.Id;
-    request.WeaponID = acEvent.WeaponID;
-    request.AmmoID = acEvent.AmmoID;
+    modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
+    modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
+    modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
 
     request.ZAngle = acEvent.ZAngle;
     request.XAngle = acEvent.XAngle;
     request.YAngle = acEvent.YAngle;
 
-    request.ParentCellID = acEvent.ParentCellID;
+    modSystem.GetServerModId(acEvent.AmmoID, request.ParentCellID);
+    modSystem.GetServerModId(acEvent.AmmoID, request.SpellID);
 
-    request.SpellID = acEvent.SpellID;
     request.CastingSource = acEvent.CastingSource;
 
 #if TP_SKYRIM64
@@ -1157,7 +1143,7 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     request.Tracer = acEvent.Tracer;
     request.ForceConeOfFire = acEvent.ForceConeOfFire;
 
-    spdlog::critical("Ammo event id: {}, request id: {}", acEvent.AmmoID, request.AmmoID);
+    spdlog::info("Ammo event id: {}, request id: {}", acEvent.AmmoID, request.AmmoID.BaseId);
 
     m_transport.Send(request);
 #endif
@@ -1166,6 +1152,8 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
 void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
 {
 #if TP_SKYRIM64
+    auto& modSystem = World::Get().GetModSystem();
+
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
     {
@@ -1180,40 +1168,37 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
 
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
-    auto* pForm = TESForm::GetById(formIdComponent.Id);
-
-    uint8_t resultBuffer[100];
-
 #if TP_SKYRIM64
     Projectile::LaunchData launchData{};
 #else
     ProjectileLaunchData launchData{};
 #endif
 
+    launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
+
     launchData.Origin.x = acMessage.OriginX;
     launchData.Origin.y = acMessage.OriginY;
     launchData.Origin.z = acMessage.OriginZ;
-    /*
-    launchData.ContactNormal.x = acMessage.ContactNormalX;
-    launchData.ContactNormal.y = acMessage.ContactNormalY;
-    launchData.ContactNormal.z = acMessage.ContactNormalZ;
-    */
 
-    spdlog::critical("Ammo id: {}", acMessage.AmmoID);
+    const auto cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
+    launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
 
-    // TODO: fix this
-    launchData.pProjectileBase = TESForm::GetById(acMessage.ProjectileBaseID);
-    launchData.pShooter = (TESObjectREFR*)pForm;
-    launchData.pFromWeapon = (TESObjectWEAP*)TESForm::GetById(acMessage.WeaponID);
-    launchData.pFromAmmo = (TESAmmo*)TESForm::GetById(acMessage.AmmoID);
+    const auto cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
+    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+
+    const auto cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
+    launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
 
     launchData.fZAngle = acMessage.ZAngle;
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
 
-    launchData.pParentCell = (TESObjectCELL*)TESForm::GetById(acMessage.ParentCellID);
+    const auto cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = RTTI_CAST(TESForm::GetById(cParentCellId), TESForm, TESObjectCELL);
 
-    launchData.pSpell = (MagicItem*)TESForm::GetById(acMessage.SpellID);
+    const auto cSpellId = modSystem.GetGameId(acMessage.SpellID);
+    launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+
     launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
 
 #if TP_SKYRIM64
@@ -1233,25 +1218,13 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bTracer = acMessage.Tracer;
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
 
-    spdlog::info("Projectile launched, data:");
-    spdlog::info("\tOrigin: {}, {}, {}", launchData.Origin.x, launchData.Origin.y, launchData.Origin.z);
-    spdlog::info("\tContactNormal: {}, {}, {}", launchData.ContactNormal.x, launchData.ContactNormal.y, launchData.ContactNormal.z);
-    //spdlog::info("\tShooter form id: {:X}", launchData.pShooter ? launchData.pShooter->formID : 0);
-    //spdlog::info("\tWeapon form id: {:X}", launchData.pFromWeapon ? launchData.pFromWeapon->formID : 0);
-    //spdlog::info("\tAmmo form id: {:X}", launchData.pFromAmmo ? launchData.pFromAmmo->formID : 0);
-    spdlog::info("\tAngles: z: {}, x: {}, y: {}", launchData.fZAngle, launchData.fXAngle, launchData.fYAngle);
-    //spdlog::info("\tSpell form id: {:X}", launchData.pSpell ? launchData.pSpell->formID : 0);
-    spdlog::info("\tUse origin: {}", launchData.bUseOrigin);
-    spdlog::info("\tProjectile base form id: {:X}", launchData.pProjectileBase ? launchData.pProjectileBase->formID : 0);
-    spdlog::info("\tArea: {}, Power: {}, Scale: {}", launchData.iArea, launchData.fPower, launchData.fScale);
+    uint8_t resultBuffer[100];
 
 #if TP_SKYRIM64
     Projectile::Launch(resultBuffer, launchData);
 #else
     Projectile::Launch(resultBuffer, launchData);
 #endif
-
-    spdlog::warn("Launched");
 #endif
 }
 
@@ -1328,7 +1301,7 @@ void CharacterService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noe
 
         if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
         {
-            spdlog::error("{}: Could not find spell with from {:X}", __FUNCTION__, acEvent.SpellID);
+            spdlog::error("{s}: Could not find spell with from {:X}", __FUNCTION__, acEvent.SpellID);
             return;
         }
 

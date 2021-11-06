@@ -30,9 +30,6 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
         }
     }
 
-    spdlog::info("\tOrigin: {}, {}, {}", arData.Origin.x, arData.Origin.y, arData.Origin.z);
-    spdlog::info("\tContactNormal: {}, {}, {}", arData.ContactNormal.x, arData.ContactNormal.y, arData.ContactNormal.z);
-
     ProjectileLaunchedEvent Event{};
     Event.Origin = arData.Origin;
     Event.ContactNormal = arData.ContactNormal;
