@@ -21,3 +21,4 @@ void MagicCaster::InterruptCast(bool abRefund) noexcept
 
     ThisCall(s_interruptCast, this, abRefund);
 }
+

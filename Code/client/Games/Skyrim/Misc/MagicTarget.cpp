@@ -23,12 +23,19 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
     return result;
 }
 
-// TODO: don't send continuous, value modifying effects like burning from flames concentration spell
-// can't cancel all ValueModifierEffects though
+/* TODO:
+* Don't send continuous, value modifying effects like burning from flames concentration spell.
+    Can't cancel all ValueModifierEffects though.
+
+* The conjuration visuals script effect is not being applied because, while we don't
+    cancel that one, only the summon effect, the form id component is not created yet
+    at the time of dispatching this event.
+*/
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     // TODO: this can be fixed by properly implementing multiple inheritance
     Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
+    spdlog::info("pTargetActor: {:X}", pTargetActor->formID);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     bool triggerLocal = false;
@@ -56,7 +63,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     }
 
     bool result = ThisCall(RealAddTarget, apThis, arData);
-    if (result)
+    if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
         World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
     return result;
 }

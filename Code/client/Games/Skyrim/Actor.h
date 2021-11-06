@@ -308,7 +308,6 @@ public:
 
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
-constexpr size_t t = offsetof(Actor, magicTarget);
 
 static_assert(offsetof(Actor, processManager) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);

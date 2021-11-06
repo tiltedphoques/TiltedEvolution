@@ -4,7 +4,7 @@
 
 struct Actor;
 struct MagicItem;
-struct EffectSetting;
+struct EffectItem;
 struct TESBoundObject;
 
 struct MagicTarget
@@ -18,7 +18,7 @@ struct MagicTarget
 
         Actor* pCaster;
         MagicItem* pSpell;
-        EffectSetting* pEffectSetting;
+        EffectItem* pEffectItem;
         TESBoundObject* pSource;
         IPostCreationModification* pCallback;
         ResultsCollector* pResultsCollector;

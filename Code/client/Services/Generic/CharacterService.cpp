@@ -1251,7 +1251,7 @@ void CharacterService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const
                 {
                     MagicTarget::AddTargetData data{};
                     data.pSpell = pSpell;
-                    data.pEffectSetting = effect;
+                    data.pEffectItem = effect;
                     data.fMagnitude = 0.0f;
                     data.fUnkFloat1 = 1.0f;
                     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
@@ -1259,7 +1259,7 @@ void CharacterService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const
                     pActor->magicTarget.AddTarget(data);
                 }
 
-                spdlog::info("Interrupt remote cast successful");
+                spdlog::error("Add target successful");
 
                 break;
             }

@@ -672,7 +672,7 @@ void TestService::OnDraw() noexcept
 
                 //data.pCaster = PlayerCharacter::Get();
                 data.pSpell = pEffectSpell;
-                data.pEffectSetting = effect;
+                data.pEffectItem = effect;
                 data.pSource = nullptr;
                 /*
                 data.ExplosionLocation.x = -11891.820f;
