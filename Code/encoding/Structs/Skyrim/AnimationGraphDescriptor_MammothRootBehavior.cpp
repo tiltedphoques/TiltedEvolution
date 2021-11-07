@@ -115,7 +115,7 @@ enum Variables
 
 AnimationGraphDescriptor_MammothRootBehavior::AnimationGraphDescriptor_MammothRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 8458961093226921228;
+    uint64_t key = 13065750443784029010;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

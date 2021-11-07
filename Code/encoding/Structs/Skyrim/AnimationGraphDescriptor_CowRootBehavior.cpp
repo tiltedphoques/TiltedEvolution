@@ -100,7 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_CowRootBehavior::AnimationGraphDescriptor_CowRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 11742327374003510759;
+    uint64_t key = 17103635255379484992;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

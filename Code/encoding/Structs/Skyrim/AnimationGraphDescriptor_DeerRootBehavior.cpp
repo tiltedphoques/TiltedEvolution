@@ -100,7 +100,7 @@ enum Variables
 
 AnimationGraphDescriptor_DeerRootBehavior::AnimationGraphDescriptor_DeerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 7360149271706171992;
+    uint64_t key = 1832497254465648632;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -84,7 +84,7 @@ enum Variables
 
 AnimationGraphDescriptor_DraugrBehavior::AnimationGraphDescriptor_DraugrBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 8502241498825323988;
+    uint64_t key = 1556693752012287718;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

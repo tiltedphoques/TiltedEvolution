@@ -98,7 +98,7 @@ enum Variables
 
 AnimationGraphDescriptor_SabreCatRootBehavior::AnimationGraphDescriptor_SabreCatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 5061395632986292749;
+    uint64_t key = 8391591236278645567;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

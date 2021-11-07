@@ -306,7 +306,8 @@ enum Variables
 
 AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 795598780193645592;
+    // third person key
+    uint64_t key = 8074503569708505439;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
