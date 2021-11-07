@@ -506,34 +506,39 @@ static TDamageActor* RealDamageActor = nullptr;
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
     const auto pExHittee = apThis->GetExtension();
-    if (!apHitter && pExHittee->IsLocal())
+    if (pExHittee->IsLocalPlayer())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
-
-    auto factions = apThis->GetFactions();
-    for (const auto& faction : factions.NpcFactions)
+    else if (pExHittee->IsRemotePlayer())
     {
-        if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
-        {
-            return false;
-        }
-        else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
+        return false;
+    }
+
+    if (apHitter)
+    {
+        const auto pExHitter = apHitter->GetExtension();
+        if (pExHitter->IsLocalPlayer())
         {
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
+        if (pExHitter->IsRemotePlayer())
+        {
+            return false;
+        }
     }
 
-    const auto pExHitter = apHitter->GetExtension();
-    if (pExHitter->IsLocal())
+    if (pExHittee->IsLocal())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1);

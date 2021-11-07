@@ -69,6 +69,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
     apSpawnRequest->IsDead = characterComponent.IsDead;
+    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -169,7 +170,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     auto& message = acMessage.Packet;
     const auto& refId = message.ReferenceId;
 
-    const auto isCustom = (refId.ModId == 0 && refId.BaseId == 0x14) || refId.ModId == std::numeric_limits<uint32_t>::max();
+    const auto isPlayer = (refId.ModId == 0 && refId.BaseId == 0x14);
+    const auto isCustom = isPlayer || refId.ModId == std::numeric_limits<uint32_t>::max();
 
     // Check if id is the player
     if (!isCustom)
@@ -515,6 +517,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
     characterComponent.IsDead = message.IsDead;
+    characterComponent.IsPlayer = isPlayer;
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -550,6 +553,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
     response.AllActorValues = message.AllActorValues;
+    // TODO: why is response.IsDead not set here?
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);
 

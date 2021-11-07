@@ -16,6 +16,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     FaceTints.Serialize(aWriter);
     InitialActorValues.Serialize(aWriter);
     Serialization::WriteBool(aWriter, IsDead);
+    Serialization::WriteBool(aWriter, IsPlayer);
 }
 
 void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -46,4 +47,5 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     FaceTints.Deserialize(aReader);
     InitialActorValues.Deserialize(aReader);
     IsDead = Serialization::ReadBool(aReader);
+    IsPlayer = Serialization::ReadBool(aReader);
 }

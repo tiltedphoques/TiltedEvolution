@@ -16,4 +16,5 @@ struct CharacterComponent
     Factions FactionsContent{};
     bool DirtyFactions{ false };
     bool IsDead{};
+    bool IsPlayer{};
 };

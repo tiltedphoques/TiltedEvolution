@@ -663,34 +663,21 @@ void TestService::OnDraw() noexcept
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
+        int isRemote = int(pFetchActor->GetExtension()->IsRemote());
+        ImGui::InputInt("Is remote?", &isRemote, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        int isPlayer = int(pFetchActor->GetExtension()->IsPlayer());
+        ImGui::InputInt("Is player?", &isPlayer, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
     #if TP_SKYRIM64
         if (pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
         {
-        
-        auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
-        ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-
-        auto* pAmmoLoc = (void*)(((uint64_t)(pFetchActor->currentProcess->middleProcess)) + 0x268);
-        ImGui::InputScalar("AmmoLoc memory address", ImGuiDataType_U64, (void*)&pAmmoLoc, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-
-        if (pAmmo)
-        {
-            auto ammoFormId = pAmmo->formID;
-            ImGui::InputScalar("Ammo form Id", ImGuiDataType_U32, (void*)&ammoFormId, nullptr, nullptr, "%" PRIx32,
-                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-
-            /*
-            auto pAmmoCast = RTTI_CAST(pAmmo, TESForm, TESAmmo);
-            if (pAmmoCast)
+            auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
+            if (pAmmo)
             {
-                int isTESAmmo = int(pAmmoCast ? true : false);
-                ImGui::InputInt("Is TESAmmo?", &isTESAmmo, 0, 0,
-                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                auto ammoFormId = pAmmo->formID;
+                ImGui::InputScalar("Ammo form Id", ImGuiDataType_U32, (void*)&ammoFormId, nullptr, nullptr, "%" PRIx32,
+                                   ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
             }
-            */
-        }
         }
 
         if (ImGui::Button("Apply active effect"))

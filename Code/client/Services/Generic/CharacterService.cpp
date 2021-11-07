@@ -340,6 +340,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+    pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();

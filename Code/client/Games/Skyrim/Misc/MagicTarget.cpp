@@ -39,34 +39,45 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
-    bool triggerLocal = false;
-
-    auto factions = pTargetActor->GetFactions();
-    for (const auto& faction : factions.NpcFactions)
+    if (pTargetActorEx->IsLocalPlayer())
     {
-        if (faction.Id.BaseId == 0x00000DB1)
-        {
-            if (pTargetActorEx->IsRemote())
-                return false;
+        bool result = ThisCall(RealAddTarget, apThis, arData);
+        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
+            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+        return result;
+    }
+    else if (pTargetActorEx->IsRemotePlayer())
+    {
+        return false;
+    }
 
-            triggerLocal = true;
-            break;
+    if (arData.pCaster)
+    {
+        ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+        if (pCasterExtension->IsLocalPlayer())
+        {
+            bool result = ThisCall(RealAddTarget, apThis, arData);
+            if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
+                World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            return result;
+        }
+        else if (pCasterExtension->IsRemotePlayer())
+        {
+            return false;
         }
     }
 
-    if (arData.pCaster && !triggerLocal)
+    if (pTargetActorEx->IsLocal())
     {
-        if (auto pExtension = arData.pCaster->GetExtension())
-        {
-            if (pExtension->IsRemote())
-                return false;
-        }
+        bool result = ThisCall(RealAddTarget, apThis, arData);
+        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
+            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+        return result;
     }
-
-    bool result = ThisCall(RealAddTarget, apThis, arData);
-    if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-        World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
-    return result;
+    else
+    {
+        return false;
+    }
 }
 
 bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, void* arArgs, float afResistance)
