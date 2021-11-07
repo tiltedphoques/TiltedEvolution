@@ -409,8 +409,8 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, BSExtraDataList, uint32_t);
-    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x119450);
-    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x8F660);
+    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x140119450 - 0x140000000);
+    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
 
 #if TP_FALLOUT4
     const auto pExtraDataList = extraData;
