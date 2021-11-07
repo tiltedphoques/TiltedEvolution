@@ -716,7 +716,6 @@ void CharacterService::ProcessMovementChanges() const noexcept
     }
 }
 
-// TODO: all below methods need to check for same cell
 void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
@@ -727,10 +726,38 @@ void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& a
     notify.CastingSource = message.CastingSource;
     notify.IsDualCasting = message.IsDualCasting;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
+    // TODO: this stuff is unfortunately kinda repetitive, maybe integrate it into PlayerManager somehow
+    const auto cCasterEntity = static_cast<entt::entity>(message.CasterId);
+    const auto* casterCellIdComp = m_world.try_get<CellIdComponent>(cCasterEntity);
+    const auto* casterOwnerComp = m_world.try_get<OwnerComponent>(cCasterEntity);
+
+    if (!casterCellIdComp || !casterOwnerComp)
     {
-        if (acMessage.pPlayer != pPlayer)
+        spdlog::warn("Caster entity not found for server id {:X}", message.CasterId);
+        return;
+    }
+
+    if (casterCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer || casterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
             pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == casterCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, casterCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
     }
 }
 
@@ -776,10 +803,37 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.Tracer = packet.Tracer;
     notify.ForceConeOfFire = packet.ForceConeOfFire;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
+    const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
+    const auto* shooterCellIdComp = m_world.try_get<CellIdComponent>(cShooterEntity);
+    const auto* shooterOwnerComp = m_world.try_get<OwnerComponent>(cShooterEntity);
+
+    if (!shooterCellIdComp || !shooterOwnerComp)
     {
-        if (acMessage.pPlayer != pPlayer)
+        spdlog::warn("Shooter entity not found for server id {:X}", packet.ShooterID);
+        return;
+    }
+
+    if (shooterCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (shooterOwnerComp->GetOwner() == pPlayer || shooterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
             pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (shooterOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == shooterCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, shooterCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
     }
 }
 
@@ -790,10 +844,37 @@ void CharacterService::OnInterruptCastRequest(const PacketEvent<InterruptCastReq
     NotifyInterruptCast notify;
     notify.CasterId = message.CasterId;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
+    const auto cCasterEntity = static_cast<entt::entity>(message.CasterId);
+    const auto* casterCellIdComp = m_world.try_get<CellIdComponent>(cCasterEntity);
+    const auto* casterOwnerComp = m_world.try_get<OwnerComponent>(cCasterEntity);
+
+    if (!casterCellIdComp || !casterOwnerComp)
     {
-        if (acMessage.pPlayer != pPlayer)
+        spdlog::warn("Caster entity not found for server id {:X}", message.CasterId);
+        return;
+    }
+
+    if (casterCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer || casterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
             pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == casterCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, casterCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
     }
 }
 
@@ -805,10 +886,37 @@ void CharacterService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& a
     notify.TargetId = message.TargetId;
     notify.SpellId = message.SpellId;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
+    const auto cTargetEntity = static_cast<entt::entity>(message.TargetId);
+    const auto* targetCellIdComp = m_world.try_get<CellIdComponent>(cTargetEntity);
+    const auto* targetOwnerComp = m_world.try_get<OwnerComponent>(cTargetEntity);
+
+    if (!targetCellIdComp || !targetOwnerComp)
     {
-        if (acMessage.pPlayer != pPlayer)
+        spdlog::warn("Target entity not found for server id {:X}", message.TargetId);
+        return;
+    }
+
+    if (targetCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (targetOwnerComp->GetOwner() == pPlayer || targetCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
             pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (targetOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == targetCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, targetCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
     }
 }
 
