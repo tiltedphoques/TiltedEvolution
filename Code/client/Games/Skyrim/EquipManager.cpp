@@ -9,7 +9,7 @@
 #include <World.h>
 
 #include <Games/Skyrim/Forms/TESAmmo.h>
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
+#include <AI/AIProcess.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
 
 struct EquipData

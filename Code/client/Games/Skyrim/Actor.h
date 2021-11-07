@@ -19,7 +19,7 @@ struct TESRace;
 struct ExActor;
 struct ExPlayerCharacter;
 struct ActorExtension;
-struct ActorProcessManager;
+struct AIProcess;
 struct CombatController;
 
 struct Actor : TESObjectREFR
@@ -115,11 +115,12 @@ struct Actor : TESObjectREFR
     virtual void sub_ED();
     virtual void sub_EE();
     virtual void sub_EF();
-    virtual void sub_F0();
-    virtual void MoveToMainProcess();
-    virtual void MoveToFourthProcess();
-    virtual void MoveToThirdProcess();
-    virtual bool MoveToSecondaryProcess();
+    // these 4 are not virtual funcs in fallout 4
+    virtual bool MoveToHigh();
+    virtual bool MoveToLow();
+    virtual bool MoveToMiddleLow();
+    virtual bool MoveToMiddleHigh();
+    virtual bool sub_F4();
     virtual void sub_F5();
     virtual void sub_F6();
     virtual void sub_F7();
@@ -250,7 +251,7 @@ public:
     uint32_t flags1;
     float headTrackingUpdateDelay;
     uint32_t unk84;
-    ActorProcessManager* processManager;
+    AIProcess* currentProcess;
     uint32_t dialogueHandle;
     uint32_t combatHandle;
     uint32_t killerHandle;
@@ -308,7 +309,7 @@ public:
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
 
-static_assert(offsetof(Actor, processManager) == 0xF0);
+static_assert(offsetof(Actor, currentProcess) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);
 static_assert(offsetof(Actor, actorValueOwner) == 0xB0);
 static_assert(offsetof(Actor, actorState) == 0xB8);

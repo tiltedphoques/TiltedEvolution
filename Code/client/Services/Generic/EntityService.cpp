@@ -25,6 +25,12 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
 {
     if (acEvent.FormType == Character)
     {
+        if (acEvent.FormId == 0x14)
+        {
+            auto* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
+            pActor->GetExtension()->SetPlayer(true);
+        }
+
         entt::entity entity;
 
         const auto view = m_world.view<RemoteComponent>();

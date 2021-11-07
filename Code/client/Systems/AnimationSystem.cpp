@@ -8,7 +8,7 @@
 #include <Games/References.h>
 
 #include <Forms/BGSAction.h>
-#include <Misc/ActorProcessManager.h>
+#include <AI/AIProcess.h>
 #include <Misc/MiddleProcess.h>
 
 #include <Messages/ClientReferencesMoveRequest.h>
@@ -104,9 +104,9 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
 
     pActor->SaveAnimationVariables(movement.Variables);
 
-    if (pActor->processManager && pActor->processManager->middleProcess)
+    if (pActor->currentProcess && pActor->currentProcess->middleProcess)
     {
-        movement.Direction = pActor->processManager->middleProcess->direction;
+        movement.Direction = pActor->currentProcess->middleProcess->direction;
     }
 
     for (auto& entry : animationComponent.Actions)

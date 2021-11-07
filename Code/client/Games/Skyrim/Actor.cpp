@@ -1,7 +1,7 @@
 #include <TiltedOnlinePCH.h>
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
-#include <Misc/ActorProcessManager.h>
+#include <AI/AIProcess.h>
 #include <Misc/MiddleProcess.h>
 #include <Misc/GameVM.h>
 #include <DefaultObjectManager.h>
@@ -34,14 +34,14 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 
     Save(&buffer);
 
-    ActorProcessManager* pProcessManager = processManager;
-    const int32_t handlerId = pProcessManager != nullptr ? pProcessManager->handlerId : -1;
+    AIProcess* pProcess = currentProcess;
+    const int32_t handlerId = pProcess != nullptr ? pProcess->handlerId : -1;
 
     aWriter.WriteBytes((uint8_t*)&handlerId, 4); // TODO: is this needed ?
     aWriter.WriteBytes((uint8_t*)&flags1, 4);
 
     //     if (!handlerId
-//         && (uint8_t)ActorProcessManager::GetBoolInSubStructure(pProcessManager))
+//         && (uint8_t)AIProcess::GetBoolInSubStructure(pProcess))
 //     {
 //         Actor::SaveSkinFar(this);
 //     }
@@ -49,7 +49,7 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 
     TESObjectREFR::Save_Reversed(aChangeFlags, aWriter);
 
-    if (pProcessManager); // Skyrim saves the process manager state, but we don't give a shit so skip !
+    if (pProcess); // Skyrim saves the process manager state, but we don't give a shit so skip !
 
     aWriter.WriteBytes((uint8_t*)&unk194, 4);
     aWriter.WriteBytes((uint8_t*)&headTrackingUpdateDelay, 4);
@@ -144,9 +144,9 @@ void Actor::InterruptCast(bool abRefund) noexcept
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
-    if (processManager && processManager->middleProcess)
+    if (currentProcess && currentProcess->middleProcess)
     {
-        auto pMiddleProcess = processManager->middleProcess;
+        auto pMiddleProcess = currentProcess->middleProcess;
 
         if (aSlotId == 0 && pMiddleProcess->leftEquippedObject)
             return pMiddleProcess->leftEquippedObject->pObject;
@@ -161,10 +161,10 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 
 TESForm* Actor::GetEquippedAmmo() const noexcept
 {
-    if (processManager && processManager->middleProcess && processManager->middleProcess->ammoEquippedObject)
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess->ammoEquippedObject)
     {
         // TODO: rtti cast to check if is ammo object? or actually, just call AIProcess::GetCurrentAmmo()
-        return processManager->middleProcess->ammoEquippedObject->pObject;
+        return currentProcess->middleProcess->ammoEquippedObject->pObject;
     }
 
     return nullptr;

@@ -4,8 +4,7 @@ struct TESForm;
 struct MiddleProcess;
 struct TESAmmo;
 
-// AIProcess
-struct ActorProcessManager
+struct AIProcess
 {
     bool SetCurrentAmmo(TESAmmo* apAmmo) noexcept;
 
@@ -24,4 +23,4 @@ struct ActorProcessManager
     int8_t movementType;
 };
 
-static_assert(offsetof(ActorProcessManager, movementType) == 0x137);
+static_assert(offsetof(AIProcess, movementType) == 0x137);

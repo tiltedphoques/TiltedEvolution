@@ -36,8 +36,9 @@
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
 
+#include <AI/AIProcess.h>
+
 #if TP_SKYRIM64
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
@@ -610,6 +611,18 @@ void TestService::OnDraw() noexcept
             auto* pFetchForm = TESForm::GetById(fetchFormId);
             if (pFetchForm)
                 pFetchActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+            if (pFetchActor)
+            {
+                auto pExtension = pFetchActor->GetExtension();
+                if (pExtension->IsLocal())
+                    spdlog::warn("IsLocal");
+                if (pExtension->IsRemote())
+                    spdlog::warn("IsRemote");
+                if (pExtension->IsLocalPlayer())
+                    spdlog::warn("IsLocalPlayer");
+                if (pExtension->IsRemotePlayer())
+                    spdlog::warn("IsRemotePlayer");
+            }
         }
     }
 
@@ -651,14 +664,14 @@ void TestService::OnDraw() noexcept
         }
 
     #if TP_SKYRIM64
-        if (pFetchActor->processManager->middleProcess->ammoEquippedObject)
+        if (pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
         {
         
-        auto* pAmmo = pFetchActor->processManager->middleProcess->ammoEquippedObject->pObject;
+        auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
         ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
-        auto* pAmmoLoc = (void*)(((uint64_t)(pFetchActor->processManager->middleProcess)) + 0x268);
+        auto* pAmmoLoc = (void*)(((uint64_t)(pFetchActor->currentProcess->middleProcess)) + 0x268);
         ImGui::InputScalar("AmmoLoc memory address", ImGuiDataType_U64, (void*)&pAmmoLoc, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
