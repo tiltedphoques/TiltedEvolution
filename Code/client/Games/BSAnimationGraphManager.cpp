@@ -99,8 +99,6 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
         }
     }
 
-    spdlog::warn("Calcing anims");
-
     std::transform(variableNames.begin(), variableNames.end(), variableNames.begin(),
                    [](unsigned char c) { return std::tolower(c); });
 
