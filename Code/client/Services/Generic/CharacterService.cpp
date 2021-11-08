@@ -1121,8 +1121,8 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     request.XAngle = acEvent.XAngle;
     request.YAngle = acEvent.YAngle;
 
-    modSystem.GetServerModId(acEvent.AmmoID, request.ParentCellID);
-    modSystem.GetServerModId(acEvent.AmmoID, request.SpellID);
+    modSystem.GetServerModId(acEvent.ParentCellID, request.ParentCellID);
+    modSystem.GetServerModId(acEvent.SpellID, request.SpellID);
 
     request.CastingSource = acEvent.CastingSource;
 
