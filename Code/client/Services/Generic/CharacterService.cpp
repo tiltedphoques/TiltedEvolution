@@ -1193,8 +1193,8 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
 
-    const auto cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = RTTI_CAST(TESForm::GetById(cParentCellId), TESForm, TESObjectCELL);
+    //const auto cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = PlayerCharacter::Get()->parentCell;
 
     const auto cSpellId = modSystem.GetGameId(acMessage.SpellID);
     launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);

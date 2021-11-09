@@ -764,6 +764,8 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.Power = packet.Power;
     notify.Scale = packet.Scale;
 
+    spdlog::info("Area: {}, Power: {}, Scale: {}", notify.Area, notify.Power, notify.Scale);
+
     notify.AlwaysHit = packet.AlwaysHit;
     notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
     notify.AutoAim = packet.AutoAim;
