@@ -78,3 +78,5 @@ Package/
 distrib/
 distrib_debug/
 distrib_releasedbg/
+
+new_addresses.txt
