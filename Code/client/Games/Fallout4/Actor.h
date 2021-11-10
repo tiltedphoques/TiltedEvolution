@@ -15,7 +15,7 @@ struct ExActor;
 struct ExPlayerCharacter;
 struct ActorExtension;
 struct TESNPC;
-struct ProcessManager;
+struct AIProcess;
 struct TESFaction;
 
 struct Actor : TESObjectREFR
@@ -46,6 +46,7 @@ struct Actor : TESObjectREFR
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
+    void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -79,7 +80,7 @@ struct Actor : TESObjectREFR
     uint8_t unk170[0x2D0 - 0x170];
     uint32_t actorFlags;
     uint8_t unk2D8[0x300 - 0x2D8];
-    ProcessManager* processManager;
+    AIProcess* currentProcess;
 
     uint8_t pad308[0x3E8 - 0x308];
     TESForm* magicItems[4];

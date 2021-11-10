@@ -7,12 +7,13 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Skyrim/Misc/MagicSystem.h>
+#include <Games/Misc/MagicSystem.h>
 #include <Games/Skyrim/Misc/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
 struct TESBoundObject;
+struct TESContainer;
 
 struct TESObjectREFR : TESForm
 {
@@ -106,7 +107,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_7C();
     virtual void sub_7D();
     virtual void* sub_7E(bool aUnk);
-    virtual void* GetBiped();
+    virtual void sub_7F();
     virtual void sub_80();
     virtual void sub_81();
     virtual void sub_82();
@@ -143,6 +144,8 @@ struct TESObjectREFR : TESForm
     ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() noexcept;
+    TESContainer* GetContainer() const noexcept;
+    int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -176,7 +179,6 @@ struct TESObjectREFR : TESForm
     uint16_t scale;
     uint16_t referenceFlags;
 };
-constexpr size_t t = offsetof(TESObjectREFR, extraData);
 
 POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141EBEABC - 0x140000000);
 

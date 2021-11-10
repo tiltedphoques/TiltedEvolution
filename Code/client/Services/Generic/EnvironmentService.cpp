@@ -199,21 +199,13 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
             return;
     }
 
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, modId, baseId))
-        return;
-
-    uint32_t cellBaseId = 0;
-    uint32_t cellModId = 0;
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), cellModId, cellBaseId))
-        return;
-
     ActivateRequest request;
-    request.Id.BaseId = baseId;
-    request.Id.ModId = modId;
-    request.CellId.BaseId = cellBaseId;
-    request.CellId.ModId = cellModId;
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, request.Id))
+        return;
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
+        return;
 
     auto view = m_world.view<FormIdComponent>();
     const auto pEntity =
@@ -295,21 +287,14 @@ void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, modId, baseId))
-        return;
-
-    uint32_t cellBaseId = 0;
-    uint32_t cellModId = 0;
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), cellModId, cellBaseId))
-        return;
-
     LockChangeRequest request;
-    request.Id.BaseId = baseId;
-    request.Id.ModId = modId;
-    request.CellId.BaseId = cellBaseId;
-    request.CellId.ModId = cellModId;
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, request.Id))
+        return;
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
+        return;
+
     request.IsLocked = acEvent.IsLocked;
     request.LockLevel = acEvent.LockLevel;
 

@@ -35,15 +35,18 @@
 #include <Games/TES.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
-#include <Games/Skyrim/Misc/ActorProcessManager.h>
+
+#include <AI/AIProcess.h>
+
+#if TP_SKYRIM64
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/DefaultObjectManager.h>
+#include <Games/Skyrim/Misc/InventoryEntry.h>
+#endif
 
 #include <imgui.h>
 #include <inttypes.h>
-
-#if TP_SKYRIM64
-#include <DefaultObjectManager.h>
-#endif
 
 extern thread_local bool g_overrideFormId;
 
@@ -608,6 +611,18 @@ void TestService::OnDraw() noexcept
             auto* pFetchForm = TESForm::GetById(fetchFormId);
             if (pFetchForm)
                 pFetchActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+            if (pFetchActor)
+            {
+                auto pExtension = pFetchActor->GetExtension();
+                if (pExtension->IsLocal())
+                    spdlog::warn("IsLocal");
+                if (pExtension->IsRemote())
+                    spdlog::warn("IsRemote");
+                if (pExtension->IsLocalPlayer())
+                    spdlog::warn("IsLocalPlayer");
+                if (pExtension->IsRemotePlayer())
+                    spdlog::warn("IsRemotePlayer");
+            }
         }
     }
 
@@ -648,18 +663,50 @@ void TestService::OnDraw() noexcept
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
+        int isRemote = int(pFetchActor->GetExtension()->IsRemote());
+        ImGui::InputInt("Is remote?", &isRemote, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        int isPlayer = int(pFetchActor->GetExtension()->IsPlayer());
+        ImGui::InputInt("Is player?", &isPlayer, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
     #if TP_SKYRIM64
-        auto* pAmmo = pFetchActor->processManager->middleProcess->pAmmo;
-        ImGui::InputScalar("Ammo memory address", ImGuiDataType_U64, (void*)&pAmmo, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-
-        auto* pAmmoLoc = (void*)(((uint64_t)(pFetchActor->processManager->middleProcess)) + 0x268);
-        ImGui::InputScalar("AmmoLoc memory address", ImGuiDataType_U64, (void*)&pAmmoLoc, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-
-        if (pAmmo)
+        if (pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
         {
-            ImGui::InputInt("Ammo form Id", (int*)&pAmmo->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
+            if (pAmmo)
+            {
+                auto ammoFormId = pAmmo->formID;
+                ImGui::InputScalar("Ammo form Id", ImGuiDataType_U32, (void*)&ammoFormId, nullptr, nullptr, "%" PRIx32,
+                                   ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            }
+        }
+
+        if (ImGui::Button("Apply active effect"))
+        {
+            auto pEffectSpell = (MagicItem*)TESForm::GetById(0x5AD5F);
+            auto activeEffects = pEffectSpell->listOfEffects;
+            for (auto effect : activeEffects)
+            {
+                MagicTarget::AddTargetData data{};
+
+                //data.pCaster = PlayerCharacter::Get();
+                data.pSpell = pEffectSpell;
+                data.pEffectItem = effect;
+                data.pSource = nullptr;
+                /*
+                data.ExplosionLocation.x = -11891.820f;
+                data.ExplosionLocation.y = -56157.960f;
+                data.ExplosionLocation.z = 665.110f;
+                */
+                data.fMagnitude = 0.0f;
+                data.fUnkFloat1 = 1.0f;
+                data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+                /*
+                data.bAreaTarget = true;
+                data.bDualCast = false;
+                */
+
+                pFetchActor->magicTarget.AddTarget(data);
+            }
         }
     #endif
     }
@@ -767,5 +814,4 @@ void TestService::OnDraw() noexcept
 
     ImGui::End();
 }
-
 

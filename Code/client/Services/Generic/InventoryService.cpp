@@ -47,7 +47,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
-        m_charactersWithInventoryChanges.insert(acEvent.FormId);
+        m_charactersWithInventoryChanges[acEvent.FormId] = String{};
     }
     else
     {
@@ -57,7 +57,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
+    m_charactersWithInventoryChanges[acEvent.ActorId] = acEvent.InventoryBuffer;
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
@@ -158,9 +158,11 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
     {
         RequestCharacterInventoryChanges message;
 
-        for (const auto formId : m_charactersWithInventoryChanges)
+        for (const auto change : m_charactersWithInventoryChanges)
         {
             auto view = m_world.view<FormIdComponent>();
+
+            auto formId = change.first;
 
             const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
             {
@@ -182,11 +184,23 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
                 continue;
 
             const auto* pForm = TESForm::GetById(formId);
-            const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
             if (!pActor)
                 continue;
 
-            message.Changes[componentId] = pActor->GetInventory();
+            Inventory inventory = pActor->GetInventory();
+
+            if (change.second != String{})
+            {
+                spdlog::warn("Using cached inventory snapshot for {:X} ({:X})", formId, componentId);
+                //inventory.Buffer = change.second;
+            }
+            else
+            {
+                spdlog::warn("Using new inventory for {:X} ({:X})", formId, componentId);
+            }
+
+            message.Changes[componentId] = inventory;
         }
 
         m_transport.Send(message);

@@ -3,7 +3,7 @@
 #include <Systems/InterpolationSystem.h>
 #include <Components.h>
 
-#include <Misc/ActorProcessManager.h>
+#include <AI/AIProcess.h>
 #include <Misc/MiddleProcess.h>
 
 #include <Games/References.h>
@@ -50,9 +50,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     apActor->ForcePosition(position);
     apActor->LoadAnimationVariables(second.Variables);
 
-    if (apActor->processManager && apActor->processManager->middleProcess)
+    if (apActor->currentProcess && apActor->currentProcess->middleProcess)
     {
-        apActor->processManager->middleProcess->direction = second.Direction;
+        apActor->currentProcess->middleProcess->direction = second.Direction;
     }
 
     auto rotA = first.Rotation;
@@ -65,7 +65,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 #if TP_FALLOUT4
     const auto finalX = 0.f;
 #else
-    const auto finalX = TiltedPhoques::Mod(rotA.x + deltaX, float(TiltedPhoques::Pi * 2));
+    auto finalX = TiltedPhoques::Mod(rotA.x + deltaX, float(TiltedPhoques::Pi * 2));
+    if (finalX > 0.f && finalX > float(TiltedPhoques::Pi / 2))
+        finalX -= TiltedPhoques::Pi * 2;
 #endif
 
     const auto finalY = TiltedPhoques::Mod(rotA.y + deltaY, float(TiltedPhoques::Pi * 2));

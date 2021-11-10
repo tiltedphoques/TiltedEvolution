@@ -122,7 +122,7 @@ enum Variables
 AnimationGraphDescriptor_Deer::AnimationGraphDescriptor_Deer(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 5075808704740177387;
+    uint64_t key = 1426621359402524832;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

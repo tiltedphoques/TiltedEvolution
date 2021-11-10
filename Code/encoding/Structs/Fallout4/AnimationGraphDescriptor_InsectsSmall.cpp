@@ -77,7 +77,7 @@ enum Variables
 AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 12220107575817031289;
+    uint64_t key = 11398773395717218432;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -29,7 +29,9 @@ enum ClientOpcode : unsigned char
     kRequestObjectInventoryChanges,
     kRequestCharacterInventoryChanges,
     kSpellCastRequest,
-    kAttachArrowRequest,
+    kInterruptCastRequest,
+    kAddTargetRequest,
+    kProjectileLaunchRequest,
     kClientOpcodeMax
 };
 
@@ -60,6 +62,8 @@ enum ServerOpcode : unsigned char
     kNotifyObjectInventoryChanges,
     kNotifyCharacterInventoryChanges,
     kNotifySpellCast,
-    kNotifyAttachArrow,
+    kNotifyInterruptCast,
+    kNotifyAddTarget,
+    kNotifyProjectileLaunch,
     kServerOpcodeMax
 };

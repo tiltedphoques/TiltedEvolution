@@ -182,13 +182,13 @@ void DiscoveryService::VisitForms() noexcept
 
     };
 
-    auto* const pActorHolder = ActorHolder::Get();
-    if (!pActorHolder)
+    auto* const pProcessLists = ProcessLists::Get();
+    if (!pProcessLists)
         return;
 
-    for (uint32_t i = 0; i < pActorHolder->actorRefs.length; ++i)
+    for (uint32_t i = 0; i < pProcessLists->HighActorHandleArray.length; ++i)
     {
-        auto* const pRefr = TESObjectREFR::GetByHandle(pActorHolder->actorRefs[i]);
+        auto* const pRefr = TESObjectREFR::GetByHandle(pProcessLists->HighActorHandleArray[i]);
         if (pRefr)
         {
             if (pRefr->GetNiNode())

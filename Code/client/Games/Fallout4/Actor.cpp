@@ -133,6 +133,16 @@ ActorValues Actor::GetEssentialActorValues() noexcept
     return actorValues;
 }
 
+// use this for fallout 4 projectile launching
+void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
+{
+    TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
+
+    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFCF0 - 0x140000000);
+
+    return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
@@ -258,34 +268,39 @@ static TDamageActor* RealDamageActor = nullptr;
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
     const auto pExHittee = apThis->GetExtension();
-    if (!apHitter && pExHittee->IsLocal())
+    if (pExHittee->IsLocalPlayer())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
-
-    auto factions = apThis->GetFactions();
-    for (const auto& faction : factions.NpcFactions)
+    else if (pExHittee->IsRemotePlayer())
     {
-        if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsRemote())
-        {
-            return 0;
-        }
-        else if (faction.Id.BaseId == 0x0001c21c && pExHittee->IsLocal())
+        return false;
+    }
+
+    if (apHitter)
+    {
+        const auto pExHitter = apHitter->GetExtension();
+        if (pExHitter->IsLocalPlayer())
         {
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
+        if (pExHitter->IsRemotePlayer())
+        {
+            return false;
+        }
     }
 
-    const auto pExHitter = apHitter->GetExtension();
-    if (pExHitter->IsLocal())
+    if (pExHittee->IsLocal())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
-
-    return 0;
+    else
+    {
+        return false;
+    }
 }
 
 TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue,

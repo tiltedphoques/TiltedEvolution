@@ -76,7 +76,7 @@ enum Variables
 AnimationGraphDescriptor_Bloatfly::AnimationGraphDescriptor_Bloatfly(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 18150152714266921941;
+    uint64_t key = 10733037448866675267;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -51,7 +51,7 @@ enum Variables
 
 AnimationGraphDescriptor_Mudcrab::AnimationGraphDescriptor_Mudcrab(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 9862647107876721694;
+    uint64_t key = 9498225481650921683;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

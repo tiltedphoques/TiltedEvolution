@@ -79,7 +79,7 @@ enum Variables
 
 AnimationGraphDescriptor_DwarvenSpider::AnimationGraphDescriptor_DwarvenSpider(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 6030488075705556297;
+    uint64_t key = 15924684633707834553;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

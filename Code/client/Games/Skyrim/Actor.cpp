@@ -1,7 +1,7 @@
 #include <TiltedOnlinePCH.h>
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
-#include <Misc/ActorProcessManager.h>
+#include <AI/AIProcess.h>
 #include <Misc/MiddleProcess.h>
 #include <Misc/GameVM.h>
 #include <DefaultObjectManager.h>
@@ -13,13 +13,16 @@
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
-#include <Events/ArrowAttachedEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
 
-#include <Effects/ValueModifierEffect.h>
 #include <Forms/ActorValueInfo.h>
+
+#include <Effects/ValueModifierEffect.h>
+
+#include <Games/Skyrim/Misc/InventoryEntry.h>
+#include <Games/Skyrim/ExtraData/ExtraCount.h>
 
 #ifdef SAVE_STUFF
 
@@ -31,14 +34,14 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 
     Save(&buffer);
 
-    ActorProcessManager* pProcessManager = processManager;
-    const int32_t handlerId = pProcessManager != nullptr ? pProcessManager->handlerId : -1;
+    AIProcess* pProcess = currentProcess;
+    const int32_t handlerId = pProcess != nullptr ? pProcess->handlerId : -1;
 
     aWriter.WriteBytes((uint8_t*)&handlerId, 4); // TODO: is this needed ?
     aWriter.WriteBytes((uint8_t*)&flags1, 4);
 
     //     if (!handlerId
-//         && (uint8_t)ActorProcessManager::GetBoolInSubStructure(pProcessManager))
+//         && (uint8_t)AIProcess::GetBoolInSubStructure(pProcess))
 //     {
 //         Actor::SaveSkinFar(this);
 //     }
@@ -46,7 +49,7 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 
     TESObjectREFR::Save_Reversed(aChangeFlags, aWriter);
 
-    if (pProcessManager); // Skyrim saves the process manager state, but we don't give a shit so skip !
+    if (pProcess); // Skyrim saves the process manager state, but we don't give a shit so skip !
 
     aWriter.WriteBytes((uint8_t*)&unk194, 4);
     aWriter.WriteBytes((uint8_t*)&headTrackingUpdateDelay, 4);
@@ -76,7 +79,6 @@ TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
 TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
-TP_THIS_FUNCTION(TAttachArrow, void, Actor, void*);
 
 using TGetLocation = TESForm *(TESForm *);
 static TGetLocation *FUNC_GetActorLocation;
@@ -87,7 +89,6 @@ TCharacterDestructor* RealCharacterDestructor;
 
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TPickUpItem* RealPickUpItem = nullptr;
-static TAttachArrow* RealAttachArrow = nullptr;
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -132,24 +133,42 @@ GamePtr<Actor> Actor::New() noexcept
     return {pActor};
 }
 
+void Actor::InterruptCast(bool abRefund) noexcept
+{
+    TP_THIS_FUNCTION(TInterruptCast, void, Actor, bool abRefund);
+
+    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x140631C80 - 0x140000000);
+
+    ThisCall(s_interruptCast, this, abRefund);
+}
 
 TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
-    if (processManager && processManager->middleProcess)
+    if (currentProcess && currentProcess->middleProcess)
     {
-        auto pMiddleProcess = processManager->middleProcess;
+        auto pMiddleProcess = currentProcess->middleProcess;
 
         if (aSlotId == 0 && pMiddleProcess->leftEquippedObject)
-            return *(pMiddleProcess->leftEquippedObject);
+            return pMiddleProcess->leftEquippedObject->pObject;
 
         else if (aSlotId == 1 && pMiddleProcess->rightEquippedObject)
-            return *(pMiddleProcess->rightEquippedObject);
+            return pMiddleProcess->rightEquippedObject->pObject;
 
     }
 
     return nullptr;
 }
 
+TESForm* Actor::GetEquippedAmmo() const noexcept
+{
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess->ammoEquippedObject)
+    {
+        // TODO: rtti cast to check if is ammo object? or actually, just call AIProcess::GetCurrentAmmo()
+        return currentProcess->middleProcess->ammoEquippedObject->pObject;
+    }
+
+    return nullptr;
+}
 
 TESForm *Actor::GetCurrentLocation()
 {
@@ -181,6 +200,10 @@ Inventory Actor::GetInventory() const noexcept
 
     uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
     modSystem.GetServerModId(shoutId, inventory.Shout);
+
+    auto pAmmo = GetEquippedAmmo();
+    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
+    modSystem.GetServerModId(ammoId, inventory.Ammo);
 
     return inventory;
 }
@@ -275,6 +298,44 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
     if (shoutId)
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+
+    uint32_t ammoId = modSystem.GetGameId(acInventory.Ammo);
+
+    if (ammoId)
+    {
+        auto* pAmmo = TESForm::GetById(ammoId);
+
+        auto count = GetItemCountInInventory(pAmmo);
+
+        const auto pContainerChanges = GetContainerChanges()->entries;
+        for (auto pChange : *pContainerChanges)
+        {
+            if (pChange && pChange->form && pChange->form->formID == ammoId)
+            {
+                if (pChange->form->formID != ammoId)
+                    continue;
+
+                const auto pDataLists = pChange->dataList;
+                for (auto* pDataList : *pDataLists)
+                {
+                    if (pDataList)
+                    {
+                        if (pDataList->Contains(ExtraData::Count))
+                        {
+                            BSExtraData* pExtraData = pDataList->GetByType(ExtraData::Count);
+                            ExtraCount* pExtraCount = RTTI_CAST(pExtraData, BSExtraData, ExtraCount);
+                            if (pExtraCount)
+                            {
+                                pExtraCount->count = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+    }
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -406,17 +467,6 @@ void Actor::Respawn() noexcept
     Reset();
 }
 
-/*
-void* Actor::GetBiped() const noexcept
-{
-    TP_THIS_FUNCTION(TGetBiped, void*, Actor);
-
-    POINTER_SKYRIMSE(TGetBiped, s_getBiped, 0x140693DF0 - 0x140000000);
-
-    ThisCall(s_getBiped, this);
-}
-*/
-
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;
 
@@ -456,34 +506,39 @@ static TDamageActor* RealDamageActor = nullptr;
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
     const auto pExHittee = apThis->GetExtension();
-    if (!apHitter && pExHittee->IsLocal())
+    if (pExHittee->IsLocalPlayer())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
-
-    auto factions = apThis->GetFactions();
-    for (const auto& faction : factions.NpcFactions)
+    else if (pExHittee->IsRemotePlayer())
     {
-        if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsRemote())
-        {
-            return 0;
-        }
-        else if (faction.Id.BaseId == 0x00000DB1 && pExHittee->IsLocal())
+        return false;
+    }
+
+    if (apHitter)
+    {
+        const auto pExHitter = apHitter->GetExtension();
+        if (pExHitter->IsLocalPlayer())
         {
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
+        if (pExHitter->IsRemotePlayer())
+        {
+            return false;
+        }
     }
 
-    const auto pExHitter = apHitter->GetExtension();
-    if (pExHitter->IsLocal())
+    if (pExHittee->IsLocal())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
-
-    return 0;
+    else
+    {
+        return false;
+    }
 }
 
 TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1);
@@ -542,15 +597,6 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
-void TP_MAKE_THISCALL(HookAttachArrow, Actor, void* apBiped)
-{
-    const auto pExActor = apThis->GetExtension();
-    if (pExActor->IsLocal())
-        World::Get().GetRunner().Trigger(ArrowAttachedEvent(apThis->formID));
-
-    ThisCall(RealAttachArrow, apThis, apBiped);
-}
-
 static TiltedPhoques::Initializer s_actorHooks([]()
     {
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
@@ -564,7 +610,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140620900 - 0x140000000);
         POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1405E6F20 - 0x140000000);
         POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x1405E6580 - 0x140000000);
-        POINTER_SKYRIMSE(TAttachArrow, s_attachArrow, 0x140624090 - 0x140000000);
 
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
@@ -576,7 +621,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         RealRegenAttributes = s_regenAttributes.Get();
         RealAddInventoryItem = s_addInventoryItem.Get();
         RealPickUpItem = s_pickUpItem.Get();
-        RealAttachArrow = s_attachArrow.Get();
 
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -587,6 +631,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
         TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
         TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
         TP_HOOK(&RealPickUpItem, HookPickUpItem);
-        TP_HOOK(&RealAttachArrow, HookAttachArrow);
 
     });
