@@ -32,6 +32,7 @@ enum ClientOpcode : unsigned char
     kInterruptCastRequest,
     kAddTargetRequest,
     kProjectileLaunchRequest,
+    kScriptAnimationRequest,
     kClientOpcodeMax
 };
 
@@ -65,5 +66,6 @@ enum ServerOpcode : unsigned char
     kNotifyInterruptCast,
     kNotifyAddTarget,
     kNotifyProjectileLaunch,
+    kNotifyScriptAnimation,
     kServerOpcodeMax
 };
