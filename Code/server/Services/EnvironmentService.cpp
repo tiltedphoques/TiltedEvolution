@@ -15,6 +15,8 @@
 #include <Messages/NotifyLockChange.h>
 #include <Messages/AssignObjectsRequest.h>
 #include <Messages/AssignObjectsResponse.h>
+#include <Messages/ScriptAnimationRequest.h>
+#include <Messages/NotifyScriptAnimation.h>
 #include <Components.h>
 
 EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
@@ -25,6 +27,7 @@ EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatc
     m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&EnvironmentService::OnAssignObjectsRequest>(this);
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
     m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
+    m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&EnvironmentService::OnScriptAnimationRequest>(this);
 }
 
 void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -206,4 +209,19 @@ void EnvironmentService::OnUpdate(const UpdateEvent &) noexcept
     auto delta = now - m_lastTick;
     m_lastTick = now;
     m_timeModel.Update(delta);
+}
+
+void EnvironmentService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>& acMessage) noexcept
+{
+    auto packet = acMessage.Packet;
+
+    NotifyScriptAnimation message;
+    message.FormID = packet.FormID;
+    message.Animation = packet.Animation;
+    message.EventName = packet.EventName;
+
+    for(auto pPlayer : m_world.GetPlayerManager())
+    {
+        pPlayer->Send(message);
+    }
 }

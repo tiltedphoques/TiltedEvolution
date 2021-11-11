@@ -15,7 +15,9 @@ struct NotifyActivate;
 struct LockChangeEvent;
 struct NotifyLockChange;
 struct CellChangeEvent;
+struct ScriptAnimationEvent;
 struct AssignObjectsResponse;
+struct NotifyScriptAnimation;
 
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
@@ -34,6 +36,8 @@ public:
     void OnActivateNotify(const NotifyActivate &) noexcept;
     void OnLockChange(const LockChangeEvent &) noexcept;
     void OnLockChangeNotify(const NotifyLockChange &) noexcept;
+    void OnScriptAnimationEvent(const ScriptAnimationEvent &) noexcept;
+    void OnNotifyScriptAnimation(const NotifyScriptAnimation &) noexcept;
     void OnDraw() noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
@@ -54,6 +58,8 @@ public:
     entt::scoped_connection m_lockChangeConnection;
     entt::scoped_connection m_lockChangeNotifyConnection;
     entt::scoped_connection m_assignObjectConnection;
+    entt::scoped_connection m_scriptAnimationConnection;
+    entt::scoped_connection m_scriptAnimationNotifyConnection;
 
     TimeModel m_onlineTime;
     TimeModel m_offlineTime;
