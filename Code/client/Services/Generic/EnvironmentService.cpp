@@ -322,7 +322,7 @@ void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) n
 
 void EnvironmentService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEvent) noexcept
 {
-    ScriptAnimationRequest request;
+    ScriptAnimationRequest request{};
     request.FormID = acEvent.FormID;
     request.Animation = acEvent.Animation;
     request.EventName = acEvent.EventName;
@@ -345,10 +345,16 @@ void EnvironmentService::OnNotifyScriptAnimation(const NotifyScriptAnimation& ac
         return;
     }
 
-    BSFixedString animation(acMessage.Animation.c_str());
     BSFixedString eventName(acMessage.EventName.c_str());
-
-    pObject->PlayAnimationAndWait(&animation, &eventName);
+    if (acMessage.Animation == String{})
+    {
+        pObject->PlayAnimation(&eventName);
+    }
+    else
+    {
+        BSFixedString animation(acMessage.Animation.c_str());
+        pObject->PlayAnimationAndWait(&animation, &eventName);
+    }
 #endif
 }
 

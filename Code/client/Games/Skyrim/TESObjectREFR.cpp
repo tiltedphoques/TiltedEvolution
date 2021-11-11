@@ -13,11 +13,13 @@ TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uin
 TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TRemoveInventoryItem, void*, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3);
 TP_THIS_FUNCTION(TPlayAnimationAndWait, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName);
+TP_THIS_FUNCTION(TPlayAnimation, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName);
 
 static TActivate* RealActivate = nullptr;
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TRemoveInventoryItem* RealRemoveInventoryItem = nullptr;
 static TPlayAnimationAndWait* RealPlayAnimationAndWait = nullptr;
+static TPlayAnimation* RealPlayAnimation = nullptr;
 
 #ifdef SAVE_STUFF
 
@@ -131,7 +133,7 @@ void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBound
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
-static thread_local bool s_cancelAnimationEvent = false;
+static thread_local bool s_cancelAnimationWaitEvent = false;
 
 bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedString* apEventName) noexcept
 {
@@ -139,18 +141,44 @@ bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedStri
 
     PAPYRUS_FUNCTION(bool, ObjectReference, PlayAnimationAndWait, BSFixedString*, BSFixedString*);
 
-    s_cancelAnimationEvent = true;
+    s_cancelAnimationWaitEvent = true;
     bool result = s_pPlayAnimationAndWait(this, apAnimation, apEventName);
-    s_cancelAnimationEvent = false;
+    s_cancelAnimationWaitEvent = false;
     return result;
 }
 
 bool TP_MAKE_THISCALL(HookPlayAnimationAndWait, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName)
 {
-    if (!s_cancelAnimationEvent && (apSelf->formID < 0xFF000000))
+    spdlog::info("Animation: {}, EventName: {}", apAnimation->AsAscii(), apEventName->AsAscii());
+
+    if (!s_cancelAnimationWaitEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, apAnimation->AsAscii(), apEventName->AsAscii()));
 
     return ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
+}
+
+static thread_local bool s_cancelAnimationEvent = false;
+
+bool TESObjectREFR::PlayAnimation(BSFixedString* apEventName) noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(bool, ObjectReference, PlayAnimation, BSFixedString*);
+
+    s_cancelAnimationEvent = true;
+    bool result = s_pPlayAnimation(this, apEventName);
+    s_cancelAnimationEvent = false;
+    return result;
+}
+
+bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName)
+{
+    spdlog::info("EventName: {}", apEventName->AsAscii());
+
+    if (!s_cancelAnimationEvent && (apSelf->formID < 0xFF000000))
+        World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, String{}, apEventName->AsAscii()));
+
+    return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
@@ -189,15 +217,18 @@ static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
     POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A9180 - 0x140000000);
     POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A0930 - 0x140000000);
     POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FCB0 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 0x140995800 - 0x140000000);
+    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 0x1409BD960 - 0x140000000);
+    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 0x1409BD8E0 - 0x140000000);
 
     RealActivate = s_activate.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();
     RealRemoveInventoryItem = s_removeInventoryItem.Get();
     RealPlayAnimationAndWait = s_playAnimationAndWait.Get();
+    RealPlayAnimation = s_playAnimation.Get();
 
     TP_HOOK(&RealActivate, HookActivate);
     TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
     TP_HOOK(&RealRemoveInventoryItem, HookRemoveInventoryItem);
     TP_HOOK(&RealPlayAnimationAndWait, HookPlayAnimationAndWait);
+    TP_HOOK(&RealPlayAnimation, HookPlayAnimation);
 });
