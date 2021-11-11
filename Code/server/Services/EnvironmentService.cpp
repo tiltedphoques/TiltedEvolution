@@ -215,7 +215,7 @@ void EnvironmentService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimat
 {
     auto packet = acMessage.Packet;
 
-    NotifyScriptAnimation message;
+    NotifyScriptAnimation message{};
     message.FormID = packet.FormID;
     message.Animation = packet.Animation;
     message.EventName = packet.EventName;
