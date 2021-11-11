@@ -47,12 +47,6 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         action.TargetEventName = apAction->targetEventName.AsAscii();
         action.IdleId = apAction->idleForm ? apAction->idleForm->formID : 0;
 
-        /*
-        if (apAction->eventName.AsAscii() != String("") || apAction->targetEventName.AsAscii() != String(""))
-            spdlog::info("Animation triggered, eventName: '{}', targetEventName: '{}'", apAction->eventName.AsAscii(),
-                         apAction->targetEventName.AsAscii());
-        */
-
         // Save for later
         if (res)
             pExtension->LatestAnimation = action;
@@ -115,7 +109,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     TP_THIS_FUNCTION(TAnimationStep, uint8_t, ActorMediator, TESActionData*);
     using TApplyAnimationVariables = void* (void*, TESActionData*);
 
-    POINTER_SKYRIMSE(TApplyAnimationVariables, ApplyAnimationVariables, 0x63D0F0);
+    POINTER_SKYRIMSE(TApplyAnimationVariables, ApplyAnimationVariables, 0x14063D0F0 - 0x140000000);
     POINTER_SKYRIMSE(TAnimationStep, PerformComplexAction, 0x63B0F0);
     POINTER_SKYRIMSE(void*, qword_142F271B8, 0x142F271B8 - 0x140000000);
 

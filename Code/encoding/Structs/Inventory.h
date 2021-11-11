@@ -25,5 +25,6 @@ struct Inventory
     GameId LeftHandSpell{};
     GameId RightHandSpell{};
     GameId Shout{};
+    GameId Ammo{};
 #endif
 };

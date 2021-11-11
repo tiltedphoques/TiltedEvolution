@@ -85,7 +85,7 @@ enum Variables
 AnimationGraphDescriptor_Stingwing::AnimationGraphDescriptor_Stingwing(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 11929852545144499178;
+    uint64_t key = 1567904913354835406;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

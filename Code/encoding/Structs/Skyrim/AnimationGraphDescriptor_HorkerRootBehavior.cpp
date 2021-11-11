@@ -97,7 +97,7 @@ enum Variables
 
 AnimationGraphDescriptor_HorkerRootBehavior::AnimationGraphDescriptor_HorkerRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 16340436023604100531;
+    uint64_t key = 6046020211772183226;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

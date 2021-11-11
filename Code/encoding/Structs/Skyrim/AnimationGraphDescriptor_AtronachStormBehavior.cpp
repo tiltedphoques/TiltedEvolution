@@ -39,7 +39,7 @@ enum Variables
 
 AnimationGraphDescriptor_AtronachStormBehavior::AnimationGraphDescriptor_AtronachStormBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 3660140713303501570;
+    uint64_t key = 9011796343880008240;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

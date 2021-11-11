@@ -56,4 +56,5 @@ struct CharacterSpawnRequest final : ServerMessage
     Tints FaceTints{};
     ActorValues InitialActorValues{};
     bool IsDead{};
+    bool IsPlayer{};
 };

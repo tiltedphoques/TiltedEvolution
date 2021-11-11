@@ -18,3 +18,24 @@
 #define POINTER_FALLOUT4(className, variableName, ...) ;
 #endif
 
+#ifdef DEBUG
+    #define TP_ASSERT(Expr, Msg, ...) \
+        if (!(Expr)) \
+        { \
+            utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str()); \
+        }
+#else
+    #define TP_ASSERT(Expr, Msg, ...) ;
+#endif
+
+namespace utils
+{
+static void Assert(const char* apExpression, const char* apMessage)
+{
+    spdlog::critical("Assertion failed ({}): {}", apExpression, apMessage);
+
+    if (IsDebuggerPresent())
+        __debugbreak();
+}
+}
+

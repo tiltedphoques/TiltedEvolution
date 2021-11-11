@@ -12,6 +12,7 @@ bool Inventory::operator==(const Inventory& acRhs) const noexcept
         && RightHandSpell == acRhs.RightHandSpell
         && LeftHandSpell == acRhs.LeftHandSpell
         && Shout == acRhs.Shout
+        && Ammo == acRhs.Ammo
 #endif
         ;
 }
@@ -29,6 +30,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
     bool isLeftSpellSet = LeftHandSpell != GameId{};
     bool isRightSpellSet = RightHandSpell != GameId{};
     bool isShoutSet = Shout != GameId{};
+    bool isAmmoSet = Ammo != GameId{};
 #endif
 
     Serialization::WriteString(aWriter, Buffer);
@@ -39,6 +41,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
     Serialization::WriteBool(aWriter, isLeftSpellSet);
     Serialization::WriteBool(aWriter, isRightSpellSet);
     Serialization::WriteBool(aWriter, isShoutSet);
+    Serialization::WriteBool(aWriter, isAmmoSet);
 #endif
 
     if (isRightWeaponSet)
@@ -56,6 +59,9 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
     if (isShoutSet)
         Shout.Serialize(aWriter);
+
+    if (isAmmoSet)
+        Ammo.Serialize(aWriter);
 #endif
 }
 
@@ -69,6 +75,7 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     bool isLeftSpellSet = Serialization::ReadBool(aReader);
     bool isRightSpellSet = Serialization::ReadBool(aReader);
     bool isShoutSet = Serialization::ReadBool(aReader);
+    bool isAmmoSet = Serialization::ReadBool(aReader);
 #endif
 
     if (isRightWeaponSet)
@@ -86,6 +93,9 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 
     if (isShoutSet)
         Shout.Deserialize(aReader);
+
+    if (isAmmoSet)
+        Ammo.Deserialize(aReader);
 #endif
 
 }

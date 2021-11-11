@@ -32,7 +32,9 @@
 #include <Events/EquipmentChangeEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/SpellCastEvent.h>
-#include <Events/ArrowAttachedEvent.h>
+#include <Events/InterruptCastEvent.h>
+#include <Events/AddTargetEvent.h>
+#include <Events/ProjectileLaunchedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -51,12 +53,19 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/NotifySpellCast.h>
-#include <Messages/AttachArrowRequest.h>
-#include <Messages/NotifyAttachArrow.h>
+#include <Messages/ProjectileLaunchRequest.h>
+#include <Messages/NotifyProjectileLaunch.h>
+#include <Messages/InterruptCastRequest.h>
+#include <Messages/NotifyInterruptCast.h>
+#include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
 
 #include <World.h>
 #include <Games/TES.h>
 
+#include <Projectiles/Projectile.h>
+#include <Forms/TESObjectWEAP.h>
+#include <Forms/TESAmmo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -83,8 +92,12 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
     m_spellCastEventConnection = m_dispatcher.sink<SpellCastEvent>().connect<&CharacterService::OnSpellCastEvent>(this);
     m_notifySpellCastConnection = m_dispatcher.sink<NotifySpellCast>().connect<&CharacterService::OnNotifySpellCast>(this);
-    m_arrowAttachedEvent = m_dispatcher.sink<ArrowAttachedEvent>().connect<&CharacterService::OnArrowAttachedEvent>(this);
-    m_notifyAttachArrowConnection = m_dispatcher.sink<NotifyAttachArrow>().connect<&CharacterService::OnNotifyAttachArrow>(this);
+    m_interruptCastEventConnection = m_dispatcher.sink<InterruptCastEvent>().connect<&CharacterService::OnInterruptCast>(this);
+    m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&CharacterService::OnNotifyInterruptCast>(this);
+    m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&CharacterService::OnAddTargetEvent>(this);
+    m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&CharacterService::OnNotifyAddTarget>(this);
+    m_projectileLaunchedConnection = m_dispatcher.sink<ProjectileLaunchedEvent>().connect<&CharacterService::OnProjectileLaunchedEvent>(this);
+    m_projectileLaunchConnection = m_dispatcher.sink<NotifyProjectileLaunch>().connect<&CharacterService::OnNotifyProjectileLaunch>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -327,6 +340,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+    pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -530,7 +544,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
 
-    auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
     if (!pActor)
         return;
 
@@ -959,6 +973,8 @@ void CharacterService::RunSpawnUpdates() const noexcept
 void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
 #if TP_SKYRIM64
+    TP_ASSERT(acSpellCastEvent.pSpell, "SpellCastEvent has no spell");
+
     if (!acSpellCastEvent.pCaster->pCasterActor || !acSpellCastEvent.pCaster->pCasterActor->GetNiNode())
     {
         spdlog::warn("Spell cast event has no actor or actor is not loaded");
@@ -982,11 +998,8 @@ void CharacterService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) 
     request.CasterId = localComponent.Id;
     request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
     request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
-    if (acSpellCastEvent.pSpell)
-        request.SpellFormId = acSpellCastEvent.pSpell->formID;
-    else
-        spdlog::warn("Current spell not set");
-    //acSpellCastEvent.pCaster->pCasterActor->magicTarget;
+    m_world.GetModSystem().GetServerModId(acSpellCastEvent.pSpell->formID, request.SpellFormId.ModId,
+                                          request.SpellFormId.BaseId);
 
     spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}", request.CasterId,
                  request.CastingSource, request.IsDualCasting);
@@ -1038,7 +1051,14 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 
     if (!pSpell)
     {
-        auto* pSpellForm = TESForm::GetById(acMessage.SpellFormId);
+        const uint32_t cSpellFormId = World::Get().GetModSystem().GetGameId(acMessage.SpellFormId);
+        if (cSpellFormId == 0)
+        {
+            spdlog::error("Could not find spell form id for GameId base {:X}, mod {:X}", acMessage.SpellFormId.BaseId,
+                          acMessage.SpellFormId.ModId);
+            return;
+        }
+        auto* pSpellForm = TESForm::GetById(cSpellFormId);
         if (!pSpellForm)
         {
             spdlog::error("Cannot find spell form");
@@ -1050,15 +1070,12 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
     switch (acMessage.CastingSource)
     {
     case MagicSystem::CastingSource::LEFT_HAND:
-        //pActor->leftHandCaster->CastSpell(pActor->leftHandCaster->pCurrentSpell, 0, nullptr, )
         pActor->leftHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
-        //pActor->rightHandCaster->CastSpell(pActor->magicItems[1], nullptr, false);
         pActor->rightHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::OTHER:
-        //pActor->shoutCaster->CastSpell(pActor->magicItems[2], nullptr, false);
         pActor->shoutCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::INSTANT:
@@ -1067,15 +1084,18 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 #endif
 }
 
-void CharacterService::OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept
+
+void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
-    uint32_t formId = acEvent.FormID;
+    auto& modSystem = m_world.Get().GetModSystem();
 
+
+    auto shooterFormId = acEvent.ShooterID;
     auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
+    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
     {
-        return view.get<FormIdComponent>(entity).Id == formId;
+        return view.get<FormIdComponent>(entity).Id == shooterFormId;
     });
 
     if (shooterEntityIt == std::end(view))
@@ -1083,27 +1103,163 @@ void CharacterService::OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) c
 
     auto& localComponent = view.get<LocalComponent>(*shooterEntityIt);
 
-    AttachArrowRequest request;
-    request.ShooterId = localComponent.Id;
+    ProjectileLaunchRequest request{};
 
-    spdlog::info("Sending attach arrow request for {:X}", localComponent.Id);
+    request.ShooterID = localComponent.Id;
+
+    request.OriginX = acEvent.Origin.x;
+    request.OriginY = acEvent.Origin.y;
+    request.OriginZ = acEvent.Origin.z;
+
+    modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
+    modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
+    modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
+
+    request.ZAngle = acEvent.ZAngle;
+    request.XAngle = acEvent.XAngle;
+    request.YAngle = acEvent.YAngle;
+
+    modSystem.GetServerModId(acEvent.ParentCellID, request.ParentCellID);
+    modSystem.GetServerModId(acEvent.SpellID, request.SpellID);
+
+    request.CastingSource = acEvent.CastingSource;
+
+#if TP_SKYRIM64
+    request.unkBool1 = acEvent.unkBool1;
+#else
+#endif
+
+    request.Area = acEvent.Area;
+    request.Power = acEvent.Power;
+    request.Scale = acEvent.Scale;
+
+    request.AlwaysHit = acEvent.AlwaysHit;
+    request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
+    request.AutoAim = acEvent.AutoAim;
+    request.UseOrigin = acEvent.UseOrigin;
+    request.DeferInitialization = acEvent.DeferInitialization;
+    request.Tracer = acEvent.Tracer;
+    request.ForceConeOfFire = acEvent.ForceConeOfFire;
+
+    spdlog::info("Ammo event id: {}, request id: {}", acEvent.AmmoID, request.AmmoID.BaseId);
 
     m_transport.Send(request);
 #endif
 }
 
-void CharacterService::OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) const noexcept
+void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
 {
 #if TP_SKYRIM64
+    auto& modSystem = World::Get().GetModSystem();
+
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterId](auto entity)
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
     {
         return remoteView.get<RemoteComponent>(entity).Id == Id;
     });
 
     if (remoteIt == std::end(remoteView))
     {
-        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterId);
+        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterID);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+
+#if TP_SKYRIM64
+    Projectile::LaunchData launchData{};
+#else
+    ProjectileLaunchData launchData{};
+#endif
+
+    launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
+
+    launchData.Origin.x = acMessage.OriginX;
+    launchData.Origin.y = acMessage.OriginY;
+    launchData.Origin.z = acMessage.OriginZ;
+
+    const auto cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
+    launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
+
+    const auto cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
+    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+
+    const auto cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
+    launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
+
+    launchData.fZAngle = acMessage.ZAngle;
+    launchData.fXAngle = acMessage.XAngle;
+    launchData.fYAngle = acMessage.YAngle;
+
+    //const auto cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = PlayerCharacter::Get()->parentCell;
+
+    const auto cSpellId = modSystem.GetGameId(acMessage.SpellID);
+    launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+
+    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
+
+#if TP_SKYRIM64
+    launchData.unkBool1 = acMessage.unkBool1;
+#else
+#endif
+
+    launchData.iArea = acMessage.Area;
+    launchData.fPower = acMessage.Power;
+    launchData.fScale = acMessage.Scale;
+
+    launchData.bAlwaysHit = acMessage.AlwaysHit;
+    launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
+    launchData.bAutoAim = acMessage.AutoAim;
+    launchData.bUseOrigin = acMessage.UseOrigin;
+    launchData.bDeferInitialization = acMessage.DeferInitialization;
+    launchData.bTracer = acMessage.Tracer;
+    launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
+
+    uint8_t resultBuffer[100];
+
+#if TP_SKYRIM64
+    Projectile::Launch(resultBuffer, launchData);
+#else
+    Projectile::Launch(resultBuffer, launchData);
+#endif
+#endif
+}
+
+void CharacterService::OnInterruptCast(const InterruptCastEvent& acEvent) const noexcept
+{
+#if TP_SKYRIM64
+    auto formId = acEvent.CasterFormID;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (casterEntityIt == std::end(view))
+        return;
+
+    auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
+
+    InterruptCastRequest request;
+    request.CasterId = localComponent.Id;
+    m_transport.Send(request);
+#endif
+}
+
+void CharacterService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept
+{
+#if TP_SKYRIM64
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Caster with remote id {:X} not found.", acMessage.CasterId);
         return;
     }
 
@@ -1112,13 +1268,109 @@ void CharacterService::OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) c
     auto* pForm = TESForm::GetById(formIdComponent.Id);
     auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
-    void* pBiped = pActor->GetBiped();
-    pActor->AttachArrow(pBiped);
+    pActor->InterruptCast(false);
 
-    // TODO: set attack state flags when attaching arrow? look at ArrowAttachHandler
-    pActor->actorState.flags1 &= 0xFFFFFFFu;
-    pActor->actorState.flags1 |= 0x90000000;
+    spdlog::info("Interrupt remote cast successful");
+#endif
+}
 
-    spdlog::info("Attached arrow");
+void CharacterService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcept
+{
+#if TP_SKYRIM64
+    auto view = m_world.view<FormIdComponent>();
+    for (auto entity : view)
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(entity);
+        if (formIdComponent.Id != acEvent.TargetID)
+            continue;
+
+        AddTargetRequest request;
+
+        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(entity))
+        {
+            request.TargetId = pLocalComponent->Id;
+        }
+        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(entity))
+        {
+            request.TargetId = pRemoteComponent->Id;
+        }
+
+        TP_ASSERT(request.TargetId, "AddTargetRequest must have a target id.");
+
+        if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
+        {
+            spdlog::error("{s}: Could not find spell with from {:X}", __FUNCTION__, acEvent.SpellID);
+            return;
+        }
+
+        m_transport.Send(request);
+
+        break;
+    }
+#endif
+}
+
+void CharacterService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
+{
+#if TP_SKYRIM64
+    auto view = m_world.view<FormIdComponent>();
+
+    for (auto entity : view)
+    {
+        uint32_t componentId;
+        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
+        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+
+        if (cpLocalComponent)
+            componentId = cpLocalComponent->Id;
+        else if (cpRemoteComponent)
+            componentId = cpRemoteComponent->Id;
+        else
+            continue;
+
+        if (componentId == acMessage.TargetId)
+        {
+            auto& formIdComponent = view.get<FormIdComponent>(entity);
+            auto* pForm = TESForm::GetById(formIdComponent.Id);
+            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+            TP_ASSERT(pActor, "Actor should exist, form id: {:X}", formIdComponent.Id);
+
+            if (pActor)
+            {
+                const auto cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+                if (cSpellId == 0)
+                {
+                    spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                                  acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+                    return;
+                }
+
+                auto* pSpell = static_cast<MagicItem*>(TESForm::GetById(cSpellId));
+                if (!pSpell)
+                {
+                    spdlog::error("{}: Failed to retrieve spell by id {:X}", cSpellId);
+                    return;
+                }
+
+                // TODO: AddTarget gets notified for every effect, but we loop through the effects here again
+                for (auto effect : pSpell->listOfEffects)
+                {
+                    MagicTarget::AddTargetData data{};
+                    data.pSpell = pSpell;
+                    data.pEffectItem = effect;
+                    data.fMagnitude = 0.0f;
+                    data.fUnkFloat1 = 1.0f;
+                    data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+
+                    pActor->magicTarget.AddTarget(data);
+                }
+
+                spdlog::error("Add target successful");
+
+                break;
+            }
+        }
+    }
 #endif
 }

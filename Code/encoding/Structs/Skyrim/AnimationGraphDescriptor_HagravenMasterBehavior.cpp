@@ -162,7 +162,7 @@ enum Variables
 
 AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_HagravenMasterBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 5479445412677711795;
+    uint64_t key = 3017922126943190855;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -2,8 +2,10 @@
 *.ilk
 *.sym
 
+vs2019
 vsxmake2019
 .xmake
+vs2019
 
 Build
 Build/*.log
@@ -76,3 +78,5 @@ Package/
 distrib/
 distrib_debug/
 distrib_releasedbg/
+
+new_addresses.txt

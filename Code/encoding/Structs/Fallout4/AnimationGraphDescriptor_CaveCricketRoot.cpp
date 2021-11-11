@@ -50,7 +50,7 @@ enum Variables
 AnimationGraphDescriptor_CaveCricketRoot::AnimationGraphDescriptor_CaveCricketRoot(
     AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 2845452345151725471;
+    uint64_t key = 7359588577465619653;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

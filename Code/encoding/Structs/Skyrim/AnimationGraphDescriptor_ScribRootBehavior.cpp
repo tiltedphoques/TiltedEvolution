@@ -95,7 +95,7 @@ enum Variables
 
 AnimationGraphDescriptor_ScribRootBehavior::AnimationGraphDescriptor_ScribRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 13190228919977708006;
+    uint64_t key = 5600819660802946846;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

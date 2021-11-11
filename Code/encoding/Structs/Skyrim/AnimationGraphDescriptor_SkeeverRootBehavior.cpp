@@ -99,7 +99,7 @@ enum Variables
 
 AnimationGraphDescriptor_SkeeverRootBehavior::AnimationGraphDescriptor_SkeeverRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 9040851203584208508;
+    uint64_t key = 2357248884501192123;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

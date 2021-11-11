@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Forms/TESBoundObject.h>
-
 struct NEW_REFR_DATA;
 struct TESObjectCELL;
 struct TESWorldSpace;
@@ -61,9 +59,9 @@ static_assert(offsetof(TES, cells) == 0x18);
 static_assert(offsetof(TES, interiorCell) == 0x58);
 #endif
 
-struct ActorHolder
+struct ProcessLists
 {
-    static ActorHolder* Get() noexcept;
+    static ProcessLists* Get() noexcept;
 
 #if TP_SKYRIM
     uint8_t pad0[0x30];
@@ -71,22 +69,23 @@ struct ActorHolder
     uint8_t pad0[0x40];
 #endif
 
-    GameArray<uint32_t> actorRefs;
+    GameArray<uint32_t> HighActorHandleArray;
 
+    // TODO: re-reverse stuff below
 #if TP_SKYRIM
     uint8_t pad48[0x90 - 0x48];
 #else
 
 #endif
 
-    GameArray<uint32_t>* actorBuckets[4]; // 0 is actorRefs, others are not investigated
+    GameArray<uint32_t>* actorBuckets[4]; // 0 is HighActorHandleArray, others are not investigated
 };
 
 #if TP_SKYRIM
-static_assert(offsetof(ActorHolder, actorRefs) == 0x30);
-static_assert(offsetof(ActorHolder, actorBuckets) == 0x90);
+static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x30);
+static_assert(offsetof(ProcessLists, actorBuckets) == 0x90);
 #elif TP_FALLOUT4
-static_assert(offsetof(ActorHolder, actorRefs) == 0x40);
+static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x40);
 #endif
 
 struct Mod

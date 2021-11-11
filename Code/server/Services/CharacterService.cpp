@@ -31,8 +31,12 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/NotifySpellCast.h>
-#include <Messages/AttachArrowRequest.h>
-#include <Messages/NotifyAttachArrow.h>
+#include <Messages/InterruptCastRequest.h>
+#include <Messages/NotifyInterruptCast.h>
+#include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
+#include <Messages/ProjectileLaunchRequest.h>
+#include <Messages/NotifyProjectileLaunch.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -49,7 +53,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_spellCastConnection(aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&CharacterService::OnSpellCastRequest>(this))
-    , m_attachArrowConnection(aDispatcher.sink<PacketEvent<AttachArrowRequest>>().connect<&CharacterService::OnAttachArrowRequest>(this))
+    , m_interruptCastConnection(aDispatcher.sink<PacketEvent<InterruptCastRequest>>().connect<&CharacterService::OnInterruptCastRequest>(this))
+    , m_addTargetConnection(aDispatcher.sink<PacketEvent<AddTargetRequest>>().connect<&CharacterService::OnAddTargetRequest>(this))
+    , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
 {
 }
 
@@ -63,6 +69,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
     apSpawnRequest->IsDead = characterComponent.IsDead;
+    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -163,7 +170,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     auto& message = acMessage.Packet;
     const auto& refId = message.ReferenceId;
 
-    const auto isCustom = (refId.ModId == 0 && refId.BaseId == 0x14) || refId.ModId == std::numeric_limits<uint32_t>::max();
+    const auto isPlayer = (refId.ModId == 0 && refId.BaseId == 0x14);
+    const auto isCustom = isPlayer || refId.ModId == std::numeric_limits<uint32_t>::max();
 
     // Check if id is the player
     if (!isCustom)
@@ -509,6 +517,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
     characterComponent.IsDead = message.IsDead;
+    characterComponent.IsPlayer = isPlayer;
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -544,6 +553,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
     response.AllActorValues = message.AllActorValues;
+    // TODO: why is response.IsDead not set here?
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);
 
@@ -716,21 +726,199 @@ void CharacterService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& a
     notify.CastingSource = message.CastingSource;
     notify.IsDualCasting = message.IsDualCasting;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
+    // TODO: this stuff is unfortunately kinda repetitive, maybe integrate it into PlayerManager somehow
+    const auto cCasterEntity = static_cast<entt::entity>(message.CasterId);
+    const auto* casterCellIdComp = m_world.try_get<CellIdComponent>(cCasterEntity);
+    const auto* casterOwnerComp = m_world.try_get<OwnerComponent>(cCasterEntity);
+
+    if (!casterCellIdComp || !casterOwnerComp)
     {
-        if (acMessage.pPlayer != pPlayer)
+        spdlog::warn("Caster entity not found for server id {:X}", message.CasterId);
+        return;
+    }
+
+    if (casterCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer || casterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
             pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == casterCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, casterCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
     }
 }
 
-void CharacterService::OnAttachArrowRequest(const PacketEvent<AttachArrowRequest>& acMessage) const noexcept
+void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
 {
-    NotifyAttachArrow notify;
-    notify.ShooterId = acMessage.Packet.ShooterId;
+    auto packet = acMessage.Packet;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
+    NotifyProjectileLaunch notify{};
+
+    notify.ShooterID = packet.ShooterID;
+
+    notify.OriginX = packet.OriginX;
+    notify.OriginY = packet.OriginY;
+    notify.OriginZ = packet.OriginZ;
+    notify.ContactNormalX = packet.ContactNormalX;
+    notify.ContactNormalY = packet.ContactNormalY;
+    notify.ContactNormalZ = packet.ContactNormalZ;
+
+    notify.ProjectileBaseID = packet.ProjectileBaseID;
+    notify.WeaponID = packet.WeaponID;
+    notify.AmmoID = packet.AmmoID;
+
+    notify.ZAngle = packet.ZAngle;
+    notify.XAngle = packet.XAngle;
+    notify.YAngle = packet.YAngle;
+
+    notify.ParentCellID = packet.ParentCellID;
+
+    notify.SpellID = packet.SpellID;
+    notify.CastingSource = packet.CastingSource;
+
+    notify.unkBool1 = packet.unkBool1;
+
+    notify.Area = packet.Area;
+    notify.Power = packet.Power;
+    notify.Scale = packet.Scale;
+
+    spdlog::info("Area: {}, Power: {}, Scale: {}", notify.Area, notify.Power, notify.Scale);
+
+    notify.AlwaysHit = packet.AlwaysHit;
+    notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
+    notify.AutoAim = packet.AutoAim;
+    notify.UseOrigin = packet.UseOrigin;
+    notify.DeferInitialization = packet.DeferInitialization;
+    notify.Tracer = packet.Tracer;
+    notify.ForceConeOfFire = packet.ForceConeOfFire;
+
+    const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
+    const auto* shooterCellIdComp = m_world.try_get<CellIdComponent>(cShooterEntity);
+    const auto* shooterOwnerComp = m_world.try_get<OwnerComponent>(cShooterEntity);
+
+    if (!shooterCellIdComp || !shooterOwnerComp)
     {
-        if (acMessage.pPlayer != pPlayer)
+        spdlog::warn("Shooter entity not found for server id {:X}", packet.ShooterID);
+        return;
+    }
+
+    if (shooterCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (shooterOwnerComp->GetOwner() == pPlayer || shooterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
             pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (shooterOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == shooterCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, shooterCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
     }
 }
+
+void CharacterService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyInterruptCast notify;
+    notify.CasterId = message.CasterId;
+
+    const auto cCasterEntity = static_cast<entt::entity>(message.CasterId);
+    const auto* casterCellIdComp = m_world.try_get<CellIdComponent>(cCasterEntity);
+    const auto* casterOwnerComp = m_world.try_get<OwnerComponent>(cCasterEntity);
+
+    if (!casterCellIdComp || !casterOwnerComp)
+    {
+        spdlog::warn("Caster entity not found for server id {:X}", message.CasterId);
+        return;
+    }
+
+    if (casterCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer || casterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
+            pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (casterOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == casterCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, casterCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
+    }
+}
+
+void CharacterService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyAddTarget notify;
+    notify.TargetId = message.TargetId;
+    notify.SpellId = message.SpellId;
+
+    const auto cTargetEntity = static_cast<entt::entity>(message.TargetId);
+    const auto* targetCellIdComp = m_world.try_get<CellIdComponent>(cTargetEntity);
+    const auto* targetOwnerComp = m_world.try_get<OwnerComponent>(cTargetEntity);
+
+    if (!targetCellIdComp || !targetOwnerComp)
+    {
+        spdlog::warn("Target entity not found for server id {:X}", message.TargetId);
+        return;
+    }
+
+    if (targetCellIdComp->WorldSpaceId == GameId{})
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (targetOwnerComp->GetOwner() == pPlayer || targetCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
+                continue;
+
+            pPlayer->Send(notify);
+        }
+    }
+    else
+    {
+        for (auto pPlayer : m_world.GetPlayerManager())
+        {
+            if (targetOwnerComp->GetOwner() == pPlayer)
+                continue;
+
+            if (pPlayer->GetCellComponent().WorldSpaceId == targetCellIdComp->WorldSpaceId && 
+              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, targetCellIdComp->CenterCoords))
+                pPlayer->Send(notify);
+        }
+    }
+}
+

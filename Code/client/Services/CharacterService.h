@@ -17,8 +17,12 @@ struct NotifySpawnData;
 struct NotifyOwnershipTransfer;
 struct SpellCastEvent;
 struct NotifySpellCast;
-struct ArrowAttachedEvent;
-struct NotifyAttachArrow;
+struct InterruptCastEvent;
+struct NotifyInterruptCast;
+struct AddTargetEvent;
+struct NotifyAddTarget;
+struct ProjectileLaunchedEvent;
+struct NotifyProjectileLaunch;
 
 struct Actor;
 struct World;
@@ -46,8 +50,12 @@ struct CharacterService
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
     void OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept;
     void OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept;
-    void OnArrowAttachedEvent(const ArrowAttachedEvent& acEvent) const noexcept;
-    void OnNotifyAttachArrow(const NotifyAttachArrow& acMessage) const noexcept;
+    void OnInterruptCast(const InterruptCastEvent& acEvent) const noexcept;
+    void OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept;
+    void OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcept;
+    void OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept;
+    void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
+    void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
 
 private:
 
@@ -80,6 +88,10 @@ private:
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
     entt::scoped_connection m_spellCastEventConnection;
     entt::scoped_connection m_notifySpellCastConnection;
-    entt::scoped_connection m_arrowAttachedEvent;
-    entt::scoped_connection m_notifyAttachArrowConnection;
+    entt::scoped_connection m_interruptCastEventConnection;
+    entt::scoped_connection m_notifyInterruptCastConnection;
+    entt::scoped_connection m_addTargetEventConnection;
+    entt::scoped_connection m_notifyAddTargetConnection;
+    entt::scoped_connection m_projectileLaunchedConnection;
+    entt::scoped_connection m_projectileLaunchConnection;
 };

@@ -83,7 +83,7 @@ enum Variables
 
 AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 4761317215286941674;
+    uint64_t key = 3064138997224155673;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

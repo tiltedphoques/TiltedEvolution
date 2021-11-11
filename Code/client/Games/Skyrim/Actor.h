@@ -19,7 +19,8 @@ struct TESRace;
 struct ExActor;
 struct ExPlayerCharacter;
 struct ActorExtension;
-struct ActorProcessManager;
+struct AIProcess;
+struct CombatController;
 
 struct Actor : TESObjectREFR
 {
@@ -79,7 +80,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CA();
     virtual void sub_CB();
     virtual void sub_CC();
-    virtual void AttachArrow(void* apBiped);
+    virtual void AttachArrow();
     virtual void sub_CE();
     virtual void sub_CF();
     virtual void sub_D0();
@@ -114,11 +115,12 @@ struct Actor : TESObjectREFR
     virtual void sub_ED();
     virtual void sub_EE();
     virtual void sub_EF();
-    virtual void sub_F0();
-    virtual void MoveToMainProcess();
-    virtual void MoveToFourthProcess();
-    virtual void MoveToThirdProcess();
-    virtual bool MoveToSecondaryProcess();
+    // these 4 are not virtual funcs in fallout 4
+    virtual bool MoveToHigh();
+    virtual bool MoveToLow();
+    virtual bool MoveToMiddleLow();
+    virtual bool MoveToMiddleHigh();
+    virtual bool sub_F4();
     virtual void sub_F5();
     virtual void sub_F6();
     virtual void sub_F7();
@@ -170,12 +172,10 @@ struct Actor : TESObjectREFR
     virtual void sub_125();
     virtual void sub_126();
     virtual void sub_127();
-    
-    // Should be virtual
-    //void* GetBiped() const noexcept;
 
     // Real functions
-    void DualCastSpell(TESObjectREFR* apDesiredTarget);
+    void DualCastSpell(TESObjectREFR* apDesiredTarget) noexcept;
+    void InterruptCast(bool abRefund) noexcept;
 
     // Casting
     ActorExtension* GetExtension() noexcept;
@@ -185,6 +185,7 @@ struct Actor : TESObjectREFR
     // Getters
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
+    TESForm* GetEquippedAmmo() const noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
 
@@ -250,7 +251,7 @@ public:
     uint32_t flags1;
     float headTrackingUpdateDelay;
     uint32_t unk84;
-    ActorProcessManager* processManager;
+    AIProcess* currentProcess;
     uint32_t dialogueHandle;
     uint32_t combatHandle;
     uint32_t killerHandle;
@@ -265,7 +266,7 @@ public:
     void* pad138[2];
     struct IMovementDrivenControl* movementDrivenControl; // MovementControllerNPC
     uint32_t unk0D4;
-    void* unkD8;
+    CombatController* pCombatController;
     void* unkDC;
     uint32_t unkE0;
     uint32_t unkE4;
@@ -308,7 +309,7 @@ public:
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
 
-static_assert(offsetof(Actor, processManager) == 0xF0);
+static_assert(offsetof(Actor, currentProcess) == 0xF0);
 static_assert(offsetof(Actor, flags1) == 0xE0);
 static_assert(offsetof(Actor, actorValueOwner) == 0xB0);
 static_assert(offsetof(Actor, actorState) == 0xB8);
@@ -317,7 +318,7 @@ static_assert(offsetof(Actor, unk194) == 0x270);
 static_assert(offsetof(Actor, unk9C) == 0x108);
 static_assert(offsetof(Actor, unk84) == 0xE8);
 static_assert(offsetof(Actor, unk17C) == 0x17C);
-static_assert(offsetof(Actor, unkD8) == 0x158);
+static_assert(offsetof(Actor, pCombatController) == 0x158);
 static_assert(offsetof(Actor, magicItems) == 0x1C0);
 static_assert(offsetof(Actor, equippedShout) == 0x1E0);
 static_assert(offsetof(Actor, actorLock) == 0x27C);

@@ -24,8 +24,8 @@ struct ExtraContainerChanges : BSExtraData
 
         GameList<Entry>* entries;
         TESObjectREFR* parent;
-        float unk10;
-        float unk14; // init to -1.0, maybe weight
+        float totalWeight;
+        float armorWeight; // init to -1.0, maybe weight
         uint16_t unk18; // Maybe count ? init to 0
     };
 

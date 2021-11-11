@@ -81,7 +81,7 @@ enum Variables
 
 AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 16314999750039846061;
+    uint64_t key = 3009402738794250552;
     
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(

@@ -99,5 +99,8 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
         }
     }
 
+    std::transform(variableNames.begin(), variableNames.end(), variableNames.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
     return Crc64(reinterpret_cast<const unsigned char*>(variableNames.c_str()), variableNames.size());
 }
