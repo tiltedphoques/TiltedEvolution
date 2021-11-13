@@ -78,7 +78,7 @@ int StartUp(int argc, char** argv)
     InstallStartHook();
     // Initialize all hooks before calling game init
     //TiltedPhoques::Initializer::RunAll();
-    //RunTiltedInit();
+    RunTiltedInit();
 
     // This shouldn't return until the game is killed
     LC->gameMain();
@@ -88,6 +88,6 @@ int StartUp(int argc, char** argv)
 void InitClient()
 {
     // Jump into client code.
-    //RunTiltedApp();
+    RunTiltedApp();
 }
 } // namespace launcher

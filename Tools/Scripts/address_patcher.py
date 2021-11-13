@@ -14,7 +14,7 @@ for subdir, dirs, files in os.walk(rootdir):
 
 with open('new_addresses.txt') as new_addresses:
 	for address_pair in new_addresses:
-		address_pair = address_pair.split(',')
+		address_pair = address_pair.strip().split(',')
 
 		is_address_rewritten = False
 

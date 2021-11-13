@@ -27,6 +27,8 @@ struct WindowConfig
     bool bForce;
 };
 
+static_assert(offsetof(ViewportConfig, name) == 32);
+
 struct BGSRenderer
 {
 

@@ -72,7 +72,7 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_SKYRIMSE(TLaunch, s_launch, 0x14074B170 - 0x140000000);
+    POINTER_SKYRIMSE(TLaunch, s_launch, 0x140778480 - 0x140000000);
 
     RealLaunch = s_launch.Get();
 

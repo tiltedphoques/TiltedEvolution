@@ -13,13 +13,13 @@ struct GameHeap;
 TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, size_t aAlignment, bool aAligned);
 TP_THIS_FUNCTION(TFormFree, void, GameHeap, void* apPtr, bool aAligned);
 
-POINTER_SKYRIMSE(GameHeap, s_gameHeap, 0x141EBD280 - 0x140000000);
+POINTER_SKYRIMSE(GameHeap, s_gameHeap, 0x141F57A80 - 0x140000000);
 POINTER_FALLOUT4(GameHeap, s_gameHeap, 0x1438CC980 - 0x140000000);
 
-POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 0x140C02260 - 0x140000000);
+POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 0x140C26F00 - 0x140000000);
 POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 0x141B0EFD0 - 0x140000000);
 
-POINTER_SKYRIMSE(TFormFree, s_formFree, 0x140C02560 - 0x140000000);
+POINTER_SKYRIMSE(TFormFree, s_formFree, 0x140C27350 - 0x140000000);
 POINTER_FALLOUT4(TFormFree, s_formFree, 0x141B0F2E0 - 0x140000000);
 
 TFormAllocate* RealFormAllocate = nullptr;

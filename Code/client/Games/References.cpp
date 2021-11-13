@@ -53,7 +53,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 
     using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
 
-    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 0x1402130F0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 0x140220880 - 0x140000000);
     POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 0x140023740 - 0x140000000);
 
     s_getRefrByHandle.Get()(aHandle, pResult);
@@ -313,7 +313,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*,
                      const NiPoint3&, const NiPoint3&);
 
-    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409AE5C0 - 0x140000000);
+    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409D33E0 - 0x140000000);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
 
     ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
@@ -356,7 +356,7 @@ void Actor::QueueUpdate() noexcept
     TP_THIS_FUNCTION(TQueueUpdate, void, Actor, bool aFaceGen, uint32_t, bool, uint32_t);
 #endif
 
-    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 0x140693110 - 0x140000000);
+    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 0x1406BADD0 - 0x140000000);
     POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 0x140D8A1F0 - 0x140000000);
 
 #ifdef TP_SKYRIM
@@ -409,7 +409,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, BSExtraDataList, uint32_t);
-    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x140119450 - 0x140000000);
+    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x1401238E0 - 0x140000000);
     POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
 
 #if TP_FALLOUT4
@@ -455,7 +455,7 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
     POINTER_FALLOUT4(PlayerCharacter*, s_character, 0x145AA4388 - 0x140000000);
-    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 0x142EFF7D8 - 0x140000000);
+    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 0x142F99F90 - 0x140000000);
 
     return *s_character.Get();
 }
@@ -473,7 +473,7 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 Lock* TESObjectREFR::GetLock() noexcept
 {
     TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
-    POINTER_SKYRIMSE(TGetLock, realGetLock, 0x1402A74C0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetLock, realGetLock, 0x1402B9260 - 0x140000000);
     POINTER_FALLOUT4(TGetLock, realGetLock, 0x14047FEE0 - 0x140000000);
 
     return ThisCall(realGetLock, this);
@@ -482,7 +482,7 @@ Lock* TESObjectREFR::GetLock() noexcept
 Lock* TESObjectREFR::CreateLock() noexcept
 {
     TP_THIS_FUNCTION(TCreateLock, Lock*, TESObjectREFR);
-    POINTER_SKYRIMSE(TCreateLock, realCreateLock, 0x1402A7270 - 0x140000000);
+    POINTER_SKYRIMSE(TCreateLock, realCreateLock, 0x1402B9060 - 0x140000000);
     POINTER_FALLOUT4(TCreateLock, realCreateLock, 0x14047FD20 - 0x140000000);
 
     return ThisCall(realCreateLock, this);
@@ -574,22 +574,22 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
 
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
-        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x140296910 - 0x140000000);
+        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x1402A8EC0 - 0x140000000);
         POINTER_FALLOUT4(TSetPosition, s_setPosition, 0x14040C060 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateX, 0x140296680 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateX, 0x1402A8CF0 - 0x140000000);
         POINTER_FALLOUT4(TRotate, s_rotateX, 0x14040BE70 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateY, 0x140296740 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateY, 0x1402A8D70 - 0x140000000);
         POINTER_FALLOUT4(TRotate, s_rotateY, 0x14040BF00 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateZ, 0x140296800 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateZ, 0x1402A8DF0 - 0x140000000);
         POINTER_FALLOUT4(TRotate, s_rotateZ, 0x14040BF90 - 0x140000000);
 
-        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 0x1405D87F0 - 0x140000000);
+        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 0x1405FD7E0 - 0x140000000);
         POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
 
-        POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x140285BE0 - 0x140000000);
+        POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x140297850 - 0x140000000);
         POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
 
         RealSetPosition = s_setPosition.Get();

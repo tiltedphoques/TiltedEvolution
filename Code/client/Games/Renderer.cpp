@@ -25,7 +25,7 @@ static TRenderPresent* RealRenderPresent = nullptr;
 
 BGSRenderer* BGSRenderer::Get()
 {
-    POINTER_SKYRIMSE(BGSRenderer*, s_instance, 0x143025F00 - 0x140000000);
+    POINTER_SKYRIMSE(BGSRenderer*, s_instance, 0x1430C0C08 - 0x140000000);
     POINTER_FALLOUT4(BGSRenderer*, s_instance, 0x14609BF80 - 0x140000000);
 
     return *(s_instance.Get());
@@ -33,7 +33,7 @@ BGSRenderer* BGSRenderer::Get()
 
 ID3D11Device* BGSRenderer::GetDevice()
 {
-    POINTER_SKYRIMSE(ID3D11Device*, s_device, 0x143025F08 - 0x140000000);
+    POINTER_SKYRIMSE(ID3D11Device*, s_device, 0x1430C0C10 - 0x140000000);
     POINTER_FALLOUT4(ID3D11Device*, s_device, 0x1461E0918 - 0x140000000);
 
     return *(s_device.Get());
@@ -87,13 +87,13 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
 
 static TiltedPhoques::Initializer s_viewportHooks([]()
 {
-    POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 0x140D68DD0 - 0x140000000);
+    POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 0x140DA3850 - 0x140000000);
     POINTER_FALLOUT4(TCreateViewport, s_realCreateViewport, 0x141D09DA0 - 0x140000000);
 
     RealCreateViewport = s_realCreateViewport.Get();
     TP_HOOK(&RealCreateViewport, HookCreateViewport);
 
-    POINTER_SKYRIMSE(TRenderPresent, s_realRenderPresent, 0x140D6A2B0 - 0x140000000);
+    POINTER_SKYRIMSE(TRenderPresent, s_realRenderPresent, 0x140DA5BE0 - 0x140000000);
     POINTER_FALLOUT4(TRenderPresent, s_realRenderPresent, 0x141D0B670 - 0x140000000);
 
     RealRenderPresent = s_realRenderPresent.Get();
@@ -101,11 +101,10 @@ static TiltedPhoques::Initializer s_viewportHooks([]()
 
 #if TP_SKYRIM64
     // change window mode style to have a close button
-    TiltedPhoques::Put(0x140000000 + (0xD71FA9 + 1), WS_OVERLAPPEDWINDOW);
+    TiltedPhoques::Put(0x140DA39C4 + 1, WS_OVERLAPPEDWINDOW);
 
     // don't let the game steal the media keys in windowed mode
-    TiltedPhoques::Put(0x140000000 + (0xC1A0B5 + 2),
-                                     /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
+    TiltedPhoques::Put(0x140C40315 + 2, /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
 #else
     TiltedPhoques::Put(0x140000000 +
          (0x1D17EE7 + 1), WS_OVERLAPPEDWINDOW);

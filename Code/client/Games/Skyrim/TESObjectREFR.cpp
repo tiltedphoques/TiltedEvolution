@@ -68,7 +68,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 0x1401D8E40 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 0x1401E4880 - 0x140000000);
     
     return ThisCall(s_getContainerChangs, this);
 }
@@ -98,7 +98,7 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainer, TESContainer*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 0x14028E390 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 0x1402A0650 - 0x140000000);
 
     return ThisCall(s_getContainer, this);
 }
@@ -150,9 +150,9 @@ void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TE
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
-        POINTER_SKYRIMSE(TActivate, s_activate, 0x140296C00 - 0x140000000);
-        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x14028E680 - 0x140000000);
-        POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14028D9E0 - 0x140000000);
+        POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A9180 - 0x140000000);
+        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A0930 - 0x140000000);
+        POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FCB0 - 0x140000000);
 
         RealActivate = s_activate.Get();
         RealAddInventoryItem = s_addInventoryItem.Get();

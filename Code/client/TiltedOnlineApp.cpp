@@ -41,7 +41,7 @@ TiltedOnlineApp::~TiltedOnlineApp() = default;
 
 void* TiltedOnlineApp::GetMainAddress() const
 {
-    POINTER_SKYRIMSE(void, winMain, 0x1405ACBD0 - 0x140000000);
+    POINTER_SKYRIMSE(void, winMain, 0x1405D29F0 - 0x140000000);
     POINTER_FALLOUT4(void, winMain, 0x140D35930 - 0x140000000);
 
     return winMain.GetPtr();
@@ -69,13 +69,13 @@ bool TiltedOnlineApp::EndMain()
 void TiltedOnlineApp::Update()
 {
     // Every frame make sure we won't use preprocessed facegen
-    POINTER_SKYRIMSE(uint32_t, bUseFaceGenPreprocessedHeads, 0x141DEA030 - 0x140000000);
+    POINTER_SKYRIMSE(uint32_t, bUseFaceGenPreprocessedHeads, 0x141E7E110 - 0x140000000);
     POINTER_FALLOUT4(uint32_t, bUseFaceGenPreprocessedHeads, 0x143733CE0 - 0x140000000);
 
     *bUseFaceGenPreprocessedHeads = 0;
 
     // Make sure the window stays active
-    POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 0x141DEED10 - 0x140000000);
+    POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 0x141E83088 - 0x140000000);
     POINTER_FALLOUT4(uint32_t, bAlwaysActive, 0x14378E618 - 0x140000000);
 
     *bAlwaysActive = 1;

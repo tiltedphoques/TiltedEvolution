@@ -18,7 +18,7 @@ char TP_MAKE_THISCALL(HookPickUpItem, PlayerCharacter, TESObjectREFR* apObject, 
 
 static TiltedPhoques::Initializer s_playerCharacterHooks([]()
     {
-        POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x1406A5300 - 0x140000000);
+        POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x1406CD770 - 0x140000000);
 
         RealPickUpItem = s_pickUpItem.Get();
 
