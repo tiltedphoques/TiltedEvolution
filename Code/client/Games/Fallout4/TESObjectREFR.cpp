@@ -54,6 +54,15 @@ ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
     return actorValueInfoArray[aId];
 }
 
+const BGSEquipSlot* TESObjectREFR::GetEquipSlot(uint32_t aEquipIndex) const noexcept
+{
+    TP_THIS_FUNCTION(TGetEquipSlot, const BGSEquipSlot*, const TESObjectREFR, uint32_t);
+
+    POINTER_FALLOUT4(TGetEquipSlot, getEquipSlot, 0x1403FE4F0 - 0x140000000);
+
+    return ThisCall(getEquipSlot, this, aEquipIndex);
+}
+
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping) noexcept
 {
     return ThisCall(RealActivate, this, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
