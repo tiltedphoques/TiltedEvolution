@@ -38,11 +38,10 @@ EquipManager* EquipManager::Get() noexcept
     return *s_singleton.Get();
 }
 
-TP_THIS_FUNCTION(TEquipObject, bool, EquipManager, Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked);
-//TEquipObject* RealEquipObject = nullptr;
 
 bool EquipManager::EquipObject(Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked)
 {
+    TP_THIS_FUNCTION(TEquipObject, bool, EquipManager, Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked);
     POINTER_FALLOUT4(TEquipObject, equipObject, 0x140E1BCD0 - 0x140000000);
 
     ScopedEquipOverride equipOverride;
@@ -51,14 +50,6 @@ bool EquipManager::EquipObject(Actor* apActor, BGSObjectInstance& arObject, uint
 
     return result;
 }
-
-/*
-bool TP_MAKE_THISCALL(EquipObjectHook, EquipManager, Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked)
-{
-    return ThisCall(RealEquipObject, apThis, apActor, arObject, auiStackID, auiNumber, apSlot, abQueueEquip,
-                    abForceEquip, abPlaySounds, abApplyNow, abLocked);
-}
-*/
 
 bool EquipManager::UnequipObject(Actor* apActor, BGSObjectInstance& arObject, uint32_t auiNumber, const BGSEquipSlot* apSlot, uint32_t auiStackID, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, const BGSEquipSlot* apSlotBeingReplaced)
 {
@@ -119,13 +110,10 @@ static TiltedPhoques::Initializer s_equipmentHooks([]()
 {
     POINTER_FALLOUT4(TEquip, s_equipFunc, 0x140E1EB50 - 0x140000000);
     POINTER_FALLOUT4(TUnEquip, s_unequipFunc, 0x140E203A0 - 0x140000000);
-    //POINTER_FALLOUT4(TEquipObject, equipObject, 0x140E1BCD0 - 0x140000000);
 
     RealUnEquip = s_unequipFunc.Get();
     RealEquip = s_equipFunc.Get();
-    //RealEquipObject = equipObject.Get();
 
     TP_HOOK(&RealUnEquip, UnEquipHook);
     TP_HOOK(&RealEquip, EquipHook);
-    //TP_HOOK(&RealEquipObject, EquipObjectHook);
 });

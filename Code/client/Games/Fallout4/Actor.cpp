@@ -162,7 +162,9 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
     {
         TESForm* pWeapon = TESForm::GetById(mainHandWeaponId);
         BGSObjectInstance object(pWeapon, nullptr);
+
         const BGSEquipSlot* pSlot = GetEquipSlot(0);
+
         pEquipManager->EquipObject(this, object, 0, 1, pSlot, false, true, false, true, false);
     }
 }
