@@ -1,0 +1,37 @@
+{
+  "branches": ["master", "bluedove", "prerel"],
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "angular",
+      "releaseRules": [
+        {"type": "tweak", "release": "patch"},
+        {"scope": "no-release", "release": false}
+      ]
+    }],
+    ["@semantic-release/release-notes-generator", {
+      "writerOpts": {
+        "groupBy": "type",
+        "commitGroupSort": [
+          "feat", "tweak", "perf", "fix"],
+        "headingLevel": "2",
+        "sectionSymbol": "*"
+      },
+      "types": [
+        {"type": "feat", "section": "Features"},
+        {"type": "fix", "section": "Bug Fixes"},
+        {"type": "perf", "section": "Performance Improvements"},
+        {"type": "tweak", "section": "Tweaks"},
+        {"type": "WIP", "section": "WIP"}
+      ]
+    }],
+    "@semantic-release/changelog",
+    ["@semantic-release/npm", {
+        "npmPublish": false
+    }],
+    ["@semantic-release/git", {
+      "assets": ["CHANGELOG.md"],
+      "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+    }]
+  ],
+  "preset": "angular"
+}
