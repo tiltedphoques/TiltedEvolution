@@ -12,6 +12,7 @@ struct BSFaceGenNiNode;
 struct TESObjectCELL;
 struct AnimationVariables;
 struct TESBoundObject;
+struct BGSEquipSlot;
 
 struct TESObjectREFR : TESForm
 {
@@ -149,6 +150,7 @@ struct TESObjectREFR : TESForm
     BSExtraDataList* GetExtraDataList() noexcept;
     ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
     Lock* GetLock() noexcept;
+    const BGSEquipSlot* GetEquipSlot(uint32_t uiIndex) const noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
