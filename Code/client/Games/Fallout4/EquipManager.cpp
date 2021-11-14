@@ -8,39 +8,27 @@
 
 #include <World.h>
 
-struct EquipData
+struct BGSEquipSlot;
+
+struct ObjectEquipParams
 {
-    BSExtraDataList* extraDataList; // 0
-    int count; // 8
-    int padC; // C
-    struct BGSEquipSlot* slot; // 10
-    void* unk18; // 18
-    bool preventEquip;
-    bool unkb1;
-    bool unkb2;
-    bool unkb3;
-    bool unkb4;
+    uint32_t uiStackID;
+    uint32_t uiNumber;
+    const BGSEquipSlot* pEquipSlot;
+    const BGSEquipSlot* pSlotBeingReplaced;
+    bool bQueueEquip;
+    bool bForceEquip;
+    bool bPlayEquipSounds;
+    bool bApplyNow;
+    bool bLocked;
+    bool bExtraWasDeleted;
 };
 
-struct UnEquipData
-{
-    BSExtraDataList* extraDataList; // 0
-    int count; // 8
-    int padC; // C
-    struct BGSEquipSlot* slot; // 10
-    void* unk18; // 18
-    bool unkb0;
-    bool preventEquip;
-    bool unkb2;
-    bool unkb3;
-    bool unkb4;
-};
+TP_THIS_FUNCTION(TEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams);
+TP_THIS_FUNCTION(TUnEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams);
 
-TP_THIS_FUNCTION(TUnEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, UnEquipData* apData);
-TP_THIS_FUNCTION(TEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData);
-
-TUnEquip* RealUnEquip = nullptr;
 TEquip* RealEquip = nullptr;
+TUnEquip* RealUnEquip = nullptr;
 
 EquipManager* EquipManager::Get() noexcept
 {
@@ -73,7 +61,7 @@ void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, int aCount, void* a
     return result;
 }
 
-void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData)
+void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams)
 {
     if (!apActor)
         return nullptr;
@@ -93,10 +81,10 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealEquip, apThis, apActor, apItem, apData);
+    return ThisCall(RealEquip, apThis, apActor, apItem, arParams);
 }
 
-void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, UnEquipData* apData)
+void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams)
 {
     if (!apActor)
         return nullptr;
@@ -113,7 +101,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
+    return ThisCall(RealUnEquip, apThis, apActor, apItem, arParams);
 }
 
 static TiltedPhoques::Initializer s_equipmentHooks([]()
