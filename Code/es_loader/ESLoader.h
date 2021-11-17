@@ -11,11 +11,11 @@ public:
 
     bool BuildFileList();
 
-private:
+//private:
     bool FindFiles();
     bool SortPlugins();
 
-private:
+//private:
     String m_directory;
     Vector<String> m_esmFilenames;
     Vector<String> m_espFilenames;

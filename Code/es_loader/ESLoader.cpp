@@ -1,5 +1,8 @@
 #include "ESLoader.h"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 ESLoader::ESLoader(String aDirectory) 
     : m_directory(std::move(aDirectory))
 {
@@ -7,8 +10,6 @@ ESLoader::ESLoader(String aDirectory)
 
 bool ESLoader::BuildFileList()
 {
-    DEBUG_BREAK;
-
     if (!FindFiles())
         return false;
 
@@ -20,19 +21,16 @@ bool ESLoader::BuildFileList()
 
 bool ESLoader::FindFiles()
 {
-    DEBUG_BREAK;
-
     if (m_directory.empty())
     {
         spdlog::error("Directory string is empty.");
         return false;
     }
 
-    // TODO: traverse files in directory
-    Vector<String> files;
-
-    for (String filename : files)
+    for (const auto& entry : fs::directory_iterator(m_directory))
     {
+        String filename = entry.path().filename().string().c_str();
+
         const char* fileExtension = strrchr(filename.c_str(), '.');
         if (!fileExtension)
         {
