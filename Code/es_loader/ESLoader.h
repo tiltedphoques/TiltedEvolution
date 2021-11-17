@@ -12,10 +12,14 @@ public:
     bool BuildFileList();
 
 private:
-    bool FindAndInsertFiles();
-    void SortAndLoadPluginsFromPluginsFile();
+    bool FindFiles();
+    bool SortPlugins();
 
 private:
     String m_directory;
-    Vector<TESFile> m_plugins;
+    Vector<String> m_esmFilenames;
+    Vector<String> m_espFilenames;
+    Vector<String> m_eslFilenames;
+    Vector<TESFile> m_standardPlugins;
+    Vector<TESFile> m_lightPlugins;
 };

@@ -2,12 +2,7 @@
 
 class TESFile
 {
-    String m_filename;
-    Buffer m_buffer;
-    uint32_t m_flags;
-    uint8_t m_standardId;
-    uint16_t m_liteId;
-
+public:
     [[nodiscard]] bool IsLite() const noexcept
     {
         return ((m_flags >> 9) & 1) != 0;
@@ -17,4 +12,14 @@ class TESFile
     {
         return IsLite() ? m_liteId : m_standardId;
     }
+
+private:
+    String m_filename;
+    Buffer m_buffer;
+    uint32_t m_flags;
+    union
+    {
+        uint8_t m_standardId;
+        uint16_t m_liteId;
+    };
 };
