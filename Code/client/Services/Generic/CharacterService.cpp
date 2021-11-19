@@ -1366,8 +1366,6 @@ void CharacterService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const
                     pActor->magicTarget.AddTarget(data);
                 }
 
-                spdlog::error("Add target successful");
-
                 break;
             }
         }

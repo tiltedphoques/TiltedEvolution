@@ -64,7 +64,7 @@ EquipManager* EquipManager::Get() noexcept
 void* EquipManager::EquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
 {
     TP_THIS_FUNCTION(TEquipSpellInternal, void*, EquipManager, Actor*, TESForm*, uint32_t);
-    POINTER_SKYRIMSE(TEquipSpellInternal, s_equipFunc, 0x140977070 - 0x140000000);
+    POINTER_SKYRIMSE(TEquipSpellInternal, s_equipFunc, 0x14065D960 - 0x140000000);
 
     ScopedEquipOverride equipOverride;
 
@@ -76,7 +76,7 @@ void* EquipManager::EquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotI
 void* EquipManager::UnEquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
 {
     TP_THIS_FUNCTION(TUnEquipSpellInternal, void*, EquipManager, Actor*, TESForm*, uint32_t);
-    POINTER_SKYRIMSE(TUnEquipSpellInternal, s_unequipFunc, 0x14065D960 - 0x140000000);
+    POINTER_SKYRIMSE(TUnEquipSpellInternal, s_unequipFunc, 0x14065E1A0 - 0x140000000);
 
     ScopedEquipOverride equipOverride;
 
