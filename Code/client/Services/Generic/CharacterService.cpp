@@ -1087,7 +1087,7 @@ void CharacterService::OnNotifySpellCast(const NotifySpellCast& acMessage) const
 
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
+#if 1
     auto& modSystem = m_world.Get().GetModSystem();
 
 
@@ -1149,7 +1149,7 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
 
 void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
 {
-#if TP_SKYRIM64
+#if 1
     auto& modSystem = World::Get().GetModSystem();
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1172,7 +1172,9 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     ProjectileLaunchData launchData{};
 #endif
 
+#if TP_FALLOUT4
     launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
+#endif
 
     launchData.Origin.x = acMessage.OriginX;
     launchData.Origin.y = acMessage.OriginY;
@@ -1181,8 +1183,13 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     const auto cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
     launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
 
-    const auto cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
-    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+    //const auto cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
+#if TP_SKYRIM64
+    //launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+#else
+    Actor* pShooter = RTTI_CAST(launchData.pShooter, TESObjectREFR, Actor);
+    pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
+#endif
 
     const auto cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
     launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
@@ -1216,13 +1223,16 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bTracer = acMessage.Tracer;
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
 
+#if TP_FALLOUT4
+    launchData.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+    launchData.fConeOfFireRadiusMult = 1.0f;
+    launchData.eTargetLimb = -1;
+    launchData.bAllow3D = true;
+#endif
+
     uint8_t resultBuffer[100];
 
-#if TP_SKYRIM64
     Projectile::Launch(resultBuffer, launchData);
-#else
-    Projectile::Launch(resultBuffer, launchData);
-#endif
 #endif
 }
 

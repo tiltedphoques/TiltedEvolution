@@ -139,7 +139,7 @@ void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
 {
     TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
 
-    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFCF0 - 0x140000000);
+    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFD00 - 0x140000000);
 
     return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
 }

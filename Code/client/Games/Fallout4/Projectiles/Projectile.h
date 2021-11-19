@@ -11,6 +11,12 @@ struct TESObjectCELL;
 struct MagicItem;
 struct AlchemyItem;
 
+struct WeaponData
+{
+    TESForm* pWeapon;
+    void* pWeaponData;
+};
+
 struct ProjectileLaunchData
 {
     NiPoint3 Origin;
@@ -19,8 +25,9 @@ struct ProjectileLaunchData
     TESObjectREFR* pShooter;
     CombatController* pShooterCombatController;
     //BGSObjectInstanceT<TESObjectWEAP> FromWeapon; // length: 0x10
-    TESForm* pFromWeapon;
-    void* pFromWeaponData;
+    //TESForm* pFromWeapon;
+    //void* pFromWeaponData;
+    WeaponData FromWeapon;
     TESAmmo *pFromAmmo;
     //BGSEquipIndex EquipIndex;
     uint32_t EquipIndex;

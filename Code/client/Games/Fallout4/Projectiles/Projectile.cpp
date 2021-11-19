@@ -4,6 +4,7 @@
 #include <Games/ActorExtension.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Forms/TESObjectCELL.h>
+#include <Forms/TESAmmo.h>
 
 TP_THIS_FUNCTION(TLaunch, void*, void, ProjectileLaunchData& arData);
 
@@ -18,7 +19,7 @@ void* Projectile::Launch(void* apResult, ProjectileLaunchData& arData)
 // TODO: make issue for more precise projectile sync.
 void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
 {
-#if 0
+#if 1
     if (arData.pShooter)
     {
         auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
@@ -38,8 +39,12 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.ZAngle = arData.fZAngle;
     Event.XAngle = arData.fXAngle;
     Event.YAngle = arData.fYAngle;
+    if (arData.pShooter)
+        Event.ShooterID = arData.pShooter->formID;
     if (arData.pParentCell)
         Event.ParentCellID = arData.pParentCell->formID;
+    if (arData.pFromAmmo)
+        Event.AmmoID = arData.pFromAmmo->formID;
     Event.Area = arData.iArea;
     Event.Power = arData.fPower;
     Event.Scale = arData.fScale;
@@ -56,17 +61,42 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.Penetrates = arData.bPenetrates;
     Event.IgnoreNearCollisions = arData.bIgnoreNearCollisions;
 
-    //World::Get().GetRunner().Trigger(Event);
+    World::Get().GetRunner().Trigger(Event);
 #endif
 
     return ThisCall(RealLaunch, apThis, arData);
 }
 
+TP_THIS_FUNCTION(TFire, void, void, TESObjectREFR* apSource, uint32_t aEquipIndex, TESAmmo* apAmmo, AlchemyItem* apPoison);
+static TFire* RealFire = nullptr;
+
+void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIndex, TESAmmo* apAmmo, AlchemyItem* apPoison)
+{
+    if (apSource)
+    {
+        Actor* pActor = RTTI_CAST(apSource, TESObjectREFR, Actor);
+        if (pActor)
+        {
+            ActorExtension* pExtension = pActor->GetExtension();
+            if (pExtension)
+            {
+                if (pExtension->IsRemote())
+                    return;
+            }
+        }
+    }
+
+    return ThisCall(RealFire, apThis, apSource, aEquipIndex, apAmmo, apPoison);
+}
+
 static TiltedPhoques::Initializer s_projectileHooks([]() {
     POINTER_FALLOUT4(TLaunch, s_launch, 0x140FCA260 - 0x140000000);
+    POINTER_FALLOUT4(TFire, fire, 0x14034D490 - 0x140000000);
 
     RealLaunch = s_launch.Get();
+    RealFire = fire.Get();
 
     TP_HOOK(&RealLaunch, HookLaunch);
+    TP_HOOK(&RealFire, HookFire);
 });
 
