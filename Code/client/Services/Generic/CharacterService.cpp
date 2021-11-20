@@ -206,13 +206,18 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
     const auto cEntity = *itor;
 
-    const auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
-
     m_world.remove<WaitingForAssignmentComponent>(cEntity);
+
+    const auto formIdComponent = m_world.try_get<FormIdComponent>(cEntity);
+    if (!formIdComponent)
+    {
+        spdlog::error("Form id component doesn't exist?");
+        return;
+    }
 
     if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
     {
-        auto* const pForm = TESForm::GetById(formIdComponent.Id);
+        auto* const pForm = TESForm::GetById(formIdComponent->Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (!pActor)
@@ -231,7 +236,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     }
     else
     {
-        auto* const pForm = TESForm::GetById(formIdComponent.Id);
+        auto* const pForm = TESForm::GetById(formIdComponent->Id);
         auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
         if (!pActor)
         {
@@ -239,7 +244,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             return;
         }
 
-        m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent.Id);
+        m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);
 
