@@ -39,6 +39,9 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
+    if (!pTargetActorEx)
+        return ThisCall(RealAddTarget, apThis, arData);
+
     if (pTargetActorEx->IsLocalPlayer())
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
