@@ -143,10 +143,21 @@ void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIt
     return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
+// TODO: here's your deadlock/memory leak, fix that
 void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
 {
+    static uint32_t count = 0;
+    count++;
+    if (count > 1)
+        spdlog::error("\tRecursive RemoveInventoryItem!");
+
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
-    return ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
+
+    auto result = ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
+
+    count--;
+
+    return result;
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
