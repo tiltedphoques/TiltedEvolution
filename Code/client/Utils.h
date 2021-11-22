@@ -12,15 +12,12 @@
 #define POINTER_FALLOUT4(className, variableName, ...) ;
 #endif
 
-#ifdef DEBUG
-    #define TP_ASSERT(Expr, Msg, ...) \
-        if (!(Expr)) \
-        { \
-            utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str()); \
-        }
-#else
-    #define TP_ASSERT(Expr, Msg, ...) ;
-#endif
+// TODO: should this be debug only? I removed the check since debug is broken, can only use releasedbg
+#define TP_ASSERT(Expr, Msg, ...) \
+    if (!(Expr)) \
+    { \
+        utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str()); \
+    }
 
 namespace utils
 {

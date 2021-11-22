@@ -99,7 +99,7 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
         {
             const auto* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESObjectREFR);
 
-            if (!pObject)
+            if (!pObject || !pObject->inventory)
                 continue;
 
             ObjectData objectData;

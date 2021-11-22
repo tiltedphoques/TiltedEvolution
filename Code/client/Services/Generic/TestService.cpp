@@ -211,7 +211,7 @@ void TestService::AnimationDebugging() noexcept
     static Map<uint32_t, uint32_t> s_reusedValues;
     static Map<uint32_t, short> s_valueTypes; //0 for bool, 1 for float, 2 for int
     static Vector<uint32_t> s_blacklist{};
-    static SortedMap<uint32_t, const char*> s_varMap{};
+    static SortedMap<uint32_t, String> s_varMap{};
     static Map<uint64_t, uint32_t> s_cachedKeys{};
 
     ImGui::Begin("Animation debugging");
@@ -294,6 +294,92 @@ void TestService::AnimationDebugging() noexcept
 
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
     {
+        if (ImGui::BeginTabItem("Variables"))
+        {
+            auto hash = pManager->GetDescriptorKey();
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+            if (pDescriptor)
+            {
+                const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
+
+                Map<String, bool> bools{};
+                Map<String, float> floats{};
+                Map<String, int> ints{};
+
+                for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
+                {
+                    const auto idx = pDescriptor->BooleanLookUpTable[i];
+                    bools[s_varMap[idx]] = *reinterpret_cast<bool*>(&pVariableSet->data[idx]);
+                }
+
+                for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
+                {
+                    const auto idx = pDescriptor->FloatLookupTable[i];
+                    floats[s_varMap[idx]] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
+                }
+
+                for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
+                {
+                    const auto idx = pDescriptor->IntegerLookupTable[i];
+                    ints[s_varMap[idx]] = *reinterpret_cast<int*>(&pVariableSet->data[idx]);
+                }
+
+                if (ImGui::Button("Dump variable values"))
+                {
+                    std::cout << "Bools: " << std::endl;
+                    for (auto& [name, value] : bools)
+                    {
+                        std::cout << "\t" << name << ": " << value << std::endl;
+                    }
+
+                    std::cout << "Floats: " << std::endl;
+                    for (auto& [name, value] : floats)
+                    {
+                        std::cout << "\t" << name << ": " << value << std::endl;
+                    }
+
+                    std::cout << "Integers: " << std::endl;
+                    for (auto& [name, value] : ints)
+                    {
+                        std::cout << "\t" << name << ": " << value << std::endl;
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Bools", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto pair : bools)
+                    {
+                        auto name = pair.first;
+                        auto value = pair.second;
+                        int iValue = int(value);
+                        ImGui::InputInt(name.c_str(), &iValue, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Floats", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto pair : floats)
+                    {
+                        auto name = pair.first;
+                        auto value = pair.second;
+                        ImGui::InputFloat(name.c_str(), &value, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Integers", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto pair : ints)
+                    {
+                        auto name = pair.first;
+                        auto value = pair.second;
+                        ImGui::InputInt(name.c_str(), &value, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    }
+                }
+            }
+
+            ImGui::EndTabItem();
+        }
+
         if (ImGui::BeginTabItem("Blacklist"))
         {
             static uint32_t s_selectedBlacklistVar = 0;
@@ -310,10 +396,10 @@ void TestService::AnimationDebugging() noexcept
                     continue;
                 }
 
-                const auto* varName = s_varMap[blacklistedVar];
+                const auto varName = s_varMap[blacklistedVar];
 
                 char name[256];
-                sprintf_s(name, std::size(name), "k%s (%d)", varName, blacklistedVar);
+                sprintf_s(name, std::size(name), "k%s (%d)", varName.c_str(), blacklistedVar);
 
                 if (ImGui::Selectable(name, s_selectedBlacklistVar == blacklistedVar))
                 {
@@ -384,14 +470,14 @@ void TestService::AnimationDebugging() noexcept
                     {
                         s_values[i] = pVariableSet->data[i];
 
-                        const auto* varName = s_varMap[i];
+                        const auto varName = s_varMap[i];
 
                         spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
                     }
                     else if (iter->second != pVariableSet->data[i])
                     {
-                        const auto* varName = s_varMap[i];
+                        const auto varName = s_varMap[i];
 
                         float floatCast = *(float*)&pVariableSet->data[i];
                         int intCast = *(int32_t*)&pVariableSet->data[i];
@@ -437,7 +523,7 @@ void TestService::AnimationDebugging() noexcept
                 {
                     if (s_valueTypes[key] == 0)
                     {
-                        const auto* varName = s_varMap[key];
+                        const auto varName = s_varMap[key];
                         std::cout << "k" << varName << "," << std::endl;
                     }
                 }
@@ -448,7 +534,7 @@ void TestService::AnimationDebugging() noexcept
                 {
                     if (s_valueTypes[key] == 1)
                     {
-                        const auto* varName = s_varMap[key];
+                        const auto varName = s_varMap[key];
                         std::cout << "k" << varName << "," << std::endl;
                     }
                 }
@@ -459,7 +545,7 @@ void TestService::AnimationDebugging() noexcept
                 {
                     if (s_valueTypes[key] == 2)
                     {
-                        const auto* varName = s_varMap[key];
+                        const auto varName = s_varMap[key];
                         std::cout << "k" << varName << "," << std::endl;
                     }
                 }

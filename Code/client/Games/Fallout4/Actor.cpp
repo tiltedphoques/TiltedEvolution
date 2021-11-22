@@ -16,9 +16,11 @@
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
+TP_THIS_FUNCTION(TActorDestructor, void*, Actor);
 
 static TActorConstructor* RealActorConstructor;
 static TActorConstructor2* RealActorConstructor2;
+static TActorDestructor* RealActorDestructor;
 
 Actor* TP_MAKE_THISCALL(HookActorContructor, Actor, uint8_t aUnk)
 {
@@ -36,6 +38,12 @@ Actor* TP_MAKE_THISCALL(HookActorContructor2, Actor, volatile int** aRefCount, u
     const auto pActor = ThisCall(RealActorConstructor2, apThis, aRefCount, aUnk);
 
     return pActor;
+}
+
+void* TP_MAKE_THISCALL(HookActorDestructor, Actor)
+{
+    // TODO: Actor dtor sometimes has garbage actor, causing a crash
+    return ThisCall(RealActorDestructor, apThis);
 }
 
 GamePtr<Actor> Actor::New() noexcept
@@ -338,16 +346,19 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
 static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
     POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
+    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 0x140D6F1C0 - 0x140000000);
     POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
     POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
 
     RealActorConstructor = s_actorCtor.Get();
     RealActorConstructor2 = s_actorCtor2.Get();
+    RealActorDestructor = s_actorDtor.Get();
     RealDamageActor = s_damageActor.Get();
     RealApplyActorEffect = s_applyActorEffect.Get();
 
     TP_HOOK(&RealActorConstructor, HookActorContructor);
     TP_HOOK(&RealActorConstructor2, HookActorContructor2);
+    TP_HOOK(&RealActorDestructor, HookActorDestructor);
     TP_HOOK(&RealDamageActor, HookDamageActor);
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
 });
