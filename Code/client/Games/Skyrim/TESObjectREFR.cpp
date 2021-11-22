@@ -146,7 +146,7 @@ void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIt
 // TODO: here's your deadlock/memory leak, fix that
 void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
 {
-    static uint32_t count = 0;
+    thread_local static uint32_t count = 0;
     count++;
     if (count > 1)
         spdlog::error("\tRecursive RemoveInventoryItem!");

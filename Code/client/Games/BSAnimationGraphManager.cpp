@@ -7,9 +7,9 @@
 
 #include <TiltedCore/Hash.hpp>
 
-SortedMap<uint32_t, const char*> BSAnimationGraphManager::DumpAnimationVariables(bool aPrintVariables)
+SortedMap<uint32_t, String> BSAnimationGraphManager::DumpAnimationVariables(bool aPrintVariables)
 {
-    SortedMap<uint32_t, const char*> variables;
+    SortedMap<uint32_t, String> variables;
 
     if (animationGraphIndex < animationGraphs.size)
     {
