@@ -211,7 +211,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     const auto formIdComponent = m_world.try_get<FormIdComponent>(cEntity);
     if (!formIdComponent)
     {
-        spdlog::error("Form id component doesn't exist?");
+        spdlog::error("CharacterService::OnAssignCharacter(): form id component doesn't exist, cookie: {:X}", acMessage.Cookie);
         return;
     }
 
