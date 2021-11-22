@@ -42,6 +42,7 @@ Actor* TP_MAKE_THISCALL(HookActorContructor2, Actor, volatile int** aRefCount, u
 
 void* TP_MAKE_THISCALL(HookActorDestructor, Actor)
 {
+    spdlog::warn("Actor dtor refcount: {}", apThis->handleRefObject.refCount);
     // TODO: Actor dtor sometimes has garbage actor, causing a crash
     return ThisCall(RealActorDestructor, apThis);
 }

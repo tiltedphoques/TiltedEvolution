@@ -99,8 +99,13 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
         {
             const auto* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESObjectREFR);
 
-            if (!pObject || !pObject->inventory)
+            if (!pObject)
                 continue;
+
+        #if TP_FALLOUT4
+            if (!pObject->inventory)
+                continue;
+        #endif
 
             ObjectData objectData;
 
