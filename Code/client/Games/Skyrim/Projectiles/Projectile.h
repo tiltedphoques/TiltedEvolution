@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Games/Skyrim/TESObjectREFR.h>
-#include <Games/Misc/MagicSystem.h>
+#include <Games/Magic/MagicSystem.h>
 
 struct BGSProjectile;
 struct TESObjectREFR;

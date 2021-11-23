@@ -2,7 +2,7 @@
 
 #include <Forms/TESForm.h>
 #include <Misc/ActorState.h>
-#include <Misc/MagicTarget.h>
+#include <Magic/MagicTarget.h>
 #include <Structs/ActorValues.h>
 #include <Structs/Factions.h>
 #include <Structs/Inventory.h>
@@ -68,7 +68,6 @@ struct Actor : TESObjectREFR
     void Respawn() noexcept;
 
     MagicTarget magicTarget;
-    uint8_t unk118[0x128 - 0x118];
     ActorState actorState;
     BSTEventSink<BSMovementDataChangedEvent> movementDataChangedSink;
     BSTEventSink<BSTransformDeltaEvent> transformDeltaSink;

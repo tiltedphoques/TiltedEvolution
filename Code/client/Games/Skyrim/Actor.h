@@ -3,12 +3,12 @@
 #include <Games/Events.h>
 #include <TESObjectREFR.h>
 
-#include <Misc/MagicTarget.h>
+#include <Magic/MagicTarget.h>
 #include <Forms/TESActorBase.h>
 #include <Misc/ActorState.h>
 #include <Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Forms/MagicItem.h>
-#include <Games/Skyrim/Misc/ActorMagicCaster.h>
+#include <Magic/ActorMagicCaster.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>

@@ -4,6 +4,7 @@
 #include <Games/ActorExtension.h>
 #include <World.h>
 #include <Games/ActorExtension.h>
+#include "EffectItem.h"
 
 #include <Events/AddTargetEvent.h>
 

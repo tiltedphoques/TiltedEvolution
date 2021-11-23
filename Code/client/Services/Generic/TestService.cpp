@@ -27,7 +27,7 @@
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>
 #include <Misc/BSFixedString.h>
-#include <Games/Skyrim/Misc/ActorMagicCaster.h>
+#include <Magic/ActorMagicCaster.h>
 
 #include <Components.h>
 #include <World.h>

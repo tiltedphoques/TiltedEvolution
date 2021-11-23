@@ -7,8 +7,8 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Misc/MagicSystem.h>
-#include <Games/Skyrim/Misc/MagicCaster.h>
+#include <Games/Magic/MagicSystem.h>
+#include <Magic/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;

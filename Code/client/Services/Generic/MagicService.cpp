@@ -15,10 +15,7 @@
 #include <Messages/NotifyAddTarget.h>
 
 #include <Actor.h>
-
-#if TP_SKYRIM64
-#include <Misc/ActorMagicCaster.h>
-#endif
+#include <Magic/ActorMagicCaster.h>
 
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)

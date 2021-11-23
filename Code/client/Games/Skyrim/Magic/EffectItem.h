@@ -1,5 +1,7 @@
 #pragma once
 
+struct EffectSetting;
+
 struct EffectItemData
 {
     float fMagnitude;

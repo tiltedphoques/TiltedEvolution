@@ -23,7 +23,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Skyrim/Misc/MagicCaster.h>
+#include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
 

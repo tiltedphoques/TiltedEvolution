@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/Misc/MagicSystem.h>
+#include <Games/Magic/MagicSystem.h>
 
 struct BGSProjectile;
 struct TESObjectREFR;

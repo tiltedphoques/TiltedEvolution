@@ -1,10 +1,11 @@
 #pragma once
 
-#include <Games/Misc/MagicSystem.h>
+#include <Effects/ActiveEffect.h>
+#include <Games/Magic/MagicSystem.h>
 
 struct Actor;
-struct MagicItem;
 struct EffectItem;
+struct MagicItem;
 struct TESBoundObject;
 
 struct MagicTarget
@@ -14,20 +15,31 @@ struct MagicTarget
 
     struct AddTargetData
     {
-        bool CheckAddEffect(void* arArgs, float afResistance);
-
         Actor* pCaster;
         MagicItem* pSpell;
         EffectItem* pEffectItem;
         TESBoundObject* pSource;
-        IPostCreationModification* pCallback;
-        ResultsCollector* pResultsCollector;
+        MagicTarget::IPostCreationModification* pCallback;
+        MagicTarget::ResultsCollector* pResultsCollector;
         NiPoint3 ExplosionLocation;
         float fMagnitude;
-        float fUnkFloat1; // seems to always be 1.0?
         MagicSystem::CastingSource eCastingSource;
         bool bAreaTarget;
         bool bDualCast;
+    };
+
+    struct SpellDispelData
+    {
+        const MagicItem* pSpell;
+        int32_t hCaster;
+        GamePtr<ActiveEffect> spActiveEffect;
+        SpellDispelData* pNext;
+    };
+
+    enum Flag : int32_t
+    {
+        MTF_UPDATING = 0x1,
+        MTF_INVISIBLE = 0x2,
     };
 
     virtual ~MagicTarget();
@@ -36,7 +48,6 @@ struct MagicTarget
     // this function actually adds the effect
     bool CheckAddEffect(AddTargetData& arData) noexcept;
 
-    void* unk04;
-    void* unk08;
+    SpellDispelData* pPostUpdateDispelList;
+    Flag ucFlags;
 };
-//constexpr size_t t = offsetof(MagicTarget::AddTargetData, eCastingSource);
