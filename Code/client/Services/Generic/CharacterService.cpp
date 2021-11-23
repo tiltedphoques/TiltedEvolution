@@ -181,7 +181,12 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
         auto& formIdComponent = remoteView.get<FormIdComponent>(entity);
 
         auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-        if (pActor)
+        if (!pActor)
+            continue;
+
+        if (pActor->GetExtension()->IsRemotePlayer())
+            pActor->Delete();
+        else
             pActor->GetExtension()->SetRemote(false);
     }
 
