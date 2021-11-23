@@ -19,6 +19,7 @@
 #include <Services/PartyService.h>
 #include <Services/ActorService.h>
 #include <Services/InventoryService.h>
+#include <Services/MagicService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -43,6 +44,7 @@ World::World()
     set<PartyService>(m_dispatcher, ctx<ImguiService>(), m_transport);
     set<ActorService>(*this, m_dispatcher, m_transport);
     set<InventoryService>(*this, m_dispatcher, m_transport);
+    set<MagicService>(*this, m_dispatcher, m_transport);
 }
 
 World::~World() = default;

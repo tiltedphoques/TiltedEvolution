@@ -17,9 +17,6 @@ struct CharacterRemoveEvent;
 struct CharacterExteriorCellChangeEvent;
 struct RequestOwnershipClaim;
 struct OwnershipTransferEvent;
-struct SpellCastRequest;
-struct InterruptCastRequest;
-struct AddTargetRequest;
 struct ProjectileLaunchRequest;
 
 struct CharacterService
@@ -45,9 +42,6 @@ protected:
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
-    void OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept;
-    void OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept;
-    void OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept;
     void OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
@@ -71,8 +65,5 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_spawnDataConnection;
-    entt::scoped_connection m_spellCastConnection;
-    entt::scoped_connection m_interruptCastConnection;
-    entt::scoped_connection m_addTargetConnection;
     entt::scoped_connection m_projectileLaunchConnection;
 };
