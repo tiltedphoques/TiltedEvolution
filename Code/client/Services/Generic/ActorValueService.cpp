@@ -43,14 +43,7 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 {
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(aEntity);
 
-    int amountOfValues;
-#if TP_SKYRIM64
-    amountOfValues = 164;
-#elif TP_FALLOUT4
-    amountOfValues = 132;
-#endif
-
-    for (int i = 0; i < amountOfValues; i++)
+    for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
 #if TP_FALLOUT4
         // These indices in the ActorValueInfo list are null
@@ -136,14 +129,7 @@ void ActorValueService::BroadcastActorValues() noexcept
         RequestActorMaxValueChanges requestMaxValueChanges;
         requestMaxValueChanges.Id = localComponent.Id;
 
-        int amountOfValues;
-#if TP_SKYRIM64
-        amountOfValues = 164;
-#elif TP_FALLOUT4
-        amountOfValues = 132;
-#endif
-
-        for (int i = 0; i < amountOfValues; i++)
+        for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
         {
 #if TP_FALLOUT4
             // These indices in the ActorValueInfo list are null
@@ -395,14 +381,14 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) {
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) {
         return view.get<RemoteComponent>(entity).Id == id;
     });
 
-    if (itor == std::end(view))
+    if (it == std::end(view))
         return;
 
-    auto& formIdComponent = view.get<FormIdComponent>(*itor);
+    auto& formIdComponent = view.get<FormIdComponent>(*it);
     auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)

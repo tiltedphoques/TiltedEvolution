@@ -237,6 +237,9 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
 
 void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 

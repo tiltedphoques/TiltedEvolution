@@ -31,6 +31,9 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
 #if TP_SKYRIM64
+    if (!m_transport.IsConnected())
+        return;
+
     TP_ASSERT(acSpellCastEvent.pSpell, "SpellCastEvent has no spell");
 
     if (!acSpellCastEvent.pCaster->pCasterActor || !acSpellCastEvent.pCaster->pCasterActor->GetNiNode())
@@ -145,6 +148,9 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
+    if (!m_transport.IsConnected())
+        return;
+
     auto formId = acEvent.CasterFormID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
@@ -193,6 +199,9 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
+    if (!m_transport.IsConnected())
+        return;
+
     auto view = m_world.view<FormIdComponent>();
     const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetID, view](auto entity) {
         return view.get<FormIdComponent>(entity).Id == id;

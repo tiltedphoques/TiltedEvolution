@@ -171,6 +171,7 @@ struct ActorValueInfo : TESForm
         kGrabbed = 161,
         kDEPRECATED05 = 162,
         kReflectDamage = 163,
+        kActorValueCount = 164,
     };
 
     static uint32_t Resolve(uint32_t aId) noexcept;
