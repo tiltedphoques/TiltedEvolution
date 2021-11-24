@@ -28,5 +28,7 @@ static void Assert(const char* apExpression, const char* apMessage)
     if (IsDebuggerPresent())
         __debugbreak();
 }
+
+uint32_t GetServerId(entt::entity aEntity) noexcept;
 }
 

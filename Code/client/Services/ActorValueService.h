@@ -7,7 +7,6 @@ struct World;
 
 struct ConnectedEvent;
 struct DisconnectedEvent;
-struct ReferenceSpawnedEvent;
 struct ReferenceRemovedEvent;
 struct UpdateEvent;
 struct HealthChangeEvent;
@@ -44,7 +43,6 @@ private:
     
     void OnLocalComponentAdded(entt::registry& aRegistry, entt::entity aEntity) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
-    void OnReferenceSpawned(const ReferenceSpawnedEvent&) noexcept;
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept;
@@ -53,6 +51,7 @@ private:
     void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept;
     void OnDeathStateChange(const NotifyDeathStateChange& acEvent) const noexcept;
 
+    void RunActorValuesUpdates() noexcept;
     void RunSmallHealthUpdates() noexcept;
     void RunDeathStateUpdates() noexcept;
     void CreateActorValuesComponent(entt::entity aEntity, Actor* apActor) noexcept;

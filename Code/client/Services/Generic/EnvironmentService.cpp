@@ -216,18 +216,9 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (pEntity == std::end(view))
         return;
 
-    const auto pLocalComponent = m_world.try_get<LocalComponent>(*pEntity);
-    const auto pRemoteComponent = m_world.try_get<RemoteComponent>(*pEntity);
-
-    if (pLocalComponent)
-        request.ActivatorId = pLocalComponent->Id;
-    else if (pRemoteComponent)
-        request.ActivatorId = pRemoteComponent->Id;
-    else
-    {
-        spdlog::error("No local or remote component attached to {:X}", acEvent.pObject->formID);
+    request.ActivatorId = utils::GetServerId(*pEntity);
+    if (request.ActivatorId == 0)
         return;
-    }
 
     m_transport.Send(request);
 }
@@ -237,18 +228,11 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
-        uint32_t componentId;
-        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
-        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+        uint32_t serverId = utils::GetServerId(entity);
+        if (serverId == 0)
+            return;
 
-        if (cpLocalComponent)
-            componentId = cpLocalComponent->Id;
-        else if (cpRemoteComponent)
-            componentId = cpRemoteComponent->Id;
-        else
-            continue;
-
-        if (componentId == acMessage.ActivatorId)
+        if (serverId == acMessage.ActivatorId)
         {
             const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
             if (cObjectId == 0)

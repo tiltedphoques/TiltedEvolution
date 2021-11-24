@@ -194,35 +194,30 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcep
 {
 #if TP_SKYRIM64
     auto view = m_world.view<FormIdComponent>();
-    for (auto entity : view)
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetID, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (it == std::end(view))
     {
-        auto& formIdComponent = view.get<FormIdComponent>(entity);
-        if (formIdComponent.Id != acEvent.TargetID)
-            continue;
-
-        AddTargetRequest request;
-
-        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(entity))
-        {
-            request.TargetId = pLocalComponent->Id;
-        }
-        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(entity))
-        {
-            request.TargetId = pRemoteComponent->Id;
-        }
-
-        TP_ASSERT(request.TargetId, "AddTargetRequest must have a target id.");
-
-        if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
-        {
-            spdlog::error("{s}: Could not find spell with from {:X}", __FUNCTION__, acEvent.SpellID);
-            return;
-        }
-
-        m_transport.Send(request);
-
-        break;
+        spdlog::warn("Target not found for magic add target, form id: {:X}", acEvent.TargetID);
+        return;
     }
+
+    entt::entity entity = *it;
+
+    AddTargetRequest request;
+    request.TargetId = utils::GetServerId(entity);
+    if (request.TargetId == 0)
+        return;
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
+    {
+        spdlog::error("{s}: Could not find spell with form {:X}", __FUNCTION__, acEvent.SpellID);
+        return;
+    }
+
+    m_transport.Send(request);
 #endif
 }
 
@@ -233,18 +228,11 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     for (auto entity : view)
     {
-        uint32_t componentId;
-        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
-        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
-
-        if (cpLocalComponent)
-            componentId = cpLocalComponent->Id;
-        else if (cpRemoteComponent)
-            componentId = cpRemoteComponent->Id;
-        else
+        uint32_t serverId = utils::GetServerId(entity);
+        if (serverId == 0)
             continue;
 
-        if (componentId == acMessage.TargetId)
+        if (serverId == acMessage.TargetId)
         {
             auto& formIdComponent = view.get<FormIdComponent>(entity);
             auto* pForm = TESForm::GetById(formIdComponent.Id);

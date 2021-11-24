@@ -177,15 +177,8 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (iter == std::end(view))
                 continue;
 
-            uint32_t componentId;
-            const auto& cpLocalComponent = m_world.try_get<LocalComponent>(*iter);
-            const auto& cpRemoteComponent = m_world.try_get<RemoteComponent>(*iter);
-
-            if (cpLocalComponent)
-                componentId = cpLocalComponent->Id;
-            else if (cpRemoteComponent)
-                componentId = cpRemoteComponent->Id;
-            else
+            uint32_t serverId = utils::GetServerId(*iter);
+            if (serverId == 0)
                 continue;
 
             const auto* pForm = TESForm::GetById(formId);
@@ -197,15 +190,15 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
 
             if (change.second != String{})
             {
-                spdlog::warn("Using cached inventory snapshot for {:X} ({:X})", formId, componentId);
+                spdlog::warn("Using cached inventory snapshot for {:X} ({:X})", formId, serverId);
                 //inventory.Buffer = change.second;
             }
             else
             {
-                spdlog::warn("Using new inventory for {:X} ({:X})", formId, componentId);
+                spdlog::warn("Using new inventory for {:X} ({:X})", formId, serverId);
             }
 
-            message.Changes[componentId] = inventory;
+            message.Changes[serverId] = inventory;
         }
 
         m_transport.Send(message);
@@ -250,18 +243,11 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     auto view = m_world.view<FormIdComponent>();
     for (const auto entity : view)
     {
-        uint32_t componentId;
-        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
-        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+        uint32_t serverId = utils::GetServerId(entity);
+        if (serverId == 0)
+            return;
 
-        if (cpLocalComponent)
-            componentId = cpLocalComponent->Id;
-        else if (cpRemoteComponent)
-            componentId = cpRemoteComponent->Id;
-        else
-            continue;
-
-        const auto change = m_cachedCharacterInventoryChanges.find(componentId);
+        const auto change = m_cachedCharacterInventoryChanges.find(serverId);
 
         if (change == m_cachedCharacterInventoryChanges.end())
             continue;
@@ -271,6 +257,7 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
         if (!pActor)
             continue;
 
+        auto* cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
         if (cpRemoteComponent)
             cpRemoteComponent->SpawnRequest.InventoryContent = change.value();
 
