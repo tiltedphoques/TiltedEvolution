@@ -63,6 +63,7 @@ void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor*
         if (i == 23 || i == 48 || i == 70)
             continue;
 #endif
+
         float value = GetActorValue(apActor, i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
         float maxValue = GetActorMaxValue(apActor, i);
@@ -383,6 +384,10 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) c
             continue;
 
 #if TP_SKYRIM64
+        // syncinc dragon soulse triggers "Dragon soul collected" event
+        if (key == ActorValueInfo::kDragonSouls)
+            continue;
+
         if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka)
         {
             ForceActorValue(pActor, 2, key, value);
@@ -415,6 +420,11 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
 
     for (const auto& [key, value] : acEvent.Values)
     {
+#if TP_SKYRIM64
+        if (key == ActorValueInfo::kDragonSouls)
+            continue;
+#endif
+
         std::cout << "Max values update." << std::endl;
         std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.Id << std::endl;
         std::cout << "Key: " << std::dec << key << " Value: " << value << std::endl;
