@@ -20,13 +20,13 @@ struct NotifyDeathStateChange;
 
 struct Actor;
 
-struct ActorService
+struct ActorValueService
 {
   public:
-    ActorService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
-    ~ActorService() noexcept;
+    ActorValueService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
+    ~ActorValueService() noexcept = default;
 
-    TP_NOCOPYMOVE(ActorService);
+    TP_NOCOPYMOVE(ActorValueService);
 
 private:
     enum ValueType : uint8_t
@@ -57,8 +57,4 @@ private:
     void RunDeathStateUpdates() noexcept;
     void CreateActorValuesComponent(entt::entity aEntity, Actor* apActor) noexcept;
     void BroadcastActorValues() noexcept;
-    static void ForceActorValue(Actor* aActor, uint32_t aMode, uint32_t aId, float aValue) noexcept;
-    static void SetActorValue(Actor* aActor, uint32_t aId, float aValue) noexcept;
-    static float GetActorValue(Actor* aActor, uint32_t aId) noexcept;
-    static float GetActorMaxValue(Actor* aActor, uint32_t aId) noexcept;
 };

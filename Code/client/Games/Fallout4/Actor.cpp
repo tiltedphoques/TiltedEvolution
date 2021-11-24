@@ -152,6 +152,18 @@ void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
     return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
 }
 
+float Actor::GetActorValue(uint32_t aId) const noexcept
+{
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    return actorValueOwner.GetValue(pActorValueInfo);
+}
+
+float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+{
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    return actorValueOwner.GetMaxValue(pActorValueInfo);
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
@@ -175,6 +187,19 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         pEquipManager->EquipObject(this, object, 0, 1, pSlot, false, true, false, true, false);
     }
+}
+
+void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
+{
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    actorValueOwner.SetValue(pActorValueInfo, aValue);
+}
+
+void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+{
+    const float current = GetActorValue(aId);
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    actorValueOwner.ForceCurrent(aMode, pActorValueInfo, aValue - current);
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept

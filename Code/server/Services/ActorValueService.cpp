@@ -5,7 +5,7 @@
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
 #include <Messages/RequestDeathStateChange.h>
-#include <Services/ActorService.h>
+#include <Services/ActorValueService.h>
 #include <World.h>
 #include <GameServer.h>
 #include <Messages/NotifyActorValueChanges.h>
@@ -13,20 +13,20 @@
 #include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/NotifyDeathStateChange.h>
 
-ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
+ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
 {
-    m_updateHealthConnection = aDispatcher.sink<PacketEvent<RequestActorValueChanges>>().connect<&ActorService::OnActorValueChanges>(this);
-    m_updateMaxValueConnection = aDispatcher.sink<PacketEvent<RequestActorMaxValueChanges>>().connect<&ActorService::OnActorMaxValueChanges>(this);
-    m_updateDeltaHealthConnection = aDispatcher.sink<PacketEvent<RequestHealthChangeBroadcast>>().connect<&ActorService::OnHealthChangeBroadcast>(this);
-    aDispatcher.sink<PacketEvent<RequestDeathStateChange>>().connect<&ActorService::OnDeathStateChange>(this);
+    m_updateHealthConnection = aDispatcher.sink<PacketEvent<RequestActorValueChanges>>().connect<&ActorValueService::OnActorValueChanges>(this);
+    m_updateMaxValueConnection = aDispatcher.sink<PacketEvent<RequestActorMaxValueChanges>>().connect<&ActorValueService::OnActorMaxValueChanges>(this);
+    m_updateDeltaHealthConnection = aDispatcher.sink<PacketEvent<RequestHealthChangeBroadcast>>().connect<&ActorValueService::OnHealthChangeBroadcast>(this);
+    aDispatcher.sink<PacketEvent<RequestDeathStateChange>>().connect<&ActorValueService::OnDeathStateChange>(this);
 }
 
-ActorService::~ActorService() noexcept
+ActorValueService::~ActorValueService() noexcept
 {
 }
 
-void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept
+void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
 
@@ -59,7 +59,7 @@ void ActorService::OnActorValueChanges(const PacketEvent<RequestActorValueChange
     }
 }
 
-void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
+void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
 
@@ -92,7 +92,7 @@ void ActorService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValue
     }
 }
 
-void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
+void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
 {
     NotifyHealthChangeBroadcast notifyDamageEvent;
     notifyDamageEvent.Id = acMessage.Packet.Id;
@@ -107,7 +107,7 @@ void ActorService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChange
     }
 }
 
-void ActorService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
+void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
 

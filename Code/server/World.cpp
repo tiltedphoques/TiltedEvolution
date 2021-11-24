@@ -9,7 +9,7 @@
 #include <Services/QuestService.h>
 #include <Services/ServerListService.h>
 #include <Services/PartyService.h>
-#include <Services/ActorService.h>
+#include <Services/ActorValueService.h>
 #include <Services/AdminService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
@@ -26,7 +26,7 @@ World::World()
     set<ServerListService>(*this, m_dispatcher);
     set<QuestService>(*this, m_dispatcher);
     set<PartyService>(*this, m_dispatcher);
-    set<ActorService>(*this, m_dispatcher);
+    set<ActorValueService>(*this, m_dispatcher);
     set<InventoryService>(*this, m_dispatcher);
     set<MagicService>(*this, m_dispatcher);
 

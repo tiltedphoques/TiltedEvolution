@@ -10,12 +10,12 @@ struct RequestActorMaxValueChanges;
 struct RequestHealthChangeBroadcast;
 struct RequestDeathStateChange;
 
-struct ActorService
+struct ActorValueService
 {
-    ActorService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
-    ~ActorService() noexcept;
+    ActorValueService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
+    ~ActorValueService() noexcept;
 
-    TP_NOCOPYMOVE(ActorService);
+    TP_NOCOPYMOVE(ActorValueService);
 
   private:
     World& m_world;

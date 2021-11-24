@@ -1,6 +1,6 @@
 #include <TiltedOnlinePCH.h>
 
-#include <Services/ActorService.h>
+#include <Services/ActorValueService.h>
 #include <World.h>
 #include <Forms/ActorValueInfo.h>
 #include <Games/References.h>
@@ -24,28 +24,24 @@
 
 #include <misc/ActorValueOwner.h>
 
-ActorService::ActorService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
+ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
-    m_world.on_construct<LocalComponent>().connect<&ActorService::OnLocalComponentAdded>(this);
-    m_dispatcher.sink<DisconnectedEvent>().connect<&ActorService::OnDisconnected>(this);
-    m_dispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorService::OnReferenceSpawned>(this);
-    m_dispatcher.sink<ReferenceRemovedEvent>().connect<&ActorService::OnReferenceRemoved>(this);
-    m_dispatcher.sink<UpdateEvent>().connect<&ActorService::OnUpdate>(this);
-    m_dispatcher.sink<NotifyActorValueChanges>().connect<&ActorService::OnActorValueChanges>(this);
-    m_dispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorService::OnActorMaxValueChanges>(this);
-    m_dispatcher.sink<HealthChangeEvent>().connect<&ActorService::OnHealthChange>(this);
-    m_dispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorService::OnHealthChangeBroadcast>(this);
-    m_dispatcher.sink<NotifyDeathStateChange>().connect<&ActorService::OnDeathStateChange>(this);
+    m_world.on_construct<LocalComponent>().connect<&ActorValueService::OnLocalComponentAdded>(this);
+    m_dispatcher.sink<DisconnectedEvent>().connect<&ActorValueService::OnDisconnected>(this);
+    m_dispatcher.sink<ReferenceSpawnedEvent>().connect<&ActorValueService::OnReferenceSpawned>(this);
+    m_dispatcher.sink<ReferenceRemovedEvent>().connect<&ActorValueService::OnReferenceRemoved>(this);
+    m_dispatcher.sink<UpdateEvent>().connect<&ActorValueService::OnUpdate>(this);
+    m_dispatcher.sink<NotifyActorValueChanges>().connect<&ActorValueService::OnActorValueChanges>(this);
+    m_dispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorValueService::OnActorMaxValueChanges>(this);
+    m_dispatcher.sink<HealthChangeEvent>().connect<&ActorValueService::OnHealthChange>(this);
+    m_dispatcher.sink<NotifyHealthChangeBroadcast>().connect<&ActorValueService::OnHealthChangeBroadcast>(this);
+    m_dispatcher.sink<NotifyDeathStateChange>().connect<&ActorValueService::OnDeathStateChange>(this);
 }
 
-ActorService::~ActorService() noexcept
-{
-}
-
-void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept
+void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept
 {
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(aEntity);
 
@@ -64,14 +60,14 @@ void ActorService::CreateActorValuesComponent(const entt::entity aEntity, Actor*
             continue;
 #endif
 
-        float value = GetActorValue(apActor, i);
+        float value = apActor->GetActorValue(i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
-        float maxValue = GetActorMaxValue(apActor, i);
+        float maxValue = apActor->GetActorMaxValue(i);
         actorValuesComponent.CurrentActorValues.ActorMaxValuesList.insert({i, maxValue});
     }
 }
 
-void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
+void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
     auto* pForm = TESForm::GetById(formIdComponent.Id);
@@ -85,12 +81,12 @@ void ActorService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::
     }
 }
 
-void ActorService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
+void ActorValueService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     m_world.clear<ActorValuesComponent>();
 }
 
-void ActorService::OnReferenceSpawned(const ReferenceSpawnedEvent& acEvent) noexcept
+void ActorValueService::OnReferenceSpawned(const ReferenceSpawnedEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -109,7 +105,7 @@ void ActorService::OnReferenceSpawned(const ReferenceSpawnedEvent& acEvent) noex
     }
 }
 
-void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noexcept
+void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -130,7 +126,7 @@ void ActorService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noex
     }
 }
 
-void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
+void ActorValueService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunSmallHealthUpdates();
     RunDeathStateUpdates();
@@ -143,7 +139,7 @@ void ActorService::OnUpdate(const UpdateEvent& acEvent) noexcept
     }
 }
 
-void ActorService::BroadcastActorValues() noexcept
+void ActorValueService::BroadcastActorValues() noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -181,7 +177,7 @@ void ActorService::BroadcastActorValues() noexcept
             if (i == 23 || i == 48 || i == 70)
                 continue;
 #endif
-            float newValue = GetActorValue(pActor, i);
+            float newValue = pActor->GetActorValue(i);
             float oldValue = actorValuesComponent.CurrentActorValues.ActorValuesList[i];
             if (newValue != oldValue)
             {
@@ -189,7 +185,7 @@ void ActorService::BroadcastActorValues() noexcept
                 actorValuesComponent.CurrentActorValues.ActorValuesList[i] = newValue;
             }
 
-            float newMaxValue = GetActorMaxValue(pActor, i);
+            float newMaxValue = pActor->GetActorMaxValue(i);
             float oldMaxValue = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[i];
             if (newMaxValue != oldMaxValue)
             {
@@ -210,7 +206,7 @@ void ActorService::BroadcastActorValues() noexcept
     }
 }
 
-void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
+void ActorValueService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -264,7 +260,7 @@ void ActorService::OnHealthChange(const HealthChangeEvent& acEvent) noexcept
     }
 }
 
-void ActorService::RunSmallHealthUpdates() noexcept
+void ActorValueService::RunSmallHealthUpdates() noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenSnapshots = 250ms;
@@ -292,7 +288,7 @@ void ActorService::RunSmallHealthUpdates() noexcept
     }
 }
 
-void ActorService::RunDeathStateUpdates() noexcept
+void ActorValueService::RunDeathStateUpdates() noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenSnapshots = 250ms;
@@ -325,7 +321,7 @@ void ActorService::RunDeathStateUpdates() noexcept
     }
 }
 
-void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acEvent) const noexcept
+void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent>();
 
@@ -350,14 +346,14 @@ void ActorService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& ac
 
             if (pActor != nullptr)
             {
-                const auto newHealth = GetActorValue(pActor, ActorValueInfo::kHealth) + acEvent.DeltaHealth;
-                ForceActorValue(pActor, 2, ActorValueInfo::kHealth, newHealth);
+                const auto newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acEvent.DeltaHealth;
+                pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
             }
         }
     }
 }
 
-void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) const noexcept
+void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
@@ -384,23 +380,23 @@ void ActorService::OnActorValueChanges(const NotifyActorValueChanges& acEvent) c
             continue;
 
 #if TP_SKYRIM64
-        // syncinc dragon soulse triggers "Dragon soul collected" event
+        // Syncing dragon souls triggers "Dragon soul collected" event
         if (key == ActorValueInfo::kDragonSouls)
             continue;
 
         if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka)
         {
-            ForceActorValue(pActor, 2, key, value);
+            pActor->ForceActorValue(2, key, value);
         }
 #endif
         else
         {
-            SetActorValue(pActor, key, value);
+            pActor->SetActorValue(key, value);
         }
     }
 }
 
-void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) const noexcept
+void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
@@ -429,11 +425,11 @@ void ActorService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acEv
         std::cout << "Form ID: " << std::hex << formIdComponent.Id << " Remote ID: " << std::hex << acEvent.Id << std::endl;
         std::cout << "Key: " << std::dec << key << " Value: " << value << std::endl;
 
-        ForceActorValue(pActor, 0, key, value);
+        pActor->ForceActorValue(0, key, value);
     }
 }
 
-void ActorService::OnDeathStateChange(const NotifyDeathStateChange& acMessage) const noexcept
+void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessage) const noexcept
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
@@ -452,45 +448,4 @@ void ActorService::OnDeathStateChange(const NotifyDeathStateChange& acMessage) c
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
-}
-
-void ActorService::ForceActorValue(Actor* apActor, uint32_t aMode, uint32_t aId, float aValue) noexcept
-{
-    const float current = GetActorValue(apActor, aId);
-#if TP_FALLOUT4
-    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
-    apActor->actorValueOwner.ForceCurrent(aMode, pActorValueInfo, aValue - current);
-#elif TP_SKYRIM64
-    apActor->actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
-#endif
-}
-
-void ActorService::SetActorValue(Actor* apActor, uint32_t aId, float aValue) noexcept
-{
-#if TP_FALLOUT4
-    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
-    apActor->actorValueOwner.SetValue(pActorValueInfo, aValue);
-#elif TP_SKYRIM64
-    apActor->actorValueOwner.SetValue(aId, aValue);
-#endif
-}
-
-float ActorService::GetActorValue(Actor* apActor, uint32_t aId) noexcept
-{
-#if TP_FALLOUT4
-    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
-    return apActor->actorValueOwner.GetValue(pActorValueInfo);
-#elif TP_SKYRIM64
-    return apActor->actorValueOwner.GetValue(aId);
-#endif
-}
-
-float ActorService::GetActorMaxValue(Actor* apActor, uint32_t aId) noexcept
-{
-#if TP_FALLOUT4
-    ActorValueInfo* pActorValueInfo = apActor->GetActorValueInfo(aId);
-    return apActor->actorValueOwner.GetMaxValue(pActorValueInfo);
-#elif TP_SKYRIM64
-    return apActor->actorValueOwner.GetMaxValue(aId);
-#endif
 }

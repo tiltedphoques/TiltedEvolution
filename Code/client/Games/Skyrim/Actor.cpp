@@ -263,6 +263,16 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
     return actorValues;
 }
 
+float Actor::GetActorValue(uint32_t aId) const noexcept
+{
+    return actorValueOwner.GetValue(aId);
+}
+
+float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+{
+    return actorValueOwner.GetMaxValue(aId);
+}
+
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
     UnEquipAll();
@@ -336,6 +346,17 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
+}
+
+void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+{
+    const float current = GetActorValue(aId);
+    actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
+}
+
+void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
+{
+    actorValueOwner.SetValue(aId, aValue);
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept

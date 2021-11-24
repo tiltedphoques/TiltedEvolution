@@ -45,7 +45,7 @@ void TESObjectREFR::RemoveAllItems() noexcept
     s_removeAllItems(nullptr, nullptr, this, nullptr, false);
 }
 
-ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
+ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) const noexcept
 {
     using TGetActorValueInfoArray = ActorValueInfo**();
 
