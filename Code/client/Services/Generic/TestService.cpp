@@ -568,9 +568,6 @@ void TestService::AnimationDebugging() noexcept
 
 void TestService::OnDraw() noexcept
 {
-    static uint32_t fetchFormId;
-    static Actor* pFetchActor = 0;
-
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
         return;
@@ -686,7 +683,10 @@ void TestService::OnDraw() noexcept
     ImGui::End();
 
     ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Actor lookup");
+    ImGui::Begin("Form lookup");
+
+    static uint32_t fetchFormId = 0;
+    static TESForm* pFetchForm = nullptr;
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
@@ -694,7 +694,38 @@ void TestService::OnDraw() noexcept
     {
         if (fetchFormId)
         {
-            auto* pFetchForm = TESForm::GetById(fetchFormId);
+            pFetchForm = TESForm::GetById(fetchFormId);
+        }
+    }
+
+    if (pFetchForm)
+    {
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Vtable address", ImGuiDataType_U64, (void*)pFetchForm, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+
+        FormType formType = pFetchForm->GetFormType();
+        ImGui::InputScalar("Form type", ImGuiDataType_U8, (void*)&formType, 0, 0, nullptr, ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::InputInt("Form id", (int*)&pFetchForm->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    }
+
+    ImGui::End();
+
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Actor lookup");
+
+    static uint32_t fetchActorId = 0;
+    static Actor* pFetchActor = nullptr;
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchActorId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
+    {
+        if (fetchActorId)
+        {
+            auto* pFetchForm = TESForm::GetById(fetchActorId);
             if (pFetchForm)
                 pFetchActor = RTTI_CAST(pFetchForm, TESForm, Actor);
             if (pFetchActor)
