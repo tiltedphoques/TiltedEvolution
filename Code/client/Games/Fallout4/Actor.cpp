@@ -386,7 +386,7 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
             {
                 spdlog::info("Cancelling detection from remote player to local player");
-                //return;
+                return;
             }
         }
     }
