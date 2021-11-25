@@ -248,7 +248,7 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     {
         uint32_t serverId = utils::GetServerId(entity);
         if (serverId == 0)
-            return;
+            continue;
 
         const auto change = m_cachedCharacterInventoryChanges.find(serverId);
 
