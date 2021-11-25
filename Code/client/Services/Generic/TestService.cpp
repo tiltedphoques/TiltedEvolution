@@ -167,9 +167,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            /*
             PlaceActorInWorld();
 
+            /*
             const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
             //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
@@ -705,10 +705,10 @@ void TestService::OnDraw() noexcept
         ImGui::InputScalar("Vtable address", ImGuiDataType_U64, (void*)pFetchForm, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
+        ImGui::InputInt("Form id", (int*)&pFetchForm->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
         FormType formType = pFetchForm->GetFormType();
         ImGui::InputScalar("Form type", ImGuiDataType_U8, (void*)&formType, 0, 0, nullptr, ImGuiInputTextFlags_ReadOnly);
-
-        ImGui::InputInt("Form id", (int*)&pFetchForm->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     }
 
     ImGui::End();

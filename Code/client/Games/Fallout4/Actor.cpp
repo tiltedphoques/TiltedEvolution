@@ -7,6 +7,7 @@
 #include <PlayerCharacter.h>
 #include <Games/Fallout4/EquipManager.h>
 #include <Forms/BGSObjectInstance.h>
+#include <Games/Misc/ActorKnowledge.h>
 
 #include <Services/PapyrusService.h>
 #include <World.h>
@@ -368,22 +369,50 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
     return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
 }
 
+TP_THIS_FUNCTION(TRunDetection, void, void, ActorKnowledge*);
+static TRunDetection* RealRunDetection = nullptr;
+
+void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
+{
+    auto pOwner = TESObjectREFR::GetByHandle(apTarget->hOwner);
+    auto pTarget = TESObjectREFR::GetByHandle(apTarget->hTarget);
+
+    if (pOwner && pTarget)
+    {
+        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
+        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        if (pOwnerActor && pTargetActor)
+        {
+            if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
+            {
+                spdlog::info("Cancelling detection from remote player to local player");
+                //return;
+            }
+        }
+    }
+
+    return ThisCall(RealRunDetection, apThis, apTarget);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
     POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
     POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 0x140D6F1C0 - 0x140000000);
     POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
     POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
+    POINTER_FALLOUT4(TRunDetection, s_runDetection, 0x140F60320 - 0x140000000);
 
     RealActorConstructor = s_actorCtor.Get();
     RealActorConstructor2 = s_actorCtor2.Get();
     RealActorDestructor = s_actorDtor.Get();
     RealDamageActor = s_damageActor.Get();
     RealApplyActorEffect = s_applyActorEffect.Get();
+    RealRunDetection = s_runDetection.Get();
 
     TP_HOOK(&RealActorConstructor, HookActorContructor);
     TP_HOOK(&RealActorConstructor2, HookActorContructor2);
     TP_HOOK(&RealActorDestructor, HookActorDestructor);
     TP_HOOK(&RealDamageActor, HookDamageActor);
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+    TP_HOOK(&RealRunDetection, HookRunDetection);
 });
