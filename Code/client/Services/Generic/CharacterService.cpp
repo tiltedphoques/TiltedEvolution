@@ -764,6 +764,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+    pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -860,6 +861,8 @@ void CharacterService::RunRemoteUpdates() const noexcept
     StackAllocator<1 << 13> allocator;
     ScopedAllocator _{allocator};
 
+    // TODO: there's a bug here sometimes, WaitingFor3D doesn't get removed, SetInventory and others get spammed
+    // ask cosi for a repro
     Vector<entt::entity> toRemove;
     for (auto entity : waitingView)
     {
