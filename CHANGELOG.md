@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.0.0...v1.1.0) (2021-11-22)
+
+
+### Bug Fixes
+
+* crash fix ([8842773](https://github.com/tiltedphoques/TiltedEvolution/commit/88427732874fae9234c9ce526518b9c36dc95feb))
+* fallout 4 crash fix ([1e2bd32](https://github.com/tiltedphoques/TiltedEvolution/commit/1e2bd32b05382f31bcc1094289acca799c571504))
+* fix crash when casting spell on object ([4ed0172](https://github.com/tiltedphoques/TiltedEvolution/commit/4ed0172dea8f5fb8801e15a4e5172eac55bb9f55))
+
+
+### Features
+
+* debug animation variables ([55bb7bc](https://github.com/tiltedphoques/TiltedEvolution/commit/55bb7bc936a41c39464fd9f95b2f8c1707ae5093))
+
 # 1.0.0 (2021-11-19)
 
 
