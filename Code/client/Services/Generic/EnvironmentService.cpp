@@ -326,7 +326,6 @@ void EnvironmentService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEv
     request.FormID = acEvent.FormID;
     request.Animation = acEvent.Animation;
     request.EventName = acEvent.EventName;
-    spdlog::info("send script anim req");
 
     m_transport.Send(request);
 }
@@ -342,7 +341,7 @@ void EnvironmentService::OnNotifyScriptAnimation(const NotifyScriptAnimation& ac
 
     if (!pObject)
     {
-        spdlog::error("error trying to fetch notify script animation object");
+        spdlog::error("Failed to fetch notify script animation object, form id: {:X}", acMessage.FormID);
         return;
     }
 

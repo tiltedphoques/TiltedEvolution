@@ -186,9 +186,9 @@ void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TE
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
-        POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A9180 - 0x140000000);
-        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A0930 - 0x140000000);
-        POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FCB0 - 0x140000000);
+    POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A9180 - 0x140000000);
+    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A0930 - 0x140000000);
+    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FCB0 - 0x140000000);
     POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 0x140995800 - 0x140000000);
 
     RealActivate = s_activate.Get();
