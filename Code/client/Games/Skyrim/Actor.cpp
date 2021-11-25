@@ -619,13 +619,13 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
-TP_THIS_FUNCTION(TRunDetection, void, void, ActorKnowledge*);
-static TRunDetection* RealRunDetection = nullptr;
+TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
+static TUpdateDetectionState* RealUpdateDetectionState = nullptr;
 
-void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
+void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
 {
-    auto pOwner = TESObjectREFR::GetByHandle(apTarget->hOwner);
-    auto pTarget = TESObjectREFR::GetByHandle(apTarget->hTarget);
+    auto pOwner = TESObjectREFR::GetByHandle(apThis->hOwner);
+    auto pTarget = TESObjectREFR::GetByHandle(apThis->hTarget);
 
     if (pOwner && pTarget)
     {
@@ -636,12 +636,12 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
             {
                 spdlog::info("Cancelling detection from remote player to local player");
-                //return;
+                return;
             }
         }
     }
 
-    return ThisCall(RealRunDetection, apThis, apTarget);
+    return ThisCall(RealUpdateDetectionState, apThis, apState);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -657,7 +657,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140607080 - 0x140000000);
     POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x14060CEA0 - 0x140000000);
     POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x14060C510 - 0x140000000);
-    POINTER_SKYRIMSE(TRunDetection, s_runDetection, 0x140F60320 - 0x140000000);
+    POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140743270 - 0x140000000);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -669,7 +669,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealRegenAttributes = s_regenAttributes.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();
     RealPickUpItem = s_pickUpItem.Get();
-    RealRunDetection = s_runDetection.Get();
+    RealUpdateDetectionState = s_updateDetectionState.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -680,5 +680,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
     TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
     TP_HOOK(&RealPickUpItem, HookPickUpItem);
-    TP_HOOK(&RealRunDetection, HookRunDetection);
+    TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
 });
