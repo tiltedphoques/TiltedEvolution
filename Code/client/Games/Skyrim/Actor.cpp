@@ -644,6 +644,21 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
     return ThisCall(RealUpdateDetectionState, apThis, apState);
 }
 
+struct DialogueItem;
+
+TP_THIS_FUNCTION(TProcessResponse, uint64_t, void, DialogueItem* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor);
+static TProcessResponse* RealProcessResponse = nullptr;
+
+uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor)
+{
+    if (apTalkingActor)
+    {
+        if (apTalkingActor->GetExtension()->IsRemotePlayer())
+            return 0;
+    }
+    return ThisCall(RealProcessResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406BA510 - 0x140000000);
@@ -658,6 +673,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x14060CEA0 - 0x140000000);
     POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x14060C510 - 0x140000000);
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140743270 - 0x140000000);
+    POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BEE0 - 0x140000000);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -670,6 +686,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealAddInventoryItem = s_addInventoryItem.Get();
     RealPickUpItem = s_pickUpItem.Get();
     RealUpdateDetectionState = s_updateDetectionState.Get();
+    RealProcessResponse = s_processResponse.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -681,4 +698,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
     TP_HOOK(&RealPickUpItem, HookPickUpItem);
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
+    TP_HOOK(&RealProcessResponse, HookProcessResponse);
 });
