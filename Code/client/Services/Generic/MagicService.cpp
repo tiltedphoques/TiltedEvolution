@@ -28,6 +28,56 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
 }
 
+void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
+{
+#if TP_SKYRIM64
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 100ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    Vector<uint32_t> markedForRemoval;
+
+    for (auto [formId, spellId] : m_queuedEffects)
+    {
+        auto view = m_world.view<FormIdComponent>();
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) {
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
+
+        if (it == std::end(view))
+            continue;
+
+        entt::entity entity = *it;
+
+        AddTargetRequest request;
+        request.TargetId = utils::GetServerId(entity);
+        if (request.TargetId == 0)
+            return;
+
+        if (!m_world.GetModSystem().GetServerModId(spellId, request.SpellId.ModId, request.SpellId.BaseId))
+        {
+            spdlog::error("{s}: Could not find spell with form {:X}", __FUNCTION__, spellId);
+            continue;
+        }
+
+        m_transport.Send(request);
+
+        markedForRemoval.push_back(formId);
+    }
+
+    for (uint32_t formId : markedForRemoval)
+        m_queuedEffects.erase(formId);
+#endif
+}
+
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
 #if TP_SKYRIM64
@@ -196,7 +246,7 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 #endif
 }
 
-void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcept
+void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 {
 #if TP_SKYRIM64
     if (!m_transport.IsConnected())
@@ -210,6 +260,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) const noexcep
     if (it == std::end(view))
     {
         spdlog::warn("Target not found for magic add target, form id: {:X}", acEvent.TargetID);
+        m_queuedEffects[acEvent.TargetID] = acEvent.SpellID;
         return;
     }
 

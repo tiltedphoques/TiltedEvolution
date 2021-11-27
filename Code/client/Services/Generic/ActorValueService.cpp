@@ -324,9 +324,6 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
     for (const auto& [key, value] : acMessage.Values)
     {
-        if (key == ActorValueInfo::kHealth)
-            continue;
-
 #if TP_SKYRIM64
         // Syncing dragon souls triggers "Dragon soul collected" event
         if (key == ActorValueInfo::kDragonSouls)
@@ -334,7 +331,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
         spdlog::debug("Actor value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);
 
-        if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka)
+        if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka || key == ActorValueInfo::kHealth)
         {
             pActor->ForceActorValue(2, key, value);
         }

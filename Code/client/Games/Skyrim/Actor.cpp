@@ -646,6 +646,7 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
 
 struct DialogueItem;
 
+// This is an AIProcess function
 TP_THIS_FUNCTION(TProcessResponse, uint64_t, void, DialogueItem* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor);
 static TProcessResponse* RealProcessResponse = nullptr;
 
