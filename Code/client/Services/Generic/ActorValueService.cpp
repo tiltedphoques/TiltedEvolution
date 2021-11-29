@@ -334,12 +334,10 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
         if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka || key == ActorValueInfo::kHealth)
         {
             pActor->ForceActorValue(2, key, value);
+            continue;
         }
 #endif
-        else
-        {
-            pActor->SetActorValue(key, value);
-        }
+        pActor->SetActorValue(key, value);
     }
 }
 
