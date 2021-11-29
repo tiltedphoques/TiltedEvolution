@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.2.0...v1.2.1) (2021-11-29)
+
+
+### Bug Fixes
+
+* removed 'skeever butt' dialogue from players ([60fd7bd](https://github.com/tiltedphoques/TiltedEvolution/commit/60fd7bda6684813a80b2ede828172f96d5a6d54e))
+
 # [1.2.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.1.0...v1.2.0) (2021-11-25)
 
 
