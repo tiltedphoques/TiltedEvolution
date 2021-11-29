@@ -1,3 +1,23 @@
+# [1.2.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.1.0...v1.2.0) (2021-11-25)
+
+
+### Bug Fixes
+
+* fix 'dragonsoul colected' bug ([8c56bfc](https://github.com/tiltedphoques/TiltedEvolution/commit/8c56bfc55a5be9c1d2cb2b5bcd80bc48f00b32e1))
+* fps drop bug ([199b51c](https://github.com/tiltedphoques/TiltedEvolution/commit/199b51c81558884fdb46c3b6e3ec38f8d31be2ad))
+* new addresses for object animations ([6e042c1](https://github.com/tiltedphoques/TiltedEvolution/commit/6e042c156540a6d580cbbd54546df49dbee96926))
+* remote SetPlayer() added in reused spawn data ([da3a10e](https://github.com/tiltedphoques/TiltedEvolution/commit/da3a10eb6c8d8d46d11e4b23d1fec2881cad0fa4))
+
+
+### Features
+
+* MagicService ([bf77eae](https://github.com/tiltedphoques/TiltedEvolution/commit/bf77eaed105cbbc62811f4200b850a1273b90ef3))
+* reverse engineered fallout 4 magic classes ([b05b415](https://github.com/tiltedphoques/TiltedEvolution/commit/b05b4151e5134986c94c08b2e5da7043c6c4d820))
+* script to fetch addresses for new AE patch ([8684497](https://github.com/tiltedphoques/TiltedEvolution/commit/868449716295d5fe8ab5fa2b792407d3a1ebcc2d))
+* shitty object anim sync implementation ([6202563](https://github.com/tiltedphoques/TiltedEvolution/commit/6202563ebfc10d5402c90ae946cefa5ec89c9f7f))
+* sneak sync in fallout 4 ([cce6f47](https://github.com/tiltedphoques/TiltedEvolution/commit/cce6f47ee7015cfe26fa209068fbac3efffb9269))
+* sneak sync in skyrim ([5be1768](https://github.com/tiltedphoques/TiltedEvolution/commit/5be17680332fa7bae39bf2fd805b4cdff8a599fc))
+
 # [1.1.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.0.0...v1.1.0) (2021-11-22)
 
 
