@@ -50,8 +50,18 @@ struct Projectile : TESObjectREFR
         bool bForceConeOfFire; // unsure // init to false
     };
 
-    static void* Launch(void* apResult, LaunchData& arData) noexcept;
+    uint8_t unk98[0xF0];
+    // TODO: get fPower after Projectile::Launch() function has finished
+    float fPower;
+    float fSpeedMult;
+    float fRange;
+    float fAge;
+    float fDamage;
+
+    static uint32_t* Launch(void* apResult, LaunchData& arData) noexcept;
 };
+
+constexpr size_t t = offsetof(Projectile, fPower);
 
 static_assert(sizeof(Projectile::LaunchData) == 0xA8);
 

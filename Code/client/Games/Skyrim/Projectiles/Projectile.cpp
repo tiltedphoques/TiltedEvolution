@@ -8,22 +8,32 @@
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
 
-TP_THIS_FUNCTION(TLaunch, void*, void, Projectile::LaunchData& arData);
-
+TP_THIS_FUNCTION(TLaunch, uint32_t*, void, Projectile::LaunchData& arData);
 static TLaunch* RealLaunch = nullptr;
 
-void* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
+uint32_t* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
 {
-    return ThisCall(RealLaunch, apResult, apLaunchData);
+    auto result = ThisCall(RealLaunch, apResult, apLaunchData);
+
+    TP_ASSERT(result, "No projectile handle returned.");
+
+    auto* pObject = TESObjectREFR::GetByHandle(*result);
+    auto* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    
+    TP_ASSERT(pProjectile, "No projectile found.");
+
+    pProjectile->fPower = apLaunchData.fPower;
+
+    return result;
 }
 
 // Projectile::Launch() is still somehow dependent on its shooter.
 // Therefore, this can only be used to sync arrows, really.
 // TODO: sync projectiles other than arrows, and make arrows work with half drawn bows.
-void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
+uint32_t* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
 {
-    if (!arData.pSpell)
-        return ThisCall(RealLaunch, apThis, arData);
+    //if (!arData.pSpell)
+        //return ThisCall(RealLaunch, apThis, arData);
 
     if (arData.pShooter)
     {
@@ -68,9 +78,20 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
     Event.Tracer = arData.bTracer;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
 
+    auto result = ThisCall(RealLaunch, apThis, arData);
+
+    TP_ASSERT(result, "No projectile handle returned.");
+
+    auto* pObject = TESObjectREFR::GetByHandle(*result);
+    auto* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    
+    TP_ASSERT(pProjectile, "No projectile found.");
+
+    Event.Power = pProjectile->fPower;
+
     World::Get().GetRunner().Trigger(Event);
 
-    return ThisCall(RealLaunch, apThis, arData);
+    return result;
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
