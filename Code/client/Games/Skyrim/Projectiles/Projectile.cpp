@@ -22,7 +22,7 @@ void* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
 // TODO: sync projectiles other than arrows, and make arrows work with half drawn bows.
 void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
 {
-    if (!arData.pFromAmmo || !arData.pFromWeapon || arData.pSpell)
+    if (!arData.pSpell)
         return ThisCall(RealLaunch, apThis, arData);
 
     if (arData.pShooter)
@@ -61,8 +61,10 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
     Event.AlwaysHit = arData.bAlwaysHit;
     Event.NoDamageOutsideCombat = arData.bNoDamageOutsideCombat;
     Event.AutoAim = arData.bAutoAim;
+    /*
     Event.UseOrigin = arData.bUseOrigin;
     Event.DeferInitialization = arData.bDeferInitialization;
+    */
     Event.Tracer = arData.bTracer;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
 

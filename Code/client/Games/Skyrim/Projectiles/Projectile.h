@@ -44,8 +44,8 @@ struct Projectile : TESObjectREFR
         bool bNoDamageOutsideCombat; // init to false
         // TODO: The following bools are probably something else
         bool bAutoAim; // unsure // init to false
-        bool bUseOrigin; // unsure // init to false
-        bool bDeferInitialization; // unsure // init to false
+        bool bUnkBool1; // unsure // init to false
+        bool bUseOrigin; // init to false
         bool bTracer; // unsure // init to false
         bool bForceConeOfFire; // unsure // init to false
     };

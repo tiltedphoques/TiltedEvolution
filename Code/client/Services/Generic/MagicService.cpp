@@ -80,7 +80,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
-#if TP_SKYRIM64
+#if 0
     if (!m_transport.IsConnected())
         return;
 

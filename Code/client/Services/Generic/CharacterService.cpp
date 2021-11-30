@@ -1099,8 +1099,10 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bAlwaysHit = acMessage.AlwaysHit;
     launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
     launchData.bAutoAim = acMessage.AutoAim;
-    launchData.bUseOrigin = acMessage.UseOrigin;
-    launchData.bDeferInitialization = acMessage.DeferInitialization;
+#if TP_SKYRIM64
+    launchData.bUseOrigin = true;
+    launchData.bUnkBool1 = acMessage.DeferInitialization;
+#endif
     launchData.bTracer = acMessage.Tracer;
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
 
