@@ -61,7 +61,5 @@ struct Projectile : TESObjectREFR
     static uint32_t* Launch(void* apResult, LaunchData& arData) noexcept;
 };
 
-constexpr size_t t = offsetof(Projectile, fPower);
-
 static_assert(sizeof(Projectile::LaunchData) == 0xA8);
 

@@ -7,6 +7,7 @@
 #include <World.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
+#include <Forms/SpellItem.h>
 
 TP_THIS_FUNCTION(TLaunch, uint32_t*, void, Projectile::LaunchData& arData);
 static TLaunch* RealLaunch = nullptr;
@@ -27,13 +28,19 @@ uint32_t* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
     return result;
 }
 
-// Projectile::Launch() is still somehow dependent on its shooter.
-// Therefore, this can only be used to sync arrows, really.
-// TODO: sync projectiles other than arrows, and make arrows work with half drawn bows.
 uint32_t* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
 {
-    //if (!arData.pSpell)
-        //return ThisCall(RealLaunch, apThis, arData);
+    // sync concentration spells through spell cast sync, the rest through projectile sync
+    if (arData.pSpell)
+    {
+        if (auto* pSpell = RTTI_CAST(arData.pSpell, MagicItem, SpellItem))
+        {
+            if (pSpell->eCastingType == MagicSystem::CastingType::CONCENTRATION)
+            {
+                return ThisCall(RealLaunch, apThis, arData);
+            }
+        }
+    }
 
     if (arData.pShooter)
     {

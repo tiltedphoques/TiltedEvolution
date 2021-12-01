@@ -22,4 +22,3 @@ struct BShkbAnimationGraph
     // Re do not use
     bool ReSendEvent(BSFixedString* apEventName);
 };
-constexpr size_t t = offsetof(BShkbAnimationGraph, hkxDB);

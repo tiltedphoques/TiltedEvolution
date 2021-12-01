@@ -11,8 +11,9 @@ struct SpellItem : MagicItem
     BGSEquipType equipType;
     BGSMenuDisplayObject menuDisplayObject;
     TESDescription description;
-    uint32_t unk6C[3];
+    uint32_t unk6C[5];
     float castTime;
-    uint32_t castType;
+    MagicSystem::CastingType eCastingType;
     // more stuff
 };
+

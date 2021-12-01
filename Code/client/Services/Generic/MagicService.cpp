@@ -16,6 +16,7 @@
 
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
+#include <Forms/SpellItem.h>
 
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -80,7 +81,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
 {
-#if 0
+#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -90,6 +91,15 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
     {
         spdlog::warn("Spell cast event has no actor or actor is not loaded");
         return;
+    }
+
+    // only sync concentration spells through spell cast sync, the rest through projectile sync
+    if (auto* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
+    {
+        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
+        {
+            return;
+        }
     }
 
     uint32_t formId = acSpellCastEvent.pCaster->pCasterActor->formID;

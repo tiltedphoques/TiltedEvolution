@@ -1,6 +1,5 @@
 #pragma once
 
-// Libcr validation required
 namespace MagicSystem
 {
 
@@ -36,6 +35,15 @@ enum CannotCastReason : int32_t
     NOCAST_SHOUTWHILECASTING = 0x7,
     NOCAST_SHOUTWHILERECOVERING = 0x8,
     NOCAST_CUSTOMREASON_START = 0x64,
+};
+
+enum CastingType : int32_t
+{
+    CONSTANT_EFFECT = 0x0,
+    FIRE_AND_FORGET = 0x1,
+    CONCENTRATION = 0x2,
+    // Skyrim: SCROLL = 0x3?
+    CASTING_COUNT = 0x3,
 };
 
 }

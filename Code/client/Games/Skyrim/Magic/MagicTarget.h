@@ -39,4 +39,3 @@ struct MagicTarget
     void* unk04;
     void* unk08;
 };
-//constexpr size_t t = offsetof(MagicTarget::AddTargetData, eCastingSource);
