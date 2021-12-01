@@ -5,6 +5,8 @@
 
 struct ExtraTextDisplayData : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::TextDisplayData;
+
     BSFixedString DisplayName;
 
     // TODO: implement the rest when i dont feel lazy

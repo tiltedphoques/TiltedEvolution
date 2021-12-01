@@ -8,6 +8,8 @@ struct TESForm;
 
 struct BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::None;
+
     virtual ~BSExtraData() = 0;
     virtual ExtraData GetType() const noexcept = 0;
 

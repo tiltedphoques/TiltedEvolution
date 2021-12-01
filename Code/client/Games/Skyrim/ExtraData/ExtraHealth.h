@@ -4,6 +4,8 @@
 
 struct ExtraHealth : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::Health;
+
     float fHealth;
 };
 

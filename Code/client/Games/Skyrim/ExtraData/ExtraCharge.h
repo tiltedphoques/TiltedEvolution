@@ -4,6 +4,8 @@
 
 struct ExtraCharge : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::Charge;
+
     float fCharge;
 };
 

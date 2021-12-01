@@ -6,6 +6,8 @@ struct EnchantmentItem;
 
 struct ExtraEnchantment : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::Enchantment;
+
     EnchantmentItem* pEnchantment;
     uint16_t usCharge;
     bool bRemoveOnUnequip;

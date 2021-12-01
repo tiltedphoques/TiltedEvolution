@@ -15,6 +15,8 @@ enum class SOUL_LEVEL
 
 struct ExtraSoul : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::Soul;
+
     SOUL_LEVEL cSoul;
 };
 

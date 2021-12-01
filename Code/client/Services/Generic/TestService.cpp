@@ -930,5 +930,14 @@ void TestService::OnDraw() noexcept
     }
 
     ImGui::End();
+
+#if TP_SKYRIM64
+
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Container debug");
+
+    ImGui::End();
+
+#endif
 }
 

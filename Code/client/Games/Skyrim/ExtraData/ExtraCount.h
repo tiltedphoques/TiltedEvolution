@@ -4,6 +4,8 @@
 
 struct ExtraCount : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::Count;
+
     int16_t count;
 };
 
