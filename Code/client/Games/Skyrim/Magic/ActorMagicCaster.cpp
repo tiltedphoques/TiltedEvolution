@@ -19,25 +19,24 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
     if (!abSuccess)
         return;
 
-    auto* pActor = apThis->pCasterActor;
+    Actor* pActor = apThis->pCasterActor;
 
     if (pActor->GetExtension()->IsRemote())
         return;
 
     World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell));
 
-    spdlog::info("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell);
+    spdlog::debug("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell);
 
     ThisCall(RealSpellCast, apThis, abSuccess, auiTargetCount, apSpell);
 }
 
 void TP_MAKE_THISCALL(HookInterruptCast, ActorMagicCaster, bool abRefund)
 {
-    auto* pExtended = apThis->pCasterActor->GetExtension();
+    ActorExtension* pExtended = apThis->pCasterActor->GetExtension();
 
     if (pExtended->IsLocal())
     {
-        spdlog::info("Send Interrupt cast event");
         World::Get().GetRunner().Trigger(InterruptCastEvent(apThis->pCasterActor->formID));
     }
 

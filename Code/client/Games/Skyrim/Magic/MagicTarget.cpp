@@ -28,10 +28,6 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 * Don't send continuous, value modifying effects like burning from flames concentration spell.
     Can't cancel all ValueModifierEffects though.
 
-* The conjuration visuals script effect is not being applied because, while we don't
-    cancel that one, only the summon effect, the form id component is not created yet
-    at the time of dispatching this event.
-
 * Maybe batch effects.
 */
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
