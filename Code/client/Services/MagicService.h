@@ -37,6 +37,7 @@ private:
 
     Map<uint32_t, uint32_t> m_queuedEffects;
 
+    entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;
     entt::scoped_connection m_notifySpellCastConnection;
     entt::scoped_connection m_interruptCastEventConnection;

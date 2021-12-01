@@ -2,6 +2,7 @@
 
 #include <World.h>
 
+#include <Events/UpdateEvent.h>
 #include <Events/SpellCastEvent.h>
 #include <Events/InterruptCastEvent.h>
 #include <Events/AddTargetEvent.h>
@@ -21,6 +22,7 @@
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
+    m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&MagicService::OnUpdate>(this);
     m_spellCastEventConnection = m_dispatcher.sink<SpellCastEvent>().connect<&MagicService::OnSpellCastEvent>(this);
     m_notifySpellCastConnection = m_dispatcher.sink<NotifySpellCast>().connect<&MagicService::OnNotifySpellCast>(this);
     m_interruptCastEventConnection = m_dispatcher.sink<InterruptCastEvent>().connect<&MagicService::OnInterruptCastEvent>(this);
@@ -61,7 +63,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
         AddTargetRequest request;
         request.TargetId = utils::GetServerId(entity);
         if (request.TargetId == 0)
-            return;
+            continue;
 
         if (!m_world.GetModSystem().GetServerModId(spellId, request.SpellId.ModId, request.SpellId.BaseId))
         {
