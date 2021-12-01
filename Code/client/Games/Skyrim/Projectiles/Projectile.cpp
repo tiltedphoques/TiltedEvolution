@@ -9,16 +9,16 @@
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
 #include <Forms/SpellItem.h>
 
-TP_THIS_FUNCTION(TLaunch, uint32_t*, uint32_t, Projectile::LaunchData& arData);
+TP_THIS_FUNCTION(TLaunch, BSPointerHandle<Projectile>*, BSPointerHandle<Projectile>, Projectile::LaunchData& arData);
 static TLaunch* RealLaunch = nullptr;
 
-uint32_t* Projectile::Launch(uint32_t* apResult, LaunchData& apLaunchData) noexcept
+BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, LaunchData& apLaunchData) noexcept
 {
-    uint32_t* result = ThisCall(RealLaunch, apResult, apLaunchData);
+    BSPointerHandle<Projectile>* result = ThisCall(RealLaunch, apResult, apLaunchData);
 
     TP_ASSERT(result, "No projectile handle returned.");
 
-    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(*result);
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
     Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
     
     TP_ASSERT(pProjectile, "No projectile found.");
@@ -28,7 +28,7 @@ uint32_t* Projectile::Launch(uint32_t* apResult, LaunchData& apLaunchData) noexc
     return result;
 }
 
-uint32_t* TP_MAKE_THISCALL(HookLaunch, uint32_t, Projectile::LaunchData& arData)
+BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projectile>, Projectile::LaunchData& arData)
 {
     // sync concentration spells through spell cast sync, the rest through projectile sync
     if (arData.pSpell)
@@ -50,8 +50,8 @@ uint32_t* TP_MAKE_THISCALL(HookLaunch, uint32_t, Projectile::LaunchData& arData)
             ActorExtension* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->IsRemote())
             {
-                // TODO: dont return null, return a 0 handle!
-                return nullptr;
+                apThis->handle.iBits = 0;
+                return apThis;
             }
         }
     }
@@ -89,8 +89,8 @@ uint32_t* TP_MAKE_THISCALL(HookLaunch, uint32_t, Projectile::LaunchData& arData)
 
     TP_ASSERT(result, "No projectile handle returned.");
 
-    auto* pObject = TESObjectREFR::GetByHandle(*result);
-    auto* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
+    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
     
     TP_ASSERT(pProjectile, "No projectile found.");
 

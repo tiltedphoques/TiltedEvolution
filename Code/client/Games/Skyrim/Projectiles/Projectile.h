@@ -56,7 +56,7 @@ struct Projectile : TESObjectREFR
     float fAge;
     float fDamage;
 
-    static uint32_t* Launch(uint32_t* apResult, LaunchData& arData) noexcept;
+    static BSPointerHandle<Projectile>* Launch(BSPointerHandle<Projectile>* apResult, LaunchData& arData) noexcept;
 };
 
 static_assert(sizeof(Projectile::LaunchData) == 0xA8);

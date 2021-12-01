@@ -59,6 +59,6 @@ struct ProjectileLaunchData
 
 struct Projectile
 {
-    static void* Launch(void* apResult, ProjectileLaunchData& arData);
+    static BSPointerHandle<Projectile>* Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept;
 };
 

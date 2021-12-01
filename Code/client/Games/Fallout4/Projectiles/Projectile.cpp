@@ -6,16 +6,16 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESAmmo.h>
 
-TP_THIS_FUNCTION(TLaunch, void*, void, ProjectileLaunchData& arData);
+TP_THIS_FUNCTION(TLaunch, BSPointerHandle<Projectile>*, BSPointerHandle<Projectile>, ProjectileLaunchData& arData);
 
 static TLaunch* RealLaunch = nullptr;
 
-void* Projectile::Launch(void* apResult, ProjectileLaunchData& arData)
+BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept
 {
     return ThisCall(RealLaunch, apResult, arData);
 }
 
-void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
+BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projectile>, ProjectileLaunchData& arData)
 {
     if (arData.pShooter)
     {
@@ -25,8 +25,8 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
             ActorExtension* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->IsRemote())
             {
-                // TODO: dont return null, return a 0 handle!
-                return nullptr;
+                apThis->handle.iBits = 0;
+                return apThis;
             }
         }
     }

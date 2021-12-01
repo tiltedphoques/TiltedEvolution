@@ -1110,7 +1110,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
 #endif
 
-    uint32_t result;
+    BSPointerHandle<Projectile> result;
 
     Projectile::Launch(&result, launchData);
 }
