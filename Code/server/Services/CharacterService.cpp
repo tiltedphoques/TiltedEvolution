@@ -718,9 +718,6 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.OriginX = packet.OriginX;
     notify.OriginY = packet.OriginY;
     notify.OriginZ = packet.OriginZ;
-    notify.ContactNormalX = packet.ContactNormalX;
-    notify.ContactNormalY = packet.ContactNormalY;
-    notify.ContactNormalZ = packet.ContactNormalZ;
 
     notify.ProjectileBaseID = packet.ProjectileBaseID;
     notify.WeaponID = packet.WeaponID;
@@ -735,8 +732,6 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.SpellID = packet.SpellID;
     notify.CastingSource = packet.CastingSource;
 
-    notify.unkBool1 = packet.unkBool1;
-
     notify.Area = packet.Area;
     notify.Power = packet.Power;
     notify.Scale = packet.Scale;
@@ -744,10 +739,18 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.AlwaysHit = packet.AlwaysHit;
     notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
     notify.AutoAim = packet.AutoAim;
-    notify.UseOrigin = packet.UseOrigin;
     notify.DeferInitialization = packet.DeferInitialization;
-    notify.Tracer = packet.Tracer;
     notify.ForceConeOfFire = packet.ForceConeOfFire;
+
+    notify.UnkBool1 = packet.UnkBool1;
+    notify.UnkBool2 = packet.UnkBool2;
+
+    notify.ConeOfFireRadiusMult = packet.ConeOfFireRadiusMult;
+    notify.Tracer = packet.Tracer;
+    notify.IntentionalMiss = packet.IntentionalMiss;
+    notify.Allow3D = packet.Allow3D;
+    notify.Penetrates = packet.Penetrates;
+    notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
 
     const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
     const auto* shooterCellIdComp = m_world.try_get<CellIdComponent>(cShooterEntity);

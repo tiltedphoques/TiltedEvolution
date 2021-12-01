@@ -15,25 +15,24 @@ void* Projectile::Launch(void* apResult, ProjectileLaunchData& arData)
     return ThisCall(RealLaunch, apResult, arData);
 }
 
-// For now, don't use this hook, let anims sync projectiles.
-// TODO: make issue for more precise projectile sync.
 void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
 {
-#if 1
     if (arData.pShooter)
     {
-        auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
         if (pActor)
         {
-            auto* pExtendedActor = pActor->GetExtension();
+            ActorExtension* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->IsRemote())
+            {
+                // TODO: dont return null, return a 0 handle!
                 return nullptr;
+            }
         }
     }
 
     ProjectileLaunchedEvent Event{};
     Event.Origin = arData.Origin;
-    Event.ContactNormal = arData.ContactNormal;
     if (arData.pProjectileBase)
         Event.ProjectileBaseID = arData.pProjectileBase->formID;
     Event.ZAngle = arData.fZAngle;
@@ -52,7 +51,6 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.ConeOfFireRadiusMult = arData.fConeOfFireRadiusMult;
     Event.NoDamageOutsideCombat = arData.bNoDamageOutsideCombat;
     Event.AutoAim = arData.bAutoAim;
-    Event.UseOrigin = arData.bUseOrigin;
     Event.DeferInitialization = arData.bDeferInitialization;
     Event.Tracer = arData.bTracer;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
@@ -62,7 +60,6 @@ void* TP_MAKE_THISCALL(HookLaunch, void, ProjectileLaunchData& arData)
     Event.IgnoreNearCollisions = arData.bIgnoreNearCollisions;
 
     World::Get().GetRunner().Trigger(Event);
-#endif
 
     return ThisCall(RealLaunch, apThis, arData);
 }

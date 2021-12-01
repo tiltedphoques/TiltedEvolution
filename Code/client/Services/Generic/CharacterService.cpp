@@ -968,11 +968,9 @@ void CharacterService::RunSpawnUpdates() const noexcept
 
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
-#if 1
-    auto& modSystem = m_world.Get().GetModSystem();
+    ModSystem& modSystem = m_world.Get().GetModSystem();
 
-
-    auto shooterFormId = acEvent.ShooterID;
+    uint32_t shooterFormId = acEvent.ShooterID;
     auto view = m_world.view<FormIdComponent, LocalComponent>();
     const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
     {
@@ -982,11 +980,9 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     if (shooterEntityIt == std::end(view))
         return;
 
-    auto& localComponent = view.get<LocalComponent>(*shooterEntityIt);
+    LocalComponent& localComponent = view.get<LocalComponent>(*shooterEntityIt);
 
     ProjectileLaunchRequest request{};
-
-    request.ShooterID = localComponent.Id;
 
     request.OriginX = acEvent.Origin.x;
     request.OriginY = acEvent.Origin.y;
@@ -995,6 +991,8 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
     modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
     modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
+
+    request.ShooterID = localComponent.Id;
 
     request.ZAngle = acEvent.ZAngle;
     request.XAngle = acEvent.XAngle;
@@ -1005,11 +1003,6 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
 
     request.CastingSource = acEvent.CastingSource;
 
-#if TP_SKYRIM64
-    request.unkBool1 = acEvent.unkBool1;
-#else
-#endif
-
     request.Area = acEvent.Area;
     request.Power = acEvent.Power;
     request.Scale = acEvent.Scale;
@@ -1017,21 +1010,27 @@ void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& 
     request.AlwaysHit = acEvent.AlwaysHit;
     request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
     request.AutoAim = acEvent.AutoAim;
-    request.UseOrigin = acEvent.UseOrigin;
     request.DeferInitialization = acEvent.DeferInitialization;
-    request.Tracer = acEvent.Tracer;
     request.ForceConeOfFire = acEvent.ForceConeOfFire;
 
-    spdlog::info("Ammo event id: {}, request id: {}", acEvent.AmmoID, request.AmmoID.BaseId);
+#if TP_SKYRIM64
+    request.UnkBool1 = acEvent.UnkBool1;
+    request.UnkBool2 = acEvent.UnkBool2;
+#else
+    request.ConeOfFireRadiusMult = acEvent.ConeOfFireRadiusMult;
+    request.Tracer = acEvent.Tracer;
+    request.IntentionalMiss = acEvent.IntentionalMiss;
+    request.Allow3D = acEvent.Allow3D;
+    request.Penetrates = acEvent.Penetrates;
+    request.IgnoreNearCollisions = acEvent.IgnoreNearCollisions;
+#endif
 
     m_transport.Send(request);
-#endif
 }
 
 void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
 {
-#if 1
-    auto& modSystem = World::Get().GetModSystem();
+    ModSystem& modSystem = World::Get().GetModSystem();
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
@@ -1045,7 +1044,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
         return;
     }
 
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    FormIdComponent formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
 #if TP_SKYRIM64
     Projectile::LaunchData launchData{};
@@ -1061,36 +1060,28 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.Origin.y = acMessage.OriginY;
     launchData.Origin.z = acMessage.OriginZ;
 
-    const auto cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
+    const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
     launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
 
-    //const auto cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
-#if TP_SKYRIM64
-    //launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
-#else
+#if TP_FALLOUT4
     Actor* pShooter = RTTI_CAST(launchData.pShooter, TESObjectREFR, Actor);
     pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
 #endif
 
-    const auto cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
+    const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
     launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
 
     launchData.fZAngle = acMessage.ZAngle;
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
 
-    //const auto cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = PlayerCharacter::Get()->parentCell;
+    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = RTTI_CAST(TESForm::GetById(cParentCellId), TESForm, TESObjectCELL);
 
-    const auto cSpellId = modSystem.GetGameId(acMessage.SpellID);
+    const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
     launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
 
     launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
-
-#if TP_SKYRIM64
-    launchData.unkBool1 = acMessage.unkBool1;
-#else
-#endif
 
     launchData.iArea = acMessage.Area;
     launchData.fPower = acMessage.Power;
@@ -1099,23 +1090,28 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     launchData.bAlwaysHit = acMessage.AlwaysHit;
     launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
     launchData.bAutoAim = acMessage.AutoAim;
-#if TP_SKYRIM64
-    launchData.bUseOrigin = true;
-    launchData.bUnkBool1 = acMessage.DeferInitialization;
-#endif
-    launchData.bTracer = acMessage.Tracer;
+
     launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
 
-#if TP_FALLOUT4
-    launchData.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-    launchData.fConeOfFireRadiusMult = 1.0f;
+    // always use origin, or it'll recalculate it and it desyncs
+    launchData.bUseOrigin = true;
+
+#if TP_SKYRIM64
+    launchData.bUnkBool1 = acMessage.UnkBool1;
+    launchData.bUnkBool2 = acMessage.UnkBool2;
+#else
     launchData.eTargetLimb = -1;
-    launchData.bAllow3D = true;
+
+    launchData.fConeOfFireRadiusMult = acMessage.ConeOfFireRadiusMult;
+    launchData.bTracer = acMessage.Tracer;
+    launchData.bIntentionalMiss = acMessage.IntentionalMiss;
+    launchData.bAllow3D = acMessage.Allow3D;
+    launchData.bPenetrates = acMessage.Penetrates;
+    launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
 #endif
 
-    uint8_t resultBuffer[100];
+    uint32_t result;
 
-    Projectile::Launch(resultBuffer, launchData);
-#endif
+    Projectile::Launch(&result, launchData);
 }
 

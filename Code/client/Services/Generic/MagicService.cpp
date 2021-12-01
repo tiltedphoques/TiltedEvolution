@@ -17,7 +17,9 @@
 
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
+#if TP_SKYRIM64
 #include <Forms/SpellItem.h>
+#endif
 
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)

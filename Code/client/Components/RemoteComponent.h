@@ -14,6 +14,6 @@ struct RemoteComponent
 
     uint32_t Id;
     uint32_t CachedRefId;
-    CharacterSpawnRequest SpawnRequest;
-    bool IsDead;
+    CharacterSpawnRequest SpawnRequest{};
+    bool IsDead = false;
 };

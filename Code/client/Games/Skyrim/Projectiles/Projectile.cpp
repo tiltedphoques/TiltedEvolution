@@ -9,17 +9,17 @@
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
 #include <Forms/SpellItem.h>
 
-TP_THIS_FUNCTION(TLaunch, uint32_t*, void, Projectile::LaunchData& arData);
+TP_THIS_FUNCTION(TLaunch, uint32_t*, uint32_t, Projectile::LaunchData& arData);
 static TLaunch* RealLaunch = nullptr;
 
-uint32_t* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
+uint32_t* Projectile::Launch(uint32_t* apResult, LaunchData& apLaunchData) noexcept
 {
-    auto result = ThisCall(RealLaunch, apResult, apLaunchData);
+    uint32_t* result = ThisCall(RealLaunch, apResult, apLaunchData);
 
     TP_ASSERT(result, "No projectile handle returned.");
 
-    auto* pObject = TESObjectREFR::GetByHandle(*result);
-    auto* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(*result);
+    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
     
     TP_ASSERT(pProjectile, "No projectile found.");
 
@@ -28,7 +28,7 @@ uint32_t* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
     return result;
 }
 
-uint32_t* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
+uint32_t* TP_MAKE_THISCALL(HookLaunch, uint32_t, Projectile::LaunchData& arData)
 {
     // sync concentration spells through spell cast sync, the rest through projectile sync
     if (arData.pSpell)
@@ -44,12 +44,15 @@ uint32_t* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
 
     if (arData.pShooter)
     {
-        auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
         if (pActor)
         {
-            auto* pExtendedActor = pActor->GetExtension();
+            ActorExtension* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->IsRemote())
+            {
+                // TODO: dont return null, return a 0 handle!
                 return nullptr;
+            }
         }
     }
 
@@ -71,18 +74,15 @@ uint32_t* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
     if (arData.pSpell)
         Event.SpellID = arData.pSpell->formID;
     Event.CastingSource = arData.eCastingSource;
-    Event.unkBool1 = arData.unkBool1;
+    Event.UnkBool1 = arData.bUnkBool1;
     Event.Area = arData.iArea;
     Event.Power = arData.fPower;
     Event.Scale = arData.fScale;
     Event.AlwaysHit = arData.bAlwaysHit;
     Event.NoDamageOutsideCombat = arData.bNoDamageOutsideCombat;
     Event.AutoAim = arData.bAutoAim;
-    /*
-    Event.UseOrigin = arData.bUseOrigin;
+    Event.UnkBool2 = arData.bUnkBool2;
     Event.DeferInitialization = arData.bDeferInitialization;
-    */
-    Event.Tracer = arData.bTracer;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
 
     auto result = ThisCall(RealLaunch, apThis, arData);
