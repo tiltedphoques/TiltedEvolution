@@ -972,14 +972,14 @@ void TestService::OnDraw() noexcept
     {
         if (pChange && pChange->form && pChange->form->formID == s_selectedInvFormId)
         {
+            itemCount++;
+
             const auto pDataLists = pChange->dataList;
             for (auto* pDataList : *pDataLists)
             {
-                dataListCount++;
-
                 if (pDataList)
                 {
-                    itemCount++;
+                    dataListCount++;
 
                     char name[256];
                     sprintf_s(name, std::size(name), "Item %d", itemCount);
@@ -989,23 +989,23 @@ void TestService::OnDraw() noexcept
                         BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                         bool charge = pDataList->Contains(ExtraData::Charge);
-                        ImGui::TextColored(charge ? red : green, "charge");
+                        ImGui::TextColored(charge ? green : red, "charge");
                         bool count = pDataList->Contains(ExtraData::Count);
-                        ImGui::TextColored(count ? red : green, "count");
+                        ImGui::TextColored(count ? green : red, "count");
                         bool enchantment = pDataList->Contains(ExtraData::Enchantment);
-                        ImGui::TextColored(enchantment ? red : green, "enchantment");
+                        ImGui::TextColored(enchantment ? green : red, "enchantment");
                         bool health = pDataList->Contains(ExtraData::Health);
-                        ImGui::TextColored(health ? red : green, "health");
+                        ImGui::TextColored(health ? green : red, "health");
                         bool poison = pDataList->Contains(ExtraData::Poison);
-                        ImGui::TextColored(poison ? red : green, "poison");
+                        ImGui::TextColored(poison ? green : red, "poison");
                         bool soul = pDataList->Contains(ExtraData::Soul);
-                        ImGui::TextColored(soul ? red : green, "soul");
+                        ImGui::TextColored(soul ? green : red, "soul");
                         bool textDisplayData = pDataList->Contains(ExtraData::TextDisplayData);
-                        ImGui::TextColored(textDisplayData ? red : green, "textDisplayData");
+                        ImGui::TextColored(textDisplayData ? green : red, "textDisplayData");
                         bool worn = pDataList->Contains(ExtraData::Worn);
-                        ImGui::TextColored(worn ? red : green, "worn");
+                        ImGui::TextColored(worn ? green : red, "worn");
                         bool wornLeft = pDataList->Contains(ExtraData::WornLeft);
-                        ImGui::TextColored(wornLeft ? red : green, "wornLeft");
+                        ImGui::TextColored(wornLeft ? green : red, "wornLeft");
                     }
                 }
             }
