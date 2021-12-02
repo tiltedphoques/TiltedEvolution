@@ -43,6 +43,7 @@
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
+#include <EquipManager.h>
 #endif
 
 #include <imgui.h>
@@ -932,12 +933,92 @@ void TestService::OnDraw() noexcept
     ImGui::End();
 
 #if TP_SKYRIM64
-
     ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
     ImGui::Begin("Container debug");
 
-    ImGui::End();
+    static uint32_t s_selectedInvFormId = 0;
+    static uint32_t s_selectedInv = 0;
 
+    auto* pContainerActor = PlayerCharacter::Get();
+
+    ImGui::BeginChild("Items", ImVec2(0, 200), true);
+
+    const auto pContainerChanges = pContainerActor->GetContainerChanges()->entries;
+
+    int i = 0;
+    for (auto pChange : *pContainerChanges)
+    {
+        if (pChange && pChange->form && pChange->dataList)
+        {
+            char name[256];
+            sprintf_s(name, std::size(name), "%x", pChange->form->formID);
+
+            if (ImGui::Selectable(name, s_selectedInvFormId == pChange->form->formID))
+            {
+                s_selectedInvFormId = pChange->form->formID;
+            }
+        }
+    }
+
+    ImGui::EndChild();
+
+    int itemCount = 0;
+    int dataListCount = 0;
+
+    ImVec4 red{255.f, 0.f, 0.f, 255.f};
+    ImVec4 green{0.f, 255.f, 0.f, 255.f};
+
+    for (auto pChange : *pContainerChanges)
+    {
+        if (pChange && pChange->form && pChange->form->formID == s_selectedInvFormId)
+        {
+            const auto pDataLists = pChange->dataList;
+            for (auto* pDataList : *pDataLists)
+            {
+                dataListCount++;
+
+                if (pDataList)
+                {
+                    itemCount++;
+
+                    char name[256];
+                    sprintf_s(name, std::size(name), "Item %d", itemCount);
+
+                    if (ImGui::CollapsingHeader(name, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        BSScopedLock<BSRecursiveLock> _(pDataList->lock);
+
+                        bool charge = pDataList->Contains(ExtraData::Charge);
+                        ImGui::TextColored(charge ? red : green, "charge");
+                        bool count = pDataList->Contains(ExtraData::Count);
+                        ImGui::TextColored(count ? red : green, "count");
+                        bool enchantment = pDataList->Contains(ExtraData::Enchantment);
+                        ImGui::TextColored(enchantment ? red : green, "enchantment");
+                        bool health = pDataList->Contains(ExtraData::Health);
+                        ImGui::TextColored(health ? red : green, "health");
+                        bool poison = pDataList->Contains(ExtraData::Poison);
+                        ImGui::TextColored(poison ? red : green, "poison");
+                        bool soul = pDataList->Contains(ExtraData::Soul);
+                        ImGui::TextColored(soul ? red : green, "soul");
+                        bool textDisplayData = pDataList->Contains(ExtraData::TextDisplayData);
+                        ImGui::TextColored(textDisplayData ? red : green, "textDisplayData");
+                        bool worn = pDataList->Contains(ExtraData::Worn);
+                        ImGui::TextColored(worn ? red : green, "worn");
+                        bool wornLeft = pDataList->Contains(ExtraData::WornLeft);
+                        ImGui::TextColored(wornLeft ? red : green, "wornLeft");
+                    }
+                }
+            }
+        }
+    }
+
+    if (ImGui::CollapsingHeader("Metadata", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::InputInt("Item count", &itemCount, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("Data list count", &dataListCount, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    }
+
+    ImGui::End();
 #endif
 }
 
