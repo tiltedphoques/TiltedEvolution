@@ -17,4 +17,5 @@ struct CharacterComponent
     bool DirtyFactions{ false };
     bool IsDead{};
     bool IsPlayer{};
+    bool IsWeaponDrawn{};
 };

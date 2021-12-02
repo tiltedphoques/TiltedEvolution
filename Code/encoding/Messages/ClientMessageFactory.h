@@ -33,6 +33,7 @@
 #include <Messages/AddTargetRequest.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/ScriptAnimationRequest.h>
+#include <Messages/DrawWeaponRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -51,7 +52,7 @@ struct ClientMessageFactory
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,
-                                 AddTargetRequest, ScriptAnimationRequest>;
+                                 AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

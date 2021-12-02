@@ -18,6 +18,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     FaceTints.Serialize(aWriter);
     AllActorValues.Serialize(aWriter);
     Serialization::WriteBool(aWriter, IsDead);
+    Serialization::WriteBool(aWriter, IsWeaponDrawn);
 }
 
 void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -49,5 +50,7 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     QuestContent.Deserialize(aReader);
     FaceTints.Deserialize(aReader);
     AllActorValues.Deserialize(aReader);
+
     IsDead = Serialization::ReadBool(aReader);
+    IsWeaponDrawn = Serialization::ReadBool(aReader);
 }

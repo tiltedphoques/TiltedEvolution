@@ -460,6 +460,25 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+extern thread_local bool g_forceAnimation;
+
+void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
+{
+    spdlog::error("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    g_forceAnimation = true;
+    if (actorState.IsWeaponDrawn() == aDraw)
+    {
+        using TSetWeaponState = void(ActorState* apActorState, bool aDraw);
+
+        POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 0x1406627C0 - 0x140000000);
+
+        setWeaponState.Get()(&actorState, !aDraw);
+    }
+    spdlog::critical("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    SetWeaponDrawn(aDraw);
+    g_forceAnimation = false;
+}
+
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);

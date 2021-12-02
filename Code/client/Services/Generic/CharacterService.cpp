@@ -136,12 +136,39 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
     CancelServerAssignment(aRegistry, aEntity, formIdComponent.Id);
 }
 
+static Actor* pCachedDrawActor = nullptr;
+
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunSpawnUpdates();
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
+
+    if (!pCachedDrawActor)
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 4s;
+
+    const auto now = std::chrono::steady_clock::now();
+
+    static bool ran = true;
+
+    if (m_transport.IsConnected() && ran)
+    {
+        lastSendTimePoint = now;
+        ran = false;
+    }
+
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    pCachedDrawActor->SetWeaponDrawnEx(true);
+
+    pCachedDrawActor = nullptr;
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -211,8 +238,12 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (!pActor)
             return;
 
+        // TODO: verify these code paths (and simplify them maybe)
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+        if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+            pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
 
         return;
     }
@@ -241,8 +272,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->SetActorValues(acMessage.AllActorValues);
 
+        //  TODO: verify this code path too while you're at it
+        // in fact, this whole function annoys me
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+        if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+            pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
 
         const auto cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
         const auto* pCellForm = TESForm::GetById(cCellId);
@@ -340,6 +376,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
+    //if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+        //pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
+
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
     remoteComponent.SpawnRequest = acMessage;
 
@@ -354,11 +393,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
 }
 
-void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept
+// TODO: verify/simplify this spawn data stuff
+void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) const noexcept
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
-    const auto id = acEvent.Id;
+    const auto id = acMessage.Id;
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [view, id](auto entity) {
         const auto& remoteComponent = view.get<RemoteComponent>(entity);
@@ -369,9 +409,9 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
     if (itor != std::end(view))
     {
         auto& remoteComponent = view.get<RemoteComponent>(*itor);
-        remoteComponent.SpawnRequest.InitialActorValues = acEvent.InitialActorValues;
-        remoteComponent.SpawnRequest.InventoryContent = acEvent.InitialInventory;
-        remoteComponent.SpawnRequest.IsDead = acEvent.IsDead;
+        remoteComponent.SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
+        remoteComponent.SpawnRequest.InventoryContent = acMessage.InitialInventory;
+        remoteComponent.SpawnRequest.IsDead = acMessage.IsDead;
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
@@ -383,8 +423,11 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent)
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
 
-        if (pActor->IsDead() != acEvent.IsDead)
-            acEvent.IsDead ? pActor->Kill() : pActor->Respawn();
+        if (pActor->IsDead() != acMessage.IsDead)
+            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+        //if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+            //pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
     }
 }
 
@@ -651,6 +694,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    message.IsWeaponDrawn = pActor->actorState.IsWeaponDrawn();
 
     if(isTemporary)
     {
@@ -775,6 +819,9 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
+    if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+        pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
+
     m_world.emplace<WaitingFor3D>(aEntity);
 
     return pActor;
@@ -886,6 +933,9 @@ void CharacterService::RunRemoteUpdates() const noexcept
 
         if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
             remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
+
+        //pActor->SetWeaponDrawnEx(remoteComponent.SpawnRequest.IsWeaponDrawn);
+        pCachedDrawActor = pActor;
 
         toRemove.push_back(entity);  
     }

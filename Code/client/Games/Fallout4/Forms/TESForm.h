@@ -101,6 +101,12 @@ struct TESForm : BaseFormComponent
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
 
+    void SetIgnoreFriendlyHit(bool aSet) noexcept 
+    {
+        // TODO: fallout 4 impl
+        return;
+    }
+
     uintptr_t unk8;
     uint32_t flags;
     uint32_t formID;

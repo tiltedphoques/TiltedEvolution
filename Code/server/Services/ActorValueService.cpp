@@ -50,6 +50,7 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
     notifyChanges.Id = acMessage.Packet.Id;
     notifyChanges.Values = acMessage.Packet.Values;
 
+    // TODO: only send to those in range
     for (auto pPlayer : m_world.GetPlayerManager())
     { 
         if (acMessage.pPlayer != pPlayer)

@@ -61,6 +61,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
     apSpawnRequest->IsDead = characterComponent.IsDead;
     apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
+    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -195,6 +196,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.Owner = false;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
             response.IsDead = characterComponent.IsDead;
+            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
 
@@ -382,6 +384,7 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
         if (pCharacterComponent)
         {
             notifySpawnData.IsDead = pCharacterComponent->IsDead;
+            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn;
         }
 
         acMessage.pPlayer->Send(notifySpawnData);
@@ -509,6 +512,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.FactionsContent = message.FactionsContent;
     characterComponent.IsDead = message.IsDead;
     characterComponent.IsPlayer = isPlayer;
+    characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -544,7 +548,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
     response.AllActorValues = message.AllActorValues;
-    // TODO: why is response.IsDead not set here?
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);
 

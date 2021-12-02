@@ -68,6 +68,7 @@ void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const e
     {
         auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
         localComponent.IsDead = pActor->IsDead();
+        localComponent.IsWeaponDrawn = pActor->actorState.IsWeaponDrawn();
         CreateActorValuesComponent(aEntity, pActor);
     }
 }

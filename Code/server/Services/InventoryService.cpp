@@ -10,6 +10,8 @@
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestCharacterInventoryChanges.h>
 #include <Messages/NotifyCharacterInventoryChanges.h>
+#include <Messages/DrawWeaponRequest.h>
+#include <Messages/NotifyDrawWeapon.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
@@ -17,6 +19,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
     m_characterInventoryConnection = aDispatcher.sink<PacketEvent<RequestCharacterInventoryChanges>>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
+    m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent&) noexcept
@@ -204,3 +207,33 @@ void InventoryService::ProcessCharacterInventoryChanges() noexcept
             pPlayer->Send(message);
     }
 }
+
+void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept
+{
+    auto& message = acMessage.Packet;
+
+    auto characterView = m_world.view<CharacterComponent, OwnerComponent>();
+    const auto it = characterView.find(static_cast<entt::entity>(message.Id));
+
+    if (it != std::end(characterView) 
+        && characterView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
+    {
+        auto& characterComponent = characterView.get<CharacterComponent>(*it);
+        characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
+        spdlog::warn("Updating weapon drawn state {:x}:{}", message.Id, message.IsWeaponDrawn);
+    }
+
+    NotifyDrawWeapon notify;
+    notify.Id = message.Id;
+    notify.IsWeaponDrawn = message.IsWeaponDrawn;
+
+    // TODO: only send to those in range
+    for (auto pPlayer : m_world.GetPlayerManager())
+    {
+        if (acMessage.pPlayer != pPlayer)
+        {
+            pPlayer->Send(notify);
+        }
+    }
+}
+

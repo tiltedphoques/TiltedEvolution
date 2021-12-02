@@ -33,6 +33,7 @@ enum ClientOpcode : unsigned char
     kAddTargetRequest,
     kProjectileLaunchRequest,
     kScriptAnimationRequest,
+    kDrawWeaponRequest,
     kClientOpcodeMax
 };
 
@@ -67,5 +68,6 @@ enum ServerOpcode : unsigned char
     kNotifyAddTarget,
     kNotifyProjectileLaunch,
     kNotifyScriptAnimation,
+    kNotifyDrawWeapon,
     kServerOpcodeMax
 };

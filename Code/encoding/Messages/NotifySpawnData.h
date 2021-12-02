@@ -21,6 +21,7 @@ struct NotifySpawnData final : ServerMessage
                InitialActorValues == acRhs.InitialActorValues && 
                InitialInventory == acRhs.InitialInventory &&
                IsDead == acRhs.IsDead &&
+               IsWeaponDrawn == acRhs.IsWeaponDrawn &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -28,4 +29,5 @@ struct NotifySpawnData final : ServerMessage
     ActorValues InitialActorValues{};
     Inventory InitialInventory{};
     bool IsDead{};
+    bool IsWeaponDrawn{};
 };

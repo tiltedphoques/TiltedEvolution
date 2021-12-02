@@ -168,7 +168,10 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
+            pActor->SetWeaponDrawnEx(true);
+
+            //PlaceActorInWorld();
 
             /*
             const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);

@@ -132,27 +132,6 @@ void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, BSExtraDataList* ap
     return result;
 }
 
-void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, UnEquipData* apData)
-{
-    if (!apActor)
-        return nullptr;
-
-    const auto pExtension = apActor->GetExtension();
-    if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
-        return nullptr;
-
-    if (pExtension->IsLocal())
-    {
-        EquipmentChangeEvent evt;
-        evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
-
-        World::Get().GetRunner().Trigger(evt);
-    }
-
-    return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
-}
-
 void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData)
 {
     if (!apActor)
@@ -175,6 +154,27 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     }
 
     return ThisCall(RealEquip, apThis, apActor, apItem, apData);
+}
+
+void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, UnEquipData* apData)
+{
+    if (!apActor)
+        return nullptr;
+
+    const auto pExtension = apActor->GetExtension();
+    if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
+        return nullptr;
+
+    if (pExtension->IsLocal())
+    {
+        EquipmentChangeEvent evt;
+        evt.ActorId = apActor->formID;
+        evt.InventoryBuffer = apActor->SerializeInventory();
+
+        World::Get().GetRunner().Trigger(evt);
+    }
+
+    return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
 }
 
 void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, void* apSlot)

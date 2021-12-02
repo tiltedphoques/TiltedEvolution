@@ -24,7 +24,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
     auto pActor = apAction->actor;
     const auto pExtension = pActor->GetExtension();
 
-    if (!pExtension->IsRemote())
+    if (!pExtension->IsRemote() || g_forceAnimation)
     {
         ActionEvent action;
         action.State1 = pActor->actorState.flags1;
@@ -39,8 +39,10 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         const auto res = ThisCall(RealPerformAction, apThis, apAction);
 
+        spdlog::warn("Action event name: {}, target name: {}", apAction->eventName.AsAscii(), apAction->targetEventName.AsAscii());
+
         // This is a weird case where it gets spammed and doesn't do much, not sure if it still needs to be sent over the network
-        if (apAction->someFlag == 1)
+        if (apAction->someFlag == 1 || g_forceAnimation)
             return res;
 
         action.EventName = apAction->eventName.AsAscii();
