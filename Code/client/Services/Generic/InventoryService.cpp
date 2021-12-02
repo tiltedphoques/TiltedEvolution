@@ -177,9 +177,11 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (iter == std::end(view))
                 continue;
 
-            uint32_t serverId = utils::GetServerId(*iter);
-            if (serverId == 0)
+            std::optional<uint32_t> serverIdRes = utils::GetServerId(*iter);
+            if (!serverIdRes.has_value())
                 continue;
+
+            uint32_t serverId = serverIdRes.value();
 
             const auto* pForm = TESForm::GetById(formId);
             auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
@@ -246,9 +248,11 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     auto view = m_world.view<FormIdComponent>();
     for (const auto entity : view)
     {
-        uint32_t serverId = utils::GetServerId(entity);
-        if (serverId == 0)
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
             continue;
+
+        uint32_t serverId = serverIdRes.value();
 
         const auto change = m_cachedCharacterInventoryChanges.find(serverId);
 

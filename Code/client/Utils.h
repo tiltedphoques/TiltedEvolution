@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #if defined(TP_SKYRIM) && TP_PLATFORM_64
 #define POINTER_SKYRIMSE(className, variableName, ...) static AutoPtr<className> variableName(__VA_ARGS__)
 #else
@@ -29,6 +31,6 @@ static void Assert(const char* apExpression, const char* apMessage)
         __debugbreak();
 }
 
-uint32_t GetServerId(entt::entity aEntity) noexcept;
+std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 }
 

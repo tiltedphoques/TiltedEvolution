@@ -221,9 +221,11 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (pEntity == std::end(view))
         return;
 
-    request.ActivatorId = utils::GetServerId(*pEntity);
-    if (request.ActivatorId == 0)
+    std::optional<uint32_t> serverIdRes = utils::GetServerId(*pEntity);
+    if (!serverIdRes.has_value())
         return;
+
+    request.ActivatorId = serverIdRes.value();
 
     m_transport.Send(request);
 }
@@ -233,9 +235,11 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
-        uint32_t serverId = utils::GetServerId(entity);
-        if (serverId == 0)
-            return;
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
+            continue;
+
+        uint32_t serverId = serverIdRes.value();
 
         if (serverId == acMessage.ActivatorId)
         {
