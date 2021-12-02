@@ -334,6 +334,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
     pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
+    if (acMessage.IsPlayer)
+        pActor->SetIgnoreFriendlyHit(true);
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -765,6 +767,10 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
     pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
+    if (acMessage.IsPlayer)
+    {
+        pActor->SetIgnoreFriendlyHit(true);
+    }
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();

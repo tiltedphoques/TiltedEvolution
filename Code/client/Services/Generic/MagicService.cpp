@@ -63,9 +63,12 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
         entt::entity entity = *it;
 
         AddTargetRequest request;
-        request.TargetId = utils::GetServerId(entity);
-        if (request.TargetId == 0)
+
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
             continue;
+
+        request.TargetId = serverIdRes.value();
 
         if (!m_world.GetModSystem().GetServerModId(spellId, request.SpellId.ModId, request.SpellId.BaseId))
         {
@@ -281,9 +284,12 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     entt::entity entity = *it;
 
     AddTargetRequest request;
-    request.TargetId = utils::GetServerId(entity);
-    if (request.TargetId == 0)
+
+    std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+    if (!serverIdRes.has_value())
         return;
+
+    request.TargetId = serverIdRes.value();
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
     {
@@ -302,9 +308,11 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     for (auto entity : view)
     {
-        uint32_t serverId = utils::GetServerId(entity);
-        if (serverId == 0)
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
             continue;
+
+        uint32_t serverId = serverIdRes.value();
 
         if (serverId == acMessage.TargetId)
         {

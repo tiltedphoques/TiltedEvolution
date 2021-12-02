@@ -27,6 +27,11 @@ struct TESForm : BaseFormComponent
         uint32_t unkC{};
     };
 
+    enum FormFlags
+    {
+        IGNORE_FRIENDLY_HITS = 1 << 0x14,
+    };
+
     static TESForm* GetById(uint32_t aId);
 
     virtual void sub_4();
@@ -87,6 +92,15 @@ struct TESForm : BaseFormComponent
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
+
+    bool GetIgnoreFriendlyHit() const noexcept { return (flags & IGNORE_FRIENDLY_HITS) != 0; }
+    void SetIgnoreFriendlyHit(bool aSet) noexcept 
+    {
+        if (aSet)
+            flags |= IGNORE_FRIENDLY_HITS;
+        else
+            flags &= IGNORE_FRIENDLY_HITS;
+    }
 
     uintptr_t unk4;
     uint32_t flags;

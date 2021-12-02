@@ -182,9 +182,11 @@ void ActorValueService::OnHealthChange(const HealthChangeEvent& acEvent) noexcep
         return;
     }
 
-    uint32_t serverId = utils::GetServerId(*hitteeIt);
-    if (serverId == 0)
+    std::optional<uint32_t> serverIdRes = utils::GetServerId(*hitteeIt);
+    if (!serverIdRes.has_value())
         return;
+
+    uint32_t serverId = serverIdRes.value();
 
     if (acEvent.DeltaHealth > -1.0f && acEvent.DeltaHealth < 1.0f)
     {
@@ -285,9 +287,11 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 
     for (auto entity : view)
     {
-        uint32_t serverId = utils::GetServerId(entity);
-        if (serverId == 0)
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
             continue;
+
+        uint32_t serverId = serverIdRes.value();
 
         if (serverId == acMessage.Id)
         {
