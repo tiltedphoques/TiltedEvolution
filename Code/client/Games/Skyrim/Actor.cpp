@@ -276,6 +276,7 @@ float Actor::GetActorMaxValue(uint32_t aId) const noexcept
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
+    spdlog::warn("SetInventory {:X}", formID);
     UnEquipAll();
 
     auto* pEquipManager = EquipManager::Get();
@@ -347,6 +348,8 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
+
+    SetWeaponDrawnEx(true);
 }
 
 void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
@@ -476,6 +479,7 @@ void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
     }
     spdlog::critical("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
     SetWeaponDrawn(aDraw);
+    spdlog::info("Setting weapon drawn result: {}", actorState.IsWeaponDrawn());
     g_forceAnimation = false;
 }
 

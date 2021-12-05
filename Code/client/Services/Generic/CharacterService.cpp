@@ -161,7 +161,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         ran = false;
     }
 
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+    if (true)
         return;
 
     lastSendTimePoint = now;
@@ -934,7 +934,6 @@ void CharacterService::RunRemoteUpdates() const noexcept
         if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
             remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
-        //pActor->SetWeaponDrawnEx(remoteComponent.SpawnRequest.IsWeaponDrawn);
         pCachedDrawActor = pActor;
 
         toRemove.push_back(entity);  
