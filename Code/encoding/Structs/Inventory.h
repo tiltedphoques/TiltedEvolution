@@ -18,6 +18,7 @@ struct Inventory
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
     String Buffer{};
+    bool IsWeaponDrawn{};
     GameId RightHandWeapon{};
 
 #if TP_SKYRIM

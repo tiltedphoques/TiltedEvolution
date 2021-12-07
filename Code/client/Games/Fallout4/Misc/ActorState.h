@@ -11,4 +11,6 @@ struct ActorState
     {
         return ((flags2 >> 1) & 7) >= 3;
     }
+
+    bool SetWeaponDrawn(bool aDraw) noexcept;
 };

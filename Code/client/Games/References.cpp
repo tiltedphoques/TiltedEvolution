@@ -492,6 +492,34 @@ void TESObjectREFR::LockChange() noexcept
     ThisCall(RealLockChange, this);
 }
 
+bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
+{
+    TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);
+
+    POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 0x1406627C0 - 0x140000000);
+    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 0x140E22DF0 - 0x140000000);
+
+    return ThisCall(setWeaponState, this, aDraw);
+}
+
+extern thread_local bool g_forceAnimation;
+
+void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
+{
+    spdlog::debug("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+
+    if (actorState.IsWeaponDrawn() == aDraw)
+    {
+        actorState.SetWeaponDrawn(!aDraw);
+
+        spdlog::debug("Setting weapon drawn after update: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    }
+
+    g_forceAnimation = true;
+    SetWeaponDrawn(aDraw);
+    g_forceAnimation = false;
+}
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;

@@ -206,6 +206,8 @@ Inventory Actor::GetInventory() const noexcept
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
     modSystem.GetServerModId(ammoId, inventory.Ammo);
 
+    inventory.IsWeaponDrawn = actorState.IsWeaponDrawn();
+
     return inventory;
 }
 
@@ -349,7 +351,7 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
 
-    SetWeaponDrawnEx(true);
+    SetWeaponDrawnEx(acInventory.IsWeaponDrawn);
 }
 
 void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
@@ -461,26 +463,6 @@ void Actor::RemoveFromAllFactions() noexcept
     PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);
 
     s_pRemoveFromAllFactions(this);
-}
-
-extern thread_local bool g_forceAnimation;
-
-void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
-{
-    spdlog::error("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
-    g_forceAnimation = true;
-    if (actorState.IsWeaponDrawn() == aDraw)
-    {
-        using TSetWeaponState = void(ActorState* apActorState, bool aDraw);
-
-        POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 0x1406627C0 - 0x140000000);
-
-        setWeaponState.Get()(&actorState, !aDraw);
-    }
-    spdlog::critical("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
-    SetWeaponDrawn(aDraw);
-    spdlog::info("Setting weapon drawn result: {}", actorState.IsWeaponDrawn());
-    g_forceAnimation = false;
 }
 
 bool Actor::IsDead() noexcept

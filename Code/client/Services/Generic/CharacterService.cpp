@@ -136,39 +136,12 @@ void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const
     CancelServerAssignment(aRegistry, aEntity, formIdComponent.Id);
 }
 
-static Actor* pCachedDrawActor = nullptr;
-
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunSpawnUpdates();
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
-
-    if (!pCachedDrawActor)
-        return;
-
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 4s;
-
-    const auto now = std::chrono::steady_clock::now();
-
-    static bool ran = true;
-
-    if (m_transport.IsConnected() && ran)
-    {
-        lastSendTimePoint = now;
-        ran = false;
-    }
-
-    if (true)
-        return;
-
-    lastSendTimePoint = now;
-
-    pCachedDrawActor->SetWeaponDrawnEx(true);
-
-    pCachedDrawActor = nullptr;
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -376,9 +349,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    //if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-        //pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
-
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
     remoteComponent.SpawnRequest = acMessage;
 
@@ -425,9 +395,6 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
-
-        //if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-            //pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
     }
 }
 
@@ -819,9 +786,6 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-        pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
-
     m_world.emplace<WaitingFor3D>(aEntity);
 
     return pActor;
@@ -933,8 +897,6 @@ void CharacterService::RunRemoteUpdates() const noexcept
 
         if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
             remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
-
-        pCachedDrawActor = pActor;
 
         toRemove.push_back(entity);  
     }
