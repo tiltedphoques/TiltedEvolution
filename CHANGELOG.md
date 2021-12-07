@@ -1,3 +1,22 @@
+# [1.3.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.2.1...v1.3.0) (2021-12-07)
+
+
+### Bug Fixes
+
+* debugger logic bugs ([2bcb30e](https://github.com/tiltedphoques/TiltedEvolution/commit/2bcb30e9a8275cf32ca42b652112185ec8a051fc))
+* fallout 4 build error ([a13154b](https://github.com/tiltedphoques/TiltedEvolution/commit/a13154bc73d856897d81467ffb58b387df88be85))
+* server id lookup bug ([efba5dd](https://github.com/tiltedphoques/TiltedEvolution/commit/efba5dd40666596bd6c2e158bba42b0abaa9ab67))
+
+
+### Features
+
+* debug TESContainer ([0c48cc5](https://github.com/tiltedphoques/TiltedEvolution/commit/0c48cc5a087d88641abbd3a808146c9e29acfc72))
+* half drawn bow sync ([120ea21](https://github.com/tiltedphoques/TiltedEvolution/commit/120ea21b1e08558f5ffb3909182f9c6f73e662fb))
+* inventory debugger tool ([bdc2315](https://github.com/tiltedphoques/TiltedEvolution/commit/bdc231557c8f1f89a5378fc734257af6f0825414))
+* major improvements to equip sync ([cb8fbcd](https://github.com/tiltedphoques/TiltedEvolution/commit/cb8fbcdada88f8cba130d1343e28dbf7ce910a59))
+* perfect magic projectile sync ([da1a7e2](https://github.com/tiltedphoques/TiltedEvolution/commit/da1a7e2fced7e4be621e5d91084905aea065f095))
+* reverse engineered extra data for skyrim containers ([19ea6a2](https://github.com/tiltedphoques/TiltedEvolution/commit/19ea6a2f67d0ea6b2d73c7716cfa4977bb8255bb))
+
 ## [1.2.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.2.0...v1.2.1) (2021-11-29)
 
 
