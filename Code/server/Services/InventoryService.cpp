@@ -192,7 +192,7 @@ void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*it);
         characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
-        spdlog::warn("Updating weapon drawn state {:x}:{}", message.Id, message.IsWeaponDrawn);
+        spdlog::debug("Updating weapon drawn state {:x}:{}", message.Id, message.IsWeaponDrawn);
     }
 
     NotifyDrawWeapon notify;

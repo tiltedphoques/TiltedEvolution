@@ -62,7 +62,8 @@ void AnimationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
 
 void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
 {
-    aWorld.remove_if_exists<RemoteAnimationComponent>(aEntity);
+    if (aWorld.all_of<RemoteAnimationComponent>(aEntity))
+        aWorld.remove<RemoteAnimationComponent>(aEntity);
 }
 
 void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept

@@ -274,7 +274,7 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
         if (ownerComp->GetOwner() == pPlayer)
             continue;
 
-        if (cellIdComp->IsInRange(pPlayer->GetCellComponent().Cell))
+        if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
             pPlayer->Send(acServerMessage);
     }
 }

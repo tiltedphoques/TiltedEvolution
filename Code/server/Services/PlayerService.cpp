@@ -28,9 +28,9 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
 
     auto& message = acMessage.Packet;
 
-    const auto oldCell = pPlayer->GetCellComponent().Cell;
+    const GameId oldCell = pPlayer->GetCellComponent().Cell;
 
-    auto cell = CellIdComponent{message.PlayerCell, message.WorldSpaceId, message.CenterCoords};
+    CellIdComponent cell = CellIdComponent{message.PlayerCell, message.WorldSpaceId, message.CenterCoords};
     pPlayer->SetCellComponent(cell);
 
     m_world.GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
@@ -44,13 +44,13 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         if (ownedComponent.GetOwner() == pPlayer)
             continue;
 
-        const auto cellItor = std::find_if(std::begin(message.Cells), std::end(message.Cells),
+        const auto cellIt = std::find_if(std::begin(message.Cells), std::end(message.Cells),
             [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell)
         {
            return playerCell == CharacterCell;
         });
 
-        if (cellItor == std::end(message.Cells))
+        if (cellIt == std::end(message.Cells))
         {
             continue;
         }

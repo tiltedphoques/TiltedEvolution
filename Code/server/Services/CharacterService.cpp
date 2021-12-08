@@ -255,7 +255,7 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
         if (isPlayerInvalid)
             continue;
 
-        if (!pPlayer->GetCellComponent().IsInRange(characterCellIdComponent.Cell))
+        if (!pPlayer->GetCellComponent().IsInRange(characterCellIdComponent))
             continue;
 
         characterOwnerComponent.SetOwner(pPlayer);
@@ -328,27 +328,27 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
 
     auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
     
-    auto itor = view.find(static_cast<entt::entity>(message.Id));
+    auto it = view.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(view))
+    if (it != std::end(view))
     {
         NotifySpawnData notifySpawnData;
         notifySpawnData.Id = message.Id;
 
-        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*itor);
+        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*it);
         if (pActorValuesComponent)
         {
             notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
         }
 
-        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*itor);
+        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*it);
         if (pInventoryComponent)
         {
             notifySpawnData.InitialInventory = pInventoryComponent->Content;
         }
 
         notifySpawnData.IsDead = false;
-        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*itor);
+        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*it);
         if (pCharacterComponent)
         {
             notifySpawnData.IsDead = pCharacterComponent->IsDead;
@@ -425,12 +425,12 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
     for (auto& [id, factions] : message.Changes)
     {
-        auto itor = view.find(static_cast<entt::entity>(id));
+        auto it = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
+        if (it == std::end(view) || view.get<OwnerComponent>(*it).GetOwner() != acMessage.pPlayer)
             continue;
 
-        auto& characterComponent = view.get<CharacterComponent>(*itor);
+        auto& characterComponent = view.get<CharacterComponent>(*it);
         characterComponent.FactionsContent = factions;
         characterComponent.DirtyFactions = true;
     }
@@ -696,7 +696,6 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
 
     const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
-
     GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity);
 }
 

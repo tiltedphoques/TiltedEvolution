@@ -203,10 +203,11 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
+    // This code path triggers when the character has been spawned through CharacterSpawnRequest
     if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
     {
-        auto* const pForm = TESForm::GetById(formIdComponent->Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        TESForm* const pForm = TESForm::GetById(formIdComponent->Id);
+        Actor* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (!pActor)
             return;
@@ -253,9 +254,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
 
-        const auto cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
-        const auto* pCellForm = TESForm::GetById(cCellId);
-        auto* pCell = RTTI_CAST(pCellForm, TESForm, TESObjectCELL);
+        const uint32_t cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
+        const TESForm* const pCellForm = TESForm::GetById(cCellId);
+        TESObjectCELL* const pCell = RTTI_CAST(pCellForm, TESForm, TESObjectCELL);
         if (pCell)
             pActor->MoveTo(pCell, acMessage.Position);
     }
@@ -689,8 +690,8 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
 {
     if (aRegistry.all_of<RemoteComponent>(aEntity))
     {
-        auto* const pForm = TESForm::GetById(aFormId);
-        auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+        TESForm* const pForm = TESForm::GetById(aFormId);
+        Actor* const pActor = RTTI_CAST(pForm, TESForm, Actor);
 
         if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
         {
@@ -750,7 +751,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
         if (acMessage.BaseId != GameId{})
         {
-            const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
+            const uint32_t cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
             if (cNpcId == 0)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
@@ -960,7 +961,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
             float characterX = interpolationComponent.Position.x;
             float characterY = interpolationComponent.Position.y;
             const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
-            const auto* pTES = TES::Get();
+            const TES* pTES = TES::Get();
             const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
             if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
