@@ -13,6 +13,8 @@ struct GameId
     bool operator==(const GameId& acRhs) const noexcept;
     bool operator!=(const GameId& acRhs) const noexcept;
 
+    operator bool() const noexcept;
+
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 

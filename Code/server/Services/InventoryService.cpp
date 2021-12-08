@@ -113,23 +113,8 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
             if (pPlayer == objectComponent.pLastSender)
                 continue;
 
-            const auto& playerCellIdComponent = pPlayer->GetCellComponent();
-            if (cellIdComponent.WorldSpaceId == GameId{})
-            {
-                if (playerCellIdComponent != cellIdComponent)
-                {
-                    continue;
-                }
-            }
-            else
-            {
-                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
-                    !GridCellCoords::IsCellInGridCell(cellIdComponent.CenterCoords,
-                                                      playerCellIdComponent.CenterCoords))
-                {
-                    continue;
-                }
-            }
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+                continue;
 
             auto& message = messages[pPlayer];
             auto& change = message.Changes[formIdComponent.Id];
@@ -176,21 +161,8 @@ void InventoryService::ProcessCharacterInventoryChanges() noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            const auto& playerCellIdComponent = pPlayer->GetCellComponent();
-            if (cellIdComponent.WorldSpaceId == GameId{})
-            {
-                if (playerCellIdComponent != cellIdComponent)
-                    continue;
-            }
-            else
-            {
-                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
-                    !GridCellCoords::IsCellInGridCell(cellIdComponent.CenterCoords,
-                                                      playerCellIdComponent.CenterCoords))
-                {
-                    continue;
-                }
-            }
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+                continue;
 
             auto& message = messages[pPlayer];
             auto& change = message.Changes[World::ToInteger(entity)];
