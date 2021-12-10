@@ -23,8 +23,8 @@ target(name)
     add_deps(
         "Common",
         "TiltedScript",
-        "TiltedConnect",
-        "AdminProtocol")
+        "TiltedConnect"
+    )
     add_packages(
         "gamenetworkingsockets",
         "spdlog",
