@@ -12,8 +12,8 @@
 #include "loader/PathRerouting.h"
 
 #include "Utils/Error.h"
-#include "oobe/InstallCheckFlow.h"
-#include "oobe/ViabilityChecks.h"
+#include "oobe/PathSelection.h"
+#include "oobe/SupportChecks.h"
 #include "steam/SteamLoader.h"
 
 extern void InstallStartHook();
@@ -52,15 +52,29 @@ int StartUp(int argc, char** argv)
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();
 
-    if (!oobe::TestPlatformViability(oobe::Policy::kRecommended))
     {
-        Die("Your platform is not supported.");
-        return 1;
+        const char* ec = nullptr;
+        const auto status = oobe::ReportModCompatabilityStatus();
+        switch (status)
+        {
+        case oobe::CompatabilityStatus::kDX11Unsupported:
+            ec = "Device does not support DirectX 11";
+            break;
+        case oobe::CompatabilityStatus::kOldOS:
+            ec = "Operating system unsupported. Please upgrade to Windows 8.1 or greater";
+            break;
+        }
+
+        if (ec)
+        {
+            Die(ec);
+        }
     }
 
-    if (!oobe::CheckInstall(*LC, askSelect))
+    if (!oobe::SelectInstall(askSelect))
     {
-        return 2;
+        Die("Failed to select game install.");
+        return false;
     }
 
     // Bind path environment.
@@ -77,7 +91,7 @@ int StartUp(int argc, char** argv)
 
     InstallStartHook();
     // Initialize all hooks before calling game init
-    //TiltedPhoques::Initializer::RunAll();
+    // TiltedPhoques::Initializer::RunAll();
     RunTiltedInit();
 
     // This shouldn't return until the game is killed
