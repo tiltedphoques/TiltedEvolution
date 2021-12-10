@@ -15,7 +15,7 @@ void BSScript::Variable::Reset() noexcept
 {
     TP_THIS_FUNCTION(TReset, void, BSScript::Variable);
 
-    POINTER_SKYRIMSE(TReset, s_reset, 0x1413613E0 - 0x140000000);
+    POINTER_SKYRIMSE(TReset, s_reset, 0x141361340 - 0x140000000);
 
     ThisCall(s_reset, this);
 }
@@ -64,7 +64,7 @@ void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::IFunctionArguments::Statement, uint32_t aCount);
 
-    POINTER_SKYRIMSE(TSetSize, s_setSize, 0x14094C950 - 0x140000000);
+    POINTER_SKYRIMSE(TSetSize, s_setSize, 0x14094C870 - 0x140000000);
 
     ThisCall(s_setSize, this, aCount);
 }

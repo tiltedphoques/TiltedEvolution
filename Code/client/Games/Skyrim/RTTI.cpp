@@ -2,7 +2,7 @@
 
 #include <RTTI.h>
 
-const AutoPtr<TDynamicCast> DynamicCast(0x14775BA);
+const AutoPtr<TDynamicCast> DynamicCast(0x147751A);
 
 AutoPtr<const void> RTTI_IFormFactory(0x1EA6AF0);
 AutoPtr<const void> RTTI_BaseFormComponent(0x1EA6B18);

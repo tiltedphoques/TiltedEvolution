@@ -31,7 +31,9 @@ with open('new_addresses.txt') as new_addresses:
 					source_file.write(file_data)
 
 				is_address_rewritten = True
-				break
+				# don't break cause the address might be in multiple places
+				# it obviously shouldnt be, but it be like that rn
+				#break
 
 		if not is_address_rewritten:
 			print("Address was not found and has not been rewritten! " + address_pair[0])

@@ -13,7 +13,7 @@ struct RequestDeathStateChange;
 struct ActorValueService
 {
     ActorValueService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
-    ~ActorValueService() noexcept;
+    ~ActorValueService() noexcept = default;
 
     TP_NOCOPYMOVE(ActorValueService);
 
@@ -28,4 +28,5 @@ struct ActorValueService
     entt::scoped_connection m_updateHealthConnection;
     entt::scoped_connection m_updateMaxValueConnection;
     entt::scoped_connection m_updateDeltaHealthConnection;
+    entt::scoped_connection m_deathStateConnection;
 };

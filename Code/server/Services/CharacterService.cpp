@@ -255,16 +255,8 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
         if (isPlayerInvalid)
             continue;
 
-        if (pPlayer->GetCellComponent().WorldSpaceId == GameId{})
-        {
-            if (pPlayer->GetCellComponent().Cell != characterCellIdComponent.Cell)
-                continue;
-        }
-        else
-        {
-            if (!GridCellCoords::IsCellInGridCell(characterCellIdComponent.CenterCoords, pPlayer->GetCellComponent().CenterCoords))
-                continue;
-        }
+        if (!pPlayer->GetCellComponent().IsInRange(characterCellIdComponent))
+            continue;
 
         characterOwnerComponent.SetOwner(pPlayer);
 
@@ -327,31 +319,7 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     CharacterSpawnRequest message;
     Serialize(m_world, acEvent.Entity, &message);
 
-    const auto& characterCellIdComponent = m_world.get<CellIdComponent>(acEvent.Entity);
-    const auto& characterOwnerComponent = m_world.get<OwnerComponent>(acEvent.Entity);
-
-    if (characterCellIdComponent.WorldSpaceId == GameId{})
-    {
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (characterOwnerComponent.GetOwner() == pPlayer || characterCellIdComponent.Cell != pPlayer->GetCellComponent().Cell)
-                continue;
-
-            pPlayer->Send(message);
-        }
-    }
-    else
-    {
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (characterOwnerComponent.GetOwner() == pPlayer)
-                continue;
-
-            if (pPlayer->GetCellComponent().WorldSpaceId == characterCellIdComponent.WorldSpaceId && 
-              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, characterCellIdComponent.CenterCoords))
-                pPlayer->Send(message);
-        }
-    }
+    GameServer::Get()->SendToPlayersInRange(message, acEvent.Entity);
 }
 
 void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
@@ -360,27 +328,27 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
 
     auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
     
-    auto itor = view.find(static_cast<entt::entity>(message.Id));
+    auto it = view.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(view))
+    if (it != std::end(view))
     {
         NotifySpawnData notifySpawnData;
         notifySpawnData.Id = message.Id;
 
-        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*itor);
+        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*it);
         if (pActorValuesComponent)
         {
             notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
         }
 
-        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*itor);
+        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*it);
         if (pInventoryComponent)
         {
             notifySpawnData.InitialInventory = pInventoryComponent->Content;
         }
 
         notifySpawnData.IsDead = false;
-        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*itor);
+        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*it);
         if (pCharacterComponent)
         {
             notifySpawnData.IsDead = pCharacterComponent->IsDead;
@@ -457,12 +425,12 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
     for (auto& [id, factions] : message.Changes)
     {
-        auto itor = view.find(static_cast<entt::entity>(id));
+        auto it = view.find(static_cast<entt::entity>(id));
 
-        if (itor == std::end(view) || view.get<OwnerComponent>(*itor).GetOwner() != acMessage.pPlayer)
+        if (it == std::end(view) || view.get<OwnerComponent>(*it).GetOwner() != acMessage.pPlayer)
             continue;
 
-        auto& characterComponent = view.get<CharacterComponent>(*itor);
+        auto& characterComponent = view.get<CharacterComponent>(*it);
         characterComponent.FactionsContent = factions;
         characterComponent.DirtyFactions = true;
     }
@@ -586,21 +554,8 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            const auto& playerCellIdComponent = pPlayer->GetCellComponent();
-            if (cellIdComponent.WorldSpaceId == GameId{})
-            {
-                if (playerCellIdComponent != cellIdComponent)
-                    continue;
-            }
-            else
-            {
-                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
-                    !GridCellCoords::IsCellInGridCell(cellIdComponent.CenterCoords,
-                                                      playerCellIdComponent.CenterCoords))
-                {
-                    continue;
-                }
-            }
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+                continue;
 
             auto& message = messages[pPlayer];
             auto& change = message.Changes[World::ToInteger(entity)];
@@ -656,23 +611,8 @@ void CharacterService::ProcessMovementChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            const auto& playerCellIdComponent = pPlayer->GetCellComponent();
-            if (cellIdComponent.WorldSpaceId == GameId{})
-            {
-                if (playerCellIdComponent != cellIdComponent)
-                {
-                    continue;
-                }
-            }
-            else
-            {
-                if (cellIdComponent.WorldSpaceId != playerCellIdComponent.WorldSpaceId ||
-                    !GridCellCoords::IsCellInGridCell(cellIdComponent.CenterCoords,
-                                                      playerCellIdComponent.CenterCoords))
-                {
-                    continue;
-                }
-            }
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+                continue;
 
             auto& message = messages[pPlayer];
             auto& update = message.Updates[World::ToInteger(entity)];
@@ -756,36 +696,6 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
 
     const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
-    const auto* shooterCellIdComp = m_world.try_get<CellIdComponent>(cShooterEntity);
-    const auto* shooterOwnerComp = m_world.try_get<OwnerComponent>(cShooterEntity);
-
-    if (!shooterCellIdComp || !shooterOwnerComp)
-    {
-        spdlog::warn("Shooter entity not found for server id {:X}", packet.ShooterID);
-        return;
-    }
-
-    if (shooterCellIdComp->WorldSpaceId == GameId{})
-    {
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (shooterOwnerComp->GetOwner() == pPlayer || shooterCellIdComp->Cell != pPlayer->GetCellComponent().Cell)
-                continue;
-
-            pPlayer->Send(notify);
-        }
-    }
-    else
-    {
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (shooterOwnerComp->GetOwner() == pPlayer)
-                continue;
-
-            if (pPlayer->GetCellComponent().WorldSpaceId == shooterCellIdComp->WorldSpaceId && 
-              GridCellCoords::IsCellInGridCell(pPlayer->GetCellComponent().CenterCoords, shooterCellIdComp->CenterCoords))
-                pPlayer->Send(notify);
-        }
-    }
+    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity);
 }
 

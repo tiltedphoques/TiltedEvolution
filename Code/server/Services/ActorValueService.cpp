@@ -19,11 +19,7 @@ ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatche
     m_updateHealthConnection = aDispatcher.sink<PacketEvent<RequestActorValueChanges>>().connect<&ActorValueService::OnActorValueChanges>(this);
     m_updateMaxValueConnection = aDispatcher.sink<PacketEvent<RequestActorMaxValueChanges>>().connect<&ActorValueService::OnActorMaxValueChanges>(this);
     m_updateDeltaHealthConnection = aDispatcher.sink<PacketEvent<RequestHealthChangeBroadcast>>().connect<&ActorValueService::OnHealthChangeBroadcast>(this);
-    aDispatcher.sink<PacketEvent<RequestDeathStateChange>>().connect<&ActorValueService::OnDeathStateChange>(this);
-}
-
-ActorValueService::~ActorValueService() noexcept
-{
+    m_deathStateConnection = aDispatcher.sink<PacketEvent<RequestDeathStateChange>>().connect<&ActorValueService::OnDeathStateChange>(this);
 }
 
 void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept
@@ -32,32 +28,26 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
 
     auto actorValuesView = m_world.view<ActorValuesComponent, OwnerComponent>();
 
-    auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
+    auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
+    if (it != std::end(actorValuesView) &&
+        actorValuesView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
     {
-        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
+        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
         for (auto& [id, value] : message.Values)
         {
             actorValuesComponent.CurrentActorValues.ActorValuesList[id] = value;
-            auto val = actorValuesComponent.CurrentActorValues.ActorValuesList[id];
+            float val = actorValuesComponent.CurrentActorValues.ActorValuesList[id];
             spdlog::debug("Updating value {:x}:{:f} of {:x}", id, val, message.Id);
         }
     }
 
-    NotifyActorValueChanges notifyChanges;
-    notifyChanges.Id = acMessage.Packet.Id;
-    notifyChanges.Values = acMessage.Packet.Values;
+    NotifyActorValueChanges notify;
+    notify.Id = acMessage.Packet.Id;
+    notify.Values = acMessage.Packet.Values;
 
-    // TODO: only send to those in range
-    for (auto pPlayer : m_world.GetPlayerManager())
-    { 
-        if (acMessage.pPlayer != pPlayer)
-        {
-            pPlayer->Send(notifyChanges);
-        }
-    }
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }
 
 void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -66,46 +56,38 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
 
     auto actorValuesView = m_world.view<ActorValuesComponent, OwnerComponent>();
 
-    auto itor = actorValuesView.find(static_cast<entt::entity>(message.Id));
+    auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
+    if (it != std::end(actorValuesView) &&
+        actorValuesView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
     {
-        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*itor);
+        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
         for (auto& [id, value] : message.Values)
         {
             actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id] = value;
-            auto val = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id];
+            float val = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id];
             spdlog::debug("Updating max value {:x}:{:f} of {:x}", id, val, message.Id);
         }
     }
 
-    NotifyActorMaxValueChanges notifyChanges;
-    notifyChanges.Id = message.Id;
-    notifyChanges.Values = message.Values;
+    NotifyActorMaxValueChanges notify;
+    notify.Id = message.Id;
+    notify.Values = message.Values;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
-    {
-        if (acMessage.pPlayer != pPlayer)
-        {
-            pPlayer->Send(notifyChanges);
-        }
-    }
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }
 
 void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
 {
-    NotifyHealthChangeBroadcast notifyDamageEvent;
-    notifyDamageEvent.Id = acMessage.Packet.Id;
-    notifyDamageEvent.DeltaHealth = acMessage.Packet.DeltaHealth;
+    auto& message = acMessage.Packet;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
-    {
-        if (acMessage.pPlayer != pPlayer)
-        {
-            pPlayer->Send(notifyDamageEvent);
-        }
-    }
+    NotifyHealthChangeBroadcast notify;
+    notify.Id = message.Id;
+    notify.DeltaHealth = message.DeltaHealth;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }
 
 void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -114,26 +96,21 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
 
     auto characterView = m_world.view<CharacterComponent, OwnerComponent>();
 
-    const auto itor = characterView.find(static_cast<entt::entity>(message.Id));
+    const auto it = characterView.find(static_cast<entt::entity>(message.Id));
 
-    if (itor != std::end(characterView) && 
-        characterView.get<OwnerComponent>(*itor).GetOwner() == acMessage.pPlayer)
+    if (it != std::end(characterView) && 
+        characterView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
     {
-        auto& characterComponent = characterView.get<CharacterComponent>(*itor);
+        auto& characterComponent = characterView.get<CharacterComponent>(*it);
         characterComponent.IsDead = message.IsDead;
         spdlog::debug("Updating death state {:x}:{}", message.Id, message.IsDead);
     }
 
-    NotifyDeathStateChange notifyChange;
-    notifyChange.Id = message.Id;
-    notifyChange.IsDead = message.IsDead;
+    NotifyDeathStateChange notify;
+    notify.Id = message.Id;
+    notify.IsDead = message.IsDead;
 
-    for (auto pPlayer : m_world.GetPlayerManager())
-    {
-        if (acMessage.pPlayer != pPlayer)
-        {
-            pPlayer->Send(notifyChange);
-        }
-    }
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }
 

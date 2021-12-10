@@ -258,6 +258,27 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
     }
 }
 
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin) const
+{
+    const auto* cellIdComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
+    const auto* ownerComp = m_pWorld->try_get<OwnerComponent>(acOrigin);
+
+    if (!cellIdComp || !ownerComp)
+    {
+        spdlog::warn("Components not found for entity {:X}", static_cast<int>(acOrigin));
+        return;
+    }
+
+    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    {
+        if (ownerComp->GetOwner() == pPlayer)
+            continue;
+
+        if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
+            pPlayer->Send(acServerMessage);
+    }
+}
+
 const String& GameServer::GetName() const noexcept
 {
     return m_name;

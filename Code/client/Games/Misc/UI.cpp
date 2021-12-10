@@ -18,7 +18,7 @@ bool UI::IsOpen(const BSFixedString& acName) const noexcept
 
     TP_THIS_FUNCTION(TMenuSystem_IsOpen, bool, const UI, const BSFixedString&);
 
-    POINTER_SKYRIMSE(TMenuSystem_IsOpen, s_isMenuOpen, 0x140F044A0 - 0x140000000);
+    POINTER_SKYRIMSE(TMenuSystem_IsOpen, s_isMenuOpen, 0x140F043C0 - 0x140000000);
     POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 0x142042160 - 0x140000000);
 
     return ThisCall(s_isMenuOpen.Get(), this, acName);

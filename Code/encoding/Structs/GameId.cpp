@@ -20,6 +20,11 @@ bool GameId::operator!=(const GameId& acRhs) const noexcept
     return !this->operator==(acRhs);
 }
 
+GameId::operator bool() const noexcept
+{
+    return *this != GameId{};
+}
+
 void GameId::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, BaseId);

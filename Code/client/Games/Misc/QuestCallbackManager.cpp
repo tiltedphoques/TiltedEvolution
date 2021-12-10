@@ -13,7 +13,7 @@ QuestCallbackManager* QuestCallbackManager::Get() noexcept
 void QuestCallbackManager::RegisterQuest(uint32_t formId)
 {
     using TRegisterQuest = void(QuestCallbackManager*, uint32_t);
-    POINTER_SKYRIMSE(TRegisterQuest, RegisterQuest, 0x14093F270 - 0x140000000);
+    POINTER_SKYRIMSE(TRegisterQuest, RegisterQuest, 0x14093F190 - 0x140000000);
     POINTER_FALLOUT4(TRegisterQuest, RegisterQuest, 0x14134B0D0 - 0x140000000);
 
     RegisterQuest(this, formId);

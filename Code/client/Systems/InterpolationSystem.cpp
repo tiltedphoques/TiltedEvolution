@@ -104,5 +104,6 @@ InterpolationComponent& InterpolationSystem::Setup(World& aWorld, const entt::en
 
 void InterpolationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
 {
-    aWorld.remove_if_exists<InterpolationComponent>(aEntity);
+    if (aWorld.all_of<InterpolationComponent>(aEntity))
+        aWorld.remove<InterpolationComponent>(aEntity);
 }
