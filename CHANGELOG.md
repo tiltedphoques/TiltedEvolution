@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.3.0...v1.4.0) (2021-12-10)
+
+
+### Bug Fixes
+
+* distrib player messages bug ([3f37634](https://github.com/tiltedphoques/TiltedEvolution/commit/3f37634a36b416a0d3c1aad4f9b7bf4cc1f1ed46))
+
+
+### Features
+
+* updated mod to AE patch 1 ([912cae8](https://github.com/tiltedphoques/TiltedEvolution/commit/912cae8c91d65bb51ad100e3584a89f8b7d0c88a))
+
 # [1.3.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.2.1...v1.3.0) (2021-12-07)
 
 
