@@ -23,7 +23,7 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
 
 static TiltedPhoques::Initializer s_vmHooks([]()
     {
-        POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x141381B20 - 0x140000000);
+        POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x141381A80 - 0x140000000);
         POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x1427338A0 - 0x140000000);
 
         RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();

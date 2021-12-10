@@ -26,7 +26,7 @@ BGSSaveFormBuffer::BGSSaveFormBuffer()
 {
     TP_THIS_FUNCTION(CtorT, BGSSaveFormBuffer*, BGSSaveFormBuffer);
 
-    POINTER_SKYRIMSE(CtorT, ctor, 0x1405BA820 - 0x140000000);
+    POINTER_SKYRIMSE(CtorT, ctor, 0x1405BA590 - 0x140000000);
     POINTER_FALLOUT4(CtorT, ctor, 0x140D09300 - 0x140000000);
 
     ThisCall(ctor, this);
@@ -58,7 +58,7 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 {
     TP_THIS_FUNCTION(CtorT, BGSLoadFormBuffer*, BGSLoadFormBuffer);
 
-    POINTER_SKYRIMSE(CtorT, ctor, 0x1405B8AC0 - 0x140000000);
+    POINTER_SKYRIMSE(CtorT, ctor, 0x1405B8830 - 0x140000000);
     POINTER_FALLOUT4(CtorT, ctor, 0x140123F00 - 0x140000000);
 
     ThisCall(ctor, this);
@@ -136,13 +136,13 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
 static TiltedPhoques::Initializer s_saveLoadHooks([]()
     {
         POINTER_FALLOUT4(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 0x140D06BC0 - 0x140000000);
-        POINTER_SKYRIMSE(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 0x1405B8D50 - 0x140000000);
+        POINTER_SKYRIMSE(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 0x1405B8AC0 - 0x140000000);
 
         POINTER_FALLOUT4(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 0x140D09AA0 - 0x140000000);
-        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 0x1405BAD90 - 0x140000000);
+        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 0x1405BAB00 - 0x140000000);
 
         POINTER_FALLOUT4(TBGSSaveFormBuffer_WriteId, s_writeId, 0x140D09A20 - 0x140000000);
-        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteId, s_writeId, 0x1405BAD10 - 0x140000000);
+        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteId, s_writeId, 0x1405BAA80 - 0x140000000);
 
         RealBGSLoadFormBuffer_ReadFormId = s_readFormId.Get();
         RealBGSSaveFormBuffer_WriteFormId = s_writeFormId.Get();

@@ -25,7 +25,7 @@ void HookSimulateTime(TimeData *apData, float aMultiplier)
 
 static TiltedPhoques::Initializer s_loadingScreenHooks([]() {
 
-    POINTER_SKYRIMSE(TSimulateTime, s_SimulateTime, 0x1405C7220 - 0x140000000);
+    POINTER_SKYRIMSE(TSimulateTime, s_SimulateTime, 0x1405C6F90 - 0x140000000);
     POINTER_FALLOUT4(TSimulateTime, s_SimulateTime, 0x140D1D850 - 0x140000000);
 
     RealSimulateTime = s_SimulateTime.Get();

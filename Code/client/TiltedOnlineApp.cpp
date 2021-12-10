@@ -41,7 +41,7 @@ TiltedOnlineApp::~TiltedOnlineApp() = default;
 
 void* TiltedOnlineApp::GetMainAddress() const
 {
-    POINTER_SKYRIMSE(void, winMain, 0x1405D29F0 - 0x140000000);
+    POINTER_SKYRIMSE(void, winMain, 0x1405D2760 - 0x140000000);
     POINTER_FALLOUT4(void, winMain, 0x140D35930 - 0x140000000);
 
     return winMain.GetPtr();
