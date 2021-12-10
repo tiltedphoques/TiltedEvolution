@@ -216,6 +216,9 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
 
 void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
@@ -250,30 +253,25 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
-    auto view = m_world.view<FormIdComponent>();
-    for (const auto entity : view)
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+    for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
     {
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) { 
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
+
+        if (it == std::end(view))
             continue;
 
-        uint32_t serverId = serverIdRes.value();
-
-        const auto change = m_cachedCharacterInventoryChanges.find(serverId);
-
-        if (change == m_cachedCharacterInventoryChanges.end())
-            continue;
-
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        const auto& formIdComponent = view.get<FormIdComponent>(*it);
         auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         if (!pActor)
             continue;
 
-        auto* cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
-        if (cpRemoteComponent)
-            cpRemoteComponent->SpawnRequest.InventoryContent = change.value();
+        auto& remoteComponent = m_world.get<RemoteComponent>(*it);
+        remoteComponent.SpawnRequest.InventoryContent = inventory;
 
-        pActor->SetInventory(change.value());
+        pActor->SetInventory(inventory);
     }
 
     m_cachedCharacterInventoryChanges.clear();

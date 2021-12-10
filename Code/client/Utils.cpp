@@ -15,7 +15,8 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
         serverId = pRemoteComponent->Id;
     else
     {
-        spdlog::warn("This entity has neither a local or remote component: {:X}",  aEntity);
+        const auto* pFormIdComponent = World::Get().try_get<FormIdComponent>(aEntity);
+        spdlog::warn("This entity has neither a local or remote component: {:X}, form id: {:X}",  aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
         return std::nullopt;
     }
 
