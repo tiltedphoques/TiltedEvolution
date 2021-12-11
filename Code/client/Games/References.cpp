@@ -225,10 +225,15 @@ String TESObjectREFR::SerializeInventory() const noexcept
 {
     ScopedSaveLoadOverride _;
 
-    char buffer[1 << 15];
+    // TODO: buffer[1 << 15] is too small for some inventories
+    // buffer[1 << 18] does the job, but these inventories seem to be bugged
+    // ask cosi for repro
+    // temp solution: increase the buffer
+    // only happened in skyrim, idk if fallout 4 needs it
+    char buffer[1 << 18];
     BGSSaveFormBuffer saveBuffer;
     saveBuffer.buffer = buffer;
-    saveBuffer.capacity = 1 << 15;
+    saveBuffer.capacity = 1 << 18;
     saveBuffer.changeFlags = 1024;
 
     SaveInventory(&saveBuffer);

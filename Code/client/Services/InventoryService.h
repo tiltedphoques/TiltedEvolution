@@ -39,7 +39,7 @@ private:
     TransportService& m_transport;
 
     Set<uint32_t> m_objectsWithInventoryChanges;
-    Map<uint32_t, String> m_charactersWithInventoryChanges;
+    Set<uint32_t> m_charactersWithInventoryChanges;
     Map<GameId, Inventory> m_cachedObjectInventoryChanges;
     Map<uint32_t, Inventory> m_cachedCharacterInventoryChanges;
 
