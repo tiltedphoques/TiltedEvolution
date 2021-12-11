@@ -70,13 +70,6 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
     pWindowConfig->bFullScreenDisplay = false;
 #endif
 
-    const wchar_t *pCmdl = GetCommandLineW();
-    if (std::wcsstr(pCmdl, L"+force_windowed"))
-    {
-        pWindowConfig->bBorderlessDisplay = false;
-        pWindowConfig->bFullScreenDisplay = false;
-    }
-
     const auto result = RealCreateViewport(viewport, pConfig, pWindowConfig, a4);
 
     auto* pSwapchain = BGSRenderer::Get()->pSwapChain;
@@ -87,6 +80,8 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
 
 static TiltedPhoques::Initializer s_viewportHooks([]()
 {
+#ifndef TP_SKYRIM64
+
     POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 0x140DA3770 - 0x140000000);
     POINTER_FALLOUT4(TCreateViewport, s_realCreateViewport, 0x141D09DA0 - 0x140000000);
 
@@ -99,13 +94,7 @@ static TiltedPhoques::Initializer s_viewportHooks([]()
     RealRenderPresent = s_realRenderPresent.Get();
     TP_HOOK(&RealRenderPresent, HookPresent);
 
-#if TP_SKYRIM64
-    // change window mode style to have a close button
-    TiltedPhoques::Put(0x140DA38E4 + 1, WS_OVERLAPPEDWINDOW);
 
-    // don't let the game steal the media keys in windowed mode
-    TiltedPhoques::Put(0x140C40235 + 2, /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
-#else
     TiltedPhoques::Put(0x140000000 +
          (0x1D17EE7 + 1), WS_OVERLAPPEDWINDOW);
 #endif

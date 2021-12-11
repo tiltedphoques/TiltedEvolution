@@ -16,8 +16,8 @@
 #include "oobe/SupportChecks.h"
 #include "steam/SteamLoader.h"
 
+// These symbols are defined within the client code
 extern void InstallStartHook();
-
 extern void RunTiltedApp();
 extern void RunTiltedInit();
 
