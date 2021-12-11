@@ -148,7 +148,6 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -169,7 +168,6 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -190,7 +188,6 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -211,7 +208,6 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -232,7 +228,6 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -253,7 +248,6 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.InventoryBuffer = apActor->SerializeInventory();
 
         World::Get().GetRunner().Trigger(evt);
     }

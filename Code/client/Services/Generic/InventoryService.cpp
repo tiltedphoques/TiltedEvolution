@@ -52,7 +52,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
-        m_charactersWithInventoryChanges[acEvent.FormId] = String{};
+        m_charactersWithInventoryChanges.insert(acEvent.FormId);
     }
     else
     {
@@ -62,7 +62,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    m_charactersWithInventoryChanges[acEvent.ActorId] = acEvent.InventoryBuffer;
+    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
@@ -168,11 +168,9 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
     {
         RequestCharacterInventoryChanges message;
 
-        for (const auto change : m_charactersWithInventoryChanges)
+        for (const auto formId : m_charactersWithInventoryChanges)
         {
             auto view = m_world.view<FormIdComponent>();
-
-            auto formId = change.first;
 
             const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
             {
@@ -193,19 +191,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (!pActor)
                 continue;
 
-            Inventory inventory = pActor->GetInventory();
-
-            if (change.second != String{})
-            {
-                spdlog::warn("Using cached inventory snapshot for {:X} ({:X})", formId, serverId);
-                //inventory.Buffer = change.second;
-            }
-            else
-            {
-                spdlog::warn("Using new inventory for {:X} ({:X})", formId, serverId);
-            }
-
-            message.Changes[serverId] = inventory;
+            message.Changes[serverId] = pActor->GetInventory();
         }
 
         m_transport.Send(message);
