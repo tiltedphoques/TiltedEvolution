@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.1...v1.5.0) (2021-12-11)
+
+
+### Features
+
+* progress on leveled actor sync ([94d4039](https://github.com/tiltedphoques/TiltedEvolution/commit/94d4039174b565398ff5d4482b6be33c6f6e527f))
+
 ## [1.4.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.0...v1.4.1) (2021-12-11)
 
 
