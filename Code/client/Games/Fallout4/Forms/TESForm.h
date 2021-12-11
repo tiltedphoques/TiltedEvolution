@@ -27,6 +27,11 @@ struct TESForm : BaseFormComponent
         uint32_t unkC;
     };
 
+    enum FormFlags
+    {
+        DISABLED = 1 << 0xB,
+    };
+
     static TESForm* GetById(uint32_t aId);
 
     virtual void sub_7();
@@ -106,6 +111,7 @@ struct TESForm : BaseFormComponent
         // TODO: fallout 4 impl
         return;
     }
+    bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
 
     uintptr_t unk8;
     uint32_t flags;

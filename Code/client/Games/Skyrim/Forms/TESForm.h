@@ -29,6 +29,7 @@ struct TESForm : BaseFormComponent
 
     enum FormFlags
     {
+        DISABLED = 1 << 0xB,
         IGNORE_FRIENDLY_HITS = 1 << 0x14,
     };
 
@@ -101,6 +102,7 @@ struct TESForm : BaseFormComponent
         else
             flags &= IGNORE_FRIENDLY_HITS;
     }
+    bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
 
     uintptr_t unk4;
     uint32_t flags;

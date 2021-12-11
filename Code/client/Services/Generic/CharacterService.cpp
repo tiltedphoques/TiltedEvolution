@@ -292,7 +292,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
             if(cNpcId == 0)
             {
-                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
+                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
                 return;
             }
 
@@ -337,6 +337,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
     }
+    
+    if (pActor->IsDisabled())
+        pActor->Enable();
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
