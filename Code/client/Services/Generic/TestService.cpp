@@ -829,6 +829,18 @@ void TestService::OnDraw() noexcept
                 pFetchActor->magicTarget.AddTarget(data);
             }
         }
+
+        int packCount = 0;
+        if (auto* pNpc = RTTI_CAST(pFetchActor->baseForm, TESForm, TESNPC))
+        {
+            for (auto package : pNpc->aiForm.AIPackList)
+            {
+                packCount++;
+            }
+        }
+
+        ImGui::InputInt("Package count", &packCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
     #endif
     }
 
