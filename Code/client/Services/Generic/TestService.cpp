@@ -44,6 +44,7 @@
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <EquipManager.h>
+#include <Games/Skyrim/Forms/TESPackage.h>
 #endif
 
 #include <imgui.h>
@@ -837,9 +838,15 @@ void TestService::OnDraw() noexcept
             {
                 packCount++;
             }
-        }
 
-        ImGui::InputInt("Package count", &packCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt("Package count", &packCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            for (auto package : pNpc->aiForm.AIPackList)
+            {
+                int proctype = package->ePROCEDURE_TYPE;
+                ImGui::InputInt("proctype", &proctype, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            }
+        }
 
     #endif
     }
