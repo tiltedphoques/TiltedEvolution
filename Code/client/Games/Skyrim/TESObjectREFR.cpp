@@ -80,7 +80,18 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 
 void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
 {
-    GetContainerChanges()->Save(apBuffer);
+    auto changes = GetContainerChanges();
+
+    auto entries = changes->entries;
+    uint32_t entryCount = 0;
+    for (auto entry : *entries)
+    {
+        entryCount++;
+    }
+    if (entryCount > 1024)
+        spdlog::error("Inventory entry count is really big: {:X}:{}", formID, entryCount);
+
+    changes->Save(apBuffer);
 }
 
 void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept

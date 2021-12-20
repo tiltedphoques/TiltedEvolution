@@ -292,7 +292,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
             if(cNpcId == 0)
             {
-                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
+                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
                 return;
             }
 
@@ -337,6 +337,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
     }
+    
+    if (pActor->IsDisabled())
+        pActor->Enable();
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
@@ -1070,9 +1073,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     ProjectileLaunchData launchData{};
 #endif
 
-#if TP_FALLOUT4
     launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
-#endif
 
     launchData.Origin.x = acMessage.OriginX;
     launchData.Origin.y = acMessage.OriginY;
@@ -1080,6 +1081,11 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
 
     const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
     launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
+
+#if TP_SKYRIM64
+    const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
+    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+#endif
 
 #if TP_FALLOUT4
     Actor* pShooter = RTTI_CAST(launchData.pShooter, TESObjectREFR, Actor);

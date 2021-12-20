@@ -1,3 +1,24 @@
+## [1.5.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.0...v1.5.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* projectile related crashes ([48eec06](https://github.com/tiltedphoques/TiltedEvolution/commit/48eec065e282898bdbd02ed7a2ad195665cd92d7))
+
+# [1.5.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.1...v1.5.0) (2021-12-11)
+
+
+### Features
+
+* progress on leveled actor sync ([94d4039](https://github.com/tiltedphoques/TiltedEvolution/commit/94d4039174b565398ff5d4482b6be33c6f6e527f))
+
+## [1.4.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.0...v1.4.1) (2021-12-11)
+
+
+### Bug Fixes
+
+* inventory crash fix ([7358e7f](https://github.com/tiltedphoques/TiltedEvolution/commit/7358e7f031418efef456d0f6218d8fa64e24ddf0))
+
 # [1.4.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.3.0...v1.4.0) (2021-12-10)
 
 
