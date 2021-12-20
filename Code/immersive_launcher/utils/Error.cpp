@@ -26,6 +26,5 @@ TiltedPhoques::String WinErrorToStringA(uint32_t aErrorCode)
 void Die(const char* aText)
 {
     auto fmt = fmt::format("{}\nError: {} = {}", aText, GetLastError(), WinErrorToStringA(GetLastError()).c_str());
-
     MessageBoxA(nullptr, fmt.c_str(), "TiltedOnline", MB_ICONSTOP);
 }

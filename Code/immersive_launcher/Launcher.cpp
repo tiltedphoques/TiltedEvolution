@@ -68,6 +68,7 @@ int StartUp(int argc, char** argv)
         if (ec)
         {
             Die(ec);
+            return false;
         }
     }
 

@@ -108,9 +108,6 @@ struct RendererInitOSData
     int bCreateSwapChainRenderTarget;
 };
 
-
-
-
 // former WindowConfig
 struct ApplicationWindowProperties
 {
