@@ -18,7 +18,7 @@
 #pragma comment(linker, "/section:.zdata,re")
 
 #pragma bss_seg(".game")
-char game_seg[CurrentTarget.exeSize];
+char game_seg[CurrentTarget.exeLoadSz];
 
 // high rip zone, used for RIP relative addressing
 // guaranteed to always be there.

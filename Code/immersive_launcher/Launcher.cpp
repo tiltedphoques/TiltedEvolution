@@ -12,6 +12,8 @@
 #include "loader/PathRerouting.h"
 
 #include "Utils/Error.h"
+#include "Utils/FileVersion.inl"
+
 #include "oobe/PathSelection.h"
 #include "oobe/SupportChecks.h"
 #include "steam/SteamLoader.h"
@@ -32,6 +34,13 @@ LaunchContext* GetLaunchContext()
 
     return g_context;
 }
+
+// Everything is nothing, life is worth living, just look to the stars
+#define DIE_NOW(err)                                                                                                   \
+    {                                                                                                                  \
+        Die(err);                                                                                                      \
+        return false;                                                                                                  \
+    }
 
 int StartUp(int argc, char** argv)
 {
@@ -66,29 +75,18 @@ int StartUp(int argc, char** argv)
         }
 
         if (ec)
-        {
-            Die(ec);
-            return false;
-        }
+            DIE_NOW(ec);
     }
 
     if (!oobe::SelectInstall(askSelect))
-    {
-        Die("Failed to select game install.");
-        return false;
-    }
+        DIE_NOW("Failed to select game install.");
 
     // Bind path environment.
     loader::InstallPathRouting(LC->gamePath);
     steam::Load(LC->gamePath);
 
-    {
-        ExeLoader loader(CurrentTarget.exeSize, GetProcAddress);
-        if (!loader.Load(LC->exePath))
-            return 3;
-
-        LC->gameMain = loader.GetEntryPoint();
-    }
+    if (!LoadProgram(*LC))
+        return 3;
 
     InstallStartHook();
     // Initialize all hooks before calling game init
@@ -98,6 +96,33 @@ int StartUp(int argc, char** argv)
     // This shouldn't return until the game is killed
     LC->gameMain();
     return 0;
+}
+
+bool LoadProgram(LaunchContext& LC)
+{
+    auto content = TiltedPhoques::LoadFile(LC.exePath);
+    if (content.empty())
+        DIE_NOW("Failed to mount game executable");
+
+    auto versionString = QueryFileVersion(LC.exePath.c_str());
+    if (versionString.empty())
+        DIE_NOW("Failed to query game version");
+
+    if (content.size() != CurrentTarget.exeDiskSz || versionString != CurrentTarget.gameVerson)
+    {
+        auto err =
+            fmt::format("Unsupported game version.\n(Executable doesn't match)\nExpected version {}\nGot version {}",
+                        CurrentTarget.gameVerson, versionString.c_str());
+
+        DIE_NOW(err.c_str());
+    }
+
+    ExeLoader loader(CurrentTarget.exeLoadSz);
+    if (!loader.Load(reinterpret_cast<uint8_t*>(content.data())))
+        DIE_NOW("Fatal error while mapping executable");
+
+    LC.gameMain = loader.GetEntryPoint();
+    return true;
 }
 
 void InitClient()

@@ -19,9 +19,9 @@ class ExeLoader
     using TEntryPoint = void(*)();
     using TFuncHandler = FARPROC(*)(HMODULE, const char*);
 
-    explicit ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncPtr);
+    explicit ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncPtr = GetProcAddress);
 
-    bool Load(const std::filesystem::path& aSourcePath);
+    bool Load(const uint8_t *apProgramBuffer);
 
     TEntryPoint GetEntryPoint() const
     {
