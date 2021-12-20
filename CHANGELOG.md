@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.0...v1.5.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* projectile related crashes ([48eec06](https://github.com/tiltedphoques/TiltedEvolution/commit/48eec065e282898bdbd02ed7a2ad195665cd92d7))
+
 # [1.5.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.1...v1.5.0) (2021-12-11)
 
 
