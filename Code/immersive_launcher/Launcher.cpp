@@ -27,6 +27,20 @@ namespace launcher
 {
 static LaunchContext* g_context = nullptr;
 
+static void PreloadSystemDlls()
+{
+    auto systemDlls = {L"\\dinput8.dll", // < Skyrim early init hook
+                       L"\\dsound.dll",  // breaks DSound init in game code
+                                         // X360CE v3 is buggy with COM hooks
+                       L"\\xinput9_1_0.dll", L"\\xinput1_1.dll", L"\\xinput1_2.dll", L"\\xinput1_3.dll",
+                       L"\\xinput1_4.dll", L"\\version.dll"};
+
+    for (auto dll : systemDlls)
+    {
+        LoadLibraryW(dll);
+    }
+}
+
 LaunchContext* GetLaunchContext()
 {
     if (!g_context)
@@ -44,6 +58,8 @@ LaunchContext* GetLaunchContext()
 
 int StartUp(int argc, char** argv)
 {
+    PreloadSystemDlls();
+
     // VK_E
     bool askSelect = (GetAsyncKeyState(0x45) & 0x8000);
     for (int i = 1; i < argc; i++)
