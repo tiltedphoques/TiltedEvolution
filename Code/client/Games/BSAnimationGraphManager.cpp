@@ -91,6 +91,7 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
                     }
                 }
 
+                // TODO: this sometimes crashes when appending. Adding logging seems to fix it. Ask cosi for repro
                 for(auto& [id, name] : variables)
                 {
                     variableNames += name;
