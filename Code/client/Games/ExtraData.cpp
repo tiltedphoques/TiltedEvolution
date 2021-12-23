@@ -36,3 +36,32 @@ BSExtraData* BSExtraDataList::GetByType(ExtraData aType) const
 
     return pEntry;
 }
+
+bool BSExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
+{
+    if (Contains(aType))
+        return false;
+
+    lock.Lock();
+
+    BSExtraData* pNext = data;
+    data = apNewData;
+    apNewData->next = pNext;
+    SetType(aType, false);
+
+    lock.Unlock();
+
+    return true;
+}
+
+void BSExtraDataList::SetType(ExtraData aType, bool aClear)
+{
+    uint32_t index = static_cast<uint8_t>(aType) >> 3;
+    uint8_t bitmask = 1 << (static_cast<uint8_t>(aType) % 8);
+    uint8_t& flag = bitfield->data[index];
+    if (aClear)
+        flag &= ~bitmask;
+    else
+        flag |= bitmask;
+}
+

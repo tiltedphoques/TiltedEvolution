@@ -9,6 +9,7 @@
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
+#include <Structs/Container.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -70,7 +71,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_57();
     virtual void sub_58();
     virtual void sub_59();
-    virtual void sub_5A();
+    virtual void AddObjectToContainer(TESBoundObject* apObj, BSExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
     virtual void sub_5B();
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual void sub_5D();
@@ -168,6 +169,8 @@ struct TESObjectREFR : TESForm
 
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
+
+    void AddItem(Container::Entry& arEntry) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

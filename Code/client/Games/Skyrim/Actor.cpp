@@ -371,6 +371,7 @@ Container Actor::GetFullContainer() const noexcept
 
     spdlog::info("fullContainer count after: {}", fullContainer.Entries.size());
 
+    // TODO: doesn't filter all duplicates?
     return fullContainer;
 }
 

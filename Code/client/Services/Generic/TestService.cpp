@@ -71,7 +71,7 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+    //pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
 
     m_actors.emplace_back(pActor);
 }
@@ -161,6 +161,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
+    static std::atomic<bool> s_f6Pressed = false;
 
     RunDiff();
 
@@ -183,6 +184,10 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             auto fullContainer = PlayerCharacter::Get()->GetFullContainer();
             spdlog::info("Full container entries: {}", fullContainer.Entries.size());
+
+            auto pActor = m_actors[0];
+            auto* pObj = RTTI_CAST(TESForm::GetById(0x139B9), TESForm, TESBoundObject);
+            pActor->AddObjectToContainer(pObj, nullptr, 1, nullptr);
 
             /*
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
@@ -207,6 +212,18 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     }
     else
         s_f8Pressed = false;
+
+    if (GetAsyncKeyState(VK_F6))
+    {
+        if (!s_f6Pressed)
+        {
+            s_f6Pressed = true;
+
+            PlaceActorInWorld();
+        }
+    }
+    else
+        s_f6Pressed = false;
 }
 
 uint64_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept

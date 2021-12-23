@@ -33,8 +33,10 @@ struct BSExtraDataList
     bool Contains(ExtraData aType) const;
     void Set(ExtraData aType, bool aSet);
 
-    bool Add(ExtraData aType, BSExtraData* apOther);
-    bool Remove(ExtraData aType, BSExtraData* apOther);
+    bool Add(ExtraData aType, BSExtraData* apNewData);
+    bool Remove(ExtraData aType, BSExtraData* apNewData);
+
+    void SetType(ExtraData aType, bool aClear);
 
     BSExtraData* GetByType(ExtraData type) const;
 #if TP_FALLOUT4

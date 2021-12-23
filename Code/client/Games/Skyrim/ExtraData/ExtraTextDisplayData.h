@@ -8,6 +8,7 @@ struct ExtraTextDisplayData : BSExtraData
     inline static constexpr auto eExtraData = ExtraData::TextDisplayData;
 
     BSFixedString DisplayName;
+    uint8_t pad[0x20];
 
     // TODO: implement the rest when i dont feel lazy
     /*
@@ -18,3 +19,5 @@ struct ExtraTextDisplayData : BSExtraData
     unsigned __int16 usCustomNameLength;
     */
 };
+
+static_assert(sizeof(ExtraTextDisplayData) == 0x38);

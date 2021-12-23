@@ -9,6 +9,16 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/ScriptAnimationEvent.h>
 
+#include <ExtraData/ExtraCharge.h>
+#include <ExtraData/ExtraCount.h>
+#include <ExtraData/ExtraEnchantment.h>
+#include <ExtraData/ExtraHealth.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraSoul.h>
+#include <ExtraData/ExtraTextDisplayData.h>
+#include <ExtraData/ExtraWorn.h>
+#include <ExtraData/ExtraWornLeft.h>
+
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TRemoveInventoryItem, void*, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3);
@@ -137,6 +147,90 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     }
 
     return count;
+}
+
+void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
+{
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
+    if (!pObject)
+    {
+        spdlog::warn("{}: Object to add not found.", __FUNCTION__);
+        return;
+    }
+
+    BSExtraDataList* pExtraData = nullptr;
+
+    if (arEntry.ContainsExtraData())
+    {
+        pExtraData = Memory::Allocate<BSExtraDataList>();
+        pExtraData->bitfield = Memory::Allocate<BSExtraDataList::Bitfield>();
+
+        if (arEntry.ExtraCharge > 0.f)
+        {
+            ExtraCharge* pExtraCharge = Memory::Allocate<ExtraCharge>();
+            pExtraCharge->fCharge = arEntry.ExtraCharge;
+            pExtraData->Add(ExtraData::Charge, pExtraCharge);
+        }
+
+        // TODO: deal with temp forms for enchanted items
+        if (arEntry.ExtraEnchantId != 0)
+        {
+        }
+
+        if (arEntry.ExtraHealth > 0.f)
+        {
+            ExtraHealth* pExtraHealth = Memory::Allocate<ExtraHealth>();
+            pExtraHealth->fHealth = arEntry.ExtraHealth;
+            pExtraData->Add(ExtraData::Health, pExtraHealth);
+        }
+
+        // TODO: does poison have the same temp problem as enchants?
+        // put an assert for now
+        if (arEntry.ExtraPoisonId != 0)
+        {
+            TP_ASSERT(arEntry.ExtraPoisonId.ModId == 0xFFFFFFFF, "Poison is sent as temp!");
+
+            uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
+            if (AlchemyItem* pPoison = RTTI_CAST(TESForm::GetById(poisonId), TESForm, AlchemyItem))
+            {
+                ExtraPoison* pExtraPoison = Memory::Allocate<ExtraPoison>();
+                pExtraPoison->pPoison = pPoison;
+                pExtraPoison->uiCount = arEntry.ExtraPoisonCount;
+                pExtraData->Add(ExtraData::Poison, pExtraPoison);
+            }
+        }
+
+        if (arEntry.ExtraSoulLevel > 0 && arEntry.ExtraSoulLevel <= 5)
+        {
+            ExtraSoul* pExtraSoul = Memory::Allocate<ExtraSoul>();
+            pExtraSoul->cSoul = static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel);
+            pExtraData->Add(ExtraData::Soul, pExtraSoul);
+        }
+
+        if (!arEntry.ExtraTextDisplayName.empty())
+        {
+            ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
+            pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
+            pExtraData->Add(ExtraData::TextDisplayData, pExtraText);
+        }
+
+        if (arEntry.ExtraWorn)
+        {
+            ExtraWorn* pExtraWorn = Memory::Allocate<ExtraWorn>();
+            pExtraData->Add(ExtraData::Worn, pExtraWorn);
+        }
+
+        if (arEntry.ExtraWornLeft)
+        {
+            ExtraWornLeft* pExtraWornLeft = Memory::Allocate<ExtraWornLeft>();
+            pExtraData->Add(ExtraData::WornLeft, pExtraWornLeft);
+        }
+    }
+
+    AddObjectToContainer(pObject, pExtraData, arEntry.Count, nullptr);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
