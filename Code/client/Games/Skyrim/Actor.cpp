@@ -25,6 +25,16 @@
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
 
+#include <ExtraData/ExtraCharge.h>
+#include <ExtraData/ExtraCount.h>
+#include <ExtraData/ExtraEnchantment.h>
+#include <ExtraData/ExtraHealth.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraSoul.h>
+#include <ExtraData/ExtraTextDisplayData.h>
+#include <Forms/EnchantmentItem.h>
+#include <Forms/AlchemyItem.h>
+
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
@@ -209,6 +219,159 @@ Inventory Actor::GetInventory() const noexcept
     inventory.IsWeaponDrawn = actorState.IsWeaponDrawn();
 
     return inventory;
+}
+
+Container Actor::GetFullContainer() const noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+    Container fullContainer{};
+
+    if (TESContainer* pBaseContainer = GetContainer())
+    {
+        for (int i = 0; i < pBaseContainer->count; i++)
+        {
+            TESContainer::Entry* pGameEntry = pBaseContainer->entries[i];
+            if (!pGameEntry || !pGameEntry->form)
+            {
+                spdlog::warn("Entry or form for inventory item is null.");
+                continue;
+            }
+
+            Container::Entry entry;
+            modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+            entry.Count = pGameEntry->count;
+
+            fullContainer.Entries.push_back(std::move(entry));
+        }
+    }
+
+    Container extraContainer{};
+
+    auto pExtraContChangesEntries = GetContainerChanges()->entries;
+    for (auto pGameEntry : *pExtraContChangesEntries)
+    {
+        Container::Entry entry;
+        modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+        entry.Count = pGameEntry->count;
+
+        for (BSExtraDataList* pExtraDataList : *pGameEntry->dataList)
+        {
+            if (!pExtraDataList)
+            {
+                spdlog::warn("Null ExtraDataList?");
+                continue;
+            }
+
+            Container::Entry innerEntry;
+            innerEntry.BaseId = entry.BaseId;
+            innerEntry.Count = 1;
+
+            if (ExtraCount* pExtraCount = (ExtraCount*)pExtraDataList->GetByType(ExtraData::Count))
+            {
+                innerEntry.Count = pExtraCount->count;
+            }
+
+            if (ExtraCharge* pExtraCharge = (ExtraCharge*)pExtraDataList->GetByType(ExtraData::Charge))
+            {
+                innerEntry.ExtraCharge = pExtraCharge->fCharge;
+            }
+
+            if (ExtraEnchantment* pExtraEnchantment = (ExtraEnchantment*)pExtraDataList->GetByType(ExtraData::Enchantment))
+            {
+                TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
+                // TODO: enchantments seem to always be temporaries, keep this in mind when trying to apply container
+                // Get base form id of enchantment instead? Probably gonna have to serialize more data
+                modSystem.GetServerModId(pExtraEnchantment->pEnchantment->formID, innerEntry.ExtraEnchantId);
+                innerEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
+                innerEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
+            }
+
+            if (ExtraHealth* pExtraHealth = (ExtraHealth*)pExtraDataList->GetByType(ExtraData::Health))
+            {
+                innerEntry.ExtraHealth = pExtraHealth->fHealth;
+            }
+
+            if (ExtraPoison* pExtraPoison = (ExtraPoison*)pExtraDataList->GetByType(ExtraData::Poison))
+            {
+                TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
+                modSystem.GetServerModId(pExtraPoison->pPoison->formID, innerEntry.ExtraPoisonId);
+                innerEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+            }
+
+            if (ExtraSoul* pExtraSoul = (ExtraSoul*)pExtraDataList->GetByType(ExtraData::Soul))
+            {
+                innerEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
+            }
+
+            if (ExtraTextDisplayData* pExtraTextDisplayData = (ExtraTextDisplayData*)pExtraDataList->GetByType(ExtraData::TextDisplayData))
+            {
+                if (pExtraTextDisplayData->DisplayName)
+                    innerEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
+                else
+                    innerEntry.ExtraTextDisplayName = "NULL DISPLAY NAME";
+            }
+
+            innerEntry.ExtraWorn = pExtraDataList->Contains(ExtraData::Worn);
+            innerEntry.ExtraWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+
+            entry.Count -= innerEntry.Count;
+
+            extraContainer.Entries.push_back(std::move(innerEntry));
+        }
+
+        if (entry.Count != 0)
+            extraContainer.Entries.push_back(std::move(entry));
+    }
+
+    spdlog::info("ExtraContainer count: {}", extraContainer.Entries.size());
+
+    Container minimizedExtraContainer{};
+
+    for (auto& entry : extraContainer.Entries)
+    {
+        auto& duplicate = std::find_if(minimizedExtraContainer.Entries.begin(), minimizedExtraContainer.Entries.end(), [entry](Container::Entry newEntry) { 
+            return newEntry.CanBeMerged(entry);
+        });
+
+        if (duplicate == std::end(minimizedExtraContainer.Entries))
+        {
+            minimizedExtraContainer.Entries.push_back(entry);
+            continue;
+        }
+
+        duplicate->Count += entry.Count;
+    }
+
+    spdlog::info("MinExtraContainer count: {}", minimizedExtraContainer.Entries.size());
+
+    for (auto& entry : minimizedExtraContainer.Entries)
+    {
+        if (entry.ContainsExtraData())
+            continue;
+
+        auto& duplicate = std::find_if(fullContainer.Entries.begin(), fullContainer.Entries.end(), [entry](Container::Entry newEntry) { 
+            return newEntry.CanBeMerged(entry);
+        });
+
+        if (duplicate == std::end(fullContainer.Entries))
+            continue;
+
+        entry.Count += duplicate->Count;
+        duplicate->Count = 0;
+    }
+
+    spdlog::info("MinExtraContainer count after: {}", minimizedExtraContainer.Entries.size());
+
+    fullContainer.Entries.insert(fullContainer.Entries.end(), minimizedExtraContainer.Entries.begin(),
+                                 minimizedExtraContainer.Entries.end());
+
+    std::remove_if(fullContainer.Entries.begin(), fullContainer.Entries.end(), [](Container::Entry entry) { 
+        return entry.Count == 0;
+    });
+
+    spdlog::info("fullContainer count after: {}", fullContainer.Entries.size());
+
+    return fullContainer;
 }
 
 Factions Actor::GetFactions() const noexcept
@@ -451,7 +614,7 @@ void Actor::UnEquipAll() noexcept
     RemoveAllItems();
 
     // Taken from skyrim's code shouts can be two form types apparently
-    if (equippedShout && (equippedShout->formType - 41) <= 1)
+    if (equippedShout && ((int)equippedShout->formType - 41) <= 1)
     {
         EquipManager::Get()->UnEquipShout(this, equippedShout);
         equippedShout = nullptr;

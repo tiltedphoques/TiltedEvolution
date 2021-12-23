@@ -181,6 +181,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            auto fullContainer = PlayerCharacter::Get()->GetFullContainer();
+            spdlog::info("Full container entries: {}", fullContainer.Entries.size());
 
             /*
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);

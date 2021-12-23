@@ -2,16 +2,14 @@
 
 #include <Games/IFormFactory.h>
 
-#include <Forms/TESForm.h>
-
-IFormFactory* IFormFactory::GetForType(const uint32_t aId) noexcept
+IFormFactory* IFormFactory::GetForType(const FormType aId) noexcept
 {
-    if (aId >= Count)
+    if (aId >= FormType::Count)
         return nullptr;
 
     POINTER_FALLOUT4(IFormFactory*, s_factories, 0x1458D3BF0 - 0x140000000);
     POINTER_SKYRIMSE(IFormFactory*, s_factories, 0x141F5E4A0 - 0x140000000);
 
-    return s_factories.Get()[aId];
+    return s_factories.Get()[(uint32_t)aId];
 }
 

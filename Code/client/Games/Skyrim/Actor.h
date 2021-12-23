@@ -13,6 +13,7 @@
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
 #include <Structs/ActorValues.h>
+#include <Structs/Container.h>
 
 struct TESNPC;
 struct TESRace;
@@ -24,7 +25,7 @@ struct CombatController;
 
 struct Actor : TESObjectREFR
 {
-    static constexpr uint32_t Type = FormType::Character;
+    static constexpr FormType Type = FormType::Character;
 
     // Allocs and calls constructor
     static GamePtr<Actor> New() noexcept;
@@ -192,6 +193,7 @@ struct Actor : TESObjectREFR
     float GetActorMaxValue(uint32_t aId) const noexcept;
 
     Inventory GetInventory() const noexcept;
+    Container GetFullContainer() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
 

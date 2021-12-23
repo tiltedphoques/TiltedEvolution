@@ -2,7 +2,7 @@
 
 #include <Components/BaseFormComponent.h>
 
-enum FormType : uint8_t
+enum class FormType : uint8_t
 {
     Book = 27,
     Container = 28,

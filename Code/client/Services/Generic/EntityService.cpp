@@ -23,7 +23,7 @@ EntityService::EntityService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 
 void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcept
 {
-    if (acEvent.FormType == Character)
+    if (acEvent.FormType == FormType::Character)
     {
         if (acEvent.FormId == 0x14)
         {

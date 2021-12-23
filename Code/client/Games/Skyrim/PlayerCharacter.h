@@ -7,7 +7,7 @@ struct TESQuest;
 
 struct PlayerCharacter : Actor
 {
-    static constexpr uint32_t Type = FormType::Character;
+    static constexpr FormType Type = FormType::Character;
 
     static PlayerCharacter* Get() noexcept;
 
