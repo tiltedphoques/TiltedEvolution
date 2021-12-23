@@ -57,6 +57,7 @@
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
+#include <Structs/Container.h>
 #endif
 
 #include <imgui.h>
@@ -185,9 +186,14 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             auto fullContainer = PlayerCharacter::Get()->GetFullContainer();
             spdlog::info("Full container entries: {}", fullContainer.Entries.size());
 
-            auto pActor = m_actors[0];
-            auto* pObj = RTTI_CAST(TESForm::GetById(0x139B9), TESForm, TESBoundObject);
-            pActor->AddObjectToContainer(pObj, nullptr, 1, nullptr);
+            for (auto entry : fullContainer.Entries)
+            {
+                if (entry.BaseId.BaseId == 0x139b9)
+                {
+                    m_actors[0]->AddItem(entry);
+                    break;
+                }
+            }
 
             /*
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);

@@ -42,14 +42,12 @@ bool BSExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
     if (Contains(aType))
         return false;
 
-    lock.Lock();
+    BSScopedLock<BSRecursiveLock> _(lock);
 
     BSExtraData* pNext = data;
     data = apNewData;
     apNewData->next = pNext;
     SetType(aType, false);
-
-    lock.Unlock();
 
     return true;
 }
