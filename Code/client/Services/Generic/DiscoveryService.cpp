@@ -35,67 +35,17 @@ DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher)
 
 void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 {
-    const auto pPlayer = PlayerCharacter::Get();
+    const PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer)
         return;
 
-    if (const auto pWorldSpace = pPlayer->GetWorldSpace())
+    if (pPlayer->GetWorldSpace())
     {
-        m_interiorCellId = 0;
-        const auto* pTES = TES::Get();
-        const auto worldSpaceId = pWorldSpace->formID;
-
-        if (m_worldSpaceId != worldSpaceId || aForceTrigger)
-        {
-            DetectGridCellChange(pWorldSpace, true);
-            aForceTrigger = true;
-        }
-
-        if (m_centerGridX != pTES->centerGridX || m_centerGridY != pTES->centerGridY)
-            DetectGridCellChange(pWorldSpace, false);
-
-        if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY || aForceTrigger)
-        {
-            CellChangeEvent cellChangeEvent;
-            uint32_t baseId = 0;
-            uint32_t modId = 0;
-
-            if (m_world.GetModSystem().GetServerModId(pWorldSpace->formID, modId, baseId))
-                cellChangeEvent.WorldSpaceId = GameId(modId, baseId);
-
-            const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
-
-            if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
-                cellChangeEvent.CellId = GameId(modId, baseId);
-
-            cellChangeEvent.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
-
-            m_dispatcher.trigger(cellChangeEvent);
-            m_currentGridX = pTES->currentGridX;
-            m_currentGridY = pTES->currentGridY;
-        }
+        VisitExteriorCell(aForceTrigger);
     }
-    else if (const auto pParentCell = pPlayer->GetParentCell())
+    else if (pPlayer->GetParentCell())
     {
-        m_worldSpaceId = 0;
-        m_centerGridX = 0;
-        m_centerGridY = 0;
-        m_currentGridX = 0;
-        m_currentGridY = 0;
-
-        const auto cellId = pParentCell->formID;
-        if (m_interiorCellId != cellId || aForceTrigger)
-        {
-            CellChangeEvent cellChangeEvent;
-            uint32_t baseId = 0;
-            uint32_t modId = 0;
-
-            if (m_world.GetModSystem().GetServerModId(cellId, modId, baseId))
-                cellChangeEvent.CellId = GameId(modId, baseId);
-
-            m_dispatcher.trigger(cellChangeEvent);
-            m_interiorCellId = cellId;
-        }
+        VisitInteriorCell(aForceTrigger);
     }
 
     // exactly how the game does it too
@@ -106,16 +56,74 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
     }
 }
 
+void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
+{
+    const auto pWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+
+    m_interiorCellId = 0;
+    const TES* pTES = TES::Get();
+    const uint32_t worldSpaceId = pWorldSpace->formID;
+
+    if (m_worldSpaceId != worldSpaceId || aForceTrigger)
+    {
+        DetectGridCellChange(pWorldSpace, true);
+        aForceTrigger = true;
+    }
+
+    if (m_centerGridX != pTES->centerGridX || m_centerGridY != pTES->centerGridY)
+        DetectGridCellChange(pWorldSpace, false);
+
+    if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY || aForceTrigger)
+    {
+        CellChangeEvent cellChangeEvent;
+        uint32_t baseId = 0;
+        uint32_t modId = 0;
+
+        if (m_world.GetModSystem().GetServerModId(pWorldSpace->formID, modId, baseId))
+            cellChangeEvent.WorldSpaceId = GameId(modId, baseId);
+
+        const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
+
+        if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
+            cellChangeEvent.CellId = GameId(modId, baseId);
+
+        cellChangeEvent.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
+
+        m_dispatcher.trigger(cellChangeEvent);
+        m_currentGridX = pTES->currentGridX;
+        m_currentGridY = pTES->currentGridY;
+    }
+}
+
+void DiscoveryService::VisitInteriorCell(bool aForceTrigger) noexcept
+{
+    ResetCachedCellData();
+
+    const uint32_t cellId = PlayerCharacter::Get()->GetParentCell()->formID;
+    if (m_interiorCellId != cellId || aForceTrigger)
+    {
+        CellChangeEvent cellChangeEvent;
+        uint32_t baseId = 0;
+        uint32_t modId = 0;
+
+        if (m_world.GetModSystem().GetServerModId(cellId, modId, baseId))
+            cellChangeEvent.CellId = GameId(modId, baseId);
+
+        m_dispatcher.trigger(cellChangeEvent);
+        m_interiorCellId = cellId;
+    }
+}
+
 void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewGridCell) noexcept
 {
-    const auto* pTES = TES::Get();
+    const TES* pTES = TES::Get();
 
     GridCellChangeEvent changeEvent;
-    const auto worldSpaceId = aWorldSpace->formID;
+    const uint32_t worldSpaceId = aWorldSpace->formID;
     changeEvent.WorldSpaceId = worldSpaceId;
 
-    const auto startGridX = pTES->centerGridX - GridCellCoords::m_gridsToLoad / 2;
-    const auto startGridY = pTES->centerGridY - GridCellCoords::m_gridsToLoad / 2;
+    const int32_t startGridX = pTES->centerGridX - GridCellCoords::m_gridsToLoad / 2;
+    const int32_t startGridY = pTES->centerGridY - GridCellCoords::m_gridsToLoad / 2;
     for (int32_t i = 0; i < GridCellCoords::m_gridsToLoad; ++i)
     {
         for (int32_t j = 0; j < GridCellCoords::m_gridsToLoad; ++j)
@@ -129,7 +137,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
                 }
             }
 
-            const auto* pCell = ModManager::Get()->GetCellFromCoordinates(startGridX + i, startGridY + j, aWorldSpace, 0);
+            const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(startGridX + i, startGridY + j, aWorldSpace, 0);
 
             if (!pCell)
             {
@@ -145,7 +153,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         }
     }
 
-    const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->centerGridX, pTES->centerGridY, aWorldSpace, 0);
+    const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->centerGridX, pTES->centerGridY, aWorldSpace, 0);
 
     uint32_t baseId = 0;
     uint32_t modId = 0;
@@ -182,13 +190,13 @@ void DiscoveryService::VisitForms() noexcept
 
     };
 
-    auto* const pProcessLists = ProcessLists::Get();
+    ProcessLists* const pProcessLists = ProcessLists::Get();
     if (!pProcessLists)
         return;
 
     for (uint32_t i = 0; i < pProcessLists->HighActorHandleArray.length; ++i)
     {
-        auto* const pRefr = TESObjectREFR::GetByHandle(pProcessLists->HighActorHandleArray[i]);
+        TESObjectREFR* const pRefr = TESObjectREFR::GetByHandle(pProcessLists->HighActorHandleArray[i]);
         if (pRefr)
         {
             if (pRefr->GetNiNode())
@@ -202,7 +210,7 @@ void DiscoveryService::VisitForms() noexcept
     visitor(PlayerCharacter::Get());
 
     // We dispatch removal events first to prevent needless reallocations
-    for (auto formId : s_previousForms)
+    for (uint32_t formId : s_previousForms)
     {
         m_dispatcher.trigger(ReferenceRemovedEvent(formId));
         m_forms.erase(formId);
@@ -230,5 +238,14 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
     return BSTEventResult::kOk;
+}
+
+void DiscoveryService::ResetCachedCellData() noexcept
+{
+    m_worldSpaceId = 0;
+    m_centerGridX = 0x7FFFFFFF;
+    m_centerGridY = 0x7FFFFFFF;
+    m_currentGridX = 0x7FFFFFFF;
+    m_currentGridY = 0x7FFFFFFF;
 }
 
