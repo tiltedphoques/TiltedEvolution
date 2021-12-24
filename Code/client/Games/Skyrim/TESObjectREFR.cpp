@@ -166,7 +166,9 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
     if (arEntry.ContainsExtraData())
     {
         pExtraData = Memory::Allocate<BSExtraDataList>();
+        pExtraData->lock.m_counter = pExtraData->lock.m_tid = 0;
         pExtraData->bitfield = Memory::Allocate<BSExtraDataList::Bitfield>();
+        memset(pExtraData->bitfield, 0, 0x18);
 
         if (arEntry.ExtraCharge > 0.f)
         {
@@ -191,12 +193,13 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
         // put an assert for now
         if (arEntry.ExtraPoisonId != 0)
         {
-            TP_ASSERT(arEntry.ExtraPoisonId.ModId == 0xFFFFFFFF, "Poison is sent as temp!");
+            TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
 
             uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
             if (AlchemyItem* pPoison = RTTI_CAST(TESForm::GetById(poisonId), TESForm, AlchemyItem))
             {
                 ExtraPoison* pExtraPoison = Memory::Allocate<ExtraPoison>();
+                *((uint64_t*)pExtraPoison) = 0x141623E50;
                 pExtraPoison->pPoison = pPoison;
                 pExtraPoison->uiCount = arEntry.ExtraPoisonCount;
                 pExtraData->Add(ExtraData::Poison, pExtraPoison);
@@ -220,17 +223,21 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
         if (arEntry.ExtraWorn)
         {
             ExtraWorn* pExtraWorn = Memory::Allocate<ExtraWorn>();
+            *((uint64_t*)pExtraWorn) = 0x1416239F0;
             pExtraData->Add(ExtraData::Worn, pExtraWorn);
         }
 
         if (arEntry.ExtraWornLeft)
         {
             ExtraWornLeft* pExtraWornLeft = Memory::Allocate<ExtraWornLeft>();
+            *((uint64_t*)pExtraWornLeft) = 0x141623A10;
             pExtraData->Add(ExtraData::WornLeft, pExtraWornLeft);
         }
     }
 
     AddObjectToContainer(pObject, pExtraData, arEntry.Count, nullptr);
+    spdlog::info("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
+                 pExtraData ? pExtraData->GetCount() : -1, arEntry.Count);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept

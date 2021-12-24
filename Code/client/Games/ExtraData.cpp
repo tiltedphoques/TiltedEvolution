@@ -42,7 +42,8 @@ bool BSExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
     if (Contains(aType))
         return false;
 
-    BSScopedLock<BSRecursiveLock> _(lock);
+    // TODO: this sometimes causes a deadlock
+    //BSScopedLock<BSRecursiveLock> _(lock);
 
     BSExtraData* pNext = data;
     data = apNewData;
@@ -50,6 +51,20 @@ bool BSExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
     SetType(aType, false);
 
     return true;
+}
+
+uint32_t BSExtraDataList::GetCount() const
+{
+    uint32_t count = 0;
+
+    BSExtraData* pNext = data;
+    while (pNext)
+    {
+        count++;
+        pNext = pNext->next;
+    }
+
+    return count;
 }
 
 void BSExtraDataList::SetType(ExtraData aType, bool aClear)

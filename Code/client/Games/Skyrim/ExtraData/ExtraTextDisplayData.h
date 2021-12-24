@@ -7,8 +7,8 @@ struct ExtraTextDisplayData : BSExtraData
 {
     inline static constexpr auto eExtraData = ExtraData::TextDisplayData;
 
-    BSFixedString DisplayName;
-    uint8_t pad[0x20];
+    BSFixedString DisplayName{};
+    uint8_t pad[0x20]{};
 
     // TODO: implement the rest when i dont feel lazy
     /*

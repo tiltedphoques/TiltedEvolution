@@ -17,7 +17,7 @@ struct ExtraSoul : BSExtraData
 {
     inline static constexpr auto eExtraData = ExtraData::Soul;
 
-    SOUL_LEVEL cSoul;
+    SOUL_LEVEL cSoul{};
 };
 
 static_assert(sizeof(ExtraSoul) == 0x18);

@@ -13,7 +13,7 @@ struct BSExtraData
     virtual ~BSExtraData() = 0;
     virtual ExtraData GetType() const noexcept = 0;
 
-    BSExtraData* next;
+    BSExtraData* next{};
 
 #if TP_FALLOUT4
     uint8_t pad10[2];
@@ -35,6 +35,8 @@ struct BSExtraDataList
 
     bool Add(ExtraData aType, BSExtraData* apNewData);
     bool Remove(ExtraData aType, BSExtraData* apNewData);
+
+    uint32_t GetCount() const;
 
     void SetType(ExtraData aType, bool aClear);
 
