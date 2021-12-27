@@ -170,7 +170,7 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
-    void AddItem(Container::Entry& arEntry) noexcept;
+    void AddItem(const Container::Entry& arEntry) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

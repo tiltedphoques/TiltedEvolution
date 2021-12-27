@@ -149,7 +149,7 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
-void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
+void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
 {
     ModSystem& modSystem = World::Get().GetModSystem();
 
@@ -166,6 +166,7 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
     if (arEntry.ContainsExtraData())
     {
         pExtraData = Memory::Allocate<BSExtraDataList>();
+        pExtraData->data = nullptr;
         pExtraData->lock.m_counter = pExtraData->lock.m_tid = 0;
         pExtraData->bitfield = Memory::Allocate<BSExtraDataList::Bitfield>();
         memset(pExtraData->bitfield, 0, 0x18);
@@ -173,6 +174,7 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
         if (arEntry.ExtraCharge > 0.f)
         {
             ExtraCharge* pExtraCharge = Memory::Allocate<ExtraCharge>();
+            *((uint64_t*)pExtraCharge) = 0x141623AB0;
             pExtraCharge->fCharge = arEntry.ExtraCharge;
             pExtraData->Add(ExtraData::Charge, pExtraCharge);
         }
@@ -185,6 +187,7 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
         if (arEntry.ExtraHealth > 0.f)
         {
             ExtraHealth* pExtraHealth = Memory::Allocate<ExtraHealth>();
+            *((uint64_t*)pExtraHealth) = 0x141623A50;
             pExtraHealth->fHealth = arEntry.ExtraHealth;
             pExtraData->Add(ExtraData::Health, pExtraHealth);
         }
@@ -209,6 +212,7 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
         if (arEntry.ExtraSoulLevel > 0 && arEntry.ExtraSoulLevel <= 5)
         {
             ExtraSoul* pExtraSoul = Memory::Allocate<ExtraSoul>();
+            *((uint64_t*)pExtraSoul) = 0x141627220;
             pExtraSoul->cSoul = static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel);
             pExtraData->Add(ExtraData::Soul, pExtraSoul);
         }
@@ -216,6 +220,7 @@ void TESObjectREFR::AddItem(Container::Entry& arEntry) noexcept
         if (!arEntry.ExtraTextDisplayName.empty())
         {
             ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
+            *((uint64_t*)pExtraText) = 0x1416244D0;
             pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
             pExtraData->Add(ExtraData::TextDisplayData, pExtraText);
         }

@@ -44,7 +44,7 @@ struct BSExtraDataList
 #if TP_FALLOUT4
     void* unk0;
 #endif
-    BSExtraData* data;
+    BSExtraData* data = nullptr;
 
     struct Bitfield
     {
@@ -54,6 +54,6 @@ struct BSExtraDataList
     void* unk10;
 #endif
 
-    Bitfield* bitfield;
-    mutable BSRecursiveLock lock;
+    Bitfield* bitfield{};
+    mutable BSRecursiveLock lock{};
 };
