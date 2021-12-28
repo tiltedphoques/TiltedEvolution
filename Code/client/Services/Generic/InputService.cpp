@@ -13,7 +13,15 @@
 #include <Services/DiscordService.h>
 #include <World.h>
 
+#include "Games/Skyrim/Interface/MenuControls.h"
+
 static OverlayService* s_pOverlay = nullptr;
+
+void ForceKillAllInput()
+{
+    MenuControls::GetInstance()->SetToggle(false);
+    
+}
 
 uint32_t GetCefModifiers(uint16_t aVirtualKey)
 {
@@ -278,7 +286,7 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     }
 }
 
-static LRESULT CALLBACK InputServiceWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     const auto pApp = s_pOverlay->GetOverlayApp();
     if (!pApp)
@@ -392,14 +400,10 @@ static LRESULT CALLBACK InputServiceWndProc(HWND hwnd, UINT uMsg, WPARAM wParam,
 InputService::InputService(OverlayService& aOverlay) noexcept
 {
     s_pOverlay = &aOverlay;
-
-    TiltedPhoques::WindowsHook::Get().SetCallback(InputServiceWndProc);
 }
 
 InputService::~InputService() noexcept
 {
-    TiltedPhoques::WindowsHook::Get().SetCallback(nullptr);
-
     s_pOverlay = nullptr;
 }
 

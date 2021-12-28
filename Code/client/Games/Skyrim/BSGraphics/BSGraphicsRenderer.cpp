@@ -1,5 +1,7 @@
 
 #include "Systems/RenderSystemD3D11.h"
+#include "Services/InputService.h"
+
 #include "World.h"
 
 #include "BSGraphics/BSGraphicsRenderer.h"
@@ -7,9 +9,19 @@
 namespace BSGraphics
 {
 static RenderSystemD3D11* g_sRs = nullptr;
+static WNDPROC RealWndProc = nullptr;
 
 void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*,
                       BSGraphics::RendererInitReturn*) = nullptr;
+
+// WNDPROC seems to be part of the renderer
+LRESULT CALLBACK Hook_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if (InputService::WndProc(hwnd, uMsg, wParam, lParam) != 0)
+        return 0;
+
+    return RealWndProc(hwnd, uMsg, wParam, lParam);
+}
 
 void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
                         const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
@@ -17,14 +29,14 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     // Append our window name.
     aOSData->pClassName = "ST Anniversary | " BUILD_BRANCH "@" BUILD_COMMIT;
 
-    WNDPROC gameProc = aOSData->pWndProc;
+    RealWndProc = aOSData->pWndProc;
+    aOSData->pWndProc = Hook_WndProc;
 
     Renderer_Init(self, aOSData, aFBData, aOut);
 
-    auto& rs = World::Get().ctx<RenderSystemD3D11>();
-    g_sRs = &rs;
+    g_sRs = &World::Get().ctx<RenderSystemD3D11>();
     // This how the game does it too
-    rs.OnDeviceCreation(self->Data.RenderWindowA[0].pSwapChain);
+    g_sRs->OnDeviceCreation(self->Data.RenderWindowA[0].pSwapChain);
 }
 
 void (*StopTimer)(int) = nullptr;
