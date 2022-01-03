@@ -49,7 +49,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
-    , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<CharacterService::OnMountRequest>(this))
+    , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
 {
 }
 
