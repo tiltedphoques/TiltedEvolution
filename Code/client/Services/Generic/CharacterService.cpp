@@ -32,6 +32,7 @@
 #include <Events/EquipmentChangeEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
+#include <Events/MountEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -50,6 +51,8 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
+#include <Messages/MountRequest.h>
+#include <Messages/NotifyMount.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -79,8 +82,12 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
+
     m_projectileLaunchedConnection = m_dispatcher.sink<ProjectileLaunchedEvent>().connect<&CharacterService::OnProjectileLaunchedEvent>(this);
     m_projectileLaunchConnection = m_dispatcher.sink<NotifyProjectileLaunch>().connect<&CharacterService::OnNotifyProjectileLaunch>(this);
+
+    m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
+    m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1134,5 +1141,87 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     BSPointerHandle<Projectile> result;
 
     Projectile::Launch(&result, launchData);
+}
+
+void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
+{
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto riderIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.RiderID, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (riderIt == std::end(view))
+    {
+        spdlog::warn("Rider not found, form id: {:X}", acEvent.RiderID);
+        return;
+    }
+
+    const entt::entity cRiderEntity = *riderIt;
+
+    std::optional<uint32_t> riderServerIdRes = utils::GetServerId(cRiderEntity);
+    if (!riderServerIdRes.has_value())
+        return;
+
+    const auto mountIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.MountID, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (mountIt == std::end(view))
+    {
+        spdlog::warn("Mount not found, form id: {:X}", acEvent.MountID);
+        return;
+    }
+
+    const entt::entity cMountEntity = *mountIt;
+
+    std::optional<uint32_t> mountServerIdRes = utils::GetServerId(cMountEntity);
+    if (!mountServerIdRes.has_value())
+        return;
+
+    MountRequest request;
+    request.MountId = mountServerIdRes.value();
+    request.RiderId = riderServerIdRes.value();
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+
+    const auto riderIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.RiderId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (riderIt == std::end(remoteView))
+    {
+        spdlog::warn("Rider with remote id {:X} not found.", acMessage.RiderId);
+        return;
+    }
+
+    auto riderFormIdComponent = remoteView.get<FormIdComponent>(*riderIt);
+    TESForm* pRiderForm = TESForm::GetById(riderFormIdComponent.Id);
+    Actor* pRider = RTTI_CAST(pRiderForm, TESForm, Actor);
+
+    const auto mountIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.MountId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (mountIt == std::end(remoteView))
+    {
+        spdlog::warn("Mount with remote id {:X} not found.", acMessage.MountId);
+        return;
+    }
+
+    auto mountFormIdComponent = remoteView.get<FormIdComponent>(*mountIt);
+    TESForm* pMountForm = TESForm::GetById(mountFormIdComponent.Id);
+    Actor* pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+
+    pRider->InitiateMountPackage(pMount);
+
+    spdlog::info("Rider mounted actor.");
 }
 

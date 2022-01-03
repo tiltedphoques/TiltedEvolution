@@ -31,6 +31,8 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
+#include <Messages/MountRequest.h>
+#include <Messages/NotifyMount.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -47,6 +49,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
+    , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<CharacterService::OnMountRequest>(this))
 {
 }
 
@@ -697,5 +700,17 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
 
     const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
     GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity);
+}
+
+void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyMount notify;
+    notify.RiderId = message.RiderId;
+    notify.MountId = message.MountId;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }
 
