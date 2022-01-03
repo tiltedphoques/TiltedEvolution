@@ -168,12 +168,15 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            Actor* pActor = (Actor*)TESForm::GetById(0xFF0015AD);
+            PlayerCharacter::Get()->InitiateMountPackage(pActor);
+
+            /*
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
             pActor->SetWeaponDrawnEx(true);
 
             //PlaceActorInWorld();
 
-            /*
             const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
             //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
