@@ -332,5 +332,10 @@ struct BSPointerHandle
 {
     BSPointerHandle() = default;
 
+    operator bool() const
+    {
+        return handle.iBits != 0;
+    }
+
     THandle handle{};
 };

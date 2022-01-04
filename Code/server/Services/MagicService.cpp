@@ -30,6 +30,7 @@ void MagicService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMes
     notify.SpellFormId = message.SpellFormId;
     notify.CastingSource = message.CastingSource;
     notify.IsDualCasting = message.IsDualCasting;
+    notify.DesiredTarget = message.DesiredTarget;
 
     const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
     GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity);
@@ -55,6 +56,6 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.SpellId = message.SpellId;
 
     const entt::entity cTargetEntity = static_cast<entt::entity>(message.TargetId);
-    GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity, acMessage.pPlayer);
 }
 

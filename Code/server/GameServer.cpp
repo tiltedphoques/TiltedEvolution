@@ -258,7 +258,7 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
     }
 }
 
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin) const
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, Player* apExcluded) const
 {
     const auto* cellIdComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
     const auto* ownerComp = m_pWorld->try_get<OwnerComponent>(acOrigin);
@@ -271,7 +271,13 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
 
     for (auto pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (ownerComp->GetOwner() == pPlayer)
+        // TODO: this is a hack
+        if (apExcluded)
+        {
+            if (apExcluded == pPlayer)
+                continue;
+        }
+        else if (ownerComp->GetOwner() == pPlayer)
             continue;
 
         if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))

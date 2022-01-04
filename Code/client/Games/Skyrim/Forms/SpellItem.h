@@ -14,6 +14,7 @@ struct SpellItem : MagicItem
     uint32_t unk6C[5];
     float castTime;
     MagicSystem::CastingType eCastingType;
+    MagicSystem::Delivery eDelivery;
     // more stuff
 };
 

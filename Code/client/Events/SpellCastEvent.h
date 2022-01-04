@@ -5,11 +5,11 @@ struct MagicItem;
 
 struct SpellCastEvent
 {
-    SpellCastEvent(ActorMagicCaster* apCaster, MagicItem* apSpell) 
-        : pCaster(apCaster), pSpell(apSpell)
+    SpellCastEvent(ActorMagicCaster* apCaster, MagicItem* apSpell, uint32_t aDesiredTargetID) 
+        : pCaster(apCaster), pSpell(apSpell), DesiredTargetID(aDesiredTargetID)
     {}
 
     ActorMagicCaster* pCaster;
     MagicItem* pSpell;
-    // TODO: bool interrupt
+    uint32_t DesiredTargetID;
 };

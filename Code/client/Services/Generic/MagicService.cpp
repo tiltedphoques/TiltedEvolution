@@ -17,8 +17,10 @@
 
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
+#include <Games/ActorExtension.h>
 #if TP_SKYRIM64
 #include <Forms/SpellItem.h>
+#include <PlayerCharacter.h>
 #endif
 
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
@@ -101,10 +103,12 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
     }
 
     // only sync concentration spells through spell cast sync, the rest through projectile sync
+    // TODO: not all fire and forget spells have a projectile (i.e. heal other)
     if (auto* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
     {
-        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
+        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION && pSpell->eDelivery == MagicSystem::Delivery::AIMED)
         {
+            spdlog::warn("Canceled magic spell");
             return;
         }
     }
@@ -122,15 +126,33 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
 
     auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
 
-    SpellCastRequest request;
+    SpellCastRequest request{};
     request.CasterId = localComponent.Id;
     request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
     request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
     m_world.GetModSystem().GetServerModId(acSpellCastEvent.pSpell->formID, request.SpellFormId.ModId,
                                           request.SpellFormId.BaseId);
+    if (acSpellCastEvent.DesiredTargetID != 0)
+    {
+        auto targetView = m_world.view<FormIdComponent>();
+        const auto targetEntityIt = std::find_if(std::begin(targetView), std::end(targetView), [id = acSpellCastEvent.DesiredTargetID, targetView](entt::entity entity)
+        {
+            return targetView.get<FormIdComponent>(entity).Id == id;
+        });
 
-    spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}", request.CasterId,
-                 request.CastingSource, request.IsDualCasting);
+        if (targetEntityIt != std::end(targetView))
+        {
+            auto desiredTargetIdRes = utils::GetServerId(*targetEntityIt);
+            if (desiredTargetIdRes.has_value())
+            {
+                spdlog::info("has_value");
+                request.DesiredTarget = desiredTargetIdRes.value();
+            }
+        }
+    }
+
+    spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
+                 request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
 #endif
@@ -152,16 +174,12 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     }
 
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    TP_ASSERT(pForm, "Form not found.");
+    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    TP_ASSERT(pActor, "Form is not actor.");
 
-    auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-    if (!pActor->leftHandCaster)
-        pActor->leftHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-    if (!pActor->rightHandCaster)
-        pActor->rightHandCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-    if (!pActor->shoutCaster)
-        pActor->shoutCaster = (ActorMagicCaster*)pActor->GetMagicCaster(MagicSystem::CastingSource::OTHER);
+    pActor->GenerateMagicCasters();
 
     // Only left hand casters need dual casting (?)
     pActor->leftHandCaster->SetDualCasting(acMessage.IsDualCasting);
@@ -171,6 +189,21 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     if (acMessage.CastingSource >= 4)
     {
         spdlog::warn("Casting source out of bounds, trying form id");
+        const uint32_t cSpellFormId = World::Get().GetModSystem().GetGameId(acMessage.SpellFormId);
+        if (cSpellFormId == 0)
+        {
+            spdlog::error("Could not find spell form id for GameId base {:X}, mod {:X}", acMessage.SpellFormId.BaseId,
+                          acMessage.SpellFormId.ModId);
+            return;
+        }
+        TESForm* pSpellForm = TESForm::GetById(cSpellFormId);
+        if (!pSpellForm)
+        {
+            spdlog::error("Cannot find spell form.");
+            return;
+        }
+        else
+            pSpell = RTTI_CAST(pSpellForm, TESForm, MagicItem);
     }
     else
     {
@@ -179,34 +212,47 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     if (!pSpell)
     {
-        const uint32_t cSpellFormId = World::Get().GetModSystem().GetGameId(acMessage.SpellFormId);
-        if (cSpellFormId == 0)
+        spdlog::error("Could not find spell.");
+        return;
+    }
+
+    TESForm* pDesiredTarget = nullptr;
+
+    if (acMessage.DesiredTarget != 0)
+    {
+        auto view = m_world.view<FormIdComponent>();
+        for (auto entity : view)
         {
-            spdlog::error("Could not find spell form id for GameId base {:X}, mod {:X}", acMessage.SpellFormId.BaseId,
-                          acMessage.SpellFormId.ModId);
-            return;
+            std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+            if (!serverIdRes.has_value())
+                continue;
+
+            uint32_t serverId = serverIdRes.value();
+        
+            if (serverId == acMessage.DesiredTarget)
+            {
+                const auto& formIdComponent = view.get<FormIdComponent>(entity);
+                pDesiredTarget = TESForm::GetById(formIdComponent.Id);
+                if (pDesiredTarget)
+                    spdlog::info("Desired target: {:X}", pDesiredTarget->formID);
+            }
         }
-        auto* pSpellForm = TESForm::GetById(cSpellFormId);
-        if (!pSpellForm)
-        {
-            spdlog::error("Cannot find spell form");
-        }
-        else
-            pSpell = RTTI_CAST(pSpellForm, TESForm, MagicItem);
+
     }
 
     switch (acMessage.CastingSource)
     {
     case MagicSystem::CastingSource::LEFT_HAND:
-        pActor->leftHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
+        pActor->leftHandCaster->CastSpellImmediate(pSpell, false, (TESObjectREFR*)pDesiredTarget, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
-        pActor->rightHandCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
+        pActor->rightHandCaster->CastSpellImmediate(pSpell, false, (TESObjectREFR*)pDesiredTarget, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::OTHER:
-        pActor->shoutCaster->CastSpellImmediate(pSpell, false, nullptr, 1.0f, false, 0.0f);
+        pActor->shoutCaster->CastSpellImmediate(pSpell, false, (TESObjectREFR*)pDesiredTarget, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::INSTANT:
+        // TODO: instant?
         break;
     }
 #endif

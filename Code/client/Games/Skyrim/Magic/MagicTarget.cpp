@@ -33,11 +33,25 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     // TODO: this can be fixed by properly implementing multiple inheritance
-    Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
+    Actor* pTargetActor = (Actor*)((uint8_t*)apThis - 0x98);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (!pTargetActorEx)
         return ThisCall(RealAddTarget, apThis, arData);
+
+    if (pTargetActorEx->IsRemotePlayer() && arData.pCaster)
+    {
+        ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+        if (pCasterExtension->IsLocalPlayer())
+        {
+            if (arData.pEffectItem->pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::VALUE_MODIFIER &&
+                arData.pEffectItem->data.fMagnitude > 0.0f)
+            {
+                spdlog::warn("sending out healing effect");
+                World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            }
+        }
+    }
 
     if (pTargetActorEx->IsLocalPlayer())
     {

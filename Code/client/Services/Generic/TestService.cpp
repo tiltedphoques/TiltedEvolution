@@ -73,6 +73,9 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 
     pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
 
+    pActor->GetExtension()->SetPlayer(true);
+    pActor->GetExtension()->SetRemote(true);
+
     m_actors.emplace_back(pActor);
 }
 
@@ -181,8 +184,12 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            PlaceActorInWorld();
 
             /*
+            Actor* pActor = (Actor*)TESForm::GetById(0xFF0015AD);
+            PlayerCharacter::Get()->InitiateMountPackage(pActor);
+
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
             pActor->SetWeaponDrawnEx(true);
 

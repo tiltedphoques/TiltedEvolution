@@ -465,6 +465,33 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+TP_THIS_FUNCTION(TInitiateMountPackage, bool, Actor, Actor* apMount);
+static TInitiateMountPackage* RealInitiateMountPackage = nullptr;
+
+bool Actor::InitiateMountPackage(Actor* apMount) noexcept
+{
+    return ThisCall(RealInitiateMountPackage, this, apMount);
+}
+
+void Actor::GenerateMagicCasters() noexcept
+{
+    if (!leftHandCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
+        leftHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+    if (!rightHandCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+        rightHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+    if (!shoutCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
+        shoutCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+}
+
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
@@ -582,6 +609,7 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
             const auto pExTarget = apTarget->GetExtension();
             if (pExTarget->IsLocal())
             {
+                spdlog::error("sending out new health");
                 World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
                 return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
             }
