@@ -33,7 +33,13 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&MagicService::OnNotifyInterruptCast>(this);
     m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&MagicService::OnAddTargetEvent>(this);
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
+
+    auto* pEventList = EventDispatcherManager::Get();
+    pEventList->magicEffectApplyEvent.RegisterSink(this);
+    pEventList->activeEffectApplyRemove.RegisterSink(this);
 }
+
+// TODO: might be easier to just check the list of effects in OnUpdate() for each actor, and send that back and forth
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
@@ -106,7 +112,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
     // TODO: not all fire and forget spells have a projectile (i.e. heal other)
     if (auto* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
     {
-        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION && pSpell->eDelivery == MagicSystem::Delivery::AIMED)
+        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
         {
             spdlog::warn("Canceled magic spell");
             return;
@@ -403,4 +409,25 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
         }
     }
 #endif
+}
+
+BSTEventResult MagicService::OnEvent(const TESMagicEffectApplyEvent* apEvent, const EventDispatcher<TESMagicEffectApplyEvent>*)
+{
+    spdlog::warn("TESMagicEffectApplyEvent, target: {:X}, caster: {:X}, effect id: {:X}",
+                 apEvent->hTarget ? apEvent->hTarget->formID : 0,
+                 apEvent->hCaster ? apEvent->hCaster->formID : 0,
+                 apEvent->uiMagicEffectFormID);
+
+    return BSTEventResult::kOk;
+}
+
+BSTEventResult MagicService::OnEvent(const TESActiveEffectApplyRemove* apEvent, const EventDispatcher<TESActiveEffectApplyRemove>*)
+{
+    spdlog::error("TESActiveEffectApplyRemove, target: {:X}, caster: {:X}, effect id: {:X}, applied? {}",
+                 apEvent->hTarget ? apEvent->hTarget->formID : 0,
+                 apEvent->hCaster ? apEvent->hCaster->formID : 0,
+                 apEvent->usActiveEffectUniqueID,
+                 apEvent->bIsApplied);
+
+    return BSTEventResult::kOk;
 }

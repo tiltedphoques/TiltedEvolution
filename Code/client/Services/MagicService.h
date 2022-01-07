@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Games/Events.h>
+#include <Events/EventDispatcher.h>
+
 struct World;
 struct TransportService;
 
@@ -12,7 +15,7 @@ struct NotifySpellCast;
 struct NotifyInterruptCast;
 struct NotifyAddTarget;
 
-struct MagicService
+struct MagicService : BSTEventSink<TESMagicEffectApplyEvent>, BSTEventSink<TESActiveEffectApplyRemove>
 {
     MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~MagicService() noexcept = default;
@@ -30,6 +33,9 @@ protected:
     void OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept;
 
 private:
+
+    BSTEventResult OnEvent(const TESMagicEffectApplyEvent*, const EventDispatcher<TESMagicEffectApplyEvent>*) override;
+    BSTEventResult OnEvent(const TESActiveEffectApplyRemove*, const EventDispatcher<TESActiveEffectApplyRemove>*) override;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;

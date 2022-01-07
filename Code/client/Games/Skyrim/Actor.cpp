@@ -543,6 +543,7 @@ void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float a
 TP_THIS_FUNCTION(TSpawnActorInWorld, bool, Actor);
 static TSpawnActorInWorld* RealSpawnActorInWorld = nullptr;
 
+// TODO: this isn't SpawnActorInWorld, this is TESObjectREFR::UpdateReference3D()
 bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 {
     const auto* pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);

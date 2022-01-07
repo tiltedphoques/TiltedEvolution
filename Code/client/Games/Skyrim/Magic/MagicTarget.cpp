@@ -47,7 +47,8 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
             if (arData.pEffectItem->pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::VALUE_MODIFIER &&
                 arData.pEffectItem->data.fMagnitude > 0.0f)
             {
-                spdlog::warn("sending out healing effect");
+                bool result = ThisCall(RealAddTarget, apThis, arData);
+                spdlog::warn("sending out healing effect {}", result);
                 World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
             }
         }
