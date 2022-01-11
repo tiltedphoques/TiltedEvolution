@@ -97,7 +97,7 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
         return false;
     };
 
-    //ClientAdminMessageFactory::Visit(adminHandlerGenerator);
+    ClientAdminMessageFactory::Visit(adminHandlerGenerator);
 }
 
 GameServer::~GameServer()
@@ -133,15 +133,15 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
 
     if (m_adminSessions.contains(aConnectionId)) [[unlikely]]
     {
-        /* const ClientAdminMessageFactory factory;
+        const ClientAdminMessageFactory factory;
         auto pMessage = factory.Extract(reader);
         if (!pMessage)
         {
             spdlog::error("Couldn't parse packet from {:x}", aConnectionId);
             return;
-        }*/
+        }
 
-        //m_adminMessageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
+        m_adminMessageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
     }
     else
     {
