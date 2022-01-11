@@ -4,12 +4,11 @@ use async_std::sync::Mutex;
 use std::convert::Infallible;
 use url::form_urlencoded;
 use std::collections::HashMap;
-use std::str::FromStr;
 
 use crate::context::Context;
 
 fn bad_request() -> Result<Response<Body>, Infallible> {
-    Ok(Response::builder().status(StatusCode::BAD_REQUEST).body(Body::empty()).unwrap())
+    Ok(Response::builder().status(StatusCode::BAD_REQUEST).body(Body::empty()).unwrap_or_default())
 }
 
 async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Result<Response<Body>, Infallible> {
@@ -34,21 +33,21 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
         .collect::<HashMap<String, String>>();
 
     let mut name = match params.get("name") {
-        Some(n) => String::from_str(n).unwrap(),
+        Some(n) => String::from(n),
         _ => String::from("")
     };
     name.truncate(64);
 
     // Optional
     let mut desc = match params.get("desc") {
-        Some(n) => String::from_str(n).unwrap(),
+        Some(n) => String::from(n),
         _ => String::from("")
     };
     desc.truncate(256);
 
     // Optional
     let mut icon_url = match params.get("icon_url") {
-        Some(n) => String::from_str(n).unwrap(),
+        Some(n) => String::from(n),
         _ => String::from("")
     };
     icon_url.truncate(512);
@@ -73,11 +72,28 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
         Err(_) => None,
     });
 
-    if port.is_none() || 
-        player_count.is_none() || 
-        max_player_count.is_none() || 
-        tick.is_none() || port.unwrap() < 1 {
-        return bad_request();
+    let port = match port {
+        Some(port) => port,
+        None => return bad_request()
+    };
+
+    let player_count = match player_count {
+        Some(player_count) => player_count,
+        None => return bad_request()
+    };
+
+    let max_player_count = match max_player_count {
+        Some(max_player_count) => max_player_count,
+        None => return bad_request()
+    };
+
+    let tick = match tick {
+        Some(tick) => tick,
+        None => return bad_request()
+    };
+
+    if port < 1 {
+        return bad_request()
     }
 
     ctx.lock().await.update(
@@ -85,15 +101,15 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
         name,
         desc,
         icon_url,
-        port.unwrap(),
-        tick.unwrap(),
-        player_count.unwrap(),
-        max_player_count.unwrap());
+        port,
+        tick,
+        player_count,
+        max_player_count);
 
     Ok(Response::builder()
     .status(StatusCode::OK)
     .body(Body::empty())
-    .unwrap())
+    .unwrap_or_default())
 }
 
 async fn handle_list(_req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Result<Response<Body>, Infallible> {
@@ -102,7 +118,7 @@ async fn handle_list(_req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Resul
     .status(StatusCode::OK)
     .header("Content-Type", "application/json")
     .body(Body::from(ctx.lock().await.server_list.clone()))
-    .unwrap())
+    .unwrap_or_default())
 }
 
 async fn handle_stat(_req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Result<Response<Body>, Infallible> {
@@ -110,8 +126,7 @@ async fn handle_stat(_req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Resul
     Ok(Response::builder()
     .status(StatusCode::OK)
     .header("Content-Type", "application/json")
-    .body(Body::from(ctx.lock().await.generate_stats()))
-    .unwrap())
+    .body(Body::from(ctx.lock().await.generate_stats())).unwrap_or_default())
 }
 
 pub async fn handle(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Result<Response<Body>, Infallible> {
@@ -123,6 +138,6 @@ pub async fn handle(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Result<
         _ => Ok(Response::builder()
         .status(StatusCode::NOT_FOUND)
         .body(Body::empty())
-        .unwrap())
+        .unwrap_or_default())
     }
 }
