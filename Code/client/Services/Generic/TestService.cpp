@@ -169,6 +169,21 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
+            auto* pPack = (TESPackage*)TESForm::GetById(0x10C702);
+            pFaendal->PutCreatedPackage(pPack);
+
+            /*
+            pFaendal->Disable();
+            pFaendal->Enable();
+            auto* pPlayer = PlayerCharacter::Get();
+            pFaendal->MoveTo(pPlayer->parentCell, pPlayer->position);
+            
+            PlaceActorInWorld();
+
+            Actor* pActor = (Actor*)TESForm::GetById(0xFF0015AD);
+            PlayerCharacter::Get()->InitiateMountPackage(pActor);
+
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
             pActor->SetWeaponDrawnEx(true);
 
@@ -831,6 +846,15 @@ void TestService::OnDraw() noexcept
             }
         }
 
+        int packFormId = 0;
+        TESPackage* pPackage = pFetchActor->currentProcess->package;
+        if (pPackage)
+        {
+            packFormId = static_cast<int>(pPackage->formID);
+        }
+        ImGui::InputInt("Package form id", &packFormId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+        /*
         int packCount = 0;
         if (auto* pNpc = RTTI_CAST(pFetchActor->baseForm, TESForm, TESNPC))
         {
@@ -847,6 +871,7 @@ void TestService::OnDraw() noexcept
                 ImGui::InputInt("proctype", &proctype, 0, 0, ImGuiInputTextFlags_ReadOnly);
             }
         }
+        */
 
     #endif
     }

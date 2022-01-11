@@ -9,4 +9,5 @@ struct TESPackage : TESForm
     uint32_t uiRefCount;
 };
 
+static_assert(offsetof(TESPackage, ePROCEDURE_TYPE) == 0xD8);
 static_assert(sizeof(TESPackage) == 0xE0);
