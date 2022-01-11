@@ -13,6 +13,15 @@ struct AuthenticationRequest;
 
 struct GameServer final : Server
 {
+public:
+    struct Info
+    {
+        String name;
+        String desc;
+        String token_url;
+        uint16_t tick_rate;
+    };
+
     GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword = "") noexcept;
     virtual ~GameServer();
 
@@ -31,7 +40,10 @@ struct GameServer final : Server
     void SendToPlayers(const ServerMessage& acServerMessage) const;
     void SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin) const;
 
-    const String& GetName() const noexcept;
+    const Info& GetInfo() const noexcept
+    {
+        return m_info;
+    }
 
     void Stop() noexcept;
 
@@ -50,13 +62,13 @@ protected:
 
 private:
 
-    void SetTitle() const;
+    void UpdateTitle() const;
 
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
 
-    String m_name;
+    Info m_info{};
     String m_token;
     String m_adminPassword;
 

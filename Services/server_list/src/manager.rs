@@ -33,28 +33,62 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
         .into_owned()
         .collect::<HashMap<String, String>>();
 
+    let mut name = match params.get("name") {
+        Some(n) => String::from_str(n).unwrap(),
+        _ => String::from("")
+    };
+    name.truncate(64);
+
+    // Optional
+    let mut desc = match params.get("desc") {
+        Some(n) => String::from_str(n).unwrap(),
+        _ => String::from("")
+    };
+    desc.truncate(256);
+
+    // Optional
+    let mut icon_url = match params.get("icon_url") {
+        Some(n) => String::from_str(n).unwrap(),
+        _ => String::from("")
+    };
+    icon_url.truncate(512);
+
     let port = params.get("port").and_then(|n| match n.parse::<u16>() {
         Ok(n) => Some(n),
         Err(_) => None,
     });
 
-    let mut name = match params.get("name") {
-        Some(n) => String::from_str(n).unwrap(),
-        _ => String::from("")
-    };
-
-    name.truncate(60);
-
-    let player_count = params.get("player_count").and_then(|n| match n.parse::<u32>() {
+    let tick = params.get("tick").and_then(|n| match n.parse::<u16>() {
         Ok(n) => Some(n),
         Err(_) => None,
     });
 
-    if port.is_none() || player_count.is_none() || port.unwrap() < 1 {
+    let player_count = params.get("player_count").and_then(|n| match n.parse::<u16>() {
+        Ok(n) => Some(n),
+        Err(_) => None,
+    });
+
+    let max_player_count = params.get("max_player_count").and_then(|n| match n.parse::<u16>() {
+        Ok(n) => Some(n),
+        Err(_) => None,
+    });
+
+    if port.is_none() || 
+        player_count.is_none() || 
+        max_player_count.is_none() || 
+        tick.is_none() || port.unwrap() < 1 {
         return bad_request();
     }
 
-    ctx.lock().await.update(host, name, port.unwrap(), player_count.unwrap());
+    ctx.lock().await.update(
+        host,
+        name,
+        desc,
+        icon_url,
+        port.unwrap(),
+        tick.unwrap(),
+        player_count.unwrap(),
+        max_player_count.unwrap());
 
     Ok(Response::builder()
     .status(StatusCode::OK)

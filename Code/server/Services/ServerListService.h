@@ -22,7 +22,14 @@ private:
 
     void Announce() const noexcept;
 
-    static void DoPost(String acName, uint16_t aPort, uint32_t aPlayerCount) noexcept;
+    static void PostAnnouncement(
+        String acName, 
+        String acDesc, 
+        String acIconUrl, 
+        uint16_t aPort, 
+        uint16_t aTick, 
+        uint16_t aPlayerCount, 
+        uint16_t aPlayerMaxCount) noexcept;
 
     World& m_world;
 

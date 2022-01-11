@@ -1,6 +1,4 @@
 
-#include "AdminMessages/AdminSessionOpen.h"
-
 #include <stdafx.h>
 #include <GameServer.h>
 #include <Components.h>
@@ -16,8 +14,6 @@
 #include <Events/OwnershipTransferEvent.h>
 #include <steam/isteamnetworkingutils.h>
 
-#include <AdminMessages/ClientAdminMessageFactory.h>
-
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Scripts/Player.h>
@@ -29,8 +25,7 @@
 GameServer* GameServer::s_pInstance = nullptr;
 
 GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword) noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now())
-    , m_name(std::move(aName)), m_token(std::move(aToken)),
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_token(std::move(aToken)),
       m_adminPassword(std::move(aAdminPassword)),
       m_requestStop(false)
 {
@@ -38,14 +33,24 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
 
     s_pInstance = this;
 
-    while (!Host(aPort, aPremium ? 60 : 20))
+    const uint16_t userTick = aPremium ? 60 : 20;
+    while (!Host(aPort, userTick))
     {
         spdlog::warn("Port {} is already in use, trying {}", aPort, aPort + 1);
         aPort++;
     }
 
+    // Fill in Info field.
+    m_info.name = std::move(aName);
+    m_info.desc = "This is my very own ST server";
+    m_info.tick_rate = userTick;
+    m_info.token_url = "";
+
+    if (m_info.name.empty())
+        m_info.name = "A Skyrim Together Server";
+
     spdlog::info("Server started on port {}", GetPort());
-    SetTitle();
+    UpdateTitle();
 
     m_pWorld = std::make_unique<World>();
 
@@ -92,7 +97,7 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
         return false;
     };
 
-    ClientAdminMessageFactory::Visit(adminHandlerGenerator);
+    //ClientAdminMessageFactory::Visit(adminHandlerGenerator);
 }
 
 GameServer::~GameServer()
@@ -128,15 +133,15 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
 
     if (m_adminSessions.contains(aConnectionId)) [[unlikely]]
     {
-        const ClientAdminMessageFactory factory;
+        /* const ClientAdminMessageFactory factory;
         auto pMessage = factory.Extract(reader);
         if (!pMessage)
         {
             spdlog::error("Couldn't parse packet from {:x}", aConnectionId);
             return;
-        }
+        }*/
 
-        m_adminMessageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
+        //m_adminMessageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
     }
     else
     {
@@ -155,8 +160,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
 void GameServer::OnConnection(const ConnectionId_t aHandle)
 {
     spdlog::info("Connection received {:x}", aHandle);
-
-    SetTitle();
+    UpdateTitle();
 }
 
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
@@ -202,7 +206,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     m_pWorld->GetPlayerManager().Remove(pPlayer);
 
-    SetTitle();
+    UpdateTitle();
 }
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
@@ -277,11 +281,6 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
         if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
             pPlayer->Send(acServerMessage);
     }
-}
-
-const String& GameServer::GetName() const noexcept
-{
-    return m_name;
 }
 
 void GameServer::Stop() noexcept
@@ -386,11 +385,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
     else if (acRequest->Token == m_adminPassword && !m_adminPassword.empty())
     {
-        AdminSessionOpen response;
+        /* AdminSessionOpen response;
         Send(aConnectionId, response);
 
         m_adminSessions.insert(aConnectionId);
-        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
+        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);*/
     }
     else
     {
@@ -400,14 +399,13 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 }
 
-void GameServer::SetTitle() const
+void GameServer::UpdateTitle() const
 {
-    std::string title(m_name.empty() ? "Private server" : m_name);
-    title += " - ";
-    title += std::to_string(GetClientCount());
-    title += GetClientCount() <= 1 ? " player - " : " players - ";
-    title += std::to_string(GetTickRate());
-    title += " FPS - " BUILD_BRANCH "@" BUILD_COMMIT;
+    const auto name = m_info.name.empty() ? "Private server" : m_info.name;
+    const char* playerText = GetClientCount() <= 1 ? " player" : " players";
+
+    constexpr char kFormatText[] = "{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT;
+    auto title = fmt::format(kFormatText, name, GetClientCount(), playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());
