@@ -149,6 +149,24 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
+    static std::atomic<bool> s_reset = false;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint = std::chrono::steady_clock::now();
+    constexpr auto cDelayBetweenSnapshots = 2000ms;
+
+    if (s_reset)
+    {
+        const auto now = std::chrono::steady_clock::now();
+        if (now - lastSendTimePoint >= cDelayBetweenSnapshots)
+        {
+            lastSendTimePoint = now;
+
+            auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
+            spdlog::info("enabled");
+            pFaendal->Enable();
+            s_reset = false;
+        }
+    }
 
     RunDiff();
 
@@ -158,8 +176,10 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            static char s_address[256] = "127.0.0.1:10578";
-            m_transport.Connect(s_address);
+            auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
+            pFaendal->EnableImpl();
+            //static char s_address[256] = "127.0.0.1:10578";
+            //m_transport.Connect(s_address);
         }
     }
 
@@ -170,12 +190,17 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
-            auto* pPack = (TESPackage*)TESForm::GetById(0x10C702);
+            auto* pPack = (TESPackage*)TESForm::GetById(0x654E2); // DoNothing package
             pFaendal->PutCreatedPackage(pPack);
 
             /*
-            pFaendal->Disable();
+            pFaendal->DisableImpl();
             pFaendal->Enable();
+            //pFaendal->EnableImpl();
+            spdlog::info("reset");
+            //s_reset = true;
+            lastSendTimePoint = std::chrono::steady_clock::now();
+
             auto* pPlayer = PlayerCharacter::Get();
             pFaendal->MoveTo(pPlayer->parentCell, pPlayer->position);
             
@@ -806,7 +831,7 @@ void TestService::OnDraw() noexcept
         ImGui::InputInt("Is player?", &isPlayer, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
     #if TP_SKYRIM64
-        if (pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
+        if (pFetchActor->currentProcess->middleProcess && pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
         {
             auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
             if (pAmmo)

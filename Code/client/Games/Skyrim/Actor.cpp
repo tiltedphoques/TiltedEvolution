@@ -664,6 +664,17 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Acto
     return ThisCall(RealProcessResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
 }
 
+TP_THIS_FUNCTION(TCheckForNewPackage, bool, void, Actor* apActor, uint64_t aUnk1);
+static TCheckForNewPackage* RealCheckForNewPackage = nullptr;
+
+bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUnk1)
+{
+    if (apActor && apActor->GetExtension()->IsRemote())
+        return false;
+
+    return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406BA280 - 0x140000000);
@@ -679,6 +690,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x14060C280 - 0x140000000);
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140742FE0 - 0x140000000);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BC50 - 0x140000000);
+    POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 0x1406692F0 - 0x140000000);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -692,6 +704,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealPickUpItem = s_pickUpItem.Get();
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
+    RealCheckForNewPackage = s_checkForNewPackage.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -704,4 +717,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealPickUpItem, HookPickUpItem);
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
+    TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
 });
