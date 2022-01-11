@@ -18,9 +18,9 @@
 
 #if TP_SKYRIM
 //static constexpr char kMasterServerEndpoint[] = "http://127.0.0.1";
-static constexpr char kMasterServerEndpoint[] = "https://skyrim-reborn-list.skyrim-together.com";
+static constexpr char kMasterServerEndpoint[] = "http://skyrim-reborn-list.skyrim-together.com";
 #elif TP_FALLOUT
-static constexpr char kMasterServerEndpoint[] = "https://fallout-reborn-list.skyrim-together.com";
+static constexpr char kMasterServerEndpoint[] = "http://fallout-reborn-list.skyrim-together.com";
 #endif
 
 static constexpr uint16_t kPlayerMaxCap = 1000;
@@ -77,7 +77,7 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         {"icon_url", std::string(acIconUrl.c_str(), acIconUrl.size())},
         {"port", std::to_string(aPort)},
         {"tick", std::to_string(aTick)},
-        {"player_count", std::to_string(aPlayerCount+1)},
+        {"player_count", std::to_string(aPlayerCount)},
         {"max_player_count", std::to_string(aPlayerMaxCount)},
     };
 

@@ -22,7 +22,7 @@ public:
         uint16_t tick_rate;
     };
 
-    GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword = "") noexcept;
+    GameServer(String aName, String aToken, String aAdminPassword = "") noexcept;
     virtual ~GameServer();
 
     TP_NOCOPYMOVE(GameServer);

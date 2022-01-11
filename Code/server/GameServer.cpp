@@ -18,13 +18,19 @@
 #include <Messages/AuthenticationResponse.h>
 #include <Scripts/Player.h>
 
+#include <Setting.h>
+
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
 #endif
 
+// TODO: this is buggy as fuck with 
+static Setting<uint32_t> uServerPort{"general:uPort", "Which port to host the server on", 10578};
+static Setting<bool> bPremiumTickrate{"general:bPremium", "Use premium tick rate", true};
+
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword) noexcept
+GameServer::GameServer(String aName, String aToken, String aAdminPassword) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_token(std::move(aToken)),
       m_adminPassword(std::move(aAdminPassword)),
       m_requestStop(false)
@@ -33,11 +39,13 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
 
     s_pInstance = this;
 
-    const uint16_t userTick = aPremium ? 60 : 20;
-    while (!Host(aPort, userTick))
+    const uint16_t userTick = bPremiumTickrate ? 60 : 20;
+
+    auto port = uServerPort.value_as<uint16_t>();
+    while (!Host(port, userTick))
     {
-        spdlog::warn("Port {} is already in use, trying {}", aPort, aPort + 1);
-        aPort++;
+        spdlog::warn("Port {} is already in use, trying {}", port, port + 1);
+        port++;
     }
 
     // Fill in Info field.
