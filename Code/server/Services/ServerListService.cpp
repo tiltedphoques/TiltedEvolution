@@ -13,14 +13,16 @@
 //#define DISABLE_LIST
 
 #ifndef DISABLE_LIST
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 #endif
 
+static constexpr char kMasterServerEndpoint[] = 
 #if TP_SKYRIM
-//static constexpr char kMasterServerEndpoint[] = "http://127.0.0.1";
-static constexpr char kMasterServerEndpoint[] = "http://skyrim-reborn-list.skyrim-together.com";
+//"http://127.0.0.1";
+"https://skyrim-reborn-list.skyrim-together.com";
 #elif TP_FALLOUT
-static constexpr char kMasterServerEndpoint[] = "http://fallout-reborn-list.skyrim-together.com";
+"https://fallout-reborn-list.skyrim-together.com";
 #endif
 
 static constexpr uint16_t kPlayerMaxCap = 1000;

@@ -16,6 +16,7 @@
 
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
+#include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Scripts/Player.h>
 
 #include <Setting.h>
