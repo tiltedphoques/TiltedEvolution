@@ -9,17 +9,15 @@ public:
     ESLoader() = delete;
     ESLoader(String aDirectory);
 
-    bool BuildFileList();
-
 //private:
-    bool FindFiles();
-    bool SortPlugins();
+    void FindFiles();
+    void LoadFiles();
 
 //private:
     String m_directory;
-    Vector<String> m_esmFilenames;
-    Vector<String> m_espFilenames;
-    Vector<String> m_eslFilenames;
+    Vector<std::filesystem::path> m_esmFilenames;
+    Vector<std::filesystem::path> m_espFilenames;
+    Vector<std::filesystem::path> m_eslFilenames;
     Vector<TESFile> m_standardPlugins;
     Vector<TESFile> m_lightPlugins;
 };

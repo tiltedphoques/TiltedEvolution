@@ -6,25 +6,16 @@ namespace fs = std::filesystem;
 ESLoader::ESLoader(String aDirectory) 
     : m_directory(std::move(aDirectory))
 {
+    FindFiles();
+    LoadFiles();
 }
 
-bool ESLoader::BuildFileList()
-{
-    if (!FindFiles())
-        return false;
-
-    if (!SortPlugins())
-        return false;
-
-    return true;
-}
-
-bool ESLoader::FindFiles()
+void ESLoader::FindFiles()
 {
     if (m_directory.empty())
     {
         spdlog::error("Directory string is empty.");
-        return false;
+        return;
     }
 
     for (const auto& entry : fs::directory_iterator(m_directory))
@@ -54,28 +45,26 @@ bool ESLoader::FindFiles()
         switch (extensionEnd)
         {
         case 'm':
-            m_esmFilenames.push_back(filename);
+            m_esmFilenames.push_back(entry.path());
             break;
         case 'p':
-            m_espFilenames.push_back(filename);
+            m_espFilenames.push_back(entry.path());
             break;
         case 'l':
-            m_eslFilenames.push_back(filename);
+            m_eslFilenames.push_back(entry.path());
             break;
         default:
             spdlog::warn("File extension ends in an unknown letter ({})", filename);
             break;
         }
     }
-
-    return true;
 }
 
-bool ESLoader::SortPlugins()
+void ESLoader::LoadFiles()
 {
-    DEBUG_BREAK;
-
-    // TODO: sort plugins
-    return true;
+    for (const auto& filename : m_esmFilenames)
+    {
+        m_standardPlugins.push_back(TESFile(filename));
+    }
 }
 
