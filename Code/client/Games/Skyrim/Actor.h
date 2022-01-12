@@ -3,12 +3,12 @@
 #include <Games/Events.h>
 #include <TESObjectREFR.h>
 
-#include <Misc/MagicTarget.h>
+#include <Magic/MagicTarget.h>
 #include <Forms/TESActorBase.h>
 #include <Misc/ActorState.h>
 #include <Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Forms/MagicItem.h>
-#include <Games/Skyrim/Misc/ActorMagicCaster.h>
+#include <Magic/ActorMagicCaster.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
@@ -188,6 +188,8 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedAmmo() const noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
+    float GetActorValue(uint32_t aId) const noexcept;
+    float GetActorMaxValue(uint32_t aId) const noexcept;
 
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
@@ -197,10 +199,13 @@ struct Actor : TESObjectREFR
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
+    void SetActorValue(uint32_t aId, float aValue) noexcept;
+    void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
+    void SetWeaponDrawnEx(bool aDraw) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

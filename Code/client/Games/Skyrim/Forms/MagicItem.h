@@ -3,7 +3,7 @@
 
 #include <Forms/TESBoundObject.h>
 #include <Forms/EffectSetting.h>
-#include <Misc/EffectItem.h>
+#include <Magic/EffectItem.h>
 #include <Components/BGSKeywordForm.h>
 #include <Components/TESFullName.h>
 

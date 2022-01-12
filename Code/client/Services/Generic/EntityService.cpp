@@ -27,24 +27,25 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
     {
         if (acEvent.FormId == 0x14)
         {
-            auto* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
+            Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
             pActor->GetExtension()->SetPlayer(true);
         }
 
         entt::entity entity;
 
+        // TODO: why would a reference already have a remote component?
         const auto view = m_world.view<RemoteComponent>();
-        const auto itor = std::find_if(std::begin(view), std::end(view), [&acEvent, view](entt::entity entity) {
+        const auto it = std::find_if(std::begin(view), std::end(view), [&acEvent, view](entt::entity entity) {
             auto& remoteComponent = view.get<RemoteComponent>(entity);
             return remoteComponent.CachedRefId == acEvent.FormId;
         });
 
-        if (itor != std::end(view))
+        if (it != std::end(view))
         {
-            auto* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
+            Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
             pActor->GetExtension()->SetRemote(true);
 
-            entity = *itor;
+            entity = *it;
         }
         else
             entity = m_world.create();
@@ -65,7 +66,8 @@ void EntityService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noe
     {
         const auto entity = cIterator->second;
 
-        m_world.remove_if_exists<FormIdComponent>(entity);
+        if (m_world.all_of<FormIdComponent>(entity))
+            m_world.remove<FormIdComponent>(entity);
 
         if (m_world.orphan(entity))
             m_world.destroy(entity);

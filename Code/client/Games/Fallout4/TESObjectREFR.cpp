@@ -15,6 +15,8 @@ static TRemoveInventoryItem* RealRemoveInventoryItem = nullptr;
 
 void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
 {
+    TP_ASSERT(inventory, "SaveInventory is called, but inventory is null!");
+
     TP_THIS_FUNCTION(TSaveFunc, void, void, BGSSaveFormBuffer*);
 
     POINTER_FALLOUT4(TSaveFunc, s_save, 0x1401ACB20 - 0x140000000);
@@ -43,7 +45,7 @@ void TESObjectREFR::RemoveAllItems() noexcept
     s_removeAllItems(nullptr, nullptr, this, nullptr, false);
 }
 
-ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) noexcept
+ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) const noexcept
 {
     using TGetActorValueInfoArray = ActorValueInfo**();
 

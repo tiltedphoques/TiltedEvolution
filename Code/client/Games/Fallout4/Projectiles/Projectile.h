@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/Misc/MagicSystem.h>
+#include <Games/Magic/MagicSystem.h>
 
 struct BGSProjectile;
 struct TESObjectREFR;
@@ -11,6 +11,12 @@ struct TESObjectCELL;
 struct MagicItem;
 struct AlchemyItem;
 
+struct WeaponData
+{
+    TESForm* pWeapon;
+    void* pWeaponData;
+};
+
 struct ProjectileLaunchData
 {
     NiPoint3 Origin;
@@ -19,8 +25,9 @@ struct ProjectileLaunchData
     TESObjectREFR* pShooter;
     CombatController* pShooterCombatController;
     //BGSObjectInstanceT<TESObjectWEAP> FromWeapon; // length: 0x10
-    TESForm* pFromWeapon;
-    void* pFromWeaponData;
+    //TESForm* pFromWeapon;
+    //void* pFromWeaponData;
+    WeaponData FromWeapon;
     TESAmmo *pFromAmmo;
     //BGSEquipIndex EquipIndex;
     uint32_t EquipIndex;
@@ -52,6 +59,6 @@ struct ProjectileLaunchData
 
 struct Projectile
 {
-    static void* Launch(void* apResult, ProjectileLaunchData& arData);
+    static BSPointerHandle<Projectile>* Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept;
 };
 

@@ -9,6 +9,8 @@ struct TESForm;
 
 struct ExtraContainerChanges : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::ContainerChanges;
+
     struct Entry
     {
         TESForm* form;

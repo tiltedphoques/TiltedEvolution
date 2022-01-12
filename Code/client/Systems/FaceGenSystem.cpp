@@ -24,7 +24,7 @@
 __declspec(noinline) NiTriBasedGeom* GetHeadTriBasedGeom(Actor* apActor, uint32_t aPartType)
 {
     using TGetObjectByName = NiAVObject*(BSFaceGenNiNode*, const char**, char);
-    POINTER_SKYRIMSE(TGetObjectByName, GetObjectByName, 0x140D41970 - 0x140000000);
+    POINTER_SKYRIMSE(TGetObjectByName, GetObjectByName, 0x140D799A0 - 0x140000000);
 
     BSFaceGenNiNode* pFaceNode = apActor->GetFaceGenNiNode();
     TESNPC* pActorBase = RTTI_CAST(apActor->baseForm, TESForm, TESNPC);
@@ -58,11 +58,11 @@ TP_THIS_FUNCTION(TCreateResourceView, Ni2DBuffer*, TextureHolder, uint32_t, uint
 using TCreateTexture = NiRenderedTexture * (__fastcall)(BSFixedString& aName);
 using TCreateTints = void(__fastcall)(const GameArray<TintMask*>& acTints, NiRenderedTexture* apTexture);
 
-POINTER_SKYRIMSE(NiRTTI, NiMaskedShaderRTTI, 0x1431D1AF8 - 0x140000000);
-POINTER_SKYRIMSE(TCreateTexture, CreateTexture, 0x140C68D20 - 0x140000000);
-POINTER_SKYRIMSE(TCreateResourceView, CreateResourceView, 0x140D6DBC0 - 0x140000000);
-POINTER_SKYRIMSE(TCreateTints, CreateTints, 0x1403DB420 - 0x140000000);
-POINTER_SKYRIMSE(TextureHolder, s_textureHolder, 0x143028490 - 0x140000000);
+POINTER_SKYRIMSE(NiRTTI, NiMaskedShaderRTTI, 0x14326BBB0 - 0x140000000);
+POINTER_SKYRIMSE(TCreateTexture, CreateTexture, 0x140C91030 - 0x140000000);
+POINTER_SKYRIMSE(TCreateResourceView, CreateResourceView, 0x140DA9530 - 0x140000000);
+POINTER_SKYRIMSE(TCreateTints, CreateTints, 0x1403F36C0 - 0x140000000);
+POINTER_SKYRIMSE(TextureHolder, s_textureHolder, 0x1430C29C0 - 0x140000000);
 
 void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFaceGenComponent) noexcept
 {

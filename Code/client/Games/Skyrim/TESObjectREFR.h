@@ -7,8 +7,8 @@
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Misc/MagicSystem.h>
-#include <Games/Skyrim/Misc/MagicCaster.h>
+#include <Games/Magic/MagicSystem.h>
+#include <Magic/MagicCaster.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -163,6 +163,9 @@ struct TESObjectREFR : TESForm
 
     void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 
+    bool PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedString* apEventName) noexcept;
+    bool PlayAnimation(BSFixedString* apEventName) noexcept;
+
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
@@ -180,7 +183,7 @@ struct TESObjectREFR : TESForm
     uint16_t referenceFlags;
 };
 
-POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141EBEABC - 0x140000000);
+POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141F592BC - 0x140000000);
 
 static_assert(sizeof(TESObjectREFR) == 0x98);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);

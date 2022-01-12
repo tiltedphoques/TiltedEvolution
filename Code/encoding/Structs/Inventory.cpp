@@ -6,6 +6,7 @@ using TiltedPhoques::Serialization;
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
 {
     return RightHandWeapon == acRhs.RightHandWeapon
+        && IsWeaponDrawn == acRhs.IsWeaponDrawn
         && Buffer == acRhs.Buffer
 #if TP_SKYRIM
         && LeftHandWeapon == acRhs.LeftHandWeapon
@@ -34,6 +35,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 #endif
 
     Serialization::WriteString(aWriter, Buffer);
+    Serialization::WriteBool(aWriter, IsWeaponDrawn);
 
     Serialization::WriteBool(aWriter, isRightWeaponSet);
 #if TP_SKYRIM
@@ -68,6 +70,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     Buffer = Serialization::ReadString(aReader);
+    IsWeaponDrawn = Serialization::ReadBool(aReader);
 
     bool isRightWeaponSet = Serialization::ReadBool(aReader);
 #if TP_SKYRIM

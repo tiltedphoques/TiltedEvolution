@@ -20,7 +20,7 @@ TESQuest::State TESQuest::getState()
 void TESQuest::SetCompleted(bool force)
 {
     using TSetCompleted = void(TESQuest*, bool);
-    POINTER_SKYRIMSE(TSetCompleted, SetCompleted, 0x140370290 - 0x140000000);
+    POINTER_SKYRIMSE(TSetCompleted, SetCompleted, 0x1403878D0 - 0x140000000);
 
     SetCompleted(this, force);
 }
@@ -28,7 +28,7 @@ void TESQuest::SetCompleted(bool force)
 void TESQuest::CompleteAllObjectives()
 {
     using TCompleteAllObjectives = void(TESQuest*);
-    POINTER_SKYRIMSE(TCompleteAllObjectives, CompleteAll, 0x1403232E0 - 0x140000000);
+    POINTER_SKYRIMSE(TCompleteAllObjectives, CompleteAll, 0x140339B40 - 0x140000000);
 
     CompleteAll(this);
 }
@@ -55,7 +55,7 @@ bool TESQuest::IsStageDone(uint16_t stageIndex)
 bool TESQuest::Kill()
 {
     using TSetStopped = void(TESQuest*, bool);
-    POINTER_SKYRIMSE(TSetStopped, SetStopped, 0x14036FFE0 - 0x140000000);
+    POINTER_SKYRIMSE(TSetStopped, SetStopped, 0x140387630 - 0x140000000);
 
     if (flags & Flags::Enabled)
     {
@@ -73,7 +73,7 @@ bool TESQuest::Kill()
 bool TESQuest::UnkSetRunning(bool &success, bool force)
 {
     using TSetRunning = bool(TESQuest*, bool*, bool);
-    POINTER_SKYRIMSE(TSetRunning, SetRunning, 0x140370910 - 0x140000000);
+    POINTER_SKYRIMSE(TSetRunning, SetRunning, 0x140387F50 - 0x140000000);
 
     return SetRunning(this, &success, force);
 }
@@ -81,7 +81,7 @@ bool TESQuest::UnkSetRunning(bool &success, bool force)
 bool TESQuest::SetStage(uint16_t newStage)
 {
     using TSetStage = bool(TESQuest*, uint16_t);
-    POINTER_SKYRIMSE(TSetStage, SetStage, 0x140370A30 - 0x140000000);
+    POINTER_SKYRIMSE(TSetStage, SetStage, 0x140388060 - 0x140000000);
 
     return SetStage(this, newStage);
 }
@@ -94,5 +94,5 @@ void TESQuest::SetStopped()
 
 static TiltedPhoques::Initializer s_questInitHooks([]() {
     // kill quest init in cold blood
-    //TiltedPhoques::Write<uint8_t>(0x140370910 - 0x140000000, 0xC3);
+    //TiltedPhoques::Write<uint8_t>(0x140387F50 - 0x140000000, 0xC3);
 });

@@ -19,14 +19,15 @@ struct AssignCharacterResponse final : ServerMessage
 
     bool operator==(const AssignCharacterResponse& achRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() &&
-            Owner == achRhs.Owner &&
-            Cookie == achRhs.Cookie &&
-            ServerId == achRhs.ServerId &&
-            Position == achRhs.Position &&
-            CellId == achRhs.CellId &&
-            IsDead == achRhs.IsDead &&
-            AllActorValues == achRhs.AllActorValues;
+        return Owner == achRhs.Owner &&
+               Cookie == achRhs.Cookie &&
+               ServerId == achRhs.ServerId &&
+               Position == achRhs.Position &&
+               CellId == achRhs.CellId &&
+               AllActorValues == achRhs.AllActorValues &&
+               IsDead == achRhs.IsDead &&
+               IsWeaponDrawn == achRhs.IsWeaponDrawn &&
+               GetOpcode() == achRhs.GetOpcode();
     }
 
     bool Owner{ false };
@@ -36,4 +37,5 @@ struct AssignCharacterResponse final : ServerMessage
     GameId CellId{};
     ActorValues AllActorValues{};
     bool IsDead{};
+    bool IsWeaponDrawn{};
 };

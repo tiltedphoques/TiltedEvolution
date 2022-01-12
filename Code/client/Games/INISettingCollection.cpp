@@ -5,7 +5,7 @@
 INISettingCollection* INISettingCollection::Get() noexcept
 {
     POINTER_FALLOUT4(INISettingCollection*, settingCollection, 0x145EDB528 - 0x140000000);
-    POINTER_SKYRIMSE(INISettingCollection*, settingCollection, 0x14301D758 - 0x140000000);
+    POINTER_SKYRIMSE(INISettingCollection*, settingCollection, 0x1430B82D8 - 0x140000000);
 
     return *settingCollection.Get();
 }

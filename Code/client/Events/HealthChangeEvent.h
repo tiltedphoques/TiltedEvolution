@@ -4,10 +4,10 @@ struct TESObjectREFR;
 
 struct HealthChangeEvent
 {
-    HealthChangeEvent(Actor* apHittee, float aDeltaHealth) 
-        : pHittee(apHittee), DeltaHealth(aDeltaHealth)
+    HealthChangeEvent(uint32_t aHitteeId, float aDeltaHealth) 
+        : HitteeId(aHitteeId), DeltaHealth(aDeltaHealth)
     {}
 
-    Actor* pHittee;
+    uint32_t HitteeId;
     float DeltaHealth;
 };

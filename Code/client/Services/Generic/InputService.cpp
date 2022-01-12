@@ -186,7 +186,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     const auto active = pRenderer->IsVisible();
 
-    if (aType == KEYEVENT_KEYDOWN && aKey == VK_RCONTROL)
+    if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
     {
 #if defined(TP_SKYRIM)
         TiltedPhoques::DInputHook::Get().SetEnabled(!TiltedPhoques::DInputHook::Get().IsEnabled());

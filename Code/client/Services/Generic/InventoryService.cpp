@@ -4,6 +4,8 @@
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestCharacterInventoryChanges.h>
 #include <Messages/NotifyCharacterInventoryChanges.h>
+#include <Messages/DrawWeaponRequest.h>
+#include <Messages/NotifyDrawWeapon.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/InventoryChangeEvent.h>
@@ -28,6 +30,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_objectInventoryChangeConnection = m_dispatcher.sink<NotifyObjectInventoryChanges>().connect<&InventoryService::OnObjectInventoryChanges>(this);
     m_characterInventoryChangeConnection = m_dispatcher.sink<NotifyCharacterInventoryChanges>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
+    m_drawWeaponConnection = m_dispatcher.sink<NotifyDrawWeapon>().connect<&InventoryService::OnNotifyDrawWeapon>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -37,6 +40,8 @@ void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
     ApplyCachedObjectInventoryChanges();
     ApplyCachedCharacterInventoryChanges();
+
+    RunWeaponStateUpdates();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
@@ -47,7 +52,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     const auto* pForm = TESForm::GetById(acEvent.FormId);
     if (RTTI_CAST(pForm, TESForm, Actor))
     {
-        m_charactersWithInventoryChanges[acEvent.FormId] = String{};
+        m_charactersWithInventoryChanges.insert(acEvent.FormId);
     }
     else
     {
@@ -57,7 +62,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    m_charactersWithInventoryChanges[acEvent.ActorId] = acEvent.InventoryBuffer;
+    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
@@ -101,6 +106,11 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
 
             if (!pObject)
                 continue;
+
+        #if TP_FALLOUT4
+            if (!pObject->inventory)
+                continue;
+        #endif
 
             ObjectData objectData;
 
@@ -158,11 +168,9 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
     {
         RequestCharacterInventoryChanges message;
 
-        for (const auto change : m_charactersWithInventoryChanges)
+        for (const auto formId : m_charactersWithInventoryChanges)
         {
             auto view = m_world.view<FormIdComponent>();
-
-            auto formId = change.first;
 
             const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
             {
@@ -172,35 +180,18 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (iter == std::end(view))
                 continue;
 
-            uint32_t componentId;
-            const auto& cpLocalComponent = m_world.try_get<LocalComponent>(*iter);
-            const auto& cpRemoteComponent = m_world.try_get<RemoteComponent>(*iter);
-
-            if (cpLocalComponent)
-                componentId = cpLocalComponent->Id;
-            else if (cpRemoteComponent)
-                componentId = cpRemoteComponent->Id;
-            else
+            std::optional<uint32_t> serverIdRes = utils::GetServerId(*iter);
+            if (!serverIdRes.has_value())
                 continue;
+
+            uint32_t serverId = serverIdRes.value();
 
             const auto* pForm = TESForm::GetById(formId);
             auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
             if (!pActor)
                 continue;
 
-            Inventory inventory = pActor->GetInventory();
-
-            if (change.second != String{})
-            {
-                spdlog::warn("Using cached inventory snapshot for {:X} ({:X})", formId, componentId);
-                //inventory.Buffer = change.second;
-            }
-            else
-            {
-                spdlog::warn("Using new inventory for {:X} ({:X})", formId, componentId);
-            }
-
-            message.Changes[componentId] = inventory;
+            message.Changes[serverId] = pActor->GetInventory();
         }
 
         m_transport.Send(message);
@@ -211,6 +202,9 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
 
 void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
@@ -239,38 +233,92 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
 
 void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
         return;
 
-    auto view = m_world.view<FormIdComponent>();
-    for (const auto entity : view)
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+    for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
     {
-        uint32_t componentId;
-        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
-        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) { 
+            return view.get<RemoteComponent>(entity).Id == id;
+        });
 
-        if (cpLocalComponent)
-            componentId = cpLocalComponent->Id;
-        else if (cpRemoteComponent)
-            componentId = cpRemoteComponent->Id;
-        else
+        if (it == std::end(view))
             continue;
 
-        const auto change = m_cachedCharacterInventoryChanges.find(componentId);
-
-        if (change == m_cachedCharacterInventoryChanges.end())
-            continue;
-
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        const auto& formIdComponent = view.get<FormIdComponent>(*it);
         auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         if (!pActor)
             continue;
 
-        if (cpRemoteComponent)
-            cpRemoteComponent->SpawnRequest.InventoryContent = change.value();
+        auto& remoteComponent = m_world.get<RemoteComponent>(*it);
+        remoteComponent.SpawnRequest.InventoryContent = inventory;
 
-        pActor->SetInventory(change.value());
+        pActor->SetInventory(inventory);
     }
 
     m_cachedCharacterInventoryChanges.clear();
 }
+
+void InventoryService::RunWeaponStateUpdates() noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    // TODO: profile how often this could run
+    constexpr auto cDelayBetweenUpdates = 100ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    // TODO: find_if()
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+
+    for (auto entity : view)
+    {
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        auto& localComponent = view.get<LocalComponent>(entity);
+
+        bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+        if (isWeaponDrawn != localComponent.IsWeaponDrawn)
+        {
+            localComponent.IsWeaponDrawn = isWeaponDrawn;
+
+            DrawWeaponRequest request;
+            request.Id = localComponent.Id;
+            request.IsWeaponDrawn = isWeaponDrawn;
+
+            m_transport.Send(request);
+        }
+    }
+}
+
+void InventoryService::OnNotifyDrawWeapon(const NotifyDrawWeapon& acMessage) noexcept
+{
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) {
+        return view.get<RemoteComponent>(entity).Id == id;
+    });
+
+    if (it == std::end(view))
+        return;
+
+    auto& formIdComponent = view.get<FormIdComponent>(*it);
+    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+
+    if (!pActor)
+        return;
+
+    if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+        pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
+}
+

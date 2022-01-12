@@ -12,6 +12,7 @@
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
 #include <Events/PlayerLeaveCellEvent.h>
+#include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
 #include <steam/isteamnetworkingutils.h>
 
@@ -177,16 +178,25 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
             m_pWorld->GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
         }
         m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
-    }
 
-    // Cleanup all entities that we own
-    auto ownerView = m_pWorld->view<OwnerComponent>();
-    for (auto entity : ownerView)
-    {
-        const auto& [ownerComponent] = ownerView.get(entity);
-        if (ownerComponent.GetOwner() == pPlayer)
+        entt::entity playerCharacter = pPlayer->GetCharacter().value_or(static_cast<entt::entity>(0));
+
+        // Cleanup all entities that we own
+        auto ownerView = m_pWorld->view<OwnerComponent>();
+        for (auto entity : ownerView)
         {
-            m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
+            if (entity == playerCharacter)
+            {
+                auto& characterComponent = m_pWorld->get<CharacterComponent>(entity);
+                m_pWorld->GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(entity)));
+                continue;
+            }
+
+            const auto& [ownerComponent] = ownerView.get(entity);
+            if (ownerComponent.GetOwner() == pPlayer)
+            {
+                m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
+            }
         }
     }
 
@@ -245,6 +255,27 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
     for (auto pPlayer : m_pWorld->GetPlayerManager())
     {
         pPlayer->Send(acServerMessage);
+    }
+}
+
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin) const
+{
+    const auto* cellIdComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
+    const auto* ownerComp = m_pWorld->try_get<OwnerComponent>(acOrigin);
+
+    if (!cellIdComp || !ownerComp)
+    {
+        spdlog::warn("Components not found for entity {:X}", static_cast<int>(acOrigin));
+        return;
+    }
+
+    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    {
+        if (ownerComp->GetOwner() == pPlayer)
+            continue;
+
+        if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
+            pPlayer->Send(acServerMessage);
     }
 }
 

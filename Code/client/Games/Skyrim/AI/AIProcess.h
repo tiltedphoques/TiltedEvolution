@@ -23,4 +23,11 @@ struct AIProcess
     int8_t movementType;
 };
 
+struct HighProcessData
+{
+    uint8_t pad0[0x218];
+    char* strVoiceSubtitle;
+    GameArray<std::tuple<uint32_t, void*>> KnowledgeArray; // BSTuple, std::tuple is prolly wrong
+};
+
 static_assert(offsetof(AIProcess, movementType) == 0x137);

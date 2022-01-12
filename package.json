@@ -1,0 +1,27 @@
+{
+  "name": "tiltedevolution",
+  "version": "1.0.0",
+  "description": "A multiplayer mod for bethesda games",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tiltedphoques/TiltedEvolution.git"
+  },
+  "author": "TiltedPhoques",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tiltedphoques/TiltedEvolution/issues"
+  },
+  "homepage": "https://github.com/tiltedphoques/TiltedEvolution#readme",
+  "dependencies": {
+    "semantic-release": "^18.0.0"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/release-notes-generator": "^10.0.2"
+  }
+}

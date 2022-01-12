@@ -34,6 +34,22 @@ struct CellIdComponent
         return *this != CellIdComponent{};
     }
 
+    bool IsInInteriorCell() const noexcept
+    {
+        return !WorldSpaceId;
+    }
+
+    bool IsInRange(const CellIdComponent& acRhs) const noexcept
+    {
+        if (IsInInteriorCell())
+            return Cell == acRhs.Cell;
+
+        if (WorldSpaceId != acRhs.WorldSpaceId)
+            return false;
+
+        return GridCellCoords::IsCellInGridCell(acRhs.CenterCoords, CenterCoords);
+    }
+
     GameId Cell{};
     GameId WorldSpaceId{};
     GridCellCoords CenterCoords{};

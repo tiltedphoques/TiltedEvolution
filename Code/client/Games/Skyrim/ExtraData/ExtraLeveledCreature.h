@@ -6,6 +6,8 @@ struct TESNPC;
 
 struct ExtraLeveledCreature : BSExtraData
 {
+    inline static constexpr auto eExtraData = ExtraData::LeveledCreature;
+
     virtual ~ExtraLeveledCreature();
 
     TESNPC* npc1;

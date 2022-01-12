@@ -6,6 +6,7 @@ struct TransportService;
 struct UpdateEvent;
 struct NotifyObjectInventoryChanges;
 struct NotifyCharacterInventoryChanges;
+struct NotifyDrawWeapon;
 struct InventoryChangeEvent;
 struct EquipmentChangeEvent;
 
@@ -20,13 +21,15 @@ struct InventoryService
     void OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept;
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
 
-    void OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acEvent) noexcept;
-    void OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acEvent) noexcept;
+    void OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept;
+    void OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept;
+    void OnNotifyDrawWeapon(const NotifyDrawWeapon& acMessage) noexcept;
 
 private:
 
     void RunObjectInventoryUpdates() noexcept;
     void RunCharacterInventoryUpdates() noexcept;
+    void RunWeaponStateUpdates() noexcept;
 
     void ApplyCachedObjectInventoryChanges() noexcept;
     void ApplyCachedCharacterInventoryChanges() noexcept;
@@ -36,7 +39,7 @@ private:
     TransportService& m_transport;
 
     Set<uint32_t> m_objectsWithInventoryChanges;
-    Map<uint32_t, String> m_charactersWithInventoryChanges;
+    Set<uint32_t> m_charactersWithInventoryChanges;
     Map<GameId, Inventory> m_cachedObjectInventoryChanges;
     Map<uint32_t, Inventory> m_cachedCharacterInventoryChanges;
 
@@ -45,4 +48,5 @@ private:
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_objectInventoryChangeConnection;
     entt::scoped_connection m_characterInventoryChangeConnection;
+    entt::scoped_connection m_drawWeaponConnection;
 };

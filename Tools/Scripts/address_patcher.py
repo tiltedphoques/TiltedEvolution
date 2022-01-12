@@ -14,7 +14,7 @@ for subdir, dirs, files in os.walk(rootdir):
 
 with open('new_addresses.txt') as new_addresses:
 	for address_pair in new_addresses:
-		address_pair = address_pair.split(',')
+		address_pair = address_pair.strip().split(',')
 
 		is_address_rewritten = False
 
@@ -31,7 +31,9 @@ with open('new_addresses.txt') as new_addresses:
 					source_file.write(file_data)
 
 				is_address_rewritten = True
-				break
+				# don't break cause the address might be in multiple places
+				# it obviously shouldnt be, but it be like that rn
+				#break
 
 		if not is_address_rewritten:
 			print("Address was not found and has not been rewritten! " + address_pair[0])

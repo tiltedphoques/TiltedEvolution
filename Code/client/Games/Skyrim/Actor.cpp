@@ -23,6 +23,7 @@
 
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
+#include <Games/Misc/ActorKnowledge.h>
 
 #ifdef SAVE_STUFF
 
@@ -137,7 +138,7 @@ void Actor::InterruptCast(bool abRefund) noexcept
 {
     TP_THIS_FUNCTION(TInterruptCast, void, Actor, bool abRefund);
 
-    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x140631C80 - 0x140000000);
+    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x140657830 - 0x140000000);
 
     ThisCall(s_interruptCast, this, abRefund);
 }
@@ -205,6 +206,8 @@ Inventory Actor::GetInventory() const noexcept
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
     modSystem.GetServerModId(ammoId, inventory.Ammo);
 
+    inventory.IsWeaponDrawn = actorState.IsWeaponDrawn();
+
     return inventory;
 }
 
@@ -261,6 +264,16 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
     }
 
     return actorValues;
+}
+
+float Actor::GetActorValue(uint32_t aId) const noexcept
+{
+    return actorValueOwner.GetValue(aId);
+}
+
+float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+{
+    return actorValueOwner.GetMaxValue(aId);
 }
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept
@@ -336,6 +349,20 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
+
+    // TODO: check if weapon drawn state is the same
+    SetWeaponDrawnEx(acInventory.IsWeaponDrawn);
+}
+
+void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+{
+    const float current = GetActorValue(aId);
+    actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
+}
+
+void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
+{
+    actorValueOwner.SetValue(aId, aValue);
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -384,7 +411,7 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
 {
     TP_THIS_FUNCTION(TSetFactionRankInternal, void, Actor, const TESFaction*, int8_t);
 
-    POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 0x1405F7AB0 - 0x140000000);
+    POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 0x14061E5B0 - 0x140000000);
 
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
@@ -508,7 +535,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     const auto pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
@@ -521,7 +548,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         const auto pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
@@ -532,7 +559,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 
     if (pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
@@ -555,7 +582,7 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
             const auto pExTarget = apTarget->GetExtension();
             if (pExTarget->IsLocal())
             {
-                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget, aEffectValue));
+                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
                 return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
             }
             return;
@@ -581,7 +608,7 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
         return 0;
     }
 
-    World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, aRegenValue));
+    World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, aRegenValue));
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
@@ -597,39 +624,85 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
-static TiltedPhoques::Initializer s_actorHooks([]()
+TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
+static TUpdateDetectionState* RealUpdateDetectionState = nullptr;
+
+void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
+{
+    auto pOwner = TESObjectREFR::GetByHandle(apThis->hOwner);
+    auto pTarget = TESObjectREFR::GetByHandle(apThis->hTarget);
+
+    if (pOwner && pTarget)
     {
-        POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406928C0 - 0x140000000);
-        POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406929C0 - 0x140000000);
-        POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405CDDA0 - 0x140000000);
-        POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402994F0 - 0x140000000);
-        POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405D4090 - 0x140000000);
-        POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x140294000 - 0x140000000);
-        POINTER_SKYRIMSE(TDamageActor, s_damageActor, 0x1405D6300 - 0x140000000);
-        POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 0x140567A89 - 0x140000000);
-        POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140620900 - 0x140000000);
-        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1405E6F20 - 0x140000000);
-        POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x1405E6580 - 0x140000000);
+        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
+        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        if (pOwnerActor && pTargetActor)
+        {
+            if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
+            {
+                spdlog::info("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
+                return;
+            }
+        }
+    }
 
-        FUNC_GetActorLocation = s_GetActorLocation.Get();
-        RealCharacterConstructor = s_characterCtor.Get();
-        RealCharacterConstructor2 = s_characterCtor2.Get();
-        RealForceState = s_ForceState.Get();
-        RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
-        RealDamageActor = s_damageActor.Get();
-        RealApplyActorEffect = s_applyActorEffect.Get();
-        RealRegenAttributes = s_regenAttributes.Get();
-        RealAddInventoryItem = s_addInventoryItem.Get();
-        RealPickUpItem = s_pickUpItem.Get();
+    return ThisCall(RealUpdateDetectionState, apThis, apState);
+}
 
-        TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
-        TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
-        TP_HOOK(&RealForceState, HookForceState);
-        TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
-        TP_HOOK(&RealDamageActor, HookDamageActor);
-        TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
-        TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
-        TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
-        TP_HOOK(&RealPickUpItem, HookPickUpItem);
+struct DialogueItem;
 
-    });
+// This is an AIProcess function
+TP_THIS_FUNCTION(TProcessResponse, uint64_t, void, DialogueItem* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor);
+static TProcessResponse* RealProcessResponse = nullptr;
+
+uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor)
+{
+    if (apTalkingActor)
+    {
+        if (apTalkingActor->GetExtension()->IsRemotePlayer())
+            return 0;
+    }
+    return ThisCall(RealProcessResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
+}
+
+static TiltedPhoques::Initializer s_actorHooks([]()
+{
+    POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406BA280 - 0x140000000);
+    POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406BA510 - 0x140000000);
+    POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405F20A0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402ABAB0 - 0x140000000);
+    POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405F85D0 - 0x140000000);
+    POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x1402A6610 - 0x140000000);
+    POINTER_SKYRIMSE(TDamageActor, s_damageActor, 0x1405FA9A0 - 0x140000000);
+    POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 0x140584369 - 0x140000000);
+    POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140606DF0 - 0x140000000);
+    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x14060CC10 - 0x140000000);
+    POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x14060C280 - 0x140000000);
+    POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140742FE0 - 0x140000000);
+    POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BC50 - 0x140000000);
+
+    FUNC_GetActorLocation = s_GetActorLocation.Get();
+    RealCharacterConstructor = s_characterCtor.Get();
+    RealCharacterConstructor2 = s_characterCtor2.Get();
+    RealForceState = s_ForceState.Get();
+    RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
+    RealDamageActor = s_damageActor.Get();
+    RealApplyActorEffect = s_applyActorEffect.Get();
+    RealRegenAttributes = s_regenAttributes.Get();
+    RealAddInventoryItem = s_addInventoryItem.Get();
+    RealPickUpItem = s_pickUpItem.Get();
+    RealUpdateDetectionState = s_updateDetectionState.Get();
+    RealProcessResponse = s_processResponse.Get();
+
+    TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
+    TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
+    TP_HOOK(&RealForceState, HookForceState);
+    TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
+    TP_HOOK(&RealDamageActor, HookDamageActor);
+    TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+    TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
+    TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
+    TP_HOOK(&RealPickUpItem, HookPickUpItem);
+    TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
+    TP_HOOK(&RealProcessResponse, HookProcessResponse);
+});

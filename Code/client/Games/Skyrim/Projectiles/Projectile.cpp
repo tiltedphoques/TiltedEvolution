@@ -7,32 +7,52 @@
 #include <World.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
+#include <Forms/SpellItem.h>
 
-TP_THIS_FUNCTION(TLaunch, void*, void, Projectile::LaunchData& arData);
-
+TP_THIS_FUNCTION(TLaunch, BSPointerHandle<Projectile>*, BSPointerHandle<Projectile>, Projectile::LaunchData& arData);
 static TLaunch* RealLaunch = nullptr;
 
-void* Projectile::Launch(void* apResult, LaunchData& apLaunchData) noexcept
+BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, LaunchData& apLaunchData) noexcept
 {
-    return ThisCall(RealLaunch, apResult, apLaunchData);
+    BSPointerHandle<Projectile>* result = ThisCall(RealLaunch, apResult, apLaunchData);
+
+    TP_ASSERT(result, "No projectile handle returned.");
+
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
+    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    
+    TP_ASSERT(pProjectile, "No projectile found.");
+
+    pProjectile->fPower = apLaunchData.fPower;
+
+    return result;
 }
 
-// Projectile::Launch() is still somehow dependent on its shooter.
-// Therefore, this can only be used to sync arrows, really.
-// TODO: sync projectiles other than arrows, and make arrows work with half drawn bows.
-void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
+BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projectile>, Projectile::LaunchData& arData)
 {
-    if (!arData.pFromAmmo || !arData.pFromWeapon || arData.pSpell)
-        return ThisCall(RealLaunch, apThis, arData);
+    // sync concentration spells through spell cast sync, the rest through projectile sync
+    if (arData.pSpell)
+    {
+        if (auto* pSpell = RTTI_CAST(arData.pSpell, MagicItem, SpellItem))
+        {
+            if (pSpell->eCastingType == MagicSystem::CastingType::CONCENTRATION)
+            {
+                return ThisCall(RealLaunch, apThis, arData);
+            }
+        }
+    }
 
     if (arData.pShooter)
     {
-        auto* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
         if (pActor)
         {
-            auto* pExtendedActor = pActor->GetExtension();
+            ActorExtension* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->IsRemote())
-                return nullptr;
+            {
+                apThis->handle.iBits = 0;
+                return apThis;
+            }
         }
     }
 
@@ -54,25 +74,35 @@ void* TP_MAKE_THISCALL(HookLaunch, void, Projectile::LaunchData& arData)
     if (arData.pSpell)
         Event.SpellID = arData.pSpell->formID;
     Event.CastingSource = arData.eCastingSource;
-    Event.unkBool1 = arData.unkBool1;
+    Event.UnkBool1 = arData.bUnkBool1;
     Event.Area = arData.iArea;
     Event.Power = arData.fPower;
     Event.Scale = arData.fScale;
     Event.AlwaysHit = arData.bAlwaysHit;
     Event.NoDamageOutsideCombat = arData.bNoDamageOutsideCombat;
     Event.AutoAim = arData.bAutoAim;
-    Event.UseOrigin = arData.bUseOrigin;
+    Event.UnkBool2 = arData.bUnkBool2;
     Event.DeferInitialization = arData.bDeferInitialization;
-    Event.Tracer = arData.bTracer;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
+
+    auto result = ThisCall(RealLaunch, apThis, arData);
+
+    TP_ASSERT(result, "No projectile handle returned.");
+
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
+    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    
+    TP_ASSERT(pProjectile, "No projectile found.");
+
+    Event.Power = pProjectile->fPower;
 
     World::Get().GetRunner().Trigger(Event);
 
-    return ThisCall(RealLaunch, apThis, arData);
+    return result;
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_SKYRIMSE(TLaunch, s_launch, 0x14074B170 - 0x140000000);
+    POINTER_SKYRIMSE(TLaunch, s_launch, 0x1407781F0 - 0x140000000);
 
     RealLaunch = s_launch.Get();
 

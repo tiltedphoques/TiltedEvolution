@@ -27,7 +27,7 @@
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>
 #include <Misc/BSFixedString.h>
-#include <Games/Skyrim/Misc/ActorMagicCaster.h>
+#include <Magic/ActorMagicCaster.h>
 
 #include <Components.h>
 #include <World.h>
@@ -43,6 +43,20 @@
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
+#include <EquipManager.h>
+
+#include <ExtraData/ExtraCharge.h>
+#include <ExtraData/ExtraCount.h>
+#include <ExtraData/ExtraEnchantment.h>
+#include <ExtraData/ExtraHealth.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraSoul.h>
+#include <ExtraData/ExtraTextDisplayData.h>
+#include <ExtraData/ExtraWorn.h>
+#include <ExtraData/ExtraWornLeft.h>
+#include <Forms/EnchantmentItem.h>
+#include <Forms/AlchemyItem.h>
 #endif
 
 #include <imgui.h>
@@ -167,8 +181,12 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+
             /*
-            PlaceActorInWorld();
+            auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
+            pActor->SetWeaponDrawnEx(true);
+
+            //PlaceActorInWorld();
 
             const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
@@ -211,7 +229,7 @@ void TestService::AnimationDebugging() noexcept
     static Map<uint32_t, uint32_t> s_reusedValues;
     static Map<uint32_t, short> s_valueTypes; //0 for bool, 1 for float, 2 for int
     static Vector<uint32_t> s_blacklist{};
-    static SortedMap<uint32_t, const char*> s_varMap{};
+    static SortedMap<uint32_t, String> s_varMap{};
     static Map<uint64_t, uint32_t> s_cachedKeys{};
 
     ImGui::Begin("Animation debugging");
@@ -294,6 +312,92 @@ void TestService::AnimationDebugging() noexcept
 
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
     {
+        if (ImGui::BeginTabItem("Variables"))
+        {
+            auto hash = pManager->GetDescriptorKey();
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+            if (pDescriptor)
+            {
+                const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
+
+                Map<String, bool> bools{};
+                Map<String, float> floats{};
+                Map<String, int> ints{};
+
+                for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
+                {
+                    const auto idx = pDescriptor->BooleanLookUpTable[i];
+                    bools[s_varMap[idx]] = *reinterpret_cast<bool*>(&pVariableSet->data[idx]);
+                }
+
+                for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
+                {
+                    const auto idx = pDescriptor->FloatLookupTable[i];
+                    floats[s_varMap[idx]] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
+                }
+
+                for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
+                {
+                    const auto idx = pDescriptor->IntegerLookupTable[i];
+                    ints[s_varMap[idx]] = *reinterpret_cast<int*>(&pVariableSet->data[idx]);
+                }
+
+                if (ImGui::Button("Dump variable values"))
+                {
+                    std::cout << "Bools: " << std::endl;
+                    for (auto& [name, value] : bools)
+                    {
+                        std::cout << "\t" << name << ": " << value << std::endl;
+                    }
+
+                    std::cout << "Floats: " << std::endl;
+                    for (auto& [name, value] : floats)
+                    {
+                        std::cout << "\t" << name << ": " << value << std::endl;
+                    }
+
+                    std::cout << "Integers: " << std::endl;
+                    for (auto& [name, value] : ints)
+                    {
+                        std::cout << "\t" << name << ": " << value << std::endl;
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Bools", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto pair : bools)
+                    {
+                        auto name = pair.first;
+                        auto value = pair.second;
+                        int iValue = int(value);
+                        ImGui::InputInt(name.c_str(), &iValue, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Floats", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto pair : floats)
+                    {
+                        auto name = pair.first;
+                        auto value = pair.second;
+                        ImGui::InputFloat(name.c_str(), &value, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
+                    }
+                }
+
+                if (ImGui::CollapsingHeader("Integers", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto pair : ints)
+                    {
+                        auto name = pair.first;
+                        auto value = pair.second;
+                        ImGui::InputInt(name.c_str(), &value, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    }
+                }
+            }
+
+            ImGui::EndTabItem();
+        }
+
         if (ImGui::BeginTabItem("Blacklist"))
         {
             static uint32_t s_selectedBlacklistVar = 0;
@@ -310,10 +414,10 @@ void TestService::AnimationDebugging() noexcept
                     continue;
                 }
 
-                const auto* varName = s_varMap[blacklistedVar];
+                const auto varName = s_varMap[blacklistedVar];
 
                 char name[256];
-                sprintf_s(name, std::size(name), "k%s (%d)", varName, blacklistedVar);
+                sprintf_s(name, std::size(name), "k%s (%d)", varName.c_str(), blacklistedVar);
 
                 if (ImGui::Selectable(name, s_selectedBlacklistVar == blacklistedVar))
                 {
@@ -384,14 +488,14 @@ void TestService::AnimationDebugging() noexcept
                     {
                         s_values[i] = pVariableSet->data[i];
 
-                        const auto* varName = s_varMap[i];
+                        const auto varName = s_varMap[i];
 
                         spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
                                      *(int32_t*)&pVariableSet->data[i]);
                     }
                     else if (iter->second != pVariableSet->data[i])
                     {
-                        const auto* varName = s_varMap[i];
+                        const auto varName = s_varMap[i];
 
                         float floatCast = *(float*)&pVariableSet->data[i];
                         int intCast = *(int32_t*)&pVariableSet->data[i];
@@ -437,7 +541,7 @@ void TestService::AnimationDebugging() noexcept
                 {
                     if (s_valueTypes[key] == 0)
                     {
-                        const auto* varName = s_varMap[key];
+                        const auto varName = s_varMap[key];
                         std::cout << "k" << varName << "," << std::endl;
                     }
                 }
@@ -448,7 +552,7 @@ void TestService::AnimationDebugging() noexcept
                 {
                     if (s_valueTypes[key] == 1)
                     {
-                        const auto* varName = s_varMap[key];
+                        const auto varName = s_varMap[key];
                         std::cout << "k" << varName << "," << std::endl;
                     }
                 }
@@ -459,7 +563,7 @@ void TestService::AnimationDebugging() noexcept
                 {
                     if (s_valueTypes[key] == 2)
                     {
-                        const auto* varName = s_varMap[key];
+                        const auto varName = s_varMap[key];
                         std::cout << "k" << varName << "," << std::endl;
                     }
                 }
@@ -482,9 +586,6 @@ void TestService::AnimationDebugging() noexcept
 
 void TestService::OnDraw() noexcept
 {
-    static uint32_t fetchFormId;
-    static Actor* pFetchActor = 0;
-
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
         return;
@@ -600,7 +701,10 @@ void TestService::OnDraw() noexcept
     ImGui::End();
 
     ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Actor lookup");
+    ImGui::Begin("Form lookup");
+
+    static uint32_t fetchFormId = 0;
+    static TESForm* pFetchForm = nullptr;
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
@@ -608,7 +712,38 @@ void TestService::OnDraw() noexcept
     {
         if (fetchFormId)
         {
-            auto* pFetchForm = TESForm::GetById(fetchFormId);
+            pFetchForm = TESForm::GetById(fetchFormId);
+        }
+    }
+
+    if (pFetchForm)
+    {
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Vtable address", ImGuiDataType_U64, (void*)pFetchForm, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::InputInt("Form id", (int*)&pFetchForm->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+        FormType formType = pFetchForm->GetFormType();
+        ImGui::InputScalar("Form type", ImGuiDataType_U8, (void*)&formType, 0, 0, nullptr, ImGuiInputTextFlags_ReadOnly);
+    }
+
+    ImGui::End();
+
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Actor lookup");
+
+    static uint32_t fetchActorId = 0;
+    static Actor* pFetchActor = nullptr;
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchActorId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
+    {
+        if (fetchActorId)
+        {
+            auto* pFetchForm = TESForm::GetById(fetchActorId);
             if (pFetchForm)
                 pFetchActor = RTTI_CAST(pFetchForm, TESForm, Actor);
             if (pFetchActor)
@@ -813,5 +948,192 @@ void TestService::OnDraw() noexcept
     }
 
     ImGui::End();
+
+#if TP_SKYRIM64
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Container debug");
+
+    if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+    {
+        if (ImGui::BeginTabItem("ExtraContainerChanges"))
+        {
+            static uint32_t s_selectedInvFormId = 0;
+
+            auto* pContainerActor = PlayerCharacter::Get();
+
+            const auto pContainerChanges = pContainerActor->GetContainerChanges()->entries;
+
+            ImGui::BeginChild("Items", ImVec2(0, 200), true);
+
+            int i = 0;
+            for (auto pChange : *pContainerChanges)
+            {
+                if (pChange && pChange->form && pChange->dataList)
+                {
+                    char name[256];
+                    sprintf_s(name, std::size(name), "%x", pChange->form->formID);
+
+                    if (ImGui::Selectable(name, s_selectedInvFormId == pChange->form->formID))
+                    {
+                        s_selectedInvFormId = pChange->form->formID;
+                    }
+                }
+            }
+
+            ImGui::EndChild();
+
+            int itemCount = 0;
+            int dataListCount = 0;
+
+            ImVec4 red{255.f, 0.f, 0.f, 255.f};
+            ImVec4 green{0.f, 255.f, 0.f, 255.f};
+
+            for (auto pChange : *pContainerChanges)
+            {
+                if (pChange && pChange->form && pChange->form->formID == s_selectedInvFormId)
+                {
+                    itemCount++;
+
+                    const auto pDataLists = pChange->dataList;
+                    for (auto* pDataList : *pDataLists)
+                    {
+                        if (pDataList)
+                        {
+                            dataListCount++;
+
+                            char name[256];
+                            sprintf_s(name, std::size(name), "Item %d", itemCount);
+
+                            if (ImGui::CollapsingHeader(name, ImGuiTreeNodeFlags_DefaultOpen))
+                            {
+                                BSScopedLock<BSRecursiveLock> _(pDataList->lock);
+
+                                bool charge = pDataList->Contains(ExtraData::Charge);
+                                ImGui::TextColored(charge ? green : red, "charge");
+                                if (charge)
+                                {
+                                    auto pCharge = (ExtraCharge*)pDataList->GetByType(ExtraData::Charge);
+                                    ImGui::InputFloat("Charge", &pCharge->fCharge, 0, 0, "%.3f",
+                                                      ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool count = pDataList->Contains(ExtraData::Count);
+                                ImGui::TextColored(count ? green : red, "count");
+                                if (count)
+                                {
+                                    auto pCount = (ExtraCount*)pDataList->GetByType(ExtraData::Count);
+                                    auto iCount = int(pCount->count);
+                                    ImGui::InputInt("Item count", &iCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool enchantment = pDataList->Contains(ExtraData::Enchantment);
+                                ImGui::TextColored(enchantment ? green : red, "enchantment");
+                                if (enchantment)
+                                {
+                                    auto pEnchantment = (ExtraEnchantment*)pDataList->GetByType(ExtraData::Enchantment);
+                                    int enchantmentID =
+                                        pEnchantment->pEnchantment ? int(pEnchantment->pEnchantment->formID) : 0;
+                                    ImGui::InputInt("Enchantment id", &enchantmentID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                                    int iCharge = int(pEnchantment->usCharge);
+                                    ImGui::InputInt("Charge", &iCharge, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                    int iRemoveOnUnequip = int(pEnchantment->bRemoveOnUnequip);
+                                    ImGui::InputInt("Remove on unequip?", &iRemoveOnUnequip, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool health = pDataList->Contains(ExtraData::Health);
+                                ImGui::TextColored(health ? green : red, "health");
+                                if (health)
+                                {
+                                    auto pHealth = (ExtraHealth*)pDataList->GetByType(ExtraData::Health);
+                                    ImGui::InputFloat("Health", &pHealth->fHealth, 0, 0, "%.3f",
+                                                      ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool poison = pDataList->Contains(ExtraData::Poison);
+                                ImGui::TextColored(poison ? green : red, "poison");
+                                if (poison)
+                                {
+                                    auto pPoison = (ExtraPoison*)pDataList->GetByType(ExtraData::Poison);
+                                    int poisonID =
+                                        pPoison->pPoison ? int(pPoison->pPoison->formID) : 0;
+                                    ImGui::InputInt("Poison id", &poisonID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                                    int iCount = int(pPoison->uiCount);
+                                    ImGui::InputInt("Count", &iCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool soul = pDataList->Contains(ExtraData::Soul);
+                                ImGui::TextColored(soul ? green : red, "soul");
+                                if (soul)
+                                {
+                                    auto pSoul = (ExtraSoul*)pDataList->GetByType(ExtraData::Soul);
+                                    auto iSoulLevel = int(pSoul->cSoul);
+                                    ImGui::InputInt("Soul level", &iSoulLevel, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool textDisplayData = pDataList->Contains(ExtraData::TextDisplayData);
+                                ImGui::TextColored(textDisplayData ? green : red, "textDisplayData");
+                                if (textDisplayData)
+                                {
+                                    auto pTextDisplayData = (ExtraTextDisplayData*)pDataList->GetByType(ExtraData::TextDisplayData);
+                                    char name[256];
+                                    sprintf_s(name, std::size(name), "%s", pTextDisplayData->DisplayName.AsAscii());
+                                    ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
+                                }
+
+                                bool worn = pDataList->Contains(ExtraData::Worn);
+                                ImGui::TextColored(worn ? green : red, "worn");
+                                bool wornLeft = pDataList->Contains(ExtraData::WornLeft);
+                                ImGui::TextColored(wornLeft ? green : red, "wornLeft");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Metadata", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::InputInt("Item count", &itemCount, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                ImGui::InputInt("Data list count", &dataListCount, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            }
+
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("TESContainer"))
+        {
+            static uint32_t s_selectedInvFormId = 0;
+
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            TESContainer* pContainer = pPlayer->GetContainer();
+            if (pContainer && pContainer->entries)
+            {
+                ImGui::Text("Items (%d)", pContainer->count);
+
+                ImGui::BeginChild("Items", ImVec2(0, 200), true);
+
+                for (int i = 0; i < pContainer->count; ++i)
+                {
+                    auto pEntry = pContainer->entries[i];
+                    if (!pEntry || !pEntry->form)
+                        continue;
+
+                    char name[256];
+                    sprintf_s(name, std::size(name), "%x (%d)", pEntry->form->formID, pEntry->count);
+
+                    if (ImGui::Selectable(name, s_selectedInvFormId == pEntry->form->formID))
+                    {
+                        s_selectedInvFormId = pEntry->form->formID;
+                    }
+                }
+
+                ImGui::EndChild();
+            }
+
+            ImGui::EndTabItem();
+        }
+    }
+
+
+    ImGui::End();
+#endif
 }
 

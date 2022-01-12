@@ -23,7 +23,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
-#include <Games/Skyrim/Misc/MagicCaster.h>
+#include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
 
@@ -53,7 +53,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 
     using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
 
-    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 0x1402130F0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 0x1402207F0 - 0x140000000);
     POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 0x140023740 - 0x140000000);
 
     s_getRefrByHandle.Get()(aHandle, pResult);
@@ -225,10 +225,15 @@ String TESObjectREFR::SerializeInventory() const noexcept
 {
     ScopedSaveLoadOverride _;
 
-    char buffer[1 << 15];
+    // TODO: buffer[1 << 15] is too small for some inventories
+    // buffer[1 << 18] does the job, but these inventories seem to be bugged
+    // ask cosi for repro
+    // temp solution: increase the buffer
+    // only happened in skyrim, idk if fallout 4 needs it
+    char buffer[1 << 18];
     BGSSaveFormBuffer saveBuffer;
     saveBuffer.buffer = buffer;
-    saveBuffer.capacity = 1 << 15;
+    saveBuffer.capacity = 1 << 18;
     saveBuffer.changeFlags = 1024;
 
     SaveInventory(&saveBuffer);
@@ -313,7 +318,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*,
                      const NiPoint3&, const NiPoint3&);
 
-    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409AE5C0 - 0x140000000);
+    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409D3300 - 0x140000000);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
 
     ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
@@ -343,7 +348,6 @@ void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
     SetPosition(acPosition, true);
 }
 
-
 void Actor::QueueUpdate() noexcept
 {
     auto* pSetting = INISettingCollection::Get()->GetSetting("bUseFaceGenPreprocessedHeads:General");
@@ -356,7 +360,7 @@ void Actor::QueueUpdate() noexcept
     TP_THIS_FUNCTION(TQueueUpdate, void, Actor, bool aFaceGen, uint32_t, bool, uint32_t);
 #endif
 
-    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 0x140693110 - 0x140000000);
+    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 0x1406BAB40 - 0x140000000);
     POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 0x140D8A1F0 - 0x140000000);
 
 #ifdef TP_SKYRIM
@@ -409,7 +413,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, BSExtraDataList, uint32_t);
-    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x140119450 - 0x140000000);
+    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x1401238E0 - 0x140000000);
     POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
 
 #if TP_FALLOUT4
@@ -455,7 +459,7 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
     POINTER_FALLOUT4(PlayerCharacter*, s_character, 0x145AA4388 - 0x140000000);
-    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 0x142EFF7D8 - 0x140000000);
+    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 0x142F99F90 - 0x140000000);
 
     return *s_character.Get();
 }
@@ -473,7 +477,7 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 Lock* TESObjectREFR::GetLock() noexcept
 {
     TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
-    POINTER_SKYRIMSE(TGetLock, realGetLock, 0x1402A74C0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetLock, realGetLock, 0x1402B91D0 - 0x140000000);
     POINTER_FALLOUT4(TGetLock, realGetLock, 0x14047FEE0 - 0x140000000);
 
     return ThisCall(realGetLock, this);
@@ -482,7 +486,7 @@ Lock* TESObjectREFR::GetLock() noexcept
 Lock* TESObjectREFR::CreateLock() noexcept
 {
     TP_THIS_FUNCTION(TCreateLock, Lock*, TESObjectREFR);
-    POINTER_SKYRIMSE(TCreateLock, realCreateLock, 0x1402A7270 - 0x140000000);
+    POINTER_SKYRIMSE(TCreateLock, realCreateLock, 0x1402B8FD0 - 0x140000000);
     POINTER_FALLOUT4(TCreateLock, realCreateLock, 0x14047FD20 - 0x140000000);
 
     return ThisCall(realCreateLock, this);
@@ -491,6 +495,34 @@ Lock* TESObjectREFR::CreateLock() noexcept
 void TESObjectREFR::LockChange() noexcept
 {
     ThisCall(RealLockChange, this);
+}
+
+bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
+{
+    TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);
+
+    POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 0x140662530 - 0x140000000);
+    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 0x140E22DF0 - 0x140000000);
+
+    return ThisCall(setWeaponState, this, aDraw);
+}
+
+extern thread_local bool g_forceAnimation;
+
+void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
+{
+    spdlog::debug("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+
+    if (actorState.IsWeaponDrawn() == aDraw)
+    {
+        actorState.SetWeaponDrawn(!aDraw);
+
+        spdlog::debug("Setting weapon drawn after update: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    }
+
+    g_forceAnimation = true;
+    SetWeaponDrawn(aDraw);
+    g_forceAnimation = false;
 }
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
@@ -574,22 +606,22 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
 
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
-        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x140296910 - 0x140000000);
+        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x1402A8E30 - 0x140000000);
         POINTER_FALLOUT4(TSetPosition, s_setPosition, 0x14040C060 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateX, 0x140296680 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateX, 0x1402A8C60 - 0x140000000);
         POINTER_FALLOUT4(TRotate, s_rotateX, 0x14040BE70 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateY, 0x140296740 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateY, 0x1402A8CE0 - 0x140000000);
         POINTER_FALLOUT4(TRotate, s_rotateY, 0x14040BF00 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateZ, 0x140296800 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateZ, 0x1402A8D60 - 0x140000000);
         POINTER_FALLOUT4(TRotate, s_rotateZ, 0x14040BF90 - 0x140000000);
 
-        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 0x1405D87F0 - 0x140000000);
+        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 0x1405FD550 - 0x140000000);
         POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
 
-        POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x140285BE0 - 0x140000000);
+        POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x1402977C0 - 0x140000000);
         POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
 
         RealSetPosition = s_setPosition.Get();

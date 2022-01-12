@@ -8,7 +8,7 @@ bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, f
 {
     TP_THIS_FUNCTION(TSetFloatVariable, bool, IAnimationGraphManagerHolder, BSFixedString*, float);
 
-    POINTER_SKYRIMSE(TSetFloatVariable, InternalSetFloatVariable, 0x1404F0720 - 0x140000000);
+    POINTER_SKYRIMSE(TSetFloatVariable, InternalSetFloatVariable, 0x140509660 - 0x140000000);
     POINTER_FALLOUT4(TSetFloatVariable, InternalSetFloatVariable, 0x14081D410 - 0x140000000);
 
     return ThisCall(InternalSetFloatVariable, this, apVariable, aValue);

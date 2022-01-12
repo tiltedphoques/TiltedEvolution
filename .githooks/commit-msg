@@ -1,0 +1,10 @@
+#!/bin/sh
+
+commit_regex='^(?<type>build|chore|ci|docs|feat|fix|tweak|perf|refactor|revert|style|test|¯\\_\(ツ\)_\/¯|\[skip-ci\])(?<scope>\(\w+\)?((?=:\s)|(?=!:\s)))?(?<breaking>!)?(?<subject>:\s.*)?|^(?<merge>Merge \w+)'
+
+error_msg='.githooks/commit-msg: Aborting commit, try again with a valid message. The regexp checks for: a conventional commit message subject (to be parsed into changelogs, see https://www.conventionalcommits.org/en/v1.0.0)'
+
+if ! grep -iqE "${commit_regex}" "$1"; then
+    echo "${error_msg}" >&2
+    exit 1
+fi

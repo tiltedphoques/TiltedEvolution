@@ -20,9 +20,5 @@ Have some experience in C++, and want to help advance the project faster? Contri
 - Try to keep your code clean, following the [code guidelines](https://wiki.tiltedphoques.com/tilted-online/coding/code-guidelines).
 
 ## License
-[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
 
-Tilted Online is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Tilted Online is written by multiple independant parties. The copyright of a contribution is held by the contributing party.

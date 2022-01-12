@@ -14,6 +14,8 @@ struct RemoteComponent
 
     uint32_t Id;
     uint32_t CachedRefId;
-    CharacterSpawnRequest SpawnRequest;
-    bool IsDead;
+    CharacterSpawnRequest SpawnRequest{};
+    // TODO: why is IsDead here (and by extension, IsWeaponDrawn)?
+    bool IsDead = false;
+    bool IsWeaponDrawn = false;
 };

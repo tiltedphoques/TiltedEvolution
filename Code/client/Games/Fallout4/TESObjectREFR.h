@@ -148,7 +148,7 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
     BSExtraDataList* GetExtraDataList() noexcept;
-    ActorValueInfo* GetActorValueInfo(uint32_t aId) noexcept;
+    ActorValueInfo* GetActorValueInfo(uint32_t aId) const noexcept;
     Lock* GetLock() noexcept;
     const BGSEquipSlot* GetEquipSlot(uint32_t uiIndex) const noexcept;
 

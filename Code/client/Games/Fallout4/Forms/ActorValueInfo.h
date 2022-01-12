@@ -136,6 +136,7 @@ struct ActorValueInfo : TESForm
         kLogicOperation = 129,
         kLogicOutput = 130,
         kIgnorePlayerWhileFrenzied = 131,
+        kActorValueCount = 132,
     };
 
     static ActorValueInfo* Resolve(uint32_t aId) noexcept;

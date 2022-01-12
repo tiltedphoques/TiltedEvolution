@@ -2,7 +2,7 @@
 
 #include <Forms/TESForm.h>
 #include <Misc/ActorState.h>
-#include <Misc/MagicTarget.h>
+#include <Magic/MagicTarget.h>
 #include <Structs/ActorValues.h>
 #include <Structs/Factions.h>
 #include <Structs/Inventory.h>
@@ -46,16 +46,21 @@ struct Actor : TESObjectREFR
     Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
+    float GetActorValue(uint32_t aId) const noexcept;
+    float GetActorMaxValue(uint32_t aId) const noexcept;
     void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetInventory(const Inventory& acInventory) noexcept;
+    void SetActorValue(uint32_t aId, float aValue) noexcept;
+    void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
+    void SetWeaponDrawnEx(bool aDraw) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
@@ -68,7 +73,6 @@ struct Actor : TESObjectREFR
     void Respawn() noexcept;
 
     MagicTarget magicTarget;
-    uint8_t unk118[0x128 - 0x118];
     ActorState actorState;
     BSTEventSink<BSMovementDataChangedEvent> movementDataChangedSink;
     BSTEventSink<BSTransformDeltaEvent> transformDeltaSink;

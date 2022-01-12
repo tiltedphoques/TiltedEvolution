@@ -7,6 +7,7 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/ActivateEvent.h>
 #include <Events/LockChangeEvent.h>
+#include <Events/ScriptAnimationEvent.h>
 #include <Services/EnvironmentService.h>
 #include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
@@ -16,6 +17,8 @@
 #include <Messages/NotifyActivate.h>
 #include <Messages/LockChangeRequest.h>
 #include <Messages/NotifyLockChange.h>
+#include <Messages/ScriptAnimationRequest.h>
+#include <Messages/NotifyScriptAnimation.h>
 
 #include <TimeManager.h>
 #include <PlayerCharacter.h>
@@ -48,6 +51,8 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_lockChangeConnection = aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
     m_lockChangeNotifyConnection = aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
     m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&EnvironmentService::OnAssignObjectsResponse>(this);
+    m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&EnvironmentService::OnScriptAnimationEvent>(this);
+    m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&EnvironmentService::OnNotifyScriptAnimation>(this);
 
 #if ENVIRONMENT_DEBUG
     m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
@@ -216,18 +221,11 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (pEntity == std::end(view))
         return;
 
-    const auto pLocalComponent = m_world.try_get<LocalComponent>(*pEntity);
-    const auto pRemoteComponent = m_world.try_get<RemoteComponent>(*pEntity);
-
-    if (pLocalComponent)
-        request.ActivatorId = pLocalComponent->Id;
-    else if (pRemoteComponent)
-        request.ActivatorId = pRemoteComponent->Id;
-    else
-    {
-        spdlog::error("No local or remote component attached to {:X}", acEvent.pObject->formID);
+    std::optional<uint32_t> serverIdRes = utils::GetServerId(*pEntity);
+    if (!serverIdRes.has_value())
         return;
-    }
+
+    request.ActivatorId = serverIdRes.value();
 
     m_transport.Send(request);
 }
@@ -237,18 +235,13 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
-        uint32_t componentId;
-        const auto cpLocalComponent = m_world.try_get<LocalComponent>(entity);
-        const auto cpRemoteComponent = m_world.try_get<RemoteComponent>(entity);
-
-        if (cpLocalComponent)
-            componentId = cpLocalComponent->Id;
-        else if (cpRemoteComponent)
-            componentId = cpRemoteComponent->Id;
-        else
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
             continue;
 
-        if (componentId == acMessage.ActivatorId)
+        uint32_t serverId = serverIdRes.value();
+
+        if (serverId == acMessage.ActivatorId)
         {
             const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
             if (cObjectId == 0)
@@ -329,6 +322,44 @@ void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) n
     pLock->lockLevel = acMessage.LockLevel;
     pLock->SetLock(acMessage.IsLocked);
     pObject->LockChange();
+}
+
+void EnvironmentService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEvent) noexcept
+{
+    ScriptAnimationRequest request{};
+    request.FormID = acEvent.FormID;
+    request.Animation = acEvent.Animation;
+    request.EventName = acEvent.EventName;
+
+    m_transport.Send(request);
+}
+
+void EnvironmentService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessage) noexcept
+{
+#if TP_SKYRIM64
+    if (acMessage.FormID == 0)
+        return;
+
+    auto* pForm = TESForm::GetById(acMessage.FormID);
+    auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+
+    if (!pObject)
+    {
+        spdlog::error("Failed to fetch notify script animation object, form id: {:X}", acMessage.FormID);
+        return;
+    }
+
+    BSFixedString eventName(acMessage.EventName.c_str());
+    if (acMessage.Animation == String{})
+    {
+        pObject->PlayAnimation(&eventName);
+    }
+    else
+    {
+        BSFixedString animation(acMessage.Animation.c_str());
+        pObject->PlayAnimationAndWait(&animation, &eventName);
+    }
+#endif
 }
 
 float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const

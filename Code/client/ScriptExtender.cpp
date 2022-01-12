@@ -33,6 +33,9 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
 
 void InjectScriptExtenderDll()
 {  
+    // WAITING FOR STABLE ANNIVERSARY SKSE RELEASE TO REENABLE
+    return;
+
     // Get the path of the game, where the Script Extender dll resides
     const std::filesystem::path gamePath = std::filesystem::current_path();
 

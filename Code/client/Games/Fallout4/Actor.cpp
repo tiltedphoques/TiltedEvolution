@@ -7,6 +7,7 @@
 #include <PlayerCharacter.h>
 #include <Games/Fallout4/EquipManager.h>
 #include <Forms/BGSObjectInstance.h>
+#include <Games/Misc/ActorKnowledge.h>
 
 #include <Services/PapyrusService.h>
 #include <World.h>
@@ -16,9 +17,11 @@
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
+TP_THIS_FUNCTION(TActorDestructor, void*, Actor);
 
 static TActorConstructor* RealActorConstructor;
 static TActorConstructor2* RealActorConstructor2;
+static TActorDestructor* RealActorDestructor;
 
 Actor* TP_MAKE_THISCALL(HookActorContructor, Actor, uint8_t aUnk)
 {
@@ -36,6 +39,12 @@ Actor* TP_MAKE_THISCALL(HookActorContructor2, Actor, volatile int** aRefCount, u
     const auto pActor = ThisCall(RealActorConstructor2, apThis, aRefCount, aUnk);
 
     return pActor;
+}
+
+void* TP_MAKE_THISCALL(HookActorDestructor, Actor)
+{
+    // TODO: Actor dtor sometimes has garbage actor, causing a crash
+    return ThisCall(RealActorDestructor, apThis);
 }
 
 GamePtr<Actor> Actor::New() noexcept
@@ -139,9 +148,21 @@ void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
 {
     TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
 
-    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFCF0 - 0x140000000);
+    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFD00 - 0x140000000);
 
     return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
+}
+
+float Actor::GetActorValue(uint32_t aId) const noexcept
+{
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    return actorValueOwner.GetValue(pActorValueInfo);
+}
+
+float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+{
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    return actorValueOwner.GetMaxValue(pActorValueInfo);
 }
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept
@@ -167,6 +188,19 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
 
         pEquipManager->EquipObject(this, object, 0, 1, pSlot, false, true, false, true, false);
     }
+}
+
+void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
+{
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    actorValueOwner.SetValue(pActorValueInfo, aValue);
+}
+
+void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+{
+    const float current = GetActorValue(aId);
+    ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
+    actorValueOwner.ForceCurrent(aMode, pActorValueInfo, aValue - current);
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -275,7 +309,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     const auto pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
@@ -288,7 +322,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         const auto pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
@@ -299,7 +333,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 
     if (pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
@@ -325,7 +359,7 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
             const auto pExTarget = apTarget->GetExtension();
             if (pExTarget->IsLocal())
             {
-                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget, aEffectValue));
+                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
                 return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
             }
             return;
@@ -335,19 +369,50 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
     return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
 }
 
+TP_THIS_FUNCTION(TRunDetection, void, void, ActorKnowledge*);
+static TRunDetection* RealRunDetection = nullptr;
+
+void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
+{
+    auto pOwner = TESObjectREFR::GetByHandle(apTarget->hOwner);
+    auto pTarget = TESObjectREFR::GetByHandle(apTarget->hTarget);
+
+    if (pOwner && pTarget)
+    {
+        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
+        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        if (pOwnerActor && pTargetActor)
+        {
+            if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
+            {
+                spdlog::info("Cancelling detection from remote player to local player");
+                return;
+            }
+        }
+    }
+
+    return ThisCall(RealRunDetection, apThis, apTarget);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
     POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
+    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 0x140D6F1C0 - 0x140000000);
     POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
     POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
+    POINTER_FALLOUT4(TRunDetection, s_runDetection, 0x140F60320 - 0x140000000);
 
     RealActorConstructor = s_actorCtor.Get();
     RealActorConstructor2 = s_actorCtor2.Get();
+    RealActorDestructor = s_actorDtor.Get();
     RealDamageActor = s_damageActor.Get();
     RealApplyActorEffect = s_applyActorEffect.Get();
+    RealRunDetection = s_runDetection.Get();
 
     TP_HOOK(&RealActorConstructor, HookActorContructor);
     TP_HOOK(&RealActorConstructor2, HookActorContructor2);
+    TP_HOOK(&RealActorDestructor, HookActorDestructor);
     TP_HOOK(&RealDamageActor, HookDamageActor);
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+    TP_HOOK(&RealRunDetection, HookRunDetection);
 });

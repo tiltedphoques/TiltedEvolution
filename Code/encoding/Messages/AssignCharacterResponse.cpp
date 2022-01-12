@@ -9,6 +9,7 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     CellId.Serialize(aWriter);
     AllActorValues.Serialize(aWriter);
     Serialization::WriteBool(aWriter, IsDead);
+    Serialization::WriteBool(aWriter, IsWeaponDrawn);
 }
 
 void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -20,4 +21,5 @@ void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     CellId.Deserialize(aReader);
     AllActorValues.Deserialize(aReader);
     IsDead = Serialization::ReadBool(aReader);
+    IsWeaponDrawn = Serialization::ReadBool(aReader);
 }
