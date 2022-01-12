@@ -8,11 +8,14 @@
 #include <cxxopts.hpp>
 #include <filesystem>
 
-#include <fstream>
 #include <Setting.h>
+#include <fstream>
 #include <simpleini/SimpleIni.h>
 
 #include <TiltedCore/Filesystem.hpp>
+
+#include <base/Check.h>
+#include <base/IniSettingsProvider.h>
 
 constexpr char kSettingsFileName[] =
 #if SKYRIM
@@ -41,69 +44,17 @@ static std::shared_ptr<spdlog::logger> InitLogging()
     return logger;
 }
 
-static void DoWriteFile(const char *path, const std::string& data)
-{
-    std::ofstream myfile;
-    myfile.open(path);
-    myfile << data.c_str();
-    myfile.close();
-}
-
 static void ParseSettingsList()
 {
-    CSimpleIni ini;
-    // Write defaults
     auto configPath = fs::current_path() / kSettingsFileName;
     if (!fs::exists(configPath))
     {
-        SettingBase::VisitAll([&](SettingBase* setting) {
-            switch (setting->type)
-            {
-            case SettingBase::Type::kBoolean:
-                ini.SetBoolValue("test", setting->name, setting->data.as_boolean);
-                break;
-            case SettingBase::Type::kInt:
-
-
-                // TODO: handle unsigned types.
-                ini.SetLongValue("test", setting->name, setting->data.as_int32);
-                break;
-            case SettingBase::Type::kFloat:
-                ini.SetDoubleValue("test", setting->name, setting->data.as_float);
-                break;
-            default:
-                assert(true);
-            }
-        });
-
-        std::string buf;
-        ini.Save(buf, true);
-
-        DoWriteFile(configPath.u8string().c_str(), buf);
+        // Write defaults
+        base::SaveSettingsToIni(configPath);
         return;
     }
 
-    {
-        auto buf = TiltedPhoques::LoadFile(configPath);
-        ini.LoadData(buf.c_str());
-    }
-
-     SettingBase::VisitAll([&](SettingBase* setting) {
-        switch (setting->type)
-        {
-        case SettingBase::Type::kBoolean:
-            setting->data.as_boolean = ini.GetBoolValue("test", setting->name, setting->data.as_boolean);
-            break;
-        case SettingBase::Type::kInt:
-            setting->data.as_int32 = ini.GetLongValue("test", setting->name, setting->data.as_int32);
-            break;
-        case SettingBase::Type::kFloat:
-            setting->data.as_float = ini.GetDoubleValue("test", setting->name, setting->data.as_float);
-            break;
-        default:
-            assert(true);
-        }
-    });
+    base::LoadSettingsFromIni(configPath);
 }
 
 int main(int argc, char** argv)

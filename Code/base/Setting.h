@@ -1,10 +1,17 @@
+// Copyright (C) 2022 TiltedPhoques SRL.
+// For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <cstdint>
+#include <TiltedCore/Stl.hpp>
+#include <Base/Check.h>
+
+namespace base
+{
+using namespace TiltedPhoques;
 
 struct SettingBase
 {
-    enum class Type
+    enum class Type : uint16_t
     {
         kNone,
         kBoolean,
@@ -12,14 +19,17 @@ struct SettingBase
         kInt64,
         kUInt,
         kUInt64,
-        kFloat
+        kFloat,
+        kString
     };
 
-    enum class Flags : uint32_t
+    enum class Flags : uint16_t
     {
         kNone,
-        // Doesn't shot up in the help list.
+        // Doesn't show up in the help list.
         kHidden = 1 << 0,
+        // Value is write protected
+        kLocked = 1 << 1,
     };
 
     SettingBase(SettingBase*& parent) : next(parent)
@@ -60,15 +70,29 @@ struct SettingBase
             return Type::kUInt64;
         if constexpr (std::is_same_v<T, float>)
             return Type::kFloat;
+        if constexpr (std::is_same_v<T, const char*>)
+            return Type::kString;
+        if constexpr (std::is_same_v<T, char*>)
+            return Type::kString;
 
         return Type::kNone;
     }
 
+    const char* c_str() const
+    {
+        BASE_ASSERT(type == Type::kString, "Must be a string");
+        return data.as_string;
+    }
+
+    // type info
     Flags flags{Flags::kNone};
     Type type{Type::kNone};
+
+    // descriptor
     const char* name{nullptr};
     const char* desc{nullptr};
-
+    // Gets aligned to 8 bytes anyway
+    size_t dataLength;
     union {
         bool as_boolean;
         int32_t as_int32;
@@ -76,9 +100,10 @@ struct SettingBase
         uint32_t as_uint32;
         uint64_t as_uint64;
         float as_float;
+        const char* as_string;
     } data{};
 
-private:
+  private:
     SettingBase* next;
 };
 
@@ -90,8 +115,13 @@ template <typename T> struct Setting : SettingBase
     {
         SettingBase::name = acName;
         SettingBase::desc = acDesc;
-        SettingBase::type = ToTypeIndex<T>();
 
+        if constexpr (std::is_pointer<T>())
+            SettingBase::dataLength = std::strlen(acDefault);
+        else
+            SettingBase::dataLength = sizeof(Type);
+
+        SettingBase::type = ToTypeIndex<T>();
         data.as_int64 = 0;
 
         // poor mans bit cast
@@ -114,3 +144,5 @@ template <typename T> struct Setting : SettingBase
         return data.as_boolean;
     }
 };
+
+} // namespace base

@@ -25,9 +25,9 @@
 #include <windows.h>
 #endif
 
-// TODO: this is buggy as fuck with 
-static Setting<uint32_t> uServerPort{"general:uPort", "Which port to host the server on", 10578};
-static Setting<bool> bPremiumTickrate{"general:bPremium", "Use premium tick rate", true};
+static base::Setting uServerPort{"general:uPort", "Which port to host the server on", 10578u};
+static base::Setting bPremiumTickrate{"general:bPremium", "Use premium tick rate", true};
+static base::Setting sStartESMS{"archive:sMasterFiles", "Master files to use", "Test.esm"};
 
 GameServer* GameServer::s_pInstance = nullptr;
 
@@ -36,8 +36,7 @@ GameServer::GameServer(String aName, String aToken, String aAdminPassword) noexc
       m_adminPassword(std::move(aAdminPassword)),
       m_requestStop(false)
 {
-    assert(s_pInstance == nullptr);
-
+    BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
 
     const uint16_t userTick = bPremiumTickrate ? 60 : 20;

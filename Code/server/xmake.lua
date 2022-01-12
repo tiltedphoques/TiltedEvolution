@@ -22,6 +22,7 @@ target(name)
 
     add_deps(
         "Common",
+        "Base",
         "TiltedScript",
         "TiltedConnect",
         "AdminProtocol")

@@ -8,6 +8,7 @@ add_requires(
 	"cryptopp",
     "spdlog",
     "cpp-httplib",
+    "gtest",
     "mem")
 
 -- all libraries listed here are under frequent change, and are thus not quired via

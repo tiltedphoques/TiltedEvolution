@@ -414,7 +414,7 @@ public:
     /** Characterset conversion utility class to convert strings to the
         same format as is used for the storage.
     */
-    class Converter : private SI_CONVERTER {
+    class Converter : public SI_CONVERTER {
     public:
         Converter(bool a_bStoreIsUtf8) : SI_CONVERTER(a_bStoreIsUtf8) {
             m_scratch.resize(1024);
@@ -437,6 +437,11 @@ public:
                 const_cast<char*>(m_scratch.data()),
                 m_scratch.size());
         }
+
+        inline bool ConvertToStore(const SI_CHAR* a_pInputData, char* a_pOutputData, size_t a_uOutputDataSize) {
+            return SI_CONVERTER::ConvertToStore(a_pInputData, a_pOutputData, a_uOutputDataSize);
+        }
+
         const char * Data() { return m_scratch.data(); }
     private:
         std::string m_scratch;
@@ -1175,6 +1180,7 @@ private:
         @param a_bCopyStrings   Should copies of the strings be made or not.
                             If false then the pointers will be used as is.
     */
+  public:
     SI_Error AddEntry(
         const SI_CHAR * a_pSection,
         const SI_CHAR * a_pKey,
@@ -1183,6 +1189,8 @@ private:
         bool            a_bForceReplace,
         bool            a_bCopyStrings
         );
+
+  private:
 
     /** Is the supplied character a whitespace character? */
     inline bool IsSpace(SI_CHAR ch) const {
@@ -2846,6 +2854,7 @@ public:
      *                      terminating NULL character was successfully
      *                      converted.
      */
+  public:
     bool ConvertToStore(
         const SI_CHAR * a_pInputData,
         char *          a_pOutputData,
