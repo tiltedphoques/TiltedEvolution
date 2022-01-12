@@ -12,5 +12,18 @@ TESFile::TESFile(const std::filesystem::path& acPath)
 
     std::ifstream file(acPath, std::ios::binary);
     file.read(reinterpret_cast<char*>(m_buffer.GetWriteData()), fileSize);
+
+    BuildFormIdRecordMap();
+}
+
+void TESFile::BuildFormIdRecordMap() noexcept
+{
+}
+
+template<class T>
+Vector<T> TESFile::GetRecords() noexcept
+{
+    // TODO: I changed TiltedCore locally to expose GetBytePosition() publicly
+    Buffer::Reader reader(&m_buffer);
 }
 
