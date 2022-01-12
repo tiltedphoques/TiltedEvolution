@@ -6,8 +6,8 @@
 #include <base/Setting.h>
 #include <base/simpleini/SimpleIni.h>
 
-#include <fstream>
 #include <charconv>
+#include <fstream>
 
 #include <TiltedCore/Filesystem.hpp>
 
@@ -24,34 +24,29 @@ static void ShittyFileWrite(const std::filesystem::path& path, const std::string
 }
 
 template <typename T, typename TVal>
-static SI_Error SetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, TVal a_nValue,
+static SI_Error SetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TVal a_nValue,
                             const T* a_pComment = nullptr)
 {
-    if (!a_pSection || !a_pKey)
-        return SI_FAIL;
-
-    // TODO: switch to to_chars
-    auto buf = fmt::format("{}", a_nValue);
+    char szValue[64]{};
+    std::to_chars(szValue, szValue + sizeof(szValue), a_nValue);
 
     // convert to output text
     T szOutput[256];
     CSimpleIni::Converter c(ini.IsUnicode());
-    c.ConvertFromStore(buf.c_str(), buf.length() + 1, szOutput, sizeof(szOutput) / sizeof(T));
+    c.ConvertFromStore(szValue, std::strlen(szValue) + 1, szOutput, sizeof(szOutput) / sizeof(T));
 
-    // actually add it
     return ini.AddEntry(a_pSection, a_pKey, szOutput, a_pComment, false, true);
 }
 
 template <typename T, typename TVal>
 TVal GetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TVal a_nDefault, bool& a_pHasMultiple)
 {
-    // return the default if we don't have a value
     const T* pszValue = ini.GetValue(a_pSection, a_pKey, nullptr, &a_pHasMultiple);
     if (!pszValue || !*pszValue)
         return a_nDefault;
 
     // convert to UTF-8/MBCS which for a numeric value will be the same as ASCII
-    char szValue[64] = {0};
+    char szValue[64]{};
     CSimpleIni::Converter c(ini.IsUnicode());
     if (!c.ConvertToStore(pszValue, szValue, sizeof(szValue)))
     {
@@ -67,7 +62,7 @@ TVal GetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TV
     return a_nDefault;
 }
 
-std::pair<std::string, const char*> SplitSection(const SettingBase *setting)
+std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
 {
     std::string nameProperty(setting->name);
     size_t pos = nameProperty.find_first_of(':');
@@ -77,7 +72,7 @@ std::pair<std::string, const char*> SplitSection(const SettingBase *setting)
 
     return {section, name};
 }
-}
+} // namespace
 
 void SaveSettingsToIni(const std::filesystem::path& path)
 {
@@ -88,30 +83,30 @@ void SaveSettingsToIni(const std::filesystem::path& path)
     SettingBase::VisitAll([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
-        auto name = items.second;
+        auto& name = items.second;
 
         switch (setting->type)
         {
         case SettingBase::Type::kBoolean:
-            error = ini.SetBoolValue(section.c_str(), name, setting->data.as_boolean);
+            error = ini.SetBoolValue(section.c_str(), name.c_str(), setting->data.as_boolean);
             break;
         case SettingBase::Type::kInt:
-            error = SetIniValue(ini, section.c_str(), name, setting->data.as_int32);
+            error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int32);
             break;
         case SettingBase::Type::kUInt:
-            error = SetIniValue(ini, section.c_str(), name, setting->data.as_uint32);
+            error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint32);
             break;
         case SettingBase::Type::kInt64:
-            error = SetIniValue(ini, section.c_str(), name, setting->data.as_int64);
+            error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int64);
             break;
         case SettingBase::Type::kUInt64:
-            error = SetIniValue(ini, section.c_str(), name, setting->data.as_uint64);
+            error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint64);
             break;
         case SettingBase::Type::kFloat:
-            error = SetIniValue(ini, section.c_str(), name, setting->data.as_float);
+            error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_float);
             break;
         case SettingBase::Type::kString:
-            error = ini.SetValue(section.c_str(), name, setting->c_str());
+            error = ini.SetValue(section.c_str(), name.c_str(), setting->c_str());
             break;
         default:
             BASE_ASSERT(true, "SaveSettingsToIni(): Unknown type index for {}", setting->name);
@@ -141,33 +136,43 @@ void LoadSettingsFromIni(const std::filesystem::path& path)
     SettingBase::VisitAll([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
-        auto name = items.second;
+        auto& name = items.second;
 
         bool multiMatch = false;
         switch (setting->type)
         {
+        // With scalar types we don't expect the size to change...
+        // However, they should all call StoreValue in the future.
         case SettingBase::Type::kBoolean:
-            setting->data.as_boolean = ini.GetBoolValue(section.c_str(), name, setting->data.as_boolean);
+            setting->data.as_boolean = ini.GetBoolValue(section.c_str(), name.c_str(), setting->data.as_boolean);
             break;
         case SettingBase::Type::kInt:
-            setting->data.as_int32 = GetIniValue(ini, section.c_str(), name, setting->data.as_int32, multiMatch);
+            setting->data.as_int32 =
+                GetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int32, multiMatch);
             break;
         case SettingBase::Type::kUInt:
-            setting->data.as_uint32 = GetIniValue(ini, section.c_str(), name, setting->data.as_uint32, multiMatch);
+            setting->data.as_uint32 =
+                GetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint32, multiMatch);
             break;
         case SettingBase::Type::kInt64:
-            setting->data.as_int64 = GetIniValue(ini, section.c_str(), name, setting->data.as_int64, multiMatch);
+            setting->data.as_int64 =
+                GetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int64, multiMatch);
             break;
         case SettingBase::Type::kUInt64:
-            setting->data.as_uint64 = GetIniValue(ini, section.c_str(), name, setting->data.as_uint64, multiMatch);
+            setting->data.as_uint64 =
+                GetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint64, multiMatch);
             break;
         case SettingBase::Type::kFloat:
-            setting->data.as_float = GetIniValue(ini, section.c_str(), name, setting->data.as_float, multiMatch);
+            setting->data.as_float =
+                GetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_float, multiMatch);
             break;
-        case SettingBase::Type::kString:
-            // TODO: string_storage
-            //setting->data.as_string = GetIniValue(ini, section.c_str(), name, setting->data.as_float, multiMatch);
+        // Strings however are a special case, as it has its own allocator.
+        case SettingBase::Type::kString: {
+            // This is not nearly how i want it to be :/
+            const char* c = ini.GetValue(section.c_str(), name.c_str(), setting->c_str());
+            static_cast<StringSetting*>(setting)->StoreValue(*setting, c);
             break;
+        }
         default:
             BASE_ASSERT(true, "LoadSettingsFromIni(): Unknown type index for {}", setting->name);
             break;

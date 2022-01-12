@@ -1296,7 +1296,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::CSimpleIniTempl(
   , m_bStoreIsUtf8(a_bIsUtf8)
   , m_bAllowMultiKey(a_bAllowMultiKey)
   , m_bAllowMultiLine(a_bAllowMultiLine)
-  , m_bSpaces(true)
+  , m_bSpaces(false)
   , m_nOrder(0)
 { }
 

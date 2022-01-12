@@ -18,16 +18,18 @@ public:
     {
         String name;
         String desc;
-        String token_url;
+        String icon_url;
         uint16_t tick_rate;
     };
 
-    GameServer(String aName, String aToken, String aAdminPassword = "") noexcept;
+    GameServer() noexcept;
     virtual ~GameServer();
 
     TP_NOCOPYMOVE(GameServer);
 
     void Initialize();
+    void BindMessageHandlers();
+    void UpdateInfo();
 
     void OnUpdate() override;
     void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
@@ -69,9 +71,6 @@ private:
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
 
     Info m_info{};
-    String m_token;
-    String m_adminPassword;
-
     std::unique_ptr<World> m_pWorld;
 
     Set<ConnectionId_t> m_adminSessions;

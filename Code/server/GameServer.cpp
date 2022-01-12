@@ -25,49 +25,59 @@
 #include <windows.h>
 #endif
 
-static base::Setting uServerPort{"general:uPort", "Which port to host the server on", 10578u};
-static base::Setting bPremiumTickrate{"general:bPremium", "Use premium tick rate", true};
-static base::Setting sStartESMS{"archive:sMasterFiles", "Master files to use", "Test.esm"};
+static base::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+static base::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+static base::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list", "Dedicated Together Server"};
+static base::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list", "Hello there!"};
+static base::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
+static base::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+static base::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+
+static uint16_t GetUserTickRate()
+{
+    return bPremiumTickrate ? 60 : 20;
+}
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(String aName, String aToken, String aAdminPassword) noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_token(std::move(aToken)),
-      m_adminPassword(std::move(aAdminPassword)),
+GameServer::GameServer() noexcept
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()),
       m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
 
-    const uint16_t userTick = bPremiumTickrate ? 60 : 20;
-
     auto port = uServerPort.value_as<uint16_t>();
-    while (!Host(port, userTick))
+    while (!Host(port, GetUserTickRate()))
     {
         spdlog::warn("Port {} is already in use, trying {}", port, port + 1);
         port++;
     }
 
-    // Fill in Info field.
-    m_info.name = std::move(aName);
-    m_info.desc = "This is my very own ST server";
-    m_info.tick_rate = userTick;
-    m_info.token_url = "";
-
-    if (m_info.name.empty())
-        m_info.name = "A Skyrim Together Server";
-
+    UpdateInfo();
     spdlog::info("Server started on port {}", GetPort());
     UpdateTitle();
 
     m_pWorld = std::make_unique<World>();
+    BindMessageHandlers();
+}
 
-    auto handlerGenerator = [this](auto& x)
-    {
+GameServer::~GameServer()
+{
+    s_pInstance = nullptr;
+}
+
+void GameServer::Initialize()
+{
+    m_pWorld->GetScriptService().Initialize();
+}
+
+void GameServer::BindMessageHandlers()
+{
+    auto handlerGenerator = [this](auto& x) {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
         m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
-
             auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
             if (!pPlayer)
@@ -88,7 +98,8 @@ GameServer::GameServer(String aName, String aToken, String aAdminPassword) noexc
     ClientMessageFactory::Visit(handlerGenerator);
 
     // Override authentication request
-    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
+    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage,
+                                                              ConnectionId_t aConnectionId) {
         const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(apMessage));
         HandleAuthenticationRequest(aConnectionId, pRealMessage);
     };
@@ -96,8 +107,8 @@ GameServer::GameServer(String aName, String aToken, String aAdminPassword) noexc
     auto adminHandlerGenerator = [this](auto& x) {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage, ConnectionId_t aConnectionId) {
-            
+        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage,
+                                                   ConnectionId_t aConnectionId) {
             const auto pRealMessage = CastUnique<T>(std::move(apMessage));
             m_pWorld->GetDispatcher().trigger(AdminPacketEvent<T>(pRealMessage.get(), aConnectionId));
         };
@@ -108,14 +119,13 @@ GameServer::GameServer(String aName, String aToken, String aAdminPassword) noexc
     ClientAdminMessageFactory::Visit(adminHandlerGenerator);
 }
 
-GameServer::~GameServer()
+void GameServer::UpdateInfo()
 {
-    s_pInstance = nullptr;
-}
-
-void GameServer::Initialize()
-{
-    m_pWorld->GetScriptService().Initialize();
+    // Update Info fields from user facing cvars.
+    m_info.name = sServerName.c_str();
+    m_info.desc = sServerDesc.c_str();
+    m_info.icon_url = sServerIconURL.c_str();
+    m_info.tick_rate = GetUserTickRate();
 }
 
 void GameServer::OnUpdate()
@@ -309,7 +319,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
     info.m_addrRemote.ToString(remoteAddress, 48, false);
 
-    if(acRequest->Token == m_token)
+    if (acRequest->Token == sToken.value())
     {
         auto& scripts = m_pWorld->GetScriptService();
 
@@ -391,7 +401,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
-    else if (acRequest->Token == m_adminPassword && !m_adminPassword.empty())
+    else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
         /* AdminSessionOpen response;
         Send(aConnectionId, response);

@@ -2,8 +2,8 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <TiltedCore/Stl.hpp>
 #include <Base/Check.h>
+#include <TiltedCore/Stl.hpp>
 
 namespace base
 {
@@ -32,12 +32,12 @@ struct SettingBase
         kLocked = 1 << 1,
     };
 
-    SettingBase(SettingBase*& parent) : next(parent)
+    SettingBase(SettingBase*& parent, const char* n, const char* d, Type t) : next(parent), name(n), desc(d), type(t)
     {
         parent = this;
     }
 
-    SettingBase() : SettingBase(ROOT())
+    explicit SettingBase(const char* n, const char* d, Type t) : SettingBase(ROOT(), n, d, t)
     {
     }
 
@@ -72,15 +72,12 @@ struct SettingBase
             return Type::kFloat;
         if constexpr (std::is_same_v<T, const char*>)
             return Type::kString;
-        if constexpr (std::is_same_v<T, char*>)
-            return Type::kString;
-
         return Type::kNone;
     }
 
     const char* c_str() const
     {
-        BASE_ASSERT(type == Type::kString, "Must be a string");
+        //BASE_ASSERT(type == Type::kString, "Must be a string");
         return data.as_string;
     }
 
@@ -91,6 +88,7 @@ struct SettingBase
     // descriptor
     const char* name{nullptr};
     const char* desc{nullptr};
+
     // Gets aligned to 8 bytes anyway
     size_t dataLength;
     union {
@@ -107,30 +105,59 @@ struct SettingBase
     SettingBase* next;
 };
 
-// TODO: this would really benefit from CXX 20 requires keyword
-template <typename T> struct Setting : SettingBase
+namespace detail
 {
-    // This could deserve a constinit
-    Setting(const char* acName, const char* acDesc, const T acDefault)
+template <typename T> struct FixedStorage
+{
+    constexpr FixedStorage(SettingBase& b, const T acValue)
     {
-        SettingBase::name = acName;
-        SettingBase::desc = acDesc;
+        b.dataLength = sizeof(T);
+        b.data.as_int64 = 0;
 
-        if constexpr (std::is_pointer<T>())
-            SettingBase::dataLength = std::strlen(acDefault);
-        else
-            SettingBase::dataLength = sizeof(Type);
-
-        SettingBase::type = ToTypeIndex<T>();
-        data.as_int64 = 0;
-
-        // poor mans bit cast
-        std::memcpy(&SettingBase::data.as_int64, &acDefault, sizeof(T));
+        StoreValue(b, acValue);
     }
+
+    inline constexpr void StoreValue(SettingBase& b, const T acValue)
+    {
+        // The Size is never gonna change, so we only need to update the actual
+        // data
+        std::memcpy(&b.data.as_int64, &acValue, sizeof(T));
+    }
+};
+
+template <typename T> struct DynamicStringStorage
+{
+    DynamicStringStorage(SettingBase& b, const T* acValue)
+    {
+        StoreValue(b, acValue);
+    }
+
+    inline void StoreValue(SettingBase& b, const T* acValue)
+    {
+        m_data = acValue;
+        b.dataLength = m_data.length() * sizeof(T);
+        b.data.as_string = m_data.c_str();
+    }
+
+  private:
+    std::basic_string<T, std::char_traits<T>, StlAllocator<T>> m_data;
+};
+}
+
+// Settings can have their own custom storage spaces.
+// However, make sure to make the providers aware of this.
+template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : public SettingBase, public TStorage
+{
+  public:
+    Setting(const char* acName, const char* acDesc, const T acDefault)
+        : SettingBase(acName, acDesc, ToTypeIndex<T>()), TStorage(*this, acDefault)
+    {
+    }
+
+    Setting() = delete;
 
     T& value()
     {
-        // TODO: bitcast?
         return reinterpret_cast<T&>(data.as_uint64);
     }
 
@@ -139,10 +166,23 @@ template <typename T> struct Setting : SettingBase
         return static_cast<Tas>(data.as_uint64);
     }
 
-    template <typename = typename std::enable_if<true>::type> operator bool()
+    operator bool()
     {
+        static_assert(std::is_same_v<T, bool>, "Must be a boolean");
         return data.as_boolean;
+    }
+
+    bool empty()
+    {
+        return dataLength == 0;
+    }
+
+    void operator=(const T value)
+    {
+        TStorage::StoreValue(*this, value);
     }
 };
 
+using StringSetting = Setting<const char*, detail::DynamicStringStorage<char>>;
+// NOTE: Wide strings are not supported, since our ini cant handle them.
 } // namespace base

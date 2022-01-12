@@ -64,7 +64,7 @@ void ServerListService::Announce() const noexcept
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
     const auto& cInfo = pServer->GetInfo();
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.token_url,
+    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
                         pServer->GetPort(),
                         cInfo.tick_rate, pc, kPlayerMaxCap);
 }
