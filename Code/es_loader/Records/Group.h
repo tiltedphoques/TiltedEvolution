@@ -14,3 +14,9 @@ private:
 
 static_assert(sizeof(Group) == 0x10);
 
+class GroupData
+{
+public:
+    Vector<const void*> m_fields;
+};
+

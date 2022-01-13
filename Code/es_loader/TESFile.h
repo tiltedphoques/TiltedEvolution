@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Records/Group.h>
+
 class Record;
 
 class TESFile
@@ -25,14 +27,18 @@ public:
 
 private:
     void BuildFormIdRecordMap() noexcept;
+    bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
 
     String m_filename;
     Buffer m_buffer;
     Map<uint32_t, Record*> m_formIdRecordMap;
+    Map<Group*, GroupData> m_groupDataMap;
     uint32_t m_flags;
     union
     {
         uint8_t m_standardId;
         uint16_t m_liteId;
     };
+
+    Vector<Record*> m_objectReferences;
 };

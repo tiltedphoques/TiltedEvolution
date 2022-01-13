@@ -69,7 +69,7 @@ void ESLoader::LoadFiles()
 }
 
 template<class T>
-Map<String, Vector<T>> ESLoader::GetRecords()
+Map<String, Vector<T>> ESLoader::GetRecords() noexcept
 {
     Map<String, Vector<T>> allRecords{};
     for (TESFile& plugin : m_standardPlugins)

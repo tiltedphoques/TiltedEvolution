@@ -1,9 +1,20 @@
 #pragma once
 
+enum class FormEnum : uint32_t
+{
+    REFR = 0x52464552,
+    ACHR = 0x52484341,
+};
+
 class Record
 {
+public:
     Record() = delete;
 
+    [[nodiscard]] FormEnum GetType() const noexcept
+    {
+        return m_formType;
+    }
     [[nodiscard]] uint32_t GetFormId() const noexcept
     {
         return m_formId;
@@ -18,7 +29,7 @@ class Record
     }
 
 private:
-    uint32_t m_formType;
+    FormEnum m_formType;
     uint32_t m_dataSize;
     uint32_t m_flags;
     uint32_t m_formId;
