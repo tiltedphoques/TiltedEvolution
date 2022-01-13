@@ -17,7 +17,7 @@ struct PartyChangeLeaderRequest final : ClientMessage
 
     bool operator==(const PartyChangeLeaderRequest& achRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() &&
+        return GetOpcode() == achRhs.GetOpcode() &&
         PartyMemberPlayerId == achRhs.PartyMemberPlayerId;
     }
 

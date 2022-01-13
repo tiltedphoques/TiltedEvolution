@@ -17,7 +17,7 @@ struct PartyKickRequest final : ClientMessage
 
     bool operator==(const PartyKickRequest& achRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() &&
+        return GetOpcode() == achRhs.GetOpcode() &&
         PartyMemberPlayerId == achRhs.PartyMemberPlayerId;
     }
 
