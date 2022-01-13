@@ -337,15 +337,15 @@ void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
     }
 }
 
-void PartyService::SendPartyJoinedEvent(Party& party, Player* player) noexcept
+void PartyService::SendPartyJoinedEvent(Party& aParty, Player* aPlayer) noexcept
 {
     NotifyPartyJoined joinedMessage;
-    joinedMessage.LeaderPlayerId = party.LeaderPlayerId;
-    joinedMessage.IsLeader = party.LeaderPlayerId == player->GetId();
-    for (auto pPlayer : party.Members)
+    joinedMessage.LeaderPlayerId = aParty.LeaderPlayerId;
+    joinedMessage.IsLeader = aParty.LeaderPlayerId == aPlayer->GetId();
+    for (auto pPlayer : aParty.Members)
     {
         joinedMessage.PlayerIds.push_back(pPlayer->GetId());
     }
     spdlog::debug("[PartyService]: Sending party join event to player");
-    player->Send(joinedMessage);
+    aPlayer->Send(joinedMessage);
 }

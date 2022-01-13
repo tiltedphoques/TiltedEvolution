@@ -21,9 +21,9 @@ struct NotifyPartyInfo final : ServerMessage
 
     bool operator==(const NotifyPartyInfo& acRhs) const noexcept
     {
-        return PlayerIds == acRhs.PlayerIds &&
-            LeaderPlayerId == acRhs.LeaderPlayerId &&
-            GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+            PlayerIds == acRhs.PlayerIds &&
+            LeaderPlayerId == acRhs.LeaderPlayerId;
     }
 
     Vector<uint32_t> PlayerIds{};

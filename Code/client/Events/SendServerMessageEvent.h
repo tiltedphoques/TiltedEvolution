@@ -4,7 +4,7 @@ struct TESObjectREFR;
 
 struct SendServerMessageEvent
 {
-    SendServerMessageEvent(ClientMessage message) : Message(message)
+    SendServerMessageEvent(ClientMessage aMessage) : Message(aMessage)
     {}
 
     ClientMessage Message;
