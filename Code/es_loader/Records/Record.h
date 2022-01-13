@@ -1,17 +1,19 @@
 #pragma once
 
-enum class FormEnum : uint32_t
-{
-    TES4 = 0x34534554,
-    GRUP = 0x50555247,
-    REFR = 0x52464552,
-    ACHR = 0x52484341,
-    CELL = 0x4C4C4543,
-};
+#include "TESFileRecordTypes.inl"
 
 class Record
 {
 public:
+
+#pragma pack(push, 1)
+    struct Chunk
+    {
+        ChunkId m_chunkId;
+        uint16_t m_dataSize;
+    };
+#pragma pack(pop)
+
     enum FLAGS
     {
         kMasterFile = 1,
@@ -21,6 +23,9 @@ public:
     };
 
     Record() = delete;
+
+    template <class T> 
+    void IterateChunks(const T& aCallback);
 
     [[nodiscard]] FormEnum GetType() const noexcept
     {
@@ -68,4 +73,5 @@ private:
 };
 
 static_assert(sizeof(Record) == 0x18);
+static_assert(sizeof(Record::Chunk) == 0x6);
 
