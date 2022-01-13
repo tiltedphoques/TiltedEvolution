@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include <Records/REFR.h>
+#include <Records/CLMT.h>
 
 namespace fs = std::filesystem;
 
@@ -73,14 +74,14 @@ void ESLoader::LoadFiles()
         //m_standardPlugins.push_back(TESFile(filename));
         TESFile skyrimEsm(filename);
 
-        const Vector<REFR*>& refs = skyrimEsm.GetObjectReferences();
+        const Map<uint32_t, CLMT*>& climates = skyrimEsm.GetClimates();
 
-        Vector<REFR::Data> refrData;
-        for (REFR* ref : refs)
+        Vector<CLMT::Data> climateData;
+        for (auto& climate : climates)
         {
-            refrData.push_back(ref->ParseChunks());
+            climateData.push_back(climate.second->ParseChunks());
         }
-        spdlog::info("refrData count: {}", refrData.size());
+        spdlog::info("refrData count: {}", climateData.size());
     }
 }
 

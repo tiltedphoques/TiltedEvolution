@@ -7,6 +7,7 @@ enum class FormEnum : uint32_t
     REFR = 0x52464552,
     ACHR = 0x52484341,
     CELL = 0x4C4C4543,
+    CLMT = 0x544D4C43,
 };
 
 enum class ChunkId : uint32_t

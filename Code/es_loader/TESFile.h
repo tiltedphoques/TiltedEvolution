@@ -4,6 +4,7 @@
 
 class Record;
 class REFR;
+class CLMT;
 
 class TESFile
 {
@@ -26,9 +27,13 @@ public:
 
     template<class T> Vector<T> GetRecords() noexcept;
 
-    const Vector<REFR*>& GetObjectReferences() const noexcept
+    const Map<uint32_t, REFR*>& GetObjectReferences() const noexcept
     {
         return m_objectReferences;
+    }
+    const Map<uint32_t, CLMT*>& GetClimates() const noexcept
+    {
+        return m_climates;
     }
 
 private:
@@ -47,5 +52,6 @@ private:
     };
 
     Map<uint32_t, REFR*> m_objectReferences;
+    Map<uint32_t, CLMT*> m_climates;
     Vector<Record*> m_cells;
 };

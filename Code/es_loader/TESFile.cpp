@@ -5,6 +5,7 @@
 
 #include "Records/Record.h"
 #include "Records/REFR.h"
+#include "Records/CLMT.h"
 
 TESFile::TESFile(const std::filesystem::path& acPath)
 {
@@ -73,6 +74,10 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
             break;
         case FormEnum::CELL:
             m_cells.push_back(record);
+            break;
+        case FormEnum::CLMT:
+            CLMT* recordCLMT = reinterpret_cast<CLMT*>(record);
+            m_climates[record->GetFormId()] = recordCLMT;
             break;
         }
 
