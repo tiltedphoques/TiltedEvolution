@@ -22,10 +22,9 @@ private:
     uint32_t m_dataSize;
     uint32_t m_flags;
     uint32_t m_formId;
-    uint16_t m_timestamp;
-    uint16_t m_versionInfo;
-    uint16_t m_internalVersion;
-    uint16_t m_unk;
+    uint32_t m_versionControl;
+    uint16_t m_formVersion;
+    uint16_t m_vcVersion;
 };
 
 static_assert(sizeof(Record) == 0x18);
