@@ -15,6 +15,7 @@
 #include <TiltedCore/Filesystem.hpp>
 
 #include <base/Check.h>
+#include <base/simpleini/SimpleIni.h>
 #include <base/IniSettingsProvider.h>
 
 constexpr char kSettingsFileName[] =
@@ -26,6 +27,14 @@ constexpr char kSettingsFileName[] =
     "Server.ini"
 #endif
     ;
+
+// Its fine for us if several potential server instances read this, since its a tilted platform thing
+// and therefore not considered game specific.
+constexpr char kEULAName[] = "EULA.txt";
+constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted platform service agreement\n"
+                             ";by setting bConfirmEULA to true\n"
+                             "[EULA]\n"
+                             "bConfirmEULA=false";
 
 namespace fs = std::filesystem;
 
@@ -74,12 +83,43 @@ struct SettingsScope
         base::SaveSettingsToIni(m_Path);
     }
 
-private:
+  private:
     fs::path m_Path;
 };
 
+static void ShittyFileWrite(const std::filesystem::path& aPath, const char* const acData)
+{
+    // TODO: Get rid of this, its horrible.
+    std::ofstream myfile(aPath.c_str());
+    myfile << acData;
+    myfile.close();
+}
+
+static bool IsEULAAccepted()
+{
+    auto path = fs::current_path() / kEULAName;
+    if (!fs::exists(path))
+    {
+        ShittyFileWrite(path, kEULAText);
+        return false;
+    }
+
+    auto data = TiltedPhoques::LoadFile(path);
+    CSimpleIni si;
+    if (si.LoadData(data.c_str()) != SI_OK)
+        return false;
+
+    return si.GetBoolValue("EULA", "bConfirmEULA", false);
+}
+
 int main(int argc, char** argv)
 {
+    if (!IsEULAAccepted())
+    {
+        fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
+        return 0;
+    }
+
     SettingsScope sscope;
     (void)sscope;
 

@@ -29,6 +29,7 @@ struct SettingBase
         // Doesn't show up in the help list.
         kHidden = 1 << 0,
         // Value is write protected
+        // TODO: honor the lock.
         kLocked = 1 << 1,
     };
 
