@@ -35,7 +35,7 @@ static base::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
 static uint16_t GetUserTickRate()
 {
-    return bPremiumTickrate ? 60 : 20;
+    return bPremiumTickrate ? 60 : 30;
 }
 
 GameServer* GameServer::s_pInstance = nullptr;
