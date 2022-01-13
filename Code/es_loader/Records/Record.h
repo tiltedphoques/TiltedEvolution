@@ -6,11 +6,20 @@ enum class FormEnum : uint32_t
     GRUP = 0x50555247,
     REFR = 0x52464552,
     ACHR = 0x52484341,
+    CELL = 0x4C4C4543,
 };
 
 class Record
 {
 public:
+    enum FLAGS
+    {
+        kMasterFile = 1,
+        kCompressed = 0x40000,
+        kIgnored = 0x1000,
+        kIsMarker = 0x800000,
+    };
+
     Record() = delete;
 
     [[nodiscard]] FormEnum GetType() const noexcept
@@ -28,6 +37,24 @@ public:
     [[nodiscard]] uint32_t GetFlags() const noexcept
     {
         return m_flags;
+    }
+
+    [[nodiscard]] bool Compressed() const noexcept
+    {
+        return (m_flags & FLAGS::kCompressed) != 0;
+    }
+    [[nodiscard]] bool Ignored() const noexcept
+    {
+        return (m_flags & FLAGS::kIgnored) != 0;
+    }
+    [[nodiscard]] bool Master() const noexcept
+    {
+        return (m_flags & FLAGS::kMasterFile) != 0;
+    }
+
+    [[nodiscard]] bool DefaultForm() const noexcept
+    {
+        return m_formId - 1 <= 0x7FE;
     }
 
 private:

@@ -49,10 +49,10 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
 
         while (aReader.GetBytePosition() < endOfGroup)
         {
-            const uint8_t* field = m_buffer.GetData() + aReader.GetBytePosition();
+            const uint8_t* subGroup = m_buffer.GetData() + aReader.GetBytePosition();
             if (ReadGroupOrRecord(aReader))
             {
-                data.m_fields.push_back(field);
+                data.m_subGroups.push_back(subGroup);
             }
         }
 
@@ -68,6 +68,9 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
         case FormEnum::REFR:
         case FormEnum::ACHR:
             m_objectReferences.push_back(record);
+            break;
+        case FormEnum::CELL:
+            m_cells.push_back(record);
             break;
         }
 

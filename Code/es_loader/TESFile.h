@@ -41,4 +41,5 @@ private:
     };
 
     Vector<Record*> m_objectReferences;
+    Vector<Record*> m_cells;
 };
