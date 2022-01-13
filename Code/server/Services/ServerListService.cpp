@@ -7,15 +7,12 @@
 #include <Services/ServerListService.h>
 
 #include <future>
+#include <base/Setting.h>
 
 #include <Components.h>
 
-//#define DISABLE_LIST
-
-#ifndef DISABLE_LIST
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
-#endif
 
 static constexpr char kMasterServerEndpoint[] = 
 #if TP_SKYRIM
@@ -26,6 +23,9 @@ static constexpr char kMasterServerEndpoint[] =
 #endif
 
 static constexpr uint16_t kPlayerMaxCap = 1000;
+
+static base::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
+                                     "Whether to announce the server to the tilted server list", true};
 
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this)),
@@ -59,10 +59,12 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    auto* pServer = GameServer::Get();
+    if (!bAnnounceServer)
+        return;
 
-    auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
+    auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
+    auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
     auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
                         pServer->GetPort(),
@@ -72,7 +74,6 @@ void ServerListService::Announce() const noexcept
 void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
                                          uint16_t aPlayerCount, uint16_t aPlayerMaxCount) noexcept
 {
-#ifndef DISABLE_LIST
     const httplib::Params params{
         {"name", std::string(acName.c_str(), acName.size())},
         {"desc", std::string(acDesc.c_str(), acDesc.size())},
@@ -91,5 +92,4 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
     {
         GameServer::Get()->Close();
     }
-#endif
 }

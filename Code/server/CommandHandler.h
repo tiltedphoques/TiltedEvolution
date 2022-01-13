@@ -11,6 +11,6 @@ class CommandHandler
   private:
     struct CommandItem
     {
-
+        const char* c;
     };
 };
