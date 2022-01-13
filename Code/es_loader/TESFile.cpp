@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "Records/Record.h"
+#include "Records/REFR.h"
 
 TESFile::TESFile(const std::filesystem::path& acPath)
 {
@@ -66,8 +67,9 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
         switch (record->GetType())
         {
         case FormEnum::REFR:
-        case FormEnum::ACHR:
-            m_objectReferences.push_back(record);
+        //case FormEnum::ACHR:
+            REFR* recordREFR = reinterpret_cast<REFR*>(record);
+            m_objectReferences[record->GetFormId()] = recordREFR;
             break;
         case FormEnum::CELL:
             m_cells.push_back(record);

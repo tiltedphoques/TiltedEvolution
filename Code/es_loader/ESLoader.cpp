@@ -1,6 +1,9 @@
 #include "ESLoader.h"
 
 #include <filesystem>
+
+#include <Records/REFR.h>
+
 namespace fs = std::filesystem;
 
 ESLoader::ESLoader(String aDirectory) 
@@ -64,7 +67,20 @@ void ESLoader::LoadFiles()
 {
     for (const auto& filename : m_esmFilenames)
     {
-        m_standardPlugins.push_back(TESFile(filename));
+        if (filename.filename().string() != "Skyrim.esm")
+            continue;
+
+        //m_standardPlugins.push_back(TESFile(filename));
+        TESFile skyrimEsm(filename);
+
+        const Vector<REFR*>& refs = skyrimEsm.GetObjectReferences();
+
+        Vector<REFR::Data> refrData;
+        for (REFR* ref : refs)
+        {
+            refrData.push_back(ref->ParseChunks());
+        }
+        spdlog::info("refrData count: {}", refrData.size());
     }
 }
 

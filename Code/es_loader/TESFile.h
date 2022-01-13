@@ -3,6 +3,7 @@
 #include <Records/Group.h>
 
 class Record;
+class REFR;
 
 class TESFile
 {
@@ -25,6 +26,11 @@ public:
 
     template<class T> Vector<T> GetRecords() noexcept;
 
+    const Vector<REFR*>& GetObjectReferences() const noexcept
+    {
+        return m_objectReferences;
+    }
+
 private:
     void BuildFormIdRecordMap() noexcept;
     bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
@@ -40,6 +46,6 @@ private:
         uint16_t m_liteId;
     };
 
-    Vector<Record*> m_objectReferences;
+    Map<uint32_t, REFR*> m_objectReferences;
     Vector<Record*> m_cells;
 };
