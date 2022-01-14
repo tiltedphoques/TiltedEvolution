@@ -8,6 +8,7 @@ enum class FormEnum : uint32_t
     ACHR = 0x52484341,
     CELL = 0x4C4C4543,
     CLMT = 0x544D4C43,
+    CONT = 0x544E4F43,
 };
 
 enum class ChunkId : uint32_t

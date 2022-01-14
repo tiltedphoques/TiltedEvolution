@@ -12,6 +12,6 @@ public:
         uint32_t m_baseId;
     };
 
-    Data ParseChunks() noexcept;
+    Data ParseChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache) noexcept;
 };
 

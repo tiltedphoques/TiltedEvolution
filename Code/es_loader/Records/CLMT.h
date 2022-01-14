@@ -6,7 +6,7 @@
 class CLMT : Record
 {
 public:
-    static constexpr FormEnum kType = FormEnum::REFR;
+    static constexpr FormEnum kType = FormEnum::CLMT;
 
     struct WeatherList // WLST
     {
