@@ -17,6 +17,7 @@
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
 #include <base/IniSettingsProvider.h>
+#include <base/CommandRegistry.h>
 
 constexpr char kSettingsFileName[] =
 #if SKYRIM
@@ -50,7 +51,7 @@ struct LogScope
         auto rotatingLogger =
             std::make_shared<spdlog::sinks::rotating_file_sink_mt>("logs/tp_game_server.log", 1048576 * 5, 3);
         auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
+        console->set_pattern("%^[%H:%M:%S %l]%$ %v");
 
         auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{console, rotatingLogger});
         logger->set_level(spdlog::level::from_str(sLogLevel.value()));
@@ -112,6 +113,74 @@ static bool IsEULAAccepted()
     return si.GetBoolValue("EULA", "bConfirmEULA", false);
 }
 
+//https://www.oreilly.com/library/view/c-cookbook/0596007612/ch04s08.html
+class StringTokenizer
+{
+  public:
+    StringTokenizer(const std::string& s, const char* delim = NULL) : str_(s), count_(-1), begin_(0), end_(0)
+    {
+
+        if (!delim)
+            delim_ = " \f\n\r\t\v"; // default to whitespace
+        else
+            delim_ = delim;
+
+        // Point to the first token
+        begin_ = str_.find_first_not_of(delim_);
+        end_ = str_.find_first_of(delim_, begin_);
+    }
+
+    size_t countTokens()
+    {
+        if (count_ >= 0) // return if we've already counted
+            return (count_);
+
+        std::string::size_type n = 0;
+        std::string::size_type i = 0;
+
+        for (;;)
+        {
+            // advance to the first token
+            if ((i = str_.find_first_not_of(delim_, i)) == std::string::npos)
+                break;
+            // advance to the next delimiter
+            i = str_.find_first_of(delim_, i + 1);
+            n++;
+            if (i == std::string::npos)
+                break;
+        }
+        return (count_ = n);
+    }
+
+    bool hasMoreTokens()
+    {
+        return (begin_ != end_);
+    }
+
+    void nextToken(std::string& s)
+    {
+        if (begin_ != std::string::npos && end_ != std::string::npos)
+        {
+            s = str_.substr(begin_, end_ - begin_);
+            begin_ = str_.find_first_not_of(delim_, end_);
+            end_ = str_.find_first_of(delim_, begin_);
+        }
+        else if (begin_ != std::string::npos && end_ == std::string::npos)
+        {
+            s = str_.substr(begin_, str_.length() - begin_);
+            begin_ = str_.find_first_not_of(delim_, end_);
+        }
+    }
+
+  private:
+    StringTokenizer(){};
+    std::string delim_;
+    std::string str_;
+    int count_;
+    int begin_;
+    int end_;
+};
+
 int main(int argc, char** argv)
 {
     if (!IsEULAAccepted())
@@ -127,11 +196,46 @@ int main(int argc, char** argv)
     (void)lscope;
 
     GameServer server;
-    // things that need initialization post construction
     server.Initialize();
 
-    while (server.IsListening())
-        server.Update();
+    // Start the net thread.
+    std::thread t([&]() {
+        while (server.IsListening())
+            server.Update();
+    });
+    t.detach();
+
+    // Start the command handler.
+    base::CommandRegistry r;
+    fmt::print(">Welcome to the ST Server console\n");
+    while (true)
+    {
+        fmt::print(">");
+        std::string s;
+        // TODO: ask for an alternative..
+        std::getline(std::cin, s);
+
+        if (s.length() <= 2 || s[0] != '/')
+        {
+            fmt::print(R"(Commands must begin with /)" "\n");
+            continue;
+        }
+
+        std::vector<std::string> tokens;
+        StringTokenizer tokenizer(&s[1]);
+        while (tokenizer.hasMoreTokens())
+        {
+            tokenizer.nextToken(tokens.emplace_back());
+        }
+
+        std::string command = tokens[0];
+        tokens.erase(tokens.begin());
+
+        if (!r.TryExecuteCommand(command.c_str(), tokens))
+        {
+            fmt::print("No command {} found\n", &s[1]);
+        }
+    }
 
     return 0;
 }

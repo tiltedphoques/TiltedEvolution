@@ -19,7 +19,8 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Scripts/Player.h>
 
-#include <Setting.h>
+#include <base/Setting.h>
+#include <base/Command.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
@@ -32,6 +33,39 @@ static base::StringSetting sServerDesc{"GameServer:sServerDesc", "Description th
 static base::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
 static base::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 static base::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+
+//static auto MXXX = [](bool b) { bPremiumTickrate = !bPremiumTickrate; };
+static void MXXX(const base::ArgStack& aStack)
+{
+    size_t s = aStack.size();
+    bool b = std::any_cast<bool>(aStack[0]);
+
+    bPremiumTickrate = !bPremiumTickrate;
+}
+
+static base::Command<bool> s_Command("TogglePremium", "Toggle the premium mode", MXXX);
+
+#if 0
+struct X
+{
+    void M1()
+    {
+    
+        bm1 = true;
+    }
+
+    bool bm1;
+};
+
+static base::Command s_BM("SBM", "Toggle the premium mode", &X::M1);
+
+void FM()
+{
+    std::function<void(void)> f = std::bind(&X::M1, new X);
+
+    f();
+}
+#endif
 
 static uint16_t GetUserTickRate()
 {
@@ -121,7 +155,7 @@ void GameServer::BindMessageHandlers()
 
 void GameServer::UpdateInfo()
 {
-    // Update Info fields from user facing cvars.
+    // Update Info fields from user facing CVARS.
     m_info.name = sServerName.c_str();
     m_info.desc = sServerDesc.c_str();
     m_info.icon_url = sServerIconURL.c_str();
