@@ -41,7 +41,8 @@ struct ScriptProperty
         } m_string {nullptr, 0};
     };
 
-    void ParseValue(Buffer::Reader& aReader) noexcept;
+    void ParseValue(const uint8_t* apData, Buffer::Reader& aReader, int16_t aObjectFormat) noexcept;
+    Type GetPropertyType(Type aArrayType) noexcept;
 
     String m_name;
     Type m_type = Type::INVALID;
