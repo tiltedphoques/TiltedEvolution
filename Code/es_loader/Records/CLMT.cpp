@@ -1,10 +1,10 @@
 #include "CLMT.h"
 
-CLMT::Data CLMT::ParseChunks() noexcept
+CLMT::Data CLMT::ParseChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache) noexcept
 {
     Data data;
 
-    IterateChunks([&](ChunkId aChunkId, const uint8_t* apData) { 
+    IterateChunks(aCompressedChunkCache, [&](ChunkId aChunkId, const uint8_t* apData) { 
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:

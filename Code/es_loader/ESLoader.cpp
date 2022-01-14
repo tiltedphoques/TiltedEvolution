@@ -79,7 +79,7 @@ void ESLoader::LoadFiles()
         Vector<CLMT::Data> climateData;
         for (auto& climate : climates)
         {
-            climateData.push_back(climate.second->ParseChunks());
+            climateData.push_back(climate.second->ParseChunks(m_decompressedChunksCache));
         }
         spdlog::info("refrData count: {}", climateData.size());
     }

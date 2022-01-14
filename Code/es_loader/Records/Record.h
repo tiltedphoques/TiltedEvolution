@@ -25,7 +25,9 @@ public:
     Record() = delete;
 
     template <class T> 
-    void IterateChunks(const T& aCallback);
+    void IterateChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache, const T& aCallback);
+
+    void DecompressChunkData(const void* apCompressedData, size_t aCompressedSize, void* apDecompressedData, size_t aDecompressedSize);
 
     [[nodiscard]] FormEnum GetType() const noexcept
     {

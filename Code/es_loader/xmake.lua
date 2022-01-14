@@ -1,4 +1,6 @@
 
+add_requires("zlib")
+
 target("ESLoader")
 	set_kind("binary")
 	set_group("common")
@@ -11,4 +13,5 @@ target("ESLoader")
 	add_packages(
 		"tiltedcore",
         "spdlog",
-        "hopscotch-map")
+        "hopscotch-map",
+        "zlib")

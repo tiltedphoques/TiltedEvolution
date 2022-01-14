@@ -6,6 +6,7 @@
 class ESLoader
 {
 public:
+
     ESLoader() = delete;
     ESLoader(String aDirectory);
 
@@ -23,4 +24,6 @@ private:
     Vector<std::filesystem::path> m_eslFilenames;
     Vector<TESFile> m_standardPlugins;
     Vector<TESFile> m_lightPlugins;
+
+    Map<Record*, SharedPtr<Buffer>> m_decompressedChunksCache{};
 };

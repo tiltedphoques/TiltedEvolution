@@ -39,5 +39,5 @@ public:
         const SunAndMoon* m_timing = nullptr;
     };
 
-    Data ParseChunks() noexcept;
+    Data ParseChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache) noexcept;
 };
