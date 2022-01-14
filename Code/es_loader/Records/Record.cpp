@@ -54,7 +54,11 @@ void Record::IterateChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCach
         const uint8_t* pData = buffer.GetData() + reader.GetBytePosition();
         reader.Advance(dataSize);
 
-        aCallback(pChunk->m_chunkId, pData);
+        Buffer chunkBuffer;
+        chunkBuffer.Resize(dataSize);
+        Buffer::Reader chunk(&chunkBuffer);
+
+        aCallback(pChunk->m_chunkId, pData, chunk);
     }
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+class Record;
+
 namespace Chunks
 {
 
@@ -32,22 +34,20 @@ struct ScriptProperty
         float m_float;
         bool m_boolean;
 
-        struct BSString
+        struct Str
         {
-            const char* m_data = nullptr;
-            size_t m_size = 0;
-        } m_string;
+          const char* data;
+          size_t length;
+        } m_string {nullptr, 0};
     };
 
-    union DataHolder {
-        Data m_dataSingle;
-        Vector<Data> m_dataArray;
-    };
+    void ParseValue(Buffer::Reader& aReader) noexcept;
 
     String m_name;
     Type m_type = Type::INVALID;
     Status m_status = Status::PROPERTY_EDITED;
-    DataHolder m_data;
+    Data m_dataSingleValue;
+    Vector<Data> m_dataArray;
 };
 
 struct Script
@@ -60,6 +60,8 @@ struct Script
 
 struct PrimaryScripts
 {
+    PrimaryScripts(const uint8_t* apData, Buffer::Reader& aReader);
+
     int16_t m_version = 0;
     int16_t m_objectFormat = 0;
     uint16_t m_scriptCount = 0;
