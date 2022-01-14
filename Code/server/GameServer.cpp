@@ -35,37 +35,14 @@ static base::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin au
 static base::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
 //static auto MXXX = [](bool b) { bPremiumTickrate = !bPremiumTickrate; };
-static void MXXX(const base::ArgStack& aStack)
+static void MXXX(base::ArgStack& aStack)
 {
-    size_t s = aStack.size();
-    bool b = std::any_cast<bool>(aStack[0]);
+    bool b = aStack.Pop<bool>();
 
     bPremiumTickrate = !bPremiumTickrate;
 }
 
 static base::Command<bool> s_Command("TogglePremium", "Toggle the premium mode", MXXX);
-
-#if 0
-struct X
-{
-    void M1()
-    {
-    
-        bm1 = true;
-    }
-
-    bool bm1;
-};
-
-static base::Command s_BM("SBM", "Toggle the premium mode", &X::M1);
-
-void FM()
-{
-    std::function<void(void)> f = std::bind(&X::M1, new X);
-
-    f();
-}
-#endif
 
 static uint16_t GetUserTickRate()
 {

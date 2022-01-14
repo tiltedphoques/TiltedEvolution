@@ -231,10 +231,11 @@ int main(int argc, char** argv)
         std::string command = tokens[0];
         tokens.erase(tokens.begin());
 
-        if (!r.TryExecuteCommand(command.c_str(), tokens))
+        auto ss = r.TryExecuteCommand(command.c_str(), tokens);
+        /* if (ss != base::CommandRegistry::Status::kSuccess)
         {
             fmt::print("No command {} found\n", &s[1]);
-        }
+        }*/
     }
 
     return 0;
