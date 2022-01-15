@@ -16,8 +16,9 @@
 
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
-#include <base/IniSettingsProvider.h>
-#include <base/CommandRegistry.h>
+#include <console/IniSettingsProvider.h>
+#include <console/ConsoleRegistry.h>
+#include <console/StringTokenizer.h>
 
 constexpr char kSettingsFileName[] =
 #if SKYRIM
@@ -39,17 +40,22 @@ constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted plat
 
 namespace fs = std::filesystem;
 
-static base::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+static console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
 
-struct LogScope
+struct LogInstance
 {
-    LogScope()
+    static constexpr size_t kLogFileSizeCap = 1048576 * 5;
+
+    LogInstance()
     {
+        using namespace spdlog;
+
         std::error_code ec;
         fs::create_directory("logs", ec);
 
         auto rotatingLogger =
-            std::make_shared<spdlog::sinks::rotating_file_sink_mt>("logs/tp_game_server.log", 1048576 * 5, 3);
+            std::make_shared<sinks::rotating_file_sink_mt>("logs/tp_game_server.log", kLogFileSizeCap, 3);
+
         auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         console->set_pattern("%^[%H:%M:%S %l]%$ %v");
 
@@ -58,35 +64,105 @@ struct LogScope
         set_default_logger(logger);
     }
 
-    ~LogScope()
+    ~LogInstance()
     {
         spdlog::shutdown();
     }
 };
 
-struct SettingsScope
+struct SettingsInstance
 {
-    SettingsScope()
+    SettingsInstance()
     {
         m_Path = fs::current_path() / kSettingsFileName;
         if (!fs::exists(m_Path))
         {
-            // Write defaults
-            base::SaveSettingsToIni(m_Path);
+            console::SaveSettingsToIni(m_Path);
             return;
         }
-
-        base::LoadSettingsFromIni(m_Path);
+        console::LoadSettingsFromIni(m_Path);
     }
 
-    ~SettingsScope()
+    ~SettingsInstance()
     {
-        base::SaveSettingsToIni(m_Path);
+        console::SaveSettingsToIni(m_Path);
     }
 
   private:
     fs::path m_Path;
 };
+
+// Frontend class for the dedicated terminal based server
+class DediRunner
+{
+  public:
+    DediRunner(int argc, char ** argv);
+    ~DediRunner() = default;
+
+    void StartGSThread();
+    void RunTerminalIO();
+
+  private:
+    fs::path m_configPath;
+    // Order here matters for constructor calling order.
+    SettingsInstance m_settings;
+    LogInstance m_logInstance;
+    GameServer m_gameServer;
+    console::ConsoleRegistry m_consoleReg;
+};
+
+DediRunner::DediRunner(int argc, char ** argv)
+{
+    // Post construction init stuff.
+    m_gameServer.Initialize();
+}
+
+void DediRunner::StartGSThread()
+{
+    std::thread t([&]() {
+        while (m_gameServer.IsListening())
+        {
+        // TODO: drain command queue
+            m_gameServer.Update();
+        }
+    });
+    t.detach();
+}
+
+void DediRunner::RunTerminalIO()
+{ 
+    fmt::print(">Welcome to the ST Server console\n");
+    while (true)
+    {
+        fmt::print(">");
+        // TODO: consider wide IO for terminal
+        std::string s;
+        std::getline(std::cin, s);
+
+        if (s.length() <= 2 || s[0] != '/')
+        {
+            fmt::print("Commands must begin with /");
+            continue;
+        }
+
+        std::vector<std::string> tokens;
+        console::StringTokenizer tokenizer(&s[1]);
+        while (tokenizer.HasMore())
+        {
+            tokenizer.GetNext(tokens.emplace_back());
+        }
+
+        std::string command = tokens[0];
+        tokens.erase(tokens.begin());
+
+        auto ss = m_consoleReg.ScheduleCommand(command.c_str(), tokens);
+        /* if (ss != base::CommandRegistry::Status::kSuccess)
+        {
+            fmt::print("No command {} found\n", &s[1]);
+        }*/
+        // Unknown command. Type /help for help.
+    }
+}
 
 static void ShittyFileWrite(const std::filesystem::path& aPath, const char* const acData)
 {
@@ -113,74 +189,6 @@ static bool IsEULAAccepted()
     return si.GetBoolValue("EULA", "bConfirmEULA", false);
 }
 
-//https://www.oreilly.com/library/view/c-cookbook/0596007612/ch04s08.html
-class StringTokenizer
-{
-  public:
-    StringTokenizer(const std::string& s, const char* delim = NULL) : str_(s), count_(-1), begin_(0), end_(0)
-    {
-
-        if (!delim)
-            delim_ = " \f\n\r\t\v"; // default to whitespace
-        else
-            delim_ = delim;
-
-        // Point to the first token
-        begin_ = str_.find_first_not_of(delim_);
-        end_ = str_.find_first_of(delim_, begin_);
-    }
-
-    size_t countTokens()
-    {
-        if (count_ >= 0) // return if we've already counted
-            return (count_);
-
-        std::string::size_type n = 0;
-        std::string::size_type i = 0;
-
-        for (;;)
-        {
-            // advance to the first token
-            if ((i = str_.find_first_not_of(delim_, i)) == std::string::npos)
-                break;
-            // advance to the next delimiter
-            i = str_.find_first_of(delim_, i + 1);
-            n++;
-            if (i == std::string::npos)
-                break;
-        }
-        return (count_ = n);
-    }
-
-    bool hasMoreTokens()
-    {
-        return (begin_ != end_);
-    }
-
-    void nextToken(std::string& s)
-    {
-        if (begin_ != std::string::npos && end_ != std::string::npos)
-        {
-            s = str_.substr(begin_, end_ - begin_);
-            begin_ = str_.find_first_not_of(delim_, end_);
-            end_ = str_.find_first_of(delim_, begin_);
-        }
-        else if (begin_ != std::string::npos && end_ == std::string::npos)
-        {
-            s = str_.substr(begin_, str_.length() - begin_);
-            begin_ = str_.find_first_not_of(delim_, end_);
-        }
-    }
-
-  private:
-    StringTokenizer(){};
-    std::string delim_;
-    std::string str_;
-    int count_;
-    int begin_;
-    int end_;
-};
-
 int main(int argc, char** argv)
 {
     if (!IsEULAAccepted())
@@ -189,54 +197,8 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    SettingsScope sscope;
-    (void)sscope;
-
-    LogScope lscope;
-    (void)lscope;
-
-    GameServer server;
-    server.Initialize();
-
-    // Start the net thread.
-    std::thread t([&]() {
-        while (server.IsListening())
-            server.Update();
-    });
-    t.detach();
-
-    // Start the command handler.
-    base::CommandRegistry r;
-    fmt::print(">Welcome to the ST Server console\n");
-    while (true)
-    {
-        fmt::print(">");
-        std::string s;
-        // TODO: ask for an alternative..
-        std::getline(std::cin, s);
-
-        if (s.length() <= 2 || s[0] != '/')
-        {
-            fmt::print(R"(Commands must begin with /)" "\n");
-            continue;
-        }
-
-        std::vector<std::string> tokens;
-        StringTokenizer tokenizer(&s[1]);
-        while (tokenizer.hasMoreTokens())
-        {
-            tokenizer.nextToken(tokens.emplace_back());
-        }
-
-        std::string command = tokens[0];
-        tokens.erase(tokens.begin());
-
-        auto ss = r.TryExecuteCommand(command.c_str(), tokens);
-        /* if (ss != base::CommandRegistry::Status::kSuccess)
-        {
-            fmt::print("No command {} found\n", &s[1]);
-        }*/
-    }
-
+    DediRunner runner(argc, argv);
+    runner.StartGSThread();
+    runner.RunTerminalIO();
     return 0;
 }

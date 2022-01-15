@@ -19,30 +19,33 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Scripts/Player.h>
 
-#include <base/Setting.h>
-#include <base/Command.h>
+#include <console/Setting.h>
+#include <console/Command.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
 #endif
 
-static base::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
-static base::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
-static base::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list", "Dedicated Together Server"};
-static base::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list", "Hello there!"};
-static base::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
-static base::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-static base::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+static console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+static console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+static console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
+                                          "Dedicated Together Server"};
+static console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
+                                          "Hello there!"};
+static console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
+                                             ""};
+static console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+static console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
 //static auto MXXX = [](bool b) { bPremiumTickrate = !bPremiumTickrate; };
-static void MXXX(base::ArgStack& aStack)
+static void MXXX(console::ArgStack& aStack)
 {
     bool b = aStack.Pop<bool>();
 
     bPremiumTickrate = !bPremiumTickrate;
 }
 
-static base::Command<bool> s_Command("TogglePremium", "Toggle the premium mode", MXXX);
+static console::Command<bool> s_Command("TogglePremium", "Toggle the premium mode", MXXX);
 
 static uint16_t GetUserTickRate()
 {

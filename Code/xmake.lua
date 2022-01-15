@@ -8,6 +8,7 @@ if is_plat("windows") then
 end
 
 includes("common")
+includes("components")
 includes("base")
 includes("admin_protocol")
 includes("server")

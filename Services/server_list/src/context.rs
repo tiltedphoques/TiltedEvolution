@@ -98,7 +98,7 @@ impl Context {
                     list.push_str(",");
                 }
                 list.push_str(&format!(
-                    r#"{{"name": {}, "desc": {}, icon_url: {}, "ip": "{}", "port": {}, "tick": {}, "player_count": {}, "max_player_count": {}}}"#,
+                    r#"{{"name": {}, "desc": {}, "icon_url": {}, "ip": "{}", "port": {}, "tick": {}, "player_count": {}, "max_player_count": {}}}"#,
                     json::stringify(s.name.clone()), json::stringify(s.desc.clone()), json::stringify(s.icon_url.clone()),
                     s.ip, s.port, s.tick, s.player_count, s.max_player_count));
                 first = false;

@@ -5,7 +5,7 @@
 #include <Base/Check.h>
 #include <TiltedCore/Stl.hpp>
 
-namespace base
+namespace console
 {
 using namespace TiltedPhoques;
 
@@ -85,6 +85,11 @@ struct SettingBase
         return data.as_string;
     }
 
+    inline bool IsHidden() const
+    {
+        return flags & Flags::kHidden;
+    }
+
     // type info
     Flags flags;
     Type type;
@@ -105,7 +110,6 @@ struct SettingBase
         const char* as_string;
     } data{};
 
-  private:
     SettingBase* next;
 };
 

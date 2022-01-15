@@ -2,49 +2,20 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <any>
 #include <charconv>
 #include <functional>
 #include <string>
-#include <vector>
+#include <console/ArgStack.h>
 
-namespace base
+namespace console
 {
 // CommandNode
 // CommandData
 
-class ArgStack
-{
-  public:
-    ArgStack() = default;
-
-    template<typename T> void Push(T &&x)
-    {
-        m_args.push_back(x);
-    }
-
-    template <typename T>
-    T Pop()
-    {
-        auto v = std::any_cast<T>(m_args[m_pushCount]);
-        m_pushCount++;
-        return v;
-    }
-
-    void Reset()
-    {
-        m_args.clear();
-        m_pushCount = 0;
-    }
-
-  private:
-    std::vector<std::any> m_args;
-    size_t m_pushCount = 0;
-};
 
 class CommandBase
 {
-    friend class CommandRegistry;
+    friend class ConsoleRegistry;
 
   public:
     enum class Type
@@ -76,9 +47,11 @@ class CommandBase
     }
 
   protected:
-    template <class _Ty>
+    //
     // TODO: does it make sense to even accept any string...
-    static constexpr bool IsStringType = _Is_any_of_v<remove_cv_t<_Ty>, const char*, std::string>;
+    // TODO: make concept.
+    //template <class _Ty>
+    //static constexpr bool IsStringType = _Is_any_of_v<remove_cv_t<_Ty>, const char*, std::string>;
 
     template <typename T> static constexpr Type ToValueTypeIndex()
     {
@@ -86,7 +59,7 @@ class CommandBase
             return Type::kBoolean;
         if constexpr (std::is_integral_v<T>)
             return Type::kNumeric;
-        if constexpr (IsStringType)
+        if constexpr (std::_Is_any_of_v<std::remove_cv_t<T>, const char*, std::string>)
             return Type::kString;
         // static_assert(false, "Unsupported type.");
         return Type::kUnknown;
@@ -110,7 +83,7 @@ class CommandBase
     // Type info
     const size_t m_argCount;
     Type* m_pArgIndicesArray = nullptr;
-    std::function<void(const ArgStack&)> m_Handler;
+    std::function<void(ArgStack&)> m_Handler;
 
     // Next static node.
     CommandBase* next = nullptr;

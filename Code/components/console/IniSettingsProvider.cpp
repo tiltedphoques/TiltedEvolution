@@ -2,16 +2,17 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include <base/Check.h>
-#include <base/IniSettingsProvider.h>
-#include <base/Setting.h>
 #include <base/simpleini/SimpleIni.h>
+
+#include <Console/IniSettingsProvider.h>
+#include <Console/Setting.h>
 
 #include <charconv>
 #include <fstream>
 
 #include <TiltedCore/Filesystem.hpp>
 
-namespace base
+namespace console
 {
 namespace
 {

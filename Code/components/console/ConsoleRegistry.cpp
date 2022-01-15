@@ -2,80 +2,72 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include <algorithm>
-#include <base/CommandRegistry.h>
-#include <cctype>
+#include <console/ConsoleRegistry.h>
+#include <console/ConsoleUtils.h>
 
-namespace base
+namespace console
 {
-namespace
+ConsoleRegistry::ConsoleRegistry()
 {
-// SEE
-// https://stackoverflow.com/questions/29169153/how-do-i-verify-a-string-is-valid-double-even-if-it-has-a-point-in-it
-bool IsNumber(const std::string& s)
-{
-    return !s.empty() &&
-           std::find_if(s.begin(), s.end(), [](char c) { return !(std::isdigit(c) || c == '.'); }) == s.end();
-}
-
-bool utf8_check_is_valid(const std::string& string)
-{
-    int c, i, ix, n, j;
-    for (i = 0, ix = string.length(); i < ix; i++)
-    {
-        c = (unsigned char)string[i];
-        // if (c==0x09 || c==0x0a || c==0x0d || (0x20 <= c && c <= 0x7e) ) n = 0; // is_printable_ascii
-        if (0x00 <= c && c <= 0x7f)
-            n = 0; // 0bbbbbbb
-        else if ((c & 0xE0) == 0xC0)
-            n = 1; // 110bbbbb
-        else if (c == 0xed && i < (ix - 1) && ((unsigned char)string[i + 1] & 0xa0) == 0xa0)
-            return false; // U+d800 to U+dfff
-        else if ((c & 0xF0) == 0xE0)
-            n = 2; // 1110bbbb
-        else if ((c & 0xF8) == 0xF0)
-            n = 3; // 11110bbb
-        // else if (($c & 0xFC) == 0xF8) n=4; // 111110bb //byte 5, unnecessary in 4 byte UTF-8
-        // else if (($c & 0xFE) == 0xFC) n=5; // 1111110b //byte 6, unnecessary in 4 byte UTF-8
-        else
-            return false;
-        for (j = 0; j < n && i < ix; j++)
-        { // n bytes matching 10bbbbbb follow ?
-            if ((++i == ix) || (((unsigned char)string[i] & 0xC0) != 0x80))
-                return false;
-        }
-    }
-    return true;
-}
-} // namespace
-
-CommandRegistry::CommandRegistry()
-{
-    // Register global commands.
+    // Register global stuff.
     for (auto* i = CommandBase::ROOT(); i;)
     {
         m_commands.push_back(i);
         i = i->next;
     }
 
-    RegisterInbuiltCommands();
+    for (auto* i = SettingBase::ROOT(); i;)
+    {
+        m_settings.push_back(i);
+        i = i->next;
+    }
+
+    RegisterNatives();
 }
 
-CommandRegistry::~CommandRegistry()
+ConsoleRegistry::~ConsoleRegistry()
 {
     for (CommandBase* c : m_ownedCommands)
-    {
         delete c;
-    }
 }
 
-void CommandRegistry::RegisterInbuiltCommands()
+void ConsoleRegistry::RegisterNatives()
 {
-    RegisterCommand<>("help", "Show a list of commands", [&](const base::ArgStack& args) {
-
+    // TODO: put this strictly on console out.
+    RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
+        spdlog::info("<------Commands-({})--->", m_commands.size());
+        for (CommandBase* c : m_commands)
+        {
+            spdlog::info("/{}:  {}", c->m_name, c->m_desc);
+        }
+        spdlog::info("<------Variables-({})--->", m_settings.size());
+        for (SettingBase* s : m_settings)
+        {
+            if (!s->IsHidden())
+                spdlog::info("{}:  {}", s->name, s->desc);
+        }
     });
 }
 
-CommandBase* CommandRegistry::FindCommand(const char* acName)
+void ConsoleRegistry::AddCommand(CommandBase* apCommand)
+{
+    std::lock_guard<std::mutex> guard(m_listLock);
+    (void)guard;
+
+    // Add to global and tracking pool
+    m_commands.push_back(apCommand);
+    m_ownedCommands.push_back(apCommand);
+}
+
+void ConsoleRegistry::AddSetting(SettingBase* apSetting)
+{
+    std::lock_guard<std::mutex> guard(m_listLock);
+    (void)guard;
+
+    m_settings.push_back(apSetting);
+}
+
+CommandBase* ConsoleRegistry::FindCommand(const char* acName)
 {
     // TODO: Maybe lookup by some hash...
     auto it = std::find_if(m_commands.begin(), m_commands.end(),
@@ -87,7 +79,7 @@ CommandBase* CommandRegistry::FindCommand(const char* acName)
 
 // This is supposed on a custom dedicated thread. When the work is submitted it gets written into the thread queue to be
 // consumed By the owning threads.
-ErrorAnd<bool> CommandRegistry::TryExecuteCommand(const char* acName, const std::vector<std::string>& acArgs)
+ErrorAnd<bool> ConsoleRegistry::ScheduleCommand(const char* acName, const std::vector<std::string>& acArgs)
 {
     auto* pCommand = FindCommand(acName);
     if (!pCommand)
@@ -98,12 +90,12 @@ ErrorAnd<bool> CommandRegistry::TryExecuteCommand(const char* acName, const std:
         return ErrorAnd("Expected %d arguments, but x", false);
     }
 
-    ArgStack stack;
+    ArgStack stack(pCommand->m_argCount);
     CommandBase::Type* pType = pCommand->m_pArgIndicesArray;
     for (size_t i = 0; i < pCommand->m_argCount; i++)
     {
         auto& stringArg = acArgs[i];
-        if (!utf8_check_is_valid(stringArg))
+        if (!CheckIsValidUTF8(stringArg))
         {
             return ErrorAnd("Malformed character sequence (Not UTF8)", false);
         }
@@ -149,9 +141,16 @@ ErrorAnd<bool> CommandRegistry::TryExecuteCommand(const char* acName, const std:
         pType++;
     }
 
-    pCommand->m_Handler(stack);
+    stack.ResetCounter();
 
-    // Need to queue execution onto the right thread...
+    // Upload Item
+    CommandItem* pItem;
+    {
+        auto lock = m_queue.write_acquire(pItem);
+        pItem->m_pCommand = pCommand;
+        pItem->m_stack = std::move(stack);
+    }
+     
     return ErrorAnd(true);
 }
 } // namespace base
