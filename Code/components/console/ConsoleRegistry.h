@@ -2,9 +2,10 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <base/fast_queue.hpp>
+#include <spdlog/spdlog-inl.h>
 #include <console/Command.h>
 #include <console/Setting.h>
+#include <console/CommandQueue.h>
 
 namespace console
 {
@@ -15,13 +16,13 @@ template <typename T> struct ErrorOr
     T val;
 };
 
-template <typename T> struct ErrorAnd
+template <typename T> struct ResultAnd
 {
-    explicit ErrorAnd(T x) : val(x)
+    explicit ResultAnd(T x) : val(x)
     {
     }
 
-    ErrorAnd(const char* msg, T x) : val(x), msg(msg)
+    ResultAnd(const char* msg, T x) : val(x), msg(msg)
     {
     }
 
@@ -33,7 +34,7 @@ template <typename T> struct ErrorAnd
 class ConsoleRegistry
 {
   public:
-    ConsoleRegistry();
+    ConsoleRegistry(const char *acLoggerName);
     ~ConsoleRegistry();
 
     void RegisterNatives();
@@ -54,25 +55,26 @@ class ConsoleRegistry
         AddSetting(new Setting<T>(acName, acDesc, acDefault));
     }
 
+    void TryExecuteCommand(const std::string& acLine);
+
     CommandBase* FindCommand(const char* acName);
-    ErrorAnd<bool> ScheduleCommand(const char* acName, const std::vector<std::string>& acArgs);
+
+    // Call this from your main thread, this will drain the work item queue.
+    bool Update();
 
   private:
     void AddCommand(CommandBase* apCommand);
     void AddSetting(SettingBase* apSetting);
+
+    ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs, ArgStack& aStackOut);
 
   private:
     std::mutex m_listLock;
     std::vector<CommandBase*> m_commands;
     std::vector<CommandBase*> m_ownedCommands;
     std::vector<SettingBase*> m_settings;
+    CommandQueue m_queue;
 
-    struct CommandItem
-    {
-        // Strictly speaking, this also isn't thread safe...
-        CommandBase* m_pCommand{nullptr};
-        ArgStack m_stack;
-    };
-    fast_queue<CommandItem> m_queue;
+    std::shared_ptr<spdlog::logger> m_out;
 };
 } // namespace console

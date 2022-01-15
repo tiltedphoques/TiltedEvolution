@@ -16,8 +16,8 @@
 
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
-#include <console/IniSettingsProvider.h>
 #include <console/ConsoleRegistry.h>
+#include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
 
 constexpr char kSettingsFileName[] =
@@ -37,11 +37,13 @@ constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted plat
                              ";by setting bConfirmEULA to true\n"
                              "[EULA]\n"
                              "bConfirmEULA=false";
+constexpr char kConsoleOutName[] = "ConOut";
 
 namespace fs = std::filesystem;
 
 static console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
 
+// LogInstance must be created for the Console Instance.
 struct LogInstance
 {
     static constexpr size_t kLogFileSizeCap = 1048576 * 5;
@@ -53,15 +55,16 @@ struct LogInstance
         std::error_code ec;
         fs::create_directory("logs", ec);
 
-        auto rotatingLogger =
-            std::make_shared<sinks::rotating_file_sink_mt>("logs/tp_game_server.log", kLogFileSizeCap, 3);
+        auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>("logs/tp_game_server.log", kLogFileSizeCap, 3);
+        auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
+        serverOut->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
 
-        auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        console->set_pattern("%^[%H:%M:%S %l]%$ %v");
+        auto consoleOut = spdlog::stdout_color_mt(kConsoleOutName);
+        consoleOut->set_pattern(">%$ %v");
 
-        auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{console, rotatingLogger});
-        logger->set_level(spdlog::level::from_str(sLogLevel.value()));
-        set_default_logger(logger);
+        auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
+        globalOut->set_level(level::from_str(sLogLevel.value()));
+        set_default_logger(globalOut);
     }
 
     ~LogInstance()
@@ -96,7 +99,7 @@ struct SettingsInstance
 class DediRunner
 {
   public:
-    DediRunner(int argc, char ** argv);
+    DediRunner(int argc, char** argv);
     ~DediRunner() = default;
 
     void StartGSThread();
@@ -108,10 +111,10 @@ class DediRunner
     SettingsInstance m_settings;
     LogInstance m_logInstance;
     GameServer m_gameServer;
-    console::ConsoleRegistry m_consoleReg;
+    console::ConsoleRegistry m_console;
 };
 
-DediRunner::DediRunner(int argc, char ** argv)
+DediRunner::DediRunner(int argc, char** argv) : m_console(kConsoleOutName)
 {
     // Post construction init stuff.
     m_gameServer.Initialize();
@@ -122,45 +125,29 @@ void DediRunner::StartGSThread()
     std::thread t([&]() {
         while (m_gameServer.IsListening())
         {
-        // TODO: drain command queue
             m_gameServer.Update();
+            if (m_console.Update())
+            {
+                // This is a hack to get the executor arrow.
+                // If you find a way to do this through the ConOut log channel
+                // please let me know (The issue is the forced formatting for that channel)
+                // and the forced null termination.
+                fmt::print(">");
+            }
         }
     });
     t.detach();
 }
 
 void DediRunner::RunTerminalIO()
-{ 
-    fmt::print(">Welcome to the ST Server console\n");
+{
+    spdlog::get("ConOut")->info("Welcome to the ST Server console");
+    fmt::print(">");
     while (true)
     {
-        fmt::print(">");
-        // TODO: consider wide IO for terminal
         std::string s;
         std::getline(std::cin, s);
-
-        if (s.length() <= 2 || s[0] != '/')
-        {
-            fmt::print("Commands must begin with /");
-            continue;
-        }
-
-        std::vector<std::string> tokens;
-        console::StringTokenizer tokenizer(&s[1]);
-        while (tokenizer.HasMore())
-        {
-            tokenizer.GetNext(tokens.emplace_back());
-        }
-
-        std::string command = tokens[0];
-        tokens.erase(tokens.begin());
-
-        auto ss = m_consoleReg.ScheduleCommand(command.c_str(), tokens);
-        /* if (ss != base::CommandRegistry::Status::kSuccess)
-        {
-            fmt::print("No command {} found\n", &s[1]);
-        }*/
-        // Unknown command. Type /help for help.
+        m_console.TryExecuteCommand(s);
     }
 }
 
@@ -197,8 +184,9 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    DediRunner runner(argc, argv);
-    runner.StartGSThread();
-    runner.RunTerminalIO();
+    // Keep stack free.
+    auto runner{std::make_unique<DediRunner>(argc, argv)};
+    runner->StartGSThread();
+    runner->RunTerminalIO();
     return 0;
 }

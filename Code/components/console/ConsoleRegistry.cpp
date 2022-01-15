@@ -4,11 +4,43 @@
 #include <algorithm>
 #include <console/ConsoleRegistry.h>
 #include <console/ConsoleUtils.h>
+#include <console/StringTokenizer.h>
 
 namespace console
 {
-ConsoleRegistry::ConsoleRegistry()
+static constexpr char kCommandPrefix = '/';
+
+static std::unique_ptr<std::string[]> ParseLine(const std::string& arLine, size_t &tokenCount)
 {
+    if (!CheckIsValidUTF8(arLine))
+        return nullptr;
+
+    StringTokenizer tokenizer(&arLine[1]);
+    tokenCount = tokenizer.CountTokens();
+
+    auto tokens = std::make_unique<std::string[]>(tokenCount);
+
+    size_t i = 0;
+    while (tokenizer.HasMore())
+    {
+        if (i > tokenCount)
+        {
+            spdlog::error("Expected {} tokens, got more than {} tokens", tokenCount, i);
+            return nullptr;
+        }
+
+        tokenizer.GetNext(tokens[i]);
+        i++;
+    }
+
+    return tokens;
+}
+
+ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
+{
+    m_out = spdlog::get(acLoggerName);
+    BASE_ASSERT(m_out.get(), "Output logger not found");
+
     // Register global stuff.
     for (auto* i = CommandBase::ROOT(); i;)
     {
@@ -35,16 +67,16 @@ void ConsoleRegistry::RegisterNatives()
 {
     // TODO: put this strictly on console out.
     RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
-        spdlog::info("<------Commands-({})--->", m_commands.size());
+        m_out->info("<------Commands-({})--->", m_commands.size());
         for (CommandBase* c : m_commands)
         {
-            spdlog::info("/{}:  {}", c->m_name, c->m_desc);
+            m_out->info("/{}:  {}", c->m_name, c->m_desc);
         }
-        spdlog::info("<------Variables-({})--->", m_settings.size());
+        m_out->info("<------Variables-({})--->", m_settings.size());
         for (SettingBase* s : m_settings)
         {
             if (!s->IsHidden())
-                spdlog::info("{}:  {}", s->name, s->desc);
+                m_out->info("{}:  {}", s->name, s->desc);
         }
     });
 }
@@ -77,80 +109,112 @@ CommandBase* ConsoleRegistry::FindCommand(const char* acName)
     return *it;
 }
 
-// This is supposed on a custom dedicated thread. When the work is submitted it gets written into the thread queue to be
-// consumed By the owning threads.
-ErrorAnd<bool> ConsoleRegistry::ScheduleCommand(const char* acName, const std::vector<std::string>& acArgs)
+void ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
 {
-    auto* pCommand = FindCommand(acName);
-    if (!pCommand)
-        return ErrorAnd("Failed to find command", false);
-
-    if (acArgs.size() != pCommand->m_argCount)
+    if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
-        return ErrorAnd("Expected %d arguments, but x", false);
+        m_out->error("Commands must begin with /");
+        return;
     }
 
-    ArgStack stack(pCommand->m_argCount);
-    CommandBase::Type* pType = pCommand->m_pArgIndicesArray;
-    for (size_t i = 0; i < pCommand->m_argCount; i++)
+    size_t tokenCount = 0;
+    auto tokens = ParseLine(acLine, tokenCount);
+    if (!tokenCount)
     {
-        auto& stringArg = acArgs[i];
-        if (!CheckIsValidUTF8(stringArg))
-        {
-            return ErrorAnd("Malformed character sequence (Not UTF8)", false);
-        }
+        m_out->error("Failed to parse line");
+        return;
+    }
 
+    auto* pCommand = FindCommand(tokens[0].c_str());
+    if (!pCommand)
+    {
+        m_out->error("Unknown command. Type /help for help.");
+        return;
+    }
+    
+    // Must subtract one, since the first is the literal command.
+    tokenCount -= 1;
+
+    if (tokenCount != pCommand->m_argCount)
+    {
+        m_out->error("Expected {} arguments but got {}", pCommand->m_argCount, tokenCount);
+        return;
+    }
+
+    ArgStack stack;
+    auto result = CreateArgStack(pCommand, &tokens[1], stack);
+    if (!result.val)
+    {
+        m_out->error(result.msg);
+        return;
+    }
+
+    stack.ResetCounter();
+    m_queue.Upload(pCommand, stack);
+}
+
+ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
+                                                const std::string* acStringArgs, ArgStack& aStackOut)
+{
+    CommandBase::Type* pType = apCommand->m_pArgIndicesArray;
+    for (size_t i = 0; i < apCommand->m_argCount; i++)
+    {
+        auto& stringArg = acStringArgs[i];
         switch (*pType)
         {
         case CommandBase::Type::kBoolean: {
             if (stringArg == "true" || stringArg == "TRUE" || stringArg == "1")
             {
-                stack.Push(true);
+                aStackOut.Push(true);
                 continue;
             }
             else if (stringArg == "false" || stringArg == "FALSE" || stringArg == "0")
             {
-                stack.Push(false);
+                aStackOut.Push(false);
                 continue;
             }
 
-            return ErrorAnd("Expected boolean argument, got y", false);
+            return ResultAnd("Expected boolean argument, got y", false);
         }
         case CommandBase::Type::kNumeric: {
             if (!IsNumber(stringArg))
             {
-                return ErrorAnd("Expected argument of type numeric", false);
+                return ResultAnd("Expected argument of type numeric", false);
             }
 
             int64_t value = false;
             auto result = std::from_chars(stringArg.data(), stringArg.data() + stringArg.length(), value);
             if (result.ec != std::errc())
             {
-                return ErrorAnd("Malformed numeric argument", false);
+                return ResultAnd("Malformed numeric argument", false);
             }
 
-            stack.Push(value);
+            aStackOut.Push(value);
             break;
         }
         case CommandBase::Type::kString:
-            stack.Push(stringArg);
+            aStackOut.Push(stringArg);
             break;
         default:
-            return ErrorAnd("Couldn't handle value of type d", false);
+            return ResultAnd("Couldn't handle value type", false);
         }
         pType++;
     }
 
-    stack.ResetCounter();
+    return ResultAnd(nullptr, true);
+}
 
-    // Upload Item
-    CommandItem* pItem;
+bool ConsoleRegistry::Update()
+{
+    // Drain the queue one by one
+    if (m_queue.HasWork())
     {
-        auto lock = m_queue.write_acquire(pItem);
-        pItem->m_pCommand = pCommand;
-        pItem->m_stack = std::move(stack);
+        CommandQueue::Item item;
+        m_queue.Fetch(item);
+        item.m_pCommand->m_Handler(item.m_stack);
+        return true;
     }
-     
-    return ErrorAnd(true);
+
+    return false;
 }
 } // namespace base
