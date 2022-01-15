@@ -1,3 +1,16 @@
+# [1.7.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.6.0...v1.7.0) (2022-01-15)
+
+
+### Bug Fixes
+
+* Incorrect arg name fix ([b08d26b](https://github.com/tiltedphoques/TiltedEvolution/commit/b08d26ba073f89fbc3f4bf12059d1787b06ca8b6))
+
+
+### Features
+
+* Added coding guidelines ([5c413ae](https://github.com/tiltedphoques/TiltedEvolution/commit/5c413ae5363f2050348feb4dd8d117727710681c))
+* Modified arg names and checking event opcodes first ([6d5c175](https://github.com/tiltedphoques/TiltedEvolution/commit/6d5c17536f4dd8d6d8754ed024b4f179c210824e))
+
 # [1.6.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.1...v1.6.0) (2022-01-15)
 
 
