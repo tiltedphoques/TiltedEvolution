@@ -41,17 +41,24 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
     m_out = spdlog::get(acLoggerName);
     BASE_ASSERT(m_out.get(), "Output logger not found");
 
-    // Register global stuff.
-    for (auto* i = CommandBase::ROOT(); i;)
+    auto* i = CommandBase::ROOT();
+    CommandBase::ROOT() = nullptr;
+    while (i)
     {
         m_commands.push_back(i);
-        i = i->next;
+        auto* j = i->next;
+        i->next = nullptr;
+        i = j;
     }
 
-    for (auto* i = SettingBase::ROOT(); i;)
+    auto* k = SettingBase::ROOT();
+    SettingBase::ROOT() = nullptr;
+    while (k)
     {
-        m_settings.push_back(i);
-        i = i->next;
+        m_settings.push_back(k);
+        auto* j = k->next;
+        k->next = nullptr;
+        k = j;
     }
 
     RegisterNatives();
@@ -61,11 +68,12 @@ ConsoleRegistry::~ConsoleRegistry()
 {
     for (CommandBase* c : m_ownedCommands)
         delete c;
+    for (SettingBase* s : m_ownedSettings)
+        delete s;
 }
 
 void ConsoleRegistry::RegisterNatives()
 {
-    // TODO: put this strictly on console out.
     RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
         m_out->info("<------Commands-({})--->", m_commands.size());
         for (CommandBase* c : m_commands)
@@ -97,6 +105,7 @@ void ConsoleRegistry::AddSetting(SettingBase* apSetting)
     (void)guard;
 
     m_settings.push_back(apSetting);
+    m_ownedSettings.push_back(apSetting);
 }
 
 CommandBase* ConsoleRegistry::FindCommand(const char* acName)
@@ -105,6 +114,16 @@ CommandBase* ConsoleRegistry::FindCommand(const char* acName)
     auto it = std::find_if(m_commands.begin(), m_commands.end(),
                            [&](CommandBase* apCommand) { return std::strcmp(apCommand->m_name, acName) == 0; });
     if (it == m_commands.end())
+        return nullptr;
+    return *it;
+}
+
+SettingBase* ConsoleRegistry::FindSetting(const char* acName)
+{
+    // TODO: Maybe lookup by some hash...
+    auto it = std::find_if(m_settings.begin(), m_settings.end(),
+                           [&](SettingBase* apSetting) { return std::strcmp(apSetting->name, acName) == 0; });
+    if (it == m_settings.end())
         return nullptr;
     return *it;
 }
@@ -141,7 +160,7 @@ void ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
         return;
     }
 
-    ArgStack stack;
+    ArgStack stack(pCommand->m_argCount);
     auto result = CreateArgStack(pCommand, &tokens[1], stack);
     if (!result.val)
     {
@@ -174,7 +193,7 @@ ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
                 continue;
             }
 
-            return ResultAnd("Expected boolean argument, got y", false);
+            return ResultAnd("Expected boolean argument", false);
         }
         case CommandBase::Type::kNumeric: {
             if (!IsNumber(stringArg))

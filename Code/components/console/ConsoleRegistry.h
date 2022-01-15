@@ -58,6 +58,7 @@ class ConsoleRegistry
     void TryExecuteCommand(const std::string& acLine);
 
     CommandBase* FindCommand(const char* acName);
+    SettingBase* FindSetting(const char* acName);
 
     // Call this from your main thread, this will drain the work item queue.
     bool Update();
@@ -73,6 +74,7 @@ class ConsoleRegistry
     std::vector<CommandBase*> m_commands;
     std::vector<CommandBase*> m_ownedCommands;
     std::vector<SettingBase*> m_settings;
+    std::vector<SettingBase*> m_ownedSettings;
     CommandQueue m_queue;
 
     std::shared_ptr<spdlog::logger> m_out;
