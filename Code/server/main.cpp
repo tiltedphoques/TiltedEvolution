@@ -30,6 +30,16 @@ constexpr char kSettingsFileName[] =
 #endif
     ;
 
+constexpr char kLogFileName[] =
+#if SKYRIM
+    "STServerOut.log"
+#elif FALLOUT4
+    "FTServerOut.log"
+#else
+    "TiltedGameServer.log"
+#endif
+    ;
+
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
 constexpr char kEULAName[] = "EULA.txt";
@@ -55,7 +65,8 @@ struct LogInstance
         std::error_code ec;
         fs::create_directory("logs", ec);
 
-        auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>("logs/tp_game_server.log", kLogFileSizeCap, 3);
+        auto fileOut =
+            std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
         auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
         serverOut->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
 
@@ -128,6 +139,7 @@ void DediRunner::StartGSThread()
             m_gameServer.Update();
             if (m_console.Update())
             {
+                // Force:
                 // This is a hack to get the executor arrow.
                 // If you find a way to do this through the ConOut log channel
                 // please let me know (The issue is the forced formatting for that channel)

@@ -32,33 +32,35 @@ void ConsoleRegistryTest::TearDown()
 TEST_F(ConsoleRegistryTest, RegisterCommand)
 {
     // "static" command
-    Command<int> sc{"test0", "desc", [&](ArgStack& stack) {
+    static Command<int> sc{"test0", "desc", [&](ArgStack& stack) {
                         EXPECT_EQ(stack.Pop<int>(), 7);
                     }};
 
     // "static" setting
-    Setting<bool> ss{"test0", "", true, SettingBase::Flags::kLocked};
+    static Setting<bool> ss{"test0", "", true, SettingBase::Flags::kLocked};
 
-    ConsoleRegistry r("Test");
-    r.RegisterCommand<bool, bool>("name", "description", [&](ArgStack& stack) {
+    auto r{std::make_unique<ConsoleRegistry>("Test")};
+    r->RegisterCommand<bool, bool>("name", "description", [&](ArgStack& stack) {
         EXPECT_TRUE(stack.Pop<bool>());
         EXPECT_FALSE(stack.Pop<bool>());
     });
 
-    ASSERT_TRUE(r.FindCommand("name"));
+    ASSERT_TRUE(r->FindCommand("name"));
 
-    r.TryExecuteCommand("/name true false");
-    r.TryExecuteCommand("/test0 7");
-    r.TryExecuteCommand("/test0 10 10 10");
-    r.TryExecuteCommand("/test0 true");
+    r->TryExecuteCommand("/name true false");
+    r->TryExecuteCommand("/test0 7");
+    r->TryExecuteCommand("/test0 10 10 10");
+    r->TryExecuteCommand("/test0 true");
 
-    r.RegisterSetting<bool>("name", "desc", false);
-    ASSERT_TRUE(r.FindSetting("name"));
-    ASSERT_TRUE(r.FindSetting("test0"));
+    r->RegisterSetting<bool>("name", "desc", false);
+    ASSERT_TRUE(r->FindSetting("name"));
+    ASSERT_TRUE(r->FindSetting("test0"));
 
     // FAIL
-    r.TryExecuteCommand("test0 7");
-    r.TryExecuteCommand("/test \xe2\x28\xa1");
+    r->TryExecuteCommand("test0 7");
+    r->TryExecuteCommand("/test \xe2\x28\xa1");
+
+    r->Update();
 }
 
 TEST_F(ConsoleRegistryTest, RegisterSetting)
