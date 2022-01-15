@@ -1,7 +1,7 @@
-#include <Messages/NotifyPartyInfo.h>
+#include <Messages/NotifyPartyJoined.h>
 #include <TiltedCore/Serialization.hpp>
 
-void NotifyPartyInfo::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+void NotifyPartyJoined::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteBool(aWriter, IsLeader);
     Serialization::WriteVarInt(aWriter, LeaderPlayerId);
@@ -13,7 +13,7 @@ void NotifyPartyInfo::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const
     }
 }
 
-void NotifyPartyInfo::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void NotifyPartyJoined::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     IsLeader = Serialization::ReadBool(aReader);
     LeaderPlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
