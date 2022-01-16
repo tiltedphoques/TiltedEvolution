@@ -78,12 +78,23 @@ GameServer::GameServer() noexcept
 
 GameServer::~GameServer()
 {
+    for (auto& it : m_pluginList.GetList())
+    {
+        //it.m_pDescriptor->destroyPlugin();
+    }
+
     s_pInstance = nullptr;
 }
 
 void GameServer::Initialize()
 {
     m_pWorld->GetScriptService().Initialize();
+
+    m_pluginList.RefreshList(std::filesystem::current_path());
+    for (auto& it : m_pluginList.GetList())
+    {
+        m_pluginInstances.push_back(it.m_pDescriptor->createPlugin());
+    }
 }
 
 void GameServer::BindMessageHandlers()

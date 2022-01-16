@@ -22,6 +22,7 @@ target(name)
     add_deps(
         "Common",
         "Console",
+        "Sv-Plugins",
         "Base",
         "TiltedScript",
         "TiltedConnect",

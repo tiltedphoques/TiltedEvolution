@@ -45,3 +45,5 @@ function unittest(name)
 
 -- List all components required below:
 includes("console")
+includes("server_plugins")
+includes("node_runtime_plugin")

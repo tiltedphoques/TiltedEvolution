@@ -1,19 +1,21 @@
 #pragma once
 
-#include <World.h>
-#include <Messages/Message.h>
-#include <Messages/AuthenticationRequest.h>
 #include <AdminMessages/Message.h>
+#include <Messages/AuthenticationRequest.h>
+#include <Messages/Message.h>
+#include <World.h>
 
-using TiltedPhoques::String;
-using TiltedPhoques::Server;
+#include <server_plugins/PluginList.h>
+
 using TiltedPhoques::ConnectionId_t;
+using TiltedPhoques::Server;
+using TiltedPhoques::String;
 
 struct AuthenticationRequest;
 
 struct GameServer final : Server
 {
-public:
+  public:
     struct Info
     {
         String name;
@@ -51,20 +53,21 @@ public:
 
     static GameServer* Get() noexcept;
 
-    template<class T>
-    void ForEachAdmin(const T& aFunctor)
+    template <class T> void ForEachAdmin(const T& aFunctor)
     {
         for (auto id : m_adminSessions)
             aFunctor(id);
     }
 
-protected:
-
-    void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept;
-
-private:
-
+  private:
     void UpdateTitle() const;
+
+  protected:
+    void HandleAuthenticationRequest(ConnectionId_t aConnectionId,
+                                     const UniquePtr<AuthenticationRequest>& acRequest) noexcept;
+
+  private:
+    static GameServer* s_pInstance;
 
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
@@ -75,8 +78,8 @@ private:
 
     Set<ConnectionId_t> m_adminSessions;
     Map<ConnectionId_t, entt::entity> m_connectionToEntity;
-
     bool m_requestStop;
 
-    static GameServer* s_pInstance;
+    server_plugins::PluginList m_pluginList;
+    std::vector<server_plugins::Plugin*> m_pluginInstances;
 };
