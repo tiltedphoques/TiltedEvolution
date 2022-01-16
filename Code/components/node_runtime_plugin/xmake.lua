@@ -29,7 +29,8 @@ component("NodeRuntimePlugin")
     add_defines(
         "V8_DEPRECATION_WARNINGS",
         "V8_IMMINENT_DEPRECATION_WARNINGS",
-        "_GLIBCXX_USE_CXX11_ABI=1",\"NODE_OPENSSL_HAS_QUIC",
+        "_GLIBCXX_USE_CXX11_ABI=1",
+        "NODE_OPENSSL_HAS_QUIC",
         "WIN32",
         "_CRT_SECURE_NO_DEPRECATE",
         "_CRT_NONSTDC_NO_DEPRECATE",

@@ -9,7 +9,7 @@ namespace server_plugins
 class Plugin
 {
   public:
-    virtual void Init() = 0;
+    virtual bool Init() = 0;
     virtual void Update() = 0;
     virtual void Detatch() = 0;
 };

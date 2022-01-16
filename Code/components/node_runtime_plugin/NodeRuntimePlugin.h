@@ -12,7 +12,7 @@ class NodeRuntimePlugin final : public server_plugins::Plugin
     NodeRuntimePlugin() = default;
     ~NodeRuntimePlugin() = default;
 
-    void Init() override;
+    bool Init() override;
     void Update() override;
     void Detatch() override;
 
