@@ -40,8 +40,7 @@ void PluginList::RefreshList(const fs::path& acPath)
             if (PluginDescriptor* pluginDescriptor =
                     reinterpret_cast<PluginDescriptor*>(GetProcAddress(pHandle, "plugin")))
             {
-                m_pluginData.emplace_back(pluginDescriptor->name, pluginDescriptor->fileName, pluginDescriptor->desc,
-                                          PluginData::Type::kRuntimePlugin);
+                m_pluginData.emplace_back(PluginData::Type::kRuntimePlugin, static_cast<void*>(pHandle), pluginDescriptor);
             }
         }
     }

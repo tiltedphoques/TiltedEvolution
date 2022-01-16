@@ -22,8 +22,8 @@ struct PluginDescriptor
 
     // Create a plugin instance with memory owned by your own
     // plugin.
-    Plugin* (*createPlugin)() = nullptr;
-    void (*destroyPlugin)(Plugin* apPluginInstance) = nullptr;
+    Plugin* (*CreatePlugin)() = nullptr;
+    void (*DestroyPlugin)(Plugin* apPluginInstance) = nullptr;
 };
 
 struct PluginData
@@ -35,10 +35,10 @@ struct PluginData
         kReserved
     };
 
-    PluginData(const Type actype, const void* apModuleHandle, PluginDescriptor *apDesc);
+    PluginData(const Type actype, void* apModuleHandle, PluginDescriptor *apDesc);
 
     Type m_type;
-    const void* m_pModuleHandle{nullptr};
+    void* m_pModuleHandle{nullptr};
     PluginDescriptor* m_pDescriptor{nullptr};
 };
 } // namespace server_plugins

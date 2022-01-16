@@ -21,7 +21,7 @@ end
 
 -- this isnt fully specified yet.
 function unittest(name)
-    target(name .. "-Test")
+    local t = target(name .. "-Test")
       set_kind("binary")
       set_group("Components")
       add_configfiles("BuildInfo.h.in")
@@ -41,7 +41,8 @@ function unittest(name)
         "hopscotch-map", 
         "gtest",
         "spdlog")
-  end
+    return t
+end
 
 -- List all components required below:
 includes("console")

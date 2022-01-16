@@ -1,2 +1,2 @@
-component("Sv-Plugins")
-unittest("Sv-Plugins")
+component("ServerPlugins")
+unittest("ServerPlugins")

@@ -13,6 +13,8 @@ add_rules("plugin.vsxmake.autoupdate")
 
 add_requires("entt", "recastnavigation")
 
+root_dir = os.curdir()
+
 before_build(function (target)
     import("modules.version")
     local branch, commitHash = version()

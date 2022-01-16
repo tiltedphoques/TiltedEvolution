@@ -80,7 +80,7 @@ GameServer::~GameServer()
 {
     for (auto& it : m_pluginList.GetList())
     {
-        //it.m_pDescriptor->destroyPlugin();
+        //it.m_pDescriptor->DestroyPlugin();
     }
 
     s_pInstance = nullptr;
@@ -93,7 +93,11 @@ void GameServer::Initialize()
     m_pluginList.RefreshList(std::filesystem::current_path());
     for (auto& it : m_pluginList.GetList())
     {
-        m_pluginInstances.push_back(it.m_pDescriptor->createPlugin());
+        auto* pPluginInstance = it.m_pDescriptor->CreatePlugin();
+        m_pluginInstances.push_back(pPluginInstance);
+
+        pPluginInstance->Init();
+
     }
 }
 

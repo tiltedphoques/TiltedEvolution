@@ -9,8 +9,8 @@ namespace node_runtime_plugin
 class NodeRuntimePlugin final : public server_plugins::Plugin
 {
   public:
-    NodeRuntimePlugin();
-    ~NodeRuntimePlugin();
+    NodeRuntimePlugin() = default;
+    ~NodeRuntimePlugin() = default;
 
     void Init() override;
     void Update() override;

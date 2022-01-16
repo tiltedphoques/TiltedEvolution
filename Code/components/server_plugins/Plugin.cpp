@@ -6,7 +6,7 @@
 namespace server_plugins
 {
 
- PluginData::PluginData(const Type actype, const void* apModuleHandle, PluginDescriptor* apDesc)
+ PluginData::PluginData(const Type actype, void* apModuleHandle, PluginDescriptor* apDesc)
     : m_type(actype), m_pModuleHandle(apModuleHandle), m_pDescriptor(apDesc)
 {
 
