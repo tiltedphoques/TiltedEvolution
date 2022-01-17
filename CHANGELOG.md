@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.7.0...v1.8.0) (2022-01-17)
+
+
+### Features
+
+* Serverlist tags support and a few bugfixes. ([37c4348](https://github.com/tiltedphoques/TiltedEvolution/commit/37c4348d7de7847e1c92f3c880c28490bdfbe19e))
+
 # [1.7.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.6.0...v1.7.0) (2022-01-15)
 
 
