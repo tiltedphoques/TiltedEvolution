@@ -109,4 +109,92 @@ struct NAME
     uint32_t m_baseId{};
 };
 
+struct DOFT
+{
+    DOFT(){}
+    DOFT(Buffer::Reader& aReader);
+
+    uint32_t m_formId = 0;
+};
+
+struct ACBS
+{
+    ACBS(){}
+    ACBS(Buffer::Reader& aReader);
+
+    enum ActorFlags
+    {
+        kFemale = 1 << 0,
+        kEssential = 1 << 1,
+        kIsChargenFacePreset = 1 << 2,
+        kRespawn = 1 << 3,
+        kAutoCalcStats = 1 << 4,
+        kUnique = 1 << 5,
+        kDoesntAffectStealth = 1 << 6,
+        kPCLevelMult = 1 << 7,
+        kAudioTemplate_m = 1 << 8, // ??
+        kProtected = 1 << 9,
+        kSummonable = 1 << 10,
+        kDoesntBleed = 1 << 11,
+        kOwnedOrFollowed_m = 1 << 12, // ??
+        kOppositeGenderAnims = 1 << 13,
+        kSimpleActor = 1 << 14,
+        kLoopedScript_m = 1 << 15, // ??
+        kLoopedAudio_m = 1 << 16, // ??
+        kGhostOrNonInteractable = 1 << 17,
+        kInvulnerable = 1 << 18,
+    };
+
+    enum TemplateFlags
+    {
+        kTraits = 1 << 0,
+        kStats = 1 << 1,
+        kFactions = 1 << 2,
+        kSpells = 1 << 3,
+        kAIData = 1 << 4,
+        kAIPackages = 1 << 5,
+        kUnused = 1 << 6,
+        kBaseData = 1 << 7,
+        kInventory = 1 << 8,
+        kScript = 1 << 9,
+        kAIDefPackList = 1 << 10,
+        kAttackData = 1 << 11,
+        kKeywords = 1 << 12
+    };
+
+    [[nodiscard]] bool IsFemale() const { return m_flags & ActorFlags::kFemale; }
+    [[nodiscard]] bool IsEssential() const { return m_flags & ActorFlags::kEssential; }
+    [[nodiscard]] bool IsChargenFacePreset() const { return m_flags & ActorFlags::kIsChargenFacePreset; }
+    [[nodiscard]] bool IsRespawn() const { return m_flags & ActorFlags::kRespawn; }
+    [[nodiscard]] bool IsAutoCalcStats() const { return m_flags & ActorFlags::kAutoCalcStats; }
+    [[nodiscard]] bool IsUnique() const { return m_flags & ActorFlags::kUnique; }
+    [[nodiscard]] bool DoesAffectStealth() const { return !(m_flags & ActorFlags::kDoesntAffectStealth); }
+    [[nodiscard]] bool IsPCLevelMult() const { return m_flags & ActorFlags::kPCLevelMult; }
+    [[nodiscard]] bool IsAudioTemplate() const { return m_flags & ActorFlags::kAudioTemplate_m; }
+    [[nodiscard]] bool IsProtected() const { return m_flags & ActorFlags::kProtected; }
+    [[nodiscard]] bool IsSummonable() const { return m_flags & ActorFlags::kSummonable; }
+    [[nodiscard]] bool DoesBleed() const { return !(m_flags & ActorFlags::kDoesntBleed); }
+    [[nodiscard]] bool IsOwnerOrFollowed() const { return m_flags & ActorFlags::kOwnedOrFollowed_m; }
+    [[nodiscard]] bool IsOppositeGenderAnims() const { return m_flags & ActorFlags::kOppositeGenderAnims; }
+    [[nodiscard]] bool IsSimpleActor() const { return m_flags & ActorFlags::kSimpleActor; }
+    [[nodiscard]] bool IsLoopedScript() const { return m_flags & ActorFlags::kLoopedScript_m; }
+    [[nodiscard]] bool IsLoopedAudio() const { return m_flags & ActorFlags::kLoopedAudio_m; }
+    [[nodiscard]] bool IsGhostOrNonInteractable() const { return m_flags & ActorFlags::kGhostOrNonInteractable; }
+    [[nodiscard]] bool IsInvulnerable() const { return m_flags & ActorFlags::kInvulnerable; }
+
+    uint32_t m_flags = 0;
+    int16_t m_magickaOffset = 0;
+    int16_t m_staminaOffset = 0;
+    uint16_t m_level = 0;
+    uint16_t m_calcMinLevel = 0;
+    uint16_t m_calcMaxLevel = 0;
+    uint16_t m_speedMultiplier = 0;
+    uint16_t m_dispositionBase = 0;
+    uint16_t m_templateDataFlags = 0;
+    int16_t m_healthOffset = 0;
+    uint16_t m_bleedoutOverride = 0;
+};
+
+static_assert(sizeof(ACBS) == 0x18);
+
 } // namespace

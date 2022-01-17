@@ -131,4 +131,24 @@ NAME::NAME(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_baseId), 4);
 }
 
+DOFT::DOFT(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_formId), 4);
+}
+
+ACBS::ACBS(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_flags), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_magickaOffset), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_staminaOffset), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_level), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_calcMinLevel), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_calcMaxLevel), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_speedMultiplier), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dispositionBase), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_templateDataFlags), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_healthOffset), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_bleedoutOverride), 2);
+}
+
 } // namespace
