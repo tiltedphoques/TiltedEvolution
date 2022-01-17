@@ -2,39 +2,30 @@
 
 #include <zlib.h>
 
-template <class T> 
-void Record::IterateChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache, const T& aCallback)
+void Record::IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& aCallback)
 {
-    Buffer buffer;
-    buffer.Resize(m_dataSize);
-    buffer.m_pData = reinterpret_cast<uint8_t*>(this) + sizeof(Record);
+    Buffer buffer(reinterpret_cast<uint8_t*>(this) + sizeof(Record), m_dataSize);
     Buffer::Reader reader(&buffer);
 
     if (Compressed())
     {
-        SharedPtr<Buffer>& pDecompressedChunk = aCompressedChunkCache[this];
-        if (!pDecompressedChunk)
-        {
-            uint32_t size = 0;
-            reader.ReadBytes(reinterpret_cast<uint8_t*>(&size), 4);
+        uint32_t size = 0;
+        reader.ReadBytes(reinterpret_cast<uint8_t*>(&size), 4);
 
-            SharedPtr<Buffer> pDecompressed;
-            pDecompressed->Resize(size);
-            const uint32_t fieldSize = m_dataSize - 4;
+        Buffer pDecompressed;
+        pDecompressed.Resize(size);
+        const uint32_t fieldSize = m_dataSize - 4;
 
-            DecompressChunkData(buffer.GetWriteData() + reader.GetBytePosition(), fieldSize, pDecompressed.GetWriteData(), pDecompressed.GetSize());
+        DecompressChunkData(reader.GetDataAtPosition(), fieldSize, pDecompressed.GetWriteData(), pDecompressed.GetSize());
 
-            pDecompressedChunk = pDecompressed;
-        }
-
-        reader = Buffer::Reader(pDecompressedChunk.get());
+        reader = Buffer::Reader(&pDecompressed);
     }
 
     uint32_t largeDataSize = 0;
 
     while (!reader.Eof())
     {
-        Record::Chunk* pChunk = reinterpret_cast<Chunk*>(buffer.GetWriteData() + reader.GetBytePosition());
+        Record::Chunk* pChunk = reinterpret_cast<Chunk*>(reader.GetDataAtPosition());
         reader.Advance(sizeof(Record::Chunk));
 
         uint32_t dataSize = pChunk->m_dataSize;
@@ -51,14 +42,12 @@ void Record::IterateChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCach
             reader.Reverse(4);
         }
 
-        const uint8_t* pData = buffer.GetData() + reader.GetBytePosition();
         reader.Advance(dataSize);
 
-        Buffer chunkBuffer;
-        chunkBuffer.Resize(dataSize);
-        Buffer::Reader chunk(&chunkBuffer);
+        // TODO: technically, you shouldn't have to copy, in theory, could just leave out the Advance() above
+        Buffer::Reader chunk(reader);
 
-        aCallback(pChunk->m_chunkId, pData, chunk);
+        aCallback(pChunk->m_chunkId, chunk);
     }
 }
 

@@ -24,8 +24,7 @@ public:
 
     Record() = delete;
 
-    template <class T> 
-    void IterateChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache, const T& aCallback);
+    void IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& aCallback);
 
     void DecompressChunkData(const void* apCompressedData, size_t aCompressedSize, void* apDecompressedData, size_t aDecompressedSize);
 

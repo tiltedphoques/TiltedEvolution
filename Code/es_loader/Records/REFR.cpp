@@ -1,14 +1,14 @@
 #include "REFR.h"
 
-REFR::Data REFR::ParseChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache) noexcept
+REFR::Data REFR::ParseChunks() noexcept
 {
     Data data;
 
-    IterateChunks(aCompressedChunkCache, [&](ChunkId aChunkId, const uint8_t* apData) { 
+    IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
         switch (aChunkId)
         {
         case ChunkId::NAME_ID:
-            data.m_baseId = *reinterpret_cast<const uint32_t*>(apData);
+            data.m_basicObject = Chunks::NAME(aReader);
             break;
         }
     });

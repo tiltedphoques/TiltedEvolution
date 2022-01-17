@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Record.h"
+#include "Chunks.h"
 
 class REFR : public Record
 {
@@ -9,9 +10,10 @@ public:
 
     struct Data
     {
-        uint32_t m_baseId;
+        Data() = default;
+        Chunks::NAME m_basicObject;
     };
 
-    Data ParseChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache) noexcept;
+    Data ParseChunks() noexcept;
 };
 

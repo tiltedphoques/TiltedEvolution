@@ -79,7 +79,7 @@ void ESLoader::LoadFiles()
         Vector<CLMT::Data> climateData;
         for (auto& climate : climates)
         {
-            climateData.push_back(climate.second->ParseChunks(m_decompressedChunksCache));
+            climateData.push_back(climate.second->ParseChunks());
         }
         spdlog::info("refrData count: {}", climateData.size());
     }
@@ -93,5 +93,12 @@ Map<String, Vector<T>> ESLoader::GetRecords() noexcept
     {
         allRecords[plugin.GetFilename()] = plugin.GetRecords<T>();
     }
+}
+
+String ESLoader::LoadZString(Buffer::Reader& aReader) noexcept
+{
+    String zstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()));
+    aReader.Advance(zstring.size() + 1);
+    return zstring;
 }
 

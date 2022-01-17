@@ -67,18 +67,20 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
 
         switch (record->GetType())
         {
-        case FormEnum::REFR:
         //case FormEnum::ACHR:
+        case FormEnum::REFR: {
             REFR* recordREFR = reinterpret_cast<REFR*>(record);
             m_objectReferences[record->GetFormId()] = recordREFR;
             break;
+        }
         case FormEnum::CELL:
             m_cells.push_back(record);
             break;
-        case FormEnum::CLMT:
+        case FormEnum::CLMT: {
             CLMT* recordCLMT = reinterpret_cast<CLMT*>(record);
             m_climates[record->GetFormId()] = recordCLMT;
             break;
+        }
         }
 
         aReader.Advance(sizeof(Record) + size);

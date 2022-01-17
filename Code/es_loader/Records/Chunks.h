@@ -41,7 +41,7 @@ struct ScriptProperty
         } m_string {nullptr, 0};
     };
 
-    void ParseValue(const uint8_t* apData, Buffer::Reader& aReader, int16_t aObjectFormat) noexcept;
+    void ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat) noexcept;
     Type GetPropertyType(Type aArrayType) noexcept;
 
     String m_name;
@@ -56,17 +56,57 @@ struct Script
     String m_name;
     uint8_t m_status;
     uint16_t m_propertyCount;
-    Set<ScriptProperty> m_properties;
+    Vector<ScriptProperty> m_properties;
 };
 
 struct PrimaryScripts
 {
-    PrimaryScripts(const uint8_t* apData, Buffer::Reader& aReader);
+    PrimaryScripts(Buffer::Reader& aReader);
 
     int16_t m_version = 0;
     int16_t m_objectFormat = 0;
     uint16_t m_scriptCount = 0;
     Vector<Script> m_scripts;
+};
+
+struct CNTO
+{
+    CNTO(){}
+    CNTO(Buffer::Reader& aReader);
+
+    uint32_t m_formId{};
+    uint32_t m_count{};
+};
+
+struct WLST
+{
+    WLST(){}
+    WLST(Buffer::Reader& aReader);
+
+    uint32_t m_weatherId{}; // WTHR
+    uint32_t m_chance{};
+    uint32_t m_globalId{};
+};
+
+struct TNAM
+{
+    TNAM(){}
+    TNAM(Buffer::Reader& aReader);
+
+    uint8_t m_sunriseBegin{}; // times 10 minutes
+    uint8_t m_sunriseEnd{}; // times 10 minutes
+    uint8_t m_sunsetBegin{}; // times 10 minutes
+    uint8_t m_sunsetEnd{}; // times 10 minutes
+    uint8_t m_volatility{}; // 0-100
+    uint8_t m_moons{};
+};
+
+struct NAME
+{
+    NAME(){}
+    NAME(Buffer::Reader& aReader);
+
+    uint32_t m_baseId{};
 };
 
 } // namespace

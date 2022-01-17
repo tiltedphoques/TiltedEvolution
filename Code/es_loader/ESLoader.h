@@ -14,6 +14,8 @@ public:
     template<class T> 
     Map<String, Vector<T>> GetRecords() noexcept;
 
+    static String LoadZString(Buffer::Reader& aReader) noexcept;
+
 private:
     void FindFiles();
     void LoadFiles();
@@ -24,6 +26,4 @@ private:
     Vector<std::filesystem::path> m_eslFilenames;
     Vector<TESFile> m_standardPlugins;
     Vector<TESFile> m_lightPlugins;
-
-    Map<Record*, SharedPtr<Buffer>> m_decompressedChunksCache{};
 };

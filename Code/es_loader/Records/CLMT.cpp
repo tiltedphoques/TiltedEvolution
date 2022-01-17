@@ -1,26 +1,28 @@
 #include "CLMT.h"
 
-CLMT::Data CLMT::ParseChunks(Map<Record*, SharedPtr<Buffer>>& aCompressedChunkCache) noexcept
+#include <ESLoader.h>
+
+CLMT::Data CLMT::ParseChunks() noexcept
 {
     Data data;
 
-    IterateChunks(aCompressedChunkCache, [&](ChunkId aChunkId, const uint8_t* apData) { 
+    IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            data.m_editorId = reinterpret_cast<const char*>(apData);
+            data.m_editorId = ESLoader::LoadZString(aReader);
             break;
         case ChunkId::WLST_ID:
-            data.m_weatherList = reinterpret_cast<const WeatherList*>(apData);
+            data.m_weatherList = Chunks::WLST(aReader);
             break;
         case ChunkId::FNAM_ID:
-            data.m_sunTexture = reinterpret_cast<const char*>(apData);
+            data.m_sunTexture = ESLoader::LoadZString(aReader);
             break;
         case ChunkId::GNAM_ID:
-            data.m_glareTexture = reinterpret_cast<const char*>(apData);
+            data.m_glareTexture = ESLoader::LoadZString(aReader);
             break;
         case ChunkId::TNAM_ID:
-            data.m_timing = reinterpret_cast<const SunAndMoon*>(apData);
+            data.m_timing = Chunks::TNAM(aReader);
             break;
         }
     });
