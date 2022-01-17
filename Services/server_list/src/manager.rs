@@ -45,6 +45,13 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
     };
     desc.truncate(256);
 
+    // Non optional
+    let mut version = match params.get("version") {
+        Some(n) => String::from(n),
+        _ => String::from("")
+    };
+    version.truncate(16);
+
     // Optional
     let mut icon_url = match params.get("icon_url") {
         Some(n) => String::from(n),
@@ -71,6 +78,13 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
         Ok(n) => Some(n),
         Err(_) => None,
     });
+
+    // Optional
+    let mut tags = match params.get("tags") {
+        Some(n) => String::from(n),
+        _ => String::from("")
+    };
+    tags.truncate(512);
 
     let port = match port {
         Some(port) => port,
@@ -100,11 +114,13 @@ async fn handle_announce(req: Request<Body>, ctx: Arc::<Mutex::<Context>>) -> Re
         host,
         name,
         desc,
+        version,
         icon_url,
         port,
         tick,
         player_count,
-        max_player_count);
+        max_player_count,
+        tags);
 
     Ok(Response::builder()
     .status(StatusCode::OK)

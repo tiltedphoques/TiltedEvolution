@@ -46,7 +46,8 @@ class CommandQueue
     }
 
   private:
-    // fast queue with up to 8 outstanding elements.
-    fast_queue<Item, 8> m_queue;
+    // fast queue with up to n outstanding elements.
+    // (8 would be 256)
+    fast_queue<Item, 4> m_queue;
 };
 } // namespace console

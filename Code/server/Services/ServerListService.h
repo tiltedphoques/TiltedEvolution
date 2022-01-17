@@ -29,7 +29,8 @@ private:
         uint16_t aPort, 
         uint16_t aTick, 
         uint16_t aPlayerCount, 
-        uint16_t aPlayerMaxCount) noexcept;
+        uint16_t aPlayerMaxCount, 
+        String acTagList) noexcept;
 
     World& m_world;
 

@@ -14,11 +14,13 @@ struct AuthenticationRequest;
 struct GameServer final : Server
 {
 public:
+    // TODO: eventually refactor this.
     struct Info
     {
         String name;
         String desc;
         String icon_url;
+        String tagList;
         uint16_t tick_rate;
     };
 

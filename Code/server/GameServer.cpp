@@ -1,31 +1,32 @@
 
-#include <stdafx.h>
-#include <GameServer.h>
 #include <Components.h>
+#include <GameServer.h>
 #include <Packet.hpp>
+#include <stdafx.h>
 
 #include <Events/AdminPacketEvent.h>
-#include <Events/PacketEvent.h>
-#include <Events/UpdateEvent.h>
-#include <Events/PlayerJoinEvent.h>
-#include <Events/PlayerLeaveEvent.h>
-#include <Events/PlayerLeaveCellEvent.h>
 #include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
+#include <Events/PacketEvent.h>
+#include <Events/PlayerJoinEvent.h>
+#include <Events/PlayerLeaveCellEvent.h>
+#include <Events/PlayerLeaveEvent.h>
+#include <Events/UpdateEvent.h>
 #include <steam/isteamnetworkingutils.h>
 
-#include <Messages/ClientMessageFactory.h>
-#include <Messages/AuthenticationResponse.h>
 #include <AdminMessages/ClientAdminMessageFactory.h>
+#include <Messages/AuthenticationResponse.h>
+#include <Messages/ClientMessageFactory.h>
 #include <Scripts/Player.h>
 
-#include <console/Setting.h>
 #include <console/Command.h>
+#include <console/Setting.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
 #endif
 
+// >> Game server cvars <<
 static console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
 static console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 static console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
@@ -34,18 +35,19 @@ static console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description
                                           "Hello there!"};
 static console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
                                              ""};
+static console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 static console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 static console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
-//static auto MXXX = [](bool b) { bPremiumTickrate = !bPremiumTickrate; };
-static void MXXX(console::ArgStack& aStack)
-{
-    bool b = aStack.Pop<bool>();
+// >> Constants <<
+static constexpr size_t kTagListCap = 512;
 
-    bPremiumTickrate = !bPremiumTickrate;
-}
-
-static console::Command<bool> s_Command("TogglePremium", "Toggle the premium mode", MXXX);
+static console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
+                                            [](console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+static console::Command<> ShowVersion("version", "Show the version the server was compiled with",
+                                      [](console::ArgStack&) {
+                                          spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
+                                      });
 
 static uint16_t GetUserTickRate()
 {
@@ -54,9 +56,7 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer() noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now()),
-      m_requestStop(false)
+GameServer::GameServer() noexcept : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -140,6 +140,14 @@ void GameServer::UpdateInfo()
     m_info.desc = sServerDesc.c_str();
     m_info.icon_url = sServerIconURL.c_str();
     m_info.tick_rate = GetUserTickRate();
+
+    if (std::strlen(sTagList.c_str()) > 512)
+    {
+        m_info.tagList = "";
+        spdlog::warn("TagList limit exceeded (512 characters). Ignoring tags.");
+    }
+    else
+        m_info.tagList = sTagList.c_str();
 }
 
 void GameServer::OnUpdate()
@@ -243,7 +251,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{ 1 << 18 };
+    static thread_local ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -279,7 +287,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    for(auto pPlayer : m_pWorld->GetPlayerManager())
+    for (auto pPlayer : m_pWorld->GetPlayerManager())
     {
         if (pPlayer->GetCellComponent())
             pPlayer->Send(acServerMessage);
@@ -322,10 +330,11 @@ void GameServer::Stop() noexcept
 
 GameServer* GameServer::Get() noexcept
 {
-	return s_pInstance;
+    return s_pInstance;
 }
 
-void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept
+void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
+                                             const UniquePtr<AuthenticationRequest>& acRequest) noexcept
 {
     const auto info = GetConnectionInfo(aConnectionId);
 
@@ -351,7 +360,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         Mods& serverMods = serverResponse.UserMods;
 
-        // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null form id anyway
+        // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
+        // form id anyway
         std::ostringstream oss;
         oss << "New player {:x} connected with mods\n\t Standard: ";
 
@@ -393,7 +403,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
 
-        //TODO: Scripting
+        // TODO: Scripting
         /*Script::Player player(cEntity, *m_pWorld);
         auto [canceled, reason] = scripts.HandlePlayerJoin(player);
 

@@ -90,6 +90,11 @@ struct SettingBase
         return flags & Flags::kHidden;
     }
 
+    inline bool IsLocked() const
+    {
+        return flags & Flags::kLocked;
+    }
+
     // type info
     Flags flags;
     Type type;
@@ -199,4 +204,4 @@ template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : 
 
 using StringSetting = Setting<const char*, detail::DynamicStringStorage<char>>;
 // NOTE: Wide strings are not supported, since our INI cant handle them.
-} // namespace base
+} // namespace console

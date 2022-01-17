@@ -87,6 +87,33 @@ void ConsoleRegistry::RegisterNatives()
                 m_out->info("{}:  {}", s->name, s->desc);
         }
     });
+
+    RegisterCommand<const char*, const char*>("set", R"(Set a setting e.g "set mysetting true")", [&](ArgStack& aStack) {
+        const std::string variableName{aStack.Pop<std::string>()};
+        if (variableName.empty())
+        {
+            m_out->error("set <varname> <state>");
+            return;
+        }
+
+        auto* pSetting = FindSetting(variableName.c_str());
+        if (!pSetting)
+        {
+            m_out->error("Failed to find setting {}", variableName);
+            return;
+        }
+
+        if (pSetting->IsLocked())
+        {
+            m_out->error("Failed apply value: setting is locked");
+            return;
+        }
+
+        m_out->warn("Failed to set value because force was too lazy to make it work");
+        // aStack.Pop<std::string>()
+        // TODO: parse value function...
+        //pSetting.data = 
+    });
 }
 
 void ConsoleRegistry::AddCommand(CommandBase* apCommand)
