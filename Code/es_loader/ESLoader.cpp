@@ -4,6 +4,7 @@
 
 #include <Records/REFR.h>
 #include <Records/CLMT.h>
+#include <Records/NPC.h>
 
 namespace fs = std::filesystem;
 
@@ -86,6 +87,10 @@ void ESLoader::LoadFiles()
         {
             spdlog::info("Climate: {}", climate.m_editorId);
         }
+
+        NPC* pNpc = skyrimEsm.GetNpcById(0x13480);
+        NPC::Data npcData = pNpc->ParseChunks();
+        spdlog::info("Is Faendal unique? {}", npcData.m_baseStats.IsUnique());
     }
 }
 

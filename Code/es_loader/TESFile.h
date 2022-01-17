@@ -5,6 +5,7 @@
 class Record;
 class REFR;
 class CLMT;
+class NPC;
 
 class TESFile
 {
@@ -36,6 +37,11 @@ public:
         return m_climates;
     }
 
+    NPC* GetNpcById(uint32_t aFormId) noexcept
+    {
+        return m_npcs[aFormId];
+    }
+
 private:
     void BuildFormIdRecordMap() noexcept;
     bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
@@ -54,4 +60,5 @@ private:
     Map<uint32_t, REFR*> m_objectReferences;
     Map<uint32_t, CLMT*> m_climates;
     Vector<Record*> m_cells;
+    Map<uint32_t, NPC*> m_npcs;
 };

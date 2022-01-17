@@ -7,12 +7,11 @@ void Record::IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& 
     Buffer buffer(reinterpret_cast<uint8_t*>(this) + sizeof(Record), m_dataSize);
     Buffer::Reader reader(&buffer);
 
+    Buffer pDecompressed;
     if (Compressed())
     {
         uint32_t size = 0;
         reader.ReadBytes(reinterpret_cast<uint8_t*>(&size), 4);
-
-        Buffer pDecompressed;
         pDecompressed.Resize(size);
         const uint32_t fieldSize = m_dataSize - 4;
 

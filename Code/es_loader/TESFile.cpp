@@ -6,6 +6,7 @@
 #include "Records/Record.h"
 #include "Records/REFR.h"
 #include "Records/CLMT.h"
+#include "Records/NPC.h"
 
 TESFile::TESFile(const std::filesystem::path& acPath)
 {
@@ -80,6 +81,13 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
         case FormEnum::CLMT: {
             CLMT* recordCLMT = reinterpret_cast<CLMT*>(record);
             m_climates[record->GetFormId()] = recordCLMT;
+            break;
+        }
+        case FormEnum::NPC_: {
+            NPC* pNpc = reinterpret_cast<NPC*>(record);
+            m_npcs[record->GetFormId()] = pNpc;
+            if (record->GetFormId() == 0x13480)
+                pNpc->ParseChunks();
             break;
         }
         }
