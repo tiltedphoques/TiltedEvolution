@@ -40,6 +40,7 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&type), 4);
     uint32_t size = 0;
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&size), 4);
+    aReader.Reverse(8);
 
     if (type == static_cast<uint32_t>(FormEnum::GRUP))
     {

@@ -10,8 +10,7 @@ public:
 
     struct Data
     {
-        Data() = default;
-        Chunks::NAME m_basicObject;
+        Chunks::NAME m_basicObject{};
     };
 
     Data ParseChunks() noexcept;

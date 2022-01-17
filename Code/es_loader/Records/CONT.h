@@ -16,7 +16,7 @@ public:
         // FULL
         String m_name = "";
         // Objects
-        Vector<Chunks::CNTO> m_objects;
+        Vector<Chunks::CNTO> m_objects{};
     };
 
     Data ParseChunks() noexcept;

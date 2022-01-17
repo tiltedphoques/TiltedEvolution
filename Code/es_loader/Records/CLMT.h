@@ -14,13 +14,13 @@ public:
         // EDID
         String m_editorId = "";
         // WLST
-        Chunks::WLST m_weatherList;
+        Chunks::WLST m_weatherList{};
         // FNAM
         String m_sunTexture = "";
         // GNAM
         String m_glareTexture = "";
         //TNAM
-        Chunks::TNAM m_timing;
+        Chunks::TNAM m_timing{};
     };
 
     Data ParseChunks() noexcept;

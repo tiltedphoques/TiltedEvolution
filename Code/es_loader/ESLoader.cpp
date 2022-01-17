@@ -81,7 +81,11 @@ void ESLoader::LoadFiles()
         {
             climateData.push_back(climate.second->ParseChunks());
         }
-        spdlog::info("refrData count: {}", climateData.size());
+        spdlog::info("climateData count: {}", climateData.size());
+        for (auto& climate : climateData)
+        {
+            spdlog::info("Climate: {}", climate.m_editorId);
+        }
     }
 }
 

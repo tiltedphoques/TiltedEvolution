@@ -42,10 +42,10 @@ void Record::IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& 
             reader.Reverse(4);
         }
 
-        reader.Advance(dataSize);
-
         // TODO: technically, you shouldn't have to copy, in theory, could just leave out the Advance() above
         Buffer::Reader chunk(reader);
+
+        reader.Advance(dataSize);
 
         aCallback(pChunk->m_chunkId, chunk);
     }
