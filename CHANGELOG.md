@@ -1,3 +1,52 @@
+# [1.8.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.7.0...v1.8.0) (2022-01-17)
+
+
+### Features
+
+* Serverlist tags support and a few bugfixes. ([37c4348](https://github.com/tiltedphoques/TiltedEvolution/commit/37c4348d7de7847e1c92f3c880c28490bdfbe19e))
+
+# [1.7.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.6.0...v1.7.0) (2022-01-15)
+
+
+### Bug Fixes
+
+* Incorrect arg name fix ([b08d26b](https://github.com/tiltedphoques/TiltedEvolution/commit/b08d26ba073f89fbc3f4bf12059d1787b06ca8b6))
+
+
+### Features
+
+* Added coding guidelines ([5c413ae](https://github.com/tiltedphoques/TiltedEvolution/commit/5c413ae5363f2050348feb4dd8d117727710681c))
+* Modified arg names and checking event opcodes first ([6d5c175](https://github.com/tiltedphoques/TiltedEvolution/commit/6d5c17536f4dd8d6d8754ed024b4f179c210824e))
+
+# [1.6.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.1...v1.6.0) (2022-01-15)
+
+
+### Bug Fixes
+
+* Docker compose not using the correct output path for server list service ([4c87f3f](https://github.com/tiltedphoques/TiltedEvolution/commit/4c87f3f28c78c1abfe1e4900f3b9c7548c5b6267))
+* Eliminate warnings. ([2080cb2](https://github.com/tiltedphoques/TiltedEvolution/commit/2080cb2b5cdf54f8672fe62ba525ceea49bda3a7))
+* improve error handling for the server list service ([2d4defa](https://github.com/tiltedphoques/TiltedEvolution/commit/2d4defae507205f1fce651b088efe8e66ebb1ad2))
+* re-enable SSL for masterlist endpoint. ([4fa7149](https://github.com/tiltedphoques/TiltedEvolution/commit/4fa714999bbc62894eaf1af14db18c7296b8bc18))
+* server admin console now relies exclusively on xmake ([b2304a4](https://github.com/tiltedphoques/TiltedEvolution/commit/b2304a4a8692057a52189f149a356f3a4c680d39))
+
+
+### Features
+
+* Console commands POC ([0e8d9e8](https://github.com/tiltedphoques/TiltedEvolution/commit/0e8d9e8a5fcd5731ffc8795a2d4e1935e2560730))
+* Console component ([cf7283d](https://github.com/tiltedphoques/TiltedEvolution/commit/cf7283dce052166b16e88af5c4e2010a6f1a6b30))
+* EULA validation for server owners. ([d5148f1](https://github.com/tiltedphoques/TiltedEvolution/commit/d5148f1c2dce5f485348561c8d6474e033d50942))
+* libbase setting<t> draft ([085fc9c](https://github.com/tiltedphoques/TiltedEvolution/commit/085fc9c4601fc334a9dacc503719fc9531a09705))
+* server settings ini poc code. ([f2efe42](https://github.com/tiltedphoques/TiltedEvolution/commit/f2efe42a6670817efaea45c9fe5201d63982a493))
+* Test coverage for console component ([de73919](https://github.com/tiltedphoques/TiltedEvolution/commit/de73919e24c50b7c7c4cc975f59a69ca0af5aca4))
+* Upgrade api endpoint with icon, desc, tick support; re-enable list service. ([2873b39](https://github.com/tiltedphoques/TiltedEvolution/commit/2873b399a6cfb7d820d2fba8a023118bf0b01817))
+
+## [1.5.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.0...v1.5.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* projectile related crashes ([48eec06](https://github.com/tiltedphoques/TiltedEvolution/commit/48eec065e282898bdbd02ed7a2ad195665cd92d7))
+
 # [1.5.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.1...v1.5.0) (2021-12-11)
 
 

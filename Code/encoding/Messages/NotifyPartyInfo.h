@@ -9,8 +9,8 @@ struct NotifyPartyInfo final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyPartyInfo;
 
-    NotifyPartyInfo() : 
-        ServerMessage(Opcode)
+    NotifyPartyInfo() :
+        ServerMessage(Opcode), IsLeader(false)
     {
     }
 
@@ -21,9 +21,12 @@ struct NotifyPartyInfo final : ServerMessage
 
     bool operator==(const NotifyPartyInfo& acRhs) const noexcept
     {
-        return PlayerIds == acRhs.PlayerIds &&
-            GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+            PlayerIds == acRhs.PlayerIds &&
+            LeaderPlayerId == acRhs.LeaderPlayerId;
     }
 
     Vector<uint32_t> PlayerIds{};
+    bool IsLeader;
+    uint32_t LeaderPlayerId;
 };

@@ -13,12 +13,25 @@ struct AuthenticationRequest;
 
 struct GameServer final : Server
 {
-    GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword = "") noexcept;
+public:
+    // TODO: eventually refactor this.
+    struct Info
+    {
+        String name;
+        String desc;
+        String icon_url;
+        String tagList;
+        uint16_t tick_rate;
+    };
+
+    GameServer() noexcept;
     virtual ~GameServer();
 
     TP_NOCOPYMOVE(GameServer);
 
     void Initialize();
+    void BindMessageHandlers();
+    void UpdateInfo();
 
     void OnUpdate() override;
     void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
@@ -31,7 +44,10 @@ struct GameServer final : Server
     void SendToPlayers(const ServerMessage& acServerMessage) const;
     void SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin) const;
 
-    const String& GetName() const noexcept;
+    const Info& GetInfo() const noexcept
+    {
+        return m_info;
+    }
 
     void Stop() noexcept;
 
@@ -50,16 +66,13 @@ protected:
 
 private:
 
-    void SetTitle() const;
+    void UpdateTitle() const;
 
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
 
-    String m_name;
-    String m_token;
-    String m_adminPassword;
-
+    Info m_info{};
     std::unique_ptr<World> m_pWorld;
 
     Set<ConnectionId_t> m_adminSessions;

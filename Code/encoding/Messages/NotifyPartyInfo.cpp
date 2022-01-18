@@ -3,6 +3,8 @@
 
 void NotifyPartyInfo::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
+    Serialization::WriteBool(aWriter, IsLeader);
+    Serialization::WriteVarInt(aWriter, LeaderPlayerId);
     aWriter.WriteBits(PlayerIds.size() & 0xFF, 8);
 
     for (auto player : PlayerIds)
@@ -13,6 +15,9 @@ void NotifyPartyInfo::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const
 
 void NotifyPartyInfo::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
+    IsLeader = Serialization::ReadBool(aReader);
+    LeaderPlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+
     uint64_t count = 0;
     aReader.ReadBits(count, 8);
 

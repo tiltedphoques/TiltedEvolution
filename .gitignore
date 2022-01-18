@@ -79,4 +79,6 @@ distrib/
 distrib_debug/
 distrib_releasedbg/
 
+.idea/
+
 new_addresses.txt
