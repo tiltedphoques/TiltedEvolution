@@ -1,5 +1,3 @@
-#include <TiltedOnlinePCH.h>
-
 // dear imgui: Platform Backend for Windows (standard windows API for 32 and 64 bits applications)
 // This needs to be used along with a Renderer (e.g. DirectX11, OpenGL3, Vulkan..)
 
