@@ -3,51 +3,75 @@
 #include <Havok/hkbStateMachine.h>
 #include <Structs/AnimationGraphDescriptorManager.h>
 
+#include <Havok/BShkbAnimationGraph.h>
 #include <Havok/BShkbHkxDB.h>
 #include <Havok/hkbBehaviorGraph.h>
-#include <Havok/BShkbAnimationGraph.h>
 
-#include <Services/TestService.h>
 #include <Services/ImguiService.h>
+#include <Services/TestService.h>
 #include <Services/TransportService.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/MagicSyncEvent.h>
+#include <Events/UpdateEvent.h>
 
 #include <Games/References.h>
 
-#include <Forms/TESQuest.h>
 #include <BSAnimationGraphManager.h>
 #include <Forms/TESFaction.h>
+#include <Forms/TESQuest.h>
 
-#include <Forms/TESNPC.h>
 #include <Forms/BGSAction.h>
 #include <Forms/TESIdleForm.h>
-#include <Structs/ActionEvent.h>
+#include <Forms/TESNPC.h>
 #include <Games/Animation/ActorMediator.h>
 #include <Games/Animation/TESActionData.h>
-#include <Misc/BSFixedString.h>
 #include <Magic/ActorMagicCaster.h>
+#include <Misc/BSFixedString.h>
+#include <Structs/ActionEvent.h>
 
 #include <Components.h>
 #include <World.h>
 
-#include <Games/TES.h>
-#include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
+#include <Games/TES.h>
+
+#include <Camera/PlayerCamera.h>
+#include <NetImmerse/NiCamera.h>
 
 #include <AI/AIProcess.h>
 
 #if TP_SKYRIM64
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Forms/TESAmmo.h>
-#include <Games/Skyrim/DefaultObjectManager.h>
-#include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <EquipManager.h>
+#include <Games/Skyrim/DefaultObjectManager.h>
+#include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/Misc/InventoryEntry.h>
+#include <Games/Skyrim/Misc/MiddleProcess.h>
 #endif
+
+//#include <Games/Skyrim/>
 
 #include <imgui.h>
 #include <inttypes.h>
+
+static float (*guimatrix)[4][4] = nullptr;
+static NiRect<float>* guiport = nullptr;
+
+static TiltedPhoques::Initializer s_Init([]() {
+    POINTER_FALLOUT4(float[4][4], s_matrix, 0x145A66AA0 - 0x140000000);
+    POINTER_FALLOUT4(NiRect<float>, s_port, 0x145A66B30 - 0x140000000);
+
+    POINTER_SKYRIMSE(float[4][4], s_matrix, 0x142FE75F0 - 0x140000000);
+    POINTER_SKYRIMSE(NiRect<float>, s_port, 0x142FE8B98 - 0x140000000);
+
+    guimatrix = s_matrix.Get();
+    guiport = s_port.Get();
+});
+
+bool HUD_WorldPtToScreenPt3(NiPoint3* in, NiPoint3* out)
+{
+    return NiCamera::WorldPtToScreenPt3((float*)guimatrix, guiport, in, &out->x, &out->y, &out->z, 1e-5f);
+}
 
 extern thread_local bool g_overrideFormId;
 
@@ -55,7 +79,7 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
-    //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
+    // const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
 
     pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
@@ -63,10 +87,9 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     m_actors.emplace_back(pActor);
 }
 
-TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService)
-    : m_dispatcher(aDispatcher)
-    , m_transport(aTransport)
-    , m_world(aWorld)
+TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport,
+                         ImguiService& aImguiService)
+    : m_dispatcher(aDispatcher), m_transport(aTransport), m_world(aWorld)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
@@ -90,7 +113,8 @@ void TestService::RunDiff()
     PlayerCharacter::Get()->SaveAnimationVariables(vars);
     pActor->LoadAnimationVariables(vars);
 
-    if (PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager) && pActor->animationGraphHolder.GetBSAnimationGraph(&pActorManager))
+    if (PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager) &&
+    pActor->animationGraphHolder.GetBSAnimationGraph(&pActorManager))
     {
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
@@ -111,7 +135,8 @@ void TestService::RunDiff()
                     for (auto i = 0u; i < pVariableSet->size; ++i)
                     {
                         //if (pVariableSet->data[i] != pActorVariableSet->data[i])
-                            //spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i], pActorVariableSet->data[i]);
+                            //spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i],
+    pActorVariableSet->data[i]);
 
                         auto itor = s_values.find(i);
                         if (itor == std::end(s_values))
@@ -120,7 +145,8 @@ void TestService::RunDiff()
 
                             if (!pDescriptor->IsSynced(i))
                             {
-                                spdlog::info("Variable {} initialized to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
+                                spdlog::info("Variable {} initialized to f: {} i: {}", i,
+    *(float*)&pVariableSet->data[i],
                                              *(int32_t*)&pVariableSet->data[i]);
                             }
                         }
@@ -171,7 +197,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
             pActor->SetWeaponDrawnEx(true);
 
-            //PlaceActorInWorld();
+            // PlaceActorInWorld();
 
             /*
             const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
@@ -196,8 +222,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 uint64_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
     auto hash = pManager->GetDescriptorKey();
-    auto pDescriptor =
-        AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+    auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
 
     spdlog::info("Key: {}", hash);
     std::cout << "uint64_t key = " << hash << ";" << std::endl;
@@ -213,14 +238,15 @@ void TestService::AnimationDebugging() noexcept
     static Actor* pActor = nullptr;
     static Map<uint32_t, uint32_t> s_values;
     static Map<uint32_t, uint32_t> s_reusedValues;
-    static Map<uint32_t, short> s_valueTypes; //0 for bool, 1 for float, 2 for int
+    static Map<uint32_t, short> s_valueTypes; // 0 for bool, 1 for float, 2 for int
     static Vector<uint32_t> s_blacklist{};
     static SortedMap<uint32_t, String> s_varMap{};
     static Map<uint64_t, uint32_t> s_cachedKeys{};
 
     ImGui::Begin("Animation debugging");
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32,
+                       ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
@@ -440,8 +466,10 @@ void TestService::AnimationDebugging() noexcept
         }
         if (ImGui::BeginTabItem("Control"))
         {
-            ImGui::InputInt("Animation graph count", (int*)&pManager->animationGraphs.size, 0, 0, ImGuiInputTextFlags_ReadOnly);
-            ImGui::InputInt("Animation graph index", (int*)&pManager->animationGraphIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt("Animation graph count", (int*)&pManager->animationGraphs.size, 0, 0,
+                            ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt("Animation graph index", (int*)&pManager->animationGraphIndex, 0, 0,
+                            ImGuiInputTextFlags_ReadOnly);
 
             char name[256];
             sprintf_s(name, std::size(name), "%s", pGraph->behaviorGraph->stateMachine->name);
@@ -449,8 +477,7 @@ void TestService::AnimationDebugging() noexcept
 
             const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
 
-            auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pManager->GetDescriptorKey());
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pManager->GetDescriptorKey());
 
             static bool toggleVariableRecord = false;
             if (ImGui::Button("Toggle variable recording"))
@@ -476,8 +503,8 @@ void TestService::AnimationDebugging() noexcept
 
                         const auto varName = s_varMap[i];
 
-                        spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i],
-                                     *(int32_t*)&pVariableSet->data[i]);
+                        spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i,
+                                     *(float*)&pVariableSet->data[i], *(int32_t*)&pVariableSet->data[i]);
                     }
                     else if (iter->second != pVariableSet->data[i])
                     {
@@ -485,13 +512,12 @@ void TestService::AnimationDebugging() noexcept
 
                         float floatCast = *(float*)&pVariableSet->data[i];
                         int intCast = *(int32_t*)&pVariableSet->data[i];
-                        spdlog::warn("Variable k{} ({}) changed to f: {} i: {}", varName, i, floatCast,
-                                     intCast);
+                        spdlog::warn("Variable k{} ({}) changed to f: {} i: {}", varName, i, floatCast, intCast);
 
                         s_values[i] = pVariableSet->data[i];
                         s_reusedValues[i] = pVariableSet->data[i];
 
-                        char varTypeChar = varName[0]; //for guessing type, to see if u can find type char (i, f, b)
+                        char varTypeChar = varName[0]; // for guessing type, to see if u can find type char (i, f, b)
                         if (varTypeChar == 'f')
                         {
                             s_valueTypes[i] = 1;
@@ -500,7 +526,8 @@ void TestService::AnimationDebugging() noexcept
                         {
                             s_valueTypes[i] = 2;
                         }
-                        else if (varTypeChar != 'b' && s_valueTypes[i] != 1) // no char hint to go off of and not assuming float
+                        else if (varTypeChar != 'b' &&
+                                 s_valueTypes[i] != 1) // no char hint to go off of and not assuming float
                         {
                             if (intCast > 1000 || intCast < -1000) // arbitrary int threshold
                             {
@@ -520,8 +547,8 @@ void TestService::AnimationDebugging() noexcept
 
             if (ImGui::Button("Dump variables") && pVariableSet)
             {
-                //kinda ugly to iterate 3 times but idc cuz its just for debugging and its a small collection
-                // BOOLS
+                // kinda ugly to iterate 3 times but idc cuz its just for debugging and its a small collection
+                //  BOOLS
                 std::cout << "{" << std::endl;
                 for (auto& [key, value] : s_reusedValues)
                 {
@@ -532,8 +559,7 @@ void TestService::AnimationDebugging() noexcept
                     }
                 }
                 // FLOATS
-                std::cout << "}," << std::endl
-                          << "{" << std::endl;
+                std::cout << "}," << std::endl << "{" << std::endl;
                 for (auto& [key, value] : s_reusedValues)
                 {
                     if (s_valueTypes[key] == 1)
@@ -543,8 +569,7 @@ void TestService::AnimationDebugging() noexcept
                     }
                 }
                 // INTS
-                std::cout << "}," << std::endl
-                          << "{" << std::endl;
+                std::cout << "}," << std::endl << "{" << std::endl;
                 for (auto& [key, value] : s_reusedValues)
                 {
                     if (s_valueTypes[key] == 2)
@@ -609,14 +634,18 @@ void TestService::OnDraw() noexcept
         uint32_t leftId = pLeftWeapon ? pLeftWeapon->formID : 0;
         uint32_t rightId = pRightWeapon ? pRightWeapon->formID : 0;
 
-        ImGui::InputScalar("Left Item", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputScalar("Right Item", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Left Item", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr,
+                           ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Right Item", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr,
+                           ImGuiInputTextFlags_ReadOnly);
 
         leftId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
         rightId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
 
-        ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr,
+                           ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr,
+                           ImGuiInputTextFlags_ReadOnly);
 
 #if TP_SKYRIM64
         auto* leftHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
@@ -633,28 +662,28 @@ void TestService::OnDraw() noexcept
         ImGui::InputScalar("instantHandCaster", ImGuiDataType_U64, (void*)&instantHandCaster, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
-
-        ImGui::InputScalar("leftHandCasterSpell", ImGuiDataType_U64, (void*)&(leftHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputScalar("rightHandCasterSpell", ImGuiDataType_U64, (void*)&(rightHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputScalar("otherHandCasterSpell", ImGuiDataType_U64, (void*)&(otherHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputScalar("instantHandCasterSpell", ImGuiDataType_U64, (void*)&(instantHandCaster->pCurrentSpell), 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("leftHandCasterSpell", ImGuiDataType_U64, (void*)&(leftHandCaster->pCurrentSpell), 0, 0,
+                           "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("rightHandCasterSpell", ImGuiDataType_U64, (void*)&(rightHandCaster->pCurrentSpell), 0, 0,
+                           "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("otherHandCasterSpell", ImGuiDataType_U64, (void*)&(otherHandCaster->pCurrentSpell), 0, 0,
+                           "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("instantHandCasterSpell", ImGuiDataType_U64, (void*)&(instantHandCaster->pCurrentSpell), 0,
+                           0, "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 #endif
 
 #if TP_SKYRIM64
         uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
 
-        ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
-#endif  
+        ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr,
+                           ImGuiInputTextFlags_ReadOnly);
+#endif
 
         auto pWorldSpace = pPlayer->GetWorldSpace();
         if (pWorldSpace)
         {
             auto worldFormId = pWorldSpace->formID;
-            ImGui::InputScalar("Worldspace", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32, 
+            ImGui::InputScalar("Worldspace", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32,
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
@@ -669,7 +698,8 @@ void TestService::OnDraw() noexcept
         const auto playerParentCell = pPlayer->parentCell;
         if (playerParentCell)
         {
-            ImGui::InputScalar("Player parent cell", ImGuiDataType_U32, (void*)&playerParentCell->formID, nullptr, nullptr, "%" PRIx32,
+            ImGui::InputScalar("Player parent cell", ImGuiDataType_U32, (void*)&playerParentCell->formID, nullptr,
+                               nullptr, "%" PRIx32,
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
@@ -692,7 +722,8 @@ void TestService::OnDraw() noexcept
     static uint32_t fetchFormId = 0;
     static TESForm* pFetchForm = nullptr;
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32,
+                       ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
@@ -709,10 +740,12 @@ void TestService::OnDraw() noexcept
         ImGui::InputScalar("Vtable address", ImGuiDataType_U64, (void*)pFetchForm, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
-        ImGui::InputInt("Form id", (int*)&pFetchForm->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("Form id", (int*)&pFetchForm->formID, 0, 0,
+                        ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
         FormType formType = pFetchForm->GetFormType();
-        ImGui::InputScalar("Form type", ImGuiDataType_U8, (void*)&formType, 0, 0, nullptr, ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Form type", ImGuiDataType_U8, (void*)&formType, 0, 0, nullptr,
+                           ImGuiInputTextFlags_ReadOnly);
     }
 
     ImGui::End();
@@ -723,7 +756,8 @@ void TestService::OnDraw() noexcept
     static uint32_t fetchActorId = 0;
     static Actor* pFetchActor = nullptr;
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchActorId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchActorId, 0, 0, "%" PRIx32,
+                       ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
@@ -762,7 +796,8 @@ void TestService::OnDraw() noexcept
         ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchActor, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
-        ImGui::InputInt("Game Id", (int*)&pFetchActor->formID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("Game Id", (int*)&pFetchActor->formID, 0, 0,
+                        ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         ImGui::InputFloat3("Position", pFetchActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
         ImGui::InputFloat3("Rotation", pFetchActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
         int isDead = int(pFetchActor->IsDead());
@@ -785,11 +820,13 @@ void TestService::OnDraw() noexcept
         }
 
         int isRemote = int(pFetchActor->GetExtension()->IsRemote());
-        ImGui::InputInt("Is remote?", &isRemote, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("Is remote?", &isRemote, 0, 0,
+                        ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         int isPlayer = int(pFetchActor->GetExtension()->IsPlayer());
-        ImGui::InputInt("Is player?", &isPlayer, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("Is player?", &isPlayer, 0, 0,
+                        ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
-    #if TP_SKYRIM64
+#if TP_SKYRIM64
         if (pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
         {
             auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
@@ -809,7 +846,7 @@ void TestService::OnDraw() noexcept
             {
                 MagicTarget::AddTargetData data{};
 
-                //data.pCaster = PlayerCharacter::Get();
+                // data.pCaster = PlayerCharacter::Get();
                 data.pSpell = pEffectSpell;
                 data.pEffectItem = effect;
                 data.pSource = nullptr;
@@ -829,7 +866,7 @@ void TestService::OnDraw() noexcept
                 pFetchActor->magicTarget.AddTarget(data);
             }
         }
-    #endif
+#endif
     }
 
     ImGui::End();
@@ -906,8 +943,7 @@ void TestService::OnDraw() noexcept
                 auto& remoteComponent = remoteView.get<RemoteComponent>(entity);
 
                 char buffer[32];
-                if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16),
-                                      s_selectedRemoteId == remoteComponent.Id))
+                if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedRemoteId == remoteComponent.Id))
                     s_selectedRemoteId = remoteComponent.Id;
 
                 if (s_selectedRemoteId == remoteComponent.Id)
@@ -1020,8 +1056,10 @@ void TestService::OnDraw() noexcept
 
             if (ImGui::CollapsingHeader("Metadata", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::InputInt("Item count", &itemCount, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-                ImGui::InputInt("Data list count", &dataListCount, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                ImGui::InputInt("Item count", &itemCount, 0, 0,
+                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                ImGui::InputInt("Data list count", &dataListCount, 0, 0,
+                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
             }
 
             ImGui::EndTabItem();
@@ -1060,8 +1098,37 @@ void TestService::OnDraw() noexcept
         }
     }
 
-
     ImGui::End();
 #endif
-}
 
+    if (auto* pPlayer = PlayerCharacter::Get())
+    {
+        if (auto* pCam = PlayerCamera::Get())
+        {
+            //auto *pRenderer = 
+            // Keep this here for future reference.
+            // https://github.com/Force67/TiltedOnline/commit/94fb9d619ad12e927a780959409cca5538665a1e#diff-9117dbfef97022d2573a94160e15274fc6c7b9ec8aebf1151257b01ae0e4726bR514
+
+            {
+                // test scale up to head.
+                // position.y -= 200.f;
+
+                NiPoint3 out{};
+                HUD_WorldPtToScreenPt3(&pPlayer->position, &out);
+
+                RECT rect{};
+                GetWindowRect(GetForegroundWindow(), &rect);
+
+                // transpose to screen
+                ImVec2 screenPos = ImVec2{
+                    ((rect.right - rect.left) * out.x) + rect.left,
+                    ((rect.bottom - rect.top) * (1.0f - out.y)) + rect.top,
+                };
+
+                // IT WORKS!
+                ImGui::GetBackgroundDrawList()->AddText(screenPos, ImColor::ImColor(255.f, 0.f, 0.f),
+                                                        "GIVE ME MY CROISSAINT");
+            }
+        }
+    }
+}
