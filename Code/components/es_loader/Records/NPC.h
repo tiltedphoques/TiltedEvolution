@@ -12,5 +12,5 @@ public:
     Chunks::ACBS m_baseStats{};
     Chunks::DOFT m_defaultOutfit{};
 
-    void ParseChunks() noexcept;
+    NPC ParseChunks() noexcept;
 };

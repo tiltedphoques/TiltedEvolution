@@ -49,6 +49,9 @@ public:
 private:
     bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
 
+    template <class T> 
+    T CopyAndParseRecord(Record* pRecordHeader);
+
     String m_filename = "";
     Buffer m_buffer{};
 

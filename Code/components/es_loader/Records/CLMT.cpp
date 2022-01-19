@@ -2,26 +2,31 @@
 
 #include <ESLoader.h>
 
-void CLMT::ParseChunks() noexcept
+CLMT CLMT::ParseChunks() noexcept
 {
+    CLMT clmt;
+    clmt.CopyRecordData(*this);
+
     IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            m_editorId = ESLoader::LoadZString(aReader);
+            clmt.m_editorId = ESLoader::LoadZString(aReader);
             break;
         case ChunkId::WLST_ID:
-            m_weatherList = Chunks::WLST(aReader);
+            clmt.m_weatherList = Chunks::WLST(aReader);
             break;
         case ChunkId::FNAM_ID:
-            m_sunTexture = ESLoader::LoadZString(aReader);
+            clmt.m_sunTexture = ESLoader::LoadZString(aReader);
             break;
         case ChunkId::GNAM_ID:
-            m_glareTexture = ESLoader::LoadZString(aReader);
+            clmt.m_glareTexture = ESLoader::LoadZString(aReader);
             break;
         case ChunkId::TNAM_ID:
-            m_timing = Chunks::TNAM(aReader);
+            clmt.m_timing = Chunks::TNAM(aReader);
             break;
         }
     });
+
+    return clmt;
 }

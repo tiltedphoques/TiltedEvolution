@@ -85,29 +85,20 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
         {
         //case FormEnum::ACHR:
         case FormEnum::REFR: {
-            REFR recordREFR;
-            recordREFR.CopyRecordData(*pRecord);
-            recordREFR.SetBaseId(GetFormIdPrefix());
-            recordREFR.ParseChunks();
-            m_objectReferences[recordREFR.GetFormId()] = recordREFR;
+            REFR parsedRecord = CopyAndParseRecord<REFR>(pRecord);
+            m_objectReferences[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
         case FormEnum::CELL:
             break;
         case FormEnum::CLMT: {
-            CLMT recordCLMT;
-            recordCLMT.CopyRecordData(*pRecord);
-            recordCLMT.SetBaseId(GetFormIdPrefix());
-            recordCLMT.ParseChunks();
-            m_climates[pRecord->GetFormId()] = recordCLMT;
+            CLMT parsedRecord = CopyAndParseRecord<CLMT>(pRecord);
+            m_climates[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
         case FormEnum::NPC_: {
-            NPC recordNPC;
-            recordNPC.CopyRecordData(*pRecord);
-            recordNPC.SetBaseId(GetFormIdPrefix());
-            recordNPC.ParseChunks();
-            m_npcs[pRecord->GetFormId()] = recordNPC;
+            NPC parsedRecord = CopyAndParseRecord<NPC>(pRecord);
+            m_npcs[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
         }
@@ -118,3 +109,11 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
     return true;
 }
 
+template <class T> 
+T TESFile::CopyAndParseRecord(Record* pRecordHeader)
+{
+    T* pRecord = reinterpret_cast<T*>(pRecordHeader);
+    T parsedRecord = pRecord->ParseChunks();
+    parsedRecord.SetBaseId(GetFormIdPrefix());
+    return parsedRecord;
+}

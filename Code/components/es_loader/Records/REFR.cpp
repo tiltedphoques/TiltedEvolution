@@ -1,13 +1,18 @@
 #include "REFR.h"
 
-void REFR::ParseChunks() noexcept
+REFR REFR::ParseChunks() noexcept
 {
+    REFR refr;
+    refr.CopyRecordData(*this);
+
     IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
         switch (aChunkId)
         {
         case ChunkId::NAME_ID:
-            m_basicObject = Chunks::NAME(aReader);
+            refr.m_basicObject = Chunks::NAME(aReader);
             break;
         }
     });
+
+    return refr;
 }

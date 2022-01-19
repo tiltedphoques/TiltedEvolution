@@ -10,6 +10,6 @@ public:
 
     Chunks::NAME m_basicObject{};
 
-    void ParseChunks() noexcept;
+    REFR ParseChunks() noexcept;
 };
 

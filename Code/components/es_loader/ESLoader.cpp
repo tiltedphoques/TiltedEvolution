@@ -101,12 +101,13 @@ void ESLoader::LoadFiles()
 
         const Map<uint32_t, CLMT>& pluginClimates = pluginFile.GetClimates();
         climates.insert(pluginClimates.begin(), pluginClimates.end());
+        spdlog::info("Climate count in {}: {}", plugin.m_filename, pluginClimates.size());
     }
 
     spdlog::info("All climates:");
     for (auto& [formId, climate] : climates)
     {
-        spdlog::info("\t{} ({:X})", climate.m_editorId);
+        spdlog::info("\t{} ({:X})", climate.m_editorId, formId);
     }
 }
 

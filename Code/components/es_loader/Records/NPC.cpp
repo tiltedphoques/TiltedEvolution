@@ -2,17 +2,22 @@
 
 #include <ESLoader.h>
 
-void NPC::ParseChunks() noexcept
+NPC NPC::ParseChunks() noexcept
 {
+    NPC npc;
+    npc.CopyRecordData(*this);
+
     IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) {
         switch (aChunkId)
         {
         case ChunkId::ACBS_ID:
-            m_baseStats = Chunks::ACBS(aReader);
+            npc.m_baseStats = Chunks::ACBS(aReader);
             break;
         case ChunkId::DOFT_ID:
-            m_defaultOutfit = Chunks::DOFT(aReader);
+            npc.m_defaultOutfit = Chunks::DOFT(aReader);
             break;
         }
     });
+
+    return npc;
 }
