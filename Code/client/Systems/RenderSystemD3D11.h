@@ -14,11 +14,10 @@ struct RenderSystemD3D11
     [[nodiscard]] HWND GetWindow() const;
     [[nodiscard]] IDXGISwapChain* GetSwapChain() const;
 
-protected:
-
-    void HandleCreate(IDXGISwapChain* apSwapChain);
-    void HandleRender(IDXGISwapChain* apSwapChain);
-    void HandleReset(IDXGISwapChain* apSwapChain);
+    // to make yamashi mad
+    void OnDeviceCreation(IDXGISwapChain* apSwapChain);
+    void OnRender();
+    void OnReset(IDXGISwapChain* apSwapChain);
 
 private:
 
