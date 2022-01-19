@@ -10,6 +10,12 @@ namespace BSGraphics
 {
 static RenderSystemD3D11* g_sRs = nullptr;
 static WNDPROC RealWndProc = nullptr;
+static RendererWindow* g_RenderWindow = nullptr;
+
+RendererWindow* GetMainWindow()
+{
+    return g_RenderWindow;
+}
 
 void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*,
                       BSGraphics::RendererInitReturn*) = nullptr;
@@ -36,6 +42,8 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
 
     g_sRs = &World::Get().ctx<RenderSystemD3D11>();
     // This how the game does it too
+    g_RenderWindow = &self->Data.RenderWindowA[0];
+
     g_sRs->OnDeviceCreation(self->Data.RenderWindowA[0].pSwapChain);
 }
 

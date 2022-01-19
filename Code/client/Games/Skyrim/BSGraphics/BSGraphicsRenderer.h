@@ -33,6 +33,8 @@ struct RendererWindow
     BSGraphics::RenderTarget SwapChainRenderTarget;
 };
 
+RendererWindow* GetMainWindow();
+
 struct DepthStencilTarget
 {
     ID3D11Texture2D* pTexture;

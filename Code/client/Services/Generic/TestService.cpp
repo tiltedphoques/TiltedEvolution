@@ -43,6 +43,7 @@
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
+#include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
@@ -1105,29 +1106,75 @@ void TestService::OnDraw() noexcept
     {
         if (auto* pCam = PlayerCamera::Get())
         {
-            //auto *pRenderer = 
-            // Keep this here for future reference.
-            // https://github.com/Force67/TiltedOnline/commit/94fb9d619ad12e927a780959409cca5538665a1e#diff-9117dbfef97022d2573a94160e15274fc6c7b9ec8aebf1151257b01ae0e4726bR514
+            // auto *pRenderer =
+            //  Keep this here for future reference.
+            //  https://github.com/Force67/TiltedOnline/commit/94fb9d619ad12e927a780959409cca5538665a1e#diff-9117dbfef97022d2573a94160e15274fc6c7b9ec8aebf1151257b01ae0e4726bR514
 
+            auto calcHeight = [&]() {
+                auto boundMax = pPlayer->GetBoundMax();
+                return boundMax.z - pPlayer->GetBoundMin().z;
+            };
+
+            // Scale up to the top of the entity.
+            auto pos = pPlayer->position;
+            pos.z -= calcHeight();
+
+            // Note(Force): In truth this is a reference, but to ensure the compiler generates the right code
+            // we pass it in as a pointer
+            NiPoint3 screenPoint{};
+            HUD_WorldPtToScreenPt3(&pos, &screenPoint);
+
+            // Here just for validation that the values are semi correct.
+            // RECT rect{};
+            // GetWindowRect(GetForegroundWindow(), &rect);
+
+            // Calculate window collision bounds.
+            auto* pViewport = BSGraphics::GetMainWindow();
+            NiRect<float> bounds = {
+                .left = static_cast<float>(pViewport->iWindowX),
+                .right = static_cast<float>(pViewport->iWindowX + pViewport->uiWindowWidth),
+                .top = static_cast<float>(pViewport->iWindowY),
+                .bottom = static_cast<float>(pViewport->iWindowY + pViewport->uiWindowHeight),
+            };
+
+            // translate to screen
+            ImVec2 screenPos = ImVec2{
+                static_cast<float>((pViewport->uiWindowWidth * screenPoint.x) + pViewport->iWindowX),
+                static_cast<float>((pViewport->uiWindowHeight * (1.0f - screenPoint.y)) + pViewport->iWindowY),
+            };
+
+            // implements HUDMarkerData::CalculateFloatingMarkerPositionAndVisiblity from FO4
+            auto IsVisible = [](const ImVec2& aVec2, const NiRect<float>& aScreenBounds, const float zCoordGame) {
+                if (aVec2.x >= aScreenBounds.left && aVec2.x <= aScreenBounds.right)
+                {
+                    if (aVec2.y >= aScreenBounds.top &&
+                        aVec2.y <= aScreenBounds.bottom
+                        /*Not too sure about the Z coord check*/
+                        && zCoordGame >= 0)
+                        return true;
+                }
+                return false;
+            };
+
+            // Obviously it would be much smarter to attach the player name tag to the head bone,
+            // because the player animation also influences the pos for example when jumping,
+            // but the bounding box is fixed.
+            // and offset it slightly above.
+            // But this is just a demo...
+            if (IsVisible(screenPos, bounds, screenPoint.z))
             {
-                // test scale up to head.
-                // position.y -= 200.f;
+                char buf[256] = {};
+                snprintf(buf, 256, "%f,%f,%f", pos.x, pos.y, pos.z);
 
-                NiPoint3 out{};
-                HUD_WorldPtToScreenPt3(&pPlayer->position, &out);
+                constexpr const float kFontSz = 30.f;
 
-                RECT rect{};
-                GetWindowRect(GetForegroundWindow(), &rect);
+                auto* pFont = ImGui::GetFont();
+                auto fontBounds = pFont->CalcTextSizeA(kFontSz, 100.f, 100.f, buf);
 
-                // transpose to screen
-                ImVec2 screenPos = ImVec2{
-                    ((rect.right - rect.left) * out.x) + rect.left,
-                    ((rect.bottom - rect.top) * (1.0f - out.y)) + rect.top,
-                };
 
-                // IT WORKS!
-                ImGui::GetBackgroundDrawList()->AddText(screenPos, ImColor::ImColor(255.f, 0.f, 0.f),
-                                                        "GIVE ME MY CROISSAINT");
+                screenPos.x -= (fontBounds.x / 4.f);
+                ImGui::GetBackgroundDrawList()->AddText(pFont, kFontSz, screenPos, ImColor::ImColor(255.f, 0.f, 0.f),
+                                                        buf);
             }
         }
     }
