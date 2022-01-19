@@ -2,7 +2,7 @@
 add_requires("zlib")
 
 target("ESLoader")
-	set_kind("static")
+	set_kind("binary")
 	set_group("Components")
     add_configfiles("BuildInfo.h.in")
     set_pcxxheader("stdafx.h")
@@ -18,7 +18,8 @@ target("ESLoader")
 		"tiltedcore",
         "spdlog",
         "hopscotch-map",
-        "zlib")
+        "zlib",
+        "gtest")
 
 
 target("ESLoader-Test")

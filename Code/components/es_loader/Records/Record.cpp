@@ -2,6 +2,23 @@
 
 #include <zlib.h>
 
+void Record::CopyRecordData(Record& aRhs)
+{
+    m_formType = aRhs.m_formType;
+    m_dataSize = aRhs.m_dataSize;
+    m_flags = aRhs.m_flags;
+    m_formId = aRhs.m_formId;
+    m_versionControl = aRhs.m_versionControl;
+    m_formVersion = aRhs.m_formVersion;
+    m_vcVersion = aRhs.m_vcVersion;
+}
+
+void Record::SetBaseId(uint32_t aBaseId)
+{
+    m_formId &= 0x00FFFFFF;
+    m_formId += aBaseId;
+}
+
 void Record::IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& aCallback)
 {
     Buffer buffer(reinterpret_cast<uint8_t*>(this) + sizeof(Record), m_dataSize);

@@ -1,29 +1,40 @@
 #pragma once
 
-#include <stdafx.h>
 #include <TESFile.h>
+
+namespace fs = std::filesystem;
 
 class ESLoader
 {
 public:
+    struct Plugin
+    {
+        [[nodiscard]] bool IsLite() const noexcept
+        {
+            return m_isLite;
+        }
+
+        String m_filename;
+        union
+        {
+            uint8_t m_standardId;
+            uint16_t m_liteId;
+        };
+        bool m_isLite;
+    };
 
     ESLoader() = delete;
     ESLoader(String aDirectory);
-
-    // TODO: yes, this map thing is awful, but i still need to sort out how to do the gameid thingy
-    template<class T> 
-    Map<String, Vector<T>> GetRecords() noexcept;
 
     static String LoadZString(Buffer::Reader& aReader) noexcept;
 
 private:
     void FindFiles();
+    bool LoadLoadOrder();
     void LoadFiles();
 
-    String m_directory;
-    Vector<std::filesystem::path> m_esmFilenames;
-    Vector<std::filesystem::path> m_espFilenames;
-    Vector<std::filesystem::path> m_eslFilenames;
-    Vector<TESFile> m_standardPlugins;
-    Vector<TESFile> m_lightPlugins;
+    fs::path GetPath(String& aFilename);
+
+    String m_directory = "";
+    Vector<Plugin> m_loadOrder{};
 };

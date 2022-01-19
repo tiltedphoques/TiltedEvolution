@@ -1,64 +1,66 @@
 #pragma once
 
 #include <Records/Group.h>
-
-class Record;
-class REFR;
-class CLMT;
-class NPC;
+#include <Records/REFR.h>
+#include <Records/CLMT.h>
+#include <Records/NPC.h>
 
 class TESFile
 {
 public:
-    TESFile() = delete;
-    TESFile(const std::filesystem::path& acPath);
+    TESFile() = default;
+
+    void Setup(uint8_t aStandardId);
+    void Setup(uint16_t aLiteId);
+    bool LoadFile(const std::filesystem::path& acPath) noexcept;
+    bool IndexRecords() noexcept;
 
     [[nodiscard]] bool IsLite() const noexcept
     {
-        return ((m_flags >> 9) & 1) != 0;
+        return m_isLite;
     }
     [[nodiscard]] uint16_t GetId() const noexcept
     {
         return IsLite() ? m_liteId : m_standardId;
+    }
+    [[nodiscard]] uint32_t GetFormIdPrefix() const noexcept
+    {
+        return m_formIdPrefix;
     }
     [[nodiscard]] String GetFilename() const noexcept
     {
         return m_filename;
     }
 
-    template<class T> Vector<T> GetRecords() noexcept;
-
-    const Map<uint32_t, REFR*>& GetObjectReferences() const noexcept
+    const Map<uint32_t, REFR>& GetObjectReferences() const noexcept
     {
         return m_objectReferences;
     }
-    const Map<uint32_t, CLMT*>& GetClimates() const noexcept
+    const Map<uint32_t, CLMT>& GetClimates() const noexcept
     {
         return m_climates;
     }
 
-    NPC* GetNpcById(uint32_t aFormId) noexcept
+    NPC& GetNpcById(uint32_t aFormId) noexcept
     {
         return m_npcs[aFormId];
     }
 
 private:
-    void BuildFormIdRecordMap() noexcept;
     bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
 
-    String m_filename;
-    Buffer m_buffer;
-    Map<uint32_t, Record*> m_formIdRecordMap;
-    Map<Group*, GroupData> m_groupDataMap;
-    uint32_t m_flags;
+    String m_filename = "";
+    Buffer m_buffer{};
+
+    bool m_isLite = false;
     union
     {
-        uint8_t m_standardId;
+        uint8_t m_standardId = 0;
         uint16_t m_liteId;
     };
+    uint32_t m_formIdPrefix = 0;
 
-    Map<uint32_t, REFR*> m_objectReferences;
-    Map<uint32_t, CLMT*> m_climates;
-    Vector<Record*> m_cells;
-    Map<uint32_t, NPC*> m_npcs;
+    Map<uint32_t, REFR> m_objectReferences{};
+    Map<uint32_t, CLMT> m_climates{};
+    Map<uint32_t, NPC> m_npcs{};
 };

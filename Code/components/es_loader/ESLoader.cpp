@@ -1,12 +1,11 @@
 #include "ESLoader.h"
 
 #include <filesystem>
+#include <fstream>
 
 #include <Records/REFR.h>
 #include <Records/CLMT.h>
 #include <Records/NPC.h>
-
-namespace fs = std::filesystem;
 
 ESLoader::ESLoader(String aDirectory) 
     : m_directory(std::move(aDirectory))
@@ -23,85 +22,105 @@ void ESLoader::FindFiles()
         return;
     }
 
-    for (const auto& entry : fs::directory_iterator(m_directory))
+    bool result = LoadLoadOrder();
+}
+
+bool ESLoader::LoadLoadOrder()
+{
+    std::ifstream loadOrderFile;
+    String loadOrderPath = m_directory + "loadorder.txt";
+    loadOrderFile.open(loadOrderPath);
+    if (loadOrderFile.fail())
     {
-        String filename = entry.path().filename().string().c_str();
+        spdlog::error("Failed to open loadorder.txt");
+        return false;
+    }
 
-        const char* fileExtension = strrchr(filename.c_str(), '.');
-        if (!fileExtension)
-        {
-            spdlog::warn("File extension for file {} not found.", filename);
+    uint8_t standardId = 0x0;
+    uint16_t liteId = 0x0;
+
+    while (!loadOrderFile.eof())
+    {
+        String line;
+        std::getline(loadOrderFile, line);
+        if (line[0] == '#' || line.empty())
             continue;
-        }
 
-        if (strlen(fileExtension) != 4)
-        {
-            spdlog::warn("File found with less or more than 3 characters in the extension ({}).", filename);
-            continue;
-        }
+        Plugin plugin;
+        plugin.m_filename = line;
 
-        if (tolower(fileExtension[1]) != 'e' || tolower(fileExtension[2]) != 's')
-        {
-            spdlog::warn("File found without 'es' in extension ({}).", filename);
-            continue;
-        }
-
-        const char extensionEnd = tolower(fileExtension[3]);
-        switch (extensionEnd)
+        char extensionType = line.back();
+        switch (extensionType)
         {
         case 'm':
-            m_esmFilenames.push_back(entry.path());
-            break;
         case 'p':
-            m_espFilenames.push_back(entry.path());
+            plugin.m_standardId = standardId;
+            standardId += 0x01;
+            plugin.m_isLite = false;
+            m_loadOrder.push_back(plugin);
             break;
         case 'l':
-            m_eslFilenames.push_back(entry.path());
+            plugin.m_liteId = liteId;
+            liteId += 0x0001;
+            plugin.m_isLite = true;
+            m_loadOrder.push_back(plugin);
             break;
         default:
-            spdlog::warn("File extension ends in an unknown letter ({})", filename);
-            break;
+            spdlog::error("Extension in loadorder.txt not recognized: {}", line);
         }
     }
+
+    return true;
 }
 
 void ESLoader::LoadFiles()
 {
-    for (const auto& filename : m_esmFilenames)
+    Map<uint32_t, CLMT> climates{};
+
+    for (Plugin& plugin : m_loadOrder)
     {
-        if (filename.filename().string() != "Skyrim.esm")
+        fs::path pluginPath = GetPath(plugin.m_filename);
+        if (pluginPath.empty())
+        {
+            spdlog::error("Path to plugin file not found: {}", plugin.m_filename);
+            continue;
+        }
+
+        TESFile pluginFile{};
+        if (plugin.IsLite())
+            pluginFile.Setup(plugin.m_liteId);
+        else
+            pluginFile.Setup(plugin.m_standardId);
+
+        bool loadResult = pluginFile.LoadFile(pluginPath);
+
+        if (!loadResult)
             continue;
 
-        //m_standardPlugins.push_back(TESFile(filename));
-        TESFile skyrimEsm(filename);
+        pluginFile.IndexRecords();
 
-        const Map<uint32_t, CLMT*>& climates = skyrimEsm.GetClimates();
+        const Map<uint32_t, CLMT>& pluginClimates = pluginFile.GetClimates();
+        climates.insert(pluginClimates.begin(), pluginClimates.end());
+    }
 
-        Vector<CLMT::Data> climateData;
-        for (auto& climate : climates)
-        {
-            climateData.push_back(climate.second->ParseChunks());
-        }
-        spdlog::info("climateData count: {}", climateData.size());
-        for (auto& climate : climateData)
-        {
-            spdlog::info("Climate: {}", climate.m_editorId);
-        }
-
-        NPC* pNpc = skyrimEsm.GetNpcById(0x13480);
-        NPC::Data npcData = pNpc->ParseChunks();
-        spdlog::info("Is Faendal unique? {}", npcData.m_baseStats.IsUnique());
+    spdlog::info("All climates:");
+    for (auto& [formId, climate] : climates)
+    {
+        spdlog::info("\t{} ({:X})", climate.m_editorId);
     }
 }
 
-template<class T>
-Map<String, Vector<T>> ESLoader::GetRecords() noexcept
+// TODO: std::optional
+fs::path ESLoader::GetPath(String& aFilename)
 {
-    Map<String, Vector<T>> allRecords{};
-    for (TESFile& plugin : m_standardPlugins)
+    for (const auto& entry : fs::directory_iterator(m_directory))
     {
-        allRecords[plugin.GetFilename()] = plugin.GetRecords<T>();
+        String filename = entry.path().filename().string().c_str();
+        if (filename == aFilename)
+            return entry.path();
     }
+
+    return fs::path();
 }
 
 String ESLoader::LoadZString(Buffer::Reader& aReader) noexcept

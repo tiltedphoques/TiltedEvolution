@@ -1,4 +1,5 @@
 #include "ESLoader.h"
+#include <Records/REFR.h>
 
 int main(int argc, char** argv)
 {

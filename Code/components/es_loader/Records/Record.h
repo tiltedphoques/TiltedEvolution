@@ -22,10 +22,12 @@ public:
         kIsMarker = 0x800000,
     };
 
-    Record() = delete;
+    Record() = default;
+
+    void CopyRecordData(Record& aRhs);
+    void SetBaseId(uint32_t aBaseId);
 
     void IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& aCallback);
-
     void DecompressChunkData(const void* apCompressedData, size_t aCompressedSize, void* apDecompressedData, size_t aDecompressedSize);
 
     [[nodiscard]] FormEnum GetType() const noexcept

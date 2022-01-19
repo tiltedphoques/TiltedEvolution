@@ -8,7 +8,21 @@
 #include "Records/CLMT.h"
 #include "Records/NPC.h"
 
-TESFile::TESFile(const std::filesystem::path& acPath)
+void TESFile::Setup(uint8_t aStandardId)
+{
+    m_isLite = false;
+    m_standardId = aStandardId;
+    m_formIdPrefix = m_standardId * 0x1000000;
+}
+
+void TESFile::Setup(uint16_t aLiteId)
+{
+    m_isLite = true;
+    m_liteId = aLiteId;
+    m_formIdPrefix = 0xFE000000 + (m_liteId * 0x1000);
+}
+
+bool TESFile::LoadFile(const std::filesystem::path& acPath) noexcept
 {
     m_filename = acPath.filename().string();
 
@@ -16,13 +30,21 @@ TESFile::TESFile(const std::filesystem::path& acPath)
     m_buffer.Resize(fileSize);
 
     std::ifstream file(acPath, std::ios::binary);
-    file.read(reinterpret_cast<char*>(m_buffer.GetWriteData()), fileSize);
+    if (file.fail())
+    {
+        spdlog::error("Failed to open plugin {}", m_filename);
+        return false;
+    }
 
-    BuildFormIdRecordMap();
+    file.read(reinterpret_cast<char*>(m_buffer.GetWriteData()), fileSize);
+    return true;
 }
 
-void TESFile::BuildFormIdRecordMap() noexcept
+bool TESFile::IndexRecords() noexcept
 {
+    if (m_filename.size() == 0)
+        return false;
+
     Buffer::Reader reader(&m_buffer);
 
     while (true)
@@ -30,6 +52,8 @@ void TESFile::BuildFormIdRecordMap() noexcept
         if (!ReadGroupOrRecord(reader))
             break;
     }
+
+    return true;
 }
 
 bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
@@ -45,49 +69,45 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
 
     if (type == static_cast<uint32_t>(FormEnum::GRUP))
     {
-        Group* pGroup = reinterpret_cast<Group*>(m_buffer.GetWriteData() + aReader.GetBytePosition());
-        GroupData data;
-
         aReader.Advance(sizeof(Group));
         const size_t endOfGroup = aReader.GetBytePosition() + size - 0x18;
 
         while (aReader.GetBytePosition() < endOfGroup)
         {
-            const uint8_t* subGroup = m_buffer.GetData() + aReader.GetBytePosition();
-            if (ReadGroupOrRecord(aReader))
-            {
-                data.m_subGroups.push_back(subGroup);
-            }
+            ReadGroupOrRecord(aReader);
         }
-
-        m_groupDataMap[pGroup] = data;
     }
     else // Records
     {
-        Record* record = reinterpret_cast<Record*>(m_buffer.GetWriteData() + aReader.GetBytePosition());
-        m_formIdRecordMap[record->GetFormId()] = record;
+        Record* pRecord = reinterpret_cast<Record*>(m_buffer.GetWriteData() + aReader.GetBytePosition());
 
-        switch (record->GetType())
+        switch (pRecord->GetType())
         {
         //case FormEnum::ACHR:
         case FormEnum::REFR: {
-            REFR* recordREFR = reinterpret_cast<REFR*>(record);
-            m_objectReferences[record->GetFormId()] = recordREFR;
+            REFR recordREFR;
+            recordREFR.CopyRecordData(*pRecord);
+            recordREFR.SetBaseId(GetFormIdPrefix());
+            recordREFR.ParseChunks();
+            m_objectReferences[recordREFR.GetFormId()] = recordREFR;
             break;
         }
         case FormEnum::CELL:
-            m_cells.push_back(record);
             break;
         case FormEnum::CLMT: {
-            CLMT* recordCLMT = reinterpret_cast<CLMT*>(record);
-            m_climates[record->GetFormId()] = recordCLMT;
+            CLMT recordCLMT;
+            recordCLMT.CopyRecordData(*pRecord);
+            recordCLMT.SetBaseId(GetFormIdPrefix());
+            recordCLMT.ParseChunks();
+            m_climates[pRecord->GetFormId()] = recordCLMT;
             break;
         }
         case FormEnum::NPC_: {
-            NPC* pNpc = reinterpret_cast<NPC*>(record);
-            m_npcs[record->GetFormId()] = pNpc;
-            if (record->GetFormId() == 0x13480)
-                pNpc->ParseChunks();
+            NPC recordNPC;
+            recordNPC.CopyRecordData(*pRecord);
+            recordNPC.SetBaseId(GetFormIdPrefix());
+            recordNPC.ParseChunks();
+            m_npcs[pRecord->GetFormId()] = recordNPC;
             break;
         }
         }
@@ -96,11 +116,5 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
     }
 
     return true;
-}
-
-template<class T>
-Vector<T> TESFile::GetRecords() noexcept
-{
-    Buffer::Reader reader(&m_buffer);
 }
 

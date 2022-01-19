@@ -106,7 +106,7 @@ struct NAME
     NAME(){}
     NAME(Buffer::Reader& aReader);
 
-    uint32_t m_baseId{};
+    uint32_t m_baseId = 0;
 };
 
 struct DOFT
