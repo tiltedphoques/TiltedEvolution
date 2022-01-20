@@ -19,14 +19,17 @@ struct TestService
 
 protected:
 
-    void AnimationDebugging() noexcept;
-
     void OnDraw() noexcept;
 
 private:
 
     void PlaceActorInWorld() noexcept;
     void RunDiff();
+
+    void DrawComponentDebugView();
+    void DrawPlayerDebugView();
+    void DrawAnimDebugView();
+    void DrawContainerDebugView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
