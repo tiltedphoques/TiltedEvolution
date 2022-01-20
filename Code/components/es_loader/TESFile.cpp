@@ -140,10 +140,11 @@ T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 
     T parsedRecord;
     parsedRecord.CopyRecordData(*pRecord);
-    parsedRecord.ParseChunks(*pRecord);
 
     uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);
     parsedRecord.SetBaseId(GetFormIdPrefix(baseId));
+
+    parsedRecord.ParseChunks(*pRecord);
 
     return parsedRecord;
 }
