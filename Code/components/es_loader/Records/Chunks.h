@@ -59,14 +59,15 @@ struct Script
     Vector<ScriptProperty> m_properties;
 };
 
-struct PrimaryScripts
+struct VMAD
 {
-    PrimaryScripts(Buffer::Reader& aReader);
+    VMAD(){};
+    VMAD(Buffer::Reader& aReader);
 
     int16_t m_version = 0;
     int16_t m_objectFormat = 0;
     uint16_t m_scriptCount = 0;
-    Vector<Script> m_scripts;
+    Vector<Script> m_scripts{};
 };
 
 struct CNTO

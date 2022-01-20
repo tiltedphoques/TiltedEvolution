@@ -11,6 +11,7 @@ public:
 
     Chunks::ACBS m_baseStats{};
     Chunks::DOFT m_defaultOutfit{};
+    Chunks::VMAD m_scriptData{};
 
     NPC ParseChunks() noexcept;
 };

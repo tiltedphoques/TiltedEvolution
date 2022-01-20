@@ -6,13 +6,13 @@
 namespace Chunks
 {
 
-PrimaryScripts::PrimaryScripts(Buffer::Reader& aReader)
+VMAD::VMAD(Buffer::Reader& aReader)
 {
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_version), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_objectFormat), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_scriptCount), 2);
     
-    m_scripts.resize(m_scriptCount);
+    m_scripts.reserve(m_scriptCount);
 
     for (uint16_t i = 0; i < m_scriptCount; i++)
     {
@@ -36,6 +36,8 @@ PrimaryScripts::PrimaryScripts(Buffer::Reader& aReader)
 
             script.m_properties.push_back(scriptProperty);
         }
+
+        m_scripts.push_back(script);
     }
 }
 

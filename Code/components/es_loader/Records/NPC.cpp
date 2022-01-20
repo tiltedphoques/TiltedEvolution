@@ -16,6 +16,9 @@ NPC NPC::ParseChunks() noexcept
         case ChunkId::DOFT_ID:
             npc.m_defaultOutfit = Chunks::DOFT(aReader);
             break;
+        case ChunkId::VMAD_ID:
+            npc.m_scriptData = Chunks::VMAD(aReader);
+            break;
         }
     });
 
