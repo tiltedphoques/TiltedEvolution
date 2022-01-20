@@ -12,5 +12,5 @@ public:
     // Master files
     Vector<Chunks::MAST> m_masterFiles{};
 
-    TES4 ParseChunks() noexcept;
+    void ParseChunks(TES4& aSourceRecord) noexcept;
 };

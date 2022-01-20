@@ -1,20 +1,17 @@
 #include "REFR.h"
 
-REFR REFR::ParseChunks() noexcept
+void REFR::ParseChunks(REFR& aSourceRecord) noexcept
 {
-    REFR refr;
-    refr.CopyRecordData(*this);
-
-    IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
+    aSourceRecord.IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
         switch (aChunkId)
         {
         case ChunkId::NAME_ID:
-            refr.m_basicObject = Chunks::NAME(aReader);
+            m_basicObject = Chunks::NAME(aReader);
             break;
         case ChunkId::XMRK_ID:
             break;
+        case ChunkId::FNAM_ID:
+            break;
         }
     });
-
-    return refr;
 }

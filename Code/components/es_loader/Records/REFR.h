@@ -10,6 +10,6 @@ public:
 
     Chunks::NAME m_basicObject{};
 
-    REFR ParseChunks() noexcept;
+    void ParseChunks(REFR& aSourceRecord) noexcept;
 };
 

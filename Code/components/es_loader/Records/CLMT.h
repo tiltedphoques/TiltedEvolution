@@ -20,5 +20,5 @@ public:
     //TNAM
     Chunks::TNAM m_timing{};
 
-    CLMT ParseChunks() noexcept;
+    void ParseChunks(CLMT& aSourceRecord) noexcept;
 };

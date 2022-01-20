@@ -137,9 +137,14 @@ template <class T>
 T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 {
     T* pRecord = reinterpret_cast<T*>(pRecordHeader);
-    T parsedRecord = pRecord->ParseChunks();
+
+    T parsedRecord;
+    parsedRecord.CopyRecordData(*pRecord);
+    parsedRecord.ParseChunks(*pRecord);
+
     uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);
     parsedRecord.SetBaseId(GetFormIdPrefix(baseId));
+
     return parsedRecord;
 }
 

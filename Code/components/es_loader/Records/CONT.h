@@ -16,5 +16,5 @@ public:
     // Objects
     Vector<Chunks::CNTO> m_objects{};
 
-    CONT ParseChunks() noexcept;
+    void ParseChunks(CONT& aSourceRecord) noexcept;
 };

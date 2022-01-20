@@ -13,5 +13,5 @@ public:
     Chunks::DOFT m_defaultOutfit{};
     Chunks::VMAD m_scriptData{};
 
-    NPC ParseChunks() noexcept;
+    void ParseChunks(NPC& aSourceRecord) noexcept;
 };
