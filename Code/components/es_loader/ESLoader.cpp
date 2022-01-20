@@ -7,27 +7,28 @@
 #include <Records/CLMT.h>
 #include <Records/NPC.h>
 
-ESLoader::ESLoader(String aDirectory) 
-    : m_directory(std::move(aDirectory))
+ESLoader::ESLoader() 
 {
+    m_directory = "Data\\";
 }
 
 UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
 {
-    FindFiles();
+    if (!fs::is_directory(m_directory))
+    {
+        spdlog::error("Data directory not found.");
+        return MakeUnique<RecordCollection>();
+    }
+
+    if (!LoadLoadOrder())
+    {
+        spdlog::error("Failed to load load order.");
+        return MakeUnique<RecordCollection>();
+    }
+
     return LoadFiles();
 }
 
-void ESLoader::FindFiles()
-{
-    if (m_directory.empty())
-    {
-        spdlog::error("Directory string is empty.");
-        return;
-    }
-
-    bool result = LoadLoadOrder();
-}
 
 bool ESLoader::LoadLoadOrder()
 {

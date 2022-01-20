@@ -28,13 +28,11 @@ public:
     static String ReadZString(Buffer::Reader& aReader) noexcept;
     static String ReadWString(Buffer::Reader& aReader) noexcept;
 
-    ESLoader() = delete;
-    ESLoader(String aDirectory);
+    ESLoader();
 
     UniquePtr<RecordCollection> BuildRecordCollection() noexcept;
 
 private:
-    void FindFiles();
     bool LoadLoadOrder();
     UniquePtr<RecordCollection> LoadFiles();
 
