@@ -51,6 +51,7 @@ void Record::IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& 
         }
 
         // Chunk XXXX will have the next data size stored at the start of the field
+        // Doesn't ever seem to trigger, but it's in the spec so might as well leave it in
         // https://en.uesp.net/wiki/Skyrim_Mod:Mod_File_Format#Fields
         if (pChunk->m_chunkId == ChunkId::XXXX_ID)
         {
@@ -58,7 +59,6 @@ void Record::IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& 
             reader.Reverse(4);
         }
 
-        // TODO: technically, you shouldn't have to copy, in theory, could just leave out the Advance() above
         Buffer::Reader chunk(reader);
 
         reader.Advance(dataSize);
@@ -85,5 +85,19 @@ void Record::DecompressChunkData(const void* apCompressedData, size_t aCompresse
     res = inflateEnd(&compressionStream);
     if (res < Z_OK)
         spdlog::error("Failed to decompress chunk of data: {}", res);
+}
+
+void Record::DiscoverChunks()
+{
+    IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) {
+        switch (aChunkId)
+        {
+            /*
+        case ChunkId::XMRK_ID:
+            spdlog::info("XMRK found in form {:X}", m_formId);
+            break;
+            */
+        }
+    });
 }
 

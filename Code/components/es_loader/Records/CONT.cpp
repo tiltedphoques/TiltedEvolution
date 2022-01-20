@@ -14,7 +14,8 @@ CONT CONT::ParseChunks() noexcept
             cont.m_editorId = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::FULL_ID:
-            cont.m_name = ESLoader::ReadZString(aReader);
+            // TODO: FULL has lstring (localized), need to extract it
+            //cont.m_name = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::CNTO_ID:
             Chunks::CNTO cnto(aReader);

@@ -30,6 +30,8 @@ public:
     void IterateChunks(const std::function<void(ChunkId, Buffer::Reader&)>& aCallback);
     void DecompressChunkData(const void* apCompressedData, size_t aCompressedSize, void* apDecompressedData, size_t aDecompressedSize);
 
+    void DiscoverChunks();
+
     [[nodiscard]] FormEnum GetType() const noexcept
     {
         return m_formType;

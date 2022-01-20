@@ -119,6 +119,8 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
         }
         }
 
+        //pRecord->DiscoverChunks();
+
         Record record;
         record.CopyRecordData(*pRecord);
         uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);

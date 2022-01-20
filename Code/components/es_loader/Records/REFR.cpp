@@ -11,6 +11,8 @@ REFR REFR::ParseChunks() noexcept
         case ChunkId::NAME_ID:
             refr.m_basicObject = Chunks::NAME(aReader);
             break;
+        case ChunkId::XMRK_ID:
+            break;
         }
     });
 
