@@ -12,7 +12,7 @@ ESLoader::ESLoader(String aDirectory)
 {
 }
 
-RecordCollection ESLoader::BuildRecordCollection() noexcept
+UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
 {
     FindFiles();
     return LoadFiles();
@@ -78,9 +78,9 @@ bool ESLoader::LoadLoadOrder()
     return true;
 }
 
-RecordCollection ESLoader::LoadFiles()
+UniquePtr<RecordCollection> ESLoader::LoadFiles()
 {
-    RecordCollection recordCollection;
+    auto recordCollection = MakeUnique<RecordCollection>();
 
     for (PluginData& plugin : m_loadOrder)
     {
@@ -102,13 +102,12 @@ RecordCollection ESLoader::LoadFiles()
         if (!loadResult)
             continue;
 
-        pluginFile.IndexRecords(recordCollection);
+        pluginFile.IndexRecords(*recordCollection);
     }
 
     return recordCollection;
 }
 
-// TODO: std::optional
 fs::path ESLoader::GetPath(String& aFilename)
 {
     for (const auto& entry : fs::directory_iterator(m_directory))
@@ -130,7 +129,6 @@ String ESLoader::ReadZString(Buffer::Reader& aReader) noexcept
 
 String ESLoader::ReadWString(Buffer::Reader& aReader) noexcept
 {
-    // TODO: docs don't mention wstring being an actual wide string, test this
     uint16_t stringLength = 0;
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
     String wstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength);

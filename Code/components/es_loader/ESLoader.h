@@ -31,12 +31,12 @@ public:
     ESLoader() = delete;
     ESLoader(String aDirectory);
 
-    RecordCollection BuildRecordCollection() noexcept;
+    UniquePtr<RecordCollection> BuildRecordCollection() noexcept;
 
 private:
     void FindFiles();
     bool LoadLoadOrder();
-    RecordCollection LoadFiles();
+    UniquePtr<RecordCollection> LoadFiles();
 
     fs::path GetPath(String& aFilename);
 

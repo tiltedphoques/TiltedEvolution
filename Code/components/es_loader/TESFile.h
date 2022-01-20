@@ -19,19 +19,6 @@ public:
     bool LoadFile(const std::filesystem::path& acPath) noexcept;
     bool IndexRecords(RecordCollection& aRecordCollection) noexcept;
 
-    [[nodiscard]] bool IsLite() const noexcept
-    {
-        return m_isLite;
-    }
-    [[nodiscard]] uint16_t GetId() const noexcept
-    {
-        return IsLite() ? m_liteId : m_standardId;
-    }
-    [[nodiscard]] String GetFilename() const noexcept
-    {
-        return m_filename;
-    }
-
     [[nodiscard]] uint32_t GetFormIdPrefix(uint8_t aCurrentPrefix) const noexcept;
 
 private:
@@ -43,7 +30,6 @@ private:
     String m_filename = "";
     Buffer m_buffer{};
 
-    bool m_isLite = false;
     union
     {
         uint8_t m_standardId = 0;

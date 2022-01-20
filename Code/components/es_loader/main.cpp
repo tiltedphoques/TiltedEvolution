@@ -5,7 +5,9 @@ int main(int argc, char** argv)
 {
     ESLoader loader("Data\\");
 
-    RecordCollection collection = loader.BuildRecordCollection();
+    UniquePtr<RecordCollection> pCollection = loader.BuildRecordCollection();
+
+    spdlog::info("{:X}", pCollection->GetFormType(0x13480));
 
     spdlog::info("Build file list succeeded.");
 

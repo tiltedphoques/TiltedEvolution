@@ -10,14 +10,12 @@ TESFile::TESFile(Map<String, uint8_t> aMasterFiles)
 
 void TESFile::Setup(uint8_t aStandardId)
 {
-    m_isLite = false;
     m_standardId = aStandardId;
     m_formIdPrefix = m_standardId * 0x1000000;
 }
 
 void TESFile::Setup(uint16_t aLiteId)
 {
-    m_isLite = true;
     m_liteId = aLiteId;
     m_formIdPrefix = 0xFE000000 + (m_liteId * 0x1000);
 }
