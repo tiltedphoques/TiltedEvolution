@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <fstream>
 
-#include "Records/Record.h"
-#include "Records/REFR.h"
-#include "Records/CLMT.h"
-#include "Records/NPC.h"
+TESFile::TESFile(Map<String, uint8_t> aMasterFiles)
+    : m_masterFiles(aMasterFiles)
+{
+}
 
 void TESFile::Setup(uint8_t aStandardId)
 {
@@ -69,8 +69,8 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
 
     if (type == static_cast<uint32_t>(FormEnum::GRUP))
     {
+        const size_t endOfGroup = aReader.GetBytePosition() + size;
         aReader.Advance(sizeof(Group));
-        const size_t endOfGroup = aReader.GetBytePosition() + size - 0x18;
 
         while (aReader.GetBytePosition() < endOfGroup)
         {
@@ -83,6 +83,18 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
 
         switch (pRecord->GetType())
         {
+        case FormEnum::TES4: {
+            TES4 fileHeader = CopyAndParseRecord<TES4>(pRecord);
+
+            uint8_t parentId = 0;
+            for (const Chunks::MAST& master : fileHeader.m_masterFiles)
+            {
+                m_parentToMaster[parentId] = m_masterFiles[master.m_masterName];
+                parentId++;
+            }
+
+            break;
+        }
         //case FormEnum::ACHR:
         case FormEnum::REFR: {
             REFR parsedRecord = CopyAndParseRecord<REFR>(pRecord);
@@ -114,6 +126,16 @@ T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 {
     T* pRecord = reinterpret_cast<T*>(pRecordHeader);
     T parsedRecord = pRecord->ParseChunks();
-    parsedRecord.SetBaseId(GetFormIdPrefix());
+    uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);
+    parsedRecord.SetBaseId(GetFormIdPrefix(baseId));
     return parsedRecord;
+}
+
+uint32_t TESFile::GetFormIdPrefix(uint8_t aCurrentPrefix) const noexcept
+{
+    auto masterId = m_parentToMaster.find(aCurrentPrefix);
+    if (masterId != std::end(m_parentToMaster))
+        return ((uint32_t)masterId->second) << 24;
+    else
+        return m_formIdPrefix;
 }

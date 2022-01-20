@@ -53,6 +53,7 @@ bool ESLoader::LoadLoadOrder()
         switch (extensionType)
         {
         case 'm':
+            m_masterFiles[line] = standardId;
         case 'p':
             plugin.m_standardId = standardId;
             standardId += 0x01;
@@ -76,6 +77,7 @@ bool ESLoader::LoadLoadOrder()
 void ESLoader::LoadFiles()
 {
     Map<uint32_t, CLMT> climates{};
+    Map<uint32_t, NPC> npcs{};
 
     for (Plugin& plugin : m_loadOrder)
     {
@@ -86,7 +88,7 @@ void ESLoader::LoadFiles()
             continue;
         }
 
-        TESFile pluginFile{};
+        TESFile pluginFile(m_masterFiles);
         if (plugin.IsLite())
             pluginFile.Setup(plugin.m_liteId);
         else
@@ -101,13 +103,24 @@ void ESLoader::LoadFiles()
 
         const Map<uint32_t, CLMT>& pluginClimates = pluginFile.GetClimates();
         climates.insert(pluginClimates.begin(), pluginClimates.end());
-        spdlog::info("Climate count in {}: {}", plugin.m_filename, pluginClimates.size());
+        //spdlog::info("Climate count in {}: {}", plugin.m_filename, pluginClimates.size());
+
+        const Map<uint32_t, NPC>& pluginNpcs = pluginFile.GetNPCs();
+        auto npc = pluginNpcs.find(0x13480);
+        if (npc != std::end(pluginNpcs))
+            spdlog::info("Found Faendal! {}", npc->second.m_baseStats.IsRespawn());
+        for (auto& [formId, npc] : pluginNpcs)
+        {
+            npcs[formId] = npc;
+        }
+        npcs.insert(pluginNpcs.begin(), pluginNpcs.end());
     }
 
-    spdlog::info("All climates:");
-    for (auto& [formId, climate] : climates)
+    spdlog::info("All NPCs:");
+    for (auto& [formId, npc] : npcs)
     {
-        spdlog::info("\t{} ({:X})", climate.m_editorId, formId);
+        if (formId == 0x13480)
+            spdlog::info("\tIsRespawn? {} ({:X})", npc.m_baseStats.IsRespawn(), formId);
     }
 }
 
@@ -124,10 +137,20 @@ fs::path ESLoader::GetPath(String& aFilename)
     return fs::path();
 }
 
-String ESLoader::LoadZString(Buffer::Reader& aReader) noexcept
+String ESLoader::ReadZString(Buffer::Reader& aReader) noexcept
 {
     String zstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()));
     aReader.Advance(zstring.size() + 1);
     return zstring;
+}
+
+String ESLoader::ReadWString(Buffer::Reader& aReader) noexcept
+{
+    // TODO: docs don't mention wstring being an actual wide string, test this
+    uint16_t stringLength = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
+    String wstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength);
+    aReader.Advance(stringLength);
+    return wstring;
 }
 

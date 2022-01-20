@@ -1,6 +1,7 @@
 #include "Chunks.h"
 
 #include "Record.h"
+#include <ESLoader.h>
 
 namespace Chunks
 {
@@ -17,11 +18,7 @@ PrimaryScripts::PrimaryScripts(Buffer::Reader& aReader)
     {
         Script script;
 
-        // TODO: ESLoader::ReadZString(Reader&);
-        uint32_t nameLength = 0;
-        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&nameLength), 2);
-        script.m_name = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), nameLength);
-        aReader.Advance(nameLength);
+        script.m_name = ESLoader::ReadWString(aReader);
 
         aReader.ReadBytes(&script.m_status, 1);
         aReader.ReadBytes(reinterpret_cast<uint8_t*>(&script.m_propertyCount), 2);
@@ -30,11 +27,7 @@ PrimaryScripts::PrimaryScripts(Buffer::Reader& aReader)
         {
             ScriptProperty scriptProperty;
 
-            // TODO: ESLoader::ReadZString(Reader&);
-            uint32_t propNameLength = 0;
-            aReader.ReadBytes(reinterpret_cast<uint8_t*>(&propNameLength), 2);
-            scriptProperty.m_name = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), propNameLength);
-            aReader.Advance(propNameLength);
+            scriptProperty.m_name = ESLoader::ReadWString(aReader);
 
             aReader.ReadBytes(reinterpret_cast<uint8_t*>(&scriptProperty.m_type), 1);
             aReader.ReadBytes(reinterpret_cast<uint8_t*>(&scriptProperty.m_status), 1);
@@ -149,6 +142,11 @@ ACBS::ACBS(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_templateDataFlags), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_healthOffset), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_bleedoutOverride), 2);
+}
+
+MAST::MAST(Buffer::Reader& aReader)
+{
+    m_masterName = ESLoader::ReadZString(aReader);
 }
 
 } // namespace

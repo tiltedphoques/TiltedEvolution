@@ -11,10 +11,10 @@ CONT CONT::ParseChunks() noexcept
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            cont.m_editorId = ESLoader::LoadZString(aReader);
+            cont.m_editorId = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::FULL_ID:
-            cont.m_name = ESLoader::LoadZString(aReader);
+            cont.m_name = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::CNTO_ID:
             Chunks::CNTO cnto(aReader);

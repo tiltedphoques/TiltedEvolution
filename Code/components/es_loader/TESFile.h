@@ -4,11 +4,13 @@
 #include <Records/REFR.h>
 #include <Records/CLMT.h>
 #include <Records/NPC.h>
+#include <Records/TES4.h>
 
 class TESFile
 {
 public:
     TESFile() = default;
+    TESFile(Map<String, uint8_t> aMasterFiles);
 
     void Setup(uint8_t aStandardId);
     void Setup(uint16_t aLiteId);
@@ -23,10 +25,6 @@ public:
     {
         return IsLite() ? m_liteId : m_standardId;
     }
-    [[nodiscard]] uint32_t GetFormIdPrefix() const noexcept
-    {
-        return m_formIdPrefix;
-    }
     [[nodiscard]] String GetFilename() const noexcept
     {
         return m_filename;
@@ -40,11 +38,17 @@ public:
     {
         return m_climates;
     }
+    const Map<uint32_t, NPC>& GetNPCs() const noexcept
+    {
+        return m_npcs;
+    }
 
     NPC& GetNpcById(uint32_t aFormId) noexcept
     {
         return m_npcs[aFormId];
     }
+
+    [[nodiscard]] uint32_t GetFormIdPrefix(uint8_t aCurrentPrefix) const noexcept;
 
 private:
     bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
@@ -62,6 +66,9 @@ private:
         uint16_t m_liteId;
     };
     uint32_t m_formIdPrefix = 0;
+
+    Map<String, uint8_t> m_masterFiles{};
+    Map<uint8_t, uint8_t> m_parentToMaster{};
 
     Map<uint32_t, REFR> m_objectReferences{};
     Map<uint32_t, CLMT> m_climates{};

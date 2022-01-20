@@ -197,4 +197,12 @@ struct ACBS
 
 static_assert(sizeof(ACBS) == 0x18);
 
+struct MAST
+{
+    MAST(){}
+    MAST(Buffer::Reader& aReader);
+
+    String m_masterName = "";
+};
+
 } // namespace

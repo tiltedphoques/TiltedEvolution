@@ -11,16 +11,16 @@ CLMT CLMT::ParseChunks() noexcept
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            clmt.m_editorId = ESLoader::LoadZString(aReader);
+            clmt.m_editorId = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::WLST_ID:
             clmt.m_weatherList = Chunks::WLST(aReader);
             break;
         case ChunkId::FNAM_ID:
-            clmt.m_sunTexture = ESLoader::LoadZString(aReader);
+            clmt.m_sunTexture = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::GNAM_ID:
-            clmt.m_glareTexture = ESLoader::LoadZString(aReader);
+            clmt.m_glareTexture = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::TNAM_ID:
             clmt.m_timing = Chunks::TNAM(aReader);
