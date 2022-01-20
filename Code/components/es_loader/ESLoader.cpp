@@ -10,8 +10,12 @@
 ESLoader::ESLoader(String aDirectory) 
     : m_directory(std::move(aDirectory))
 {
+}
+
+RecordCollection ESLoader::BuildRecordCollection() noexcept
+{
     FindFiles();
-    LoadFiles();
+    return LoadFiles();
 }
 
 void ESLoader::FindFiles()
@@ -46,7 +50,7 @@ bool ESLoader::LoadLoadOrder()
         if (line[0] == '#' || line.empty())
             continue;
 
-        Plugin plugin;
+        PluginData plugin;
         plugin.m_filename = line;
 
         char extensionType = line.back();
@@ -74,12 +78,11 @@ bool ESLoader::LoadLoadOrder()
     return true;
 }
 
-void ESLoader::LoadFiles()
+RecordCollection ESLoader::LoadFiles()
 {
-    Map<uint32_t, CLMT> climates{};
-    Map<uint32_t, NPC> npcs{};
+    RecordCollection recordCollection;
 
-    for (Plugin& plugin : m_loadOrder)
+    for (PluginData& plugin : m_loadOrder)
     {
         fs::path pluginPath = GetPath(plugin.m_filename);
         if (pluginPath.empty())
@@ -99,29 +102,10 @@ void ESLoader::LoadFiles()
         if (!loadResult)
             continue;
 
-        pluginFile.IndexRecords();
-
-        const Map<uint32_t, CLMT>& pluginClimates = pluginFile.GetClimates();
-        climates.insert(pluginClimates.begin(), pluginClimates.end());
-        //spdlog::info("Climate count in {}: {}", plugin.m_filename, pluginClimates.size());
-
-        const Map<uint32_t, NPC>& pluginNpcs = pluginFile.GetNPCs();
-        auto npc = pluginNpcs.find(0x13480);
-        if (npc != std::end(pluginNpcs))
-            spdlog::info("Found Faendal! {}", npc->second.m_baseStats.IsRespawn());
-        for (auto& [formId, npc] : pluginNpcs)
-        {
-            npcs[formId] = npc;
-        }
-        npcs.insert(pluginNpcs.begin(), pluginNpcs.end());
+        pluginFile.IndexRecords(recordCollection);
     }
 
-    spdlog::info("All NPCs:");
-    for (auto& [formId, npc] : npcs)
-    {
-        if (formId == 0x13480)
-            spdlog::info("\tIsRespawn? {} ({:X})", npc.m_baseStats.IsRespawn(), formId);
-    }
+    return recordCollection;
 }
 
 // TODO: std::optional

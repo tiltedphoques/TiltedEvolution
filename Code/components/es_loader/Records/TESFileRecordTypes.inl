@@ -2,6 +2,7 @@
 
 enum class FormEnum : uint32_t
 {
+    EMPTY_ID = 0,
     TES4 = 0x34534554,
     GRUP = 0x50555247,
     REFR = 0x52464552,

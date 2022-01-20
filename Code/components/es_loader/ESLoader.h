@@ -4,10 +4,12 @@
 
 namespace fs = std::filesystem;
 
+class RecordCollection;
+
 class ESLoader
 {
 public:
-    struct Plugin
+    struct PluginData
     {
         [[nodiscard]] bool IsLite() const noexcept
         {
@@ -23,20 +25,22 @@ public:
         bool m_isLite;
     };
 
+    static String ReadZString(Buffer::Reader& aReader) noexcept;
+    static String ReadWString(Buffer::Reader& aReader) noexcept;
+
     ESLoader() = delete;
     ESLoader(String aDirectory);
 
-    static String ReadZString(Buffer::Reader& aReader) noexcept;
-    static String ReadWString(Buffer::Reader& aReader) noexcept;
+    RecordCollection BuildRecordCollection() noexcept;
 
 private:
     void FindFiles();
     bool LoadLoadOrder();
-    void LoadFiles();
+    RecordCollection LoadFiles();
 
     fs::path GetPath(String& aFilename);
 
     String m_directory = "";
-    Vector<Plugin> m_loadOrder{};
+    Vector<PluginData> m_loadOrder{};
     Map<String, uint8_t> m_masterFiles{};
 };

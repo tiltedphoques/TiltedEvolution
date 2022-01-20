@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RecordCollection.h>
+
 #include <Records/Group.h>
 #include <Records/REFR.h>
 #include <Records/CLMT.h>
@@ -15,7 +17,7 @@ public:
     void Setup(uint8_t aStandardId);
     void Setup(uint16_t aLiteId);
     bool LoadFile(const std::filesystem::path& acPath) noexcept;
-    bool IndexRecords() noexcept;
+    bool IndexRecords(RecordCollection& aRecordCollection) noexcept;
 
     [[nodiscard]] bool IsLite() const noexcept
     {
@@ -30,28 +32,10 @@ public:
         return m_filename;
     }
 
-    const Map<uint32_t, REFR>& GetObjectReferences() const noexcept
-    {
-        return m_objectReferences;
-    }
-    const Map<uint32_t, CLMT>& GetClimates() const noexcept
-    {
-        return m_climates;
-    }
-    const Map<uint32_t, NPC>& GetNPCs() const noexcept
-    {
-        return m_npcs;
-    }
-
-    NPC& GetNpcById(uint32_t aFormId) noexcept
-    {
-        return m_npcs[aFormId];
-    }
-
     [[nodiscard]] uint32_t GetFormIdPrefix(uint8_t aCurrentPrefix) const noexcept;
 
 private:
-    bool ReadGroupOrRecord(Buffer::Reader& aReader) noexcept;
+    bool ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aRecordCollection) noexcept;
 
     template <class T> 
     T CopyAndParseRecord(Record* pRecordHeader);
@@ -69,8 +53,4 @@ private:
 
     Map<String, uint8_t> m_masterFiles{};
     Map<uint8_t, uint8_t> m_parentToMaster{};
-
-    Map<uint32_t, REFR> m_objectReferences{};
-    Map<uint32_t, CLMT> m_climates{};
-    Map<uint32_t, NPC> m_npcs{};
 };

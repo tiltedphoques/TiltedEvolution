@@ -37,10 +37,11 @@ bool TESFile::LoadFile(const std::filesystem::path& acPath) noexcept
     }
 
     file.read(reinterpret_cast<char*>(m_buffer.GetWriteData()), fileSize);
+
     return true;
 }
 
-bool TESFile::IndexRecords() noexcept
+bool TESFile::IndexRecords(RecordCollection& aRecordCollection) noexcept
 {
     if (m_filename.size() == 0)
         return false;
@@ -49,14 +50,14 @@ bool TESFile::IndexRecords() noexcept
 
     while (true)
     {
-        if (!ReadGroupOrRecord(reader))
+        if (!ReadGroupOrRecord(reader, aRecordCollection))
             break;
     }
 
     return true;
 }
 
-bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
+bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aRecordCollection) noexcept
 {
     if (aReader.Eof())
         return false;
@@ -74,7 +75,7 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
 
         while (aReader.GetBytePosition() < endOfGroup)
         {
-            ReadGroupOrRecord(aReader);
+            ReadGroupOrRecord(aReader, aRecordCollection);
         }
     }
     else // Records
@@ -98,22 +99,33 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader) noexcept
         //case FormEnum::ACHR:
         case FormEnum::REFR: {
             REFR parsedRecord = CopyAndParseRecord<REFR>(pRecord);
-            m_objectReferences[parsedRecord.GetFormId()] = parsedRecord;
+            aRecordCollection.m_objectReferences[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
         case FormEnum::CELL:
             break;
         case FormEnum::CLMT: {
             CLMT parsedRecord = CopyAndParseRecord<CLMT>(pRecord);
-            m_climates[parsedRecord.GetFormId()] = parsedRecord;
+            aRecordCollection.m_climates[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
         case FormEnum::NPC_: {
             NPC parsedRecord = CopyAndParseRecord<NPC>(pRecord);
-            m_npcs[parsedRecord.GetFormId()] = parsedRecord;
+            aRecordCollection.m_npcs[parsedRecord.GetFormId()] = parsedRecord;
+            break;
+        }
+        case FormEnum::CONT: {
+            CONT parsedRecord = CopyAndParseRecord<CONT>(pRecord);
+            aRecordCollection.m_containers[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
         }
+
+        Record record;
+        record.CopyRecordData(*pRecord);
+        uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);
+        record.SetBaseId(GetFormIdPrefix(baseId));
+        aRecordCollection.m_allRecords[pRecord->GetFormId()] = *pRecord;
 
         aReader.Advance(sizeof(Record) + size);
     }
