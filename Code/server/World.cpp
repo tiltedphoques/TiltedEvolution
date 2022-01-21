@@ -14,6 +14,8 @@
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 
+#include <es_loader/ESLoader.h>
+
 World::World()
 {
     m_spAdminService = std::make_shared<AdminService>(*this, m_dispatcher);
@@ -29,6 +31,9 @@ World::World()
     set<ActorValueService>(*this, m_dispatcher);
     set<InventoryService>(*this, m_dispatcher);
     set<MagicService>(*this, m_dispatcher);
+
+    ESLoader loader;
+    m_recordCollection = loader.BuildRecordCollection();
 
     // late initialize the ScriptService to ensure all components are valid
     m_scriptService = std::make_unique<ScriptService>(*this, m_dispatcher);

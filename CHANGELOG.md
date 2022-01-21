@@ -1,3 +1,37 @@
+# [1.9.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.8.0...v1.9.0) (2022-01-21)
+
+
+### Bug Fixes
+
+* compression bug in es parser ([426a251](https://github.com/tiltedphoques/TiltedEvolution/commit/426a25147c65b3436aee49806d1f624e1605540d))
+* script property parsing ([3018ad7](https://github.com/tiltedphoques/TiltedEvolution/commit/3018ad761eb098573113e0b245d590e9740f23a0))
+* static var rename ([6919096](https://github.com/tiltedphoques/TiltedEvolution/commit/69190962da08c63ed2222cbfb7bd144ec4638d94))
+
+
+### Features
+
+* another attempt at full inventory control ([4f8fbe0](https://github.com/tiltedphoques/TiltedEvolution/commit/4f8fbe0cf9b0386f75f3002cdd2aac88f01b8f6a))
+* base id assignment for parsed records ([dee225a](https://github.com/tiltedphoques/TiltedEvolution/commit/dee225a22f4700420e9c0e595201a2c97f73eced))
+* chunk sorting and parsing on REFR records ([8c196f5](https://github.com/tiltedphoques/TiltedEvolution/commit/8c196f523d71242a95266c52375c89d47e70cdef))
+* copy parse chunks ([47e0441](https://github.com/tiltedphoques/TiltedEvolution/commit/47e04410994b976c7be0d1a3a2ba8c914fb89b9d))
+* ESLoader setup ([3f8dd1b](https://github.com/tiltedphoques/TiltedEvolution/commit/3f8dd1bcc72a6af35276fc76d3301adc2d5a3be4))
+* fetch es files from Data/ ([39bfed8](https://github.com/tiltedphoques/TiltedEvolution/commit/39bfed88439f6d365dc02eaf2685ac89a10b528e))
+* index parent esms and handle overwritten records ([7866a42](https://github.com/tiltedphoques/TiltedEvolution/commit/7866a42bdf24a21362830a08009e35eebdb32b31))
+* integrated es parser into server ([7bd1acd](https://github.com/tiltedphoques/TiltedEvolution/commit/7bd1acd3bf5b4415a5445efb2c29a4adc7ae25d8))
+* iterate and parse chunks in record ([173e3ee](https://github.com/tiltedphoques/TiltedEvolution/commit/173e3ee30ceb84a724d5101f1012881a103baaf9))
+* load esm data and record base ([a208a85](https://github.com/tiltedphoques/TiltedEvolution/commit/a208a851ea08822a9d1308067f569ca6d8280b61))
+* load game settings on server ([b0e1c33](https://github.com/tiltedphoques/TiltedEvolution/commit/b0e1c33dab4c1b4f75cb329acc50b6f43fb8388b))
+* parse climate records ([dde6f16](https://github.com/tiltedphoques/TiltedEvolution/commit/dde6f1686e920b34776767aaeb7e8b683b5ad4d3))
+* parse containers and decoded scripts data ([1ff6f73](https://github.com/tiltedphoques/TiltedEvolution/commit/1ff6f73ff341072c7e45c28bfb4cb8c1284f94cc))
+* parse group headers ([46eb291](https://github.com/tiltedphoques/TiltedEvolution/commit/46eb2915ac054bdcbb1815ad27888c1a1bd3c180))
+* parse map markers ([fb45e77](https://github.com/tiltedphoques/TiltedEvolution/commit/fb45e7761ca57c3fabef9d3de143e60853d21b17))
+* parse NPCs ([5ce7919](https://github.com/tiltedphoques/TiltedEvolution/commit/5ce79195df3a592b289967f7a85d45dc339231c3))
+* parse records and groups, and fetch fields ([a3e69f2](https://github.com/tiltedphoques/TiltedEvolution/commit/a3e69f2fa30dbe0ab1f11bb0f8dbf8b2ce6918b3))
+* RecordCollection ([98c0825](https://github.com/tiltedphoques/TiltedEvolution/commit/98c0825e492b46670f3bfc30a046c98e70867454))
+* sort files by esm/esp/esl ([e4ec55a](https://github.com/tiltedphoques/TiltedEvolution/commit/e4ec55a49479f6bbff67d7286534c8be96ba1a05))
+* store cell records ([8b4021d](https://github.com/tiltedphoques/TiltedEvolution/commit/8b4021d19e4fca8106dd1e5930b1c64f55740451))
+* working es parser ([ee5271e](https://github.com/tiltedphoques/TiltedEvolution/commit/ee5271eb5fadb66521e5f8f1ed4665a1157288c3))
+
 # [1.8.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.7.0...v1.8.0) (2022-01-17)
 
 

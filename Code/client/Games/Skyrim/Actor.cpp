@@ -351,6 +351,7 @@ void Actor::SetInventory(const Inventory& acInventory) noexcept
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
 
+    // TODO: check if weapon drawn state is the same
     SetWeaponDrawnEx(acInventory.IsWeaponDrawn);
 }
 
