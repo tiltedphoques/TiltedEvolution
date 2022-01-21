@@ -45,3 +45,4 @@ function unittest(name)
 
 -- List all components required below:
 includes("console")
+includes("es_loader")
