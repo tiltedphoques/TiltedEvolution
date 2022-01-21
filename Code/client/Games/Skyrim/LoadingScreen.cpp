@@ -35,11 +35,11 @@ TRequestLoadingText* RealRequestLoadingText;
 
 void RequestLoadingText(ScaleFormContext* apContext)
 {
-    static char* s_displayStr = "TESSST";
+    static const char* s_displayStr = "TESSST";
 
     apContext->scaleformReturn->someBool50 = 0;
     if(apContext->scaleformReturn->scaleformValue)
-        apContext->scaleformReturn->scaleformValue->data = s_displayStr;
+        apContext->scaleformReturn->scaleformValue->data = (char*)s_displayStr;
 
     RealRequestLoadingText(apContext);
 }
