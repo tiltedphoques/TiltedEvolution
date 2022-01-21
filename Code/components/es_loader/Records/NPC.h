@@ -9,6 +9,7 @@ class NPC : public Record
 public:
     static constexpr FormEnum kType = FormEnum::NPC_;
 
+    String m_editorId = "";
     Chunks::ACBS m_baseStats{};
     Chunks::DOFT m_defaultOutfit{};
     Chunks::VMAD m_scriptData{};

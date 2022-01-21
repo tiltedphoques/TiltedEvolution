@@ -17,13 +17,13 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
     if (!fs::is_directory(m_directory))
     {
         spdlog::error("Data directory not found.");
-        return MakeUnique<RecordCollection>();
+        return UniquePtr<RecordCollection>();
     }
 
     if (!LoadLoadOrder())
     {
         spdlog::error("Failed to load load order.");
-        return MakeUnique<RecordCollection>();
+        return UniquePtr<RecordCollection>();
     }
 
     return LoadFiles();

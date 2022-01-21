@@ -7,6 +7,9 @@ void NPC::ParseChunks(NPC& aSourceRecord) noexcept
     aSourceRecord.IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) {
         switch (aChunkId)
         {
+        case ChunkId::EDID_ID:
+            m_editorId = ESLoader::ReadZString(aReader);
+            break;
         case ChunkId::ACBS_ID:
             m_baseStats = Chunks::ACBS(aReader);
             break;
