@@ -10,6 +10,8 @@
 
 #include "Game/PlayerManager.h"
 
+#include <es_loader/RecordCollection.h>
+
 struct World : entt::registry
 {
     World();
@@ -31,6 +33,8 @@ struct World : entt::registry
     const QuestService& GetQuestService() const noexcept { return ctx<const QuestService>(); }
     PlayerManager& GetPlayerManager() noexcept { return m_playerManager; }
     const PlayerManager& GetPlayerManager() const noexcept { return m_playerManager; }
+    RecordCollection& GetRecordCollection() noexcept { return *m_recordCollection; }
+    const RecordCollection& GetRecordCollection() const noexcept { return *m_recordCollection; }
 
     [[nodiscard]] static uint32_t ToInteger(entt::entity aEntity) { return to_integral(aEntity); }
 
@@ -40,4 +44,5 @@ private:
     std::shared_ptr<AdminService> m_spAdminService;
     std::unique_ptr<ScriptService> m_scriptService;
     PlayerManager m_playerManager;
+    UniquePtr<RecordCollection> m_recordCollection;
 };
