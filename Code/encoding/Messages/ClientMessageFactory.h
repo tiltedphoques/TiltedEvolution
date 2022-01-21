@@ -15,6 +15,10 @@
 #include <Messages/PartyInviteRequest.h>
 #include <Messages/PartyAcceptInviteRequest.h>
 #include <Messages/PartyLeaveRequest.h>
+#include <Messages/PartyCreateRequest.h>
+#include <Messages/PartyChangeLeaderRequest.h>
+#include <Messages/PartyKickRequest.h>
+#include <Messages/PartyInviteRequest.h>
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>
@@ -48,7 +52,7 @@ struct ClientMessageFactory
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
                                  ClientReferencesMoveRequest, EnterInteriorCellRequest, ClientRpcCalls,
                                  RequestCharacterInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
-                                 PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest,
+                                 PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest,
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,

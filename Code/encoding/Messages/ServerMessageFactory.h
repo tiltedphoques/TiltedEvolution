@@ -17,6 +17,8 @@
 #include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPartyInfo.h>
 #include <Messages/NotifyPartyInvite.h>
+#include <Messages/NotifyPartyJoined.h>
+#include <Messages/NotifyPartyLeft.h>
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
@@ -47,7 +49,7 @@ struct ServerMessageFactory
             CreateMessageVisitor<AuthenticationResponse, AssignCharacterResponse, ServerReferencesMoveRequest,
                                  ServerScriptUpdate, ServerTimeSettings, CharacterSpawnRequest, NotifyCharacterInventoryChanges,
                                  NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
-                                 NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges,
+                                 NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges, NotifyPartyJoined, NotifyPartyLeft,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
                                  NotifyLockChange, AssignObjectsResponse, NotifyDeathStateChange, NotifyOwnershipTransfer,
                                  NotifyObjectInventoryChanges, NotifySpellCast, NotifyProjectileLaunch, NotifyInterruptCast,
