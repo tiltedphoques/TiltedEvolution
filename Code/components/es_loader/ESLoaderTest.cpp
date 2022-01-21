@@ -14,18 +14,18 @@ public:
     static void SetUpTestSuite()
     {
         ESLoader loader;
-        m_collection = loader.BuildRecordCollection();
+        s_collection = loader.BuildRecordCollection();
     }
 
     UniquePtr<RecordCollection>& GetCollection()
     {
-        return m_collection;
+        return s_collection;
     }
 
-    static UniquePtr<RecordCollection> m_collection;
+    static UniquePtr<RecordCollection> s_collection;
 };
 
-UniquePtr<RecordCollection> ESLoaderTest::m_collection = nullptr;
+UniquePtr<RecordCollection> ESLoaderTest::s_collection = nullptr;
 
 TEST_F(ESLoaderTest, BuildRecordCollection)
 {
