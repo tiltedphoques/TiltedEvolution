@@ -44,6 +44,19 @@
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <EquipManager.h>
+
+#include <ExtraData/ExtraCharge.h>
+#include <ExtraData/ExtraCount.h>
+#include <ExtraData/ExtraEnchantment.h>
+#include <ExtraData/ExtraHealth.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraSoul.h>
+#include <ExtraData/ExtraTextDisplayData.h>
+#include <ExtraData/ExtraWorn.h>
+#include <ExtraData/ExtraWornLeft.h>
+#include <Forms/EnchantmentItem.h>
+#include <Forms/AlchemyItem.h>
 #include <Games/Skyrim/Forms/TESPackage.h>
 #endif
 
@@ -176,10 +189,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
-            pFaendal->EnableImpl();
-            //static char s_address[256] = "127.0.0.1:10578";
-            //m_transport.Connect(s_address);
+            static char s_address[256] = "127.0.0.1:10578";
+            m_transport.Connect(s_address);
         }
     }
 
@@ -192,42 +203,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
             auto* pPack = (TESPackage*)TESForm::GetById(0x654E2); // DoNothing package
             pFaendal->PutCreatedPackage(pPack);
-
-            /*
-            pFaendal->DisableImpl();
-            pFaendal->Enable();
-            //pFaendal->EnableImpl();
-            spdlog::info("reset");
-            //s_reset = true;
-            lastSendTimePoint = std::chrono::steady_clock::now();
-
-            auto* pPlayer = PlayerCharacter::Get();
-            pFaendal->MoveTo(pPlayer->parentCell, pPlayer->position);
-            
-            PlaceActorInWorld();
-
-            Actor* pActor = (Actor*)TESForm::GetById(0xFF0015AD);
-            PlayerCharacter::Get()->InitiateMountPackage(pActor);
-
-            auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
-            pActor->SetWeaponDrawnEx(true);
-
-            //PlaceActorInWorld();
-
-            /*
-            const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
-
-            //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
-            auto pActor = Actor::Create(pPlayerBaseForm);
-            pActor->SaveInventory(0);
-
-        #if TP_SKYRIM64
-            auto& objManager = DefaultObjectManager::Get();
-            spdlog::info(objManager.isSomeActionReady);
-        #endif
-
-            TP_ASSERT(0, "{}", 5)
-            */
         }
     }
     else
@@ -1065,18 +1040,76 @@ void TestService::OnDraw() noexcept
 
                                 bool charge = pDataList->Contains(ExtraData::Charge);
                                 ImGui::TextColored(charge ? green : red, "charge");
+                                if (charge)
+                                {
+                                    auto pCharge = (ExtraCharge*)pDataList->GetByType(ExtraData::Charge);
+                                    ImGui::InputFloat("Charge", &pCharge->fCharge, 0, 0, "%.3f",
+                                                      ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool count = pDataList->Contains(ExtraData::Count);
                                 ImGui::TextColored(count ? green : red, "count");
+                                if (count)
+                                {
+                                    auto pCount = (ExtraCount*)pDataList->GetByType(ExtraData::Count);
+                                    auto iCount = int(pCount->count);
+                                    ImGui::InputInt("Item count", &iCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool enchantment = pDataList->Contains(ExtraData::Enchantment);
                                 ImGui::TextColored(enchantment ? green : red, "enchantment");
+                                if (enchantment)
+                                {
+                                    auto pEnchantment = (ExtraEnchantment*)pDataList->GetByType(ExtraData::Enchantment);
+                                    int enchantmentID =
+                                        pEnchantment->pEnchantment ? int(pEnchantment->pEnchantment->formID) : 0;
+                                    ImGui::InputInt("Enchantment id", &enchantmentID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                                    int iCharge = int(pEnchantment->usCharge);
+                                    ImGui::InputInt("Charge", &iCharge, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                    int iRemoveOnUnequip = int(pEnchantment->bRemoveOnUnequip);
+                                    ImGui::InputInt("Remove on unequip?", &iRemoveOnUnequip, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool health = pDataList->Contains(ExtraData::Health);
                                 ImGui::TextColored(health ? green : red, "health");
+                                if (health)
+                                {
+                                    auto pHealth = (ExtraHealth*)pDataList->GetByType(ExtraData::Health);
+                                    ImGui::InputFloat("Health", &pHealth->fHealth, 0, 0, "%.3f",
+                                                      ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool poison = pDataList->Contains(ExtraData::Poison);
                                 ImGui::TextColored(poison ? green : red, "poison");
+                                if (poison)
+                                {
+                                    auto pPoison = (ExtraPoison*)pDataList->GetByType(ExtraData::Poison);
+                                    int poisonID =
+                                        pPoison->pPoison ? int(pPoison->pPoison->formID) : 0;
+                                    ImGui::InputInt("Poison id", &poisonID, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+                                    int iCount = int(pPoison->uiCount);
+                                    ImGui::InputInt("Count", &iCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool soul = pDataList->Contains(ExtraData::Soul);
                                 ImGui::TextColored(soul ? green : red, "soul");
+                                if (soul)
+                                {
+                                    auto pSoul = (ExtraSoul*)pDataList->GetByType(ExtraData::Soul);
+                                    auto iSoulLevel = int(pSoul->cSoul);
+                                    ImGui::InputInt("Soul level", &iSoulLevel, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool textDisplayData = pDataList->Contains(ExtraData::TextDisplayData);
                                 ImGui::TextColored(textDisplayData ? green : red, "textDisplayData");
+                                if (textDisplayData)
+                                {
+                                    auto pTextDisplayData = (ExtraTextDisplayData*)pDataList->GetByType(ExtraData::TextDisplayData);
+                                    char name[256];
+                                    sprintf_s(name, std::size(name), "%s", pTextDisplayData->DisplayName.AsAscii());
+                                    ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
+                                }
+
                                 bool worn = pDataList->Contains(ExtraData::Worn);
                                 ImGui::TextColored(worn ? green : red, "worn");
                                 bool wornLeft = pDataList->Contains(ExtraData::WornLeft);

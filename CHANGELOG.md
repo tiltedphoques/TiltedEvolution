@@ -1,3 +1,86 @@
+# [1.9.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.8.0...v1.9.0) (2022-01-21)
+
+
+### Bug Fixes
+
+* compression bug in es parser ([426a251](https://github.com/tiltedphoques/TiltedEvolution/commit/426a25147c65b3436aee49806d1f624e1605540d))
+* script property parsing ([3018ad7](https://github.com/tiltedphoques/TiltedEvolution/commit/3018ad761eb098573113e0b245d590e9740f23a0))
+* static var rename ([6919096](https://github.com/tiltedphoques/TiltedEvolution/commit/69190962da08c63ed2222cbfb7bd144ec4638d94))
+
+
+### Features
+
+* another attempt at full inventory control ([4f8fbe0](https://github.com/tiltedphoques/TiltedEvolution/commit/4f8fbe0cf9b0386f75f3002cdd2aac88f01b8f6a))
+* base id assignment for parsed records ([dee225a](https://github.com/tiltedphoques/TiltedEvolution/commit/dee225a22f4700420e9c0e595201a2c97f73eced))
+* chunk sorting and parsing on REFR records ([8c196f5](https://github.com/tiltedphoques/TiltedEvolution/commit/8c196f523d71242a95266c52375c89d47e70cdef))
+* copy parse chunks ([47e0441](https://github.com/tiltedphoques/TiltedEvolution/commit/47e04410994b976c7be0d1a3a2ba8c914fb89b9d))
+* ESLoader setup ([3f8dd1b](https://github.com/tiltedphoques/TiltedEvolution/commit/3f8dd1bcc72a6af35276fc76d3301adc2d5a3be4))
+* fetch es files from Data/ ([39bfed8](https://github.com/tiltedphoques/TiltedEvolution/commit/39bfed88439f6d365dc02eaf2685ac89a10b528e))
+* index parent esms and handle overwritten records ([7866a42](https://github.com/tiltedphoques/TiltedEvolution/commit/7866a42bdf24a21362830a08009e35eebdb32b31))
+* integrated es parser into server ([7bd1acd](https://github.com/tiltedphoques/TiltedEvolution/commit/7bd1acd3bf5b4415a5445efb2c29a4adc7ae25d8))
+* iterate and parse chunks in record ([173e3ee](https://github.com/tiltedphoques/TiltedEvolution/commit/173e3ee30ceb84a724d5101f1012881a103baaf9))
+* load esm data and record base ([a208a85](https://github.com/tiltedphoques/TiltedEvolution/commit/a208a851ea08822a9d1308067f569ca6d8280b61))
+* load game settings on server ([b0e1c33](https://github.com/tiltedphoques/TiltedEvolution/commit/b0e1c33dab4c1b4f75cb329acc50b6f43fb8388b))
+* parse climate records ([dde6f16](https://github.com/tiltedphoques/TiltedEvolution/commit/dde6f1686e920b34776767aaeb7e8b683b5ad4d3))
+* parse containers and decoded scripts data ([1ff6f73](https://github.com/tiltedphoques/TiltedEvolution/commit/1ff6f73ff341072c7e45c28bfb4cb8c1284f94cc))
+* parse group headers ([46eb291](https://github.com/tiltedphoques/TiltedEvolution/commit/46eb2915ac054bdcbb1815ad27888c1a1bd3c180))
+* parse map markers ([fb45e77](https://github.com/tiltedphoques/TiltedEvolution/commit/fb45e7761ca57c3fabef9d3de143e60853d21b17))
+* parse NPCs ([5ce7919](https://github.com/tiltedphoques/TiltedEvolution/commit/5ce79195df3a592b289967f7a85d45dc339231c3))
+* parse records and groups, and fetch fields ([a3e69f2](https://github.com/tiltedphoques/TiltedEvolution/commit/a3e69f2fa30dbe0ab1f11bb0f8dbf8b2ce6918b3))
+* RecordCollection ([98c0825](https://github.com/tiltedphoques/TiltedEvolution/commit/98c0825e492b46670f3bfc30a046c98e70867454))
+* sort files by esm/esp/esl ([e4ec55a](https://github.com/tiltedphoques/TiltedEvolution/commit/e4ec55a49479f6bbff67d7286534c8be96ba1a05))
+* store cell records ([8b4021d](https://github.com/tiltedphoques/TiltedEvolution/commit/8b4021d19e4fca8106dd1e5930b1c64f55740451))
+* working es parser ([ee5271e](https://github.com/tiltedphoques/TiltedEvolution/commit/ee5271eb5fadb66521e5f8f1ed4665a1157288c3))
+
+# [1.8.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.7.0...v1.8.0) (2022-01-17)
+
+
+### Features
+
+* Serverlist tags support and a few bugfixes. ([37c4348](https://github.com/tiltedphoques/TiltedEvolution/commit/37c4348d7de7847e1c92f3c880c28490bdfbe19e))
+
+# [1.7.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.6.0...v1.7.0) (2022-01-15)
+
+
+### Bug Fixes
+
+* Incorrect arg name fix ([b08d26b](https://github.com/tiltedphoques/TiltedEvolution/commit/b08d26ba073f89fbc3f4bf12059d1787b06ca8b6))
+
+
+### Features
+
+* Added coding guidelines ([5c413ae](https://github.com/tiltedphoques/TiltedEvolution/commit/5c413ae5363f2050348feb4dd8d117727710681c))
+* Modified arg names and checking event opcodes first ([6d5c175](https://github.com/tiltedphoques/TiltedEvolution/commit/6d5c17536f4dd8d6d8754ed024b4f179c210824e))
+
+# [1.6.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.1...v1.6.0) (2022-01-15)
+
+
+### Bug Fixes
+
+* Docker compose not using the correct output path for server list service ([4c87f3f](https://github.com/tiltedphoques/TiltedEvolution/commit/4c87f3f28c78c1abfe1e4900f3b9c7548c5b6267))
+* Eliminate warnings. ([2080cb2](https://github.com/tiltedphoques/TiltedEvolution/commit/2080cb2b5cdf54f8672fe62ba525ceea49bda3a7))
+* improve error handling for the server list service ([2d4defa](https://github.com/tiltedphoques/TiltedEvolution/commit/2d4defae507205f1fce651b088efe8e66ebb1ad2))
+* re-enable SSL for masterlist endpoint. ([4fa7149](https://github.com/tiltedphoques/TiltedEvolution/commit/4fa714999bbc62894eaf1af14db18c7296b8bc18))
+* server admin console now relies exclusively on xmake ([b2304a4](https://github.com/tiltedphoques/TiltedEvolution/commit/b2304a4a8692057a52189f149a356f3a4c680d39))
+
+
+### Features
+
+* Console commands POC ([0e8d9e8](https://github.com/tiltedphoques/TiltedEvolution/commit/0e8d9e8a5fcd5731ffc8795a2d4e1935e2560730))
+* Console component ([cf7283d](https://github.com/tiltedphoques/TiltedEvolution/commit/cf7283dce052166b16e88af5c4e2010a6f1a6b30))
+* EULA validation for server owners. ([d5148f1](https://github.com/tiltedphoques/TiltedEvolution/commit/d5148f1c2dce5f485348561c8d6474e033d50942))
+* libbase setting<t> draft ([085fc9c](https://github.com/tiltedphoques/TiltedEvolution/commit/085fc9c4601fc334a9dacc503719fc9531a09705))
+* server settings ini poc code. ([f2efe42](https://github.com/tiltedphoques/TiltedEvolution/commit/f2efe42a6670817efaea45c9fe5201d63982a493))
+* Test coverage for console component ([de73919](https://github.com/tiltedphoques/TiltedEvolution/commit/de73919e24c50b7c7c4cc975f59a69ca0af5aca4))
+* Upgrade api endpoint with icon, desc, tick support; re-enable list service. ([2873b39](https://github.com/tiltedphoques/TiltedEvolution/commit/2873b399a6cfb7d820d2fba8a023118bf0b01817))
+
+## [1.5.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.5.0...v1.5.1) (2021-12-20)
+
+
+### Bug Fixes
+
+* projectile related crashes ([48eec06](https://github.com/tiltedphoques/TiltedEvolution/commit/48eec065e282898bdbd02ed7a2ad195665cd92d7))
+
 # [1.5.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.4.1...v1.5.0) (2021-12-11)
 
 
