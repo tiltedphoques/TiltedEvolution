@@ -1148,6 +1148,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
 
 void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 {
+#if TP_SKYRIM64
     auto view = m_world.view<FormIdComponent>();
 
     const auto riderIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.RiderID, view](auto entity) {
@@ -1204,10 +1205,12 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     request.RiderId = riderServerIdRes.value();
 
     m_transport.Send(request);
+#endif
 }
 
 void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcept
 {
+#if TP_SKYRIM64
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
 
     const auto riderIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.RiderId](auto entity)
@@ -1258,7 +1261,6 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     }
 
     pRider->InitiateMountPackage(pMount);
-
-    spdlog::info("Rider mounted actor.");
+#endif
 }
 

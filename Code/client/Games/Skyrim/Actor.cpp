@@ -680,15 +680,6 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
         return ThisCall(RealInitiateMountPackage, apThis, apMount);
     }
 
-    // TODO: dont cancel, request ownership
-    /*
-    if (ActorExtension* pMountExt = apMount->GetExtension())
-    {
-        if (pMountExt->IsRemote())
-            return false;
-    }
-    */
-
     World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
     return ThisCall(RealInitiateMountPackage, apThis, apMount);
 }
