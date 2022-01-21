@@ -298,22 +298,20 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
 {
     auto& message = acMessage.Packet;
 
-    const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    auto view = m_world.view<OwnerComponent>();
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.pPlayer->GetConnectionId());
+        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
-    {
-        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.pPlayer->GetConnectionId());
-        return;
-    }
 
+    characterOwnerComponent.SetOwner(acMessage.pPlayer);
     characterOwnerComponent.InvalidOwners.clear();
+
     spdlog::info("\tOwnership claimed {:X}", message.ServerId);
 }
 
@@ -713,4 +711,3 @@ void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage
     const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
     GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }
-

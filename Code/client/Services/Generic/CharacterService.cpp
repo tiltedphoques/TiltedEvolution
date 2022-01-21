@@ -1182,6 +1182,23 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     if (!mountServerIdRes.has_value())
         return;
 
+    if (m_world.try_get<RemoteComponent>(cMountEntity))
+    {
+        const TESForm* pMountForm = TESForm::GetById(acEvent.MountID);
+        Actor* pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+        pMount->GetExtension()->SetRemote(false);
+
+        m_world.emplace<LocalComponent>(cMountEntity, mountServerIdRes.value());
+        m_world.emplace<LocalAnimationComponent>(cMountEntity);
+        m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+                       FaceGenComponent, CacheComponent, WaitingFor3D>(cMountEntity);
+
+        RequestOwnershipClaim request;
+        request.ServerId = mountServerIdRes.value();
+
+        m_transport.Send(request);
+    }
+
     MountRequest request;
     request.MountId = mountServerIdRes.value();
     request.RiderId = riderServerIdRes.value();
@@ -1208,20 +1225,37 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     TESForm* pRiderForm = TESForm::GetById(riderFormIdComponent.Id);
     Actor* pRider = RTTI_CAST(pRiderForm, TESForm, Actor);
 
-    const auto mountIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.MountId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
+    Actor* pMount = nullptr;
 
-    if (mountIt == std::end(remoteView))
+    auto formView = m_world.view<FormIdComponent>();
+    for (auto entity : formView)
     {
-        spdlog::warn("Mount with remote id {:X} not found.", acMessage.MountId);
-        return;
+        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
+            continue;
+
+        uint32_t serverId = serverIdRes.value();
+
+        if (serverId == acMessage.MountId)
+        {
+            auto mountFormIdComponent = formView.get<FormIdComponent>(entity);
+
+            if (m_world.all_of<LocalComponent>(entity))
+            {
+                m_world.remove<LocalAnimationComponent, LocalComponent>(entity);
+                m_world.emplace_or_replace<RemoteComponent>(entity, acMessage.MountId, mountFormIdComponent.Id);
+            }
+
+            TESForm* pMountForm = TESForm::GetById(mountFormIdComponent.Id);
+            pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+            pMount->GetExtension()->SetRemote(true);
+
+            InterpolationSystem::Setup(m_world, entity);
+            AnimationSystem::Setup(m_world, entity);
+
+            break;
+        }
     }
-
-    auto mountFormIdComponent = remoteView.get<FormIdComponent>(*mountIt);
-    TESForm* pMountForm = TESForm::GetById(mountFormIdComponent.Id);
-    Actor* pMount = RTTI_CAST(pMountForm, TESForm, Actor);
 
     pRider->InitiateMountPackage(pMount);
 
