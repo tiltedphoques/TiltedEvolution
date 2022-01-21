@@ -13,6 +13,7 @@
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <Events/MountEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -465,6 +466,14 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
+TP_THIS_FUNCTION(TInitiateMountPackage, bool, Actor, Actor* apMount);
+static TInitiateMountPackage* RealInitiateMountPackage = nullptr;
+
+bool Actor::InitiateMountPackage(Actor* apMount) noexcept
+{
+    return ThisCall(RealInitiateMountPackage, this, apMount);
+}
+
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
@@ -651,7 +660,7 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
 
 struct DialogueItem;
 
-// This is an AIProcess function
+// TODO: This is an AIProcess function
 TP_THIS_FUNCTION(TProcessResponse, uint64_t, void, DialogueItem* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor);
 static TProcessResponse* RealProcessResponse = nullptr;
 
@@ -663,6 +672,17 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Acto
             return 0;
     }
     return ThisCall(RealProcessResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
+}
+
+bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
+{
+    if (!apMount)
+    {
+        return ThisCall(RealInitiateMountPackage, apThis, apMount);
+    }
+
+    World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
+    return ThisCall(RealInitiateMountPackage, apThis, apMount);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -680,6 +700,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x14060C280 - 0x140000000);
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140742FE0 - 0x140000000);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BC50 - 0x140000000);
+    POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 0x14062CF40 - 0x140000000);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -693,6 +714,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealPickUpItem = s_pickUpItem.Get();
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
+    RealInitiateMountPackage = s_initiateMountPackage.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -705,4 +727,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealPickUpItem, HookPickUpItem);
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
+    TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
 });

@@ -18,6 +18,7 @@ struct CharacterExteriorCellChangeEvent;
 struct RequestOwnershipClaim;
 struct OwnershipTransferEvent;
 struct ProjectileLaunchRequest;
+struct MountRequest;
 
 struct CharacterService
 {
@@ -43,6 +44,7 @@ protected:
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
     void OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept;
+    void OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
@@ -66,4 +68,5 @@ private:
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_projectileLaunchConnection;
+    entt::scoped_connection m_mountConnection;
 };
