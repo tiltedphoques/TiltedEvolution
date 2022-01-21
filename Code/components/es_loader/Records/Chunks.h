@@ -41,7 +41,7 @@ struct ScriptProperty
         } m_string {nullptr, 0};
     };
 
-    void ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat) noexcept;
+    void ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
     Type GetPropertyType(Type aArrayType) noexcept;
 
     String m_name;
@@ -62,7 +62,7 @@ struct Script
 struct VMAD
 {
     VMAD(){};
-    VMAD(Buffer::Reader& aReader);
+    VMAD(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     int16_t m_version = 0;
     int16_t m_objectFormat = 0;
@@ -82,7 +82,7 @@ struct CNTO
 struct WLST
 {
     WLST(){}
-    WLST(Buffer::Reader& aReader);
+    WLST(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_weatherId{}; // WTHR
     uint32_t m_chance{};
@@ -105,7 +105,7 @@ struct TNAM
 struct NAME
 {
     NAME(){}
-    NAME(Buffer::Reader& aReader);
+    NAME(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_baseId = 0;
 };
@@ -113,7 +113,7 @@ struct NAME
 struct DOFT
 {
     DOFT(){}
-    DOFT(Buffer::Reader& aReader);
+    DOFT(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_formId = 0;
 };

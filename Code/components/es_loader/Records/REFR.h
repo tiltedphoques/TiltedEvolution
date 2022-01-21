@@ -11,6 +11,6 @@ public:
     Chunks::NAME m_basicObject{};
     Chunks::MapMarkerData m_markerData{};
 
-    void ParseChunks(REFR& aSourceRecord) noexcept;
+    void ParseChunks(REFR& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };
 

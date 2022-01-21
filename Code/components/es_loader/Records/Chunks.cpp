@@ -6,7 +6,20 @@
 namespace Chunks
 {
 
-VMAD::VMAD(Buffer::Reader& aReader)
+uint32_t ReadFormId(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
+{
+    uint32_t formId = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&formId), 4);
+
+    uint32_t realBaseId = TESFile::GetFormIdPrefix(formId, aParentToFormIdPrefix);
+
+    formId &= 0x00FFFFFF;
+    formId += realBaseId;
+
+    return formId;
+}
+
+VMAD::VMAD(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
 {
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_version), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_objectFormat), 2);
@@ -32,7 +45,7 @@ VMAD::VMAD(Buffer::Reader& aReader)
             aReader.ReadBytes(reinterpret_cast<uint8_t*>(&scriptProperty.m_type), 1);
             aReader.ReadBytes(reinterpret_cast<uint8_t*>(&scriptProperty.m_status), 1);
 
-            scriptProperty.ParseValue(aReader, m_objectFormat);
+            scriptProperty.ParseValue(aReader, m_objectFormat, aParentToFormIdPrefix);
 
             script.m_properties.push_back(scriptProperty);
         }
@@ -41,17 +54,19 @@ VMAD::VMAD(Buffer::Reader& aReader)
     }
 }
 
-void ScriptProperty::ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat) noexcept
+void ScriptProperty::ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
     switch (m_type)
     {
     case Type::OBJECT:
         if (aObjectFormat == 1)
-            aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_formId), 4);
+        {
+            m_dataSingleValue.m_formId = ReadFormId(aReader, aParentToFormIdPrefix);
+        }
         else if (aObjectFormat == 2)
         {
             aReader.Advance(4);
-            aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_formId), 4);
+            m_dataSingleValue.m_formId = ReadFormId(aReader, aParentToFormIdPrefix);
         }
         break;
 
@@ -84,7 +99,7 @@ void ScriptProperty::ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat) 
         {
             ScriptProperty scriptProperty;
             scriptProperty.m_type = GetPropertyType(m_type);
-            ParseValue(aReader, aObjectFormat);
+            ParseValue(aReader, aObjectFormat, aParentToFormIdPrefix);
             m_dataArray.push_back(scriptProperty.m_dataSingleValue);
         }
 
@@ -104,11 +119,11 @@ CNTO::CNTO(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_count), 4);
 }
 
-WLST::WLST(Buffer::Reader& aReader)
+WLST::WLST(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
 {
-    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_weatherId), 4);
+    m_weatherId = ReadFormId(aReader, aParentToFormIdPrefix);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_chance), 4);
-    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_globalId), 4);
+    m_globalId = ReadFormId(aReader, aParentToFormIdPrefix);
 }
 
 TNAM::TNAM(Buffer::Reader& aReader)
@@ -121,14 +136,14 @@ TNAM::TNAM(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_moons), 1);
 }
 
-NAME::NAME(Buffer::Reader& aReader)
+NAME::NAME(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
 {
-    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_baseId), 4);
+    m_baseId = ReadFormId(aReader, aParentToFormIdPrefix);
 }
 
-DOFT::DOFT(Buffer::Reader& aReader)
+DOFT::DOFT(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
 {
-    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_formId), 4);
+    m_formId = ReadFormId(aReader, aParentToFormIdPrefix);
 }
 
 ACBS::ACBS(Buffer::Reader& aReader)

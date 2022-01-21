@@ -1,12 +1,12 @@
 #include "REFR.h"
 
-void REFR::ParseChunks(REFR& aSourceRecord) noexcept
+void REFR::ParseChunks(REFR& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
     aSourceRecord.IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) { 
         switch (aChunkId)
         {
         case ChunkId::NAME_ID:
-            m_basicObject = Chunks::NAME(aReader);
+            m_basicObject = Chunks::NAME(aReader, aParentToFormIdPrefix);
             break;
         case ChunkId::XMRK_ID:
             // XMRK contains no data

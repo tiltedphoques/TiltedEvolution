@@ -2,7 +2,7 @@
 
 #include <ESLoader.h>
 
-void NPC::ParseChunks(NPC& aSourceRecord) noexcept
+void NPC::ParseChunks(NPC& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
     aSourceRecord.IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) {
         switch (aChunkId)
@@ -14,10 +14,10 @@ void NPC::ParseChunks(NPC& aSourceRecord) noexcept
             m_baseStats = Chunks::ACBS(aReader);
             break;
         case ChunkId::DOFT_ID:
-            m_defaultOutfit = Chunks::DOFT(aReader);
+            m_defaultOutfit = Chunks::DOFT(aReader, aParentToFormIdPrefix);
             break;
         case ChunkId::VMAD_ID:
-            m_scriptData = Chunks::VMAD(aReader);
+            m_scriptData = Chunks::VMAD(aReader, aParentToFormIdPrefix);
             break;
         }
     });

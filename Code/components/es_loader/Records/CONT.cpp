@@ -2,7 +2,7 @@
 
 #include <ESLoader.h>
 
-void CONT::ParseChunks(CONT& aSourceRecord) noexcept
+void CONT::ParseChunks(CONT& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
     aSourceRecord.IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) {
         switch (aChunkId)

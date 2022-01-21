@@ -14,5 +14,5 @@ public:
     Chunks::DOFT m_defaultOutfit{};
     Chunks::VMAD m_scriptData{};
 
-    void ParseChunks(NPC& aSourceRecord) noexcept;
+    void ParseChunks(NPC& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };

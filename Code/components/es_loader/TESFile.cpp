@@ -83,14 +83,20 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
         switch (pRecord->GetType())
         {
         case FormEnum::TES4: {
-            TES4 fileHeader = CopyAndParseRecord<TES4>(pRecord);
+            TES4* pFileHeader = reinterpret_cast<TES4*>(pRecord);
+
+            TES4 fileHeader;
+            fileHeader.CopyRecordData(*pFileHeader);
+            fileHeader.ParseChunks(*pFileHeader, m_parentToFormIdPrefix);
 
             uint8_t parentId = 0;
             for (const Chunks::MAST& master : fileHeader.m_masterFiles)
             {
-                m_parentToMaster[parentId] = m_masterFiles[master.m_masterName];
+                m_parentToFormIdPrefix[parentId] = ((uint32_t)m_masterFiles[master.m_masterName]) << 24;
                 parentId++;
             }
+
+            m_parentToFormIdPrefix[parentId] = m_formIdPrefix;
 
             break;
         }
@@ -121,11 +127,13 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
 
         //pRecord->DiscoverChunks();
 
-        Record record;
-        record.CopyRecordData(*pRecord);
-        uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);
-        record.SetBaseId(GetFormIdPrefix(baseId));
-        aRecordCollection.m_allRecords[pRecord->GetFormId()] = *pRecord;
+        if (pRecord->GetType() != FormEnum::TES4)
+        {
+            Record record;
+            record.CopyRecordData(*pRecord);
+            record.SetBaseId(TESFile::GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
+            aRecordCollection.m_allRecords[pRecord->GetFormId()] = *pRecord;
+        }
 
         aReader.Advance(sizeof(Record) + size);
     }
@@ -141,19 +149,25 @@ T TESFile::CopyAndParseRecord(Record* pRecordHeader)
     T parsedRecord;
     parsedRecord.CopyRecordData(*pRecord);
 
-    uint8_t baseId = (uint8_t)(pRecord->GetFormId() >> 24);
-    parsedRecord.SetBaseId(GetFormIdPrefix(baseId));
+    parsedRecord.SetBaseId(TESFile::GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
 
-    parsedRecord.ParseChunks(*pRecord);
+    parsedRecord.ParseChunks(*pRecord, m_parentToFormIdPrefix);
 
     return parsedRecord;
 }
 
-uint32_t TESFile::GetFormIdPrefix(uint8_t aCurrentPrefix) const noexcept
+uint32_t TESFile::GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
-    auto masterId = m_parentToMaster.find(aCurrentPrefix);
-    if (masterId != std::end(m_parentToMaster))
-        return ((uint32_t)masterId->second) << 24;
-    else
-        return m_formIdPrefix;
+    uint8_t baseId = (uint8_t)(aFormId >> 24);
+    auto masterId = aParentToFormIdPrefix.find(baseId);
+
+    if (masterId == std::end(aParentToFormIdPrefix))
+    {
+        // TODO: this is weird, but for some reason, in Skyrim.esm,
+        // the GMST record with EDID "iDaysToRespawnVendor" has a base id of 0x01
+        spdlog::error("Form id prefix not found: {:X}", baseId);
+        return 0;
+    }
+
+    return masterId->second;
 }

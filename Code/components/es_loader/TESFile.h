@@ -19,7 +19,7 @@ public:
     bool LoadFile(const std::filesystem::path& acPath) noexcept;
     bool IndexRecords(RecordCollection& aRecordCollection) noexcept;
 
-    [[nodiscard]] uint32_t GetFormIdPrefix(uint8_t aCurrentPrefix) const noexcept;
+    static [[nodiscard]] uint32_t GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 
 private:
     bool ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aRecordCollection) noexcept;
@@ -38,5 +38,5 @@ private:
     uint32_t m_formIdPrefix = 0;
 
     Map<String, uint8_t> m_masterFiles{};
-    Map<uint8_t, uint8_t> m_parentToMaster{};
+    Map<uint8_t, uint32_t> m_parentToFormIdPrefix{};
 };

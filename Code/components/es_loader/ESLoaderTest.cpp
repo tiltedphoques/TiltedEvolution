@@ -87,8 +87,6 @@ TEST_F(ESLoaderTest, GetClimateDlcApocrypha)
     CLMT& climate = pCollection->GetClimateById(0x401C48E);
 
     EXPECT_EQ(climate.m_editorId, "DLC2ApocryphaClimate");
-    // TODO: the below check fails. The base id is wrong.
-    // Needs to be corrected for the load order, like record form ids.
     EXPECT_EQ(climate.m_weatherList.m_weatherId, 0x4034CFB);
     EXPECT_EQ(climate.m_weatherList.m_chance, 100);
     EXPECT_EQ(climate.m_weatherList.m_globalId, 0);
