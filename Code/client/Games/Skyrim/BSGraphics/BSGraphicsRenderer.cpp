@@ -58,25 +58,6 @@ void Hook_StopTimer(int type)
     StopTimer(type);
 }
 
-template <typename T> inline T get_call(mem::pointer address)
-{
-    // call length
-    uintptr_t target = address.as<uintptr_t>() + 5;
-    target += *reinterpret_cast<int32_t*>(address.as<uintptr_t>() + 1);
-
-    return reinterpret_cast<T>(target);
-}
-
-template <typename TFunc> void swap_call(mem::pointer p, TFunc& old_fn, const TFunc& new_fn)
-{
-    old_fn = get_call<TFunc>(p);
-    // put new call VA
-    int32_t disp = static_cast<int32_t>(reinterpret_cast<uintptr_t>(*new_fn) - p.as<uintptr_t>() - 5);
-
-    TiltedPhoques::Put<uint8_t>(p, 0xE8);
-    TiltedPhoques::Put<int>(p.as<uintptr_t>() + 1, disp);
-}
-
 static TiltedPhoques::Initializer s_viewportHooks([]() {
     // patch dwStyle in BSGraphics::InitWindows
     TiltedPhoques::Put(0x140DA38E4 + 1, WS_OVERLAPPEDWINDOW);
@@ -85,7 +66,7 @@ static TiltedPhoques::Initializer s_viewportHooks([]() {
     // don't let the game steal the media keys in windowed mode
     TiltedPhoques::Put(0x140C40235 + 2, /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
 
-    swap_call(0x140DA5B09, StopTimer, &Hook_StopTimer);
-    swap_call(0x1405D4C2A, Renderer_Init, &Hook_Renderer_Init);
+    TiltedPhoques::SwapCall(0x140DA5B09, StopTimer, &Hook_StopTimer);
+    TiltedPhoques::SwapCall(0x1405D4C2A, Renderer_Init, &Hook_Renderer_Init);
 });
 } // namespace BSGraphics

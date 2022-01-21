@@ -22,7 +22,6 @@
 #error No game matches these build options
 #endif
 
-
 #include <windows.h>
 #include <intrin.h>
 #include <cstdint>
@@ -46,6 +45,10 @@
 #include <Entry.hpp>
 #include <Debug.hpp>
 #include <ThisCall.hpp>
+
+extern void* RipAllocateN(size_t blockLength);
+#define REVERSE_ALLOC_STUB(x) RipAllocateN(x)
+#include <JitAssembly.hpp>
 
 #define SPDLOG_WCHAR_FILENAMES
 
