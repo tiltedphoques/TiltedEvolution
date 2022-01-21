@@ -1,3 +1,20 @@
+# [1.10.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.9.0...v1.10.0) (2022-01-21)
+
+
+### Bug Fixes
+
+* build error ([e7c1f9a](https://github.com/tiltedphoques/TiltedEvolution/commit/e7c1f9a9ab83e994ed848d9a122dd11922521915))
+* build errors ([4826b8b](https://github.com/tiltedphoques/TiltedEvolution/commit/4826b8b4db1f8170e789f60e8b385092632c6d39))
+* moved opcode check ([f168015](https://github.com/tiltedphoques/TiltedEvolution/commit/f168015c01b36dacec8d9e4a014ff37bbfc967e7))
+* variable naming convention ([47f3e70](https://github.com/tiltedphoques/TiltedEvolution/commit/47f3e7093bd31a09e2d84742767e369e9e34f57a))
+
+
+### Features
+
+* remote horses are now synced ([a8a267a](https://github.com/tiltedphoques/TiltedEvolution/commit/a8a267a9229e8a239bd6d6411590b2171d1d0871))
+* take control of remote horse ([400c12e](https://github.com/tiltedphoques/TiltedEvolution/commit/400c12e0a6065e021a7a2ace7744c2e283347aba))
+* trigger mounting ([6fe7d4a](https://github.com/tiltedphoques/TiltedEvolution/commit/6fe7d4a04f0f898d303e43d1b9c37714c1535a57))
+
 # [1.9.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.8.0...v1.9.0) (2022-01-21)
 
 
