@@ -7,6 +7,7 @@
 #include <Records/CLMT.h>
 #include <Records/NPC.h>
 #include <Records/TES4.h>
+#include <Records/GMST.h>
 
 class TESFile
 {

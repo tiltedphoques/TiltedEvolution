@@ -4,6 +4,7 @@
 #include "Records/CONT.h"
 #include "Records/NPC.h"
 #include "Records/REFR.h"
+#include "Records/GMST.h"
 
 class RecordCollection
 {
@@ -38,6 +39,10 @@ public:
     {
         return m_containers[aFormId];
     }
+    GMST& GetGameSettingById(uint32_t aFormId) noexcept
+    {
+        return m_gameSettings[aFormId];
+    }
 
 private:
     Map<uint32_t, Record> m_allRecords{};
@@ -45,4 +50,5 @@ private:
     Map<uint32_t, CLMT> m_climates{};
     Map<uint32_t, NPC> m_npcs{};
     Map<uint32_t, CONT> m_containers{};
+    Map<uint32_t, GMST> m_gameSettings{};
 };

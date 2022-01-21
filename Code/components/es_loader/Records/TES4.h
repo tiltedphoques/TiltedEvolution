@@ -7,7 +7,7 @@
 class TES4 : public Record
 {
 public:
-    static constexpr FormEnum kType = FormEnum::CONT;
+    static constexpr FormEnum kType = FormEnum::TES4;
 
     // Master files
     Vector<Chunks::MAST> m_masterFiles{};

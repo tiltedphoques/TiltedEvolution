@@ -11,6 +11,7 @@ enum class FormEnum : uint32_t
     CLMT = 0x544D4C43,
     CONT = 0x544E4F43,
     NPC_ = 0x5F43504E,
+    GMST = 0x54534D47,
 };
 
 enum class ChunkId : uint32_t

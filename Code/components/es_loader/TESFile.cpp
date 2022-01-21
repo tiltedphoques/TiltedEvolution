@@ -123,6 +123,11 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
             aRecordCollection.m_containers[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
+        case FormEnum::GMST: {
+            GMST parsedRecord = CopyAndParseRecord<GMST>(pRecord);
+            aRecordCollection.m_gameSettings[parsedRecord.GetFormId()] = parsedRecord;
+            break;
+        }
         }
 
         //pRecord->DiscoverChunks();
@@ -165,7 +170,7 @@ uint32_t TESFile::GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aPar
     {
         // TODO: this is weird, but for some reason, in Skyrim.esm,
         // the GMST record with EDID "iDaysToRespawnVendor" has a base id of 0x01
-        spdlog::error("Form id prefix not found: {:X}", baseId);
+        spdlog::warn("Form id prefix not found: {:X}", baseId);
         return 0;
     }
 

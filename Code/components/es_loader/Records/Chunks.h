@@ -285,4 +285,29 @@ struct MapMarkerData
     MARKER_FLAGS m_flags = MARKER_FLAGS::NONE;
 };
 
+struct TypedValue
+{
+    enum class TYPE
+    {
+        BOOL = 0,
+        CHAR = 1,
+        HEX_CHAR_M = 2,
+        INT = 3,
+        UINT = 4,
+        FLOAT = 5,
+        LSTRING = 6,
+        RGB = 7,
+        RGBA = 8,
+        UNK = 9,
+    };
+
+    TYPE m_type = TYPE::UNK;
+
+    union {
+        uint32_t m_int = 0;
+        float m_float;
+        bool m_bool;
+    };
+};
+
 } // namespace

@@ -100,4 +100,15 @@ TEST_F(ESLoaderTest, GetClimateDlcApocrypha)
     EXPECT_EQ(climate.m_timing.m_moons, 0x3);
 }
 
+TEST_F(ESLoaderTest, GetGameSettingFloatBribeScale)
+{
+    auto& pCollection = ESLoaderTest::GetCollection();
+
+    GMST& bribeSetting = pCollection->GetGameSettingById(0xE63);
+
+    EXPECT_EQ(bribeSetting.m_editorId, "fBribeScale");
+    EXPECT_EQ(bribeSetting.m_value.m_type, Chunks::TypedValue::TYPE::FLOAT);
+    EXPECT_EQ(bribeSetting.m_value.m_float, 0.5f);
+}
+
 } // namespace
