@@ -36,14 +36,18 @@ protected:
 
 private:
 
+    void ResetCachedCellData() noexcept;
+    void VisitExteriorCell(bool aForceTrigger) noexcept;
+    void VisitInteriorCell(bool aForceTrigger) noexcept;
+
     World& m_world;
     entt::dispatcher& m_dispatcher;
 
     Set<uint32_t> m_forms;
-    int32_t m_centerGridX = 0xFFFF;
-    int32_t m_centerGridY = 0xFFFF;
-    int32_t m_currentGridX = 0xFFFF;
-    int32_t m_currentGridY = 0xFFFF;
+    int32_t m_centerGridX = 0x7FFFFFFF;
+    int32_t m_centerGridY = 0x7FFFFFFF;
+    int32_t m_currentGridX = 0x7FFFFFFF;
+    int32_t m_currentGridY = 0x7FFFFFFF;
     uint32_t m_worldSpaceId = 0;
     uint32_t m_interiorCellId = 0;
     struct TESForm *m_pLocation = nullptr;
