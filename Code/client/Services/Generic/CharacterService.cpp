@@ -1328,6 +1328,6 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
 
     TESPackage* pPackage = RTTI_CAST(pPackageForm, TESForm, TESPackage);
 
-    pActor->PutCreatedPackage(pPackage);
+    pActor->SetPackage(pPackage);
 }
 

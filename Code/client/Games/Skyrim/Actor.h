@@ -206,6 +206,7 @@ struct Actor : TESObjectREFR
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
+    void SetPackage(TESPackage* apPackage) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

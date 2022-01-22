@@ -14,7 +14,6 @@
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
-#include <Events/InitPackageEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -26,7 +25,6 @@
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
-#include <Forms/TESPackage.h>
 
 #ifdef SAVE_STUFF
 
@@ -687,29 +685,6 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
     return ThisCall(RealInitiateMountPackage, apThis, apMount);
 }
 
-TP_THIS_FUNCTION(TCheckForNewPackage, bool, void, Actor* apActor, uint64_t aUnk1);
-static TCheckForNewPackage* RealCheckForNewPackage = nullptr;
-
-bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUnk1)
-{
-    if (apActor && apActor->GetExtension()->IsRemote())
-        return false;
-
-    return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
-}
-
-TP_THIS_FUNCTION(TInitFromPackage, void, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor);
-static TInitFromPackage* RealInitFromPackage = nullptr;
-
-void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor)
-{
-    if (arActor && arActor->GetExtension()->IsRemote())
-        return;
-
-    World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
-    return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
-}
-
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406BA280 - 0x140000000);
@@ -726,7 +701,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140742FE0 - 0x140000000);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BC50 - 0x140000000);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 0x14062CF40 - 0x140000000);
-    POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 0x1406692F0 - 0x140000000);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -741,7 +715,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
-    RealCheckForNewPackage = s_checkForNewPackage.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -755,5 +728,4 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
-    TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
 });
