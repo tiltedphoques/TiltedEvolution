@@ -75,5 +75,5 @@ Player const* PlayerManager::GetById(uint32_t aId) const noexcept
 
 uint32_t PlayerManager::Count() const noexcept
 {
-    return m_players.size() & 0xFFFFFFFF;
+    return static_cast<uint32_t>(m_players.size());
 }

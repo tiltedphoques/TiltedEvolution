@@ -123,7 +123,7 @@ struct BSScript
         void PrepareImplementation(IFunctionArguments::Statement* apStatement,
                                    std::index_sequence<Is...>) noexcept
         {
-            ((apStatement->values[Is].Set(std::get<Is>(args))), ...);
+            ((apStatement->vars[Is].Set(std::get<Is>(args))), ...);
         }
 
         Tuple args;

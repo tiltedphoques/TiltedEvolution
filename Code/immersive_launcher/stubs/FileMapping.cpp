@@ -73,7 +73,7 @@ static DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, LPSTR alpFileName, DW
 
         if (!IsLocalModulePath(rbp) && launcher::GetLaunchContext())
         {
-            auto aExePath = launcher::GetLaunchContext()->exePath.u8string();
+            auto aExePath = launcher::GetLaunchContext()->exePath.string();
             StringCchCopyA(alpFileName, aSize, aExePath.c_str());
 
             return static_cast<DWORD>(std::strlen(alpFileName));
@@ -87,7 +87,7 @@ HMODULE WINAPI TP_GetModuleHandleW(LPCWSTR alpModuleName)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    constexpr wchar_t* kMapList[] = { 
+    constexpr const wchar_t* kMapList[] = { 
         L"SkyrimSE.exe", 
         L"SkyrimVR.exe", 
         L"Fallout4.exe", 
@@ -113,7 +113,7 @@ HMODULE WINAPI TP_GetModuleHandleA(LPSTR alpModuleName)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    constexpr char* kMapList[] = {
+    constexpr const char* kMapList[] = {
         "SkyrimSE.exe", 
         "SkyrimVR.exe", 
         "Fallout4.exe", 

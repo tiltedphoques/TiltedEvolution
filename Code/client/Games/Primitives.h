@@ -265,7 +265,7 @@ struct GamePtr
 
     GamePtr& operator=(GamePtr<T>&& aRhs)
     {
-        std::swap(m_pPointer, acRhs.m_pPointer);
+        std::swap(m_pPointer, aRhs.m_pPointer);
 
         return *this;
     }

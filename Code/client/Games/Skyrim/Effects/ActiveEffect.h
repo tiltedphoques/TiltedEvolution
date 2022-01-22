@@ -10,7 +10,7 @@ struct ActiveEffect
     // this ctor is used by seemingly all ActiveEffect child classes' Instantiate() methods
     // can be used to find individual Instantiate() methods
     // address: 0x140C4E350
-    ActiveEffect::ActiveEffect(Actor* apCaster, MagicItem* apSpell, EffectItem* apEffect);
+    ActiveEffect(Actor* apCaster, MagicItem* apSpell, EffectItem* apEffect);
 
     virtual void sub_0();
     virtual void sub_1();

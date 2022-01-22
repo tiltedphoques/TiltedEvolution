@@ -12,10 +12,16 @@ pub struct Statistics{
 
 struct Server {
     pub last_update: SystemTime,
-    pub player_count: u32,
     pub name: String,
+    pub desc: String,
+    pub version: String,
+    pub icon_url: String,
     pub ip: String,
-    pub port: u16
+    pub port: u16,
+    pub tick: u16,
+    pub player_count: u16,
+    pub max_player_count: u16,
+    pub tags: String,           //< Tags are comma seperated values
 }
 
 pub struct Context {
@@ -49,15 +55,32 @@ impl Context {
         self.generate_list();
     }
 
-    pub fn update(&mut self, endpoint: String, name: String, port: u16, player_count: u32) {
+    pub fn update(&mut self, 
+        endpoint: String, 
+        name: String,
+        desc: String,
+        version: String,
+        icon_url: String,
+        port: u16,
+        tick: u16,  
+        player_count: u16, 
+        max_player_count: u16,
+        tags: String) {
+
         let key = format!("{}:{}", endpoint, port);
 
         let server = Server{
             last_update: SystemTime::now(),
-            player_count,
             name: name.clone(),
+            desc: desc.clone(),
+            version: version.clone(),
+            icon_url: icon_url.clone(),
             ip: endpoint,
-            port
+            port,
+            tick,
+            player_count,
+            max_player_count,
+            tags,
         };
 
         self.servers.insert(key, server);
@@ -73,15 +96,17 @@ impl Context {
 
         let mut first = true;
 
-        for (_, value) in &self.servers {
-            self.stats.player_count += value.player_count;
+        for (_, s) in &self.servers {
+            self.stats.player_count += s.player_count as u32;
 
-            if value.name.len() > 0 {
+            if s.ip.len() > 0 {
                 if !first {
                     list.push_str(",");
                 }
-                list.push_str(&format!("{{\"name\": {}, \"ip\": \"{}\", \"port\": {}, \"player_count\": {} }}", json::stringify(value.name.clone()), value.ip, value.port, value.player_count));
-
+                list.push_str(&format!(
+                    r#"{{"name": {}, "desc": {}, "icon_url": {}, "version": {}, "ip": "{}", "port": {}, "tick": {}, "player_count": {}, "max_player_count": {}, "tags": {}}}"#,
+                    json::stringify(s.name.clone()), json::stringify(s.desc.clone()), json::stringify(s.icon_url.clone()), json::stringify(s.version.clone()),
+                    s.ip, s.port, s.tick, s.player_count, s.max_player_count, json::stringify(s.tags.clone())));
                 first = false;
             }
         }
@@ -95,7 +120,8 @@ impl Context {
     }
 
     pub fn generate_stats(&self) -> String {
-        format!("{{\"current\": {{\"servers\": {}, \"players\": {} }}, \"max\": {{\"servers\": {}, \"players\": {} }} }}", 
+        format!(
+            r#"{{"current": {{"servers": {}, "players": {} }}, "max": {{"servers": {}, "players": {} }} }}"#,
             self.stats.server_count, self.stats.player_count, self.stats.max_server_count, self.stats.max_player_count)
     }
 }
