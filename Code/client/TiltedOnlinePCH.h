@@ -47,6 +47,10 @@
 #include <Debug.hpp>
 #include <ThisCall.hpp>
 
+extern void* RipAllocateN(size_t blockLength);
+#define REVERSE_ALLOC_STUB(x) RipAllocateN(x)
+#include <JitAssembly.hpp>
+
 #define SPDLOG_WCHAR_FILENAMES
 
 #include <entt/entt.hpp>
