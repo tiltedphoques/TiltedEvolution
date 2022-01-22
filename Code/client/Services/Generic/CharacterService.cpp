@@ -1272,6 +1272,9 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
 
 void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     auto view = m_world.view<FormIdComponent>();
 
     const auto actorIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.ActorId, view](auto entity) {
@@ -1279,10 +1282,7 @@ void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const
     });
 
     if (actorIt == std::end(view))
-    {
-        spdlog::warn("Actor not found, form id: {:X}", acEvent.ActorId);
         return;
-    }
 
     const entt::entity cActorEntity = *actorIt;
 
