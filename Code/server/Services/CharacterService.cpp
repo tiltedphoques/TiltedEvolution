@@ -33,6 +33,8 @@
 #include <Messages/NotifyProjectileLaunch.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
+#include <Messages/NewPackageRequest.h>
+#include <Messages/NotifyNewPackage.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -50,6 +52,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
+    , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
 {
 }
 
@@ -709,5 +712,17 @@ void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage
     notify.MountId = message.MountId;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+}
+
+void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyNewPackage notify;
+    notify.ActorId = message.ActorId;
+    notify.PackageId = message.PackageId;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
     GameServer::Get()->SendToPlayersInRange(notify, cEntity);
 }

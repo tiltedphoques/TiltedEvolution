@@ -14,6 +14,7 @@
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
+#include <Events/InitPackageEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -25,6 +26,7 @@
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
+#include <Forms/TESPackage.h>
 
 #ifdef SAVE_STUFF
 
@@ -694,6 +696,18 @@ bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUn
         return false;
 
     return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
+}
+
+TP_THIS_FUNCTION(TInitFromPackage, void, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor);
+static TInitFromPackage* RealInitFromPackage = nullptr;
+
+void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor)
+{
+    if (arActor && arActor->GetExtension()->IsRemote())
+        return;
+
+    World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
+    return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()

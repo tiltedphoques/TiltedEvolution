@@ -201,8 +201,16 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
-            auto* pPack = (TESPackage*)TESForm::GetById(0x654E2); // DoNothing package
-            pFaendal->PutCreatedPackage(pPack);
+            if (pFaendal->GetExtension()->IsRemote())
+            {
+                pFaendal->GetExtension()->SetRemote(false);
+            }
+            else
+            {
+                pFaendal->GetExtension()->SetRemote(true);
+                auto* pPack = (TESPackage*)TESForm::GetById(0x654E2); // DoNothing package
+                pFaendal->PutCreatedPackage(pPack);
+            }
         }
     }
     else
