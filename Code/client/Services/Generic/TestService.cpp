@@ -57,6 +57,7 @@
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
+#include <Games/Skyrim/Forms/TESPackage.h>
 #endif
 
 #include <imgui.h>
@@ -161,6 +162,24 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
+    static std::atomic<bool> s_reset = false;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint = std::chrono::steady_clock::now();
+    constexpr auto cDelayBetweenSnapshots = 2000ms;
+
+    if (s_reset)
+    {
+        const auto now = std::chrono::steady_clock::now();
+        if (now - lastSendTimePoint >= cDelayBetweenSnapshots)
+        {
+            lastSendTimePoint = now;
+
+            auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
+            spdlog::info("enabled");
+            pFaendal->Enable();
+            s_reset = false;
+        }
+    }
 
     RunDiff();
 
@@ -181,7 +200,17 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            auto* pFaendal = (Actor*)TESForm::GetById(0x1348C);
+            if (pFaendal->GetExtension()->IsRemote())
+            {
+                pFaendal->GetExtension()->SetRemote(false);
+            }
+            else
+            {
+                pFaendal->GetExtension()->SetRemote(true);
+                auto* pPack = (TESPackage*)TESForm::GetById(0x654E2); // DoNothing package
+                pFaendal->PutCreatedPackage(pPack);
+            }
         }
     }
     else
@@ -785,7 +814,7 @@ void TestService::OnDraw() noexcept
         ImGui::InputInt("Is player?", &isPlayer, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
     #if TP_SKYRIM64
-        if (pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
+        if (pFetchActor->currentProcess->middleProcess && pFetchActor->currentProcess->middleProcess->ammoEquippedObject)
         {
             auto* pAmmo = pFetchActor->currentProcess->middleProcess->ammoEquippedObject->pObject;
             if (pAmmo)
@@ -824,6 +853,34 @@ void TestService::OnDraw() noexcept
                 pFetchActor->magicTarget.AddTarget(data);
             }
         }
+
+        int packFormId = 0;
+        TESPackage* pPackage = pFetchActor->currentProcess->package;
+        if (pPackage)
+        {
+            packFormId = static_cast<int>(pPackage->formID);
+        }
+        ImGui::InputInt("Package form id", &packFormId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+        /*
+        int packCount = 0;
+        if (auto* pNpc = RTTI_CAST(pFetchActor->baseForm, TESForm, TESNPC))
+        {
+            for (auto package : pNpc->aiForm.AIPackList)
+            {
+                packCount++;
+            }
+
+            ImGui::InputInt("Package count", &packCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            for (auto package : pNpc->aiForm.AIPackList)
+            {
+                int proctype = package->ePROCEDURE_TYPE;
+                ImGui::InputInt("proctype", &proctype, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            }
+        }
+        */
+
     #endif
     }
 

@@ -33,6 +33,7 @@
 #include <Events/UpdateEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
+#include <Events/InitPackageEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -53,6 +54,8 @@
 #include <Messages/NotifyProjectileLaunch.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
+#include <Messages/NewPackageRequest.h>
+#include <Messages/NotifyNewPackage.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -88,6 +91,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
     m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
+
+    m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
+    m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1262,5 +1268,66 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
 
     pRider->InitiateMountPackage(pMount);
 #endif
+}
+
+void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto actorIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.ActorId, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (actorIt == std::end(view))
+        return;
+
+    const entt::entity cActorEntity = *actorIt;
+
+    std::optional<uint32_t> actorServerIdRes = utils::GetServerId(cActorEntity);
+    if (!actorServerIdRes.has_value())
+        return;
+
+    NewPackageRequest request;
+    request.ActorId = actorServerIdRes.value();
+    if (!m_world.GetModSystem().GetServerModId(acEvent.PackageId, request.PackageId.ModId, request.PackageId.BaseId))
+        return;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ActorId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for package with remote id {:X} not found.", acMessage.ActorId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+    const uint32_t cPackageFormId = World::Get().GetModSystem().GetGameId(acMessage.PackageId);
+    const TESForm* pPackageForm = TESForm::GetById(cPackageFormId);
+    if (!pPackageForm)
+    {
+        spdlog::warn("Actor package not found, base id: {:X}, mod id: {:X}", acMessage.PackageId.BaseId,
+                     acMessage.PackageId.ModId);
+        return;
+    }
+
+    TESPackage* pPackage = RTTI_CAST(pPackageForm, TESForm, TESPackage);
+
+    pActor->SetPackage(pPackage);
 }
 
