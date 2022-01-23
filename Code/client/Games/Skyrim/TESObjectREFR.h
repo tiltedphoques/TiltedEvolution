@@ -169,6 +169,8 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
+    const float GetHeight() noexcept;
+
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
     IAnimationGraphManagerHolder animationGraphHolder;

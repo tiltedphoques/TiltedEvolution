@@ -236,24 +236,15 @@ void TestService::OnDraw() noexcept
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Engine"))
-    {
-        ImGui::MenuItem("Open Rage Tab", NULL, nullptr);
-        ImGui::EndMenu();
-    }
     if (ImGui::BeginMenu("Player"))
     {
         DrawPlayerDebugView();
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Entities"))
-    {
-        ImGui::MenuItem("Open Rage Tab", NULL, nullptr);
-        ImGui::EndMenu();
-    }
     if (ImGui::BeginMenu("Components"))
     {
-        DrawComponentDebugView();
+        ImGui::MenuItem("Show component list", nullptr, &m_bToggleComponentWindow);
+        ImGui::MenuItem("Show selected component in world", nullptr, &m_bDrawComponentInScreenSpace);
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Containers"))
@@ -266,13 +257,11 @@ void TestService::OnDraw() noexcept
         ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Misc"))
-    {
-        ImGui::MenuItem("Open Rage Tab", NULL, nullptr);
-        ImGui::EndMenu();
-    }
     ImGui::EndMainMenuBar();
 
     if (g_EnableAnimWindow)
         DrawAnimDebugView();
+
+    if (m_bToggleComponentWindow)
+        DrawComponentDebugView();
 }

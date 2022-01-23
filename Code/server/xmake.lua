@@ -24,6 +24,7 @@ target(name)
         "Console",
         "ESLoader",
         "Base",
+        "AdminProtocol",
         "TiltedScript",
         "TiltedConnect"
     )

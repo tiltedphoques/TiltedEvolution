@@ -17,61 +17,9 @@
 
 static OverlayService* s_pOverlay = nullptr;
 
-static void* g_menuCursor{nullptr};
-static void (*ToggleMenu)(void*, bool);
-
-using TWorldPtToScreenPt3 = void(void*, bool);
-static TWorldPtToScreenPt3* s_WorldPtToScreenPt3;
-
-static bool g_guard = false;
-
-static void (*SRRRR)(__int64, __int64) = nullptr;
-
-void SomeProcessingShit(__int64 a1, __int64 queueHead)
-{
-    if (!g_guard)
-    {
-        SRRRR(a1, queueHead);
-    }
-}
-
-static TiltedPhoques::Initializer s_LMAOLDDSA([]() {
-    POINTER_SKYRIMSE(void*, s_menuCursor, 0x142FC1C10 - 0x140000000);
-    g_menuCursor = s_menuCursor.Get();
-
-    POINTER_SKYRIMSE(TWorldPtToScreenPt3, s_w2s, 0x140F1A3F0 - 0x140000000);
-    s_WorldPtToScreenPt3 = s_w2s.Get();
-
-    //TiltedPhoques::Put(0x1408D6F10, 0xCC);
-
-    TiltedPhoques::SwapCall(0x140C3B2FB, SRRRR, &SomeProcessingShit);
-
-    struct C : TiltedPhoques::CodeGenerator
-    {
-        C()
-        {
-            lea(rax, ptr[rcx + rdx]);
-            ret();
-        }
-    } gen;
-
-    auto* pCode = gen.getCode();
-
-    int x = reinterpret_cast<int (*)(int, int)>(pCode)(10, 20);
-
-});
-
-void ToggleInput(bool v)
-{
-    s_WorldPtToScreenPt3(g_menuCursor, v);
-    g_guard = !v;
-}
-
-
 void ForceKillAllInput()
 {
     MenuControls::GetInstance()->SetToggle(false);
-    
 }
 
 uint32_t GetCefModifiers(uint16_t aVirtualKey)
@@ -248,13 +196,11 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
     {
 #if defined(TP_SKYRIM)
-        //TiltedPhoques::DInputHook::Get().SetEnabled(!TiltedPhoques::DInputHook::Get().IsEnabled());
+        TiltedPhoques::DInputHook::Get().SetEnabled(!TiltedPhoques::DInputHook::Get().IsEnabled());
 #else
         pRenderer->SetVisible(!active);
 #endif
-        ToggleInput(active);
-
-        #if 0
+        #if 1
         if (active)
             while (ShowCursor(FALSE) >= 0)
                 ;

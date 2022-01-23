@@ -2,6 +2,7 @@
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Camera/PlayerCamera.h>
 #include <Games/Skyrim/Forms/TESForm.h>
+#include <Games/Skyrim/Interface/Menus/HUDMenuUtils.h>
 #include <Games/Skyrim/NetImmerse/NiCamera.h>
 #include <Games/Skyrim/TESObjectREFR.h>
 #include <NetImmerse/NiCamera.h>
@@ -12,61 +13,45 @@
 
 #include <imgui.h>
 
-// Note(Force): Here for now, we decide on a proper place for this later.
 namespace
 {
-static float (*guimatrix)[4][4] = nullptr;
-static NiRect<float>* guiport = nullptr;
+#if 0
+constexpr float fFloatQuestMarkerMaxDistance = 2000.f;
+constexpr float fFloatQuestMarkerMinDistance = 1000.f;
 
-static TiltedPhoques::Initializer s_Init([]() {
-    POINTER_FALLOUT4(float[4][4], s_matrix, 0x145A66AA0 - 0x140000000);
-    POINTER_FALLOUT4(NiRect<float>, s_port, 0x145A66B30 - 0x140000000);
-
-    POINTER_SKYRIMSE(float[4][4], s_matrix, 0x142FE75F0 - 0x140000000);
-    POINTER_SKYRIMSE(NiRect<float>, s_port, 0x142FE8B98 - 0x140000000);
-
-    guimatrix = s_matrix.Get();
-    guiport = s_port.Get();
-});
-
-bool HUD_WorldPtToScreenPt3(NiPoint3* in, NiPoint3* out)
+float CalculateFloatingQuestMarkerAlpha()
 {
-    return NiCamera::WorldPtToScreenPt3(reinterpret_cast<float*>(guimatrix), guiport, in, &out->x, &out->y, &out->z,
-                                        1e-5f);
+    float v1 = fsqrt((__m128)LODWORD(this->fDistanceToPlayerSqr)).m128_f32[0] -
+                         fFloatQuestMarkerMaxDistance) /
+                         (fFloatQuestMarkerMinDistance - fFloatQuestMarkerMaxDistance)) * 100.0;
+    if (v1 > 100.0)
+        return FLOAT_100_0;
+    result = 0.0;
+    if (v1 >= 0.0)
+        return v1;
+    return result;
 }
-} // namespace
+#endif
 
-static void DrawInWorldSpace(TESObjectREFR* apRefr)
+static bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2& outViewPos)
 {
-    auto calcObjectHeight = [&]() {
-        auto boundMax = apRefr->GetBoundMax();
-        return boundMax.z - apRefr->GetBoundMin().z;
-    };
-
-    // Scale up to the top of the entity.
+    // Attach at the head ish.
     auto pos = apRefr->position;
-    pos.z -= calcObjectHeight();
+    pos.z -= apRefr->GetHeight();
 
-    // Note(Force): In truth this is a reference, but to ensure the compiler generates the right code
-    // we pass it in as a pointer
     NiPoint3 screenPoint{};
-    HUD_WorldPtToScreenPt3(&pos, &screenPoint);
-
-    // Here just for validation that the values are semi correct.
-    // RECT rect{};
-    // GetWindowRect(GetForegroundWindow(), &rect);
-
+    HUDMenuUtils::WorldPtToScreenPt3(pos, screenPoint);
     // Calculate window collision bounds.
     auto* pViewport = BSGraphics::GetMainWindow();
-    NiRect<float> bounds = {
-        .left = static_cast<float>(pViewport->iWindowX),
-        .right = static_cast<float>(pViewport->iWindowX + pViewport->uiWindowWidth),
-        .top = static_cast<float>(pViewport->iWindowY),
-        .bottom = static_cast<float>(pViewport->iWindowY + pViewport->uiWindowHeight),
+    const NiRect<float> bounds = {
+        static_cast<float>(pViewport->iWindowX),
+        static_cast<float>(pViewport->iWindowX + pViewport->uiWindowWidth),
+        static_cast<float>(pViewport->iWindowY),
+        static_cast<float>(pViewport->iWindowY + pViewport->uiWindowHeight),
     };
 
     // translate to screen
-    ImVec2 screenPos = ImVec2{
+    const ImVec2 screenPos = ImVec2{
         (pViewport->uiWindowWidth * screenPoint.x) + bounds.left,
         (pViewport->uiWindowHeight * (1.0f - screenPoint.y)) + bounds.top,
     };
@@ -91,158 +76,72 @@ static void DrawInWorldSpace(TESObjectREFR* apRefr)
     // But this is just a demo...
     if (IsVisible(screenPos, bounds, screenPoint.z))
     {
-        ImGui::SetNextWindowPos(screenPos);
-        ImGui::Begin("AttachedWindow");
-        ImGui::Button("Kill Force67");
-        ImGui::End();
+        outViewPos = screenPos;
+        return true;
     }
+
+    outViewPos = {};
+    return false;
 }
+} // namespace
 
 // TODO(Force): Net Histrogram (waves)
 // Engine stuff.
 // Fix cursor.
 
-static bool g_DrawComponentsInWorldSpace{false};
-static TESForm* g_pSelectedLocalTESForm{nullptr};
-static TESForm* g_pSelectedRemoteTESForm{nullptr};
-
-#if 0
-void DrawRemoteComponent(const RemoteComponent& acComponent, const InterpolationComponent& acInterpolationc)
-{
-    ImGui::Begin("Entity");
-    ImGui::InputScalar("Server ID", ImGuiDataType_U32, &acComponent.Id, 0, 0, "%" PRIx32,
-                       ImGuiInputTextFlags_CharsHexadecimal);
-    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &acComponent.CachedRefId, 0, 0, "%" PRIx32,
-                       ImGuiInputTextFlags_CharsHexadecimal);
-
-    auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
-    ImGui::InputFloat("Position x", &interpolationComponent.Position.x, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
-    ImGui::InputFloat("Position y", &interpolationComponent.Position.y, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
-    ImGui::InputFloat("Position z", &interpolationComponent.Position.z, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
-    ImGui::End();
-}
-#endif
+static TESForm* g_SelectedForm{nullptr};
 
 void TestService::DrawComponentDebugView()
 {
-    ImGui::MenuItem("Visualize Components", nullptr, &g_DrawComponentsInWorldSpace);
+    auto invisibleView =
+        m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
 
-    if (g_DrawComponentsInWorldSpace)
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Component view", &m_bToggleComponentWindow);
+
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    Vector<entt::entity> entities(remoteView.begin(), remoteView.end());
+
+    static uint32_t s_selectedRemoteId = 0;
+    static uint32_t s_selectedRemote = 0;
+    static entt::entity s_selectedEnt{};
+
+    int i = 0;
+    for (auto entity : entities)
     {
-        if (g_pSelectedLocalTESForm)
+        auto& remoteComponent = remoteView.get<RemoteComponent>(entity);
+        auto& formComponent = remoteView.get<FormIdComponent>(entity);
+
+        char buffer[32];
+        if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedRemoteId == remoteComponent.Id))
         {
-            #if 0
-            auto invisibleView =
-                m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>();
-
-            ImGui::Begin("Entity");
-            ImGui::InputScalar("Server ID", ImGuiDataType_U32, &acComponent.Id, 0, 0, "%" PRIx32,
-                               ImGuiInputTextFlags_CharsHexadecimal);
-            ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &acComponent.CachedRefId, 0, 0, "%" PRIx32,
-                               ImGuiInputTextFlags_CharsHexadecimal);
-
-            auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
-            ImGui::InputFloat("Position x", &interpolationComponent.Position.x, 0, 0, "%.3f",
-                              ImGuiInputTextFlags_ReadOnly);
-            ImGui::InputFloat("Position y", &interpolationComponent.Position.y, 0, 0, "%.3f",
-                              ImGuiInputTextFlags_ReadOnly);
-            ImGui::InputFloat("Position z", &interpolationComponent.Position.z, 0, 0, "%.3f",
-                              ImGuiInputTextFlags_ReadOnly);
-            ImGui::End();
-            #endif
+            s_selectedRemoteId = remoteComponent.Id;
+            g_SelectedForm = TESForm::GetById(formComponent.Id);
+            s_selectedEnt = entities[s_selectedRemote];
         }
+
+        if (s_selectedRemoteId == remoteComponent.Id)
+            s_selectedRemote = i;
+
+        ++i;
     }
+    ImGui::End();
 
-    if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+    if (m_bDrawComponentInScreenSpace && g_SelectedForm)
     {
-        if (ImGui::BeginTabItem("Invisible"))
+        if (auto* pObject = RTTI_CAST(g_SelectedForm, TESForm, TESObjectREFR))
         {
-            ImGui::BeginChild("Invisible components", ImVec2(0, 100), true);
-
-            static uint32_t s_selectedInvisibleId = 0;
-            static uint32_t s_selectedInvisible = 0;
-
-            auto invisibleView =
-                m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, FormIdComponent>();
-            Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
-
-            int i = 0;
-            for (auto entity : entities)
+            ImVec2 screenPos{};
+            if (DrawInWorldSpace(pObject, screenPos))
             {
-                auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
-                auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+                auto& remote = remoteView.get<RemoteComponent>(s_selectedEnt);
 
-                char buffer[32];
-                if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16),
-                                      s_selectedInvisibleId == remoteComponent.Id))
-                    s_selectedInvisibleId = remoteComponent.Id;
+                char buf[256] = {};
+                snprintf(buf, 256, "ID %x, CachedRefID %x", remote.Id, remote.CachedRefId);
 
-                if (s_selectedInvisibleId == remoteComponent.Id)
-                    s_selectedInvisible = i;
-
-                ++i;
+                ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
+                                                        ImColor::ImColor(255.f, 0.f, 0.f), buf);
             }
-
-            ImGui::EndChild();
-
-            if (s_selectedInvisible < entities.size())
-            {
-                auto entity = entities[s_selectedInvisible];
-                //auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
-                auto& formComponent = invisibleView.get<FormIdComponent>(entity);
-                if (auto* pEntity = TESForm::GetById(formComponent.Id))
-                {
-                    g_pSelectedLocalTESForm = pEntity;
-                }
-            }
-            ImGui::EndTabItem();
         }
-
-        if (ImGui::BeginTabItem("Remote"))
-        {
-            ImGui::BeginChild("Remote components", ImVec2(0, 100), true);
-
-            static uint32_t s_selectedRemoteId = 0;
-            static uint32_t s_selectedRemote = 0;
-
-            auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-            Vector<entt::entity> entities(remoteView.begin(), remoteView.end());
-
-            int i = 0;
-            for (auto entity : entities)
-            {
-                auto& remoteComponent = remoteView.get<RemoteComponent>(entity);
-
-                char buffer[32];
-                if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedRemoteId == remoteComponent.Id))
-                    s_selectedRemoteId = remoteComponent.Id;
-
-                if (s_selectedRemoteId == remoteComponent.Id)
-                    s_selectedRemote = i;
-
-                ++i;
-            }
-
-            ImGui::EndChild();
-
-            if (s_selectedRemote < entities.size())
-            {
-                auto entity = entities[s_selectedRemote];
-
-                auto& remoteComponent = remoteView.get<RemoteComponent>(entity);
-                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &remoteComponent.Id, 0, 0, "%" PRIx32,
-                                   ImGuiInputTextFlags_CharsHexadecimal);
-                ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &remoteComponent.CachedRefId, 0, 0, "%" PRIx32,
-                                   ImGuiInputTextFlags_CharsHexadecimal);
-
-                auto& formComponent = remoteView.get<FormIdComponent>(entity);
-                if (auto* pEntity = TESForm::GetById(formComponent.Id))
-                {
-                    g_pSelectedLocalTESForm = pEntity;
-                }
-            }
-            ImGui::EndTabItem();
-        }
-        ImGui::EndTabBar();
     }
 }
