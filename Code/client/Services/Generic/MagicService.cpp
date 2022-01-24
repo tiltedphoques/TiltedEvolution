@@ -254,12 +254,12 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
-    auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
     pActor->InterruptCast(false);
 
-    spdlog::info("Interrupt remote cast successful");
+    spdlog::debug("Interrupt remote cast successful");
 #endif
 }
 

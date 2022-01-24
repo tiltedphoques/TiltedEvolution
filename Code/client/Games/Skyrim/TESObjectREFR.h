@@ -117,7 +117,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_86();
     virtual void sub_87();
     virtual void sub_88();
-    virtual void sub_89();
+    virtual void DisableImpl();
     virtual void sub_8A();
     virtual void sub_8B();
     virtual void sub_8C();
@@ -170,6 +170,7 @@ struct TESObjectREFR : TESForm
     void LockChange() noexcept;
 
     const float GetHeight() noexcept;
+    void EnableImpl() noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

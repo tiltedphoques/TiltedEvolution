@@ -1,3 +1,20 @@
+# [1.11.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.10.0...v1.11.0) (2022-01-23)
+
+
+### Bug Fixes
+
+* merge conflict ([c2b082f](https://github.com/tiltedphoques/TiltedEvolution/commit/c2b082f40e4a145226299af06a1dfc842884e36b))
+* merge conflicts ([7f299e9](https://github.com/tiltedphoques/TiltedEvolution/commit/7f299e9c6655f6c9c0b9f6c6adab181f09b2884d))
+
+
+### Features
+
+* AI sync for Fallout 4 ([d86dfda](https://github.com/tiltedphoques/TiltedEvolution/commit/d86dfdaedd4d14c26e360223758118b637e97dd7))
+* first step in syncing AI packages ([de84956](https://github.com/tiltedphoques/TiltedEvolution/commit/de84956e489a9f145afd7957cdaa63a4e7a06aa8))
+* more ugly debuggers (force dont look) ([77b85e9](https://github.com/tiltedphoques/TiltedEvolution/commit/77b85e914664d4cd43fee63504df793baf54091a))
+* reverse engineered TESAIForm ([59cf6a2](https://github.com/tiltedphoques/TiltedEvolution/commit/59cf6a2a56bbde2a2e273b28b65bacbd42992ab4))
+* sync TESPackage by actor ownership ([a2aa136](https://github.com/tiltedphoques/TiltedEvolution/commit/a2aa1362985440854d5e17d676bcfe97d413e90b))
+
 # [1.10.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.9.0...v1.10.0) (2022-01-21)
 
 

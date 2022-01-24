@@ -8,6 +8,7 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/BGSHeadPart.h>
 #include <Forms/TESNPC.h>
+#include <Forms/TESPackage.h>
 #include <SaveLoad.h>
 
 #include <BSAnimationGraphManager.h>
@@ -26,6 +27,7 @@
 #include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
+#include <Events/InitPackageEvent.h>
 
 #include <TiltedCore/Serialization.hpp>
 
@@ -531,6 +533,15 @@ void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
     g_forceAnimation = false;
 }
 
+static thread_local bool s_execInitPackage = false;
+
+void Actor::SetPackage(TESPackage* apPackage) noexcept
+{
+    s_execInitPackage = true;
+    PutCreatedPackage(apPackage);
+    s_execInitPackage = false;
+}
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
@@ -610,6 +621,35 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     ThisCall(RealLockChange, apThis);
 }
 
+TP_THIS_FUNCTION(TCheckForNewPackage, bool, void, Actor* apActor, uint64_t aUnk1);
+static TCheckForNewPackage* RealCheckForNewPackage = nullptr;
+
+bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUnk1)
+{
+    if (apActor && apActor->GetExtension()->IsRemote())
+        return false;
+
+    return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
+}
+
+TP_THIS_FUNCTION(TInitFromPackage, void, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor);
+static TInitFromPackage* RealInitFromPackage = nullptr;
+
+void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor)
+{
+    // This guard is here for when the client sets the package based on a remote message
+    if (s_execInitPackage)
+        return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
+
+    if (arActor && arActor->GetExtension()->IsRemote())
+        return;
+
+    if (arActor && apPackage)
+        World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
+
+    return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x1402A8E30 - 0x140000000);
@@ -630,12 +670,20 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x1402977C0 - 0x140000000);
         POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
 
+        POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 0x1406692F0 - 0x140000000);
+        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 0x140E28F80 - 0x140000000);
+
+        POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 0x140661590 - 0x140000000);
+        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
         RealRotateZ = s_rotateZ.Get();
         RealActorProcess = s_actorProcess.Get();
         RealLockChange = s_lockChange.Get();
+        RealCheckForNewPackage = s_checkForNewPackage.Get();
+        RealInitFromPackage = s_initFromPackage.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -643,5 +691,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealRotateZ, HookRotateZ);
         TP_HOOK(&RealActorProcess, HookActorProcess);
         TP_HOOK(&RealLockChange, HookLockChange);
+        TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
+        TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
     });
 
