@@ -249,7 +249,7 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
-        ImGui::MenuItem("Show selected component in world", nullptr, &m_drawComponentsInWorldSpace);
+        ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Containers"))

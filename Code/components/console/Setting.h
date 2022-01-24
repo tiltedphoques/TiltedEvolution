@@ -2,7 +2,7 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <Base/Check.h>
+#include <base/Check.h>
 #include <TiltedCore/Stl.hpp>
 
 namespace console
