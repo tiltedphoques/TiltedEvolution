@@ -1,3 +1,23 @@
+# [1.12.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.11.0...v1.12.0) (2022-01-24)
+
+
+### Bug Fixes
+
+* Attempt to make linux build. ([ed9fa0a](https://github.com/tiltedphoques/TiltedEvolution/commit/ed9fa0ae41117f709d1d18068f124b8bafa6eb2d))
+* Block SKSE Plugin Preloader for compatabiliy reasons. ([0d5d0e4](https://github.com/tiltedphoques/TiltedEvolution/commit/0d5d0e4cef885fd8946bcb3619c3d8bf40999961))
+* change some naming. ([fb876c0](https://github.com/tiltedphoques/TiltedEvolution/commit/fb876c033f6ad911e74855953cc0e76636c38d2c))
+* Imgui end scope. ([5493a52](https://github.com/tiltedphoques/TiltedEvolution/commit/5493a52b5c98f05eeb2f79e8afe91972f4fb50a1))
+* Repair my monke code ([f9491fe](https://github.com/tiltedphoques/TiltedEvolution/commit/f9491fe4a0d48824c17586fecd95e9e753adc65d))
+
+
+### Features
+
+* Deny load for unsupported game versions. ([0a1e7cb](https://github.com/tiltedphoques/TiltedEvolution/commit/0a1e7cb12042a83453cccebec3c56e877800b196))
+* rip 'allocator' ([2695f2f](https://github.com/tiltedphoques/TiltedEvolution/commit/2695f2fe81402139095af7f94058d9e4d650fc9f))
+* Selectable entity for component view debug, hudmenuutils. ([5b2e063](https://github.com/tiltedphoques/TiltedEvolution/commit/5b2e06399dcacfec70b1f84ae176d3ff51a49b0e))
+* Smarter input handling for skyrim. ([68e188b](https://github.com/tiltedphoques/TiltedEvolution/commit/68e188bae36838c4f2628fe292366fdc212ec142))
+* world to screen with hud matrix for skyrim. Cxx20 updates for client. ([4825286](https://github.com/tiltedphoques/TiltedEvolution/commit/4825286c8227ad82e903080bfa03ab768eef0c2c))
+
 # [1.11.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.10.0...v1.11.0) (2022-01-23)
 
 
