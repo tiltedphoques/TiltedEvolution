@@ -4,6 +4,7 @@
 
 #if defined(TP_SKYRIM) && TP_PLATFORM_64
 #define POINTER_SKYRIMSE(className, variableName, ...) static AutoPtr<className> variableName(__VA_ARGS__)
+//#define POINTER_SKYRIMSE_V2(variableName, ...) static AutoPtr<decltype()> variableName(__VA_ARGS__)
 #else
 #define POINTER_SKYRIMSE(className, variableName, ...) ;
 #endif

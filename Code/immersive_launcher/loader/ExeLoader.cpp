@@ -178,14 +178,9 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
     apSourceNt->OptionalHeader.AddressOfEntryPoint = static_cast<uint32_t>(realEntry);
 }
 
-bool ExeLoader::Load(const std::filesystem::path& aSourcePath)
+bool ExeLoader::Load(const uint8_t* apProgramBuffer)
 {
-    // Load the target from disk into memory
-    auto content = TiltedPhoques::LoadFile(aSourcePath);
-    if (content.empty())
-        return false;
-
-    m_pBinary = reinterpret_cast<uint8_t*>(content.data());
+    m_pBinary = apProgramBuffer;
     m_moduleHandle = GetModuleHandleW(nullptr);
 
     // validate the target

@@ -90,8 +90,8 @@ struct TESObjectREFR : TESForm
     virtual void sub_8D();
     virtual void sub_8E();
     virtual void sub_8F();
-    virtual void sub_90();
-    virtual void sub_91();
+    virtual NiPoint3 GetBoundMin();
+    virtual NiPoint3 GetBoundMax();
     virtual void sub_92();
     virtual void sub_93();
     virtual void sub_94();
@@ -171,7 +171,8 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
-public:
+    const float GetHeight() noexcept;
+ public:
 
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];

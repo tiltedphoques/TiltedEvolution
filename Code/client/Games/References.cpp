@@ -499,6 +499,12 @@ void TESObjectREFR::LockChange() noexcept
     ThisCall(RealLockChange, this);
 }
 
+const float TESObjectREFR::GetHeight() noexcept
+{
+    auto boundMax = GetBoundMax();
+    return boundMax.z - GetBoundMin().z;
+}
+
 bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
 {
     TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);

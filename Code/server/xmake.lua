@@ -24,9 +24,10 @@ target(name)
         "Console",
         "ESLoader",
         "Base",
+        "AdminProtocol",
         "TiltedScript",
-        "TiltedConnect",
-        "AdminProtocol")
+        "TiltedConnect"
+    )
     add_packages(
         "gamenetworkingsockets",
         "spdlog",
