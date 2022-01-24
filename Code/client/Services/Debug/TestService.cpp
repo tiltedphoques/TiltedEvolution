@@ -166,6 +166,11 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         }
     }
 
+    if (GetAsyncKeyState(VK_F3) & 0x01)
+    {
+        m_showDebugStuff = !m_showDebugStuff;
+    }
+
     if (GetAsyncKeyState(VK_F8))
     {
         if (!s_f8Pressed)
@@ -215,7 +220,7 @@ static bool g_EnableAnimWindow{false};
 void TestService::OnDraw() noexcept
 {
     const auto view = m_world.view<FormIdComponent>();
-    if (view.empty())
+    if (view.empty() || !m_showDebugStuff)
         return;
 
     ImGui::BeginMainMenuBar();
@@ -243,8 +248,8 @@ void TestService::OnDraw() noexcept
     }
     if (ImGui::BeginMenu("Components"))
     {
-        ImGui::MenuItem("Show component list", nullptr, &m_bToggleComponentWindow);
-        ImGui::MenuItem("Show selected component in world", nullptr, &m_bDrawComponentInScreenSpace);
+        ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
+        ImGui::MenuItem("Show selected component in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Containers"))
@@ -262,6 +267,6 @@ void TestService::OnDraw() noexcept
     if (g_EnableAnimWindow)
         DrawAnimDebugView();
 
-    if (m_bToggleComponentWindow)
+    if (m_toggleComponentWindow)
         DrawComponentDebugView();
 }

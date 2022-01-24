@@ -1,15 +1,21 @@
 
 #include <imgui.h>
+#include <EquipManager.h>
 #include <services/TestService.h>
 
+#if (TP_SKYRIM64)
 #include <Games/Skyrim/Forms/TESForm.h>
-#include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Skyrim/Actor.h>
+#endif
+
+#if (TP_FALLOUT4)
+#include <Games/Fallout4/Actor.h>
+#endif
 
 #include <BSAnimationGraphManager.h>
 #include <Havok/hkbStateMachine.h>

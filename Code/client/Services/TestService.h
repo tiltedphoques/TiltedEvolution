@@ -41,6 +41,7 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
-    bool m_bToggleComponentWindow{false};
-    bool m_bDrawComponentInScreenSpace{true};
+    bool m_showDebugStuff = false;
+    bool m_toggleComponentWindow = false;
+    bool m_drawComponentsInWorldSpace = true;
 };

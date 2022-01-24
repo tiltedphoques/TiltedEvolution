@@ -2,9 +2,16 @@
 #include <imgui.h>
 #include <inttypes.h>
 #include <Games/TES.h>
+
+#if (TP_SKYRIM64)
 #include <Games/Skyrim/PlayerCharacter.h>
 #include <Games/Skyrim/Forms/TESObjectCELL.h>
 #include <Games/Skyrim/Forms/TESWorldSpace.h>
+#else
+#include <Games/Fallout4/PlayerCharacter.h>
+#include <Games/Fallout4/Forms/TESObjectCELL.h>
+#include <Games/Fallout4/Forms/TESWorldSpace.h>
+#endif
 
 #include <Services/TestService.h>
 

@@ -1,10 +1,18 @@
 
 #include <imgui.h>
-#include <PlayerCharacter.h>
 #include <Services/TestService.h>
+
+#if (TP_SKYRIM64)
+#include <PlayerCharacter.h>
+#endif
+
+#if (TP_FALLOUT4)
+#include <Games/Fallout4/PlayerCharacter.h>
+#endif
 
 void TestService::DrawContainerDebugView()
 {
+#if (TP_SKYRIM64)
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
     {
         if (ImGui::BeginTabItem("ExtraContainerChanges"))
@@ -127,4 +135,5 @@ void TestService::DrawContainerDebugView()
             ImGui::EndTabItem();
         }
     }
+    #endif
 }
