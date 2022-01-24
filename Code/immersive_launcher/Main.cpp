@@ -15,8 +15,8 @@ extern "C"
 }
 
 auto kSystemPreloadDlls = {L"\\dinput8.dll", // < Skyrim early init hook
-                           L"\\dsound.dll",  // breaks DSound init in game code
-                                             // X360CE v3 is buggy with COM hooks
+                           L"\\dsound.dll",  // < breaks DSound init in game code
+                                             // < X360CE v3 is buggy with COM hooks
                            L"\\xinput9_1_0.dll", L"\\xinput1_1.dll", L"\\xinput1_2.dll", L"\\xinput1_3.dll",
                            L"\\xinput1_4.dll", L"\\version.dll"};
 
@@ -34,7 +34,6 @@ static void PreloadSystemDlls()
     for (auto dll : kSystemPreloadDlls)
         loadSystemDll(dll);
 }
-
 
 struct ComScope
 {
@@ -59,7 +58,7 @@ int main(int argc, char** argv)
         return -1;
     }
     PreloadSystemDlls();
-    CoreStubsInit();  
+    CoreStubsInit();
     ComScope cs;
     TP_UNUSED(cs);
 
