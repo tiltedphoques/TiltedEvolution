@@ -183,12 +183,12 @@ void TestService::DrawComponentDebugView()
                                     pComponent->LastRanAction.TargetEventName.c_str(), pComponent->LastRanAction.State1,
                                     pComponent->LastRanAction.State2);
                     }
-
-                    ImGui::End();
-
                     // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
                     //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
                 }
+
+                ImGui::End();
+
             }
         }
     }
