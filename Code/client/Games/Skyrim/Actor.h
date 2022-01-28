@@ -99,7 +99,7 @@ struct Actor : TESObjectREFR
     virtual void sub_DC();
     virtual void sub_DD();
     virtual void sub_DE();
-    virtual void sub_DF(struct TESPackage*, bool = false, bool = true, float = -1.f); // 14069BBF0
+    virtual void PutCreatedPackage(struct TESPackage*, bool = false, bool = true, bool = true); // 14069BBF0
     virtual void sub_E0();
     virtual void sub_E1();
     virtual void sub_E2();
@@ -208,6 +208,7 @@ struct Actor : TESObjectREFR
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
+    void SetPackage(TESPackage* apPackage) noexcept;
     void SetFullContainer(Container& acContainer) noexcept;
 
     // Actions

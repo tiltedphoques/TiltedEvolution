@@ -25,6 +25,7 @@ local function build_launcher()
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
+        "ImGuiImpl",
         "Common")
     add_links("ntdll_x64")
     add_linkdirs(".")

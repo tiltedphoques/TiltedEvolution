@@ -250,6 +250,15 @@ void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBound
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
+void TESObjectREFR::EnableImpl() noexcept
+{
+    TP_THIS_FUNCTION(TEnableImpl, void, TESObjectREFR, bool aResetInventory);
+
+    POINTER_SKYRIMSE(TEnableImpl, s_enable, 0x1402AA780 - 0x140000000);
+    
+    ThisCall(s_enable, this, false);
+}
+
 static thread_local bool s_cancelAnimationWaitEvent = false;
 
 bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedString* apEventName) noexcept

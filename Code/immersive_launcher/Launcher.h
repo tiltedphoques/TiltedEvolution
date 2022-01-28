@@ -28,6 +28,7 @@ struct LaunchContext
 
 LaunchContext* GetLaunchContext();
 
+bool LoadProgram(LaunchContext&);
 int StartUp(int argc, char** argv);
 
 void InitClient();

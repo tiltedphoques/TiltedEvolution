@@ -38,6 +38,7 @@ enum ClientOpcode : unsigned char
     kScriptAnimationRequest,
     kDrawWeaponRequest,
     kMountRequest,
+    kNewPackageRequest,
     kClientOpcodeMax
 };
 
@@ -76,5 +77,6 @@ enum ServerOpcode : unsigned char
     kNotifyScriptAnimation,
     kNotifyDrawWeapon,
     kNotifyMount,
+    kNotifyNewPackage,
     kServerOpcodeMax
 };

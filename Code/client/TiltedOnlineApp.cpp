@@ -100,7 +100,6 @@ void TiltedOnlineApp::InstallHooks2()
     TiltedPhoques::Initializer::RunAll();
 
     TiltedPhoques::DInputHook::Install();
-    TiltedPhoques::WindowsHook::Install();
 }
 
 void TiltedOnlineApp::UninstallHooks()

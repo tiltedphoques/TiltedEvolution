@@ -1,3 +1,40 @@
+# [1.12.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.11.0...v1.12.0) (2022-01-24)
+
+
+### Bug Fixes
+
+* Attempt to make linux build. ([ed9fa0a](https://github.com/tiltedphoques/TiltedEvolution/commit/ed9fa0ae41117f709d1d18068f124b8bafa6eb2d))
+* Block SKSE Plugin Preloader for compatabiliy reasons. ([0d5d0e4](https://github.com/tiltedphoques/TiltedEvolution/commit/0d5d0e4cef885fd8946bcb3619c3d8bf40999961))
+* change some naming. ([fb876c0](https://github.com/tiltedphoques/TiltedEvolution/commit/fb876c033f6ad911e74855953cc0e76636c38d2c))
+* Imgui end scope. ([5493a52](https://github.com/tiltedphoques/TiltedEvolution/commit/5493a52b5c98f05eeb2f79e8afe91972f4fb50a1))
+* Repair my monke code ([f9491fe](https://github.com/tiltedphoques/TiltedEvolution/commit/f9491fe4a0d48824c17586fecd95e9e753adc65d))
+
+
+### Features
+
+* Deny load for unsupported game versions. ([0a1e7cb](https://github.com/tiltedphoques/TiltedEvolution/commit/0a1e7cb12042a83453cccebec3c56e877800b196))
+* rip 'allocator' ([2695f2f](https://github.com/tiltedphoques/TiltedEvolution/commit/2695f2fe81402139095af7f94058d9e4d650fc9f))
+* Selectable entity for component view debug, hudmenuutils. ([5b2e063](https://github.com/tiltedphoques/TiltedEvolution/commit/5b2e06399dcacfec70b1f84ae176d3ff51a49b0e))
+* Smarter input handling for skyrim. ([68e188b](https://github.com/tiltedphoques/TiltedEvolution/commit/68e188bae36838c4f2628fe292366fdc212ec142))
+* world to screen with hud matrix for skyrim. Cxx20 updates for client. ([4825286](https://github.com/tiltedphoques/TiltedEvolution/commit/4825286c8227ad82e903080bfa03ab768eef0c2c))
+
+# [1.11.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.10.0...v1.11.0) (2022-01-23)
+
+
+### Bug Fixes
+
+* merge conflict ([c2b082f](https://github.com/tiltedphoques/TiltedEvolution/commit/c2b082f40e4a145226299af06a1dfc842884e36b))
+* merge conflicts ([7f299e9](https://github.com/tiltedphoques/TiltedEvolution/commit/7f299e9c6655f6c9c0b9f6c6adab181f09b2884d))
+
+
+### Features
+
+* AI sync for Fallout 4 ([d86dfda](https://github.com/tiltedphoques/TiltedEvolution/commit/d86dfdaedd4d14c26e360223758118b637e97dd7))
+* first step in syncing AI packages ([de84956](https://github.com/tiltedphoques/TiltedEvolution/commit/de84956e489a9f145afd7957cdaa63a4e7a06aa8))
+* more ugly debuggers (force dont look) ([77b85e9](https://github.com/tiltedphoques/TiltedEvolution/commit/77b85e914664d4cd43fee63504df793baf54091a))
+* reverse engineered TESAIForm ([59cf6a2](https://github.com/tiltedphoques/TiltedEvolution/commit/59cf6a2a56bbde2a2e273b28b65bacbd42992ab4))
+* sync TESPackage by actor ownership ([a2aa136](https://github.com/tiltedphoques/TiltedEvolution/commit/a2aa1362985440854d5e17d676bcfe97d413e90b))
+
 # [1.10.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.9.0...v1.10.0) (2022-01-21)
 
 
