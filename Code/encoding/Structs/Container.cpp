@@ -63,5 +63,6 @@ void Container::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     {
         Entry entry;
         entry.Deserialize(aReader);
+        Entries.push_back(entry);
     }
 }
