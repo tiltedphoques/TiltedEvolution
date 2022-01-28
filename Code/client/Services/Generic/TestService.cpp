@@ -73,7 +73,8 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     auto pActor = Actor::Create(pPlayerBaseForm);
 
     //pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
-    pActor->SetFullContainer(PlayerCharacter::Get()->GetFullContainer());
+    Container container = PlayerCharacter::Get()->GetFullContainer();
+    pActor->SetFullContainer(container);
 
     m_actors.emplace_back(pActor);
 }
@@ -184,7 +185,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            /*
             auto fullContainer = PlayerCharacter::Get()->GetFullContainer();
             spdlog::info("Full container entries: {}", fullContainer.Entries.size());
 
@@ -197,6 +197,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 }
             }
 
+            /*
             auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
             pActor->SetWeaponDrawnEx(true);
 

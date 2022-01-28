@@ -330,7 +330,7 @@ Container Actor::GetFullContainer() const noexcept
 
     for (auto& entry : extraContainer.Entries)
     {
-        auto& duplicate = std::find_if(minimizedExtraContainer.Entries.begin(), minimizedExtraContainer.Entries.end(), [entry](Container::Entry newEntry) { 
+        auto duplicate = std::find_if(minimizedExtraContainer.Entries.begin(), minimizedExtraContainer.Entries.end(), [entry](const Container::Entry& newEntry) { 
             return newEntry.CanBeMerged(entry);
         });
 
@@ -350,7 +350,7 @@ Container Actor::GetFullContainer() const noexcept
         if (entry.ContainsExtraData())
             continue;
 
-        auto& duplicate = std::find_if(fullContainer.Entries.begin(), fullContainer.Entries.end(), [entry](Container::Entry newEntry) { 
+        auto duplicate = std::find_if(fullContainer.Entries.begin(), fullContainer.Entries.end(), [entry](const Container::Entry& newEntry) { 
             return newEntry.CanBeMerged(entry);
         });
 
@@ -387,7 +387,7 @@ void Actor::SetFullContainer(Container& acContainer) noexcept
     Container currentContainer = GetFullContainer();
     for (auto currentEntry : currentContainer.Entries)
     {
-        auto& duplicate = std::find_if(acContainer.Entries.begin(), acContainer.Entries.end(), [currentEntry](Container::Entry newEntry) { 
+        auto duplicate = std::find_if(acContainer.Entries.begin(), acContainer.Entries.end(), [currentEntry](const Container::Entry& newEntry) { 
             return newEntry.CanBeMerged(currentEntry);
         });
 
