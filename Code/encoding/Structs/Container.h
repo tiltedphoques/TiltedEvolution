@@ -4,6 +4,8 @@
 #include <Structs/GameId.h>
 
 using TiltedPhoques::Buffer;
+using TiltedPhoques::String;
+using TiltedPhoques::Vector;
 
 struct Container
 {
@@ -31,6 +33,9 @@ struct Container
 
         bool ExtraWorn{};
         bool ExtraWornLeft{};
+
+        void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
+        void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
         bool ContainsExtraData() const noexcept
         {
@@ -61,9 +66,11 @@ struct Container
     Container() = default;
     ~Container() = default;
 
+    bool operator==(const Container& acRhs) const noexcept;
+    bool operator!=(const Container& acRhs) const noexcept;
+
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
-
 
     Vector<Entry> Entries{};
 };
