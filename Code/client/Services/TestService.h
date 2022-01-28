@@ -11,7 +11,7 @@ struct Actor;
 struct TestService
 {
     TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
-    ~TestService() noexcept;
+    ~TestService() noexcept = default;
 
     TP_NOCOPYMOVE(TestService);
 
