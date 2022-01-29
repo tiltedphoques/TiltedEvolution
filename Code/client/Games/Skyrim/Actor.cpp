@@ -366,10 +366,6 @@ Container Actor::GetFullContainer() const noexcept
     fullContainer.Entries.insert(fullContainer.Entries.end(), minimizedExtraContainer.Entries.begin(),
                                  minimizedExtraContainer.Entries.end());
 
-    std::remove_if(fullContainer.Entries.begin(), fullContainer.Entries.end(), [](Container::Entry entry) { 
-        return entry.Count == 0;
-    });
-
     spdlog::info("fullContainer count after: {}", fullContainer.Entries.size());
 
     // TODO: doesn't filter all duplicates?
@@ -379,10 +375,6 @@ Container Actor::GetFullContainer() const noexcept
 void Actor::SetFullContainer(Container& acContainer) noexcept
 {
     RemoveAllItems();
-
-    std::sort(acContainer.Entries.begin(), acContainer.Entries.end(), [](Container::Entry lhs, Container::Entry rhs) { 
-        return lhs.Count < rhs.Count;
-    });
 
     Container currentContainer = GetFullContainer();
     for (auto currentEntry : currentContainer.Entries)
@@ -394,7 +386,6 @@ void Actor::SetFullContainer(Container& acContainer) noexcept
         if (duplicate != std::end(acContainer.Entries))
         {
             duplicate->Count -= currentEntry.Count;
-            continue;
         }
         else
         {
@@ -404,13 +395,10 @@ void Actor::SetFullContainer(Container& acContainer) noexcept
         }
     }
 
-    std::remove_if(acContainer.Entries.begin(), acContainer.Entries.end(), [](Container::Entry entry) { 
-        return entry.Count == 0;
-    });
-
     for (const Container::Entry& entry : acContainer.Entries)
     {
-        AddItem(entry);
+        if (entry.Count != 0)
+            AddItem(entry);
     }
 }
 

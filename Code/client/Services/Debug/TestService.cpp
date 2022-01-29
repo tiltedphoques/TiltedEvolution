@@ -57,7 +57,9 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+    auto container = PlayerCharacter::Get()->GetFullContainer();
+    spdlog::info("Container size: {}", container.Entries.size());
+    pActor->SetFullContainer(container);
 
     m_actors.emplace_back(pActor);
 }
@@ -74,8 +76,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
-
-    RunDiff();
 
     if (GetAsyncKeyState(VK_F7))
     {

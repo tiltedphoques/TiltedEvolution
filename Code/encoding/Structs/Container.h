@@ -34,6 +34,9 @@ struct Container
         bool ExtraWorn{};
         bool ExtraWornLeft{};
 
+        bool operator==(const Entry& acRhs) const noexcept;
+        bool operator!=(const Entry& acRhs) const noexcept;
+
         void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
         void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
