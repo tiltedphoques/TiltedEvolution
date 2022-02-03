@@ -128,6 +128,10 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
             aRecordCollection.m_gameSettings[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
+        case FormEnum::WRLD: {
+            WRLD parsedRecord = CopyAndParseRecord<WRLD>(pRecord);
+            aRecordCollection.m_worlds[parsedRecord.GetFormId()] = parsedRecord;
+        }
         }
 
         //pRecord->DiscoverChunks();
@@ -136,7 +140,7 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
         {
             Record record;
             record.CopyRecordData(*pRecord);
-            record.SetBaseId(TESFile::GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
+            record.SetBaseId(GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
             aRecordCollection.m_allRecords[pRecord->GetFormId()] = *pRecord;
         }
 
@@ -163,8 +167,8 @@ T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 
 uint32_t TESFile::GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
-    uint8_t baseId = (uint8_t)(aFormId >> 24);
-    auto masterId = aParentToFormIdPrefix.find(baseId);
+    auto baseId = (uint8_t)(aFormId >> 24);
+    const auto masterId = aParentToFormIdPrefix.find(baseId);
 
     if (masterId == std::end(aParentToFormIdPrefix))
     {

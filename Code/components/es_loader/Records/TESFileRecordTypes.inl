@@ -1,17 +1,21 @@
 #pragma once
 
+#define EXPAND_TO_INTEGER(name) ((#name)[0]) | ((#name)[1]) << 8 | ((#name)[2]) << 16 | ((#name)[3]) << 24
+#define DECLARE_FORM_TYPE(name) name = EXPAND_TO_INTEGER(name)
+
 enum class FormEnum : uint32_t
 {
     EMPTY_ID = 0,
-    TES4 = 0x34534554,
-    GRUP = 0x50555247,
-    REFR = 0x52464552,
-    ACHR = 0x52484341,
-    CELL = 0x4C4C4543,
-    CLMT = 0x544D4C43,
-    CONT = 0x544E4F43,
-    NPC_ = 0x5F43504E,
-    GMST = 0x54534D47,
+    DECLARE_FORM_TYPE(TES4),
+    DECLARE_FORM_TYPE(GRUP),
+    DECLARE_FORM_TYPE(REFR),
+    DECLARE_FORM_TYPE(ACHR),
+    DECLARE_FORM_TYPE(CELL),
+    DECLARE_FORM_TYPE(CLMT),
+    DECLARE_FORM_TYPE(CONT),
+    DECLARE_FORM_TYPE(NPC_),
+    DECLARE_FORM_TYPE(GMST),
+    DECLARE_FORM_TYPE(WRLD)
 };
 
 enum class ChunkId : uint32_t

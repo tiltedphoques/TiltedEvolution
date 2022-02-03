@@ -310,4 +310,26 @@ struct TypedValue
     };
 };
 
+struct WCTR
+{
+    WCTR()
+    {
+    }
+    WCTR(Buffer::Reader& aReader);
+
+    int16_t m_x;
+    int16_t m_y;
+};
+
+struct DNAM
+{
+    DNAM()
+    {
+    }
+    DNAM(Buffer::Reader& aReader);
+
+    float m_landLevel;
+    float m_waterLevel;
+};
+
 } // namespace

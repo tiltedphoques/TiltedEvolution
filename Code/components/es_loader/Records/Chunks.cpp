@@ -166,4 +166,16 @@ MAST::MAST(Buffer::Reader& aReader)
     m_masterName = ESLoader::ReadZString(aReader);
 }
 
+WCTR::WCTR(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_x), 2);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_y), 2);
+}
+
+DNAM::DNAM(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_landLevel), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_waterLevel), 4);
+}
+
 } // namespace
