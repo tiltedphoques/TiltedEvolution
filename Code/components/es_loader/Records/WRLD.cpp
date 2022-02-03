@@ -1,6 +1,7 @@
 #include "WRLD.h"
 
 #include <ESLoader.h>
+#include <iostream>
 
 void WRLD::ParseChunks(WRLD& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
@@ -33,4 +34,8 @@ void WRLD::ParseChunks(WRLD& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFor
             break;
         }
     });
+}
+
+void WRLD::ParseGRUP() noexcept
+{
 }

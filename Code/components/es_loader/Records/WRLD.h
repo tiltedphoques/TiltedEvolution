@@ -18,4 +18,5 @@ public:
     float m_lodMultiplier;
 
     void ParseChunks(WRLD& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseGRUP() noexcept;
 };

@@ -178,4 +178,73 @@ DNAM::DNAM(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_waterLevel), 4);
 }
 
-} // namespace
+NVNM::NVNM(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_unknown), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_locactionMarker), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_worldSpaceId), 4);
+    if (m_worldSpaceId == 0)
+    {
+        uint32_t id = 0;
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&id), 4);
+        m_cellId = id;
+    }
+    else
+    {
+        int16_t tmp = 0;
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&tmp), 2);
+        m_gridY = tmp;
+
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&tmp), 2);
+        m_gridX = tmp;
+    }
+    int32_t vertexCount = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&vertexCount), 4);
+    m_vertices.resize(vertexCount);
+    for (auto& vertex : m_vertices)
+    {
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&vertex), sizeof(vertex));
+    }
+
+    int32_t triangleCount = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&triangleCount), 4);
+    m_triangles.resize(triangleCount);
+    for (auto& tri : m_triangles)
+    {
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&tri), sizeof(tri));
+    }
+
+    int32_t connectionCount = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&connectionCount), 4);
+    m_connections.resize(connectionCount);
+    for (auto& connection : m_connections)
+    {
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&connection.m_unk), sizeof(connection.m_unk));
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&connection.m_navMeshId), sizeof(connection.m_navMeshId));
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&connection.tri), sizeof(connection.tri));
+    }
+
+    int32_t doorCount = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&doorCount), 4);
+    m_doorTris.resize(doorCount);
+    for (auto& doorTri : m_doorTris)
+    {
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&doorTri.tri), sizeof(doorTri.tri));
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&doorTri.m_unk), sizeof(doorTri.m_unk));
+        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&doorTri.m_doorId), sizeof(doorTri.m_doorId));
+    }
+
+    int32_t coverTriangleCount = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&coverTriangleCount), 4);
+    m_coverTris.resize(coverTriangleCount);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(m_coverTris.data()), sizeof(int16_t) * m_coverTris.size());
+
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_divisor), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_maxDistance), sizeof(m_maxDistance));
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_min), sizeof(m_min));
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_max), sizeof(m_max));
+
+    // Missing triangle divisor but we don't care about it
+}
+
+} // namespace Chunks

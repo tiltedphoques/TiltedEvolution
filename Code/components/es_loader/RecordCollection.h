@@ -5,6 +5,7 @@
 #include "Records/NPC.h"
 #include "Records/REFR.h"
 #include "Records/GMST.h"
+#include "Records/NAVM.h"
 #include "Records/WRLD.h"
 
 class RecordCollection
@@ -48,6 +49,10 @@ public:
     {
         return m_worlds[aFormId];
     }
+    NAVM& GetNavMeshById(uint32_t aFormId) noexcept
+    {
+        return m_navMeshes[aFormId];
+    }
 
 private:
     Map<uint32_t, Record> m_allRecords{};
@@ -57,4 +62,5 @@ private:
     Map<uint32_t, CONT> m_containers{};
     Map<uint32_t, GMST> m_gameSettings{};
     Map<uint32_t, WRLD> m_worlds{};
+    Map<uint32_t, NAVM> m_navMeshes{};
 };
