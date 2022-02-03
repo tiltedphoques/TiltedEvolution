@@ -4,8 +4,8 @@
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
 
-#include <Console/IniSettingsProvider.h>
-#include <Console/Setting.h>
+#include <console/IniSettingsProvider.h>
+#include <console/Setting.h>
 
 #include <charconv>
 #include <fstream>
