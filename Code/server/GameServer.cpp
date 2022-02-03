@@ -27,25 +27,25 @@
 #endif
 
 // >> Game server cvars <<
-static console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
-static console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
-static console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
+static Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+static Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+static Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                           "Dedicated Together Server"};
-static console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
+static Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
                                           "Hello there!"};
-static console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
+static Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
                                              ""};
-static console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
-static console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-static console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+static Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
+static Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+static Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
 // >> Constants <<
 static constexpr size_t kTagListCap = 512;
 
-static console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
-                                            [](console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
-static console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                                      [](console::ArgStack&) {
+static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
+                                            [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
+                                      [](Console::ArgStack&) {
                                           spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
                                       });
 

@@ -19,7 +19,13 @@ static OverlayService* s_pOverlay = nullptr;
 
 void ForceKillAllInput()
 {
+#if TP_SKYRIM
     MenuControls::GetInstance()->SetToggle(false);
+#else
+// TODO! Crash the project so we notice
+    int* t = nullptr;
+    *t = 42;
+#endif
 }
 
 uint32_t GetCefModifiers(uint16_t aVirtualKey)

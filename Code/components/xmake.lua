@@ -21,9 +21,9 @@ end
 
 -- this isnt fully specified yet.
 function unittest(name)
-    target(name .. "-Test")
+    target(name .. "_Tests")
       set_kind("binary")
-      set_group("Components")
+      set_group("Tests")
       add_configfiles("BuildInfo.h.in")
       add_includedirs(
         ".",

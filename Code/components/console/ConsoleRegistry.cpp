@@ -6,7 +6,7 @@
 #include <console/ConsoleUtils.h>
 #include <console/StringTokenizer.h>
 
-namespace console
+namespace Console
 {
 static constexpr char kCommandPrefix = '/';
 

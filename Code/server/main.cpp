@@ -51,7 +51,7 @@ constexpr char kConsoleOutName[] = "ConOut";
 
 namespace fs = std::filesystem;
 
-static console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+static Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
 
 // LogInstance must be created for the Console Instance.
 struct LogInstance
@@ -91,15 +91,15 @@ struct SettingsInstance
         m_Path = fs::current_path() / kSettingsFileName;
         if (!fs::exists(m_Path))
         {
-            console::SaveSettingsToIni(m_Path);
+            Console::SaveSettingsToIni(m_Path);
             return;
         }
-        console::LoadSettingsFromIni(m_Path);
+        Console::LoadSettingsFromIni(m_Path);
     }
 
     ~SettingsInstance()
     {
-        console::SaveSettingsToIni(m_Path);
+        Console::SaveSettingsToIni(m_Path);
     }
 
   private:
@@ -122,7 +122,7 @@ class DediRunner
     SettingsInstance m_settings;
     LogInstance m_logInstance;
     GameServer m_gameServer;
-    console::ConsoleRegistry m_console;
+    Console::ConsoleRegistry m_console;
 };
 
 DediRunner::DediRunner(int argc, char** argv) : m_console(kConsoleOutName)

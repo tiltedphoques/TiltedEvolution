@@ -16,13 +16,13 @@
 #endif
 
 // TODO: should this be debug only? I removed the check since debug is broken, can only use releasedbg
-#define TP_ASSERT(Expr, Msg, ...) \
-    if (!(Expr)) \
-    { \
-        utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str()); \
+#define TP_ASSERT(Expr, Msg, ...)                                                                                      \
+    if (!(Expr))                                                                                                       \
+    {                                                                                                                  \
+        Utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str());                                                   \
     }
 
-namespace utils
+namespace Utils
 {
 static void Assert(const char* apExpression, const char* apMessage)
 {
@@ -33,5 +33,4 @@ static void Assert(const char* apExpression, const char* apMessage)
 }
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
-}
-
+} // namespace Utils

@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-namespace console
+namespace Console
 {
 void SaveSettingsToIni(const std::filesystem::path& path);
 void LoadSettingsFromIni(const std::filesystem::path& path);

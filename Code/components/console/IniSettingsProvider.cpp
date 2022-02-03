@@ -12,7 +12,7 @@
 
 #include <TiltedCore/Filesystem.hpp>
 
-namespace console
+namespace Console
 {
 namespace
 {

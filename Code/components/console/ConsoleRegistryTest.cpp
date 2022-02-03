@@ -6,7 +6,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <console/ConsoleRegistry.h>
 
-namespace console
+namespace Console
 {
 namespace
 {
@@ -71,4 +71,4 @@ TEST_F(ConsoleRegistryTest, RegisterSetting)
     //ASSERT_TRUE(r.FindSetting("name"));
 }
 } // namespace
-} // namespace console
+} // namespace Console
