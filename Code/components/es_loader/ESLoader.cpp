@@ -26,7 +26,11 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
         return UniquePtr<RecordCollection>();
     }
 
-    return LoadFiles();
+    auto recordCollection = LoadFiles();
+
+    recordCollection->BuildReferences();
+
+    return std::move(recordCollection);
 }
 
 

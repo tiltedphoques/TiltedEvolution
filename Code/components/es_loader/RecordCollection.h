@@ -54,6 +54,8 @@ public:
         return m_navMeshes[aFormId];
     }
 
+    void BuildReferences();
+
 private:
     Map<uint32_t, Record> m_allRecords{};
     Map<uint32_t, REFR> m_objectReferences{};

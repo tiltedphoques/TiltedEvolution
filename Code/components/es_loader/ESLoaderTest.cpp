@@ -118,6 +118,7 @@ TEST_F(ESLoaderTest, GetWorldTamriel)
     const WRLD& tamrielWorld = pCollection->GetWorldById(60);
 
     EXPECT_EQ(tamrielWorld.m_editorId, "Tamriel");
+    EXPECT_EQ(tamrielWorld.m_navMeshRefs.size(), 0x3315);
 }
 
 } // namespace
