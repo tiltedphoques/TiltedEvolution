@@ -117,23 +117,23 @@ void MumbleService::Update(const UpdateEvent& acEvent)
 
     // Unit vector pointing out of the avatar's eyes aka "At"-vector.
     m_pLinkedMem->fAvatarFront[0] = playerForwardVector.x;
-    m_pLinkedMem->fAvatarFront[1] = playerForwardVector.y;
-    m_pLinkedMem->fAvatarFront[2] = playerForwardVector.z;
+    m_pLinkedMem->fAvatarFront[1] = playerForwardVector.z;
+    m_pLinkedMem->fAvatarFront[2] = playerForwardVector.y;
 
     // Unit vector pointing out of the top of the avatar's head aka "Up"-vector (here Top points straight up).
     m_pLinkedMem->fAvatarTop[0] = playerUpVector.x;
-    m_pLinkedMem->fAvatarTop[1] = playerUpVector.y;
-    m_pLinkedMem->fAvatarTop[2] = playerUpVector.z;
+    m_pLinkedMem->fAvatarTop[1] = playerUpVector.z;
+    m_pLinkedMem->fAvatarTop[2] = playerUpVector.y;
 
     // Position of the avatar (here standing slightly off the origin)
     m_pLinkedMem->fAvatarPosition[0] = pPlayer->position.x;
-    m_pLinkedMem->fAvatarPosition[1] = pPlayer->position.y;
-    m_pLinkedMem->fAvatarPosition[2] = pPlayer->position.z;
+    m_pLinkedMem->fAvatarPosition[1] = pPlayer->position.z;
+    m_pLinkedMem->fAvatarPosition[2] = pPlayer->position.y;
 
     // Same as avatar but for the camera.
     m_pLinkedMem->fCameraPosition[0] = pCamera->pos.x;
-    m_pLinkedMem->fCameraPosition[1] = pCamera->pos.y;
-    m_pLinkedMem->fCameraPosition[2] = pCamera->pos.z;
+    m_pLinkedMem->fCameraPosition[1] = pCamera->pos.z;
+    m_pLinkedMem->fCameraPosition[2] = pCamera->pos.y;
 
     auto rot = angleAxis(pCamera->pitch, glm::vec3(1, 0, 0));
     rot *= angleAxis(pCamera->yaw, glm::vec3(0, 1, 0));
@@ -142,12 +142,12 @@ void MumbleService::Update(const UpdateEvent& acEvent)
     const auto forwardVector = rotate(rot, glm::vec3(0, 0, -1));
 
     m_pLinkedMem->fCameraFront[0] = forwardVector.x;
-    m_pLinkedMem->fCameraFront[1] = forwardVector.y;
-    m_pLinkedMem->fCameraFront[2] = forwardVector.z;
+    m_pLinkedMem->fCameraFront[1] = forwardVector.z;
+    m_pLinkedMem->fCameraFront[2] = forwardVector.y;
 
     m_pLinkedMem->fCameraTop[0] = upVector.x;
-    m_pLinkedMem->fCameraTop[1] = upVector.y;
-    m_pLinkedMem->fCameraTop[2] = upVector.z;
+    m_pLinkedMem->fCameraTop[1] = upVector.z;
+    m_pLinkedMem->fCameraTop[2] = upVector.y;
 
     // Identifier which uniquely identifies a certain player in a context (e.g. the ingame name).
     wcsncpy(m_pLinkedMem->identity, m_uniqueIdentifier.c_str(), m_uniqueIdentifier.size());
