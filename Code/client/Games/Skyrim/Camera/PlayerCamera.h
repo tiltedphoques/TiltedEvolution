@@ -10,8 +10,8 @@ struct PlayerCamera : public TESCamera
 
     bool WorldPtToScreenPt3(const NiPoint3& in, NiPoint3& out, float zeroTolerance = 1e-5f);
 
-    float rotZ;
-    float rotX;
+    float yaw;
+    float pitch;
     NiPoint3 pos;
     float zoom;
     NiNode* cameraNode;

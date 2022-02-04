@@ -32,5 +32,8 @@ static void Assert(const char* apExpression, const char* apMessage)
         __debugbreak();
 }
 
+TiltedPhoques::String RandomString(size_t aLength);
+TiltedPhoques::WString RandomStringW(size_t aLength);
+
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 } // namespace Utils
