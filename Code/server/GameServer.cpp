@@ -17,7 +17,6 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
-#include <Scripts/Player.h>
 
 #include <console/Command.h>
 #include <console/Setting.h>
@@ -334,7 +333,7 @@ GameServer* GameServer::Get() noexcept
 }
 
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
-                                             const UniquePtr<AuthenticationRequest>& acRequest) noexcept
+                                             const UniquePtr<AuthenticationRequest>& acRequest)
 {
     const auto info = GetConnectionInfo(aConnectionId);
 
@@ -363,7 +362,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
         // form id anyway
         std::ostringstream oss;
-        oss << "New player {:x} connected with mods\n\t Standard: ";
+        oss << fmt::format("New player {:x} connected with mods\n\t Standard: ", aConnectionId);
 
         Vector<String> playerMods;
         Vector<uint16_t> playerModsIds;
@@ -416,7 +415,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             return;
         }*/
 
-        spdlog::info(oss.str(), aConnectionId);
+        spdlog::info("{}", oss.str().c_str());
 
         serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
@@ -446,8 +445,8 @@ void GameServer::UpdateTitle() const
     const auto name = m_info.name.empty() ? "Private server" : m_info.name;
     const char* playerText = GetClientCount() <= 1 ? " player" : " players";
 
-    constexpr char kFormatText[] = "{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT;
-    auto title = fmt::format(kFormatText, name, GetClientCount(), playerText, GetTickRate());
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(), GetClientCount(),
+                             playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

@@ -38,7 +38,7 @@ bool ESLoader::LoadLoadOrder()
 {
     std::ifstream loadOrderFile;
     String loadOrderPath = m_directory + "loadorder.txt";
-    loadOrderFile.open(loadOrderPath);
+    loadOrderFile.open(loadOrderPath.c_str());
     if (loadOrderFile.fail())
     {
         spdlog::error("Failed to open loadorder.txt");
