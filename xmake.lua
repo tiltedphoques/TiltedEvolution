@@ -28,14 +28,6 @@ before_build(function (target)
     bool_to_number[branch == "bluedove"], 
     bool_to_number[branch == "prerel"])
     io.writefile("build/BranchInfo.h", contents)
-
-    local testContents = [[
-        #include <gtest/gtest.h>
-        int main(int argc, char** argv) {
-            ::testing::InitGoogleTest(&argc, argv);
-            return RUN_ALL_TESTS();
-        }]]
-    io.writefile("build/TestMain.cpp", testContents)
 end)
 
 if is_mode("debug") then

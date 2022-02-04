@@ -35,7 +35,7 @@ function unittest(name)
           "**.h")
       add_files(
           "**.cpp",
-          "../../../build/TestMain.cpp")
+          "../../TestMain.cpp")
       add_packages(
         "tiltedcore", 
         "hopscotch-map", 
