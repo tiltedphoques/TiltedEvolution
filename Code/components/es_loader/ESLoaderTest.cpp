@@ -111,4 +111,14 @@ TEST_F(ESLoaderTest, GetGameSettingFloatBribeScale)
     EXPECT_EQ(bribeSetting.m_value.m_float, 0.5f);
 }
 
+TEST_F(ESLoaderTest, GetWorldTamriel)
+{
+    const auto& pCollection = GetCollection();
+
+    const WRLD& tamrielWorld = pCollection->GetWorldById(60);
+
+    EXPECT_EQ(tamrielWorld.m_editorId, "Tamriel");
+    EXPECT_EQ(tamrielWorld.m_navMeshRefs.size(), 0x3315);
+}
+
 } // namespace

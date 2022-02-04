@@ -6,7 +6,7 @@
 #include <console/ArgStack.h>
 #include <console/Command.h>
 
-namespace console
+namespace Console
 {
 class CommandQueue
 {
@@ -50,4 +50,4 @@ class CommandQueue
     // (8 would be 256)
     fast_queue<Item, 4> m_queue;
 };
-} // namespace console
+} // namespace Console

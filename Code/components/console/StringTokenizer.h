@@ -4,18 +4,18 @@
 
 #include <string>
 
-namespace console
+namespace Console
 {
 // Adapted from https://www.oreilly.com/library/view/c-cookbook/0596007612/ch04s08.html
 class StringTokenizer
 {
   public:
-    StringTokenizer(const std::string& acInput, const char* acDelim = nullptr);
+    StringTokenizer(std::string acInput, const char* acpDelim = nullptr);
 
-    size_t CountTokens();
+    size_t CountTokens() noexcept;
     void GetNext(std::string& s);
 
-    bool HasMore()
+    bool HasMore() const noexcept
     {
         return (m_begin != m_end);
     }
@@ -23,7 +23,7 @@ class StringTokenizer
     std::string m_delim;
     std::string m_string;
     int m_count;
-    int m_begin;
-    int m_end;
+    std::string::size_type m_begin;
+    std::string::size_type m_end;
 };
-} // namespace console
+} // namespace Console

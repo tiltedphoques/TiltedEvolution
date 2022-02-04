@@ -2,7 +2,6 @@
 
 #include <Services/ImguiService.h>
 
-#include <OverlayApp.hpp>
 #include <Systems/RenderSystemD3D11.h>
 #include <d3d11.h>
 

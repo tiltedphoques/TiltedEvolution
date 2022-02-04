@@ -180,7 +180,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (iter == std::end(view))
                 continue;
 
-            std::optional<uint32_t> serverIdRes = utils::GetServerId(*iter);
+            std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
             if (!serverIdRes.has_value())
                 continue;
 

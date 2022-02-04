@@ -69,7 +69,7 @@ jobs:
 
     # Build the game
     - name: Build with xmake
-      run: xmake.exe
+      run: xmake.exe -j1
 
     # Create install
     - name: Bundle package

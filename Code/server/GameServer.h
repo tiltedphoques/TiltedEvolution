@@ -62,7 +62,7 @@ public:
 
 protected:
 
-    void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept;
+    void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
 private:
 
