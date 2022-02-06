@@ -9,6 +9,8 @@
 #include <SaveLoad.h>
 #include <Games/Overrides.h>
 
+#include <Games/TES.h>
+
 
 TESForm* TESForm::GetById(const uint32_t aId)
 {
@@ -154,3 +156,48 @@ BGSHeadPart* TESNPC::GetHeadPart(uint32_t aType)
 
     return nullptr;
 }
+
+TP_THIS_FUNCTION(TRemoveFromDataStructures, void, TESForm, bool aUnk);
+static TRemoveFromDataStructures* RealRemoveFromDataStructures = nullptr;
+
+void TP_MAKE_THISCALL(HookRemoveFromDataStructures, TESForm, bool aUnk)
+{
+    ModManager::UpdateFormCache(apThis->formID, apThis, true);
+
+    ThisCall(RealRemoveFromDataStructures, apThis, aUnk);
+}
+
+TP_THIS_FUNCTION(TAddFormToScatterTable, uint64_t, void, uint32_t* apFormId, void* apUnk1);
+static TAddFormToScatterTable* RealAddFormToScatterTable = nullptr;
+
+uint64_t TP_MAKE_THISCALL(HookAddFormToScatterTable, void, uint32_t* apFormId, void* apUnk1)
+{
+    ModManager::UpdateFormCache(*apFormId, nullptr, true);
+
+    ThisCall(RealAddFormToScatterTable, apThis, apFormId, apUnk1);
+}
+
+TP_THIS_FUNCTION(TRemoveFormFromScatterTable, uint64_t, void, uint32_t* apFormId, void* apUnk1);
+static TRemoveFormFromScatterTable* RealRemoveFormFromScatterTable = nullptr;
+
+uint64_t TP_MAKE_THISCALL(HookRemoveFormFromScatterTable, void, uint32_t* apFormId, void* apUnk1)
+{
+    ModManager::UpdateFormCache(*apFormId, nullptr, true);
+
+    ThisCall(RealRemoveFormFromScatterTable, apThis, apFormId, apUnk1);
+}
+
+static TiltedPhoques::Initializer s_projectileHooks([]() {
+    POINTER_SKYRIMSE(TRemoveFromDataStructures, s_removeFromDataStructs, 0x14019F500 - 0x140000000);
+    POINTER_SKYRIMSE(TAddFormToScatterTable, s_addFormToScatterTable, 0x1401A0B50 - 0x140000000);
+    POINTER_SKYRIMSE(TRemoveFormFromScatterTable, s_removeFormFromScatterTable, 0x1401A1750 - 0x140000000);
+
+    RealRemoveFromDataStructures = s_removeFromDataStructs.Get();
+    RealAddFormToScatterTable = s_addFormToScatterTable.Get();
+    RealRemoveFormFromScatterTable = s_removeFormFromScatterTable.Get();
+
+    TP_HOOK(&RealRemoveFromDataStructures, HookRemoveFromDataStructures);
+    TP_HOOK(&RealAddFormToScatterTable, HookAddFormToScatterTable);
+    TP_HOOK(&RealRemoveFormFromScatterTable, HookRemoveFormFromScatterTable);
+});
+

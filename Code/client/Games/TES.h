@@ -148,6 +148,9 @@ struct ModManager
 {
     static ModManager* Get() noexcept;
 
+    static Map<uint32_t, TESForm*> sGlobalFormCache[256];
+    static void UpdateFormCache(uint32_t aFormId, TESForm* apForm, bool aInvalidate) noexcept;
+
     uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept;
     Mod* GetByName(const char* acpName) const noexcept;
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
