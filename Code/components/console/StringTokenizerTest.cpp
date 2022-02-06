@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <console/StringTokenizer.h>
 
-namespace console
+namespace Console
 {
 namespace
 {

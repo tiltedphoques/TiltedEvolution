@@ -17,6 +17,7 @@ struct ActorExtension;
 struct TESNPC;
 struct AIProcess;
 struct TESFaction;
+struct TESPackage;
 
 struct Actor : TESObjectREFR
 {
@@ -34,6 +35,60 @@ struct Actor : TESObjectREFR
     virtual void SetPosition(const NiPoint3& acPosition, bool aSyncHavok = true);
     virtual void sub_CB();
     virtual void Resurrect(bool aResetInventory);
+    virtual void sub_CD();
+    virtual void sub_CE();
+    virtual void sub_CF();
+    virtual void sub_D0();
+    virtual void sub_D1();
+    virtual void sub_D2();
+    virtual void sub_D3();
+    virtual void sub_D4();
+    virtual void sub_D5();
+    virtual void sub_D6();
+    virtual void sub_D7();
+    virtual void sub_D8();
+    virtual void sub_D9();
+    virtual void sub_DA();
+    virtual void sub_DB();
+    virtual void sub_DC();
+    virtual void sub_DD();
+    virtual void sub_DE();
+    virtual void sub_DF();
+    virtual void sub_E0();
+    virtual void sub_E1();
+    virtual void sub_E2();
+    virtual void sub_E3();
+    virtual void sub_E4();
+    virtual void sub_E5();
+    virtual void sub_E6();
+    virtual void sub_E7();
+    virtual void sub_E8();
+    virtual void sub_E9();
+    virtual void sub_EA();
+    virtual void sub_EB();
+    virtual void sub_EC();
+    virtual void sub_ED();
+    virtual void sub_EE();
+    virtual void sub_EF();
+    virtual void sub_F0();
+    virtual void sub_F1();
+    virtual void sub_F2();
+    virtual void sub_F3();
+    virtual void sub_F4();
+    virtual void sub_F5();
+    virtual void sub_F6();
+    virtual void sub_F7();
+    virtual void sub_F8();
+    virtual void sub_F9();
+    virtual void sub_FA();
+    virtual void sub_FB();
+    virtual void sub_FC();
+    virtual void sub_FD();
+    virtual void sub_FE();
+    virtual void PutCreatedPackage(struct TESPackage*, bool = false, bool = true, bool = true);
+    virtual void sub_100();
+    //...
+    //virtual void sub_132();
 
     // Casting
     ActorExtension* GetExtension() noexcept;
@@ -61,6 +116,7 @@ struct Actor : TESObjectREFR
     void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
+    void SetPackage(TESPackage* apPackage) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

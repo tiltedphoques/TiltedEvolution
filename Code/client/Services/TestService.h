@@ -19,14 +19,17 @@ struct TestService
 
 protected:
 
-    void AnimationDebugging() noexcept;
-
     void OnDraw() noexcept;
 
 private:
 
     void PlaceActorInWorld() noexcept;
     void RunDiff();
+
+    void DrawComponentDebugView();
+    void DrawPlayerDebugView();
+    void DrawAnimDebugView();
+    void DrawContainerDebugView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
@@ -38,5 +41,7 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
-
+    bool m_showDebugStuff = false;
+    bool m_toggleComponentWindow = false;
+    bool m_drawComponentsInWorldSpace = true;
 };

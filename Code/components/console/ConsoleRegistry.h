@@ -7,7 +7,7 @@
 #include <console/Setting.h>
 #include <console/CommandQueue.h>
 
-namespace console
+namespace Console
 {
 
 template <typename T> struct ErrorOr
@@ -79,4 +79,4 @@ class ConsoleRegistry
 
     std::shared_ptr<spdlog::logger> m_out;
 };
-} // namespace console
+} // namespace Console

@@ -310,4 +310,81 @@ struct TypedValue
     };
 };
 
+struct WCTR
+{
+    WCTR()
+    {
+    }
+    WCTR(Buffer::Reader& aReader);
+
+    int16_t m_x;
+    int16_t m_y;
+};
+
+struct DNAM
+{
+    DNAM()
+    {
+    }
+    DNAM(Buffer::Reader& aReader);
+
+    float m_landLevel;
+    float m_waterLevel;
+};
+
+struct NVNM
+{
+    NVNM()
+    {
+    }
+    NVNM(Buffer::Reader& aReader);
+
+    struct Tri
+    {
+        int16_t m_vertex0;
+        int16_t m_vertex1;
+        int16_t m_vertex2;
+
+        int16_t m_edge0;
+        int16_t m_edge1;
+        int16_t m_edge2;
+
+        int16_t m_coverMarker;
+        int16_t m_coverFlags;
+    };
+
+    struct Connection
+    {
+        uint32_t m_unk;
+        uint32_t m_navMeshId;
+        int16_t tri;
+    };
+
+    struct Door
+    {
+        int16_t tri;
+        uint32_t m_unk;
+        uint32_t m_doorId;
+    };
+
+    uint32_t m_unknown;
+    uint32_t m_locactionMarker;
+    uint32_t m_worldSpaceId;
+    std::optional<uint32_t> m_cellId;
+    std::optional<int16_t> m_gridX;
+    std::optional<int16_t> m_gridY;
+    Vector<glm::vec3> m_vertices;
+    Vector<Tri> m_triangles;
+    Vector<Connection> m_connections;
+    Vector<Door> m_doorTris;
+    Vector<int16_t> m_coverTris;
+    uint32_t m_divisor;
+    glm::vec2 m_maxDistance;
+    glm::vec3 m_min;
+    glm::vec3 m_max;
+};
+
+static_assert(sizeof(glm::vec3) == 12);
+static_assert(sizeof(NVNM::Tri) == 16);
+
 } // namespace

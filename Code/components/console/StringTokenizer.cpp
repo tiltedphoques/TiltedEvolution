@@ -3,23 +3,23 @@
 
 #include <console/StringTokenizer.h>
 
-namespace console
+namespace Console
 {
-StringTokenizer::StringTokenizer(const std::string& acInput, const char* acDelim)
-    : m_string(acInput), m_count(-1), m_begin(0), m_end(0)
+StringTokenizer::StringTokenizer(std::string acInput, const char* acpDelim)
+    : m_string(std::move(acInput)), m_count(-1), m_begin(0), m_end(0)
 {
 
-    if (!acDelim)
+    if (!acpDelim)
         m_delim = " \f\n\r\t\v"; // default to whitespace
     else
-        m_delim = acDelim;
+        m_delim = acpDelim;
 
     // Point to the first token
     m_begin = m_string.find_first_not_of(m_delim);
     m_end = m_string.find_first_of(m_delim, m_begin);
 }
 
-size_t StringTokenizer::CountTokens()
+size_t StringTokenizer::CountTokens() noexcept
 {
     if (m_count >= 0) // return if we've already counted
         return (m_count);
@@ -55,4 +55,4 @@ void StringTokenizer::GetNext(std::string& s)
         m_begin = m_string.find_first_not_of(m_delim, m_end);
     }
 }
-} // namespace console
+} // namespace Console

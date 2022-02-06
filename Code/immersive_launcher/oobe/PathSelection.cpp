@@ -31,7 +31,7 @@ static std::wstring SuggestTitlePath()
     return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, path.c_str(), subName);
 }
 
-static std::optional<std::wstring> OpenPathSelectionPromt(const std::wstring &aSuggestion)
+static std::optional<std::wstring> OpenPathSelectionDialog(const std::wstring &aSuggestion)
 {
     OPENFILENAMEW file{};
 
@@ -65,7 +65,7 @@ bool SelectInstall(bool aForceSelect)
     if (!std::filesystem::exists(titlePath) || 
         !std::filesystem::exists(exePath) || aForceSelect)
     {
-        if (auto path = OpenPathSelectionPromt(SuggestTitlePath()))
+        if (auto path = OpenPathSelectionDialog(SuggestTitlePath()))
         {
             size_t pos = path->find_last_of(L'\\');
             if (pos == std::string::npos)

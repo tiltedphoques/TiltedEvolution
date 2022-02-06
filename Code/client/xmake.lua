@@ -39,11 +39,14 @@ target(name)
     add_deps(
         "UiProcess",
         "Common",
+        "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
         "TiltedScript",
-        "TiltedUi")
+        "TiltedUi",
+        {inherit = true}
+    )
 
     add_packages(
         "tiltedcore",

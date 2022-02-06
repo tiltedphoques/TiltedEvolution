@@ -24,7 +24,7 @@ static constexpr char kMasterServerEndpoint[] =
 
 static constexpr uint16_t kPlayerMaxCap = 1000;
 
-static console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
+static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
                                         "Whether to announce the server to the tilted server list", true};
 
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept

@@ -2,10 +2,10 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <Base/Check.h>
+#include <base/Check.h>
 #include <TiltedCore/Stl.hpp>
 
-namespace console
+namespace Console
 {
 using namespace TiltedPhoques;
 
@@ -204,4 +204,4 @@ template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : 
 
 using StringSetting = Setting<const char*, detail::DynamicStringStorage<char>>;
 // NOTE: Wide strings are not supported, since our INI cant handle them.
-} // namespace console
+} // namespace Console

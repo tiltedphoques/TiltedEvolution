@@ -4,12 +4,12 @@
 
 namespace oobe
 {
-enum class Policy
+enum class CompatabilityStatus
 {
-    kLax,
-    kRecommended,
-    kTesting
+    kAllGood,
+    kDX11Unsupported,
+    kOldOS
 };
 
-bool TestPlatformViability(Policy);
+CompatabilityStatus ReportModCompatabilityStatus();
 } // namespace oobe

@@ -128,6 +128,15 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
             aRecordCollection.m_gameSettings[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
+        case FormEnum::WRLD: {
+            WRLD parsedRecord = CopyAndParseRecord<WRLD>(pRecord);
+            aRecordCollection.m_worlds[parsedRecord.GetFormId()] = parsedRecord;
+        }
+        case FormEnum::NAVM: {
+            NAVM parsedRecord = CopyAndParseRecord<NAVM>(pRecord);
+            aRecordCollection.m_navMeshes[parsedRecord.GetFormId()] = parsedRecord;
+        
+        }
         }
 
         //pRecord->DiscoverChunks();
@@ -136,7 +145,7 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
         {
             Record record;
             record.CopyRecordData(*pRecord);
-            record.SetBaseId(TESFile::GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
+            record.SetBaseId(GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
             aRecordCollection.m_allRecords[pRecord->GetFormId()] = *pRecord;
         }
 
@@ -146,6 +155,12 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
     return true;
 }
 
+template <typename T>
+concept ExpectsGRUP = requires(T t)
+{
+    &T::ParseGRUP;
+};
+
 template <class T> 
 T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 {
@@ -153,18 +168,28 @@ T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 
     T parsedRecord;
     parsedRecord.CopyRecordData(*pRecord);
-
     parsedRecord.SetBaseId(TESFile::GetFormIdPrefix(pRecord->GetFormId(), m_parentToFormIdPrefix));
-
     parsedRecord.ParseChunks(*pRecord, m_parentToFormIdPrefix);
+
+    // If the record expects a subgroup right after, parse it? Or do we not care since we load everything?
+    if constexpr (ExpectsGRUP<T>)
+    {
+    //    ParseGRUP(pRecord, parsedRecord);
+    }
 
     return parsedRecord;
 }
 
+template <class T>
+void TESFile::ParseGRUP(Record* pRecordHeader, T& aRecord)
+{
+    //aRecord.ParseGRUP();
+}
+
 uint32_t TESFile::GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
 {
-    uint8_t baseId = (uint8_t)(aFormId >> 24);
-    auto masterId = aParentToFormIdPrefix.find(baseId);
+    auto baseId = (uint8_t)(aFormId >> 24);
+    const auto masterId = aParentToFormIdPrefix.find(baseId);
 
     if (masterId == std::end(aParentToFormIdPrefix))
     {

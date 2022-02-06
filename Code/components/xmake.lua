@@ -21,9 +21,9 @@ end
 
 -- this isnt fully specified yet.
 function unittest(name)
-    target(name .. "-Test")
+    target(name .. "_Tests")
       set_kind("binary")
-      set_group("Components")
+      set_group("Tests")
       add_configfiles("BuildInfo.h.in")
       add_includedirs(
         ".",
@@ -35,7 +35,7 @@ function unittest(name)
           "**.h")
       add_files(
           "**.cpp",
-          "../../../build/TestMain.cpp")
+          "../../TestMain.cpp")
       add_packages(
         "tiltedcore", 
         "hopscotch-map", 
@@ -45,4 +45,5 @@ function unittest(name)
 
 -- List all components required below:
 includes("console")
+includes("imgui")
 includes("es_loader")

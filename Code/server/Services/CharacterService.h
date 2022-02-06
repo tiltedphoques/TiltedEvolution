@@ -19,6 +19,7 @@ struct RequestOwnershipClaim;
 struct OwnershipTransferEvent;
 struct ProjectileLaunchRequest;
 struct MountRequest;
+struct NewPackageRequest;
 
 struct CharacterService
 {
@@ -45,6 +46,7 @@ protected:
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
     void OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept;
     void OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept;
+    void OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
@@ -69,4 +71,5 @@ private:
     entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_projectileLaunchConnection;
     entt::scoped_connection m_mountConnection;
+    entt::scoped_connection m_newPackageConnection;
 };

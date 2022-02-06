@@ -22,7 +22,6 @@
 #error No game matches these build options
 #endif
 
-
 #include <windows.h>
 #include <intrin.h>
 #include <cstdint>

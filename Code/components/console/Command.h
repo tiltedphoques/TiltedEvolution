@@ -7,7 +7,7 @@
 #include <string>
 #include <console/ArgStack.h>
 
-namespace console
+namespace Console
 {
 // CommandNode
 // CommandData
@@ -53,13 +53,17 @@ class CommandBase
     //template <class _Ty>
     //static constexpr bool IsStringType = _Is_any_of_v<remove_cv_t<_Ty>, const char*, std::string>;
 
+    template <class _Ty, class... _Types>
+    static constexpr bool IsAnyOf = // true if and only if _Ty is in _Types
+        std::disjunction_v<std::is_same<_Ty, _Types>...>;
+
     template <typename T> static constexpr Type ToValueTypeIndex()
     {
         if constexpr (std::is_same_v<T, bool>)
             return Type::kBoolean;
         if constexpr (std::is_integral_v<T>)
             return Type::kNumeric;
-        if constexpr (std::_Is_any_of_v<std::remove_cv_t<T>, const char*, std::string>)
+        if constexpr (IsAnyOf<std::remove_cv_t<T>, const char*, std::string>)
             return Type::kString;
         // static_assert(false, "Unsupported type.");
         return Type::kUnknown;
