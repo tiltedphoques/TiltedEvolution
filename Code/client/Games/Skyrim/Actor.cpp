@@ -258,10 +258,7 @@ Container Actor::GetFullContainer() const noexcept
         for (BSExtraDataList* pExtraDataList : *pGameEntry->dataList)
         {
             if (!pExtraDataList)
-            {
-                spdlog::warn("Null ExtraDataList?");
                 continue;
-            }
 
             Container::Entry innerEntry;
             innerEntry.BaseId = entry.BaseId;
@@ -368,7 +365,6 @@ Container Actor::GetFullContainer() const noexcept
 
     spdlog::info("fullContainer count after: {}", fullContainer.Entries.size());
 
-    // TODO: doesn't filter all duplicates?
     return fullContainer;
 }
 
