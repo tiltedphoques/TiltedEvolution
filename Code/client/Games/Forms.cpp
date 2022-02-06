@@ -199,8 +199,8 @@ TESForm* TP_MAKE_THISCALL(HookGetById, void)
     const uint8_t modId = (formId & 0xFF000000) >> 24;
     const uint32_t baseId = (formId & 0x00FFFFFF);
 
-    auto baseIdIt = ModManager::sGlobalFormCache->find(baseId);
-    if (baseIdIt != ModManager::sGlobalFormCache->end())
+    auto baseIdIt = ModManager::sGlobalFormCache[modId].find(baseId);
+    if (baseIdIt != ModManager::sGlobalFormCache[modId].end())
         return baseIdIt->second;
 
     return ThisCall(RealGetById, apThis);

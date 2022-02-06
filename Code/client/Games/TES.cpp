@@ -18,6 +18,8 @@ ProcessLists* ProcessLists::Get() noexcept
     return *processLists.Get();
 }
 
+Map<uint32_t, TESForm*> ModManager::sGlobalFormCache[256]{};
+
 void ModManager::UpdateFormCache(uint32_t aFormId, TESForm* apForm, bool aInvalidate) noexcept
 {
     const uint8_t modId = (aFormId & 0xFF000000) >> 24;
