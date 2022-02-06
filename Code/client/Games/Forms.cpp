@@ -12,6 +12,7 @@
 #include <Games/TES.h>
 
 
+// By calling the original addr, we also check our cached forms first
 TESForm* TESForm::GetById(const uint32_t aId)
 {
     using TGetFormById = TESForm*(uint32_t);
@@ -174,7 +175,7 @@ uint64_t TP_MAKE_THISCALL(HookAddFormToScatterTable, void, uint32_t* apFormId, v
 {
     ModManager::UpdateFormCache(*apFormId, nullptr, true);
 
-    ThisCall(RealAddFormToScatterTable, apThis, apFormId, apUnk1);
+    return ThisCall(RealAddFormToScatterTable, apThis, apFormId, apUnk1);
 }
 
 TP_THIS_FUNCTION(TRemoveFormFromScatterTable, uint64_t, void, uint32_t* apFormId, void* apUnk1);
@@ -184,20 +185,41 @@ uint64_t TP_MAKE_THISCALL(HookRemoveFormFromScatterTable, void, uint32_t* apForm
 {
     ModManager::UpdateFormCache(*apFormId, nullptr, true);
 
-    ThisCall(RealRemoveFormFromScatterTable, apThis, apFormId, apUnk1);
+    return ThisCall(RealRemoveFormFromScatterTable, apThis, apFormId, apUnk1);
+}
+
+TP_THIS_FUNCTION(TGetById, TESForm*, void);
+static TGetById* RealGetById = nullptr;
+
+TESForm* TP_MAKE_THISCALL(HookGetById, void)
+{
+    // TODO: ugly hack
+    uint32_t formId = (uint32_t)apThis;
+
+    const uint8_t modId = (formId & 0xFF000000) >> 24;
+    const uint32_t baseId = (formId & 0x00FFFFFF);
+
+    auto baseIdIt = ModManager::sGlobalFormCache->find(baseId);
+    if (baseIdIt != ModManager::sGlobalFormCache->end())
+        return baseIdIt->second;
+
+    return ThisCall(RealGetById, apThis);
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
     POINTER_SKYRIMSE(TRemoveFromDataStructures, s_removeFromDataStructs, 0x14019F500 - 0x140000000);
     POINTER_SKYRIMSE(TAddFormToScatterTable, s_addFormToScatterTable, 0x1401A0B50 - 0x140000000);
     POINTER_SKYRIMSE(TRemoveFormFromScatterTable, s_removeFormFromScatterTable, 0x1401A1750 - 0x140000000);
+    POINTER_SKYRIMSE(TGetById, s_getById, 0x14019F080 - 0x140000000);
 
     RealRemoveFromDataStructures = s_removeFromDataStructs.Get();
     RealAddFormToScatterTable = s_addFormToScatterTable.Get();
     RealRemoveFormFromScatterTable = s_removeFormFromScatterTable.Get();
+    RealGetById = s_getById.Get();
 
     TP_HOOK(&RealRemoveFromDataStructures, HookRemoveFromDataStructures);
     TP_HOOK(&RealAddFormToScatterTable, HookAddFormToScatterTable);
     TP_HOOK(&RealRemoveFormFromScatterTable, HookRemoveFormFromScatterTable);
+    TP_HOOK(&RealGetById, HookGetById);
 });
 
