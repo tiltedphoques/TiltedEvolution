@@ -4,14 +4,18 @@ ARG make_jobs=8
 
 WORKDIR /home/server
 
-COPY ./Build ./Build
-COPY ./Code ./Code
+COPY ./modules ./modules
 COPY ./Libraries ./Libraries
+COPY xmake.lua xmake.lua
+COPY ./.git ./.git
+COPY ./Code ./Code
 
-RUN ln  -s -f /usr/local/bin/premake5 ./Build/premake5 && \
-    ln  -s -f /usr/local/bin/protoc ./Libraries/TiltedConnect/Build/protoc && \
-    cd Build && \
-    ./MakeGMakeProjects.sh && \
-    cd projects && \
-    make config=skyrim_x64 -j $make_jobs && \
-    make config=fallout4_x64 -j $make_jobs
+RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
+export PATH="$XMAKE_ROOTDIR:$PATH" && \
+export XMAKE_ROOT=y && \
+xmake config -y
+
+RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
+export PATH="$XMAKE_ROOTDIR:$PATH" && \
+export XMAKE_ROOT=y && \
+xmake -y -j8
