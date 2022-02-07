@@ -107,5 +107,35 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
     RealLaunch = s_launch.Get();
 
     TP_HOOK(&RealLaunch, HookLaunch);
+
+    struct C : TiltedPhoques::CodeGenerator
+    {
+        C()
+        {
+            // replicate
+            mov(rbx, ptr[rsp + 0x50]);
+            
+            // nullptr check
+            cmp(rbx, 0);
+            jz("exit");
+            // jump back 
+            jmp_S(0x14056B9D9);
+
+            L("exit");
+            // return false; scratch space from the registers
+            mov(al, 0);
+            add(rsp, 0x138);
+            pop(r15);
+            pop(r14);
+            pop(r13);
+            pop(r12);
+            pop(rdi);
+            pop(rsi);
+            pop(rbx);
+            pop(rbp);
+            ret();
+        }
+    } gen;
+    TiltedPhoques::Jump(0x14056B9D4, gen.getCode());
 });
 
