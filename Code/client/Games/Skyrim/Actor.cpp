@@ -25,6 +25,8 @@
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
+#include <Forms/BGSPerk.h>
+#include <Games/Misc/TaskQueueInterface.h>
 
 #ifdef SAVE_STUFF
 
@@ -685,6 +687,49 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
     return ThisCall(RealInitiateMountPackage, apThis, apMount);
 }
 
+static uint32_t s_nextFormId = 0;
+
+// TODO: this is BGSPerk::ApplyPerksVisitor::operator()
+TP_THIS_FUNCTION(TAddPerk, int64_t, BGSPerk::ApplyPerksVisitor, BGSPerk::PerkRankData* apPerkData);
+static TAddPerk* RealAddPerk = nullptr;
+
+int64_t TP_MAKE_THISCALL(HookAddPerk, BGSPerk::ApplyPerksVisitor, BGSPerk::PerkRankData* apPerkData)
+{
+    if (apPerkData && apPerkData->pPerk)
+    {
+        int8_t oldRank = 0;
+        const int8_t newRank = apPerkData->cCurrentRank;
+        const uint32_t formId = apThis->pActor->formID;
+
+        if (formId == s_nextFormId)
+        {
+            s_nextFormId = 0;
+            if (formId != 0x14)
+                oldRank |= 0x100;
+        }
+
+        TaskQueueInterface::Get()->QueueApplyPerk(apThis->pActor, apPerkData->pPerk, oldRank, newRank);
+    }
+
+    return 1;
+}
+
+// TODO: This is an AIProcess function
+TP_THIS_FUNCTION(TApplyPerksFromBase, void, AIProcess, Actor* apOwner);
+static TApplyPerksFromBase* RealApplyPerksFromBase = nullptr;
+
+void TP_MAKE_THISCALL(HookApplyPerksFromBase, AIProcess, Actor* apOwner)
+{
+    // mimics the in-game code
+    if (apThis->middleProcess)
+    {
+        if (TESForm* pBase = apOwner->baseForm)
+            s_nextFormId = pBase->formID;
+    }
+
+    return;
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406BA280 - 0x140000000);
@@ -701,6 +746,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140742FE0 - 0x140000000);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BC50 - 0x140000000);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 0x14062CF40 - 0x140000000);
+    POINTER_SKYRIMSE(TAddPerk, s_addPerk, 0x14034EEA0 - 0x140000000);
+    POINTER_SKYRIMSE(TApplyPerksFromBase, s_applyPerksFromBase, 0x1406A9580 - 0x140000000);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -715,6 +762,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
+    RealAddPerk = s_addPerk.Get();
+    RealApplyPerksFromBase = s_applyPerksFromBase.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -728,4 +777,6 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
+    TP_HOOK(&RealAddPerk, HookAddInventoryItem);
+    TP_HOOK(&RealApplyPerksFromBase, HookApplyPerksFromBase);
 });

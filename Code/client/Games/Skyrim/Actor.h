@@ -21,6 +21,7 @@ struct ExPlayerCharacter;
 struct ActorExtension;
 struct AIProcess;
 struct CombatController;
+struct BGSPerk;
 
 struct Actor : TESObjectREFR
 {

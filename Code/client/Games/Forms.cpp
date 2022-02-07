@@ -206,7 +206,7 @@ TESForm* TP_MAKE_THISCALL(HookGetById, void)
     return ThisCall(RealGetById, apThis);
 }
 
-static TiltedPhoques::Initializer s_projectileHooks([]() {
+static TiltedPhoques::Initializer s_formHooks([]() {
     POINTER_SKYRIMSE(TRemoveFromDataStructures, s_removeFromDataStructs, 0x14019F500 - 0x140000000);
     POINTER_SKYRIMSE(TAddFormToScatterTable, s_addFormToScatterTable, 0x1401A0B50 - 0x140000000);
     POINTER_SKYRIMSE(TRemoveFormFromScatterTable, s_removeFormFromScatterTable, 0x1401A1750 - 0x140000000);
