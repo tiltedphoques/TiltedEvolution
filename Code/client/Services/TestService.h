@@ -24,7 +24,6 @@ protected:
 private:
 
     void PlaceActorInWorld() noexcept;
-    void RunDiff();
 
     void DrawComponentDebugView();
     void DrawPlayerDebugView();
