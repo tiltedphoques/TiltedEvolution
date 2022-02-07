@@ -13,9 +13,5 @@ COPY ./Code ./Code
 RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
 export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
-xmake config -y
-
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
+xmake config -y --ldflags="-static" && \
 xmake -y -j8
