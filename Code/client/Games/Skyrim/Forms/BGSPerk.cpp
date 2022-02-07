@@ -4,7 +4,7 @@
 #include <Games/Misc/TaskQueueInterface.h>
 #include <AI/AIProcess.h>
 
-extern uint32_t s_nextPerkFormId;
+uint32_t s_nextPerkFormId = 0;
 
 // TODO: this is BGSPerk::ApplyPerksVisitor::operator()
 TP_THIS_FUNCTION(TAddPerk, int64_t, BGSPerk::ApplyPerksVisitor, BGSPerk::PerkRankData* apPerkData);

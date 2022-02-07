@@ -26,13 +26,13 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, AIProcess, DialogueItem* apVoice,
     return ThisCall(RealProcessResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
 }
 
-static uint32_t s_nextPerkFormId = 0;
-
 TP_THIS_FUNCTION(TApplyPerksFromBase, void, AIProcess, Actor* apOwner);
 static TApplyPerksFromBase* RealApplyPerksFromBase = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyPerksFromBase, AIProcess, Actor* apOwner)
 {
+    extern uint32_t s_nextPerkFormId;
+
     // mimics the in-game code
     if (apThis->middleProcess)
     {
