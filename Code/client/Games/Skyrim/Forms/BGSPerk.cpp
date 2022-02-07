@@ -1,7 +1,43 @@
 #include "BGSPerk.h"
-#include <Actor.h>
 
-static TiltedPhoques::Initializer s_perkHooks([]() {
+#include <Actor.h>
+#include <Games/Misc/TaskQueueInterface.h>
+
+extern uint32_t s_nextPerkFormId;
+
+// TODO: this is BGSPerk::ApplyPerksVisitor::operator()
+TP_THIS_FUNCTION(TAddPerk, int64_t, BGSPerk::ApplyPerksVisitor, BGSPerk::PerkRankData* apPerkData);
+static TAddPerk* RealAddPerk = nullptr;
+
+int64_t TP_MAKE_THISCALL(HookAddPerk, BGSPerk::ApplyPerksVisitor, BGSPerk::PerkRankData* apPerkData)
+{
+    if (apPerkData && apPerkData->pPerk)
+    {
+        int8_t oldRank = 0;
+        const int8_t newRank = apPerkData->cCurrentRank;
+        const uint32_t formId = apThis->pActor->formID;
+
+        if (formId == s_nextPerkFormId)
+        {
+            s_nextPerkFormId = 0;
+            if (formId != 0x14)
+                oldRank |= 0x100;
+        }
+
+        TaskQueueInterface::Get()->QueueApplyPerk(apThis->pActor, apPerkData->pPerk, oldRank, newRank);
+    }
+
+    return 1;
+}
+
+static TiltedPhoques::Initializer s_perkHooks([]() 
+{
+    POINTER_SKYRIMSE(TAddPerk, s_addPerk, 0x14034EEA0 - 0x140000000);
+
+    RealAddPerk = s_addPerk.Get();
+
+    TP_HOOK(&RealAddPerk, HookAddPerk);
+
 
     // TODO: probably a better way to do this
 

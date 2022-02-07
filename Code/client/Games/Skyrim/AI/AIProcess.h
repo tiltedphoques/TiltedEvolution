@@ -7,6 +7,7 @@ struct TESAmmo;
 struct AIProcess
 {
     bool SetCurrentAmmo(TESAmmo* apAmmo) noexcept;
+    void ClearPerks() noexcept;
 
     void* unk0;
     MiddleProcess* middleProcess;
