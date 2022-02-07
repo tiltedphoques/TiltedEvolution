@@ -40,7 +40,7 @@ void TP_MAKE_THISCALL(HookApplyPerksFromBase, AIProcess, Actor* apOwner)
             s_nextPerkFormId = pBase->formID;
     }
 
-    return;
+    ThisCall(RealApplyPerksFromBase, apThis, apOwner);
 }
 
 static TiltedPhoques::Initializer s_aiProcessHooks([]() 
