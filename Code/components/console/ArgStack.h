@@ -5,7 +5,7 @@
 #include <any>
 #include <memory>
 
-namespace console
+namespace Console
 {
 // Optimized for small size.
 class ArgStack
@@ -51,4 +51,4 @@ class ArgStack
     std::unique_ptr<std::any[]> m_pArgs = nullptr;
     size_t m_Count = 0;
 };
-} // namespace console
+} // namespace Console

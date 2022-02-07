@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <BranchInfo.h>
 
 #define CLIENT_DLL 0
@@ -35,7 +36,7 @@ static constexpr TargetConfig CurrentTarget{
     L"Fallout4", 
     L"Fallout4",
     "cba",
-    377160, 0x70000000, UINT_MAX};
+    377160, 0x70000000, std::numeric_limits<std::uint32_t>::max()};
 #define TARGET_NAME "Fallout4";
 #endif
 

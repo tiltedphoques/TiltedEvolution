@@ -7,11 +7,13 @@
 #endif
 
 #include <cstdint>
+#include <optional>
 
 #include <TiltedCore/Filesystem.hpp>
 #include <TiltedCore/Stl.hpp>
 #include <TiltedCore/Buffer.hpp>
 #include <TiltedCore/Serialization.hpp>
+#include <glm/glm.hpp>
 
 #include <spdlog/spdlog.h>
 

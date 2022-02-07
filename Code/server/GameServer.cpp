@@ -17,7 +17,6 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
-#include <Scripts/Player.h>
 
 #include <console/Command.h>
 #include <console/Setting.h>
@@ -27,25 +26,25 @@
 #endif
 
 // >> Game server cvars <<
-static console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
-static console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
-static console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
+static Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+static Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+static Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                           "Dedicated Together Server"};
-static console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
+static Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
                                           "Hello there!"};
-static console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
+static Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
                                              ""};
-static console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
-static console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-static console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+static Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
+static Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+static Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
 // >> Constants <<
 static constexpr size_t kTagListCap = 512;
 
-static console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
-                                            [](console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
-static console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                                      [](console::ArgStack&) {
+static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
+                                            [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
+                                      [](Console::ArgStack&) {
                                           spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
                                       });
 
@@ -334,7 +333,7 @@ GameServer* GameServer::Get() noexcept
 }
 
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
-                                             const UniquePtr<AuthenticationRequest>& acRequest) noexcept
+                                             const UniquePtr<AuthenticationRequest>& acRequest)
 {
     const auto info = GetConnectionInfo(aConnectionId);
 
@@ -363,7 +362,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
         // form id anyway
         std::ostringstream oss;
-        oss << "New player {:x} connected with mods\n\t Standard: ";
+        oss << fmt::format("New player {:x} connected with mods\n\t Standard: ", aConnectionId);
 
         Vector<String> playerMods;
         Vector<uint16_t> playerModsIds;
@@ -416,7 +415,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             return;
         }*/
 
-        spdlog::info(oss.str(), aConnectionId);
+        spdlog::info("{}", oss.str().c_str());
 
         serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
@@ -446,8 +445,8 @@ void GameServer::UpdateTitle() const
     const auto name = m_info.name.empty() ? "Private server" : m_info.name;
     const char* playerText = GetClientCount() <= 1 ? " player" : " players";
 
-    constexpr char kFormatText[] = "{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT;
-    auto title = fmt::format(kFormatText, name, GetClientCount(), playerText, GetTickRate());
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(), GetClientCount(),
+                             playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

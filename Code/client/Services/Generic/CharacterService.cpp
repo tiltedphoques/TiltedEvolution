@@ -1169,7 +1169,7 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     const entt::entity cRiderEntity = *riderIt;
 
-    std::optional<uint32_t> riderServerIdRes = utils::GetServerId(cRiderEntity);
+    std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
     if (!riderServerIdRes.has_value())
         return;
 
@@ -1185,7 +1185,7 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     const entt::entity cMountEntity = *mountIt;
 
-    std::optional<uint32_t> mountServerIdRes = utils::GetServerId(cMountEntity);
+    std::optional<uint32_t> mountServerIdRes = Utils::GetServerId(cMountEntity);
     if (!mountServerIdRes.has_value())
         return;
 
@@ -1239,7 +1239,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     auto formView = m_world.view<FormIdComponent>();
     for (auto entity : formView)
     {
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 
@@ -1286,7 +1286,7 @@ void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const
 
     const entt::entity cActorEntity = *actorIt;
 
-    std::optional<uint32_t> actorServerIdRes = utils::GetServerId(cActorEntity);
+    std::optional<uint32_t> actorServerIdRes = Utils::GetServerId(cActorEntity);
     if (!actorServerIdRes.has_value())
         return;
 

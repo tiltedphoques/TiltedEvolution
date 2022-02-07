@@ -7,7 +7,7 @@
 #include <string>
 #include <console/ArgStack.h>
 
-namespace console
+namespace Console
 {
 // CommandNode
 // CommandData

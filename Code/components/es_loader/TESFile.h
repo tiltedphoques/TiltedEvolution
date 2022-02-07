@@ -9,6 +9,7 @@
 #include <Records/TES4.h>
 #include <Records/GMST.h>
 
+
 class TESFile
 {
 public:
@@ -25,8 +26,9 @@ public:
 private:
     bool ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aRecordCollection) noexcept;
 
-    template <class T> 
-    T CopyAndParseRecord(Record* pRecordHeader);
+    template <class T> T CopyAndParseRecord(Record* pRecordHeader);
+
+    template <class T> void ParseGRUP(Record* pRecordHeader, T& aRecord);
 
     String m_filename = "";
     Buffer m_buffer{};

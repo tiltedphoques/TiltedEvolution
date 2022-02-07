@@ -5,7 +5,7 @@
 #include <cctype>
 #include <string>
 
-namespace console
+namespace Console
 {
 // taken from
 // https://stackoverflow.com/questions/29169153/how-do-i-verify-a-string-is-valid-double-even-if-it-has-a-point-in-it
@@ -16,4 +16,4 @@ inline bool IsNumber(const std::string_view s)
 }
 
 bool CheckIsValidUTF8(const std::string& string);
-} // namespace console
+} // namespace Console

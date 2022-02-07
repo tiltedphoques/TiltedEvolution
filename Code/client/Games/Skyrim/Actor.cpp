@@ -409,7 +409,7 @@ Factions Actor::GetFactions() const noexcept
     {
         auto& factions = pNpc->actorData.factions;
 
-        for (auto i = 0; i < factions.length; ++i)
+        for (auto i = 0u; i < factions.length; ++i)
         {
             Faction faction;
 
@@ -423,7 +423,7 @@ Factions Actor::GetFactions() const noexcept
     auto* pChanges = RTTI_CAST(extraData.GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
     if (pChanges)
     {
-        for (auto i = 0; i < pChanges->entries.length; ++i)
+        for (auto i = 0u; i < pChanges->entries.length; ++i)
         {
             Faction faction;
 

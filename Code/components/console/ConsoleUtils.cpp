@@ -2,7 +2,7 @@
 
 #include <console/ConsoleUtils.h>
 
-namespace console
+namespace Console
 {
 bool CheckIsValidUTF8(const std::string& string)
 {
@@ -33,4 +33,4 @@ bool CheckIsValidUTF8(const std::string& string)
     }
     return true;
 }
-} // namespace console
+} // namespace Console

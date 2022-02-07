@@ -49,7 +49,7 @@ local function build_launcher()
         "mem")
 end
 
-target("Immersivelauncher-ST")
+target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")
     add_defines(
         "TARGET_ST",
@@ -58,7 +58,7 @@ target("Immersivelauncher-ST")
     add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
     build_launcher()
 
-target("Immersivelauncher-FT")
+target("FalloutImmersiveLauncher")
     set_basename("FalloutTogether")
     add_defines(
         "TARGET_FT",
@@ -66,3 +66,4 @@ target("Immersivelauncher-FT")
     add_deps("FalloutTogetherClient")
     add_ldflags("/WHOLEARCHIVE:FalloutTogetherClient", { force = true })
     build_launcher()
+

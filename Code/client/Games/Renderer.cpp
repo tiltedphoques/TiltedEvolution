@@ -1,8 +1,6 @@
 #include <TiltedOnlinePCH.h>
 
 
-#include <MemoryVP.hpp>
-
 #include <Renderer.h>
 
 #include <Systems/RenderSystemD3D11.h>

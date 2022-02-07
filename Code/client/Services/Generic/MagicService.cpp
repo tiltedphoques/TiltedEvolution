@@ -64,7 +64,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
         AddTargetRequest request;
 
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 
@@ -285,7 +285,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     AddTargetRequest request;
 
-    std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
     if (!serverIdRes.has_value())
         return;
 
@@ -308,7 +308,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     for (auto entity : view)
     {
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 
