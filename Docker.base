@@ -1,4 +1,0 @@
-FROM muslcc/x86_64:x86_64-linux-musl
-
-RUN apk add --no-cache --update autoconf automake linux-headers p7zip curl tar unzip cmake bash
-RUN curl -fsSL https://xmake.io/shget.text > getxmake.sh && chmod +x getxmake.sh && ./getxmake.sh && apk del g++ gcc libc-dev musl-dev && ln -s /bin/gcc-11.2.1 /usr/bin/gcc

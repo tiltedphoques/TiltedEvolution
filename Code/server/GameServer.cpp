@@ -43,6 +43,10 @@ static constexpr size_t kTagListCap = 512;
 
 static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                             [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+
+static Console::Command<> Quit("quit", "Shutdown the server",
+                               [](Console::ArgStack&) { GameServer::Get()->Stop(); });
+
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                       [](Console::ArgStack&) {
                                           spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
@@ -55,7 +59,9 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer() noexcept : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_requestStop(false)
+GameServer::GameServer() noexcept
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now())
+    , m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -324,6 +330,7 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
 
 void GameServer::Stop() noexcept
 {
+    spdlog::info("Server shutdown requested");
     m_requestStop = true;
 }
 

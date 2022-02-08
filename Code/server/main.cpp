@@ -42,6 +42,7 @@ constexpr char kLogFileName[] =
 
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
+constexpr char kConfigPathName[] = "config";
 constexpr char kEULAName[] = "EULA.txt";
 constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted platform service agreement\n"
                              ";by setting bConfirmEULA to true\n"
@@ -52,6 +53,8 @@ constexpr char kConsoleOutName[] = "ConOut";
 namespace fs = std::filesystem;
 
 static Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+static Console::Setting bConsole{"bConsole", "Enable the console", false};
+
 
 // LogInstance must be created for the Console Instance.
 struct LogInstance
@@ -88,35 +91,37 @@ struct SettingsInstance
 {
     SettingsInstance()
     {
-        m_Path = fs::current_path() / kSettingsFileName;
-        if (!fs::exists(m_Path))
+        m_path = fs::current_path() / kConfigPathName / kSettingsFileName;
+        if (!fs::exists(m_path))
         {
-            Console::SaveSettingsToIni(m_Path);
+            create_directory(fs::current_path() / kConfigPathName);
+            Console::SaveSettingsToIni(m_path);
             return;
         }
-        Console::LoadSettingsFromIni(m_Path);
+        Console::LoadSettingsFromIni(m_path);
     }
 
     ~SettingsInstance()
     {
-        Console::SaveSettingsToIni(m_Path);
+        Console::SaveSettingsToIni(m_path);
     }
 
-  private:
-    fs::path m_Path;
+private:
+    fs::path m_path;
 };
 
 // Frontend class for the dedicated terminal based server
 class DediRunner
 {
-  public:
+public:
+
     DediRunner(int argc, char** argv);
     ~DediRunner() = default;
 
     void StartGSThread();
     void RunTerminalIO();
 
-  private:
+private:
     fs::path m_configPath;
     // Order here matters for constructor calling order.
     SettingsInstance m_settings;
@@ -125,7 +130,8 @@ class DediRunner
     Console::ConsoleRegistry m_console;
 };
 
-DediRunner::DediRunner(int argc, char** argv) : m_console(kConsoleOutName)
+DediRunner::DediRunner(int argc, char** argv)
+    : m_console(kConsoleOutName)
 {
     // Post construction init stuff.
     m_gameServer.Initialize();
@@ -137,7 +143,7 @@ void DediRunner::StartGSThread()
         while (m_gameServer.IsListening())
         {
             m_gameServer.Update();
-            if (m_console.Update())
+            if (bConsole && m_console.Update())
             {
                 // Force:
                 // This is a hack to get the executor arrow.
@@ -153,13 +159,23 @@ void DediRunner::StartGSThread()
 
 void DediRunner::RunTerminalIO()
 {
-    spdlog::get("ConOut")->info("Welcome to the ST Server console");
-    fmt::print(">");
-    while (true)
+    if (bConsole)
     {
-        std::string s;
-        std::getline(std::cin, s);
-        m_console.TryExecuteCommand(s);
+        spdlog::get("ConOut")->info("Server console");
+        fmt::print(">");
+        while (m_gameServer.IsRunning())
+        {
+            std::string s;
+            std::getline(std::cin, s);
+            m_console.TryExecuteCommand(s);
+        }
+    }
+    else
+    {
+        while (m_gameServer.IsRunning())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
     }
 }
 
@@ -173,14 +189,15 @@ static void ShittyFileWrite(const std::filesystem::path& aPath, const char* cons
 
 static bool IsEULAAccepted()
 {
-    auto path = fs::current_path() / kEULAName;
-    if (!fs::exists(path))
+    const auto path = fs::current_path() / kConfigPathName / kEULAName;
+    if (!exists(path))
     {
+        create_directory(fs::current_path() / kConfigPathName);
         ShittyFileWrite(path, kEULAText);
         return false;
     }
 
-    auto data = TiltedPhoques::LoadFile(path);
+    const auto data = LoadFile(path);
     CSimpleIni si;
     if (si.LoadData(data.c_str()) != SI_OK)
         return false;
@@ -197,8 +214,9 @@ int main(int argc, char** argv)
     }
 
     // Keep stack free.
-    auto runner{std::make_unique<DediRunner>(argc, argv)};
-    runner->StartGSThread();
-    runner->RunTerminalIO();
+    const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
+    cpRunner->StartGSThread();
+    cpRunner->RunTerminalIO();
+
     return 0;
 }

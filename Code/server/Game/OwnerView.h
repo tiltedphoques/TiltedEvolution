@@ -3,7 +3,7 @@
 template<class... T>
 struct OwnerView
 {
-    using TView = entt::basic_view<entt::entity, entt::exclude_t<>, OwnerComponent, T...>;
+    using TView = entt::basic_view<entt::entity, entt::get_t<OwnerComponent, T...>, entt::exclude_t<>>;
 
     struct iterator
     {
