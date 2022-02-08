@@ -50,6 +50,7 @@ public:
     }
 
     void Stop() noexcept;
+    bool IsRunning() const noexcept { return !m_requestStop; }
 
     static GameServer* Get() noexcept;
 
