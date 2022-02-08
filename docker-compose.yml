@@ -9,4 +9,6 @@ services:
     volumes:
      - ./build/config:/config
      - ./build/logs:/logs
+    ports:
+    - 10578:10578/udp
     
