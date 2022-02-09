@@ -1,3 +1,28 @@
+# [1.13.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.12.0...v1.13.0) (2022-02-09)
+
+
+### Bug Fixes
+
+* build error ([7c8c017](https://github.com/tiltedphoques/TiltedEvolution/commit/7c8c017096a5f08bcd6beabeffc5143be5329d5e))
+* build errors ([92f8dbf](https://github.com/tiltedphoques/TiltedEvolution/commit/92f8dbf578f3d39ed729e224b1d1774cf987a89c))
+* crash when allocating too much data in a single packet ([d672708](https://github.com/tiltedphoques/TiltedEvolution/commit/d6727085c1932306d02c87a31dd5ec5a2c6a7c8e))
+* linux build ([6d340a0](https://github.com/tiltedphoques/TiltedEvolution/commit/6d340a08c75215ca367133e768ac4cf3cd663b27))
+* linux build should not include imgui ([6359122](https://github.com/tiltedphoques/TiltedEvolution/commit/63591224f0531386cc46ebb8a6e5b91430194e9d))
+* linux build vs lower case ([0e8b386](https://github.com/tiltedphoques/TiltedEvolution/commit/0e8b386fdc10941306f7ac217f5a9da447276c27))
+* linux now builds ! ([46f85be](https://github.com/tiltedphoques/TiltedEvolution/commit/46f85be9399926f22947f845e5982281dd20c4f6))
+* Project builds, proper namespace naming conventions and some warning fixes ([5ccf173](https://github.com/tiltedphoques/TiltedEvolution/commit/5ccf1733bfc102628374b2492d84c3ba097d8b66))
+* Tests now build correctly on first build ([23801f5](https://github.com/tiltedphoques/TiltedEvolution/commit/23801f50b96c79839721c1908b699366be86a43a))
+
+
+### Features
+
+* Build a reference map of navmesh chunks for each worldspace/cell ([b16ec88](https://github.com/tiltedphoques/TiltedEvolution/commit/b16ec88e1a51e732724c50c36048ba721af96fa6))
+* Docker image can now be built ([3ef8308](https://github.com/tiltedphoques/TiltedEvolution/commit/3ef8308529c4840b78c0342b6c82ea85bf89ad91))
+* docker-compose ([8d4b802](https://github.com/tiltedphoques/TiltedEvolution/commit/8d4b8026d881b8bf507eadf93c729e7b0ce53e27))
+* docker-compose now forward port correctly ([c85d138](https://github.com/tiltedphoques/TiltedEvolution/commit/c85d13828baa19b7632b57b063da69976415574d))
+* load world data on the server ([e6d8d28](https://github.com/tiltedphoques/TiltedEvolution/commit/e6d8d28d7e6c5c62e42ef80a83dd98a3ef3192ec))
+* Parse navmesh and geometry ([80c70b5](https://github.com/tiltedphoques/TiltedEvolution/commit/80c70b50d5562cee3919991e5750083035cccaef))
+
 # [1.12.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.11.0...v1.12.0) (2022-01-24)
 
 
