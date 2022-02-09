@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  skyrim_server:
+    build:
+      context: .
+      args:
+        project: skyrim
+    volumes:
+     - ./build/config:/config
+     - ./build/logs:/logs
+    ports:
+    - 10578:10578/udp
+    
