@@ -75,6 +75,7 @@ void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const e
 
 void ActorValueService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
+    // TODO: this crashes sometimes, no clue why
     m_world.clear<ActorValuesComponent>();
 }
 
