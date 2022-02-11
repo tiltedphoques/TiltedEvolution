@@ -183,7 +183,18 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         // TODO: deal with temp forms for enchanted items
         if (arEntry.ExtraEnchantId != 0)
         {
-            spdlog::info("Enchanted");
+            TP_ASSERT(arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF, "Enchantment is sent as temp!");
+
+            uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
+            if (EnchantmentItem* pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem))
+            {
+                ExtraEnchantment* pExtraEnchantment = Memory::Allocate<ExtraEnchantment>();
+                *((uint64_t*)pExtraEnchantment) = 0x141623E70;
+                pExtraEnchantment->next = nullptr;
+                pExtraEnchantment->pEnchantment = pEnchantment;
+                pExtraEnchantment->usCharge = arEntry.ExtraEnchantCharge;
+                pExtraEnchantment->bRemoveOnUnequip = arEntry.ExtraEnchantRemoveUnequip;
+            }
         }
 
         if (arEntry.ExtraHealth > 0.f)
