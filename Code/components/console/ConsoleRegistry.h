@@ -55,10 +55,17 @@ class ConsoleRegistry
         AddSetting(new Setting<T>(acName, acDesc, acDefault));
     }
 
-    void TryExecuteCommand(const std::string& acLine);
+    bool TryExecuteCommand(const std::string& acLine);
 
     CommandBase* FindCommand(const char* acName);
     SettingBase* FindSetting(const char* acName);
+
+    // Note that this is not thread safe, call this from the same thread you requested
+    // the execution from.
+    auto& GetCommandHistory() const noexcept
+    {
+        return m_commandHistory;
+    }
 
     // Call this from your main thread, this will drain the work item queue.
     bool Update();
@@ -66,6 +73,7 @@ class ConsoleRegistry
   private:
     void AddCommand(CommandBase* apCommand);
     void AddSetting(SettingBase* apSetting);
+    void StoreCommandInHistory(const std::string& acLine);
 
     ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs, ArgStack& aStackOut);
 
@@ -75,6 +83,8 @@ class ConsoleRegistry
     std::vector<CommandBase*> m_ownedCommands;
     std::vector<SettingBase*> m_settings;
     std::vector<SettingBase*> m_ownedSettings;
+
+    std::vector<std::string> m_commandHistory;
     CommandQueue m_queue;
 
     std::shared_ptr<spdlog::logger> m_out;

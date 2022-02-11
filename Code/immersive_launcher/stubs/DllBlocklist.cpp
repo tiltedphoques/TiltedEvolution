@@ -16,6 +16,8 @@ namespace stubs
 #endif
         L"crashhandler64.dll", // Stream crash handler, breaks heap
         L"fraps64.dll",        // Breaks tilted ui
+       // L"atiuxp64.dll",
+       // L"aticfx64.dll"
     };
 
 // clang-format on

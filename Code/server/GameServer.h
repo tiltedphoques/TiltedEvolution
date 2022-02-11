@@ -11,6 +11,11 @@ using TiltedPhoques::ConnectionId_t;
 
 struct AuthenticationRequest;
 
+namespace Console
+{
+class ConsoleRegistry;
+}
+
 struct GameServer final : Server
 {
 public:
@@ -24,20 +29,28 @@ public:
         uint16_t tick_rate;
     };
 
-    GameServer() noexcept;
+    GameServer(Console::ConsoleRegistry * apConsole) noexcept;
     virtual ~GameServer();
 
     TP_NOCOPYMOVE(GameServer);
 
+    static GameServer* Get() noexcept;
+
     void Initialize();
+    void Kill();
+
     void BindMessageHandlers();
+    void BindServerCommands();
+
     void UpdateInfo();
 
+    // Implement TiltedPhoques::Server
     void OnUpdate() override;
     void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
     void OnConnection(ConnectionId_t aHandle) override;
     void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
 
+    // Packet dispatching
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
     void Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;
@@ -49,10 +62,7 @@ public:
         return m_info;
     }
 
-    void Stop() noexcept;
     bool IsRunning() const noexcept { return !m_requestStop; }
-
-    static GameServer* Get() noexcept;
 
     template<class T>
     void ForEachAdmin(const T& aFunctor)
@@ -69,12 +79,15 @@ private:
 
     void UpdateTitle() const;
 
+
+private:
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
 
     Info m_info{};
     std::unique_ptr<World> m_pWorld;
+    Console::ConsoleRegistry* m_pCommands;
 
     Set<ConnectionId_t> m_adminSessions;
     Map<ConnectionId_t, entt::entity> m_connectionToEntity;

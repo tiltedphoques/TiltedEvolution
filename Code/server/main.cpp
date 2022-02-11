@@ -53,8 +53,9 @@ constexpr char kConsoleOutName[] = "ConOut";
 namespace fs = std::filesystem;
 
 static Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
-static Console::Setting bConsole{"bConsole", "Enable the console", false};
+static Console::Setting bConsole{"bConsole", "Enable the console", true};
 
+class DediRunner;
 
 // LogInstance must be created for the Console Instance.
 struct LogInstance
@@ -106,77 +107,134 @@ struct SettingsInstance
         Console::SaveSettingsToIni(m_path);
     }
 
-private:
+  private:
     fs::path m_path;
 };
+
+static DediRunner* s_pRunner{nullptr};
 
 // Frontend class for the dedicated terminal based server
 class DediRunner
 {
-public:
-
+  public:
     DediRunner(int argc, char** argv);
     ~DediRunner() = default;
 
-    void StartGSThread();
-    void RunTerminalIO();
+    void RunGSThread();
+    void StartTerminalIO();
+    void RequestKill();
 
-private:
+  private:
+    static void PrintExecutorArrowHack();
+
+  private:
     fs::path m_configPath;
     // Order here matters for constructor calling order.
     SettingsInstance m_settings;
     LogInstance m_logInstance;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
+    std::unique_ptr<std::jthread> m_pConIOThread;
 };
 
-DediRunner::DediRunner(int argc, char** argv)
-    : m_console(kConsoleOutName)
+DediRunner::DediRunner(int argc, char** argv) : m_gameServer(&m_console), m_console(kConsoleOutName)
 {
+    s_pRunner = this;
+
     // Post construction init stuff.
     m_gameServer.Initialize();
 }
 
-void DediRunner::StartGSThread()
+void DediRunner::PrintExecutorArrowHack()
 {
-    std::thread t([&]() {
-        while (m_gameServer.IsListening())
-        {
-            m_gameServer.Update();
-            if (bConsole && m_console.Update())
-            {
-                // Force:
-                // This is a hack to get the executor arrow.
-                // If you find a way to do this through the ConOut log channel
-                // please let me know (The issue is the forced formatting for that channel)
-                // and the forced null termination.
-                fmt::print(">");
-            }
-        }
-    });
-    t.detach();
+    // Force:
+    // This is a hack to get the executor arrow.
+    // If you find a way to do this through the ConOut log channel
+    // please let me know (The issue is the forced formatting for that channel)
+    // and the forced null termination.
+    fmt::print(">>>");
 }
 
-void DediRunner::RunTerminalIO()
+void DediRunner::RunGSThread()
 {
-    if (bConsole)
+    while (m_gameServer.IsListening())
     {
+        m_gameServer.Update();
+        if (bConsole && m_console.Update())
+        {
+            PrintExecutorArrowHack();
+        }
+    }
+}
+
+void DediRunner::StartTerminalIO()
+{
+    m_pConIOThread.reset(new std::jthread([&]() {
         spdlog::get("ConOut")->info("Server console");
-        fmt::print(">");
+        PrintExecutorArrowHack();
+
         while (m_gameServer.IsRunning())
         {
             std::string s;
             std::getline(std::cin, s);
-            m_console.TryExecuteCommand(s);
+            if (!m_console.TryExecuteCommand(s))
+            {
+                // we take the opportunity here and insert it directly
+                // else we will be lacking it, and we want to avoid testing the queue size after
+                // insert due to race condition.
+                PrintExecutorArrowHack();
+            }
+
+            // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
+            if (s == "/quit")
+                return;
         }
-    }
-    else
-    {
-        while (m_gameServer.IsRunning())
+    }));
+    m_pConIOThread->detach();
+}
+
+void DediRunner::RequestKill()
+{
+    m_pConIOThread->request_stop();
+    m_gameServer.Kill();
+
+    // Give the threads time to process the message.
+    // Of course this is a kind of hack, but its the only kind of way
+    // to ensure a graceful exit!
+    std::this_thread::sleep_for(300ms);
+}
+
+static bool RegisterQuitHandler()
+{
+#if defined(_WIN32)
+    return SetConsoleCtrlHandler(
+        [](DWORD aType) 
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        }
-    }
+            switch (aType)
+            {
+            case CTRL_C_EVENT:
+            case CTRL_CLOSE_EVENT:
+            case CTRL_BREAK_EVENT:
+            case CTRL_LOGOFF_EVENT:
+            case CTRL_SHUTDOWN_EVENT: 
+            {
+                if (s_pRunner)
+                {
+                    s_pRunner->RequestKill();
+                    return TRUE;
+                }
+
+                // if the user kills during the ctor we deny the request
+                // to save our dear life.
+                return FALSE;
+            }
+            default:
+                return FALSE;
+            }
+        },
+        TRUE);
+#endif
+    return true;
 }
 
 static void ShittyFileWrite(const std::filesystem::path& aPath, const char* const acData)
@@ -213,10 +271,15 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    RegisterQuitHandler();
+
     // Keep stack free.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
-    cpRunner->StartGSThread();
-    cpRunner->RunTerminalIO();
+    if (bConsole)
+    {
+        cpRunner->StartTerminalIO();
+    }
+    cpRunner->RunGSThread();
 
     return 0;
 }

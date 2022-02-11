@@ -17,9 +17,7 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
-
-#include <console/Command.h>
-#include <console/Setting.h>
+#include <console/ConsoleRegistry.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
@@ -44,13 +42,8 @@ static constexpr size_t kTagListCap = 512;
 static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                             [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
-static Console::Command<> Quit("quit", "Shutdown the server",
-                               [](Console::ArgStack&) { GameServer::Get()->Stop(); });
-
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                                      [](Console::ArgStack&) {
-                                          spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
-                                      });
+                                      [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
 static uint16_t GetUserTickRate()
 {
@@ -59,9 +52,8 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer() noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now())
-    , m_requestStop(false)
+GameServer::GameServer(Console::ConsoleRegistry* apConsole) noexcept
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_pCommands(apConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -78,6 +70,7 @@ GameServer::GameServer() noexcept
     UpdateTitle();
 
     m_pWorld = std::make_unique<World>();
+
     BindMessageHandlers();
 }
 
@@ -86,9 +79,21 @@ GameServer::~GameServer()
     s_pInstance = nullptr;
 }
 
+GameServer* GameServer::Get() noexcept
+{
+    return s_pInstance;
+}
+
 void GameServer::Initialize()
 {
+    BindServerCommands();
     m_pWorld->GetScriptService().Initialize();
+}
+
+void GameServer::Kill()
+{
+    spdlog::info("Server shutdown requested");
+    m_requestStop = true;
 }
 
 void GameServer::BindMessageHandlers()
@@ -136,6 +141,29 @@ void GameServer::BindMessageHandlers()
     };
 
     ClientAdminMessageFactory::Visit(adminHandlerGenerator);
+}
+
+void GameServer::BindServerCommands()
+{
+    BASE_ASSERT(m_pCommands, "Command logic error");
+
+    m_pCommands->RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        uint32_t count = m_pWorld->GetPlayerManager().Count();
+        if (count == 0)
+        {
+            out->warn("No players on here. Invite some friends!");
+            return;
+        }
+
+        out->info("<------Players-({})--->", count);
+        for (Player* pPlayer : m_pWorld->GetPlayerManager())
+        {
+            out->info("{}: {}", pPlayer->GetId(), pPlayer->GetUsername().c_str());
+        }
+    });
+
+    m_pCommands->RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 }
 
 void GameServer::UpdateInfo()
@@ -328,17 +356,6 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
-void GameServer::Stop() noexcept
-{
-    spdlog::info("Server shutdown requested");
-    m_requestStop = true;
-}
-
-GameServer* GameServer::Get() noexcept
-{
-    return s_pInstance;
-}
-
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                                              const UniquePtr<AuthenticationRequest>& acRequest)
 {
@@ -452,8 +469,8 @@ void GameServer::UpdateTitle() const
     const auto name = m_info.name.empty() ? "Private server" : m_info.name;
     const char* playerText = GetClientCount() <= 1 ? " player" : " players";
 
-    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(), GetClientCount(),
-                             playerText, GetTickRate());
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(),
+                                   GetClientCount(), playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());
