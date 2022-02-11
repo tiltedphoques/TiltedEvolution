@@ -163,7 +163,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
 
     BSExtraDataList* pExtraData = nullptr;
 
-    if (arEntry.ContainsExtraData())
+    if (arEntry.ContainsExtraData() && arEntry.ExtraEnchantId.BaseId == 0)
     {
         pExtraData = Memory::Allocate<BSExtraDataList>();
         pExtraData->data = nullptr;
@@ -175,6 +175,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             ExtraCharge* pExtraCharge = Memory::Allocate<ExtraCharge>();
             *((uint64_t*)pExtraCharge) = 0x141623AB0;
+            pExtraCharge->next = nullptr;
             pExtraCharge->fCharge = arEntry.ExtraCharge;
             pExtraData->Add(ExtraData::Charge, pExtraCharge);
         }
@@ -188,6 +189,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             ExtraHealth* pExtraHealth = Memory::Allocate<ExtraHealth>();
             *((uint64_t*)pExtraHealth) = 0x141623A50;
+            pExtraHealth->next = nullptr;
             pExtraHealth->fHealth = arEntry.ExtraHealth;
             pExtraData->Add(ExtraData::Health, pExtraHealth);
         }
@@ -203,6 +205,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             {
                 ExtraPoison* pExtraPoison = Memory::Allocate<ExtraPoison>();
                 *((uint64_t*)pExtraPoison) = 0x141623E50;
+                pExtraPoison->next = nullptr;
                 pExtraPoison->pPoison = pPoison;
                 pExtraPoison->uiCount = arEntry.ExtraPoisonCount;
                 pExtraData->Add(ExtraData::Poison, pExtraPoison);
@@ -213,6 +216,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             ExtraSoul* pExtraSoul = Memory::Allocate<ExtraSoul>();
             *((uint64_t*)pExtraSoul) = 0x141627220;
+            pExtraSoul->next = nullptr;
             pExtraSoul->cSoul = static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel);
             pExtraData->Add(ExtraData::Soul, pExtraSoul);
         }
@@ -221,6 +225,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
             *((uint64_t*)pExtraText) = 0x1416244D0;
+            pExtraText->next = nullptr;
             pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
             pExtraData->Add(ExtraData::TextDisplayData, pExtraText);
         }
@@ -229,6 +234,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             ExtraWorn* pExtraWorn = Memory::Allocate<ExtraWorn>();
             *((uint64_t*)pExtraWorn) = 0x1416239F0;
+            pExtraWorn->next = nullptr;
             pExtraData->Add(ExtraData::Worn, pExtraWorn);
         }
 
@@ -236,9 +242,16 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             ExtraWornLeft* pExtraWornLeft = Memory::Allocate<ExtraWornLeft>();
             *((uint64_t*)pExtraWornLeft) = 0x141623A10;
+            pExtraWornLeft->next = nullptr;
             pExtraData->Add(ExtraData::WornLeft, pExtraWornLeft);
         }
     }
+
+    /*
+    BSExtraDataList* pExtraData2 = pExtraData;
+    if (pExtraData)
+        DebugBreak();
+    */
 
     AddObjectToContainer(pObject, pExtraData, arEntry.Count, nullptr);
     spdlog::info("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,

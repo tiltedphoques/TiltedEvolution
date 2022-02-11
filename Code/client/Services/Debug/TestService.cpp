@@ -102,7 +102,10 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+            Actor* pActor = RTTI_CAST(TESForm::GetById(0x1348C), TESForm, Actor);
+            auto container = PlayerCharacter::Get()->GetFullContainer();
+            pActor->SetFullContainer(container);
         }
     }
     else
