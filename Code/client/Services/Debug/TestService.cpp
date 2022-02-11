@@ -172,6 +172,11 @@ void TestService::OnDraw() noexcept
         ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Form"))
+    {
+        DrawFormDebugView();
+        ImGui::EndMenu();
+    }
     ImGui::EndMainMenuBar();
 
     if (g_EnableAnimWindow)
