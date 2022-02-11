@@ -55,6 +55,7 @@ extern thread_local bool g_overrideFormId;
 
 constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
 
+// TODO: this doesnt account for the stupid title bar....
 static void DrawBuildTag()
 {
     auto* pWindow = BSGraphics::GetMainWindow();

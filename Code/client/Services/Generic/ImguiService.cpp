@@ -23,6 +23,8 @@ void ImguiService::Create(RenderSystemD3D11* apRenderSystem, HWND aHwnd)
     ID3D11Device* d3dDevice = nullptr;
     ID3D11DeviceContext* d3dContext = nullptr;
 
+    m_imDriver.Initialize(static_cast<void*>(aHwnd));
+
     // init platform
     if (!ImGui_ImplWin32_Init(aHwnd))
         spdlog::error("Failed to initialize Imgui-Win32");
@@ -49,57 +51,6 @@ void ImguiService::Render() const
 void ImguiService::Reset() const
 {
     // TODO: idk how imgui handles this
-}
-
-static bool ImGui_ImplWin32_UpdateMouseCursor()
-{
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
-        return false;
-
-    ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-    if (imgui_cursor == ImGuiMouseCursor_None || io.MouseDrawCursor)
-    {
-        // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
-        ::SetCursor(NULL);
-    }
-    else
-    {
-        // Show OS mouse cursor
-        LPTSTR win32_cursor = IDC_ARROW;
-        switch (imgui_cursor)
-        {
-        case ImGuiMouseCursor_Arrow:
-            win32_cursor = IDC_ARROW;
-            break;
-        case ImGuiMouseCursor_TextInput:
-            win32_cursor = IDC_IBEAM;
-            break;
-        case ImGuiMouseCursor_ResizeAll:
-            win32_cursor = IDC_SIZEALL;
-            break;
-        case ImGuiMouseCursor_ResizeEW:
-            win32_cursor = IDC_SIZEWE;
-            break;
-        case ImGuiMouseCursor_ResizeNS:
-            win32_cursor = IDC_SIZENS;
-            break;
-        case ImGuiMouseCursor_ResizeNESW:
-            win32_cursor = IDC_SIZENESW;
-            break;
-        case ImGuiMouseCursor_ResizeNWSE:
-            win32_cursor = IDC_SIZENWSE;
-            break;
-        case ImGuiMouseCursor_Hand:
-            win32_cursor = IDC_HAND;
-            break;
-        case ImGuiMouseCursor_NotAllowed:
-            win32_cursor = IDC_NO;
-            break;
-        }
-        ::SetCursor(::LoadCursor(NULL, win32_cursor));
-    }
-    return true;
 }
 
 LRESULT ImguiService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
