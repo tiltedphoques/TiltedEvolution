@@ -196,11 +196,9 @@ void DediRunner::RequestKill()
 {
     m_gameServer.Kill();
 
-    if (m_pConIOThread)
-    {
-        auto wait = std::move(m_pConIOThread);
-        TP_UNUSED(wait);
-    }
+    auto wait = std::move(m_pConIOThread);
+    TP_UNUSED(wait);
+
     // work around 
     // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
     // being set.
