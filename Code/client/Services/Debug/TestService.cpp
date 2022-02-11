@@ -72,8 +72,6 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
 }
 
-TestService::~TestService() noexcept = default;
-
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
