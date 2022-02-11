@@ -621,14 +621,19 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     ThisCall(RealLockChange, apThis);
 }
 
+// Disable AI sync for now, experiment didn't work, code might be useful later on though.
+#define AI_SYNC 0
+
 TP_THIS_FUNCTION(TCheckForNewPackage, bool, void, Actor* apActor, uint64_t aUnk1);
 static TCheckForNewPackage* RealCheckForNewPackage = nullptr;
 
 bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUnk1)
 {
+#if AI_SYNC
     if (apActor && apActor->GetExtension()->IsRemote())
         return false;
 
+#endif
     return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
 }
 
@@ -637,6 +642,7 @@ static TInitFromPackage* RealInitFromPackage = nullptr;
 
 void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor)
 {
+#if AI_SYNC
     // This guard is here for when the client sets the package based on a remote message
     if (s_execInitPackage)
         return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
@@ -647,6 +653,7 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
     if (arActor && apPackage)
         World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
 
+#endif
     return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 

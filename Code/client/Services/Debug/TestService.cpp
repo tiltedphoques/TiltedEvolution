@@ -72,6 +72,8 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
 }
 
+TestService::~TestService() noexcept = default;
+
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
@@ -84,9 +86,12 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f7Pressed = true;
 
             static char s_address[256] = "127.0.0.1:10578";
-            m_transport.Connect(s_address);
+            if (!m_transport.IsOnline())
+                m_transport.Connect(s_address);
         }
     }
+    else
+        s_f7Pressed = false;
 
     if (GetAsyncKeyState(VK_F3) & 0x01)
     {
@@ -164,6 +169,11 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("Animation"))
     {
         ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Form"))
+    {
+        DrawFormDebugView();
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
