@@ -134,10 +134,10 @@ class DediRunner
     LogInstance m_logInstance;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
-    std::unique_ptr<std::jthread> m_pConIOThread;
+    UniquePtr<std::jthread> m_pConIOThread;
 };
 
-DediRunner::DediRunner(int argc, char** argv) : m_gameServer(&m_console), m_console(kConsoleOutName)
+DediRunner::DediRunner(int argc, char** argv) : m_gameServer(m_console), m_console(kConsoleOutName)
 {
     s_pRunner = this;
 

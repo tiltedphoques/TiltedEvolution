@@ -3,7 +3,7 @@
 #pragma once
 
 #include <any>
-#include <memory>
+#include <TiltedCore/Stl.hpp>
 
 namespace Console
 {
@@ -16,7 +16,7 @@ class ArgStack
 
     explicit ArgStack(size_t acCount)
     {
-        m_pArgs = std::make_unique<std::any[]>(acCount);
+        m_pArgs = TiltedPhoques::MakeUnique<std::any[]>(acCount);
     }
 
     // Move operator for em placing within queue
@@ -48,7 +48,7 @@ class ArgStack
     }
 
   private:
-    std::unique_ptr<std::any[]> m_pArgs = nullptr;
+    TiltedPhoques::UniquePtr<std::any[]> m_pArgs = nullptr;
     size_t m_Count = 0;
 };
 } // namespace Console

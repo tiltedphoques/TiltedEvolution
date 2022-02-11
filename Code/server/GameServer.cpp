@@ -52,8 +52,8 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(Console::ConsoleRegistry* apConsole) noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_pCommands(apConsole), m_requestStop(false)
+GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -145,9 +145,7 @@ void GameServer::BindMessageHandlers()
 
 void GameServer::BindServerCommands()
 {
-    BASE_ASSERT(m_pCommands, "Command logic error");
-
-    m_pCommands->RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
+    m_commands.RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
         auto out = spdlog::get("ConOut");
         uint32_t count = m_pWorld->GetPlayerManager().Count();
         if (count == 0)
@@ -163,7 +161,7 @@ void GameServer::BindServerCommands()
         }
     });
 
-    m_pCommands->RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
+    m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 }
 
 void GameServer::UpdateInfo()

@@ -79,12 +79,11 @@ class ConsoleRegistry
 
   private:
     std::mutex m_listLock;
-    std::vector<CommandBase*> m_commands;
-    std::vector<CommandBase*> m_ownedCommands;
-    std::vector<SettingBase*> m_settings;
-    std::vector<SettingBase*> m_ownedSettings;
-
-    std::vector<std::string> m_commandHistory;
+    TiltedPhoques::Vector<CommandBase*> m_commands;
+    TiltedPhoques::Vector<CommandBase*> m_ownedCommands;
+    TiltedPhoques::Vector<SettingBase*> m_settings;
+    TiltedPhoques::Vector<SettingBase*> m_ownedSettings;
+    TiltedPhoques::Vector<std::string> m_commandHistory;
     CommandQueue m_queue;
 
     std::shared_ptr<spdlog::logger> m_out;

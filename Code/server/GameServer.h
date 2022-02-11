@@ -29,7 +29,7 @@ public:
         uint16_t tick_rate;
     };
 
-    GameServer(Console::ConsoleRegistry * apConsole) noexcept;
+    GameServer(Console::ConsoleRegistry &aConsole) noexcept;
     virtual ~GameServer();
 
     TP_NOCOPYMOVE(GameServer);
@@ -87,7 +87,7 @@ private:
 
     Info m_info{};
     std::unique_ptr<World> m_pWorld;
-    Console::ConsoleRegistry* m_pCommands;
+    Console::ConsoleRegistry& m_commands;
 
     Set<ConnectionId_t> m_adminSessions;
     Map<ConnectionId_t, entt::entity> m_connectionToEntity;
