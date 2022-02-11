@@ -53,6 +53,18 @@
 #include <inttypes.h>
 extern thread_local bool g_overrideFormId;
 
+constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
+
+static void DrawBuildTag()
+{
+    auto* pWindow = BSGraphics::GetMainWindow();
+    const ImVec2 coord{static_cast<float>(pWindow->iWindowX + 50),
+                       static_cast<float>(pWindow->iWindowY + (pWindow->uiWindowHeight - 100))};
+
+    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), 35.f, coord, ImColor::ImColor(255.f, 0.f, 0.f),
+                                            kBuildTag);
+}
+
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
@@ -262,6 +274,11 @@ void TestService::OnDraw() noexcept
         ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("UI"))
+    {
+        ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
+        ImGui::EndMenu();
+    }
     ImGui::EndMainMenuBar();
 
     if (g_EnableAnimWindow)
@@ -269,4 +286,7 @@ void TestService::OnDraw() noexcept
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();
+
+    if (m_showBuildTag)
+        DrawBuildTag();
 }
