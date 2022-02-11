@@ -2,9 +2,6 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <imgui/imgui_impl_dx11.h>
-#include <imgui/imgui_impl_win32.h>
-
 namespace ImGuiImpl
 {
 class ImGuiDriver

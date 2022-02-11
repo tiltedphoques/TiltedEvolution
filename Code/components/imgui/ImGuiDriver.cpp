@@ -6,8 +6,6 @@
 #include <imgui/ImGuiClipboard_Win32.h>
 #include <imgui/ImguiFont.inl>
 
-#include <Windows.h>
-
 namespace ImGuiImpl
 {
 namespace
