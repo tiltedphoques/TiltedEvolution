@@ -190,18 +190,13 @@ void DediRunner::StartTerminalIO()
                 return;
         }
     }));
-    m_pConIOThread->detach();
 }
 
 void DediRunner::RequestKill()
 {
-    m_pConIOThread->request_stop();
     m_gameServer.Kill();
 
-    // Give the threads time to process the message.
-    // Of course this is a kind of hack, but its the only kind of way
-    // to ensure a graceful exit!
-    std::this_thread::sleep_for(300ms);
+    auto wait = std::move(m_pConIOThread);
 }
 
 static bool RegisterQuitHandler()
