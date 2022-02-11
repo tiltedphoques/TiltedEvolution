@@ -196,7 +196,20 @@ void DediRunner::RequestKill()
 {
     m_gameServer.Kill();
 
-    auto wait = std::move(m_pConIOThread);
+    if (m_pConIOThread)
+    {
+        auto wait = std::move(m_pConIOThread);
+        TP_UNUSED(wait);
+    }
+    // work around 
+    // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
+    // being set.
+#if defined(_WIN32)
+    if (IsDebuggerPresent())
+    {
+        std::this_thread::sleep_for(300ms);
+    }
+#endif
 }
 
 static bool RegisterQuitHandler()
