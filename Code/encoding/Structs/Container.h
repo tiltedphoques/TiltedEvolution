@@ -9,6 +9,11 @@ using TiltedPhoques::Vector;
 
 struct Container
 {
+    struct EnchantmentData
+    {
+        GameId EnchantmentId{};
+    };
+
     struct Entry
     {
         GameId BaseId{};
