@@ -163,7 +163,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
 
     BSExtraDataList* pExtraData = nullptr;
 
-    if (arEntry.ContainsExtraData() && arEntry.ExtraEnchantId.BaseId == 0)
+    if (arEntry.ContainsExtraData())
     {
         pExtraData = Memory::Allocate<BSExtraDataList>();
         pExtraData->data = nullptr;
@@ -183,6 +183,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         // TODO: deal with temp forms for enchanted items
         if (arEntry.ExtraEnchantId != 0)
         {
+            spdlog::info("Enchanted");
         }
 
         if (arEntry.ExtraHealth > 0.f)
@@ -244,6 +245,12 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             *((uint64_t*)pExtraWornLeft) = 0x141623A10;
             pExtraWornLeft->next = nullptr;
             pExtraData->Add(ExtraData::WornLeft, pExtraWornLeft);
+        }
+
+        if (pExtraData->data == nullptr)
+        {
+            Memory::Delete(pExtraData);
+            pExtraData = nullptr;
         }
     }
 
