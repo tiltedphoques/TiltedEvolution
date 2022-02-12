@@ -2,9 +2,6 @@
 
 VersionDb& GetVersionDb()
 {
-    while (!IsDebuggerPresent())
-        Sleep(1000);
-
     static std::mutex lock;
     std::scoped_lock _{lock};
 
