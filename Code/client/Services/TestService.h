@@ -24,12 +24,12 @@ protected:
 private:
 
     void PlaceActorInWorld() noexcept;
-    void RunDiff();
 
     void DrawComponentDebugView();
     void DrawPlayerDebugView();
     void DrawAnimDebugView();
     void DrawContainerDebugView();
+    void DrawFormDebugView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 

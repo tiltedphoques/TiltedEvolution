@@ -279,6 +279,7 @@ float Actor::GetActorMaxValue(uint32_t aId) const noexcept
 
 void Actor::SetInventory(const Inventory& acInventory) noexcept
 {
+    spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
     UnEquipAll();
 
     auto* pEquipManager = EquipManager::Get();
