@@ -1,3 +1,15 @@
+# [1.16.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.15.0...v1.16.0) (2022-02-12)
+
+
+### Bug Fixes
+
+* More scaling stuff. ([d3d6053](https://github.com/tiltedphoques/TiltedEvolution/commit/d3d605371ca8bd45e676c5daf899a55a614a3d8d))
+
+
+### Features
+
+* clipboard driver 1 ([226efd1](https://github.com/tiltedphoques/TiltedEvolution/commit/226efd12166d4b23aa272f3a58e0ab8fda73b5e3))
+
 # [1.15.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.14.0...v1.15.0) (2022-02-12)
 
 
