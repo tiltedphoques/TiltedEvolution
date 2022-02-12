@@ -27,8 +27,8 @@ static constexpr TargetConfig CurrentTarget{
     L"SkyrimTogether.dll", 
     L"Skyrim Special Edition", 
     L"Skyrim Special Edition",
-    "1.6.323.0",
-    489830, 0x40000000, 35403608};
+    "1.6.353.0",
+    489830, 0x40000000, 35410264};
 #define TARGET_NAME = "SkyrimSE";
 #elif defined(TARGET_FT)
 static constexpr TargetConfig CurrentTarget{

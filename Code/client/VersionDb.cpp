@@ -8,7 +8,7 @@ VersionDb& GetVersionDb()
     static VersionDb db;
     static std::once_flag flag;
     std::call_once(flag, []() { 
-        auto result = db.Load(1,6,323,0);
+        auto result = db.Load(1,6,353,0);
         if (result != true)
         {
             spdlog::error("Failed to load address library!");

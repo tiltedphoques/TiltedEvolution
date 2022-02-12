@@ -108,6 +108,8 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
 
     TP_HOOK(&RealLaunch, HookLaunch);
 
+    static VersionDbPtr<void*> hookLoc(34452);
+
     struct C : TiltedPhoques::CodeGenerator
     {
         C()
@@ -119,7 +121,7 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
             cmp(rbx, 0);
             jz("exit");
             // jump back 
-            jmp_S(0x14056B9D9);
+            jmp_S(uintptr_t(hookLoc.Get()) + 0x379);
 
             L("exit");
             // return false; scratch space from the registers
@@ -136,6 +138,6 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
             ret();
         }
     } gen;
-    TiltedPhoques::Jump(0x14056B9D4, gen.getCode());
+    TiltedPhoques::Jump(uintptr_t(hookLoc.Get()) + 0x374, gen.getCode());
 });
 
