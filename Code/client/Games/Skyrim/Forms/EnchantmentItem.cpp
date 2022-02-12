@@ -6,29 +6,31 @@
 
 EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData) noexcept
 {
-    TP_THIS_FUNCTION(TCreateNewEnchantment, EnchantmentItem*, GameArray<EffectItem*>, bool abIsWeapon);
+    TP_THIS_FUNCTION(TCreateNewEnchantment, EnchantmentItem*, GameArray<EffectItem>, bool abIsWeapon);
     POINTER_SKYRIMSE(TCreateNewEnchantment, createNewEnchantment, 0x1405C1290 - 0x140000000);
 
     ModSystem& modSystem = World::Get().GetModSystem();
 
-    GameArray<EffectItem*> effects{};
-    for (Container::EffectItem effect : aData.Effects)
+    GameArray<EffectItem> effects{};
+    effects.Resize(aData.Effects.size());
+    for (int i = 0; i < aData.Effects.size(); i++)
     {
-        EffectItem* pEffectItem = new EffectItem;
-        pEffectItem->data.fMagnitude = effect.Magnitude;
-        pEffectItem->data.iArea = effect.Area;
-        pEffectItem->data.iDuration = effect.Duration;
-        pEffectItem->fRawCost = effect.RawCost;
-        pEffectItem->pEffectSetting =
+        Container::EffectItem effect = aData.Effects[i];
+
+        EffectItem effectItem{};
+        effectItem.data.fMagnitude = effect.Magnitude;
+        effectItem.data.iArea = effect.Area;
+        effectItem.data.iDuration = effect.Duration;
+        effectItem.fRawCost = effect.RawCost;
+        effectItem.pEffectSetting =
             RTTI_CAST(TESForm::GetById(modSystem.GetGameId(effect.EffectId)), TESForm, EffectSetting);
-        if (!pEffectItem->pEffectSetting)
+        if (!effectItem.pEffectSetting)
             spdlog::error("Effect setting not found: {:X}:{:X}", effect.EffectId.ModId, effect.EffectId.BaseId);
+
+        effects[i] = effectItem;
     }
 
     EnchantmentItem* pItem = ThisCall(createNewEnchantment, &effects, aData.IsWeapon);
-
-    for (EffectItem* pEffectItem : effects)
-        delete pEffectItem;
 
     return pItem;
 }
