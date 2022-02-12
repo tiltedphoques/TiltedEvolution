@@ -6,8 +6,6 @@ std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 
 void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion)
 {
-    TiltedPhoques::Debug::WaitForDebugger();
-
     if(!VersionDb::Get().Load(acGamePath, aExeVersion))
     {
         MessageBoxA(
