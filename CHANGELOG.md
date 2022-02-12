@@ -1,3 +1,15 @@
+# [1.14.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.13.0...v1.14.0) (2022-02-12)
+
+
+### Bug Fixes
+
+* address submodule clusterfuck ([2fafe5d](https://github.com/tiltedphoques/TiltedEvolution/commit/2fafe5d7c7b2e88dfe0e2ad1d46da12f1fecab35))
+
+
+### Features
+
+* Always exit the server gracefully on windows. ([a3394bd](https://github.com/tiltedphoques/TiltedEvolution/commit/a3394bd26ecc71269e74d055f73a6d337f590985))
+
 # [1.13.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.12.0...v1.13.0) (2022-02-09)
 
 
