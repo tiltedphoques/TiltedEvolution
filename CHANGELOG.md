@@ -1,3 +1,12 @@
+# [1.15.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.14.0...v1.15.0) (2022-02-12)
+
+
+### Features
+
+* address library for RTTI as well ([35fb2ba](https://github.com/tiltedphoques/TiltedEvolution/commit/35fb2ba313deb34710a5499a9eb0b7fe9b04a6d0))
+* Use address library instead of hardcoded addresses ([6b2afeb](https://github.com/tiltedphoques/TiltedEvolution/commit/6b2afebce3cf1545137c84adfd75ae4840828625))
+* weird pointers now use address library as well ([543a379](https://github.com/tiltedphoques/TiltedEvolution/commit/543a3793b11294e11db3082b6e6fca5744e84b4c))
+
 # [1.14.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.13.0...v1.14.0) (2022-02-12)
 
 
