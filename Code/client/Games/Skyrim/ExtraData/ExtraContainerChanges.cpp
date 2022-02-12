@@ -6,7 +6,7 @@ void ExtraContainerChanges::Data::Save(BGSSaveFormBuffer* apBuffer)
 {
     TP_THIS_FUNCTION(TSaveFunc, void*, ExtraContainerChanges::Data, BGSSaveFormBuffer*);
 
-    POINTER_SKYRIMSE(TSaveFunc, s_save, 0x1401F7C20 - 0x140000000);
+    POINTER_SKYRIMSE(TSaveFunc, s_save, 16142);
 
     ThisCall(s_save, this, apBuffer);
 }
@@ -15,7 +15,7 @@ void ExtraContainerChanges::Data::Load(BGSLoadFormBuffer* apBuffer)
 {
     TP_THIS_FUNCTION(TLoadFunc, void*, ExtraContainerChanges::Data, BGSLoadFormBuffer*);
 
-    POINTER_SKYRIMSE(TLoadFunc, s_load, 0x1401F7D50 - 0x140000000);
+    POINTER_SKYRIMSE(TLoadFunc, s_load, 16143);
 
     ThisCall(s_load, this, apBuffer);
 }

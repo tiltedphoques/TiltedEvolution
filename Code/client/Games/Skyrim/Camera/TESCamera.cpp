@@ -5,7 +5,7 @@
 
 #include <RTTI.h>
 
-POINTER_SKYRIMSE(NiRTTI, NiCameraRTTI, 0x143012598 - 0x140000000);
+POINTER_SKYRIMSE(NiRTTI, NiCameraRTTI, 410506);
 
 NiCamera* TESCamera::GetNiCamera()
 {

@@ -73,7 +73,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 0x1401E47F0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 16040);
     
     return ThisCall(s_getContainerChangs, this);
 }
@@ -114,7 +114,7 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainer, TESContainer*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 0x1402A05C0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 19702);
 
     return ThisCall(s_getContainer, this);
 }
@@ -148,7 +148,7 @@ void TESObjectREFR::EnableImpl() noexcept
 {
     TP_THIS_FUNCTION(TEnableImpl, void, TESObjectREFR, bool aResetInventory);
 
-    POINTER_SKYRIMSE(TEnableImpl, s_enable, 0x1402AA780 - 0x140000000);
+    POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
     
     ThisCall(s_enable, this, false);
 }
@@ -234,11 +234,11 @@ void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TE
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
-    POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A90F0 - 0x140000000);
-    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A08A0 - 0x140000000);
-    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FC20 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 0x1409BD880 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 0x1409BD800 - 0x140000000);
+    POINTER_SKYRIMSE(TActivate, s_activate, 19796);
+    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 19708);
+    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 19689);
+    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 56206);
+    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 56205);
 
     RealActivate = s_activate.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();
