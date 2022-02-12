@@ -95,7 +95,7 @@ struct SettingsInstance
         if (!fs::exists(m_path))
         {
             create_directory(fs::current_path() / kConfigPathName);
-            Console::SaveSettingsToIni(m_path);
+            Console::SaveSettingsToIni(m_path, true);
             return;
         }
         Console::LoadSettingsFromIni(m_path);
@@ -103,7 +103,7 @@ struct SettingsInstance
 
     ~SettingsInstance()
     {
-        Console::SaveSettingsToIni(m_path);
+        Console::SaveSettingsToIni(m_path, false);
     }
 
 private:

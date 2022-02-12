@@ -75,13 +75,21 @@ std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
 }
 } // namespace
 
-void SaveSettingsToIni(const std::filesystem::path& path)
+void SaveSettingsToIni(const std::filesystem::path& aPath, bool aFirstRun)
 {
     CSimpleIni ini;
 
     SI_Error error{SI_Error::SI_OK};
 
     SettingBase::VisitAll([&](SettingBase* setting) {
+        // In first run mode we dont write hidden settings. so the user will be less
+        // aware of them
+        if (aFirstRun)
+        {
+            if (setting->IsHidden())
+                return;
+        }
+
         auto items = SplitSection(setting);
         auto& section = items.first;
         auto& name = items.second;
@@ -123,14 +131,14 @@ void SaveSettingsToIni(const std::filesystem::path& path)
     std::string buf;
     ini.Save(buf, true);
 
-    ShittyFileWrite(path, buf);
+    ShittyFileWrite(aPath, buf);
 }
 
-void LoadSettingsFromIni(const std::filesystem::path& path)
+void LoadSettingsFromIni(const std::filesystem::path& aPath)
 {
     CSimpleIni ini;
     {
-        auto buf = TiltedPhoques::LoadFile(path);
+        auto buf = TiltedPhoques::LoadFile(aPath);
         ini.LoadData(buf.c_str());
     }
 

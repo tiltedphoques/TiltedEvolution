@@ -49,7 +49,8 @@ static Console::Command<> Quit("quit", "Shutdown the server", [](Console::ArgSta
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                       [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
-static Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false};
+static Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
+                                    Console::SettingBase::Flags::kHidden};
 
 static uint16_t GetUserTickRate()
 {
@@ -93,7 +94,7 @@ void GameServer::Initialize()
             "DRAGONS AHEAD: Mod Policy is disabled. This can lead to *severe* desync and other oddities. We don't "
             "encourage this for your player's sake. Make sure you know what you are doing. Support "
             "requests "
-            "with bypassed Mod Policy will be *ignored*, as we cannot ensure parity of the gamestate anymore.");
+            "will be *ignored* with this bypass is in place.");
     }
 }
 
@@ -366,6 +367,19 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             return;
         }
 
+        auto printModList = [](const Vector<String>& acList) -> String {
+            String string;
+            for (size_t i = 0; i < acList.size(); i++)
+            {
+                string += acList[i];
+                if (i != (acList.size() - 1))
+                {
+                    string += ", ";
+                }
+            }
+            return string;
+        };
+
         AuthenticationResponse serverResponse;
         Mods& serverMods = serverResponse.UserMods;
 
@@ -387,7 +401,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             // U done goofed up.
             if (missingMods.size() != 0)
             {
-                // TODO...
+                auto list = printModList(missingMods);
+                spdlog::info("New player {:x} '{}' is missing the following mods: ", aConnectionId, remoteAddress,
+                             list.c_str());
+
+
+
+                Kick(aConnectionId);
+                return;
             }
         }
 
