@@ -27,6 +27,8 @@ EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData
         if (!effectItem.pEffectSetting)
             spdlog::error("Effect setting not found: {:X}:{:X}", effect.EffectId.ModId, effect.EffectId.BaseId);
 
+        // TODO: TESCondition
+
         effects[i] = effectItem;
     }
 
