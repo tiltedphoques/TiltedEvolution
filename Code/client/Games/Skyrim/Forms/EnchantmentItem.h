@@ -1,19 +1,27 @@
 #pragma once
 
-#include "TESForm.h"
+#include "MagicItem.h"
 
 #include <Structs/Container.h>
 #include <Games/Magic/MagicSystem.h>
+#include "BGSListForm.h"
 
-struct EnchantmentItem : TESForm
+struct EnchantmentItem : MagicItem
 {
+    static EnchantmentItem* Create(const Container::EnchantmentData& aData) noexcept;
+
     void Init(const Container::EnchantmentData& aData);
 
+    int32_t iCostOverride;
+    int32_t iFlags;
     MagicSystem::CastingType eCastingType;
     int32_t iChargeOverride;
     MagicSystem::Delivery eDelivery;
     MagicSystem::SpellType eSpellType;
     float fChargeTime;
     EnchantmentItem* pBaseEnchantment;
-    void* pWornRestrictions;
+    // TODO: use BGSListForm::SaveGame() and BGSListForm::LoadGame()?
+    BGSListForm* pWornRestrictions;
 };
+
+static_assert(sizeof(EnchantmentItem) == 0xC0);

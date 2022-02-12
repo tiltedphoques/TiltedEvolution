@@ -280,6 +280,23 @@ Container Actor::GetFullContainer() const noexcept
                 // TODO: enchantments seem to always be temporaries, keep this in mind when trying to apply container
                 // Get base form id of enchantment instead? Probably gonna have to serialize more data
                 modSystem.GetServerModId(pExtraEnchantment->pEnchantment->formID, innerEntry.ExtraEnchantId);
+                if (pExtraEnchantment->pEnchantment->formID & 0xFF000000)
+                {
+                    for (EffectItem* pEffectItem : pExtraEnchantment->pEnchantment->listOfEffects)
+                    {
+                        // TODO: null checking and that
+                        Container::EffectItem effect;
+                        effect.Magnitude = pEffectItem->data.fMagnitude;
+                        effect.Area = pEffectItem->data.iArea;
+                        effect.Duration = pEffectItem->data.iDuration;
+                        effect.RawCost = pEffectItem->fRawCost;
+                        modSystem.GetServerModId(pEffectItem->pEffectSetting->formID, effect.EffectId);
+                        innerEntry.EnchantData.Effects.push_back(effect);
+                    }
+
+                    uint32_t objectId = modSystem.GetGameId(innerEntry.BaseId);
+                    innerEntry.EnchantData.IsWeapon = TESForm::GetById(objectId)->formType == FormType::Weapon;
+                }
                 innerEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
                 innerEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
             }

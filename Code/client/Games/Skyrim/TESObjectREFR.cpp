@@ -18,6 +18,7 @@
 #include <ExtraData/ExtraTextDisplayData.h>
 #include <ExtraData/ExtraWorn.h>
 #include <ExtraData/ExtraWornLeft.h>
+#include <Forms/EnchantmentItem.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
@@ -183,18 +184,25 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         // TODO: deal with temp forms for enchanted items
         if (arEntry.ExtraEnchantId != 0)
         {
-            TP_ASSERT(arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF, "Enchantment is sent as temp!");
+            //TP_ASSERT(arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF, "Enchantment is sent as temp!");
 
-            uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
-            if (EnchantmentItem* pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem))
+            EnchantmentItem* pEnchantment = nullptr;
+            if (arEntry.ExtraEnchantId.ModId == 0xFFFFFFFF)
             {
-                ExtraEnchantment* pExtraEnchantment = Memory::Allocate<ExtraEnchantment>();
-                *((uint64_t*)pExtraEnchantment) = 0x141623E70;
-                pExtraEnchantment->next = nullptr;
-                pExtraEnchantment->pEnchantment = pEnchantment;
-                pExtraEnchantment->usCharge = arEntry.ExtraEnchantCharge;
-                pExtraEnchantment->bRemoveOnUnequip = arEntry.ExtraEnchantRemoveUnequip;
+                pEnchantment = EnchantmentItem::Create(arEntry.EnchantData);
             }
+            else
+            {
+                uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
+                pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem);
+            }
+
+            ExtraEnchantment* pExtraEnchantment = Memory::Allocate<ExtraEnchantment>();
+            *((uint64_t*)pExtraEnchantment) = 0x141623E70;
+            pExtraEnchantment->next = nullptr;
+            pExtraEnchantment->pEnchantment = pEnchantment;
+            pExtraEnchantment->usCharge = arEntry.ExtraEnchantCharge;
+            pExtraEnchantment->bRemoveOnUnequip = arEntry.ExtraEnchantRemoveUnequip;
         }
 
         if (arEntry.ExtraHealth > 0.f)

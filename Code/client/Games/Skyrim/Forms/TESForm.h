@@ -7,6 +7,7 @@ enum class FormType : uint8_t
     Book = 27,
     Container = 28,
     Door = 29,
+    Weapon = 41,
     Ammo = 42,
     Npc = 43,
     LeveledCharacter = 44,

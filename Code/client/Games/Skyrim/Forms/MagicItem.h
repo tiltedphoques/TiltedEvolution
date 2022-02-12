@@ -14,6 +14,8 @@ struct MagicItem : TESBoundObject
     GameArray<EffectItem*> listOfEffects;
     int32_t iHostileCount;
     EffectSetting* pAVEffectSetting;
-    uint32_t unk48;
-    uint32_t unk4C;
+    uint32_t uiPreloadCount;
+    void* pPreloadItem;
 };
+
+static_assert(sizeof(MagicItem) == 0x90);

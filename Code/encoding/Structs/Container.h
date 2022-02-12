@@ -9,9 +9,35 @@ using TiltedPhoques::Vector;
 
 struct Container
 {
+    struct EffectItem
+    {
+        float Magnitude{};
+        int32_t Area{};
+        int32_t Duration{};
+        float RawCost{};
+        GameId EffectId{};
+    };
+
     struct EnchantmentData
     {
-        GameId EnchantmentId{};
+        bool IsWeapon{};
+        Vector<EffectItem> Effects{};
+
+        /*
+        int32_t CostOverride{};
+        int32_t Flags{};
+        int32_t CastingType{};
+        int32_t ChargeOverride{};
+        int32_t Delivery{};
+        int32_t SpellType{};
+        float ChargeTime{};
+        // TODO: try with IDs for base and worn restrictions first
+        // place asserts to see if these are ever temporary
+        // should probably support it anyway though
+        GameId BaseEnchantmentId{};
+        GameId WornRestrictionsId{};
+        //Vector<GameId> WornRestrictions{};
+        */
     };
 
     struct Entry
@@ -26,6 +52,7 @@ struct Container
         GameId ExtraEnchantId{};
         uint16_t ExtraEnchantCharge{};
         bool ExtraEnchantRemoveUnequip{};
+        EnchantmentData EnchantData{};
 
         float ExtraHealth{};
 
