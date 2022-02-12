@@ -23,6 +23,7 @@ struct LaunchContext
 {
     fs::path exePath;
     fs::path gamePath;
+    TiltedPhoques::String Version;
     ExeLoader::TEntryPoint gameMain = nullptr;
 };
 

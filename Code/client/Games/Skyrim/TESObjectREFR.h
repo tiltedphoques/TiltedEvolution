@@ -36,6 +36,7 @@ struct TESObjectREFR : TESForm
     };
 
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
+    static uint32_t* GetNullHandle() noexcept;
 
     virtual void sub_39();
     virtual void sub_3A();
@@ -185,8 +186,6 @@ struct TESObjectREFR : TESForm
     uint16_t scale;
     uint16_t referenceFlags;
 };
-
-POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
 
 static_assert(sizeof(TESObjectREFR) == 0x98);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);
