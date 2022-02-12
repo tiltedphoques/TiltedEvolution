@@ -33,7 +33,7 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
                         const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
 {
     // Append our window name.
-    aOSData->pClassName = "ST Anniversary | " BUILD_BRANCH "@" BUILD_COMMIT;
+    aOSData->pClassName = "Skyrim Together EVO Test";
 
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;
