@@ -7,7 +7,7 @@ static TWorldPtToScreenPt3* s_WorldPtToScreenPt3;
 bool NiCamera::WorldPtToScreenPt3(const NiPoint3& in, NiPoint3& out, float tolerance)
 {
     TP_THIS_FUNCTION(TW2S, bool, NiCamera, const NiPoint3*, float*, float*, float*, float);
-    POINTER_SKYRIMSE(TW2S, s_w2s, 0x140C8E4A0 - 0x140000000);
+    POINTER_SKYRIMSE(TW2S, s_w2s, 70639);
 
     return ThisCall(s_w2s, this, &in, &out.x, &out.y, &out.y, tolerance);
 }
@@ -20,6 +20,6 @@ bool NiCamera::WorldPtToScreenPt3(float* matrix, const NiRect<float>* port, cons
 
 static TiltedPhoques::Initializer s_Init([]() {
     //POINTER_FALLOUT4(TWorldPtToScreenPt3, s_w2s, 0x141BADB00 - 0x140000000);
-    POINTER_SKYRIMSE(TWorldPtToScreenPt3, s_w2s, 0x140C8E670 - 0x140000000);
+    POINTER_SKYRIMSE(TWorldPtToScreenPt3, s_w2s, 70640);
     s_WorldPtToScreenPt3 = s_w2s.Get();
 });
