@@ -20,7 +20,7 @@ struct AuthenticationResponse final : ServerMessage
     {
         return GetOpcode() == achRhs.GetOpcode() && 
             Accepted == achRhs.Accepted && 
-            UserMods == achRhs.UserMods && 
+            UserMods == achRhs.UserMods &&
             ServerScripts == achRhs.ServerScripts &&
             ReplicatedObjects == achRhs.ReplicatedObjects;
     }

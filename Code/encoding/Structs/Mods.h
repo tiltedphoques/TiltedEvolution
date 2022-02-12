@@ -14,6 +14,11 @@ struct Mods
         String Filename;
         uint16_t Id;
 
+        inline bool IsLite() const noexcept
+        {
+            return Id & (1 << 15);
+        }
+
         bool operator==(const Entry& acRhs) const noexcept
         {
             return Filename == acRhs.Filename && Id == acRhs.Id;
@@ -25,8 +30,7 @@ struct Mods
         }
     };
 
-    Vector<Entry> StandardMods{};
-    Vector<Entry> LiteMods{};
+    Vector<Entry> LoadOrder{};
 
     Mods() = default;
     ~Mods() = default;

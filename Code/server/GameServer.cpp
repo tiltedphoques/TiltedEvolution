@@ -44,13 +44,10 @@ static constexpr size_t kTagListCap = 512;
 static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                             [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
-static Console::Command<> Quit("quit", "Shutdown the server",
-                               [](Console::ArgStack&) { GameServer::Get()->Stop(); });
+static Console::Command<> Quit("quit", "Shutdown the server", [](Console::ArgStack&) { GameServer::Get()->Stop(); });
 
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                                      [](Console::ArgStack&) {
-                                          spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
-                                      });
+                                      [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
 static uint16_t GetUserTickRate()
 {
@@ -59,9 +56,7 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer() noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now())
-    , m_requestStop(false)
+GameServer::GameServer() noexcept : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -344,12 +339,22 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 {
     const auto info = GetConnectionInfo(aConnectionId);
 
-    char remoteAddress[48];
-
+    char remoteAddress[48]{};
     info.m_addrRemote.ToString(remoteAddress, 48, false);
 
+    // accept
     if (acRequest->Token == sToken.value())
     {
+        // NOTE(Force): Does this belong in this scope?
+        if (acRequest->Version != BUILD_COMMIT)
+        {
+            spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
+                         remoteAddress, acRequest->Version.c_str());
+
+            Kick(aConnectionId);
+            return;
+        }
+
         auto& scripts = m_pWorld->GetScriptService();
 
         // TODO: Abort if a mod didn't accept the player
@@ -368,43 +373,36 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
         // form id anyway
-        std::ostringstream oss;
-        oss << fmt::format("New player {:x} connected with mods\n\t Standard: ", aConnectionId);
-
         Vector<String> playerMods;
         Vector<uint16_t> playerModsIds;
-        for (auto& standardMod : acRequest->UserMods.StandardMods)
-        {
-            oss << standardMod.Filename << ", ";
 
-            const auto id = mods.AddStandard(standardMod.Filename);
+        String modList;
+        size_t modCount = acRequest->UserMods.LoadOrder.size();
+
+        size_t i = 0;
+        for (auto& mod : acRequest->UserMods.LoadOrder)
+        {
+            modList += mod.Filename;
+            const uint32_t id = mod.IsLite() ? mods.AddLite(mod.Filename) : mods.AddStandard(mod.Filename);
 
             Mods::Entry entry;
-            entry.Filename = standardMod.Filename;
+            entry.Filename = mod.Filename;
             entry.Id = static_cast<uint16_t>(id);
 
-            playerMods.push_back(standardMod.Filename);
+            playerMods.push_back(mod.Filename);
             playerModsIds.push_back(entry.Id);
+            serverMods.LoadOrder.push_back(entry);
 
-            serverMods.StandardMods.push_back(entry);
+            // TODO(Force): Tell me if you know a better way of doing this...
+            if (i != (modCount - 1))
+            {
+                modList += ", ";
+            }
+            i++;
         }
 
-        oss << "\n\t Lite: ";
-        for (auto& liteMod : acRequest->UserMods.LiteMods)
-        {
-            oss << liteMod.Filename << ", ";
-
-            const auto id = mods.AddLite(liteMod.Filename);
-
-            Mods::Entry entry;
-            entry.Filename = liteMod.Filename;
-            entry.Id = static_cast<uint16_t>(id);
-
-            playerMods.push_back(liteMod.Filename);
-            playerModsIds.push_back(entry.Id);
-
-            serverMods.LiteMods.push_back(entry);
-        }
+        // Thats where the checks go...
+        // missingMods.push_back
 
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
@@ -422,7 +420,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             return;
         }*/
 
-        spdlog::info("{}", oss.str().c_str());
+        // TODO: also transmit player version
+        spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId, modCount, modList.c_str());
 
         serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
@@ -433,7 +432,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
-        /* AdminSessionOpen response;
+        /*AdminSessionOpen response;
         Send(aConnectionId, response);
 
         m_adminSessions.insert(aConnectionId);
@@ -452,8 +451,8 @@ void GameServer::UpdateTitle() const
     const auto name = m_info.name.empty() ? "Private server" : m_info.name;
     const char* playerText = GetClientCount() <= 1 ? " player" : " players";
 
-    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(), GetClientCount(),
-                             playerText, GetTickRate());
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(),
+                                   GetClientCount(), playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

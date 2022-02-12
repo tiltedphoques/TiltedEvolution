@@ -109,6 +109,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 void TransportService::OnConnected()
 {
     AuthenticationRequest request;
+    request.Version = BUILD_COMMIT;
 
     // null if discord is not active
     // TODO: think about user opt out
@@ -130,9 +131,7 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        auto& entry =
-            pMod->IsLite() ? request.UserMods.LiteMods.emplace_back() : request.UserMods.StandardMods.emplace_back();
-
+        auto& entry = request.UserMods.LoadOrder.emplace_back();
         entry.Id = pMod->GetId();
         entry.Filename = pMod->filename;
     }

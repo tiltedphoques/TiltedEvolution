@@ -85,29 +85,22 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
 
     const auto pModManager = ModManager::Get();
 
-    for (auto& mod : acMods.LiteMods)
+    for (auto& mod : acMods.LoadOrder)
     {
-        const auto pMod = pModManager->GetByName(mod.Filename.c_str());
-        if (!pMod)
+        if (Mod* pMod = pModManager->GetByName(mod.Filename.c_str()))
         {
-            // Shouldn't happen
-            continue;
+            if (mod.IsLite())
+            {
+                m_serverToGame.emplace(mod.Id, GameMod{pMod->GetId() & 0xFFFu, true});
+                m_liteToServer.emplace(pMod->GetId(), mod.Id);
+            }
+            else
+            {
+                m_serverToGame.emplace(mod.Id, GameMod{pMod->GetId() & 0xFFu, false});
+                m_standardToServer[pMod->GetId() & 0xFF] = mod.Id;
+            }
         }
 
-        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFFFu, true });
-        m_liteToServer.emplace(pMod->GetId(), mod.Id);
-    }
-
-    for (auto& mod : acMods.StandardMods)
-    {
-        auto pMod = pModManager->GetByName(mod.Filename.c_str());
-        if (!pMod)
-        {
-            // Shouldn't happen
-            continue;
-        }
-
-        m_serverToGame.emplace(mod.Id, GameMod{ pMod->GetId() & 0xFFu, false });
-        m_standardToServer[pMod->GetId() & 0xFF] = mod.Id;
+        // this should never get hit.
     }
 }
