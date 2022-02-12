@@ -14,8 +14,8 @@
 #include <Events/UpdateEvent.h>
 #include <steam/isteamnetworkingutils.h>
 
-#include <AdminMessages/ClientAdminMessageFactory.h>
 #include <AdminMessages/AdminSessionOpen.h>
+#include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
 #include <console/ConsoleRegistry.h>
@@ -45,7 +45,7 @@ static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium
 
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                       [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
-                                      
+
 static Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
                                     Console::SettingBase::Flags::kHidden};
 
@@ -56,7 +56,7 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
+GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
@@ -100,6 +100,16 @@ void GameServer::Initialize()
             "encourage this for your player's sake. Make sure you know what you are doing. Support "
             "requests "
             "will be *ignored* with this bypass is in place.");
+    }
+    else
+    {
+        if (!m_pWorld->GetRecordCollection())
+        {
+            spdlog::error("Failed to start: Mod policy is enabled, but no mods are installed. Players wont be able "
+                          "to join! Please install Mods into the /data/ directory.");
+
+            Kill();
+        }
     }
 }
 
@@ -171,6 +181,22 @@ void GameServer::BindServerCommands()
         for (Player* pPlayer : m_pWorld->GetPlayerManager())
         {
             out->info("{}: {}", pPlayer->GetId(), pPlayer->GetUsername().c_str());
+        }
+    });
+
+    m_commands.RegisterCommand<>("mods", "List all installed mods on this server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        auto& mods = m_pWorld->ctx<ModsComponent>().GetServerMods();
+        if (mods.size() == 0)
+        {
+            out->warn("No mods installed");
+            return;
+        }
+
+        out->info("<------Mods-({})--->", mods.size());
+        for (auto& it : mods)
+        {
+            out->info(it.first);
         }
     });
 
@@ -286,9 +312,9 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
                 m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
             }
         }
-    }
 
-    m_pWorld->GetPlayerManager().Remove(pPlayer);
+        m_pWorld->GetPlayerManager().Remove(pPlayer);
+    }
 
     UpdateTitle();
 }
@@ -367,6 +393,19 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
+static String PrettyPrintModList(const Vector<Mods::Entry>& acMods)
+{
+    String text;
+    for (size_t i = 0; i < acMods.size(); i++)
+    {
+        text += acMods[i].Filename;
+        if (i != (acMods.size() - 1))
+            text += ", ";
+    }
+
+    return text;
+}
+
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                                              const UniquePtr<AuthenticationRequest>& acRequest)
 {
@@ -399,10 +438,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         if (!bBypassMoPo)
         {
+            // This doesnt make much sense, as we should have to ask the record collection
             Mods missingMods;
             for (const Mods::Entry& mod : acRequest->UserMods.ModList)
             {
-                if (!modsComponent.IsKnown(mod.Filename))
+                if (!modsComponent.IsInstalled(mod.Filename))
                 {
                     missingMods.ModList.push_back(mod);
                 }
@@ -411,8 +451,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             if (missingMods.ModList.size() > 0)
             {
                 String text = PrettyPrintModList(missingMods.ModList);
-                spdlog::info("New player {:x} '{}' is missing the following mods: ", aConnectionId, remoteAddress,
-                             text.c_str());
+                spdlog::info("Modpolicy: refusing connection {:x} because essential mods are missing: {}",
+                             aConnectionId, text.c_str());
 
                 serverResponse.Type = AuthenticationResponse::ResponseType::kMissingMods;
                 serverResponse.UserMods.ModList = std::move(missingMods.ModList);
@@ -423,8 +463,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             }
         }
 
-        // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
-        // form id anyway
+        // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a
+        // null form id anyway
         Vector<String> playerMods;
         Vector<uint16_t> playerModsIds;
 

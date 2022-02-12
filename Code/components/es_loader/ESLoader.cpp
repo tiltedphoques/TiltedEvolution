@@ -1,15 +1,19 @@
+
+
 #include "ESLoader.h"
 
 #include <filesystem>
 #include <fstream>
 
-#include <Records/REFR.h>
 #include <Records/CLMT.h>
 #include <Records/NPC.h>
+#include <Records/REFR.h>
 
-ESLoader::ESLoader() 
+namespace ESLoader
 {
-    m_directory = "Data\\";
+ESLoader::ESLoader()
+{
+    m_directory = "data\\";
 }
 
 UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
@@ -17,22 +21,20 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
     if (!fs::is_directory(m_directory))
     {
         spdlog::error("Data directory not found.");
-        return UniquePtr<RecordCollection>();
+        return nullptr;
     }
 
     if (!LoadLoadOrder())
     {
         spdlog::error("Failed to load load order.");
-        return UniquePtr<RecordCollection>();
+        return nullptr;
     }
 
     auto recordCollection = LoadFiles();
-
     recordCollection->BuildReferences();
 
     return std::move(recordCollection);
 }
-
 
 bool ESLoader::LoadLoadOrder()
 {
@@ -141,3 +143,4 @@ String ESLoader::ReadWString(Buffer::Reader& aReader) noexcept
     return wstring;
 }
 
+} // namespace ESLoader

@@ -253,6 +253,7 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     default:
     case AuthenticationResponse::ResponseType::kMissingMods:
         // TODO: this message should be handeled elsewhere...
+        // (OR dispatched).
         break;
     }
 }

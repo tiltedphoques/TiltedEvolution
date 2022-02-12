@@ -8,7 +8,7 @@ void CONT::ParseChunks(CONT& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFor
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            m_editorId = ESLoader::ReadZString(aReader);
+            m_editorId = ESLoader::ESLoader::ReadZString(aReader);
             break;
         case ChunkId::FULL_ID:
             // TODO: FULL has lstring (localized), need to extract it

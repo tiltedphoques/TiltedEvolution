@@ -134,7 +134,7 @@ class DediRunner
     LogInstance m_logInstance;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
-    UniquePtr<std::jthread> m_pConIOThread;
+    UniquePtr<std::jthread> m_pConIOThread{nullptr};
 };
 
 DediRunner::DediRunner(int argc, char** argv) : m_gameServer(m_console), m_console(kConsoleOutName)
@@ -169,7 +169,7 @@ void DediRunner::RunGSThread()
 
 void DediRunner::StartTerminalIO()
 {
-    m_pConIOThread.reset(new std::jthread([&]() {
+    m_pConIOThread = MakeUnique<std::jthread>(([&]() {
         spdlog::get("ConOut")->info("Server console");
         PrintExecutorArrowHack();
 
@@ -198,7 +198,7 @@ void DediRunner::RequestKill()
 
     auto wait = std::move(m_pConIOThread);
     TP_UNUSED(wait);
-
+    
     // work around 
     // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
     // being set.

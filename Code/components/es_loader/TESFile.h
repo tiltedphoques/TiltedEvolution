@@ -2,17 +2,18 @@
 
 #include <RecordCollection.h>
 
-#include <Records/Group.h>
-#include <Records/REFR.h>
 #include <Records/CLMT.h>
-#include <Records/NPC.h>
-#include <Records/TES4.h>
 #include <Records/GMST.h>
+#include <Records/Group.h>
+#include <Records/NPC.h>
+#include <Records/REFR.h>
+#include <Records/TES4.h>
 
-
+namespace ESLoader
+{
 class TESFile
 {
-public:
+  public:
     TESFile() = default;
     TESFile(Map<String, uint8_t> aMasterFiles);
 
@@ -21,9 +22,10 @@ public:
     bool LoadFile(const std::filesystem::path& acPath) noexcept;
     bool IndexRecords(RecordCollection& aRecordCollection) noexcept;
 
-    static [[nodiscard]] uint32_t GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    static [[nodiscard]] uint32_t GetFormIdPrefix(uint32_t aFormId,
+                                                  Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 
-private:
+  private:
     bool ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aRecordCollection) noexcept;
 
     template <class T> T CopyAndParseRecord(Record* pRecordHeader);
@@ -33,8 +35,7 @@ private:
     String m_filename = "";
     Buffer m_buffer{};
 
-    union
-    {
+    union {
         uint8_t m_standardId = 0;
         uint16_t m_liteId;
     };
@@ -43,3 +44,5 @@ private:
     Map<String, uint8_t> m_masterFiles{};
     Map<uint8_t, uint32_t> m_parentToFormIdPrefix{};
 };
+
+} // namespace ESLoader

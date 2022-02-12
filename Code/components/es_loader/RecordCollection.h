@@ -2,17 +2,19 @@
 
 #include "Records/CLMT.h"
 #include "Records/CONT.h"
-#include "Records/NPC.h"
-#include "Records/REFR.h"
 #include "Records/GMST.h"
 #include "Records/NAVM.h"
+#include "Records/NPC.h"
+#include "Records/REFR.h"
 #include "Records/WRLD.h"
 
+namespace ESLoader
+{
 class RecordCollection
 {
     friend class TESFile;
 
-public:
+  public:
     FormEnum GetFormType(uint32_t aFormId) const noexcept
     {
         auto record = m_allRecords.find(aFormId);
@@ -23,6 +25,11 @@ public:
         }
 
         return record->second.GetType();
+    }
+
+    bool HasAnyRecords() const noexcept
+    {
+        return m_allRecords.size();
     }
 
     REFR& GetObjectRefById(uint32_t aFormId) noexcept
@@ -56,7 +63,7 @@ public:
 
     void BuildReferences();
 
-private:
+  private:
     Map<uint32_t, Record> m_allRecords{};
     Map<uint32_t, REFR> m_objectReferences{};
     Map<uint32_t, CLMT> m_climates{};
@@ -66,3 +73,5 @@ private:
     Map<uint32_t, WRLD> m_worlds{};
     Map<uint32_t, NAVM> m_navMeshes{};
 };
+
+} // namespace ESLoader

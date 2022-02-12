@@ -3,8 +3,9 @@
 #include <filesystem>
 #include <fstream>
 
-TESFile::TESFile(Map<String, uint8_t> aMasterFiles)
-    : m_masterFiles(aMasterFiles)
+namespace ESLoader
+{
+TESFile::TESFile(Map<String, uint8_t> aMasterFiles) : m_masterFiles(aMasterFiles)
 {
 }
 
@@ -100,7 +101,7 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
 
             break;
         }
-        //case FormEnum::ACHR:
+        // case FormEnum::ACHR:
         case FormEnum::REFR: {
             REFR parsedRecord = CopyAndParseRecord<REFR>(pRecord);
             aRecordCollection.m_objectReferences[parsedRecord.GetFormId()] = parsedRecord;
@@ -135,11 +136,10 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
         case FormEnum::NAVM: {
             NAVM parsedRecord = CopyAndParseRecord<NAVM>(pRecord);
             aRecordCollection.m_navMeshes[parsedRecord.GetFormId()] = parsedRecord;
-        
         }
         }
 
-        //pRecord->DiscoverChunks();
+        // pRecord->DiscoverChunks();
 
         if (pRecord->GetType() != FormEnum::TES4)
         {
@@ -161,8 +161,7 @@ concept ExpectsGRUP = requires(T t)
     &T::ParseGRUP;
 };
 
-template <class T> 
-T TESFile::CopyAndParseRecord(Record* pRecordHeader)
+template <class T> T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 {
     T* pRecord = reinterpret_cast<T*>(pRecordHeader);
 
@@ -174,16 +173,15 @@ T TESFile::CopyAndParseRecord(Record* pRecordHeader)
     // If the record expects a subgroup right after, parse it? Or do we not care since we load everything?
     if constexpr (ExpectsGRUP<T>)
     {
-    //    ParseGRUP(pRecord, parsedRecord);
+        //    ParseGRUP(pRecord, parsedRecord);
     }
 
     return parsedRecord;
 }
 
-template <class T>
-void TESFile::ParseGRUP(Record* pRecordHeader, T& aRecord)
+template <class T> void TESFile::ParseGRUP(Record* pRecordHeader, T& aRecord)
 {
-    //aRecord.ParseGRUP();
+    // aRecord.ParseGRUP();
 }
 
 uint32_t TESFile::GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept
@@ -201,3 +199,5 @@ uint32_t TESFile::GetFormIdPrefix(uint32_t aFormId, Map<uint8_t, uint32_t>& aPar
 
     return masterId->second;
 }
+
+} // namespace ESLoader
