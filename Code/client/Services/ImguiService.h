@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui/ImGuiDriver.h>
+
 struct RenderSystemD3D9;
 struct RenderSystemD3D11;
 
@@ -24,5 +26,6 @@ struct ImguiService
     
 private:
 
+    ImGuiImpl::ImGuiDriver m_imDriver;
     entt::sigh<TCallback> m_drawSignal;
 };

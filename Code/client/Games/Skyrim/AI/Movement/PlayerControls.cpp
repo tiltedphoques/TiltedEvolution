@@ -3,7 +3,7 @@
 
 PlayerControls* PlayerControls::GetInstance()
 {
-    POINTER_SKYRIMSE(PlayerControls*, s_instance, 0x142F60328 - 0x140000000);
+    POINTER_SKYRIMSE(PlayerControls*, s_instance, 400864);
     return *(s_instance.Get());
 }
 
