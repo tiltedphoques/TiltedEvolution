@@ -58,14 +58,16 @@ TP_THIS_FUNCTION(TCreateResourceView, Ni2DBuffer*, TextureHolder, uint32_t, uint
 using TCreateTexture = NiRenderedTexture * (__fastcall)(BSFixedString& aName);
 using TCreateTints = void(__fastcall)(const GameArray<TintMask*>& acTints, NiRenderedTexture* apTexture);
 
-POINTER_SKYRIMSE(NiRTTI, NiMaskedShaderRTTI, 414675);
-POINTER_SKYRIMSE(TCreateTexture, CreateTexture, 70717);
-POINTER_SKYRIMSE(TCreateResourceView, CreateResourceView, 77299);
-POINTER_SKYRIMSE(TCreateTints, CreateTints, 27040);
-POINTER_SKYRIMSE(TextureHolder, s_textureHolder, 411393);
+
 
 void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFaceGenComponent) noexcept
 {
+    POINTER_SKYRIMSE(NiRTTI, NiMaskedShaderRTTI, 414675);
+    POINTER_SKYRIMSE(TCreateTexture, CreateTexture, 70717);
+    POINTER_SKYRIMSE(TCreateResourceView, CreateResourceView, 77299);
+    POINTER_SKYRIMSE(TCreateTints, CreateTints, 27040);
+    POINTER_SKYRIMSE(TextureHolder, s_textureHolder, 411393);
+
     if (aFaceGenComponent.Generated)
         return;
 

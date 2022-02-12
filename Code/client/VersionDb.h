@@ -2,7 +2,6 @@
 
 #include <Windows.h>
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <stdio.h>
 
@@ -10,7 +9,7 @@
 
 class VersionDb
 {
-  public:
+public:
     VersionDb()
     {
         Clear();
@@ -19,7 +18,9 @@ class VersionDb
     {
     }
 
-  private:
+    static VersionDb& Get();
+
+private:
     std::map<unsigned long long, unsigned long long> _data;
     std::map<unsigned long long, unsigned long long> _rdata;
     int _ver[4];
@@ -50,7 +51,7 @@ class VersionDb
                ((major != 1 && major != 0) || minor != 0 || revision != 0 || build != 0);
     }
 
-  public:
+public:
     const std::string& GetModuleName() const
     {
         return _moduleName;
@@ -178,24 +179,26 @@ class VersionDb
         _base = 0;
     }
 
-    bool Load()
+    bool Load(const std::filesystem::path& acGamePath, const TiltedPhoques::String& acExeVersion)
     {
         int major, minor, revision, build;
 
-        if (!GetExecutableVersion(major, minor, revision, build))
+        if (!ParseVersionFromString(acExeVersion.c_str(), major, minor, revision, build))
+        {
             return false;
+        }
 
-        return Load(major, minor, revision, build);
+        return Load(acGamePath, major, minor, revision, build);
     }
 
-    bool Load(int major, int minor, int revision, int build)
+    bool Load(const std::filesystem::path& acGamePath, int major, int minor, int revision, int build)
     {
         Clear();
 
         char fileName[256];
-        _snprintf_s(fileName, 256, "Data\\SKSE\\Plugins\\versionlib-%d-%d-%d-%d.bin", major, minor, revision, build);
+        _snprintf_s(fileName, 256, "versionlib-%d-%d-%d-%d.bin", major, minor, revision, build);
 
-        std::ifstream file(fileName, std::ios::binary);
+        std::ifstream file(acGamePath / "Data" / "SKSE" / "Plugins" / fileName, std::ios::binary);
         if (!file.good())
             return false;
 
@@ -359,14 +362,13 @@ class VersionDb
     }
 };
 
-VersionDb& GetVersionDb();
-
 template <class T> 
 struct VersionDbPtr
 {
     VersionDbPtr(const uint32_t aId) noexcept
+        : m_pPtr{nullptr}
+        , m_id{aId}
     {
-        m_pPtr = GetVersionDb().FindAddressById(aId);
     }
 
     VersionDbPtr() = delete;
@@ -390,10 +392,14 @@ struct VersionDbPtr
 
     void* GetPtr() const noexcept
     {
+        if (m_pPtr == nullptr)
+            m_pPtr = VersionDb::Get().FindAddressById(m_id);
+
         return m_pPtr;
     }
 
 private:
 
-    void* m_pPtr;
+    mutable void* m_pPtr;
+    uint32_t m_id;
 };

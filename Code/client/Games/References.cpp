@@ -66,6 +66,14 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     return pResult;
 }
 
+uint32_t* TESObjectREFR::GetNullHandle() noexcept
+{
+    POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
+    POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
+
+    return s_nullHandle.Get();
+}
+
 void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
 {
     ThisCall(RealRotateX, this, aX);
@@ -323,7 +331,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
 
-    ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
+    ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
 float Actor::GetSpeed() noexcept
