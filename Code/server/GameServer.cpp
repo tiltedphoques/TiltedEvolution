@@ -49,6 +49,8 @@ static Console::Command<> Quit("quit", "Shutdown the server", [](Console::ArgSta
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                       [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
+static Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false};
+
 static uint16_t GetUserTickRate()
 {
     return bPremiumTickrate ? 60 : 30;
@@ -84,6 +86,15 @@ GameServer::~GameServer()
 void GameServer::Initialize()
 {
     m_pWorld->GetScriptService().Initialize();
+
+    if (bBypassMoPo)
+    {
+        spdlog::warn(
+            "DRAGONS AHEAD: Mod Policy is disabled. This can lead to *severe* desync and other oddities. We don't "
+            "encourage this for your player's sake. Make sure you know what you are doing. Support "
+            "requests "
+            "with bypassed Mod Policy will be *ignored*, as we cannot ensure parity of the gamestate anymore.");
+    }
 }
 
 void GameServer::BindMessageHandlers()
@@ -355,21 +366,30 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             return;
         }
 
-        auto& scripts = m_pWorld->GetScriptService();
-
-        // TODO: Abort if a mod didn't accept the player
+        AuthenticationResponse serverResponse;
+        Mods& serverMods = serverResponse.UserMods;
 
         auto& mods = m_pWorld->ctx<ModsComponent>();
+        if (!bBypassMoPo)
+        {
+            // Policy time before we do anything
+            // NOTE(Force): Should we move this to a free function?
+            Vector<String> missingMods;
 
-        auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
+            for (const Mods::Entry& mod : acRequest->UserMods.LoadOrder)
+            {
+                if (!mods.IsKnown(mod.Filename))
+                {
+                    missingMods.push_back(mod.Filename);
+                }
+            }
 
-        pPlayer->SetEndpoint(remoteAddress);
-        pPlayer->SetDiscordId(acRequest->DiscordId);
-        pPlayer->SetUsername(std::move(acRequest->Username));
-
-        AuthenticationResponse serverResponse;
-
-        Mods& serverMods = serverResponse.UserMods;
+            // U done goofed up.
+            if (missingMods.size() != 0)
+            {
+                // TODO...
+            }
+        }
 
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
         // form id anyway
@@ -401,9 +421,17 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             i++;
         }
 
-        // Thats where the checks go...
-        // missingMods.push_back
+        auto& scripts = m_pWorld->GetScriptService();
 
+        // TODO: Abort if a mod didn't accept the player
+
+        auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
+
+        pPlayer->SetEndpoint(remoteAddress);
+        pPlayer->SetDiscordId(acRequest->DiscordId);
+        pPlayer->SetUsername(std::move(acRequest->Username));
+
+        // TODO: rename this to takeXXX
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
 

@@ -12,7 +12,8 @@ uint32_t ModsComponent::AddStandard(const String& acpFilename) noexcept
     }
 
     const auto id = m_seed++;
-    m_standardMods.emplace(acpFilename, Entry{ id, 1 });
+    m_standardMods.emplace(acpFilename, Entry{id, 1});
+    m_globalList.push_back(acpFilename);
 
     return id;
 }
@@ -27,7 +28,16 @@ uint32_t ModsComponent::AddLite(const String& acpFilename) noexcept
     }
 
     const auto id = m_seed++;
-    m_liteMods.emplace(acpFilename, Entry{ id, 1 });
+    m_liteMods.emplace(acpFilename, Entry{id, 1});
+    m_globalList.push_back(acpFilename);
 
     return id;
+}
+
+bool ModsComponent::IsKnown(const String& acpFilename)
+{
+    auto it =
+        std::find_if(m_globalList.begin(), m_globalList.end(), [&](const String& aStr) { return aStr == acpFilename; });
+
+    return it != m_globalList.end();
 }
