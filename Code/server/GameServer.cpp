@@ -15,6 +15,7 @@
 #include <steam/isteamnetworkingutils.h>
 
 #include <AdminMessages/ClientAdminMessageFactory.h>
+#include <AdminMessages/AdminSessionOpen.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
 
@@ -346,6 +347,19 @@ GameServer* GameServer::Get() noexcept
     return s_pInstance;
 }
 
+static String PrettyPrintModList(const Vector<Mods::Entry> &acMods)
+{
+    String text;
+    for (size_t i = 0; i < acMods.size(); i++)
+    {
+        text += acMods[i].Filename;
+        if (i != (acMods.size() - 1))
+            text += ", ";
+    }
+
+    return text;
+}
+
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                                              const UniquePtr<AuthenticationRequest>& acRequest)
 {
@@ -354,59 +368,49 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     char remoteAddress[48]{};
     info.m_addrRemote.ToString(remoteAddress, 48, false);
 
-    // accept
+    AuthenticationResponse serverResponse;
+    serverResponse.Version = BUILD_COMMIT;
+#if 1
+    // to make our testing life a bit easier.
+    if (acRequest->Version != BUILD_COMMIT)
+    {
+        spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
+                     remoteAddress, acRequest->Version.c_str());
+
+        serverResponse.Type = AuthenticationResponse::ResponseType::kWrongVersion;
+        Send(aConnectionId, serverResponse);
+        Kick(aConnectionId);
+        return;
+    }
+#endif
+
+    // check if the proper server password was supplied.
     if (acRequest->Token == sToken.value())
     {
-        // NOTE(Force): Does this belong in this scope?
-        if (acRequest->Version != BUILD_COMMIT)
-        {
-            spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
-                         remoteAddress, acRequest->Version.c_str());
+        Mods& responseList = serverResponse.UserMods;
+        auto& modsComponent = m_pWorld->ctx<ModsComponent>();
 
-            Kick(aConnectionId);
-            return;
-        }
-
-        auto printModList = [](const Vector<String>& acList) -> String {
-            String string;
-            for (size_t i = 0; i < acList.size(); i++)
-            {
-                string += acList[i];
-                if (i != (acList.size() - 1))
-                {
-                    string += ", ";
-                }
-            }
-            return string;
-        };
-
-        AuthenticationResponse serverResponse;
-        Mods& serverMods = serverResponse.UserMods;
-
-        auto& mods = m_pWorld->ctx<ModsComponent>();
         if (!bBypassMoPo)
         {
-            // Policy time before we do anything
-            // NOTE(Force): Should we move this to a free function?
-            Vector<String> missingMods;
-
-            for (const Mods::Entry& mod : acRequest->UserMods.LoadOrder)
+            Mods missingMods;
+            for (const Mods::Entry& mod : acRequest->UserMods.ModList)
             {
-                if (!mods.IsKnown(mod.Filename))
+                if (!modsComponent.IsKnown(mod.Filename))
                 {
-                    missingMods.push_back(mod.Filename);
+                    missingMods.ModList.push_back(mod);
                 }
             }
 
-            // U done goofed up.
-            if (missingMods.size() != 0)
+            if (missingMods.ModList.size() > 0)
             {
-                auto list = printModList(missingMods);
+                String text = PrettyPrintModList(missingMods.ModList);
                 spdlog::info("New player {:x} '{}' is missing the following mods: ", aConnectionId, remoteAddress,
-                             list.c_str());
+                             text.c_str());
 
-
-
+                serverResponse.Type = AuthenticationResponse::ResponseType::kMissingMods;
+                serverResponse.UserMods.ModList = std::move(missingMods.ModList);
+                Send(aConnectionId, serverResponse);
+                // This is a lingering kick, so sending the response should still succeed.
                 Kick(aConnectionId);
                 return;
             }
@@ -417,14 +421,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         Vector<String> playerMods;
         Vector<uint16_t> playerModsIds;
 
-        String modList;
-        size_t modCount = acRequest->UserMods.LoadOrder.size();
-
         size_t i = 0;
-        for (auto& mod : acRequest->UserMods.LoadOrder)
+        for (auto& mod : acRequest->UserMods.ModList)
         {
-            modList += mod.Filename;
-            const uint32_t id = mod.IsLite() ? mods.AddLite(mod.Filename) : mods.AddStandard(mod.Filename);
+            const uint32_t id =
+                mod.IsLite() ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
 
             Mods::Entry entry;
             entry.Filename = mod.Filename;
@@ -432,65 +433,35 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             playerMods.push_back(mod.Filename);
             playerModsIds.push_back(entry.Id);
-            serverMods.LoadOrder.push_back(entry);
-
-            // TODO(Force): Tell me if you know a better way of doing this...
-            if (i != (modCount - 1))
-            {
-                modList += ", ";
-            }
-            i++;
+            responseList.ModList.push_back(entry);
         }
 
-        auto& scripts = m_pWorld->GetScriptService();
-
-        // TODO: Abort if a mod didn't accept the player
-
         auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
-
         pPlayer->SetEndpoint(remoteAddress);
         pPlayer->SetDiscordId(acRequest->DiscordId);
         pPlayer->SetUsername(std::move(acRequest->Username));
-
-        // TODO: rename this to takeXXX
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
 
-        // TODO: Scripting
-        /*Script::Player player(cEntity, *m_pWorld);
-        auto [canceled, reason] = scripts.HandlePlayerJoin(player);
+        auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
+        spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
+                     acRequest->UserMods.ModList.size(), modList.c_str());
 
-        if (canceled)
-        {
-            spdlog::info("New player {:x} has a been rejected because \"{}\".", aConnectionId, reason.c_str());
-
-            Kick(aConnectionId);
-            m_pWorld->destroy(cEntity);
-            return;
-        }*/
-
-        // TODO: also transmit player version
-        spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId, modCount, modList.c_str());
-
-        serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
-        serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
-
+        serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
-
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
-        /*AdminSessionOpen response;
+        AdminSessionOpen response;
         Send(aConnectionId, response);
 
         m_adminSessions.insert(aConnectionId);
-        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);*/
+        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
     }
     else
     {
         spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);
-
         Kick(aConnectionId);
     }
 }

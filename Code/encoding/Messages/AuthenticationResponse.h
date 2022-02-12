@@ -9,6 +9,13 @@ struct AuthenticationResponse final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kAuthenticationResponse;
 
+    enum class ResponseType : uint8_t
+    {
+        kAccepted,
+        kWrongVersion,
+        kMissingMods,
+    };
+
     AuthenticationResponse() : ServerMessage(Opcode)
     {
     }
@@ -18,15 +25,10 @@ struct AuthenticationResponse final : ServerMessage
 
     bool operator==(const AuthenticationResponse& achRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() && 
-            Accepted == achRhs.Accepted && 
-            UserMods == achRhs.UserMods &&
-            ServerScripts == achRhs.ServerScripts &&
-            ReplicatedObjects == achRhs.ReplicatedObjects;
+        return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods;
     }
 
-    bool Accepted{ false };
+    ResponseType Type;
+    String Version;
     Mods UserMods{};
-    Scripts ServerScripts{};
-    FullObjects ReplicatedObjects{};
 };

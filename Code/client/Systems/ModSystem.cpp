@@ -85,7 +85,7 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
 
     const auto pModManager = ModManager::Get();
 
-    for (auto& mod : acMods.LoadOrder)
+    for (const auto& mod : acMods.ModList)
     {
         if (Mod* pMod = pModManager->GetByName(mod.Filename.c_str()))
         {

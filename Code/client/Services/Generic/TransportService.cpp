@@ -131,7 +131,7 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        auto& entry = request.UserMods.LoadOrder.emplace_back();
+        auto& entry = request.UserMods.ModList.emplace_back();
         entry.Id = pMod->GetId();
         entry.Filename = pMod->filename;
     }
@@ -237,17 +237,22 @@ void TransportService::OnDraw() noexcept
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
-    m_connected = true;
+    switch (acMessage.Type)
+    {
+    case AuthenticationResponse::ResponseType::kAccepted: 
+    {
+        m_connected = true;
 
-    // Dispatch the mods to anyone who needs it
-    m_dispatcher.trigger(acMessage.UserMods);
+        // Dispatch the mods to anyone who needs it
+        m_dispatcher.trigger(acMessage.UserMods);
 
-    // Dispatch the scripts to anyone who needs it
-    m_dispatcher.trigger(acMessage.ServerScripts);
-
-    // Dispatch the replicated objects
-    m_dispatcher.trigger(acMessage.ReplicatedObjects);
-
-    // Notify we are ready for action
-    m_dispatcher.trigger(ConnectedEvent());
+        // Notify we are ready for action
+        m_dispatcher.trigger(ConnectedEvent());
+        break;
+    }
+    default:
+    case AuthenticationResponse::ResponseType::kMissingMods:
+        // TODO: this message should be handeled elsewhere...
+        break;
+    }
 }

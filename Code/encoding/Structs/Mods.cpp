@@ -6,7 +6,7 @@ using TiltedPhoques::Serialization;
 
 bool Mods::operator==(const Mods& acRhs) const noexcept
 {
-    return LoadOrder == acRhs.LoadOrder;
+    return ModList == acRhs.ModList;
 }
 
 bool Mods::operator!=(const Mods& acRhs) const noexcept
@@ -16,10 +16,10 @@ bool Mods::operator!=(const Mods& acRhs) const noexcept
 
 void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    const uint16_t modCount = std::min(LoadOrder.size(), size_t(4096)) & 0xFFFF;
+    const uint16_t modCount = std::min(ModList.size(), size_t(4096)) & 0xFFFF;
     aWriter.WriteBits(modCount, 13); 
 
-    for (auto& entry : LoadOrder)
+    for (auto& entry : ModList)
     {
         aWriter.WriteBits(entry.Id, 12);
         Serialization::WriteString(aWriter, entry.Filename);
@@ -32,11 +32,11 @@ void Mods::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     aReader.ReadBits(data, 13);
     
     const size_t modCount = data & 0xFFFF;
-    LoadOrder.resize(modCount);
+    ModList.resize(modCount);
     for (size_t i = 0; i < modCount; ++i)
     {
         aReader.ReadBits(data, 12);
-        LoadOrder[i].Id = data & 0xFFF;
-        LoadOrder[i].Filename = Serialization::ReadString(aReader);
+        ModList[i].Id = data & 0xFFF;
+        ModList[i].Filename = Serialization::ReadString(aReader);
     }
 }

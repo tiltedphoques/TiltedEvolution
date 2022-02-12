@@ -30,7 +30,7 @@ struct Mods
         }
     };
 
-    Vector<Entry> LoadOrder{};
+    Vector<Entry> ModList{};
 
     Mods() = default;
     ~Mods() = default;
