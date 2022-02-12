@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.16.0...v1.17.0) (2022-02-12)
+
+
+### Features
+
+* lazy loading from version db to give the process time to initialize it ([225bbad](https://github.com/tiltedphoques/TiltedEvolution/commit/225bbad523baa9f1b1b0e95824031b78f0aa8eee))
+
 # [1.16.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.15.0...v1.16.0) (2022-02-12)
 
 
