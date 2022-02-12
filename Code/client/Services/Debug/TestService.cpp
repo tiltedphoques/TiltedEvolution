@@ -54,15 +54,12 @@
 extern thread_local bool g_overrideFormId;
 
 constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
-
-// TODO: this doesnt account for the stupid title bar....
 static void DrawBuildTag()
 {
     auto* pWindow = BSGraphics::GetMainWindow();
-    const ImVec2 coord{static_cast<float>(pWindow->iWindowX + 50),
-                       static_cast<float>(pWindow->iWindowY + (pWindow->uiWindowHeight - 100))};
-
-    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), 35.f, coord, ImColor::ImColor(255.f, 0.f, 0.f),
+    const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
+    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
+                                            ImColor::ImColor(255.f, 0.f, 0.f),
                                             kBuildTag);
 }
 

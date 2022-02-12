@@ -11,6 +11,7 @@ class ImGuiDriver
     ~ImGuiDriver();
 
     void Initialize(void* apNativeHandle);
+
   private:
     // No user data yet. TBD later
 };

@@ -1,6 +1,7 @@
 // Copyright (C) 2022 TiltedPhoques SRL.
 // For licensing information see LICENSE at the root of this distribution.
-// Taken from https://github.com/xposure/ImGuiSharp/blob/58860d38a9ec066f492c983c9c63393d6e00a442/ImGuiSharp.Shared/ImGui.h/Helpers.cpp
+// Taken from
+// https://github.com/xposure/ImGuiSharp/blob/58860d38a9ec066f492c983c9c63393d6e00a442/ImGuiSharp.Shared/ImGui.h/Helpers.cpp
 
 #include "imgui.h"
 #include <Windows.h>

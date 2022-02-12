@@ -2,10 +2,10 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include "imgui.h"
-#include <imgui/ImGuiDriver.h>
-#include <imgui/imgui_impl_win32.h>
 #include <imgui/ImGuiClipboard_Win32.h>
+#include <imgui/ImGuiDriver.h>
 #include <imgui/ImguiFont.inl>
+#include <imgui/imgui_impl_win32.h>
 
 namespace ImGuiImpl
 {
@@ -79,7 +79,7 @@ void SetTiltedImStyle()
     style.FrameBorderSize = 0.0f;
     style.WindowBorderSize = 1.0f;
 }
-}
+} // namespace
 
 ImGuiDriver::ImGuiDriver()
 {
@@ -118,21 +118,13 @@ ImGuiDriver::~ImGuiDriver()
 void ImGuiDriver::Initialize(void* apHandle)
 {
     float scaleFactor = ImGui_ImplWin32_GetDpiScaleForHwnd(apHandle);
-
-    // https://docs.microsoft.com/en-us/windows/win32/learnwin32/dpi-and-device-independent-pixels
-    // 45.f / 1.5 = 30
-    // 45.f / 1.0 = 40
-
-    // 1440P = 2560 x 1440
-    // 1080P = 1920 x 1080
-    // 3840P = 3480 x 2160
-    // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
-
     // 3260 = 3x
-    // 1920 = 
+    // 1920 =
     // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
     auto& io = ImGui::GetIO();
     io.Fonts->AddFontFromMemoryCompressedBase85TTF(Roboto_compressed_data_base85,
                                                    20.f * scaleFactor); //->Scale = scaleFactor;
+
+    ImGui::GetStyle().ScaleAllSizes(scaleFactor);
 }
-}
+} // namespace ImGuiImpl
