@@ -18,6 +18,10 @@ template <typename T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 // TODO: requires some logging.
 bool TestD3D11Support()
 {
+    // FIXME(Force): Ignore amd for now
+    if (GetModuleHandleW(L"atiuxp64.dll"))
+        return true;
+
     ComPtr<ID3D11Device> device;
 
     HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION,

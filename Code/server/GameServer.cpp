@@ -18,9 +18,7 @@
 #include <AdminMessages/AdminSessionOpen.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
-
-#include <console/Command.h>
-#include <console/Setting.h>
+#include <console/ConsoleRegistry.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
@@ -45,11 +43,9 @@ static constexpr size_t kTagListCap = 512;
 static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                             [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
-static Console::Command<> Quit("quit", "Shutdown the server", [](Console::ArgStack&) { GameServer::Get()->Stop(); });
-
 static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                       [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
-
+                                      
 static Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
                                     Console::SettingBase::Flags::kHidden};
 
@@ -60,7 +56,8 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer() noexcept : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_requestStop(false)
+GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -77,6 +74,7 @@ GameServer::GameServer() noexcept : m_lastFrameTime(std::chrono::high_resolution
     UpdateTitle();
 
     m_pWorld = std::make_unique<World>();
+
     BindMessageHandlers();
 }
 
@@ -85,8 +83,14 @@ GameServer::~GameServer()
     s_pInstance = nullptr;
 }
 
+GameServer* GameServer::Get() noexcept
+{
+    return s_pInstance;
+}
+
 void GameServer::Initialize()
 {
+    BindServerCommands();
     m_pWorld->GetScriptService().Initialize();
 
     if (bBypassMoPo)
@@ -97,6 +101,12 @@ void GameServer::Initialize()
             "requests "
             "will be *ignored* with this bypass is in place.");
     }
+}
+
+void GameServer::Kill()
+{
+    spdlog::info("Server shutdown requested");
+    m_requestStop = true;
 }
 
 void GameServer::BindMessageHandlers()
@@ -144,6 +154,27 @@ void GameServer::BindMessageHandlers()
     };
 
     ClientAdminMessageFactory::Visit(adminHandlerGenerator);
+}
+
+void GameServer::BindServerCommands()
+{
+    m_commands.RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        uint32_t count = m_pWorld->GetPlayerManager().Count();
+        if (count == 0)
+        {
+            out->warn("No players on here. Invite some friends!");
+            return;
+        }
+
+        out->info("<------Players-({})--->", count);
+        for (Player* pPlayer : m_pWorld->GetPlayerManager())
+        {
+            out->info("{}: {}", pPlayer->GetId(), pPlayer->GetUsername().c_str());
+        }
+    });
+
+    m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 }
 
 void GameServer::UpdateInfo()
@@ -334,30 +365,6 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
         if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
             pPlayer->Send(acServerMessage);
     }
-}
-
-void GameServer::Stop() noexcept
-{
-    spdlog::info("Server shutdown requested");
-    m_requestStop = true;
-}
-
-GameServer* GameServer::Get() noexcept
-{
-    return s_pInstance;
-}
-
-static String PrettyPrintModList(const Vector<Mods::Entry> &acMods)
-{
-    String text;
-    for (size_t i = 0; i < acMods.size(); i++)
-    {
-        text += acMods[i].Filename;
-        if (i != (acMods.size() - 1))
-            text += ", ";
-    }
-
-    return text;
 }
 
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
