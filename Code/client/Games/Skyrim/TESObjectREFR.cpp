@@ -158,7 +158,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
     TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
     if (!pObject)
     {
-        spdlog::warn("{}: Object to add not found.", __FUNCTION__);
+        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
         return;
     }
 
@@ -186,9 +186,13 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             //TP_ASSERT(arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF, "Enchantment is sent as temp!");
 
+            if (arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF)
+            {
+            
             EnchantmentItem* pEnchantment = nullptr;
             if (arEntry.ExtraEnchantId.ModId == 0xFFFFFFFF)
             {
+                spdlog::warn("Creating EnchantmentItem for {:X}:{:X}", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
                 pEnchantment = EnchantmentItem::Create(arEntry.EnchantData);
             }
             else
@@ -203,6 +207,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             pExtraEnchantment->pEnchantment = pEnchantment;
             pExtraEnchantment->usCharge = arEntry.ExtraEnchantCharge;
             pExtraEnchantment->bRemoveOnUnequip = arEntry.ExtraEnchantRemoveUnequip;
+            }
         }
 
         if (arEntry.ExtraHealth > 0.f)
@@ -247,6 +252,9 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             *((uint64_t*)pExtraText) = 0x1416244D0;
             pExtraText->next = nullptr;
             pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
+            pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
+            pExtraText->iOwnerInstance = -2;
+            pExtraText->fTemperFactor = 1.0F;
             pExtraData->Add(ExtraData::TextDisplayData, pExtraText);
         }
 

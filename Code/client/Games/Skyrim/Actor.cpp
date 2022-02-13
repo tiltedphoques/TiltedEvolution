@@ -323,7 +323,7 @@ Container Actor::GetFullContainer() const noexcept
                 if (pExtraTextDisplayData->DisplayName)
                     innerEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
                 else
-                    innerEntry.ExtraTextDisplayName = "NULL DISPLAY NAME";
+                    innerEntry.ExtraTextDisplayName = "";
             }
 
             innerEntry.ExtraWorn = pExtraDataList->Contains(ExtraData::Worn);
