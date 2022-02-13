@@ -186,7 +186,7 @@ struct TESObjectREFR : TESForm
     uint16_t referenceFlags;
 };
 
-POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141F592BC - 0x140000000);
+POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
 
 static_assert(sizeof(TESObjectREFR) == 0x98);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);

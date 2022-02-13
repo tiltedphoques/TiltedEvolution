@@ -155,12 +155,13 @@ SettingBase* ConsoleRegistry::FindSetting(const char* acName)
     return *it;
 }
 
-void ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
+// NOTE(Force): Maybe make this return a status instead?
+bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
 {
     if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
         m_out->error("Commands must begin with /");
-        return;
+        return false;
     }
 
     size_t tokenCount = 0;
@@ -168,14 +169,14 @@ void ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (!tokenCount)
     {
         m_out->error("Failed to parse line");
-        return;
+        return false;
     }
 
     auto* pCommand = FindCommand(tokens[0].c_str());
     if (!pCommand)
     {
         m_out->error("Unknown command. Type /help for help.");
-        return;
+        return false;
     }
     
     // Must subtract one, since the first is the literal command.
@@ -184,7 +185,7 @@ void ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (tokenCount != pCommand->m_argCount)
     {
         m_out->error("Expected {} arguments but got {}", pCommand->m_argCount, tokenCount);
-        return;
+        return false;
     }
 
     ArgStack stack(pCommand->m_argCount);
@@ -192,11 +193,25 @@ void ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (!result.val)
     {
         m_out->error(result.msg);
-        return;
+        return false;
     }
 
     stack.ResetCounter();
     m_queue.Upload(pCommand, stack);
+    StoreCommandInHistory(acLine);
+
+    return true;
+}
+
+void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
+{
+    m_commandHistory.push_back(acLine);
+
+    // Do some housekeeping.
+    if (m_commandHistory.size() == 10)
+    {
+        m_commandHistory.erase(m_commandHistory.end());
+    }
 }
 
 ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
