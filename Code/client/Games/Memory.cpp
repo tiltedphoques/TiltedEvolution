@@ -8,19 +8,20 @@
 
 #pragma optimize( "", off )
 
-struct GameHeap;
+struct GameHeap
+{
+    static GameHeap* Get()
+    {
+        POINTER_SKYRIMSE(GameHeap, s_gameHeap, 400188);
+        POINTER_FALLOUT4(GameHeap, s_gameHeap, 0x1438CC980 - 0x140000000);
+
+        return s_gameHeap.Get();
+    }
+};
 
 TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, size_t aAlignment, bool aAligned);
 TP_THIS_FUNCTION(TFormFree, void, GameHeap, void* apPtr, bool aAligned);
 
-POINTER_SKYRIMSE(GameHeap, s_gameHeap, 400188);
-POINTER_FALLOUT4(GameHeap, s_gameHeap, 0x1438CC980 - 0x140000000);
-
-POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
-POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 0x141B0EFD0 - 0x140000000);
-
-POINTER_SKYRIMSE(TFormFree, s_formFree, 68116);
-POINTER_FALLOUT4(TFormFree, s_formFree, 0x141B0F2E0 - 0x140000000);
 
 TFormAllocate* RealFormAllocate = nullptr;
 TFormFree* RealFormFree = nullptr;
@@ -61,18 +62,18 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 void* Memory::Allocate(const size_t aSize) noexcept
 {
 #if TP_FALLOUT4
-    return ThisCall(HookFormAllocate, s_gameHeap, aSize, 0x10, true);
+    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
 #else
-    return ThisCall(HookFormAllocate, s_gameHeap, aSize, 0, false);
+    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
 #endif
 }
 
 void Memory::Free(void* apData) noexcept
 {
 #if TP_FALLOUT4
-    ThisCall(RealFormFree, s_gameHeap, apData, true);
+    ThisCall(RealFormFree, GameHeap::Get(), apData, true);
 #else
-    ThisCall(RealFormFree, s_gameHeap, apData, false);
+    ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 #endif
 }
 
@@ -108,6 +109,12 @@ void* Hook_aligned_malloc(size_t aSize, size_t aAlignment)
 
 static TiltedPhoques::Initializer s_memoryHooks([]()
     {
+        POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
+        POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 0x141B0EFD0 - 0x140000000);
+
+        POINTER_SKYRIMSE(TFormFree, s_formFree, 68116);
+        POINTER_FALLOUT4(TFormFree, s_formFree, 0x141B0F2E0 - 0x140000000);
+
         RealFormAllocate = s_formAllocate.Get();
         RealFormFree = s_formFree.Get();
 
