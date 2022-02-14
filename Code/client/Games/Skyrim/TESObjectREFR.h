@@ -71,7 +71,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_57();
     virtual void sub_58();
     virtual void sub_59();
-    virtual void AddObjectToContainer(TESBoundObject* apObj, BSExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
+    virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
     virtual void sub_5B();
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual void sub_5D();
@@ -143,7 +143,7 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;
     ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
-    BSExtraDataList* GetExtraDataList() noexcept;
+    ExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
@@ -183,7 +183,7 @@ struct TESObjectREFR : TESForm
     NiPoint3 position;
     TESObjectCELL* parentCell;
     void* loadedState;
-    BSExtraDataList extraData;
+    ExtraDataList extraData;
     BSRecursiveLock refLock;
     uint16_t scale;
     uint16_t referenceFlags;

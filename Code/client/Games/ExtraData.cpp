@@ -2,7 +2,7 @@
 
 #include <Games/ExtraData.h>
 
-bool BSExtraDataList::Contains(ExtraData aType) const
+bool ExtraDataList::Contains(ExtraData aType) const
 {
     if(bitfield)
     {
@@ -17,7 +17,7 @@ bool BSExtraDataList::Contains(ExtraData aType) const
     return false;
 }
 
-BSExtraData* BSExtraDataList::GetByType(ExtraData aType) const
+BSExtraData* ExtraDataList::GetByType(ExtraData aType) const
 {
     BSScopedLock<BSRecursiveLock> _(lock);
 
@@ -37,7 +37,7 @@ BSExtraData* BSExtraDataList::GetByType(ExtraData aType) const
     return pEntry;
 }
 
-bool BSExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
+bool ExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
 {
     if (Contains(aType))
         return false;
@@ -53,7 +53,7 @@ bool BSExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
     return true;
 }
 
-uint32_t BSExtraDataList::GetCount() const
+uint32_t ExtraDataList::GetCount() const
 {
     uint32_t count = 0;
 
@@ -67,7 +67,7 @@ uint32_t BSExtraDataList::GetCount() const
     return count;
 }
 
-void BSExtraDataList::SetType(ExtraData aType, bool aClear)
+void ExtraDataList::SetType(ExtraData aType, bool aClear)
 {
     uint32_t index = static_cast<uint8_t>(aType) >> 3;
     uint8_t bitmask = 1 << (static_cast<uint8_t>(aType) % 8);

@@ -14,7 +14,7 @@ struct ExtraContainerChanges : BSExtraData
     struct Entry
     {
         TESForm* form;
-        GameList<BSExtraDataList>* dataList;
+        GameList<ExtraDataList>* dataList;
         int32_t count;
         uint8_t pad[8];
     };

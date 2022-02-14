@@ -89,7 +89,7 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
-TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
 
 using TGetLocation = TESForm *(TESForm *);
@@ -255,7 +255,7 @@ Container Actor::GetFullContainer() const noexcept
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
         entry.Count = pGameEntry->count;
 
-        for (BSExtraDataList* pExtraDataList : *pGameEntry->dataList)
+        for (ExtraDataList* pExtraDataList : *pGameEntry->dataList)
         {
             if (!pExtraDataList)
                 continue;
@@ -825,7 +825,7 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
-void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
 {
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);

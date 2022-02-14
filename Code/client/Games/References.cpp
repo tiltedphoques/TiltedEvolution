@@ -275,7 +275,7 @@ TESWorldSpace* TESObjectREFR::GetWorldSpace() const noexcept
     return nullptr;
 }
 
-BSExtraDataList* TESObjectREFR::GetExtraDataList() noexcept
+ExtraDataList* TESObjectREFR::GetExtraDataList() noexcept
 {
 #if TP_FALLOUT4
     return extraData;
@@ -414,7 +414,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
-    TP_THIS_FUNCTION(TActorSetLevelMod, void, BSExtraDataList, uint32_t);
+    TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
     POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x1401238E0 - 0x140000000);
     POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
 

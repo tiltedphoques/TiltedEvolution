@@ -28,32 +28,3 @@ static_assert(offsetof(BSExtraData, form) == 0x18);
 static_assert(sizeof(BSExtraData) == 0x20);
 #endif
 
-struct BSExtraDataList
-{
-    bool Contains(ExtraData aType) const;
-    void Set(ExtraData aType, bool aSet);
-
-    bool Add(ExtraData aType, BSExtraData* apNewData);
-    bool Remove(ExtraData aType, BSExtraData* apNewData);
-
-    uint32_t GetCount() const;
-
-    void SetType(ExtraData aType, bool aClear);
-
-    BSExtraData* GetByType(ExtraData type) const;
-#if TP_FALLOUT4
-    void* unk0;
-#endif
-    BSExtraData* data = nullptr;
-
-    struct Bitfield
-    {
-        uint8_t data[0x18];
-    };
-#if TP_FALLOUT4
-    void* unk10;
-#endif
-
-    Bitfield* bitfield{};
-    mutable BSRecursiveLock lock{};
-};
