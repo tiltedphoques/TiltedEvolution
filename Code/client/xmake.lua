@@ -61,7 +61,8 @@ target(name)
         "minhook",
         "entt",
         "glm",
-        "mem")
+        "mem",
+        "xbyak")
 
     if has_config("vivox") then
         add_files("Services/Vivox/**.cpp")
