@@ -26,6 +26,7 @@
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
 
+#include <Games/ExtraDataList.h>
 #include <ExtraData/ExtraCharge.h>
 #include <ExtraData/ExtraCount.h>
 #include <ExtraData/ExtraEnchantment.h>

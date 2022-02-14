@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include <Games/ExtraDataList.h>
 
 struct BGSLoadFormBuffer;
 struct BGSSaveFormBuffer;

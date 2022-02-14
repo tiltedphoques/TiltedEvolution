@@ -10,6 +10,7 @@
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
 #include <Structs/Container.h>
+#include <Games/ExtraDataList.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
