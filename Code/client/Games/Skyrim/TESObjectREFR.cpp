@@ -247,6 +247,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
 
         if (pExtraDataList->data == nullptr)
         {
+            Memory::Delete(pExtraDataList->bitfield);
             Memory::Delete(pExtraDataList);
             pExtraDataList = nullptr;
         }
