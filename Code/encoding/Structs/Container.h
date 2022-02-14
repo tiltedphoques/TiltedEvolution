@@ -16,28 +16,15 @@ struct Container
         int32_t Duration{};
         float RawCost{};
         GameId EffectId{};
+
+        void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
+        void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
     };
 
     struct EnchantmentData
     {
         bool IsWeapon{};
         Vector<EffectItem> Effects{};
-
-        /*
-        int32_t CostOverride{};
-        int32_t Flags{};
-        int32_t CastingType{};
-        int32_t ChargeOverride{};
-        int32_t Delivery{};
-        int32_t SpellType{};
-        float ChargeTime{};
-        // TODO: try with IDs for base and worn restrictions first
-        // place asserts to see if these are ever temporary
-        // should probably support it anyway though
-        GameId BaseEnchantmentId{};
-        GameId WornRestrictionsId{};
-        //Vector<GameId> WornRestrictions{};
-        */
     };
 
     struct Entry
@@ -45,13 +32,10 @@ struct Container
         GameId BaseId{};
         int32_t Count{};
 
-        // TODO: refactor extra data stuff
-        // these are the extra data items seemingly relevant to container items
         float ExtraCharge{};
 
         GameId ExtraEnchantId{};
         uint16_t ExtraEnchantCharge{};
-        bool ExtraEnchantRemoveUnequip{};
         EnchantmentData EnchantData{};
 
         float ExtraHealth{};
@@ -63,6 +47,7 @@ struct Container
 
         String ExtraTextDisplayName{};
 
+        bool ExtraEnchantRemoveUnequip{};
         bool ExtraWorn{};
         bool ExtraWornLeft{};
 

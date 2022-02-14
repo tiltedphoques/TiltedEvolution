@@ -206,14 +206,15 @@ Container TESObjectREFR::GetFullContainer() const noexcept
             if (ExtraEnchantment* pExtraEnchantment = (ExtraEnchantment*)pExtraDataList->GetByType(ExtraData::Enchantment))
             {
                 TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
-                // TODO: enchantments seem to always be temporaries, keep this in mind when trying to apply container
-                // Get base form id of enchantment instead? Probably gonna have to serialize more data
+
                 modSystem.GetServerModId(pExtraEnchantment->pEnchantment->formID, innerEntry.ExtraEnchantId);
+
                 if (pExtraEnchantment->pEnchantment->formID & 0xFF000000)
                 {
                     for (EffectItem* pEffectItem : pExtraEnchantment->pEnchantment->listOfEffects)
                     {
-                        // TODO: null checking and that
+                        TP_ASSERT(pEffectItem, "pEffectItem is null.");
+
                         Container::EffectItem effect;
                         effect.Magnitude = pEffectItem->data.fMagnitude;
                         effect.Area = pEffectItem->data.iArea;
@@ -226,6 +227,7 @@ Container TESObjectREFR::GetFullContainer() const noexcept
                     uint32_t objectId = modSystem.GetGameId(innerEntry.BaseId);
                     innerEntry.EnchantData.IsWeapon = TESForm::GetById(objectId)->formType == FormType::Weapon;
                 }
+
                 innerEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
                 innerEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
             }
