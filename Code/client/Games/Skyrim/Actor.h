@@ -13,7 +13,6 @@
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
 #include <Structs/ActorValues.h>
-#include <Structs/Container.h>
 
 struct TESNPC;
 struct TESRace;
@@ -193,7 +192,6 @@ struct Actor : TESObjectREFR
     float GetActorMaxValue(uint32_t aId) const noexcept;
 
     Inventory GetInventory() const noexcept;
-    Container GetFullContainer() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
 
@@ -209,7 +207,6 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
-    void SetFullContainer(Container& acContainer) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

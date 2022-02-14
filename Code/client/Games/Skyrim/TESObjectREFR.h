@@ -11,6 +11,7 @@
 #include <Magic/MagicCaster.h>
 #include <Structs/Container.h>
 #include <Games/ExtraDataList.h>
+#include <Structs/Container.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -173,6 +174,9 @@ struct TESObjectREFR : TESForm
 
     const float GetHeight() noexcept;
     void EnableImpl() noexcept;
+
+    Container GetFullContainer() const noexcept;
+    void SetFullContainer(Container& acContainer) noexcept;
 
     void AddItem(const Container::Entry& arEntry) noexcept;
 
