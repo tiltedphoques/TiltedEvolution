@@ -6,8 +6,15 @@
 
 EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData) noexcept
 {
+    /*
     TP_THIS_FUNCTION(TCreateNewEnchantment, EnchantmentItem*, GameArray<EffectItem>, bool abIsWeapon);
     POINTER_SKYRIMSE(TCreateNewEnchantment, createNewEnchantment, 0x1405C1290 - 0x140000000);
+    */
+
+    TP_THIS_FUNCTION(TAddWeaponEnchantment, EnchantmentItem*, void, GameArray<EffectItem>*);
+    POINTER_SKYRIMSE(TAddWeaponEnchantment, addWeaponEnchantment, 0x1405C0370 - 0x140000000);
+    TP_THIS_FUNCTION(TAddArmorEnchantment, EnchantmentItem*, void, GameArray<EffectItem>*);
+    POINTER_SKYRIMSE(TAddArmorEnchantment, addArmorEnchantment, 0x1405C0410 - 0x140000000);
 
     ModSystem& modSystem = World::Get().GetModSystem();
 
@@ -32,7 +39,23 @@ EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData
         effects[i] = effectItem;
     }
 
+    /*
     EnchantmentItem* pItem = ThisCall(createNewEnchantment, &effects, aData.IsWeapon);
+    */
+
+    POINTER_SKYRIMSE(void*, pObjManager, 0x141F592E8 - 0x140000000);
+
+    void* objManager = *pObjManager.Get();
+
+    EnchantmentItem* pItem = nullptr;
+    if (aData.IsWeapon)
+    {
+        pItem = ThisCall(addWeaponEnchantment, objManager, &effects);
+    }
+    else
+    {
+        pItem = ThisCall(addArmorEnchantment, objManager, &effects);
+    }
 
     return pItem;
 }

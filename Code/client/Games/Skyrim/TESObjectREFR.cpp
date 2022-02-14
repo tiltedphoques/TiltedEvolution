@@ -186,9 +186,6 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
         {
             //TP_ASSERT(arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF, "Enchantment is sent as temp!");
 
-            if (arEntry.ExtraEnchantId.ModId != 0xFFFFFFFF)
-            {
-            
             EnchantmentItem* pEnchantment = nullptr;
             if (arEntry.ExtraEnchantId.ModId == 0xFFFFFFFF)
             {
@@ -207,7 +204,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             pExtraEnchantment->pEnchantment = pEnchantment;
             pExtraEnchantment->usCharge = arEntry.ExtraEnchantCharge;
             pExtraEnchantment->bRemoveOnUnequip = arEntry.ExtraEnchantRemoveUnequip;
-            }
+            pExtraData->Add(ExtraData::Enchantment, pExtraEnchantment);
         }
 
         if (arEntry.ExtraHealth > 0.f)
@@ -246,6 +243,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             pExtraData->Add(ExtraData::Soul, pExtraSoul);
         }
 
+        /*
         if (!arEntry.ExtraTextDisplayName.empty())
         {
             ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
@@ -257,6 +255,7 @@ void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
             pExtraText->fTemperFactor = 1.0F;
             pExtraData->Add(ExtraData::TextDisplayData, pExtraText);
         }
+        */
 
         if (arEntry.ExtraWorn)
         {
