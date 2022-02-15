@@ -190,39 +190,6 @@ TESForm *Actor::GetCurrentLocation()
     return FUNC_GetActorLocation(this);
 }
 
-Inventory Actor::GetInventory() const noexcept
-{
-    auto& modSystem = World::Get().GetModSystem();
-
-    Inventory inventory;
-    inventory.Buffer = SerializeInventory();
-
-    auto pMainHandWeapon = GetEquippedWeapon(0);
-    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
-
-    auto pSecondaryHandWeapon = GetEquippedWeapon(1);
-    uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
-
-    mainId = magicItems[0] ? magicItems[0]->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
-
-    secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
-
-    uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
-    modSystem.GetServerModId(shoutId, inventory.Shout);
-
-    auto pAmmo = GetEquippedAmmo();
-    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
-    modSystem.GetServerModId(ammoId, inventory.Ammo);
-
-    inventory.IsWeaponDrawn = actorState.IsWeaponDrawn();
-
-    return inventory;
-}
-
 Factions Actor::GetFactions() const noexcept
 {
     Factions result;
@@ -286,85 +253,6 @@ float Actor::GetActorValue(uint32_t aId) const noexcept
 float Actor::GetActorMaxValue(uint32_t aId) const noexcept
 {
     return actorValueOwner.GetMaxValue(aId);
-}
-
-void Actor::SetInventory(const Inventory& acInventory) noexcept
-{
-    spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
-    UnEquipAll();
-
-    auto* pEquipManager = EquipManager::Get();
-
-    if (!acInventory.Buffer.empty())
-        DeserializeInventory(acInventory.Buffer);
-
-    auto& modSystem = World::Get().GetModSystem();
-
-    uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandWeapon);
-
-    if (mainHandWeaponId)
-        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
-
-    uint32_t secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
-
-    if (secondaryHandWeaponId)
-        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-
-    mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandSpell);
-
-    if (mainHandWeaponId)
-        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
-
-    secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandSpell);
-
-    if (secondaryHandWeaponId)
-        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
-
-    uint32_t shoutId = modSystem.GetGameId(acInventory.Shout);
-
-    if (shoutId)
-        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
-
-    uint32_t ammoId = modSystem.GetGameId(acInventory.Ammo);
-
-    if (ammoId)
-    {
-        auto* pAmmo = TESForm::GetById(ammoId);
-
-        auto count = GetItemCountInInventory(pAmmo);
-
-        const auto pContainerChanges = GetContainerChanges()->entries;
-        for (auto pChange : *pContainerChanges)
-        {
-            if (pChange && pChange->form && pChange->form->formID == ammoId)
-            {
-                if (pChange->form->formID != ammoId)
-                    continue;
-
-                const auto pDataLists = pChange->dataList;
-                for (auto* pDataList : *pDataLists)
-                {
-                    if (pDataList)
-                    {
-                        if (pDataList->Contains(ExtraData::Count))
-                        {
-                            BSExtraData* pExtraData = pDataList->GetByType(ExtraData::Count);
-                            ExtraCount* pExtraCount = RTTI_CAST(pExtraData, BSExtraData, ExtraCount);
-                            if (pExtraCount)
-                            {
-                                pExtraCount->count = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-    }
-
-    // TODO: check if weapon drawn state is the same
-    SetWeaponDrawnEx(acInventory.IsWeaponDrawn);
 }
 
 void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept

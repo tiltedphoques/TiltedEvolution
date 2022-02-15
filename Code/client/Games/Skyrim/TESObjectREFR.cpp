@@ -151,10 +151,10 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
-Container TESObjectREFR::GetFullContainer() const noexcept
+Inventory TESObjectREFR::GetInventory() const noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
-    Container fullContainer{};
+    Inventory inventory{};
 
     if (TESContainer* pBaseContainer = GetContainer())
     {
@@ -167,20 +167,20 @@ Container TESObjectREFR::GetFullContainer() const noexcept
                 continue;
             }
 
-            Container::Entry entry;
+            Inventory::Entry entry;
             modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
             entry.Count = pGameEntry->count;
 
-            fullContainer.Entries.push_back(std::move(entry));
+            inventory.Entries.push_back(std::move(entry));
         }
     }
 
-    Container extraContainer{};
+    Inventory extraInventory{};
 
     auto pExtraContChangesEntries = GetContainerChanges()->entries;
     for (auto pGameEntry : *pExtraContChangesEntries)
     {
-        Container::Entry entry;
+        Inventory::Entry entry;
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
         entry.Count = pGameEntry->count;
 
@@ -189,7 +189,7 @@ Container TESObjectREFR::GetFullContainer() const noexcept
             if (!pExtraDataList)
                 continue;
 
-            Container::Entry innerEntry;
+            Inventory::Entry innerEntry;
             innerEntry.BaseId = entry.BaseId;
             innerEntry.Count = 1;
 
@@ -215,7 +215,7 @@ Container TESObjectREFR::GetFullContainer() const noexcept
                     {
                         TP_ASSERT(pEffectItem, "pEffectItem is null.");
 
-                        Container::EffectItem effect;
+                        Inventory::EffectItem effect;
                         effect.Magnitude = pEffectItem->data.fMagnitude;
                         effect.Area = pEffectItem->data.iArea;
                         effect.Duration = pEffectItem->data.iDuration;
@@ -262,68 +262,68 @@ Container TESObjectREFR::GetFullContainer() const noexcept
 
             entry.Count -= innerEntry.Count;
 
-            extraContainer.Entries.push_back(std::move(innerEntry));
+            extraInventory.Entries.push_back(std::move(innerEntry));
         }
 
         if (entry.Count != 0)
-            extraContainer.Entries.push_back(std::move(entry));
+            extraInventory.Entries.push_back(std::move(entry));
     }
 
-    spdlog::info("ExtraContainer count: {}", extraContainer.Entries.size());
+    spdlog::info("ExtraInventory count: {}", extraInventory.Entries.size());
 
-    Container minimizedExtraContainer{};
+    Inventory minimizedExtraInventory{};
 
-    for (auto& entry : extraContainer.Entries)
+    for (auto& entry : extraInventory.Entries)
     {
-        auto duplicate = std::find_if(minimizedExtraContainer.Entries.begin(), minimizedExtraContainer.Entries.end(), [entry](const Container::Entry& newEntry) { 
+        auto duplicate = std::find_if(minimizedExtraInventory.Entries.begin(), minimizedExtraInventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { 
             return newEntry.CanBeMerged(entry);
         });
 
-        if (duplicate == std::end(minimizedExtraContainer.Entries))
+        if (duplicate == std::end(minimizedExtraInventory.Entries))
         {
-            minimizedExtraContainer.Entries.push_back(entry);
+            minimizedExtraInventory.Entries.push_back(entry);
             continue;
         }
 
         duplicate->Count += entry.Count;
     }
 
-    spdlog::info("MinExtraContainer count: {}", minimizedExtraContainer.Entries.size());
+    spdlog::info("MinExtraInventory count: {}", minimizedExtraInventory.Entries.size());
 
-    for (auto& entry : minimizedExtraContainer.Entries)
+    for (auto& entry : minimizedExtraInventory.Entries)
     {
         if (entry.ContainsExtraData())
             continue;
 
-        auto duplicate = std::find_if(fullContainer.Entries.begin(), fullContainer.Entries.end(), [entry](const Container::Entry& newEntry) { 
+        auto duplicate = std::find_if(inventory.Entries.begin(), inventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { 
             return newEntry.CanBeMerged(entry);
         });
 
-        if (duplicate == std::end(fullContainer.Entries))
+        if (duplicate == std::end(inventory.Entries))
             continue;
 
         entry.Count += duplicate->Count;
         duplicate->Count = 0;
     }
 
-    spdlog::info("MinExtraContainer count after: {}", minimizedExtraContainer.Entries.size());
+    spdlog::info("MinExtraInventory count after: {}", minimizedExtraInventory.Entries.size());
 
-    fullContainer.Entries.insert(fullContainer.Entries.end(), minimizedExtraContainer.Entries.begin(),
-                                 minimizedExtraContainer.Entries.end());
+    inventory.Entries.insert(inventory.Entries.end(), minimizedExtraInventory.Entries.begin(),
+                                 minimizedExtraInventory.Entries.end());
 
-    spdlog::info("fullContainer count after: {}", fullContainer.Entries.size());
+    spdlog::info("Inventory count after: {}", inventory.Entries.size());
 
-    return fullContainer;
+    return inventory;
 }
 
-void TESObjectREFR::SetFullContainer(Container& acContainer) noexcept
+void TESObjectREFR::SetInventory(Inventory& acContainer) noexcept
 {
     RemoveAllItems();
 
-    Container currentContainer = GetFullContainer();
+    Inventory currentContainer = GetInventory();
     for (auto currentEntry : currentContainer.Entries)
     {
-        auto duplicate = std::find_if(acContainer.Entries.begin(), acContainer.Entries.end(), [currentEntry](const Container::Entry& newEntry) { 
+        auto duplicate = std::find_if(acContainer.Entries.begin(), acContainer.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
             return newEntry.CanBeMerged(currentEntry);
         });
 
@@ -334,19 +334,19 @@ void TESObjectREFR::SetFullContainer(Container& acContainer) noexcept
         else
         {
             acContainer.Entries.push_back(*duplicate);
-            Container::Entry& back = acContainer.Entries.back();
+            Inventory::Entry& back = acContainer.Entries.back();
             back.Count *= -1;
         }
     }
 
-    for (const Container::Entry& entry : acContainer.Entries)
+    for (const Inventory::Entry& entry : acContainer.Entries)
     {
         if (entry.Count != 0)
             AddItem(entry);
     }
 }
 
-void TESObjectREFR::AddItem(const Container::Entry& arEntry) noexcept
+void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
 {
     ModSystem& modSystem = World::Get().GetModSystem();
 

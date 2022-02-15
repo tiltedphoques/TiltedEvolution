@@ -8,9 +8,9 @@
 
 struct EnchantmentItem : MagicItem
 {
-    static EnchantmentItem* Create(const Container::EnchantmentData& aData) noexcept;
+    static EnchantmentItem* Create(const Inventory::EnchantmentData& aData) noexcept;
 
-    void Init(const Container::EnchantmentData& aData);
+    void Init(const Inventory::EnchantmentData& aData);
 
     int32_t iCostOverride;
     int32_t iFlags;

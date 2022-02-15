@@ -175,10 +175,10 @@ struct TESObjectREFR : TESForm
     const float GetHeight() noexcept;
     void EnableImpl() noexcept;
 
-    Container GetFullContainer() const noexcept;
-    void SetFullContainer(Container& acContainer) noexcept;
+    Inventory GetInventory() const noexcept;
+    void SetInventory(Inventory& acContainer) noexcept;
 
-    void AddItem(const Container::Entry& arEntry) noexcept;
+    void AddItem(const Inventory::Entry& arEntry) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

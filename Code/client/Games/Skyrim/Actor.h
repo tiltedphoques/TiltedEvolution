@@ -191,14 +191,12 @@ struct Actor : TESObjectREFR
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorMaxValue(uint32_t aId) const noexcept;
 
-    Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
     void SetActorValue(uint32_t aId, float aValue) noexcept;
     void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;

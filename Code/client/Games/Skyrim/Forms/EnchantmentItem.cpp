@@ -4,7 +4,7 @@
 #include <Magic/EffectItem.h>
 #include <World.h>
 
-EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData) noexcept
+EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData) noexcept
 {
     /*
     TP_THIS_FUNCTION(TCreateNewEnchantment, EnchantmentItem*, GameArray<EffectItem>, bool abIsWeapon);
@@ -22,7 +22,7 @@ EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData
     effects.Resize(aData.Effects.size());
     for (int i = 0; i < aData.Effects.size(); i++)
     {
-        Container::EffectItem effect = aData.Effects[i];
+        Inventory::EffectItem effect = aData.Effects[i];
 
         EffectItem effectItem{};
         effectItem.data.fMagnitude = effect.Magnitude;
@@ -60,7 +60,7 @@ EnchantmentItem* EnchantmentItem::Create(const Container::EnchantmentData& aData
     return pItem;
 }
 
-void EnchantmentItem::Init(const Container::EnchantmentData& aData)
+void EnchantmentItem::Init(const Inventory::EnchantmentData& aData)
 {
     /*
     iCostOverride = aData.CostOverride;
