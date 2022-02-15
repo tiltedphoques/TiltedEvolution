@@ -86,6 +86,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             static char s_address[256] = "127.0.0.1:10578";
             if (!m_transport.IsOnline())
                 m_transport.Connect(s_address);
+            else
+                m_transport.Close();
         }
     }
     else

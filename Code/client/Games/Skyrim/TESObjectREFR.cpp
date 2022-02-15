@@ -180,6 +180,9 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     auto pExtraContChangesEntries = GetContainerChanges()->entries;
     for (auto pGameEntry : *pExtraContChangesEntries)
     {
+        if (!pGameEntry)
+            continue;
+
         Inventory::Entry entry;
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
         entry.Count = pGameEntry->count;

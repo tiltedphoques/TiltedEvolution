@@ -1,4 +1,4 @@
-#include <Structs/Container.h>
+#include <Structs/Inventory.h>
 #include <TiltedCore/Serialization.hpp>
 
 using TiltedPhoques::Serialization;

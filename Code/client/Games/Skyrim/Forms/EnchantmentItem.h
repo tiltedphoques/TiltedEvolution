@@ -2,7 +2,7 @@
 
 #include "MagicItem.h"
 
-#include <Structs/Container.h>
+#include <Structs/Inventory.h>
 #include <Games/Magic/MagicSystem.h>
 #include "BGSListForm.h"
 

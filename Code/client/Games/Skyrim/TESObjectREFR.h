@@ -9,9 +9,8 @@
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
-#include <Structs/Container.h>
+#include <Structs/Inventory.h>
 #include <Games/ExtraDataList.h>
-#include <Structs/Container.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
