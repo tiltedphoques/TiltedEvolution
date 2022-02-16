@@ -56,25 +56,7 @@ IMenu* UI::FindMenuByName(const BSFixedString& acName)
     return nullptr;
 }
 
-void UI::UnPauseAllDX()
-{
-}
-
-void UI::UnPauseAll()
-{
-    for (auto& e : MenuMap)
-    {
-        // The game does lazy load its menus, so we cannot assume they exist.
-        if (auto* pMenu = e.value.spMenu)
-        {
-            pMenu->ClearFlag(IMenu::UI_MENU_FLAGS::kPausesGame);
-        }
-
-        spdlog::info("Menu name: {}", e.key.AsAscii());
-    }
-}
-
-void UI::UnPauseAll2()
+void UI::DebugLogAllMenus()
 {
     for (auto& e : menuStack)
     {
@@ -82,7 +64,7 @@ void UI::UnPauseAll2()
     }
 }
 
-static void ClearFlags(IMenu* apEntry)
+static void MakeMenuNonBlocking(IMenu* apEntry)
 {
     if (apEntry->PausesGame())
         apEntry->ClearFlag(IMenu::kPausesGame);
@@ -94,21 +76,17 @@ static void ClearFlags(IMenu* apEntry)
         apEntry->ClearFlag(IMenu::kFreezeFramePause);
 }
 
-static __int64 (*OldFn)(UI*, IMenu*, __int64 a3);
+// Mist Menu immedeatly hit on startup (before the beth logo)
+// Main Menu: hit after beth logo.
+static constexpr const char* kAllowList[] = {"Console",   "Journal Menu",  "TweenMenu", "MagicMenu",
+                                             "StatsMenu", "InventoryMenu", "MapMenu"};
 
-// Unpause works very well for Console
+static __int64 (*UI_GetSomething_O)(UI*, IMenu*, __int64);
 
-
-static constexpr const char* kAllowList[] = {"Console", "Journal Menu",   "TweenMenu", "MagicMenu",
-                                             /*"MapMenu", "StatsMenu",*/ "InventoryMenu"};
-
-static __int64 NewFn(UI* apSelf, IMenu* apEntry, __int64 a3)
+static __int64 UI_GetSomething(UI* apSelf, IMenu* apEntry, __int64 a3)
 {
     if (apEntry)
     {
-        // Mist Menu immedeatly hit on startup (before the beth logo)
-        // Main Menu: hit after beth logo.
-
         if (auto* pName = apSelf->LookupMenuNameByInstance(apEntry))
         {
             spdlog::info("Menu requested {}", pName->AsAscii());
@@ -119,72 +97,20 @@ static __int64 NewFn(UI* apSelf, IMenu* apEntry, __int64 a3)
             if (auto* pMenu = apSelf->FindMenuByName(item))
             {
                 if (pMenu == apEntry)
-                    ClearFlags(apEntry);
+                    MakeMenuNonBlocking(apEntry);
             }
-
         }
-
-        // ClearFlags(apEntry);
     }
 
-    return OldFn(apSelf, apEntry, a3);
-}
-
-static void (*sub_140F06A80_0)(void*, IMenu*);
-
-static void sub_140F06A80(void* a1, IMenu* apEntry)
-{
-    if (apEntry)
-        ClearFlags(apEntry);
-
-    sub_140F06A80_0(a1, apEntry);
-}
-
-static void (*BSTreeManager__Update_O)(void*, void*, bool);
-
-void BSTreeManager__Update(void* treeManager, void* a2, bool abMenuMode)
-{
-    if (!a2)
-        return;
-
-    BSTreeManager__Update_O(treeManager, a2, abMenuMode);
+    return UI_GetSomething_O(apSelf, apEntry, a3);
 }
 
 static TiltedPhoques::Initializer s_s([]() {
-    TiltedPhoques::SwapCall(0x140F05232, OldFn, &NewFn);
-    // TiltedPhoques::SwapCall(0x1405D9F96, BSTreeManager__Update_O, &BSTreeManager__Update);
-    //
-    //
-    // TiltedPhoques::SwapCall(0x140F054AC, sub_140F06A80_0, &sub_140F06A80);
+    // pray that this doesnt fail!
+    VersionDbPtr<uint8_t> ProcessHook(82082);
+    TiltedPhoques::SwapCall(ProcessHook.Get() + 0x682, UI_GetSomething_O, &UI_GetSomething);
 
-    struct C : TiltedPhoques::CodeGenerator
-    {
-        C()
-        {
-            mov(rdi, ptr[rdx + 0x18]);
-            mov(edx, 0);
-
-            cmp(rdi, 0);
-            jz("exit");
-            db(0xCC);
-            jmp_S(0x1403F6460 + 1);
-
-            L("exit");
-            add(rsp, 0x30260);
-            pop(r15);
-            pop(r14);
-            pop(r13);
-            pop(r12);
-            pop(rdi);
-            pop(rsi);
-            pop(rbx);
-            pop(rbp);
-            ret();
-        }
-    } gen;
-    // TiltedPhoques::Jump(0x1403F645C, gen.getCode());
-    // TiltedPhoques::Nop(0x1403F645C + 5, 1);
-
-    // iltedPhoques::Jump(0x1403F6484, gen.getCode());
-    // TiltedPhoques::Nop(0x1403F6484 + 5, 2);
+    // Ignore startup movie
+    VersionDbPtr<uint8_t> MainInit(36548);
+    TiltedPhoques::Put<uint8_t>(MainInit.Get() + 0xFE, 0xEB);
 });

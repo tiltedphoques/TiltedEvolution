@@ -193,18 +193,9 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
-        if (ImGui::Button("Create All"))
-        {
-            //UI::Get()->InstanciateAllMenus();
-        }
-        if (ImGui::Button("Close All"))
+        if (ImGui::Button("Close all menus"))
         {
             UI::Get()->CloseAllMenus();
-        }
-        if (ImGui::Button("Unpause all"))
-        {
-            UI::Get()->UnPauseAll();
-            UI::Get()->UnPauseAll2();
         }
 
         ImGui::EndMenu();

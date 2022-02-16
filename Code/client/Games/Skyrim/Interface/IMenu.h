@@ -88,12 +88,49 @@ struct GStatGroups
 
 class FxDelegateHandler : public GRefCountBase<FxDelegateHandler, GStatGroups::kGStat_Default_Mem>
 {
+  public:
+    using CallbackFn = void(const void* a_params);
+
+    class CallbackProcessor
+    {
+      public:
+        virtual ~CallbackProcessor() = default; // 00
+
+        // add
+        virtual void Process(const void* a_methodName, CallbackFn* a_method) = 0; // 01
+    };
+    static_assert(sizeof(CallbackProcessor) == 0x8);
+
+    ~FxDelegateHandler() override = default; // 00
+
+    // add
+    virtual void Accept(CallbackProcessor* a_cbReg) = 0; // 01
 };
+
+enum class UI_MESSAGE_RESULTS
+{
+    kHandled = 0,
+    kIgnore = 1,
+    kPassOn = 2
+};
+
+class UIMessage;
 
 class IMenu : public FxDelegateHandler
 {
   public:
     virtual ~IMenu() = default;
+
+    void Accept(CallbackProcessor* a_processor) override;
+
+    // add
+    virtual void PostCreate() = 0;
+    virtual void Unk_03(void) = 0;
+    virtual UI_MESSAGE_RESULTS ProcessMessage(UIMessage& a_message) = 0;
+    virtual void AdvanceMovie(float a_interval, std::uint32_t a_currentTime) = 0;
+    virtual void PostDisplay() = 0;
+    virtual void PreDisplay() = 0;
+    virtual void RefreshPlatform() = 0;
 
     enum UI_MENU_FLAGS : uint32_t
     {

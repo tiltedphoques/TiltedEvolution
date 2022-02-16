@@ -42,11 +42,7 @@ class UI
 
     bool GetMenuOpen(const BSFixedString& acName) const;
     void CloseAllMenus();
-
-    void UnPauseAll();
-    void UnPauseAll2();
-
-    void UnPauseAllDX();
+    void DebugLogAllMenus();
 
     IMenu* FindMenuByName(const BSFixedString& acName);
     BSFixedString* LookupMenuNameByInstance(IMenu* apMenu);
