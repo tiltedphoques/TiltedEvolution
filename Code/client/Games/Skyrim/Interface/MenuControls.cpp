@@ -11,3 +11,9 @@ MenuControls* MenuControls::GetInstance()
     POINTER_SKYRIMSE(MenuControls*, s_instance, 401263);
     return *(s_instance.Get());
 }
+
+#include <Services/TransportService.h>
+
+static TiltedPhoques::Initializer s_init([]() {
+
+});
