@@ -40,8 +40,7 @@ bool ExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
     if (Contains(aType))
         return false;
 
-    // TODO: this sometimes causes a deadlock
-    //BSScopedLock<BSRecursiveLock> _(lock);
+    BSScopedLock<BSRecursiveLock> _(lock);
 
     BSExtraData* pNext = data;
     data = apNewData;
