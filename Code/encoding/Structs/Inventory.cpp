@@ -18,7 +18,6 @@ void Inventory::EffectItem::Deserialize(TiltedPhoques::Buffer::Reader& aReader) 
     Area = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Duration = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     RawCost = Serialization::ReadFloat(aReader);
-    uint32_t count = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     EffectId.Deserialize(aReader);
 }
 
@@ -61,8 +60,8 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
 
     ExtraEnchantId.Deserialize(aReader);
     ExtraEnchantCharge = Serialization::ReadVarInt(aReader) & 0xFFFF;
-    uint32_t effectCount = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    for (uint32_t i = 0; i < effectCount; i++)
+    uint64_t effectCount = Serialization::ReadVarInt(aReader);
+    for (uint64_t i = 0; i < effectCount; i++)
     {
         EffectItem effect;
         effect.Deserialize(aReader);

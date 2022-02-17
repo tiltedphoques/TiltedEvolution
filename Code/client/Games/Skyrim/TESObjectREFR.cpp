@@ -324,7 +324,7 @@ void TESObjectREFR::SetInventory(Inventory& acContainer) noexcept
     RemoveAllItems();
 
     Inventory currentContainer = GetInventory();
-    for (auto currentEntry : currentContainer.Entries)
+    for (const auto& currentEntry : currentContainer.Entries)
     {
         auto duplicate = std::find_if(acContainer.Entries.begin(), acContainer.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
             return newEntry.CanBeMerged(currentEntry);
@@ -336,7 +336,8 @@ void TESObjectREFR::SetInventory(Inventory& acContainer) noexcept
         }
         else
         {
-            acContainer.Entries.push_back(*duplicate);
+            // TODO: revisit
+            acContainer.Entries.push_back(currentEntry);
             Inventory::Entry& back = acContainer.Entries.back();
             back.Count *= -1;
         }

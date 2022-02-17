@@ -59,6 +59,7 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
     using TiltedPhoques::FHash::Crc64;
 
     String variableNames{};
+    variableNames.reserve(8192);
     std::map<uint32_t, const char*> variables;
 
     if (animationGraphIndex < animationGraphs.size)
