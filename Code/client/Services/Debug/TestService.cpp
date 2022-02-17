@@ -57,9 +57,9 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    Inventory inventory = PlayerCharacter::Get()->GetInventory();
+    Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
     spdlog::info("Inventory size: {}", inventory.Entries.size());
-    pActor->SetInventory(inventory);
+    pActor->SetActorInventory(inventory);
 
     m_actors.emplace_back(pActor);
 }
@@ -106,8 +106,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             //PlaceActorInWorld();
             Actor* pActor = RTTI_CAST(TESForm::GetById(0x1348C), TESForm, Actor);
-            auto container = PlayerCharacter::Get()->GetInventory();
-            pActor->SetInventory(container);
+            auto container = PlayerCharacter::Get()->GetActorInventory();
+            pActor->SetActorInventory(container);
         }
     }
     else

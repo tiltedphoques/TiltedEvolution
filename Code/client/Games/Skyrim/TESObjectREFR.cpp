@@ -455,7 +455,7 @@ void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
 
     AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
     spdlog::info("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
-                 pExtraDataList ? pExtraDataList->GetCount() : -1, arEntry.Count);
+                 pExtraDataList ? (int)pExtraDataList->GetCount() : -1, arEntry.Count);
 
 
     // TODO: if worn, call equip

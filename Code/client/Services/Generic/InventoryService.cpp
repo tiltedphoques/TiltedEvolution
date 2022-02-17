@@ -191,7 +191,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (!pActor)
                 continue;
 
-            message.Changes[serverId] = pActor->GetInventory();
+            message.Changes[serverId] = pActor->GetActorInventory();
         }
 
         m_transport.Send(message);
@@ -259,7 +259,7 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
         auto& remoteComponent = m_world.get<RemoteComponent>(*it);
         remoteComponent.SpawnRequest.InventoryContent = inventory;
 
-        pActor->SetInventory(inventory);
+        pActor->SetActorInventory(inventory);
     }
 
     m_cachedCharacterInventoryChanges.clear();

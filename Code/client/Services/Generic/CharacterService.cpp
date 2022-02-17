@@ -408,7 +408,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
             return;
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
-        pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
+        pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -674,7 +674,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
         questLog.resize(std::distance(questLog.begin(), ip));
     }
 
-    message.InventoryContent = pActor->GetInventory();
+    message.InventoryContent = pActor->GetActorInventory();
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
@@ -908,7 +908,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
         if (!pActor || !pActor->GetNiNode())
             continue;
 
-        pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);
+        pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
         pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
 
