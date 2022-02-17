@@ -20,6 +20,7 @@
 #include <ExtraData/ExtraWorn.h>
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
+#include <EquipManager.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
@@ -319,31 +320,31 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
-void TESObjectREFR::SetInventory(Inventory& acContainer) noexcept
+void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
 {
     RemoveAllItems();
 
     Inventory currentContainer = GetInventory();
     for (const auto& currentEntry : currentContainer.Entries)
     {
-        auto duplicate = std::find_if(acContainer.Entries.begin(), acContainer.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
+        auto duplicate = std::find_if(aInventory.Entries.begin(), aInventory.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
             return newEntry.CanBeMerged(currentEntry);
         });
 
-        if (duplicate != std::end(acContainer.Entries))
+        if (duplicate != std::end(aInventory.Entries))
         {
             duplicate->Count -= currentEntry.Count;
         }
         else
         {
             // TODO: revisit
-            acContainer.Entries.push_back(currentEntry);
-            Inventory::Entry& back = acContainer.Entries.back();
+            aInventory.Entries.push_back(currentEntry);
+            Inventory::Entry& back = aInventory.Entries.back();
             back.Count *= -1;
         }
     }
 
-    for (const Inventory::Entry& entry : acContainer.Entries)
+    for (const Inventory::Entry& entry : aInventory.Entries)
     {
         if (entry.Count != 0)
             AddItem(entry);
@@ -455,6 +456,13 @@ void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
     AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
     spdlog::info("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
                  pExtraDataList ? pExtraDataList->GetCount() : -1, arEntry.Count);
+
+
+    // TODO: if worn, call equip
+    if (pExtraDataList && pExtraDataList->Contains(ExtraData::Worn))
+    {
+        auto* pEquipManager = EquipManager::Get();
+    }
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept

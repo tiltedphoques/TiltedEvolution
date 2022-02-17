@@ -317,6 +317,111 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
 
+Inventory Actor::GetActorInventory() const noexcept
+{
+    Inventory inventory = GetInventory();
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    auto pMainHandWeapon = GetEquippedWeapon(0);
+    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+
+    auto pSecondaryHandWeapon = GetEquippedWeapon(1);
+    uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
+    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
+
+    mainId = magicItems[0] ? magicItems[0]->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
+
+    secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
+    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
+
+    uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
+    modSystem.GetServerModId(shoutId, inventory.Shout);
+
+    auto pAmmo = GetEquippedAmmo();
+    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
+    modSystem.GetServerModId(ammoId, inventory.Ammo);
+
+    return inventory;
+}
+
+void Actor::SetActorInventory(Inventory& aInventory) noexcept
+{
+    UnEquipAll();
+
+    SetInventory(aInventory);
+
+    auto* pEquipManager = EquipManager::Get();
+    auto& modSystem = World::Get().GetModSystem();
+
+    uint32_t mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandWeapon);
+
+    if (mainHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+
+    uint32_t secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandWeapon);
+
+    if (secondaryHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+
+    mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandSpell);
+
+    if (mainHandWeaponId)
+        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
+
+    secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandSpell);
+
+    if (secondaryHandWeaponId)
+        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+
+    uint32_t shoutId = modSystem.GetGameId(aInventory.Shout);
+
+    if (shoutId)
+        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+
+    uint32_t ammoId = modSystem.GetGameId(aInventory.Ammo);
+
+    if (ammoId)
+    {
+        TESForm* pAmmo = TESForm::GetById(ammoId);
+
+        auto count = GetItemCountInInventory(pAmmo);
+
+        /*
+        const auto pContainerChanges = GetContainerChanges()->entries;
+        for (auto pChange : *pContainerChanges)
+        {
+            if (pChange && pChange->form && pChange->form->formID == ammoId)
+            {
+                if (pChange->form->formID != ammoId)
+                    continue;
+
+                const auto pDataLists = pChange->dataList;
+                for (auto* pDataList : *pDataLists)
+                {
+                    if (pDataList)
+                    {
+                        if (pDataList->Contains(ExtraData::Count))
+                        {
+                            BSExtraData* pExtraData = pDataList->GetByType(ExtraData::Count);
+                            ExtraCount* pExtraCount = RTTI_CAST(pExtraData, BSExtraData, ExtraCount);
+                            if (pExtraCount)
+                            {
+                                pExtraCount->count = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        */
+
+        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+    }
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 
@@ -348,8 +453,6 @@ void Actor::UnEquipAll() noexcept
             }
         }
     }
-
-    RemoveAllItems();
 
     // Taken from skyrim's code shouts can be two form types apparently
     if (equippedShout && ((int)equippedShout->formType - 41) <= 1)

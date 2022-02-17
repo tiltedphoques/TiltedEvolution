@@ -190,6 +190,7 @@ struct Actor : TESObjectREFR
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorMaxValue(uint32_t aId) const noexcept;
+    Inventory GetActorInventory() const noexcept;
 
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
@@ -205,6 +206,7 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
+    void SetActorInventory(Inventory& aInventory) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

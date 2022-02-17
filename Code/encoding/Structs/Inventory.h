@@ -102,4 +102,13 @@ struct Inventory
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
     Vector<Entry> Entries{};
+
+    GameId RightHandWeapon{};
+#if TP_SKYRIM
+    GameId LeftHandWeapon{};
+    GameId LeftHandSpell{};
+    GameId RightHandSpell{};
+    GameId Shout{};
+    GameId Ammo{};
+#endif
 };
