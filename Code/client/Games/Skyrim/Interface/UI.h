@@ -25,7 +25,7 @@ struct UIMessage
         kChatterEvent = 13
     };
 
-    BSFixedString Menu;
+    BSFixedString menu;
     UI_MESSAGE_TYPE eType;
     uint32_t pad0C;
     void* data;
@@ -48,12 +48,12 @@ class UI
     BSFixedString* LookupMenuNameByInstance(IMenu* apMenu);
 
   public:
-    using Create_t = IMenu*(UIMessage*);
+    using TCreate = IMenu*(UIMessage*);
 
     struct UIMenuEntry
     {
         IMenu* spMenu; // Actually a scaleform ptr TODO: reverse that stuff.
-        Create_t* create;
+        TCreate* create;
     };
 
     char pad_0[0x110]; // Too lazy to reverse inheritance for now.
@@ -63,7 +63,7 @@ class UI
 
     // A map of name to the entry, the game will only create the menu instance
     // if the menu is opened, and frees it otherwise.
-    creation::BSTHashMap<BSFixedString, UIMenuEntry> MenuMap;
+    creation::BSTHashMap<BSFixedString, UIMenuEntry> menuMap;
 
     uint64_t spinlock;
     // These offsets are a bit unreliable.

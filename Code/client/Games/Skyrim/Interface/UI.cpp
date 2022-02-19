@@ -38,7 +38,7 @@ void UI::CloseAllMenus()
 
 BSFixedString* UI::LookupMenuNameByInstance(IMenu* apMenu)
 {
-    for (auto& it : MenuMap)
+    for (auto& it : menuMap)
     {
         if (it.value.spMenu == apMenu)
             return &it.key;
@@ -48,7 +48,7 @@ BSFixedString* UI::LookupMenuNameByInstance(IMenu* apMenu)
 
 IMenu* UI::FindMenuByName(const BSFixedString& acName)
 {
-    for (const auto& it : MenuMap)
+    for (const auto& it : menuMap)
     {
         if (it.key == acName)
             return it.value.spMenu;

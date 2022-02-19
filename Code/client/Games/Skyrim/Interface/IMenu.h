@@ -3,21 +3,20 @@
 class GRefCountImplCore
 {
   public:
-    virtual ~GRefCountImplCore() = default; // 00
+    virtual ~GRefCountImplCore() = default;
 
     static void CheckInvalidDelete(GRefCountImplCore*)
     {
     }
 
-    [[nodiscard]] constexpr std::uint32_t GetRefCount() const noexcept
+    [[nodiscard]] constexpr uint32_t GetRefCount() const noexcept
     {
-        return _refCount;
+        return m_refCount;
     }
 
   protected:
-    // members
-    volatile std::uint32_t _refCount{1}; // 08
-    std::uint32_t _pad0C{0};             // 0C
+    uint32_t m_refCount{1};
+    std::uint32_t _pad0C{0};
 };
 
 class GRefCountImpl : GRefCountImplCore
@@ -89,15 +88,13 @@ struct GStatGroups
 class FxDelegateHandler : public GRefCountBase<FxDelegateHandler, GStatGroups::kGStat_Default_Mem>
 {
   public:
-    using CallbackFn = void(const void* a_params);
+    using CallbackFn = void(const void*);
 
     class CallbackProcessor
     {
       public:
-        virtual ~CallbackProcessor() = default; // 00
-
-        // add
-        virtual void Process(const void* a_methodName, CallbackFn* a_method) = 0; // 01
+        virtual ~CallbackProcessor() = default;
+        virtual void Process(const void* apMethodName, CallbackFn* apMethod) = 0;
     };
     static_assert(sizeof(CallbackProcessor) == 0x8);
 
@@ -121,13 +118,13 @@ class IMenu : public FxDelegateHandler
   public:
     virtual ~IMenu() = default;
 
-    void Accept(CallbackProcessor* a_processor) override;
+    void Accept(CallbackProcessor* apProcessor) override;
 
     // add
     virtual void PostCreate() = 0;
     virtual void Unk_03(void) = 0;
-    virtual UI_MESSAGE_RESULTS ProcessMessage(UIMessage& a_message) = 0;
-    virtual void AdvanceMovie(float a_interval, std::uint32_t a_currentTime) = 0;
+    virtual UI_MESSAGE_RESULTS ProcessMessage(UIMessage& aMessage) = 0;
+    virtual void AdvanceMovie(float aInterval, uint32_t aCurrentTime) = 0;
     virtual void PostDisplay() = 0;
     virtual void PreDisplay() = 0;
     virtual void RefreshPlatform() = 0;

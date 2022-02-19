@@ -398,14 +398,6 @@ struct VersionDbPtr
         return m_pPtr;
     }
 
-    uint8_t* GetPtrU() const noexcept
-    {
-        if (m_pPtr == nullptr)
-            m_pPtr = VersionDb::Get().FindAddressById(m_id);
-
-        return static_cast<uint8_t*>(m_pPtr);
-    }
-
 private:
 
     mutable void* m_pPtr;
