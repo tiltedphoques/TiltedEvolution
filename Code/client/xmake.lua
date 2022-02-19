@@ -52,6 +52,7 @@ target(name)
         "tiltedcore",
         "spdlog",
         "hopscotch-map",
+        "cryptopp",
         "gamenetworkingsockets",
         "discord",
         "imgui",
