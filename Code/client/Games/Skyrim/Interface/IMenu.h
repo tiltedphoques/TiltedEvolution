@@ -114,7 +114,7 @@ enum class UI_MESSAGE_RESULTS
     kPassOn = 2
 };
 
-class UIMessage;
+struct UIMessage;
 
 class IMenu : public FxDelegateHandler
 {
