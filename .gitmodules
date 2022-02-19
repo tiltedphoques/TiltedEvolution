@@ -1,9 +1,6 @@
 [submodule "Libraries/TiltedReverse"]
 	path = Libraries/TiltedReverse
 	url = https://github.com/TiltedPhoques/TiltedReverse
-[submodule "Libraries/TiltedUI"]
-	path = Libraries/TiltedUI
-	url = https://github.com/TiltedPhoques/TiltedUI
 [submodule "Libraries/TiltedConnect"]
 	path = Libraries/TiltedConnect
 	url = https://github.com/TiltedPhoques/TiltedConnect
