@@ -1,4 +1,4 @@
-#include <OverlayV8Handler.hpp>
+#include <OverlayV8Handler.h>
 #include <TiltedCore/Platform.hpp>
 
 namespace TiltedPhoques

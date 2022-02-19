@@ -7,8 +7,8 @@
 #include <WICTextureLoader.h>
 #include <DDSTextureLoader.h>
 
-#include <OverlayClient.hpp>
-#include <OverlayRenderHandlerD3D11.hpp>
+#include <OverlayClient.h>
+#include <OverlayRenderHandlerD3D11.h>
 
 namespace TiltedPhoques
 {

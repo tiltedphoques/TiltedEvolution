@@ -1,6 +1,6 @@
 
-#include <OverlayClient.hpp>
-#include <OverlayContextHandler.hpp>
+#include <OverlayClient.h>
+#include <OverlayContextHandler.h>
 #include <filesystem>
 #include <TiltedCore/Filesystem.hpp>
 

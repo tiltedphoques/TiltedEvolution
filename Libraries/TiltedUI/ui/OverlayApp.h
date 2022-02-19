@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OverlayBrowserProcessHandler.hpp>
-#include <OverlayClient.hpp>
+#include <OverlayClient.h>
 
 #include <TiltedCore/Meta.hpp>
 #include <include/cef_app.h>

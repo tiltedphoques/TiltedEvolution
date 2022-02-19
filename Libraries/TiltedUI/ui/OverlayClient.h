@@ -1,7 +1,7 @@
 #pragma once
 
 #include <include/cef_client.h>
-#include <OverlayLoadHandler.hpp>
+#include <OverlayLoadHandler.h>
 #include <OverlayRenderHandler.hpp>
 
 #include <TiltedCore/Meta.hpp>

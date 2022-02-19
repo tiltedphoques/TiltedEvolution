@@ -4,8 +4,8 @@
 
 #include <include/cef_render_process_handler.h>
 
-#include <OverlayV8Handler.hpp>
-#include <EventsV8Handler.hpp>
+#include <OverlayV8Handler.h>
+#include <EventsV8Handler.h>
 
 namespace TiltedPhoques
 {

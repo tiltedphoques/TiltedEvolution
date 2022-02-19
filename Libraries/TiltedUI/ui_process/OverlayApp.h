@@ -1,7 +1,7 @@
 #pragma once
 
 #include <include/cef_app.h>
-#include <OverlayRenderProcessHandler.hpp>
+#include <OverlayRenderProcessHandler.h>
 #include <functional>
 
 namespace TiltedPhoques

@@ -1,4 +1,4 @@
-#include <OverlayApp.hpp>
+#include <OverlayApp.h>
 
 #include <thread>
 

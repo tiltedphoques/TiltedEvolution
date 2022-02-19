@@ -2,10 +2,10 @@
 
 #include <Services/OverlayService.h>
 
-#include <OverlayApp.hpp>
+#include <OverlayApp.h>
 
 #include <D3D11Hook.hpp>
-#include <OverlayRenderHandlerD3D11.hpp>
+#include <OverlayRenderHandlerD3D11.h>
 
 #include <Systems/RenderSystemD3D11.h>
 
