@@ -27,6 +27,7 @@ namespace TiltedPhoques
 
         bool Initialize(const std::string_view acUri) noexcept;
         void Shutdown() noexcept;
+        void ShowDevTools();
 
         void ExecuteAsync(const std::string& acFunction, const CefRefPtr<CefListValue>& apArguments = nullptr) const noexcept;
 

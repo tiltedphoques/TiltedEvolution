@@ -1,10 +1,7 @@
 
 add_requires(
-    "tiltedcore",
-    "catch2",
     "directxtk",
-    "cef",
-    "hopscotch-map")
+    "cef")
 
 target("TiltedUi")
     set_kind("static")
@@ -37,7 +34,7 @@ target("UITestRunner")
     add_files("ui_test_runner/*.cpp")
     add_deps("TiltedUi")
     add_defines("RUNNER_PATH=LR\"($(scriptdir))\"")
-    add_packages("tiltedcore", "catch2", "hopscotch-map", "cef", "directxtk")
+    add_packages("tiltedcore", "catch2", "hopscotch-map", "cef", "directxtk", "spdlog")
 
 --target("TiltedUi_Tests")
 --    set_kind("binary")

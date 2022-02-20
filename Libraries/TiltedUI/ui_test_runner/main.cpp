@@ -1,6 +1,7 @@
 
 #include "GraphicsRenderer.h"
 
+#include <spdlog/spdlog.h>
 #include <OverlayApp.h>
 #include <OverlayRenderHandler.hpp>
 #include <OverlayRenderHandlerD3D11.h>
@@ -88,14 +89,35 @@ public:
 
     bool Draw()
     {
-        if (GetAsyncKeyState(VK_F3) & 1)
+        if (GetAsyncKeyState(VK_F3) & 1) {
             m_bShowCEF = !m_bShowCEF;
+            UpdateWindowTitle();
 
+            m_pOverlay->GetClient()->Reset();
+        }
+
+        if (GetAsyncKeyState(VK_F4) & 1) {
+            m_pOverlay->ShowDevTools();
+        }
+
+        if (GetAsyncKeyState(VK_F5) & 1) {
+            GraphicsRenderer::ToggleRect();
+        }
+
+        return GraphicsRenderer::Run(); 
+    }
+
+    void DrawWithin() override
+    {
         if (m_bShowCEF) {
             m_pOverlay->GetClient()->Render();
         }
+    }
 
-        return GraphicsRenderer::Run();
+    void UpdateWindowTitle()
+    {
+        auto title = fmt::format("UITestRunner{}", m_bShowCEF ? " - Cef active" : "");
+        SetWindowTextA(m_hwnd, title.c_str());
     }
 
 private:
@@ -121,7 +143,22 @@ IDXGISwapChain* D3D11RenderProvider::GetSwapChain() const noexcept
     return m_runner.m_pSwapchain;
 }
 
+struct ComScope
+{
+    ComScope()
+    {
+        CoInitialize(nullptr);
+    }
+    ~ComScope()
+    {
+        CoUninitialize();
+    }
+};
+
 int main(int argc, char** argv) {
+    ComScope cs;
+    (void)cs;
+
     UITestRunner runner(argc, argv);
     while (true)
     {

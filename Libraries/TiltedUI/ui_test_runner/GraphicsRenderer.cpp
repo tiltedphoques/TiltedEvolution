@@ -326,18 +326,22 @@ bool GraphicsRenderer::Run()
     D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
     m_pDeviceContext->RSSetViewports(1, &viewport);
 
-    m_pDeviceContext->OMSetRenderTargets(1, &m_pd3d11FrameBufferView, nullptr);
+    DrawWithin();
 
-    m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_pDeviceContext->IASetInputLayout(shaders.inputLayout);
+    if (m_bDrawRectangle)
+    {
+        m_pDeviceContext->OMSetRenderTargets(1, &m_pd3d11FrameBufferView, nullptr);
 
-    m_pDeviceContext->VSSetShader(shaders.vertexShader, nullptr, 0);
-    m_pDeviceContext->PSSetShader(shaders.pixelShader, nullptr, 0);
+        m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        m_pDeviceContext->IASetInputLayout(shaders.inputLayout);
+        m_pDeviceContext->VSSetShader(shaders.vertexShader, nullptr, 0);
+        m_pDeviceContext->PSSetShader(shaders.pixelShader, nullptr, 0);
+        m_pDeviceContext->IASetVertexBuffers(0, 1, &shaders.vertexBuffer, &shaders.stride, &shaders.offset);
+        m_pDeviceContext->Draw(shaders.numVerts, 0);
 
-    m_pDeviceContext->IASetVertexBuffers(0, 1, &shaders.vertexBuffer, &shaders.stride, &shaders.offset);
+    }
 
-    m_pDeviceContext->Draw(shaders.numVerts, 0);
-
+    //DrawWithin();
     m_pSwapchain->Present(1, 0);
 
     return m_bIsRunning;

@@ -14,6 +14,12 @@ public:
     void Initialize(HINSTANCE hs);
     bool Run();
 
+    void ToggleRect() {
+        m_bDrawRectangle = !m_bDrawRectangle;
+    }
+
+    virtual void DrawWithin() = 0;
+
 private:
     void CreateWindowX(HINSTANCE hs);
     void InitD3D();
@@ -21,6 +27,7 @@ private:
 
 private:
     bool m_bIsRunning = true;
+    bool m_bDrawRectangle = true;
 
     struct ShaderData {
         ID3D11Buffer* vertexBuffer = nullptr;

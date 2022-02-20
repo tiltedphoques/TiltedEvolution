@@ -51,8 +51,8 @@ namespace TiltedPhoques
         browserSettings.windowless_frame_rate = 240;
 
         CefWindowInfo info;
-        info.SetAsWindowless(/*m_pRenderProvider->GetWindow()*/ nullptr);
-        info.shared_texture_enabled = true;
+        info.SetAsWindowless(m_pRenderProvider->GetWindow());
+        //info.shared_texture_enabled = true;
 
         // TO BE PUT BACK
         // (currentPath / L"UI" / acPath / L"index.html").wstring()
@@ -67,6 +67,28 @@ namespace TiltedPhoques
     void OverlayApp::Shutdown() noexcept
     {
         CefShutdown();
+    }
+
+    class DevToolsClient : public CefClient
+    {
+    private:
+        IMPLEMENT_REFCOUNTING(DevToolsClient);
+    };
+
+
+    void OverlayApp::ShowDevTools()
+    {
+        if (auto browsi = m_pClient->GetBrowser())
+        {
+            CefWindowInfo windowInfo;
+            windowInfo.SetAsPopup(nullptr, "Developer Tools");
+            windowInfo.style = WS_VISIBLE | WS_OVERLAPPEDWINDOW;
+            windowInfo.bounds.x = 0;
+            windowInfo.bounds.y = 0;
+            windowInfo.bounds.width = 640;
+            windowInfo.bounds.height = 480;
+            browsi->GetHost()->ShowDevTools(windowInfo, new DevToolsClient(), CefBrowserSettings(), { 0, 0 });
+        }
     }
 
     void OverlayApp::ExecuteAsync(const std::string& acFunction, const CefRefPtr<CefListValue>& apArguments) const noexcept
@@ -156,5 +178,18 @@ namespace TiltedPhoques
     {
         aCommandLine->AppendSwitch("allow-file-access-from-files");
         aCommandLine->AppendSwitch("allow-universal-access-from-files");
+        aCommandLine->AppendSwitch("enable-gpu-rasterization");
+        aCommandLine->AppendSwitch("ignore-gpu-blocklist"); // future proofing for when Google disables the above
+        aCommandLine->AppendSwitch("disable-direct-composition");
+        aCommandLine->AppendSwitch("disable-gpu-driver-bug-workarounds");
+        aCommandLine->AppendSwitchWithValue("default-encoding", "utf-8");
+        aCommandLine->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+        aCommandLine->AppendSwitchWithValue("disable-features", "HardwareMediaKeyHandling");
+        aCommandLine->AppendSwitch("disable-gpu-process-crash-limit");
+        aCommandLine->AppendSwitchWithValue("use-angle", "d3d11");
+
+        // Disable CORS
+        aCommandLine->AppendSwitch("disable-web-security");
+        //aCommandLine->AppendSwitch("in-process-gpu");
     }
 }
