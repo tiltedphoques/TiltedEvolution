@@ -32,9 +32,16 @@ target("UiProcess")
         "mimalloc",
         "hopscotch-map")
 
+target("UITestRunner")
+    set_kind("binary")
+    add_files("ui_test_runner/*.cpp")
+    add_deps("TiltedUi")
+    add_defines("RUNNER_PATH=LR\"($(scriptdir))\"")
+    add_packages("tiltedcore", "catch2", "hopscotch-map", "cef", "directxtk")
+
 --target("TiltedUi_Tests")
 --    set_kind("binary")
 --    set_group("Tests")
---    add_files("Code/tests/src/*.cpp")
+--    add_files("tests/src/*.cpp")
 --    add_deps("TiltedUi")
 --    add_packages("tiltedcore", "catch2", "hopscotch-map")

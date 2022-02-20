@@ -25,7 +25,7 @@ namespace TiltedPhoques
 
         TP_NOCOPYMOVE(OverlayApp);
 
-        bool Initialize(const std::string& acPath) noexcept;
+        bool Initialize(const std::string_view acUri) noexcept;
         void Shutdown() noexcept;
 
         void ExecuteAsync(const std::string& acFunction, const CefRefPtr<CefListValue>& apArguments = nullptr) const noexcept;

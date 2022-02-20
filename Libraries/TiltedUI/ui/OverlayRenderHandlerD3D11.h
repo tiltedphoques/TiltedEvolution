@@ -43,6 +43,12 @@ namespace TiltedPhoques
         void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
         void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects, const void* buffer, int width, int height) override;
 
+        void OnAcceleratedPaint(
+            CefRefPtr<CefBrowser> /*browser*/,
+            PaintElementType type,
+            const RectList& dirtyRects,
+            void* share_handle) override;
+
         IMPLEMENT_REFCOUNTING(OverlayRenderHandlerD3D11);
 
     protected:

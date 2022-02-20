@@ -59,8 +59,8 @@ int main(int argc, char** argv)
     }
     PreloadSystemDlls();
     CoreStubsInit();
-    ComScope cs;
-    TP_UNUSED(cs);
+    //ComScope cs;
+    //TP_UNUSED(cs);
 
     return launcher::StartUp(argc, argv);
 }

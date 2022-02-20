@@ -13,7 +13,7 @@ namespace TiltedPhoques
 
         void SetVisible(const bool aVisible) noexcept
         {
-            m_visible = aVisible;
+            //m_visible = aVisible;
         }
 
         [[nodiscard]] bool IsVisible() const noexcept
@@ -39,7 +39,7 @@ namespace TiltedPhoques
 
     protected:
 
-        bool m_visible{ false };
+        bool m_visible{ true };
         uint16_t m_cursorX{ 0 };
         uint16_t m_cursorY{ 0 };
         OverlayClient* m_pParent{ nullptr };

@@ -47,7 +47,7 @@ namespace TiltedPhoques
 
         GetRenderTargetSize();
 
-        if (IsVisible())
+        //if (IsVisible())
         {
             m_pSpriteBatch->Begin(DirectX::SpriteSortMode_Deferred, m_pStates->NonPremultiplied());
 
@@ -55,7 +55,11 @@ namespace TiltedPhoques
                 std::unique_lock<std::mutex> _(m_textureLock);
 
                 if (m_pTextureView)
+                {
                     m_pSpriteBatch->Draw(m_pTextureView.Get(), DirectX::SimpleMath::Vector2(0.f, 0.f), nullptr, DirectX::Colors::White, 0.f);
+                }
+
+
             }
 
             if (m_pCursorTexture)
@@ -106,7 +110,7 @@ namespace TiltedPhoques
     void OverlayRenderHandlerD3D11::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
     {
         std::scoped_lock _(m_createLock);
-
+        GetRenderTargetSize();
         rect = CefRect(0, 0, m_width, m_height);
     }
 
@@ -123,7 +127,7 @@ namespace TiltedPhoques
             D3D11_MAPPED_SUBRESOURCE mappedResource;
             const auto result = m_pContext->Map(m_pTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 
-            if(SUCCEEDED(result))
+            if (SUCCEEDED(result))
             {
                 const auto pDest = static_cast<uint8_t*>(mappedResource.pData);
                 std::memcpy(pDest, buffer, width * height * 4);
@@ -137,6 +141,14 @@ namespace TiltedPhoques
                 m_width = m_height = 0;
             }
         }
+    }
+
+    void OverlayRenderHandlerD3D11::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
+        PaintElementType type,
+        const RectList& dirtyRects,
+        void* share_handle)
+    {
+
     }
 
     void OverlayRenderHandlerD3D11::GetRenderTargetSize()
@@ -194,7 +206,10 @@ namespace TiltedPhoques
         textDesc.MiscFlags = 0;
 
         if (FAILED(m_pDevice->CreateTexture2D(&textDesc, nullptr, m_pTexture.ReleaseAndGetAddressOf())))
+        {
+            __debugbreak();
             return;
+        }
 
         D3D11_SHADER_RESOURCE_VIEW_DESC sharedResourceViewDesc = {};
         sharedResourceViewDesc.Format = textDesc.Format;
@@ -202,6 +217,9 @@ namespace TiltedPhoques
         sharedResourceViewDesc.Texture2D.MipLevels = 1;
 
         if (FAILED(m_pDevice->CreateShaderResourceView(m_pTexture.Get(), &sharedResourceViewDesc, m_pTextureView.ReleaseAndGetAddressOf())))
+        {
+            __debugbreak();
             return;
+        }
     }
 }

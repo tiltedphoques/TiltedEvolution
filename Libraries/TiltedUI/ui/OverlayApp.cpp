@@ -15,7 +15,7 @@ namespace TiltedPhoques
 
     }
 
-    bool OverlayApp::Initialize(const std::string& acPath) noexcept
+    bool OverlayApp::Initialize(const std::string_view acUri) noexcept
     {
         CefMainArgs args(GetModuleHandleW(nullptr));
 
@@ -41,7 +41,7 @@ namespace TiltedPhoques
         CefString(&settings.locales_dir_path).FromWString(currentPath / L"locales");
         CefString(&settings.browser_subprocess_path).FromWString(currentPath / m_processName);
 
-        CefInitialize(args, settings, this, nullptr);
+        bool result = CefInitialize(args, settings, this, nullptr);
 
         if (!m_pClient)
             m_pClient = new OverlayClient(m_pRenderProvider->Create());
@@ -51,10 +51,15 @@ namespace TiltedPhoques
         browserSettings.windowless_frame_rate = 240;
 
         CefWindowInfo info;
-        info.SetAsWindowless(m_pRenderProvider->GetWindow());
+        info.SetAsWindowless(/*m_pRenderProvider->GetWindow()*/ nullptr);
+        info.shared_texture_enabled = true;
+
+        // TO BE PUT BACK
+        // (currentPath / L"UI" / acPath / L"index.html").wstring()
+        
 
         const auto ret = CefBrowserHost::CreateBrowser(info, m_pClient.get(),
-            (currentPath / L"UI" / acPath / L"index.html").wstring(), browserSettings, nullptr, nullptr);
+            "https://www.google.com/", browserSettings, nullptr, nullptr);
 
         return ret;
     }
