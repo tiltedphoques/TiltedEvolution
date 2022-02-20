@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OverlayBrowserProcessHandler.hpp>
+#include <OverlayBrowserProcessHandler.h>
 #include <OverlayClient.h>
 
 #include <TiltedCore/Meta.hpp>

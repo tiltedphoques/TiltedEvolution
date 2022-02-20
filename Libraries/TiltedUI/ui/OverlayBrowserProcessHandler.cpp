@@ -1,4 +1,4 @@
-#include <OverlayBrowserProcessHandler.hpp>
+#include <OverlayBrowserProcessHandler.h>
 
 namespace TiltedPhoques
 {
