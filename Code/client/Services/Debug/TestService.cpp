@@ -45,6 +45,7 @@
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Interface/UI.h>
 #endif
 
 //#include <Games/Skyrim/>
@@ -192,6 +193,11 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
+        if (ImGui::Button("Close all menus"))
+        {
+            UI::Get()->CloseAllMenus();
+        }
+
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
