@@ -86,7 +86,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 0x1401E47F0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 16040);
     
     return ThisCall(s_getContainerChangs, this);
 }
@@ -127,7 +127,7 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainer, TESContainer*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 0x1402A05C0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 19702);
 
     return ThisCall(s_getContainer, this);
 }
@@ -474,7 +474,7 @@ void TESObjectREFR::EnableImpl() noexcept
 {
     TP_THIS_FUNCTION(TEnableImpl, void, TESObjectREFR, bool aResetInventory);
 
-    POINTER_SKYRIMSE(TEnableImpl, s_enable, 0x1402AA780 - 0x140000000);
+    POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
     
     ThisCall(s_enable, this, false);
 }
@@ -493,12 +493,16 @@ bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedStri
     return result;
 }
 
+#define OBJECT_ANIM_SYNC 0
+
 bool TP_MAKE_THISCALL(HookPlayAnimationAndWait, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName)
 {
     spdlog::debug("Animation: {}, EventName: {}", apAnimation->AsAscii(), apEventName->AsAscii());
 
+#if OBJECT_ANIM_SYNC
     if (!s_cancelAnimationWaitEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, apAnimation->AsAscii(), apEventName->AsAscii()));
+#endif
 
     return ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
 }
@@ -521,8 +525,10 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
 {
     spdlog::debug("EventName: {}", apEventName->AsAscii());
 
+#if OBJECT_ANIM_SYNC
     if (!s_cancelAnimationEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, String{}, apEventName->AsAscii()));
+#endif
 
     return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
@@ -542,29 +548,18 @@ void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIt
     return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
-// TODO: here's your deadlock/memory leak, fix that
 void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, ExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
 {
-    thread_local static uint32_t count = 0;
-    count++;
-    if (count > 1)
-        spdlog::error("\tRecursive RemoveInventoryItem!");
-
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
-
-    auto result = ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
-
-    count--;
-
-    return result;
+    return ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
-    POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A90F0 - 0x140000000);
-    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A08A0 - 0x140000000);
-    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FC20 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 0x1409BD880 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 0x1409BD800 - 0x140000000);
+    POINTER_SKYRIMSE(TActivate, s_activate, 19796);
+    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 19708);
+    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 19689);
+    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 56206);
+    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 56205);
 
     RealActivate = s_activate.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();

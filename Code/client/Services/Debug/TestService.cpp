@@ -45,11 +45,24 @@
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Interface/UI.h>
 #endif
 
 #include <imgui.h>
 #include <inttypes.h>
 extern thread_local bool g_overrideFormId;
+
+constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
+static void DrawBuildTag()
+{
+#ifndef TP_FALLOUT
+    auto* pWindow = BSGraphics::GetMainWindow();
+    const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
+    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
+                                            ImColor::ImColor(255.f, 0.f, 0.f),
+                                            kBuildTag);
+#endif
+}
 
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
@@ -179,6 +192,16 @@ void TestService::OnDraw() noexcept
         DrawFormDebugView();
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("UI"))
+    {
+        ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
+        if (ImGui::Button("Close all menus"))
+        {
+            UI::Get()->CloseAllMenus();
+        }
+
+        ImGui::EndMenu();
+    }
     ImGui::EndMainMenuBar();
 
     if (g_EnableAnimWindow)
@@ -186,4 +209,7 @@ void TestService::OnDraw() noexcept
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();
+
+    if (m_showBuildTag)
+        DrawBuildTag();
 }

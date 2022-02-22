@@ -17,6 +17,7 @@ struct BGSEquipSlot;
 struct TESObjectREFR : TESForm
 {
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
+    static uint32_t* GetNullHandle() noexcept;
 
     virtual void sub_48();
     virtual void sub_49();
@@ -193,8 +194,6 @@ struct TESObjectREFR : TESForm
     ExtraDataList* extraData;
     uint64_t unk108;
 };
-
-POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
 
 static_assert(offsetof(TESObjectREFR, animationGraphHolder) == 0x48);
 static_assert(offsetof(TESObjectREFR, baseForm) == 0xE0);

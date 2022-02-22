@@ -150,7 +150,7 @@ void Actor::InterruptCast(bool abRefund) noexcept
 {
     TP_THIS_FUNCTION(TInterruptCast, void, Actor, bool abRefund);
 
-    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x140657830 - 0x140000000);
+    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 38757);
 
     ThisCall(s_interruptCast, this, abRefund);
 }
@@ -422,6 +422,57 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     }
 }
 
+void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
+{
+    for (auto& value : acActorValues.ActorMaxValuesList)
+    {
+        float current = actorValueOwner.GetValue(value.first);
+        actorValueOwner.ForceCurrent(0, value.first, value.second - current);
+    }
+
+    for (auto& value : acActorValues.ActorValuesList)
+    {
+        float current = actorValueOwner.GetValue(value.first);
+        actorValueOwner.ForceCurrent(2, value.first, value.second - current);
+    }
+}
+
+void Actor::SetFactions(const Factions& acFactions) noexcept
+{
+    RemoveFromAllFactions();
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    for (auto& entry : acFactions.NpcFactions)
+    {
+        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        if (pFaction)
+        {
+            SetFactionRank(pFaction, entry.Rank);
+        }
+    }
+
+    for (auto& entry : acFactions.ExtraFactions)
+    {
+        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        if (pFaction)
+        {
+            SetFactionRank(pFaction, entry.Rank);
+        }
+    }
+}
+
+void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
+{
+    TP_THIS_FUNCTION(TSetFactionRankInternal, void, Actor, const TESFaction*, int8_t);
+
+    POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 37677);
+
+    ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 
@@ -591,13 +642,16 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
     {
         if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && aEffectValue > 0.0f)
         {
-            const auto pExTarget = apTarget->GetExtension();
-            if (pExTarget->IsLocal())
+            if (apTarget && apTarget->GetExtension())
             {
-                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
-                return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
+                const auto pExTarget = apTarget->GetExtension();
+                if (pExTarget->IsLocal())
+                {
+                    World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
+                    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
+                }
+                return;
             }
-            return;
         }
     }
 
@@ -690,20 +744,20 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
-    POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 0x1406BA280 - 0x140000000);
-    POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 0x1406BA510 - 0x140000000);
-    POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 0x1405F20A0 - 0x140000000);
-    POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 0x1402ABAB0 - 0x140000000);
-    POINTER_SKYRIMSE(TForceState, s_ForceState, 0x1405F85D0 - 0x140000000);
-    POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 0x1402A6610 - 0x140000000);
-    POINTER_SKYRIMSE(TDamageActor, s_damageActor, 0x1405FA9A0 - 0x140000000);
-    POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 0x140584369 - 0x140000000);
-    POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 0x140606DF0 - 0x140000000);
-    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x14060CC10 - 0x140000000);
-    POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 0x14060C280 - 0x140000000);
-    POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 0x140742FE0 - 0x140000000);
-    POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 0x14068BC50 - 0x140000000);
-    POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 0x14062CF40 - 0x140000000);
+    POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
+    POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 40246);
+    POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 37175);
+    POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 19812);
+    POINTER_SKYRIMSE(TForceState, s_ForceState, 37313);
+    POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 19742);
+    POINTER_SKYRIMSE(TDamageActor, s_damageActor, 37335);
+    POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 35086);
+    POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 37448);
+    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 37525);
+    POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 37521);
+    POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 42704);
+    POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
+    POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();

@@ -12,7 +12,7 @@
 #include <Events/EquipmentChangeEvent.h>
 
 #include <World.h>
-#include <Games/Misc/UI.h>
+#include <Games/Skyrim/Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Actor.h>
@@ -205,7 +205,7 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
     if (!m_transport.IsConnected())
         return;
 
-    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
+    if (UI::Get()->GetMenuOpen(BSFixedString("ContainerMenu")))
         return;
 
     for (auto& idInventory : m_cachedObjectInventoryChanges)
@@ -236,7 +236,7 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
     if (!m_transport.IsConnected())
         return;
 
-    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
+    if (UI::Get()->GetMenuOpen(BSFixedString("ContainerMenu")))
         return;
 
     auto view = m_world.view<FormIdComponent, RemoteComponent>();

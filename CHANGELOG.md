@@ -1,3 +1,43 @@
+# [1.17.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.16.0...v1.17.0) (2022-02-12)
+
+
+### Features
+
+* lazy loading from version db to give the process time to initialize it ([225bbad](https://github.com/tiltedphoques/TiltedEvolution/commit/225bbad523baa9f1b1b0e95824031b78f0aa8eee))
+
+# [1.16.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.15.0...v1.16.0) (2022-02-12)
+
+
+### Bug Fixes
+
+* More scaling stuff. ([d3d6053](https://github.com/tiltedphoques/TiltedEvolution/commit/d3d605371ca8bd45e676c5daf899a55a614a3d8d))
+
+
+### Features
+
+* clipboard driver 1 ([226efd1](https://github.com/tiltedphoques/TiltedEvolution/commit/226efd12166d4b23aa272f3a58e0ab8fda73b5e3))
+
+# [1.15.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.14.0...v1.15.0) (2022-02-12)
+
+
+### Features
+
+* address library for RTTI as well ([35fb2ba](https://github.com/tiltedphoques/TiltedEvolution/commit/35fb2ba313deb34710a5499a9eb0b7fe9b04a6d0))
+* Use address library instead of hardcoded addresses ([6b2afeb](https://github.com/tiltedphoques/TiltedEvolution/commit/6b2afebce3cf1545137c84adfd75ae4840828625))
+* weird pointers now use address library as well ([543a379](https://github.com/tiltedphoques/TiltedEvolution/commit/543a3793b11294e11db3082b6e6fca5744e84b4c))
+
+# [1.14.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.13.0...v1.14.0) (2022-02-12)
+
+
+### Bug Fixes
+
+* address submodule clusterfuck ([2fafe5d](https://github.com/tiltedphoques/TiltedEvolution/commit/2fafe5d7c7b2e88dfe0e2ad1d46da12f1fecab35))
+
+
+### Features
+
+* Always exit the server gracefully on windows. ([a3394bd](https://github.com/tiltedphoques/TiltedEvolution/commit/a3394bd26ecc71269e74d055f73a6d337f590985))
+
 # [1.13.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.12.0...v1.13.0) (2022-02-09)
 
 

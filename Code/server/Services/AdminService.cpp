@@ -19,7 +19,7 @@ void AdminService::HandleShutdown(const AdminPacketEvent<AdminShutdownRequest>& 
 {
     spdlog::warn("Shutdown was requested by {:x}", acMessage.ConnectionId);
 
-    GameServer::Get()->Stop();
+    GameServer::Get()->Kill();
 }
 
 void AdminService::sink_it_(const spdlog::details::log_msg& msg)
