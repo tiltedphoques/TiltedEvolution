@@ -320,8 +320,12 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
+thread_local bool g_modifyingInventory = false;
+
 void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
 {
+    g_modifyingInventory = true;
+
     RemoveAllItems();
 
     Inventory currentContainer = GetInventory();
@@ -349,6 +353,8 @@ void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
         if (entry.Count != 0)
             AddItem(entry);
     }
+
+    g_modifyingInventory = false;
 }
 
 void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
@@ -544,13 +550,15 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
 
 void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!g_modifyingInventory)
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, ExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!g_modifyingInventory)
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
 }
 

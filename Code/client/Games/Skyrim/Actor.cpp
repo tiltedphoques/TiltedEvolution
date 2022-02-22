@@ -627,15 +627,19 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
+extern thread_local bool g_modifyingInventory;
+
 void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!g_modifyingInventory)
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!g_modifyingInventory)
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
