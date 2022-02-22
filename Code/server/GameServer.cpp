@@ -325,11 +325,12 @@ void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
     }
 }
 
-void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
+void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludeSender) const
 {
     for (auto pPlayer : m_pWorld->GetPlayerManager())
     {
-        pPlayer->Send(acServerMessage);
+        if (pPlayer != apExcludeSender)
+            pPlayer->Send(acServerMessage);
     }
 }
 
