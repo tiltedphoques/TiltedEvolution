@@ -8,13 +8,13 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
 {
     /*
     TP_THIS_FUNCTION(TCreateNewEnchantment, EnchantmentItem*, GameArray<EffectItem>, bool abIsWeapon);
-    POINTER_SKYRIMSE(TCreateNewEnchantment, createNewEnchantment, 0x1405C1290 - 0x140000000);
+    POINTER_SKYRIMSE(TCreateNewEnchantment, createNewEnchantment, 36178);
     */
 
     TP_THIS_FUNCTION(TAddWeaponEnchantment, EnchantmentItem*, void, GameArray<EffectItem>*);
-    POINTER_SKYRIMSE(TAddWeaponEnchantment, addWeaponEnchantment, 0x1405C0370 - 0x140000000);
+    POINTER_SKYRIMSE(TAddWeaponEnchantment, addWeaponEnchantment, 36165);
     TP_THIS_FUNCTION(TAddArmorEnchantment, EnchantmentItem*, void, GameArray<EffectItem>*);
-    POINTER_SKYRIMSE(TAddArmorEnchantment, addArmorEnchantment, 0x1405C0410 - 0x140000000);
+    POINTER_SKYRIMSE(TAddArmorEnchantment, addArmorEnchantment, 36166);
 
     ModSystem& modSystem = World::Get().GetModSystem();
 
@@ -43,7 +43,7 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
     EnchantmentItem* pItem = ThisCall(createNewEnchantment, &effects, aData.IsWeapon);
     */
 
-    POINTER_SKYRIMSE(void*, pObjManager, 0x141F592E8 - 0x140000000);
+    POINTER_SKYRIMSE(void*, pObjManager, 400320);
 
     void* objManager = *pObjManager.Get();
 

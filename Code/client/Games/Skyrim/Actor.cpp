@@ -255,66 +255,15 @@ float Actor::GetActorMaxValue(uint32_t aId) const noexcept
     return actorValueOwner.GetMaxValue(aId);
 }
 
-void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
-{
-    const float current = GetActorValue(aId);
-    actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
-}
-
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
 {
     actorValueOwner.SetValue(aId, aValue);
 }
 
-void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
+void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
 {
-    for (auto& value : acActorValues.ActorMaxValuesList)
-    {
-        float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(0, value.first, value.second - current);
-    }
-
-    for (auto& value : acActorValues.ActorValuesList)
-    {
-        float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(2, value.first, value.second - current);
-    }
-}
-
-void Actor::SetFactions(const Factions& acFactions) noexcept
-{
-    RemoveFromAllFactions();
-
-    auto& modSystem = World::Get().GetModSystem();
-
-    for (auto& entry : acFactions.NpcFactions)
-    {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
-        if (pFaction)
-        {
-            SetFactionRank(pFaction, entry.Rank);
-        }
-    }
-
-    for (auto& entry : acFactions.ExtraFactions)
-    {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
-        if (pFaction)
-        {
-            SetFactionRank(pFaction, entry.Rank);
-        }
-    }
-}
-
-void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
-{
-    TP_THIS_FUNCTION(TSetFactionRankInternal, void, Actor, const TESFaction*, int8_t);
-
-    POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 0x14061E5B0 - 0x140000000);
-
-    ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
+    const float current = GetActorValue(aId);
+    actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
 }
 
 Inventory Actor::GetActorInventory() const noexcept
