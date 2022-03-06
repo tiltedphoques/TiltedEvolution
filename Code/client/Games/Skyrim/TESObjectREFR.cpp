@@ -167,12 +167,16 @@ bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedStri
     return result;
 }
 
+#define OBJECT_ANIM_SYNC 0
+
 bool TP_MAKE_THISCALL(HookPlayAnimationAndWait, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName)
 {
     spdlog::debug("Animation: {}, EventName: {}", apAnimation->AsAscii(), apEventName->AsAscii());
 
+#if OBJECT_ANIM_SYNC
     if (!s_cancelAnimationWaitEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, apAnimation->AsAscii(), apEventName->AsAscii()));
+#endif
 
     return ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
 }
@@ -195,8 +199,10 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
 {
     spdlog::debug("EventName: {}", apEventName->AsAscii());
 
+#if OBJECT_ANIM_SYNC
     if (!s_cancelAnimationEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, String{}, apEventName->AsAscii()));
+#endif
 
     return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
@@ -216,21 +222,10 @@ void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIt
     return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
-// TODO: here's your deadlock/memory leak, fix that
 void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
 {
-    thread_local static uint32_t count = 0;
-    count++;
-    if (count > 1)
-        spdlog::error("\tRecursive RemoveInventoryItem!");
-
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
-
-    auto result = ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
-
-    count--;
-
-    return result;
+    return ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {

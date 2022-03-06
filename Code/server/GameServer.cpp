@@ -318,44 +318,35 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
         if (pPlayer->GetCellComponent())
             pPlayer->Send(acServerMessage);
     }
 }
 
-void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
+void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludedPlayer) const
 {
-    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        pPlayer->Send(acServerMessage);
+        if (pPlayer != apExcludedPlayer)
+            pPlayer->Send(acServerMessage);
     }
 }
 
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, Player* apExcluded) const
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludedPlayer) const
 {
-    const auto* cellIdComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
-    const auto* ownerComp = m_pWorld->try_get<OwnerComponent>(acOrigin);
+    const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
 
-    if (!cellIdComp || !ownerComp)
+    if (!pCellComp)
     {
-        spdlog::warn("Components not found for entity {:X}", static_cast<int>(acOrigin));
+        spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
         return;
     }
 
-    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        // TODO: this is a hack
-        if (apExcluded)
-        {
-            if (apExcluded == pPlayer)
-                continue;
-        }
-        else if (ownerComp->GetOwner() == pPlayer)
-            continue;
-
-        if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
+        if (pCellComp->IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
 }
