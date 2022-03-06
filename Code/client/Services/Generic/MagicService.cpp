@@ -366,7 +366,8 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 #if TP_SKYRIM64
     auto view = m_world.view<FormIdComponent>();
 
-    for (auto entity : view)
+    // TODO: this pattern is common enough to be refactored
+    for (entt::entity entity : view)
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
@@ -377,14 +378,13 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
         if (serverId == acMessage.TargetId)
         {
             auto& formIdComponent = view.get<FormIdComponent>(entity);
-            auto* pForm = TESForm::GetById(formIdComponent.Id);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
             TP_ASSERT(pActor, "Actor should exist, form id: {:X}", formIdComponent.Id);
 
             if (pActor)
             {
-                const auto cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+                const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
                 if (cSpellId == 0)
                 {
                     spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
@@ -392,14 +392,14 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
                     return;
                 }
 
-                auto* pSpell = static_cast<MagicItem*>(TESForm::GetById(cSpellId));
+                MagicItem* pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
                 if (!pSpell)
                 {
-                    spdlog::error("{}: Failed to retrieve spell by id {:X}", cSpellId);
+                    spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cSpellId);
                     return;
                 }
 
-                const auto cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
+                const uint32_t cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
                 if (cEffectId == 0)
                 {
                     spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
@@ -409,7 +409,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
                 EffectItem* pEffect = nullptr;
 
-                for (auto effect : pSpell->listOfEffects)
+                for (EffectItem* effect : pSpell->listOfEffects)
                 {
                     if (effect->pEffectSetting->formID == cEffectId)
                     {
