@@ -104,8 +104,8 @@ bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, 
 }
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
-    POINTER_SKYRIMSE(TAddTarget, addTarget, 0x14056EB50 - 0x140000000);
-    POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 0x14056E9C0 - 0x140000000);
+    POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
+    POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
 
     RealAddTarget = addTarget.Get();
     RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();

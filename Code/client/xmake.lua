@@ -39,16 +39,20 @@ target(name)
     add_deps(
         "UiProcess",
         "Common",
+        "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
         "TiltedScript",
-        "TiltedUi")
+        "TiltedUi",
+        {inherit = true}
+    )
 
     add_packages(
         "tiltedcore",
         "spdlog",
         "hopscotch-map",
+        "cryptopp",
         "gamenetworkingsockets",
         "discord",
         "imgui",
@@ -58,7 +62,8 @@ target(name)
         "minhook",
         "entt",
         "glm",
-        "mem")
+        "mem",
+        "xbyak")
 
     if has_config("vivox") then
         add_files("Services/Vivox/**.cpp")

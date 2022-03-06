@@ -4,7 +4,7 @@
 
 WeatherManager* WeatherManager::Get()
 {
-    POINTER_SKYRIMSE(WeatherManager*, s_instance, 0x142FD3650 - 0x140000000);
+    POINTER_SKYRIMSE(WeatherManager*, s_instance, 403759);
 
     return *s_instance.Get();
 }

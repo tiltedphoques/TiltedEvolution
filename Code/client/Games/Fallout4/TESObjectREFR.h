@@ -17,6 +17,7 @@ struct BGSEquipSlot;
 struct TESObjectREFR : TESForm
 {
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
+    static uint32_t* GetNullHandle() noexcept;
 
     virtual void sub_48();
     virtual void sub_49();
@@ -90,8 +91,8 @@ struct TESObjectREFR : TESForm
     virtual void sub_8D();
     virtual void sub_8E();
     virtual void sub_8F();
-    virtual void sub_90();
-    virtual void sub_91();
+    virtual NiPoint3 GetBoundMin();
+    virtual NiPoint3 GetBoundMax();
     virtual void sub_92();
     virtual void sub_93();
     virtual void sub_94();
@@ -171,7 +172,8 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
-public:
+    const float GetHeight() noexcept;
+ public:
 
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
@@ -192,8 +194,6 @@ public:
     BSExtraDataList* extraData;
     uint64_t unk108;
 };
-
-POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
 
 static_assert(offsetof(TESObjectREFR, animationGraphHolder) == 0x48);
 static_assert(offsetof(TESObjectREFR, baseForm) == 0xE0);

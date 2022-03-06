@@ -72,7 +72,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
         AddTargetRequest request;
 
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 
@@ -306,12 +306,12 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
-    auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
 
     pActor->InterruptCast(false);
 
-    spdlog::info("Interrupt remote cast successful");
+    spdlog::debug("Interrupt remote cast successful");
 #endif
 }
 
@@ -337,7 +337,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     AddTargetRequest request;
 
-    std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
     if (!serverIdRes.has_value())
         return;
 
@@ -360,7 +360,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     for (auto entity : view)
     {
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 

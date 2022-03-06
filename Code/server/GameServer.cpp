@@ -1,60 +1,107 @@
 
-#include "AdminMessages/AdminSessionOpen.h"
-
-#include <stdafx.h>
-#include <GameServer.h>
 #include <Components.h>
+#include <GameServer.h>
 #include <Packet.hpp>
+#include <stdafx.h>
 
 #include <Events/AdminPacketEvent.h>
-#include <Events/PacketEvent.h>
-#include <Events/UpdateEvent.h>
-#include <Events/PlayerJoinEvent.h>
-#include <Events/PlayerLeaveEvent.h>
-#include <Events/PlayerLeaveCellEvent.h>
 #include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
+#include <Events/PacketEvent.h>
+#include <Events/PlayerJoinEvent.h>
+#include <Events/PlayerLeaveCellEvent.h>
+#include <Events/PlayerLeaveEvent.h>
+#include <Events/UpdateEvent.h>
 #include <steam/isteamnetworkingutils.h>
 
 #include <AdminMessages/ClientAdminMessageFactory.h>
-
-#include <Messages/ClientMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
-#include <Scripts/Player.h>
+#include <Messages/ClientMessageFactory.h>
+#include <console/ConsoleRegistry.h>
 
 #if TP_PLATFORM_WINDOWS
 #include <windows.h>
 #endif
 
+// >> Game server cvars <<
+static Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+static Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+static Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
+                                          "Dedicated Together Server"};
+static Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
+                                          "Hello there!"};
+static Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
+                                             ""};
+static Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
+static Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+static Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+
+// >> Constants <<
+static constexpr size_t kTagListCap = 512;
+
+static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
+                                            [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+
+static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
+                                      [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+
+static uint16_t GetUserTickRate()
+{
+    return bPremiumTickrate ? 60 : 30;
+}
+
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToken, String aAdminPassword) noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now())
-    , m_name(std::move(aName)), m_token(std::move(aToken)),
-      m_adminPassword(std::move(aAdminPassword)),
-      m_requestStop(false)
+GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
-    assert(s_pInstance == nullptr);
-
+    BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
 
-    while (!Host(aPort, aPremium ? 60 : 20))
+    auto port = uServerPort.value_as<uint16_t>();
+    while (!Host(port, GetUserTickRate()))
     {
-        spdlog::warn("Port {} is already in use, trying {}", aPort, aPort + 1);
-        aPort++;
+        spdlog::warn("Port {} is already in use, trying {}", port, port + 1);
+        port++;
     }
 
+    UpdateInfo();
     spdlog::info("Server started on port {}", GetPort());
-    SetTitle();
+    UpdateTitle();
 
     m_pWorld = std::make_unique<World>();
 
-    auto handlerGenerator = [this](auto& x)
-    {
+    BindMessageHandlers();
+}
+
+GameServer::~GameServer()
+{
+    s_pInstance = nullptr;
+}
+
+GameServer* GameServer::Get() noexcept
+{
+    return s_pInstance;
+}
+
+void GameServer::Initialize()
+{
+    BindServerCommands();
+    m_pWorld->GetScriptService().Initialize();
+}
+
+void GameServer::Kill()
+{
+    spdlog::info("Server shutdown requested");
+    m_requestStop = true;
+}
+
+void GameServer::BindMessageHandlers()
+{
+    auto handlerGenerator = [this](auto& x) {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
         m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
-
             auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
             if (!pPlayer)
@@ -75,7 +122,8 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     ClientMessageFactory::Visit(handlerGenerator);
 
     // Override authentication request
-    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
+    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage,
+                                                              ConnectionId_t aConnectionId) {
         const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(apMessage));
         HandleAuthenticationRequest(aConnectionId, pRealMessage);
     };
@@ -83,8 +131,8 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     auto adminHandlerGenerator = [this](auto& x) {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage, ConnectionId_t aConnectionId) {
-            
+        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage,
+                                                   ConnectionId_t aConnectionId) {
             const auto pRealMessage = CastUnique<T>(std::move(apMessage));
             m_pWorld->GetDispatcher().trigger(AdminPacketEvent<T>(pRealMessage.get(), aConnectionId));
         };
@@ -95,14 +143,42 @@ GameServer::GameServer(uint16_t aPort, bool aPremium, String aName, String aToke
     ClientAdminMessageFactory::Visit(adminHandlerGenerator);
 }
 
-GameServer::~GameServer()
+void GameServer::BindServerCommands()
 {
-    s_pInstance = nullptr;
+    m_commands.RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        uint32_t count = m_pWorld->GetPlayerManager().Count();
+        if (count == 0)
+        {
+            out->warn("No players on here. Invite some friends!");
+            return;
+        }
+
+        out->info("<------Players-({})--->", count);
+        for (Player* pPlayer : m_pWorld->GetPlayerManager())
+        {
+            out->info("{}: {}", pPlayer->GetId(), pPlayer->GetUsername().c_str());
+        }
+    });
+
+    m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 }
 
-void GameServer::Initialize()
+void GameServer::UpdateInfo()
 {
-    m_pWorld->GetScriptService().Initialize();
+    // Update Info fields from user facing CVARS.
+    m_info.name = sServerName.c_str();
+    m_info.desc = sServerDesc.c_str();
+    m_info.icon_url = sServerIconURL.c_str();
+    m_info.tick_rate = GetUserTickRate();
+
+    if (std::strlen(sTagList.c_str()) > 512)
+    {
+        m_info.tagList = "";
+        spdlog::warn("TagList limit exceeded (512 characters). Ignoring tags.");
+    }
+    else
+        m_info.tagList = sTagList.c_str();
 }
 
 void GameServer::OnUpdate()
@@ -155,8 +231,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
 void GameServer::OnConnection(const ConnectionId_t aHandle)
 {
     spdlog::info("Connection received {:x}", aHandle);
-
-    SetTitle();
+    UpdateTitle();
 }
 
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
@@ -202,12 +277,12 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     m_pWorld->GetPlayerManager().Remove(pPlayer);
 
-    SetTitle();
+    UpdateTitle();
 }
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{ 1 << 18 };
+    static thread_local ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -243,7 +318,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    for(auto pPlayer : m_pWorld->GetPlayerManager())
+    for (auto pPlayer : m_pWorld->GetPlayerManager())
     {
         if (pPlayer->GetCellComponent())
             pPlayer->Send(acServerMessage);
@@ -285,22 +360,8 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
-const String& GameServer::GetName() const noexcept
-{
-    return m_name;
-}
-
-void GameServer::Stop() noexcept
-{
-    m_requestStop = true;
-}
-
-GameServer* GameServer::Get() noexcept
-{
-	return s_pInstance;
-}
-
-void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest) noexcept
+void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
+                                             const UniquePtr<AuthenticationRequest>& acRequest)
 {
     const auto info = GetConnectionInfo(aConnectionId);
 
@@ -308,7 +369,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
     info.m_addrRemote.ToString(remoteAddress, 48, false);
 
-    if(acRequest->Token == m_token)
+    if (acRequest->Token == sToken.value())
     {
         auto& scripts = m_pWorld->GetScriptService();
 
@@ -326,9 +387,10 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         Mods& serverMods = serverResponse.UserMods;
 
-        // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null form id anyway
+        // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a null
+        // form id anyway
         std::ostringstream oss;
-        oss << "New player {:x} connected with mods\n\t Standard: ";
+        oss << fmt::format("New player {:x} connected with mods\n\t Standard: ", aConnectionId);
 
         Vector<String> playerMods;
         Vector<uint16_t> playerModsIds;
@@ -368,7 +430,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
 
-        //TODO: Scripting
+        // TODO: Scripting
         /*Script::Player player(cEntity, *m_pWorld);
         auto [canceled, reason] = scripts.HandlePlayerJoin(player);
 
@@ -381,7 +443,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             return;
         }*/
 
-        spdlog::info(oss.str(), aConnectionId);
+        spdlog::info("{}", oss.str().c_str());
 
         serverResponse.ServerScripts = std::move(scripts.SerializeScripts());
         serverResponse.ReplicatedObjects = std::move(scripts.GenerateFull());
@@ -390,13 +452,13 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
-    else if (acRequest->Token == m_adminPassword && !m_adminPassword.empty())
+    else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
-        AdminSessionOpen response;
+        /* AdminSessionOpen response;
         Send(aConnectionId, response);
 
         m_adminSessions.insert(aConnectionId);
-        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
+        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);*/
     }
     else
     {
@@ -406,14 +468,13 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 }
 
-void GameServer::SetTitle() const
+void GameServer::UpdateTitle() const
 {
-    std::string title(m_name.empty() ? "Private server" : m_name);
-    title += " - ";
-    title += std::to_string(GetClientCount());
-    title += GetClientCount() <= 1 ? " player - " : " players - ";
-    title += std::to_string(GetTickRate());
-    title += " FPS - " BUILD_BRANCH "@" BUILD_COMMIT;
+    const auto name = m_info.name.empty() ? "Private server" : m_info.name;
+    const char* playerText = GetClientCount() <= 1 ? " player" : " players";
+
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(),
+                                   GetClientCount(), playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

@@ -3,9 +3,8 @@
 struct TESForm;
 struct TBO_InstanceData;
 
-class BGSObjectInstance
+struct BGSObjectInstance
 {
-public:
     BGSObjectInstance(TESForm* apObject, TBO_InstanceData* apInstanceData);
 
     TESForm* pObject;

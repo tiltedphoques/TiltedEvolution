@@ -1,7 +1,5 @@
-add_requires("vcpkg::magnum")
-add_requires("vcpkg::sdl2")
-add_requires("vcpkg::magnum-integration[imgui]")
-add_requires("vcpkg::corrade")
+add_requires("magnum", { configs = { sdl2 = true }})
+add_requires("magnum-integration",  { configs = { imgui = true }})
 
 target("Admin")
     set_kind("binary")
@@ -29,9 +27,6 @@ target("Admin")
         "spdlog",
         "hopscotch-map",
         "glm",
-        "vcpkg::corrade",
-        "vcpkg::magnum",
-        "vcpkg::magnum-integration[imgui]",
-        "imgui",
-        "vcpkg::sdl2",
+        "magnum",
+        "magnum-integration",
         "gamenetworkingsockets")

@@ -8,6 +8,7 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/BGSHeadPart.h>
 #include <Forms/TESNPC.h>
+#include <Forms/TESPackage.h>
 #include <SaveLoad.h>
 
 #include <BSAnimationGraphManager.h>
@@ -26,6 +27,7 @@
 #include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
+#include <Events/InitPackageEvent.h>
 
 #include <TiltedCore/Serialization.hpp>
 
@@ -53,7 +55,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 
     using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
 
-    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 0x1402207F0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 17201);
     POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 0x140023740 - 0x140000000);
 
     s_getRefrByHandle.Get()(aHandle, pResult);
@@ -62,6 +64,14 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
         pResult->handleRefObject.DecRefHandle();
 
     return pResult;
+}
+
+uint32_t* TESObjectREFR::GetNullHandle() noexcept
+{
+    POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
+    POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
+
+    return s_nullHandle.Get();
 }
 
 void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
@@ -318,10 +328,10 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*,
                      const NiPoint3&, const NiPoint3&);
 
-    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 0x1409D3300 - 0x140000000);
+    POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
 
-    ThisCall(s_internalMoveTo, this, s_nullHandle.Get(), apCell, apCell->worldspace, acPosition, rotation);
+    ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
 float Actor::GetSpeed() noexcept
@@ -360,7 +370,7 @@ void Actor::QueueUpdate() noexcept
     TP_THIS_FUNCTION(TQueueUpdate, void, Actor, bool aFaceGen, uint32_t, bool, uint32_t);
 #endif
 
-    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 0x1406BAB40 - 0x140000000);
+    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 40255);
     POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 0x140D8A1F0 - 0x140000000);
 
 #ifdef TP_SKYRIM
@@ -413,7 +423,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, BSExtraDataList, uint32_t);
-    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 0x1401238E0 - 0x140000000);
+    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 11806);
     POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
 
 #if TP_FALLOUT4
@@ -459,7 +469,7 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
     POINTER_FALLOUT4(PlayerCharacter*, s_character, 0x145AA4388 - 0x140000000);
-    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 0x142F99F90 - 0x140000000);
+    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 401069);
 
     return *s_character.Get();
 }
@@ -477,7 +487,7 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 Lock* TESObjectREFR::GetLock() noexcept
 {
     TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
-    POINTER_SKYRIMSE(TGetLock, realGetLock, 0x1402B91D0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
     POINTER_FALLOUT4(TGetLock, realGetLock, 0x14047FEE0 - 0x140000000);
 
     return ThisCall(realGetLock, this);
@@ -486,7 +496,7 @@ Lock* TESObjectREFR::GetLock() noexcept
 Lock* TESObjectREFR::CreateLock() noexcept
 {
     TP_THIS_FUNCTION(TCreateLock, Lock*, TESObjectREFR);
-    POINTER_SKYRIMSE(TCreateLock, realCreateLock, 0x1402B8FD0 - 0x140000000);
+    POINTER_SKYRIMSE(TCreateLock, realCreateLock, 20221);
     POINTER_FALLOUT4(TCreateLock, realCreateLock, 0x14047FD20 - 0x140000000);
 
     return ThisCall(realCreateLock, this);
@@ -497,11 +507,17 @@ void TESObjectREFR::LockChange() noexcept
     ThisCall(RealLockChange, this);
 }
 
+const float TESObjectREFR::GetHeight() noexcept
+{
+    auto boundMax = GetBoundMax();
+    return boundMax.z - GetBoundMin().z;
+}
+
 bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
 {
     TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);
 
-    POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 0x140662530 - 0x140000000);
+    POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 38979);
     POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 0x140E22DF0 - 0x140000000);
 
     return ThisCall(setWeaponState, this, aDraw);
@@ -523,6 +539,15 @@ void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
     g_forceAnimation = true;
     SetWeaponDrawn(aDraw);
     g_forceAnimation = false;
+}
+
+static thread_local bool s_execInitPackage = false;
+
+void Actor::SetPackage(TESPackage* apPackage) noexcept
+{
+    s_execInitPackage = true;
+    PutCreatedPackage(apPackage);
+    s_execInitPackage = false;
 }
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
@@ -604,25 +629,67 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     ThisCall(RealLockChange, apThis);
 }
 
+// Disable AI sync for now, experiment didn't work, code might be useful later on though.
+#define AI_SYNC 0
+
+TP_THIS_FUNCTION(TCheckForNewPackage, bool, void, Actor* apActor, uint64_t aUnk1);
+static TCheckForNewPackage* RealCheckForNewPackage = nullptr;
+
+bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUnk1)
+{
+#if AI_SYNC
+    if (apActor && apActor->GetExtension()->IsRemote())
+        return false;
+
+#endif
+    return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
+}
+
+TP_THIS_FUNCTION(TInitFromPackage, void, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor);
+static TInitFromPackage* RealInitFromPackage = nullptr;
+
+void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor)
+{
+#if AI_SYNC
+    // This guard is here for when the client sets the package based on a remote message
+    if (s_execInitPackage)
+        return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
+
+    if (arActor && arActor->GetExtension()->IsRemote())
+        return;
+
+    if (arActor && apPackage)
+        World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
+
+#endif
+    return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
-        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 0x1402A8E30 - 0x140000000);
+        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
         POINTER_FALLOUT4(TSetPosition, s_setPosition, 0x14040C060 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateX, 0x1402A8C60 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateX, 19787);
         POINTER_FALLOUT4(TRotate, s_rotateX, 0x14040BE70 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateY, 0x1402A8CE0 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateY, 19788);
         POINTER_FALLOUT4(TRotate, s_rotateY, 0x14040BF00 - 0x140000000);
 
-        POINTER_SKYRIMSE(TRotate, s_rotateZ, 0x1402A8D60 - 0x140000000);
+        POINTER_SKYRIMSE(TRotate, s_rotateZ, 19789);
         POINTER_FALLOUT4(TRotate, s_rotateZ, 0x14040BF90 - 0x140000000);
 
-        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 0x1405FD550 - 0x140000000);
+        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 37356);
         POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
 
-        POINTER_SKYRIMSE(TLockChange, s_lockChange, 0x1402977C0 - 0x140000000);
+        POINTER_SKYRIMSE(TLockChange, s_lockChange, 19512);
         POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
+
+        POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 39114);
+        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 0x140E28F80 - 0x140000000);
+
+        POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
+        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
 
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
@@ -630,6 +697,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealRotateZ = s_rotateZ.Get();
         RealActorProcess = s_actorProcess.Get();
         RealLockChange = s_lockChange.Get();
+        RealCheckForNewPackage = s_checkForNewPackage.Get();
+        RealInitFromPackage = s_initFromPackage.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -637,5 +706,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealRotateZ, HookRotateZ);
         TP_HOOK(&RealActorProcess, HookActorProcess);
         TP_HOOK(&RealLockChange, HookLockChange);
+        TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
+        TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
     });
 

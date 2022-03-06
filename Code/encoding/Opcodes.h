@@ -15,6 +15,9 @@ enum ClientOpcode : unsigned char
     kPartyInviteRequest,
     kPartyAcceptInviteRequest,
     kPartyLeaveRequest,
+    kPartyCreateRequest,
+    kPartyChangeLeaderRequest,
+    kPartyKickRequest,
     kRequestActorValueChanges,
     kRequestActorMaxValueChanges,
     kRequestHealthChangeBroadcast,
@@ -34,6 +37,8 @@ enum ClientOpcode : unsigned char
     kProjectileLaunchRequest,
     kScriptAnimationRequest,
     kDrawWeaponRequest,
+    kMountRequest,
+    kNewPackageRequest,
     kClientOpcodeMax
 };
 
@@ -52,6 +57,8 @@ enum ServerOpcode : unsigned char
     kNotifyPlayerList,
     kNotifyPartyInfo,
     kNotifyPartyInvite,
+    kNotifyPartyJoined,
+    kNotifyPartyLeft,
     kNotifyActorValueChanges,
     kNotifyActorMaxValueChanges,
     kNotifyHealthChangeBroadcast,
@@ -69,5 +76,7 @@ enum ServerOpcode : unsigned char
     kNotifyProjectileLaunch,
     kNotifyScriptAnimation,
     kNotifyDrawWeapon,
+    kNotifyMount,
+    kNotifyNewPackage,
     kServerOpcodeMax
 };

@@ -3,7 +3,9 @@
 *.sym
 
 vs2019
+vs2022
 vsxmake2019
+vsxmake2022
 .xmake
 vs2019
 
@@ -79,4 +81,8 @@ distrib/
 distrib_debug/
 distrib_releasedbg/
 
+.idea/
+
 new_addresses.txt
+
+packaged/*

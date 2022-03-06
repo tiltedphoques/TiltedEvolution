@@ -9,6 +9,7 @@ struct CellChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
+struct SendServerMessageEvent;
 
 struct World;
 
@@ -34,6 +35,7 @@ protected:
 
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnDraw() noexcept;
@@ -51,5 +53,6 @@ private:
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_drawImGuiConnection;
+    entt::scoped_connection m_sendServerMessageConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };

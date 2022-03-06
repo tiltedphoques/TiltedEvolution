@@ -31,6 +31,10 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
+#include <Messages/MountRequest.h>
+#include <Messages/NotifyMount.h>
+#include <Messages/NewPackageRequest.h>
+#include <Messages/NotifyNewPackage.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -47,6 +51,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
+    , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
+    , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
 {
 }
 
@@ -295,22 +301,20 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
 {
     auto& message = acMessage.Packet;
 
-    const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    auto view = m_world.view<OwnerComponent>();
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.pPlayer->GetConnectionId());
+        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
-    {
-        spdlog::warn("Client {:X} requested travel of an entity that they do not own !", acMessage.pPlayer->GetConnectionId());
-        return;
-    }
 
+    characterOwnerComponent.SetOwner(acMessage.pPlayer);
     characterOwnerComponent.InvalidOwners.clear();
+
     spdlog::info("\tOwnership claimed {:X}", message.ServerId);
 }
 
@@ -699,3 +703,26 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity);
 }
 
+void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyMount notify;
+    notify.RiderId = message.RiderId;
+    notify.MountId = message.MountId;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+}
+
+void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyNewPackage notify;
+    notify.ActorId = message.ActorId;
+    notify.PackageId = message.PackageId;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+}

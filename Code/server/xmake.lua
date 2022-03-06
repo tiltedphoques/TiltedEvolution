@@ -4,7 +4,6 @@ target(name)
     set_kind("binary")
     set_group("Server")
     --set_basename(name .. "RebornServer")
-    set_languages("cxx17")
     add_defines(def)
     add_includedirs(
         ".",
@@ -22,9 +21,13 @@ target(name)
 
     add_deps(
         "Common",
+        "Console",
+        "ESLoader",
+        "Base",
+        "AdminProtocol",
         "TiltedScript",
-        "TiltedConnect",
-        "AdminProtocol")
+        "TiltedConnect"
+    )
     add_packages(
         "gamenetworkingsockets",
         "spdlog",

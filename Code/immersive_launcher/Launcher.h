@@ -23,11 +23,13 @@ struct LaunchContext
 {
     fs::path exePath;
     fs::path gamePath;
+    TiltedPhoques::String Version;
     ExeLoader::TEntryPoint gameMain = nullptr;
 };
 
 LaunchContext* GetLaunchContext();
 
+bool LoadProgram(LaunchContext&);
 int StartUp(int argc, char** argv);
 
 void InitClient();

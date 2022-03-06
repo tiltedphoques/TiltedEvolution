@@ -27,21 +27,21 @@ TiltedOnlineApp::TiltedOnlineApp()
     auto logPath = TiltedPhoques::GetPath() / "logs";
 
     std::error_code ec;
-    std::filesystem::create_directory(logPath, ec);
+    create_directory(logPath, ec);
 
     auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
 
     auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{ console, rotatingLogger });
-    spdlog::set_default_logger(logger);
+    set_default_logger(logger);
 }
 
 TiltedOnlineApp::~TiltedOnlineApp() = default;
 
 void* TiltedOnlineApp::GetMainAddress() const
 {
-    POINTER_SKYRIMSE(void, winMain, 0x1405D2760 - 0x140000000);
+    POINTER_SKYRIMSE(void, winMain, 36544);
     POINTER_FALLOUT4(void, winMain, 0x140D35930 - 0x140000000);
 
     return winMain.GetPtr();
@@ -49,8 +49,6 @@ void* TiltedOnlineApp::GetMainAddress() const
 
 bool TiltedOnlineApp::BeginMain()
 {
-    //InstallHooks();
-
     World::Create();
     World::Get().ctx<DiscordService>().Init();
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
@@ -69,13 +67,13 @@ bool TiltedOnlineApp::EndMain()
 void TiltedOnlineApp::Update()
 {
     // Every frame make sure we won't use preprocessed facegen
-    POINTER_SKYRIMSE(uint32_t, bUseFaceGenPreprocessedHeads, 0x141E7E110 - 0x140000000);
+    POINTER_SKYRIMSE(uint32_t, bUseFaceGenPreprocessedHeads, 378620);
     POINTER_FALLOUT4(uint32_t, bUseFaceGenPreprocessedHeads, 0x143733CE0 - 0x140000000);
 
     *bUseFaceGenPreprocessedHeads = 0;
 
     // Make sure the window stays active
-    POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 0x141E83088 - 0x140000000);
+    POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 380768);
     POINTER_FALLOUT4(uint32_t, bAlwaysActive, 0x14378E618 - 0x140000000);
 
     *bAlwaysActive = 1;
@@ -100,7 +98,6 @@ void TiltedOnlineApp::InstallHooks2()
     TiltedPhoques::Initializer::RunAll();
 
     TiltedPhoques::DInputHook::Install();
-    TiltedPhoques::WindowsHook::Install();
 }
 
 void TiltedOnlineApp::UninstallHooks()

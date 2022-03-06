@@ -35,18 +35,18 @@ TRequestLoadingText* RealRequestLoadingText;
 
 void RequestLoadingText(ScaleFormContext* apContext)
 {
-    static char* s_displayStr = "TESSST";
+    static const char* s_displayStr = "TESSST";
 
     apContext->scaleformReturn->someBool50 = 0;
     if(apContext->scaleformReturn->scaleformValue)
-        apContext->scaleformReturn->scaleformValue->data = s_displayStr;
+        apContext->scaleformReturn->scaleformValue->data = (char*)s_displayStr;
 
     RealRequestLoadingText(apContext);
 }
 
 static TiltedPhoques::Initializer s_loadingScreenHooks([]()
     {
-        POINTER_SKYRIMSE(TRequestLoadingText, s_requestLoadingText, 0x1408C4FA0 - 0x140000000);
+        POINTER_SKYRIMSE(TRequestLoadingText, s_requestLoadingText, 51925);
 
         RealRequestLoadingText = s_requestLoadingText.Get();
 

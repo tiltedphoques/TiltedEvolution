@@ -23,6 +23,10 @@ struct AddTargetEvent;
 struct NotifyAddTarget;
 struct ProjectileLaunchedEvent;
 struct NotifyProjectileLaunch;
+struct MountEvent;
+struct NotifyMount;
+struct InitPackageEvent;
+struct NotifyNewPackage;
 
 struct Actor;
 struct World;
@@ -50,6 +54,10 @@ struct CharacterService
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
     void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
     void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
+    void OnMountEvent(const MountEvent& acEvent) const noexcept;
+    void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
+    void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
+    void OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept;
 
 private:
 
@@ -82,4 +90,8 @@ private:
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
     entt::scoped_connection m_projectileLaunchedConnection;
     entt::scoped_connection m_projectileLaunchConnection;
+    entt::scoped_connection m_mountConnection;
+    entt::scoped_connection m_notifyMountConnection;
+    entt::scoped_connection m_initPackageConnection;
+    entt::scoped_connection m_newPackageConnection;
 };

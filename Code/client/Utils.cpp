@@ -1,7 +1,7 @@
 #include <World.h>
 #include <Components.h>
 
-namespace utils
+namespace Utils
 {
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
 {

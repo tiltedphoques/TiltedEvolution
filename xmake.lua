@@ -1,10 +1,8 @@
-set_xmakever("2.5.7")
+set_xmakever("2.6.2")
 
 -- c code will use c99,
--- cxx code will use cxx17 currently, cxx20 soon
-set_languages("c99", "cxx17")
+set_languages("c99", "cxx20")
 
--- 64 bit only, as SkyrimLE support is history
 set_arch("x64")
 set_warnings("all")
 add_vectorexts("sse", "sse2", "sse3", "ssse3")
@@ -12,10 +10,10 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
+add_rules("c.unity_build")
 
 add_requires("entt", "recastnavigation")
 
--- fuck the xmake ecosystem.
 before_build(function (target)
     import("modules.version")
     local branch, commitHash = version()

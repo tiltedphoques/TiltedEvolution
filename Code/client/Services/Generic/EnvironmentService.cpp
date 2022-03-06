@@ -221,7 +221,7 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (pEntity == std::end(view))
         return;
 
-    std::optional<uint32_t> serverIdRes = utils::GetServerId(*pEntity);
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*pEntity);
     if (!serverIdRes.has_value())
         return;
 
@@ -235,7 +235,7 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 

@@ -36,6 +36,7 @@ struct TESObjectREFR : TESForm
     };
 
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
+    static uint32_t* GetNullHandle() noexcept;
 
     virtual void sub_39();
     virtual void sub_3A();
@@ -96,8 +97,8 @@ struct TESObjectREFR : TESForm
     virtual void sub_71();
     virtual void sub_72();
     virtual void sub_73();
-    virtual void sub_74();
-    virtual void sub_75();
+    virtual NiPoint3 GetBoundMin();
+    virtual NiPoint3 GetBoundMax();
     virtual void sub_76();
     virtual void sub_77();
     virtual void sub_78();
@@ -117,7 +118,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_86();
     virtual void sub_87();
     virtual void sub_88();
-    virtual void sub_89();
+    virtual void DisableImpl();
     virtual void sub_8A();
     virtual void sub_8B();
     virtual void sub_8C();
@@ -169,6 +170,9 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
+    const float GetHeight() noexcept;
+    void EnableImpl() noexcept;
+
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
     IAnimationGraphManagerHolder animationGraphHolder;
@@ -182,8 +186,6 @@ struct TESObjectREFR : TESForm
     uint16_t scale;
     uint16_t referenceFlags;
 };
-
-POINTER_SKYRIMSE(uint32_t, s_nullHandle, 0x141F592BC - 0x140000000);
 
 static_assert(sizeof(TESObjectREFR) == 0x98);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);

@@ -75,6 +75,7 @@ void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const e
 
 void ActorValueService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
+    // TODO: this crashes sometimes, no clue why
     m_world.clear<ActorValuesComponent>();
 }
 
@@ -183,7 +184,7 @@ void ActorValueService::OnHealthChange(const HealthChangeEvent& acEvent) noexcep
         return;
     }
 
-    std::optional<uint32_t> serverIdRes = utils::GetServerId(*hitteeIt);
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*hitteeIt);
     if (!serverIdRes.has_value())
         return;
 
@@ -288,7 +289,7 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 
     for (auto entity : view)
     {
-        std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 
