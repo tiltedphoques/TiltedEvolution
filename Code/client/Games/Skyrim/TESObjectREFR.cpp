@@ -462,13 +462,6 @@ void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
     AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
     spdlog::info("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
                  pExtraDataList ? (int)pExtraDataList->GetCount() : -1, arEntry.Count);
-
-
-    // TODO: if worn, call equip
-    if (pExtraDataList && pExtraDataList->Contains(ExtraData::Worn))
-    {
-        auto* pEquipManager = EquipManager::Get();
-    }
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
