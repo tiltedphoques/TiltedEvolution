@@ -10,9 +10,11 @@
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
+TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount, TESBoundObject* apSource, char abLoadCast, char abAdjust);
 
 static TAddTarget* RealAddTarget = nullptr;
 static TCheckAddEffectTargetData* RealCheckAddEffectTargetData = nullptr;
+static TFindTargets* RealFindTargets = nullptr;
 
 static thread_local bool s_autoSucceedEffectCheck = false;
 
@@ -39,6 +41,12 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     if (!pTargetActorEx)
         return ThisCall(RealAddTarget, apThis, arData);
 
+    AddTargetEvent addTargetEvent{};
+    addTargetEvent.TargetID = pTargetActor->formID;
+    addTargetEvent.SpellID = arData.pSpell->formID;
+    addTargetEvent.EffectID = arData.pEffectItem->pEffectSetting->formID;
+    addTargetEvent.Magnitude = arData.fMagnitude;
+
     if (pTargetActorEx->IsRemotePlayer() && arData.pCaster)
     {
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
@@ -49,7 +57,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
             {
                 bool result = ThisCall(RealAddTarget, apThis, arData);
                 spdlog::warn("sending out healing effect {}", result);
-                World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+                World::Get().GetRunner().Trigger(addTargetEvent);
             }
         }
     }
@@ -58,7 +66,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
         if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
     else if (pTargetActorEx->IsRemotePlayer())
@@ -73,7 +81,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         {
             bool result = ThisCall(RealAddTarget, apThis, arData);
             if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-                World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+                World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
         }
         else if (pCasterExtension->IsRemotePlayer())
@@ -86,7 +94,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
         if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
     else
@@ -103,14 +111,22 @@ bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, 
     return ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
 }
 
+bool TP_MAKE_THISCALL(HookFindTargets, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount, TESBoundObject* apSource, char abLoadCast, char abAdjust)
+{
+    return ThisCall(RealFindTargets, apThis, afEffectivenessMult, aruiTargetCount, apSource, abLoadCast, abAdjust);
+}
+
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
     POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
+    POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
 
     RealAddTarget = addTarget.Get();
     RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
+    RealFindTargets = findTargets.Get();
 
     TP_HOOK(&RealAddTarget, HookAddTarget);
     TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
+    TP_HOOK(&RealFindTargets, HookFindTargets);
 });
 

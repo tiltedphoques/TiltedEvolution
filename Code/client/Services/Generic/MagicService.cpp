@@ -349,6 +349,14 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
         return;
     }
 
+    if (!m_world.GetModSystem().GetServerModId(acEvent.EffectID, request.EffectId.ModId, request.EffectId.BaseId))
+    {
+        spdlog::error("{s}: Could not find effect with form {:X}", __FUNCTION__, acEvent.EffectID);
+        return;
+    }
+
+    request.Magnitude = acEvent.Magnitude;
+
     m_transport.Send(request);
 #endif
 }
@@ -391,18 +399,39 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
                     return;
                 }
 
-                // TODO: AddTarget gets notified for every effect, but we loop through the effects here again
+                const auto cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
+                if (cEffectId == 0)
+                {
+                    spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                                  acMessage.EffectId.BaseId, acMessage.EffectId.ModId);
+                    return;
+                }
+
+                EffectItem* pEffect = nullptr;
+
                 for (auto effect : pSpell->listOfEffects)
                 {
-                    MagicTarget::AddTargetData data{};
-                    data.pSpell = pSpell;
-                    data.pEffectItem = effect;
-                    data.fMagnitude = 0.0f;
-                    data.fUnkFloat1 = 1.0f;
-                    data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-
-                    pActor->magicTarget.AddTarget(data);
+                    if (effect->pEffectSetting->formID == cEffectId)
+                    {
+                        pEffect = effect;
+                        break;
+                    }
                 }
+
+                if (!pEffect)
+                {
+                    spdlog::error("{}: Failed to retrieve spell by id {:X}", cEffectId);
+                    return;
+                }
+
+                MagicTarget::AddTargetData data{};
+                data.pSpell = pSpell;
+                data.pEffectItem = pEffect;
+                data.fMagnitude = acMessage.Magnitude;
+                data.fUnkFloat1 = 1.0f;
+                data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+
+                pActor->magicTarget.AddTarget(data);
 
                 break;
             }

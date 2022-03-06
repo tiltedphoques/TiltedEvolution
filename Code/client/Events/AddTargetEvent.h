@@ -2,10 +2,10 @@
 
 struct AddTargetEvent
 {
-    AddTargetEvent(uint32_t aTargetID, uint32_t aSpellID) 
-        : TargetID(aTargetID), SpellID(aSpellID)
-    {}
+    AddTargetEvent() = default;
 
-    uint32_t TargetID;
-    uint32_t SpellID;
+    uint32_t TargetID{};
+    uint32_t SpellID{};
+    uint32_t EffectID{};
+    float Magnitude{};
 };

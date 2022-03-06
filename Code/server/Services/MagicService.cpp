@@ -54,6 +54,8 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     NotifyAddTarget notify;
     notify.TargetId = message.TargetId;
     notify.SpellId = message.SpellId;
+    notify.EffectId = message.EffectId;
+    notify.Magnitude = message.Magnitude;
 
     const entt::entity cTargetEntity = static_cast<entt::entity>(message.TargetId);
     GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity, acMessage.pPlayer);

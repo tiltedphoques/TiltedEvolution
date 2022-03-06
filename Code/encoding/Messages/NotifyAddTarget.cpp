@@ -4,6 +4,8 @@ void NotifyAddTarget::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const
 {
     Serialization::WriteVarInt(aWriter, TargetId);
     SpellId.Serialize(aWriter);
+    EffectId.Serialize(aWriter);
+    Serialization::WriteFloat(aWriter, Magnitude);
 }
 
 void NotifyAddTarget::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,4 +14,6 @@ void NotifyAddTarget::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noe
 
     TargetId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     SpellId.Deserialize(aReader);
+    EffectId.Deserialize(aReader);
+    Magnitude = Serialization::ReadFloat(aReader);
 }
