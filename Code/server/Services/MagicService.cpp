@@ -32,7 +32,7 @@ void MagicService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMes
     notify.IsDualCasting = message.IsDualCasting;
 
     const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
-    GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity, acMessage.GetSender());
 }
 
 void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept
@@ -43,7 +43,7 @@ void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest
     notify.CasterId = message.CasterId;
 
     const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
-    GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity, acMessage.GetSender());
 }
 
 void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept
@@ -55,6 +55,6 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.SpellId = message.SpellId;
 
     const entt::entity cTargetEntity = static_cast<entt::entity>(message.TargetId);
-    GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity, acMessage.GetSender());
 }
 
