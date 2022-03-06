@@ -148,7 +148,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
 
         if (targetEntityIt != std::end(targetView))
         {
-            auto desiredTargetIdRes = utils::GetServerId(*targetEntityIt);
+            auto desiredTargetIdRes = Utils::GetServerId(*targetEntityIt);
             if (desiredTargetIdRes.has_value())
             {
                 spdlog::info("has_value");
@@ -229,7 +229,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
         auto view = m_world.view<FormIdComponent>();
         for (auto entity : view)
         {
-            std::optional<uint32_t> serverIdRes = utils::GetServerId(entity);
+            std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
             if (!serverIdRes.has_value())
                 continue;
 
