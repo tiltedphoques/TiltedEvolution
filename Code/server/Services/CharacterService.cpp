@@ -323,7 +323,8 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     CharacterSpawnRequest message;
     Serialize(m_world, acEvent.Entity, &message);
 
-    GameServer::Get()->SendToPlayersInRange(message, acEvent.Entity);
+    const auto& ownerComp = m_world.get<OwnerComponent>(acEvent.Entity);
+    GameServer::Get()->SendToPlayersInRange(message, acEvent.Entity, ownerComp.GetOwner());
 }
 
 void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
@@ -700,7 +701,7 @@ void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLau
     notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
 
     const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
-    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender());
 }
 
 void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
@@ -712,7 +713,7 @@ void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage
     notify.MountId = message.MountId;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
 }
 
 void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept
@@ -724,5 +725,5 @@ void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>&
     notify.PackageId = message.PackageId;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
 }

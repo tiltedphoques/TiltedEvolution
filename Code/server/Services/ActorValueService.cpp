@@ -46,8 +46,7 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
     notify.Id = acMessage.Packet.Id;
     notify.Values = acMessage.Packet.Values;
 
-    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
 
 void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -74,8 +73,7 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
     notify.Id = message.Id;
     notify.Values = message.Values;
 
-    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
 
 void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
@@ -86,8 +84,7 @@ void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthC
     notify.Id = message.Id;
     notify.DeltaHealth = message.DeltaHealth;
 
-    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
 
 void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -110,7 +107,6 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
     notify.Id = message.Id;
     notify.IsDead = message.IsDead;
 
-    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity);
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
 

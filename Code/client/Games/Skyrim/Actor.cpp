@@ -589,13 +589,16 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
     {
         if (pValueModEffect->actorValueIndex == ActorValueInfo::kHealth && aEffectValue > 0.0f)
         {
-            const auto pExTarget = apTarget->GetExtension();
-            if (pExTarget->IsLocal())
+            if (apTarget && apTarget->GetExtension())
             {
-                World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
-                return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
+                const auto pExTarget = apTarget->GetExtension();
+                if (pExTarget->IsLocal())
+                {
+                    World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
+                    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, unk1);
+                }
+                return;
             }
-            return;
         }
     }
 
