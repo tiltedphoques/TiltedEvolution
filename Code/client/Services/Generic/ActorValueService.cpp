@@ -85,18 +85,18 @@ void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent)
         return;
 
     auto view = m_world.view<FormIdComponent>();
-    const auto formId = acEvent.FormId;
+    const uint32_t formId = acEvent.FormId;
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
+    const auto it = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
 
         return formIdComponent.Id == formId;
     });
 
-    if (itor != std::end(view))
+    if (it != std::end(view))
     {
-        m_world.remove<ActorValuesComponent>(*itor);
+        m_world.remove<ActorValuesComponent>(*it);
     }
 }
 
@@ -252,7 +252,7 @@ void ActorValueService::RunDeathStateUpdates() noexcept
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
@@ -285,29 +285,14 @@ void ActorValueService::RunActorValuesUpdates() noexcept
 
 void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept
 {
-    auto view = m_world.view<FormIdComponent>();
+    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.Id);
+    if (!pActorRes.has_value())
+        return;
 
-    for (auto entity : view)
-    {
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
+    Actor* pActor = pActorRes.value();
 
-        uint32_t serverId = serverIdRes.value();
-
-        if (serverId == acMessage.Id)
-        {
-            const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            const auto* pForm = TESForm::GetById(formIdComponent.Id);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-            if (pActor != nullptr)
-            {
-                const auto newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
-                pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
-            }
-        }
-    }
+    const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
+    pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
@@ -323,7 +308,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
         return;
@@ -351,16 +336,16 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity)
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity)
     {
         return view.get<RemoteComponent>(entity).Id == id;
     });
 
-    if (itor == std::end(view))
+    if (it == std::end(view))
         return;
 
-    auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    auto& formIdComponent = view.get<FormIdComponent>(*it);
+    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
         return;
@@ -390,7 +375,7 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*it);
-    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
         return;

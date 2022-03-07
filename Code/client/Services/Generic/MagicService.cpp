@@ -364,79 +364,60 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
 #if TP_SKYRIM64
-    auto view = m_world.view<FormIdComponent>();
+    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.TargetId);
+    if (!pActorRes.has_value())
+        return;
 
-    // TODO: this pattern is common enough to be refactored
-    for (entt::entity entity : view)
+    Actor* pActor = pActorRes.value();
+
+    const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+    if (cSpellId == 0)
     {
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                      acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+        return;
+    }
 
-        uint32_t serverId = serverIdRes.value();
+    MagicItem* pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+    if (!pSpell)
+    {
+        spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cSpellId);
+        return;
+    }
 
-        if (serverId == acMessage.TargetId)
+    const uint32_t cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
+    if (cEffectId == 0)
+    {
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                      acMessage.EffectId.BaseId, acMessage.EffectId.ModId);
+        return;
+    }
+
+    EffectItem* pEffect = nullptr;
+
+    for (EffectItem* effect : pSpell->listOfEffects)
+    {
+        if (effect->pEffectSetting->formID == cEffectId)
         {
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-
-            TP_ASSERT(pActor, "Actor should exist, form id: {:X}", formIdComponent.Id);
-
-            if (pActor)
-            {
-                const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
-                if (cSpellId == 0)
-                {
-                    spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
-                                  acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
-                    return;
-                }
-
-                MagicItem* pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
-                if (!pSpell)
-                {
-                    spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cSpellId);
-                    return;
-                }
-
-                const uint32_t cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
-                if (cEffectId == 0)
-                {
-                    spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
-                                  acMessage.EffectId.BaseId, acMessage.EffectId.ModId);
-                    return;
-                }
-
-                EffectItem* pEffect = nullptr;
-
-                for (EffectItem* effect : pSpell->listOfEffects)
-                {
-                    if (effect->pEffectSetting->formID == cEffectId)
-                    {
-                        pEffect = effect;
-                        break;
-                    }
-                }
-
-                if (!pEffect)
-                {
-                    spdlog::error("{}: Failed to retrieve spell by id {:X}", cEffectId);
-                    return;
-                }
-
-                MagicTarget::AddTargetData data{};
-                data.pSpell = pSpell;
-                data.pEffectItem = pEffect;
-                data.fMagnitude = acMessage.Magnitude;
-                data.fUnkFloat1 = 1.0f;
-                data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-
-                pActor->magicTarget.AddTarget(data);
-
-                break;
-            }
+            pEffect = effect;
+            break;
         }
     }
+
+    if (!pEffect)
+    {
+        spdlog::error("{}: Failed to retrieve spell by id {:X}", cEffectId);
+        return;
+    }
+
+    MagicTarget::AddTargetData data{};
+    data.pSpell = pSpell;
+    data.pEffectItem = pEffect;
+    data.fMagnitude = acMessage.Magnitude;
+    data.fUnkFloat1 = 1.0f;
+    data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+
+    pActor->magicTarget.AddTarget(data);
 #endif
 }
 
