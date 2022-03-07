@@ -304,57 +304,38 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
 #if TP_SKYRIM64
-    auto view = m_world.view<FormIdComponent>();
+    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.TargetId);
+    if (!pActorRes.has_value())
+        return;
 
-    for (auto entity : view)
+    Actor* pActor = pActorRes.value();
+
+    const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+    if (cSpellId == 0)
     {
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                      acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+        return;
+    }
 
-        uint32_t serverId = serverIdRes.value();
+    MagicItem* pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+    if (!pSpell)
+    {
+        spdlog::error("{}: Failed to retrieve spell by id {:X}", cSpellId);
+        return;
+    }
 
-        if (serverId == acMessage.TargetId)
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            auto* pForm = TESForm::GetById(formIdComponent.Id);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    // TODO: AddTarget gets notified for every effect, but we loop through the effects here again
+    for (EffectItem* effect : pSpell->listOfEffects)
+    {
+        MagicTarget::AddTargetData data{};
+        data.pSpell = pSpell;
+        data.pEffectItem = effect;
+        data.fMagnitude = 0.0f;
+        data.fUnkFloat1 = 1.0f;
+        data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
-            TP_ASSERT(pActor, "Actor should exist, form id: {:X}", formIdComponent.Id);
-
-            if (pActor)
-            {
-                const auto cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
-                if (cSpellId == 0)
-                {
-                    spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
-                                  acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
-                    return;
-                }
-
-                auto* pSpell = static_cast<MagicItem*>(TESForm::GetById(cSpellId));
-                if (!pSpell)
-                {
-                    spdlog::error("{}: Failed to retrieve spell by id {:X}", cSpellId);
-                    return;
-                }
-
-                // TODO: AddTarget gets notified for every effect, but we loop through the effects here again
-                for (auto effect : pSpell->listOfEffects)
-                {
-                    MagicTarget::AddTargetData data{};
-                    data.pSpell = pSpell;
-                    data.pEffectItem = effect;
-                    data.fMagnitude = 0.0f;
-                    data.fUnkFloat1 = 1.0f;
-                    data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-
-                    pActor->magicTarget.AddTarget(data);
-                }
-
-                break;
-            }
-        }
+        pActor->magicTarget.AddTarget(data);
     }
 #endif
 }
