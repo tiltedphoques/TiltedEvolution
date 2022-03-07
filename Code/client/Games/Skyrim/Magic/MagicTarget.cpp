@@ -52,12 +52,16 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
         if (pCasterExtension->IsLocalPlayer())
         {
-            if (arData.pEffectItem->pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::VALUE_MODIFIER &&
-                arData.pEffectItem->data.fMagnitude > 0.0f)
+            if (arData.pEffectItem->IsHealingEffect())
             {
                 bool result = ThisCall(RealAddTarget, apThis, arData);
-                spdlog::warn("sending out healing effect {}", result);
-                World::Get().GetRunner().Trigger(addTargetEvent);
+                if (result)
+                    World::Get().GetRunner().Trigger(addTargetEvent);
+                return result;
+            }
+            else
+            {
+                return false;
             }
         }
     }

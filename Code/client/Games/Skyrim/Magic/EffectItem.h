@@ -11,6 +11,8 @@ struct EffectItemData
 
 struct EffectItem
 {
+    bool IsHealingEffect() noexcept;
+
     EffectItemData data;
     uint32_t padC;
     EffectSetting* pEffectSetting;

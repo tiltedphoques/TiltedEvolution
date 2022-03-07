@@ -406,7 +406,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     if (!pEffect)
     {
-        spdlog::error("{}: Failed to retrieve spell by id {:X}", cEffectId);
+        spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cEffectId);
         return;
     }
 
