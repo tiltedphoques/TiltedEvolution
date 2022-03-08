@@ -37,7 +37,7 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
 
     World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell, targetFormId));
 
-    spdlog::info("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}, desired target: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell, targetFormId);
+    spdlog::debug("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}, desired target: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell, targetFormId);
 
     ThisCall(RealSpellCast, apThis, abSuccess, auiTargetCount, apSpell);
 }

@@ -55,13 +55,7 @@ uint32_t& TP_MAKE_THISCALL(SpawnNewREFR, ModManager, uint32_t& aRefHandleOut, TE
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    auto result = ThisCall(RealSpawnNewREFR, apThis, aRefHandleOut, apBaseForm, apPosition, apRotation, apParentCell, apWorldSpace, apActor, a9, a10, aForcePersist, a12);
-
-    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(aRefHandleOut);
-
-    spdlog::debug("Spawned new refr, {:X}", pObject ? pObject->formID : 0);
-
-    return result;
+    return ThisCall(RealSpawnNewREFR, apThis, aRefHandleOut, apBaseForm, apPosition, apRotation, apParentCell, apWorldSpace, apActor, a9, a10, aForcePersist, a12);
 }
 #endif
 
@@ -117,6 +111,6 @@ static TiltedPhoques::Initializer s_tesHooks([]()
 
     RealSpawnNewREFR = s_realSpawnNewREFR.Get();
 
-    TP_HOOK(&RealSpawnNewREFR, SpawnNewREFR);
+    //TP_HOOK(&RealSpawnNewREFR, SpawnNewREFR);
 });
 

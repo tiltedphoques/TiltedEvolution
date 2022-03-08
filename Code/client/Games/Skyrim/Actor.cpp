@@ -492,6 +492,11 @@ void Actor::GenerateMagicCasters() noexcept
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
         shoutCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
     }
+    if (!instantCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
+        instantCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
 }
 
 bool Actor::IsDead() noexcept

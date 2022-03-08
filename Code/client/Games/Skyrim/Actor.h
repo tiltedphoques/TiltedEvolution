@@ -287,7 +287,7 @@ public:
     ActorMagicCaster* leftHandCaster;
     ActorMagicCaster* rightHandCaster;
     ActorMagicCaster* shoutCaster;
-    uintptr_t unk114;
+    ActorMagicCaster* instantCaster;
     MagicItem* magicItems[4];
     TESForm* equippedShout;
     uint32_t someRefrHandle;

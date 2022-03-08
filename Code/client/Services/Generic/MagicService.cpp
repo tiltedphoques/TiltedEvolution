@@ -22,6 +22,8 @@
 #include <PlayerCharacter.h>
 #endif
 
+#define MAGIC_DEBUG 0
+
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
@@ -33,9 +35,11 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&MagicService::OnAddTargetEvent>(this);
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
 
+#if MAGIC_DEBUG
     auto* pEventList = EventDispatcherManager::Get();
     pEventList->magicEffectApplyEvent.RegisterSink(this);
     pEventList->activeEffectApplyRemove.RegisterSink(this);
+#endif
 }
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -99,11 +103,11 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
 
     // only sync concentration spells through spell cast sync, the rest through projectile sync
     // TODO: not all fire and forget spells have a projectile (i.e. heal other)
-    if (auto* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
+    if (SpellItem* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
     {
         if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
         {
-            spdlog::warn("Canceled magic spell");
+            spdlog::debug("Canceled magic spell");
             return;
         }
     }
@@ -140,13 +144,12 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
             auto desiredTargetIdRes = Utils::GetServerId(*targetEntityIt);
             if (desiredTargetIdRes.has_value())
             {
-                spdlog::info("has_value");
                 request.DesiredTarget = desiredTargetIdRes.value();
             }
         }
     }
 
-    spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
+    spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
                  request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
@@ -211,7 +214,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
         return;
     }
 
-    TESForm* pDesiredTarget = nullptr;
+    TESForm* pDesiredTargetForm = nullptr;
 
     if (acMessage.DesiredTarget != 0)
     {
@@ -227,27 +230,27 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
             if (serverId == acMessage.DesiredTarget)
             {
                 const auto& formIdComponent = view.get<FormIdComponent>(entity);
-                pDesiredTarget = TESForm::GetById(formIdComponent.Id);
-                if (pDesiredTarget)
-                    spdlog::info("Desired target: {:X}", pDesiredTarget->formID);
+                pDesiredTargetForm = TESForm::GetById(formIdComponent.Id);
             }
         }
 
     }
 
+    TESObjectREFR* pDesiredTarget = RTTI_CAST(pDesiredTargetForm, TESForm, TESObjectREFR);
+
     switch (acMessage.CastingSource)
     {
     case MagicSystem::CastingSource::LEFT_HAND:
-        pActor->leftHandCaster->CastSpellImmediate(pSpell, false, (TESObjectREFR*)pDesiredTarget, 1.0f, false, 0.0f);
+        pActor->leftHandCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::RIGHT_HAND:
-        pActor->rightHandCaster->CastSpellImmediate(pSpell, false, (TESObjectREFR*)pDesiredTarget, 1.0f, false, 0.0f);
+        pActor->rightHandCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::OTHER:
-        pActor->shoutCaster->CastSpellImmediate(pSpell, false, (TESObjectREFR*)pDesiredTarget, 1.0f, false, 0.0f);
+        pActor->shoutCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
         break;
     case MagicSystem::CastingSource::INSTANT:
-        // TODO: instant?
+        pActor->instantCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
         break;
     }
 #endif
@@ -259,7 +262,7 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
     if (!m_transport.IsConnected())
         return;
 
-    auto formId = acEvent.CasterFormID;
+    uint32_t formId = acEvent.CasterFormID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
     const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
@@ -411,21 +414,25 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
 BSTEventResult MagicService::OnEvent(const TESMagicEffectApplyEvent* apEvent, const EventDispatcher<TESMagicEffectApplyEvent>*)
 {
+#if MAGIC_DEBUG
     spdlog::warn("TESMagicEffectApplyEvent, target: {:X}, caster: {:X}, effect id: {:X}",
                  apEvent->hTarget ? apEvent->hTarget->formID : 0,
                  apEvent->hCaster ? apEvent->hCaster->formID : 0,
                  apEvent->uiMagicEffectFormID);
+#endif
 
     return BSTEventResult::kOk;
 }
 
 BSTEventResult MagicService::OnEvent(const TESActiveEffectApplyRemove* apEvent, const EventDispatcher<TESActiveEffectApplyRemove>*)
 {
+#if MAGIC_DEBUG
     spdlog::error("TESActiveEffectApplyRemove, target: {:X}, caster: {:X}, effect id: {:X}, applied? {}",
                  apEvent->hTarget ? apEvent->hTarget->formID : 0,
                  apEvent->hCaster ? apEvent->hCaster->formID : 0,
                  apEvent->usActiveEffectUniqueID,
                  apEvent->bIsApplied);
+#endif
 
     return BSTEventResult::kOk;
 }
