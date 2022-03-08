@@ -408,6 +408,10 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     data.fUnkFloat1 = 1.0f;
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
+    // This hack is here because slow time seems to be twice as slow when cast by an npc
+    if (pEffect->pEffectSetting->eArchetype == EffectArchetypes::SLOW_TIME)
+        pActor = PlayerCharacter::Get();
+
     pActor->magicTarget.AddTarget(data);
 #endif
 }
