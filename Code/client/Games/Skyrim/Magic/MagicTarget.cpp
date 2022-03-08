@@ -26,12 +26,7 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
     return result;
 }
 
-/* TODO:
-* Don't send continuous, value modifying effects like burning from flames concentration spell.
-    Can't cancel all ValueModifierEffects though.
-
-* Maybe batch effects.
-*/
+// If you want a detailed flowchart of what's happening here, ask cosi
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     // TODO: this can be fixed by properly implementing multiple inheritance

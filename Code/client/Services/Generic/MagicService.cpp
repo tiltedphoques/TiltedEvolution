@@ -101,8 +101,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
         return;
     }
 
-    // only sync concentration spells through spell cast sync, the rest through projectile sync
-    // TODO: not all fire and forget spells have a projectile (i.e. heal other)
+    // only sync concentration spells through spell cast sync, the rest through projectile sync for accuracy
     if (SpellItem* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
     {
         if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
@@ -173,9 +172,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
     TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    TP_ASSERT(pForm, "Form not found.");
     Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
-    TP_ASSERT(pActor, "Form is not actor.");
 
     pActor->GenerateMagicCasters();
 
