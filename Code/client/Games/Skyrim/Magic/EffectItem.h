@@ -11,7 +11,8 @@ struct EffectItemData
 
 struct EffectItem
 {
-    bool IsHealingEffect() noexcept;
+    bool IsHealingEffect() const noexcept;
+    bool IsSummonEffect() const noexcept;
 
     EffectItemData data;
     uint32_t padC;

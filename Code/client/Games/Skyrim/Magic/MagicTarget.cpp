@@ -47,35 +47,37 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     addTargetEvent.EffectID = arData.pEffectItem->pEffectSetting->formID;
     addTargetEvent.Magnitude = arData.fMagnitude;
 
-    if (pTargetActorEx->IsRemotePlayer() && arData.pCaster)
+    if (pTargetActorEx->IsRemotePlayer())
     {
+        if (!arData.pCaster)
+            return false;
+
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-        if (pCasterExtension->IsLocalPlayer())
-        {
-            if (arData.pEffectItem->IsHealingEffect())
-            {
-                bool result = ThisCall(RealAddTarget, apThis, arData);
-                if (result)
-                    World::Get().GetRunner().Trigger(addTargetEvent);
-                return result;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        if (!pCasterExtension->IsLocalPlayer())
+            return false;
+
+        if (!arData.pEffectItem->IsHealingEffect())
+            return false;
+
+        bool result = ThisCall(RealAddTarget, apThis, arData);
+        if (result)
+            World::Get().GetRunner().Trigger(addTargetEvent);
+        return result;
     }
 
     if (pTargetActorEx->IsLocalPlayer())
     {
+        if (arData.pCaster)
+        {
+            ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+            if (pCasterExtension->IsRemotePlayer())
+                return false;
+        }
+
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
+        if (result && !arData.pEffectItem->IsSummonEffect())
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
-    }
-    else if (pTargetActorEx->IsRemotePlayer())
-    {
-        return false;
     }
 
     if (arData.pCaster)
@@ -84,7 +86,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (pCasterExtension->IsLocalPlayer())
         {
             bool result = ThisCall(RealAddTarget, apThis, arData);
-            if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
+            if (result && !arData.pEffectItem->IsSummonEffect())
                 World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
         }
@@ -97,7 +99,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     if (pTargetActorEx->IsLocal())
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
+        if (result && !arData.pEffectItem->IsSummonEffect())
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
