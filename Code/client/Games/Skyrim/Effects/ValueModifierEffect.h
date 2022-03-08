@@ -15,7 +15,6 @@ struct ValueModifierEffect : public ActiveEffect
     virtual void sub_1F();
     virtual void ApplyActorEffect(Actor* actor, float effectValue, unsigned int unk1);
 
-    char pad_0080[16];
     uint32_t actorValueIndex;
     char pad_0094[4];
 };

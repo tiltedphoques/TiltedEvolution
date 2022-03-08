@@ -9,7 +9,6 @@
 
 #include <Messages/SpellCastRequest.h>
 #include <Messages/InterruptCastRequest.h>
-#include <Messages/AddTargetRequest.h>
 
 #include <Messages/NotifySpellCast.h>
 #include <Messages/NotifyInterruptCast.h>
@@ -39,8 +38,6 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     pEventList->activeEffectApplyRemove.RegisterSink(this);
 }
 
-// TODO: might be easier to just check the list of effects in OnUpdate() for each actor, and send that back and forth
-
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
 #if TP_SKYRIM64
@@ -58,7 +55,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
     Vector<uint32_t> markedForRemoval;
 
-    for (auto [formId, spellId] : m_queuedEffects)
+    for (auto [formId, request] : m_queuedEffects)
     {
         auto view = m_world.view<FormIdComponent>();
         const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) {
@@ -70,19 +67,11 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
         entt::entity entity = *it;
 
-        AddTargetRequest request;
-
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
             continue;
 
         request.TargetId = serverIdRes.value();
-
-        if (!m_world.GetModSystem().GetServerModId(spellId, request.SpellId.ModId, request.SpellId.BaseId))
-        {
-            spdlog::error("{s}: Could not find spell with form {:X}", __FUNCTION__, spellId);
-            continue;
-        }
 
         m_transport.Send(request);
 
@@ -205,7 +194,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
         TESForm* pSpellForm = TESForm::GetById(cSpellFormId);
         if (!pSpellForm)
         {
-            spdlog::error("Cannot find spell form.");
+            spdlog::error("Cannot find spell form, id: {:X}.", cSpellFormId);
             return;
         }
         else
@@ -321,27 +310,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    auto view = m_world.view<FormIdComponent>();
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetID, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
-
-    if (it == std::end(view))
-    {
-        spdlog::warn("Target not found for magic add target, form id: {:X}", acEvent.TargetID);
-        m_queuedEffects[acEvent.TargetID] = acEvent.SpellID;
-        return;
-    }
-
-    entt::entity entity = *it;
-
     AddTargetRequest request;
-
-    std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-    if (!serverIdRes.has_value())
-        return;
-
-    request.TargetId = serverIdRes.value();
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
     {
@@ -357,6 +326,25 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     request.Magnitude = acEvent.Magnitude;
 
+    auto view = m_world.view<FormIdComponent>();
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetID, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (it == std::end(view))
+    {
+        spdlog::warn("Target not found for magic add target, form id: {:X}", acEvent.TargetID);
+        m_queuedEffects[acEvent.TargetID] = request;
+        return;
+    }
+
+    entt::entity entity = *it;
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
+    if (!serverIdRes.has_value())
+        return;
+
+    request.TargetId = serverIdRes.value();
     m_transport.Send(request);
 #endif
 }
@@ -388,7 +376,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     const uint32_t cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
     if (cEffectId == 0)
     {
-        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+        spdlog::error("{}: failed to retrieve effect id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
                       acMessage.EffectId.BaseId, acMessage.EffectId.ModId);
         return;
     }
@@ -406,7 +394,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     if (!pEffect)
     {
-        spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cEffectId);
+        spdlog::error("{}: Failed to retrieve effect by id {:X}", __FUNCTION__, cEffectId);
         return;
     }
 

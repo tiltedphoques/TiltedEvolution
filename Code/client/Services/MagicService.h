@@ -2,6 +2,7 @@
 
 #include <Games/Events.h>
 #include <Events/EventDispatcher.h>
+#include <Messages/AddTargetRequest.h>
 
 struct World;
 struct TransportService;
@@ -41,7 +42,7 @@ private:
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
-    Map<uint32_t, uint32_t> m_queuedEffects;
+    Map<uint32_t, AddTargetRequest> m_queuedEffects;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

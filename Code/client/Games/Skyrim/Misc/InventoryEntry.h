@@ -6,6 +6,6 @@ struct ExtraDataList;
 struct InventoryEntry
 {
     TESBoundObject* pObject;
-    GameList<ExtraDataList*>* pExtraLists;
+    GameList<ExtraDataList>* pExtraLists;
     int32_t count;
 };
