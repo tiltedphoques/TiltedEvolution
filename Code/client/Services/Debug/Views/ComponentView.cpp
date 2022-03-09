@@ -39,7 +39,7 @@ float CalculateFloatingQuestMarkerAlpha()
 }
 #endif
 
-static bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2& outViewPos)
+static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2& outViewPos)
 {
     // Attach at the head ish.
     auto pos = apRefr->position;
@@ -99,9 +99,6 @@ static TESForm* g_SelectedForm{nullptr};
 
 void TestService::DrawComponentDebugView()
 {
-    auto invisibleView =
-        m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
-
     ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
     ImGui::Begin("Component view", &m_toggleComponentWindow);
 

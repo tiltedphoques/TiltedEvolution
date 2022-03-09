@@ -199,13 +199,7 @@ void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>
     notify.Id = message.Id;
     notify.IsWeaponDrawn = message.IsWeaponDrawn;
 
-    // TODO: only send to those in range
-    for (auto pPlayer : m_world.GetPlayerManager())
-    {
-        if (acMessage.pPlayer != pPlayer)
-        {
-            pPlayer->Send(notify);
-        }
-    }
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
 }
 

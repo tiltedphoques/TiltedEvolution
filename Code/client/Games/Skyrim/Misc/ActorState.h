@@ -14,5 +14,10 @@ struct ActorState : IMovementState
         return (flags2 >> 5 & 7) >= 3;
     }
 
+    bool IsWeaponFullyDrawn() const noexcept
+    {
+        return (flags2 >> 5 & 7) == 3;
+    }
+
     bool SetWeaponDrawn(bool aDraw) noexcept;
 };
