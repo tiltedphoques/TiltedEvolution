@@ -231,8 +231,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
 
-        pActor->EvaluatePackage(true, true);
-
         return;
     }
 
