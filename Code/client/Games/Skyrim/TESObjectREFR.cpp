@@ -328,33 +328,11 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
 thread_local bool g_modifyingInventory = false;
 
-void TESObjectREFR::SetInventory(Inventory& aInventory, bool aReset) noexcept
+void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
 {
     g_modifyingInventory = true;
 
-    if (aReset)
-        RemoveAllItems();
-    else
-    {
-        Inventory currentContainer = GetInventory();
-        for (const auto& currentEntry : currentContainer.Entries)
-        {
-            auto duplicate = std::find_if(aInventory.Entries.begin(), aInventory.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
-                return newEntry.CanBeMerged(currentEntry);
-            });
-
-            if (duplicate != std::end(aInventory.Entries))
-            {
-                duplicate->Count -= currentEntry.Count;
-            }
-            else
-            {
-                aInventory.Entries.push_back(currentEntry);
-                Inventory::Entry& back = aInventory.Entries.back();
-                back.Count *= -1;
-            }
-        }
-    }
+    RemoveAllItems();
 
     for (const Inventory::Entry& entry : aInventory.Entries)
     {

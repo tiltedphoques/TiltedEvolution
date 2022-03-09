@@ -296,14 +296,12 @@ Inventory Actor::GetActorInventory() const noexcept
     return inventory;
 }
 
-void Actor::SetActorInventory(Inventory& aInventory, bool aReset) noexcept
+void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
-    if (aReset)
-        UnEquipAll();
+    UnEquipAll();
 
     SetInventory(aInventory);
 
-    // TODO: if aReset is false, diff currently equipped weapons first
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
