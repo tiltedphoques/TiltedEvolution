@@ -46,6 +46,16 @@ enum CastingType : int32_t
     CASTING_COUNT = 0x3,
 };
 
+enum Delivery : int32_t
+{
+    SELF = 0x0,
+    TOUCH = 0x1,
+    AIMED = 0x2,
+    TARGET_ACTOR = 0x3,
+    TARGET_LOCATION = 0x4,
+    DELIVERY_COUNT = 0x5,
+};
+
 }
 
 namespace EffectArchetypes

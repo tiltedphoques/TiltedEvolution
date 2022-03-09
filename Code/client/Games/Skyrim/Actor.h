@@ -213,6 +213,7 @@ struct Actor : TESObjectREFR
     void RemoveFromAllFactions() noexcept;
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
+    void GenerateMagicCasters() noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
@@ -286,7 +287,7 @@ public:
     ActorMagicCaster* leftHandCaster;
     ActorMagicCaster* rightHandCaster;
     ActorMagicCaster* shoutCaster;
-    uintptr_t unk114;
+    ActorMagicCaster* instantCaster;
     MagicItem* magicItems[4];
     TESForm* equippedShout;
     uint32_t someRefrHandle;

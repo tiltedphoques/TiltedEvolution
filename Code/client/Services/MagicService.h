@@ -1,5 +1,9 @@
 #pragma once
 
+#include <Games/Events.h>
+#include <Events/EventDispatcher.h>
+#include <Messages/AddTargetRequest.h>
+
 struct World;
 struct TransportService;
 
@@ -12,7 +16,7 @@ struct NotifySpellCast;
 struct NotifyInterruptCast;
 struct NotifyAddTarget;
 
-struct MagicService
+struct MagicService : BSTEventSink<TESMagicEffectApplyEvent>, BSTEventSink<TESActiveEffectApplyRemove>
 {
     MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~MagicService() noexcept = default;
@@ -31,11 +35,14 @@ protected:
 
 private:
 
+    BSTEventResult OnEvent(const TESMagicEffectApplyEvent*, const EventDispatcher<TESMagicEffectApplyEvent>*) override;
+    BSTEventResult OnEvent(const TESActiveEffectApplyRemove*, const EventDispatcher<TESActiveEffectApplyRemove>*) override;
+
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
-    Map<uint32_t, uint32_t> m_queuedEffects;
+    Map<uint32_t, AddTargetRequest> m_queuedEffects;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

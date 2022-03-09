@@ -6,11 +6,39 @@ struct Actor;
 struct MagicItem;
 struct EffectItem;
 struct TESBoundObject;
+struct ActiveEffect;
 
 struct MagicTarget
 {
     struct IPostCreationModification;
     struct ResultsCollector;
+
+    struct ForEachActiveEffectVisitor
+    {
+        virtual ~ForEachActiveEffectVisitor();
+
+        virtual bool Visit(ActiveEffect* apEffect) = 0;
+    };
+    static_assert(sizeof(ForEachActiveEffectVisitor) == 0x8);
+
+    // this struct is a lot simpler in Fallout 4, it just passes a ref to AddTargetData
+    struct ResetElapsedTimeMatchingEffects : ForEachActiveEffectVisitor
+    {
+        MagicItem* pSpell;
+        Actor* pCaster;
+        EffectItem* pEffectItem;
+        TESBoundObject* pSource;
+        MagicSystem::CastingSource eCastingSource;
+        bool bResetOne;
+    };
+    static_assert(sizeof(ResetElapsedTimeMatchingEffects) == 0x30);
+
+    struct HasSameUsageEffect : ForEachActiveEffectVisitor
+    {
+        EffectItem* pUsage;
+        ActiveEffect* spFoundEffect;
+    };
+    static_assert(sizeof(HasSameUsageEffect) == 0x18);
 
     struct AddTargetData
     {

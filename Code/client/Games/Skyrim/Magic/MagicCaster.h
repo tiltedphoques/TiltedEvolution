@@ -67,7 +67,7 @@ struct MagicCaster
     };
 
     GameArray<uint64_t> hSounds; // BSTArray<BSSoundHandle> hSounds;
-    int32_t hDesiredTarget;      // BSPointerHandle<TESObjectREFR,BSUntypedPointerHandle<21,5> > hDesiredTarget;
+    BSPointerHandle<TESObjectREFR*> hDesiredTarget;
     MagicItem* pCurrentSpell;
     MagicCaster::State eState;
     float fCastingTimer;
