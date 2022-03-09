@@ -256,6 +256,8 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
 
+        pActor->EvaluatePackage(true, true);
+
         pActor->SetActorValues(acMessage.AllActorValues);
 
         //  TODO: verify this code path too while you're at it
@@ -405,6 +407,8 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
 
         if (!pActor)
             return;
+
+        pActor->EvaluatePackage(true, true);
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetInventory(remoteComponent.SpawnRequest.InventoryContent);

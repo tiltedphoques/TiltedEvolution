@@ -418,6 +418,15 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
 
+void Actor::EvaluatePackage(bool aImmediate, bool aResetAI) noexcept
+{
+    TP_THIS_FUNCTION(TEvaluatePackage, void, Actor, bool, bool);
+
+    POINTER_SKYRIMSE(TEvaluatePackage, s_evalPack, 37401);
+
+    ThisCall(s_evalPack, this, aImmediate, aResetAI);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 
