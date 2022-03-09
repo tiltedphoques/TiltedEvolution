@@ -683,7 +683,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
-    message.IsWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+    message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
     if(isTemporary)
     {
