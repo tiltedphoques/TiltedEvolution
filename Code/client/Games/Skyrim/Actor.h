@@ -213,7 +213,6 @@ struct Actor : TESObjectREFR
     void RemoveFromAllFactions() noexcept;
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
-    void EvaluatePackage(bool aImmediate, bool aResetAI) noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
