@@ -50,7 +50,10 @@ struct TESActivateEvent
 
 struct TESActiveEffectApplyRemove
 {
-
+    TESObjectREFR* hCaster;
+    TESObjectREFR* hTarget;
+    uint16_t usActiveEffectUniqueID;
+    bool bIsApplied;
 };
 
 struct TESActorLocationChangeEvent
@@ -138,7 +141,9 @@ struct TESLockChangedEvent
 
 struct TESMagicEffectApplyEvent
 {
-
+    TESObjectREFR* hTarget;
+    TESObjectREFR* hCaster;
+    uint32_t uiMagicEffectFormID;
 };
 
 struct TESMagicWardHitEvent

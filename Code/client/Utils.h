@@ -25,6 +25,8 @@
         Utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str());                                                   \
     }
 
+struct Actor;
+
 namespace Utils
 {
 static void Assert(const char* apExpression, const char* apMessage)
@@ -36,6 +38,7 @@ static void Assert(const char* apExpression, const char* apMessage)
 }
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
+std::optional<Actor*> GetActorByServerId(const uint32_t aServerId) noexcept;
 } // namespace Utils
 
 namespace TiltedPhoques

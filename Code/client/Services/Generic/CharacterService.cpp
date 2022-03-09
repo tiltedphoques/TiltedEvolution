@@ -249,6 +249,12 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             return;
         }
 
+        const auto* pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
+        if (pNpc)
+        {
+            spdlog::warn("Spawn Actor: {:X}, and NPC {}", pActor->formID, pNpc->fullName.value);
+        }
+
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);

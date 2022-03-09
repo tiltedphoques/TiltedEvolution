@@ -232,47 +232,33 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
 void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
-    auto view = m_world.view<FormIdComponent>();
-    for (auto entity : view)
+    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.ActivatorId);
+    if (!pActorRes.has_value())
+        return;
+
+    Actor* pActor = pActorRes.value();
+
+    const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
+    if (cObjectId == 0)
     {
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
-
-        uint32_t serverId = serverIdRes.value();
-
-        if (serverId == acMessage.ActivatorId)
-        {
-            const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
-            if (cObjectId == 0)
-            {
-                spdlog::error("Failed to retrieve object to activate.");
-                return;
-            }
-
-            auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
-            if (!pObject)
-            {
-                spdlog::error("Failed to retrieve object to activate.");
-                return;
-            }
-
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-            
-            if (pActor)
-            {
-                // unsure if these flags are the best, but these are passed with the papyrus Activate fn
-                // might be an idea to have the client send the flags through NotifyActivate
-            #if TP_FALLOUT4
-                pObject->Activate(pActor, nullptr, 1, 0, 0, 0);
-            #elif TP_SKYRIM64
-                pObject->Activate(pActor, 0, nullptr, 1, 0);
-            #endif
-                return;
-            }
-        }
+        spdlog::error("Failed to retrieve object to activate.");
+        return;
     }
+
+    TESObjectREFR* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+    if (!pObject)
+    {
+        spdlog::error("Failed to retrieve object to activate.");
+        return;
+    }
+
+    // unsure if these flags are the best, but these are passed with the papyrus Activate fn
+    // might be an idea to have the client send the flags through NotifyActivate
+#if TP_FALLOUT4
+    pObject->Activate(pActor, nullptr, 1, 0, 0, 0);
+#elif TP_SKYRIM64
+    pObject->Activate(pActor, 0, nullptr, 1, 0);
+#endif
 }
 
 void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept

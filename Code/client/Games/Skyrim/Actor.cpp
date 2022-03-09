@@ -446,6 +446,30 @@ bool Actor::InitiateMountPackage(Actor* apMount) noexcept
     return ThisCall(RealInitiateMountPackage, this, apMount);
 }
 
+void Actor::GenerateMagicCasters() noexcept
+{
+    if (!leftHandCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
+        leftHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+    if (!rightHandCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+        rightHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+    if (!shoutCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
+        shoutCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+    if (!instantCaster)
+    {
+        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
+        instantCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+    }
+}
+
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
@@ -497,6 +521,7 @@ void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float a
 TP_THIS_FUNCTION(TSpawnActorInWorld, bool, Actor);
 static TSpawnActorInWorld* RealSpawnActorInWorld = nullptr;
 
+// TODO: this isn't SpawnActorInWorld, this is TESObjectREFR::UpdateReference3D()
 bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 {
     const auto* pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
