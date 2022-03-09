@@ -315,6 +315,12 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     inventory.Entries.insert(inventory.Entries.end(), minimizedExtraInventory.Entries.begin(),
                                  minimizedExtraInventory.Entries.end());
 
+    spdlog::info("Inventory count before: {}", inventory.Entries.size());
+
+    inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), inventory.Entries.end(),
+                                           [](const Inventory::Entry& entry) { return entry.Count == 0; }),
+                            inventory.Entries.end());
+
     spdlog::info("Inventory count after: {}", inventory.Entries.size());
 
     return inventory;
@@ -322,29 +328,31 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
 thread_local bool g_modifyingInventory = false;
 
-void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
+void TESObjectREFR::SetInventory(Inventory& aInventory, bool aReset) noexcept
 {
     g_modifyingInventory = true;
 
-    RemoveAllItems();
-
-    Inventory currentContainer = GetInventory();
-    for (const auto& currentEntry : currentContainer.Entries)
+    if (aReset)
+        RemoveAllItems();
+    else
     {
-        auto duplicate = std::find_if(aInventory.Entries.begin(), aInventory.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
-            return newEntry.CanBeMerged(currentEntry);
-        });
+        Inventory currentContainer = GetInventory();
+        for (const auto& currentEntry : currentContainer.Entries)
+        {
+            auto duplicate = std::find_if(aInventory.Entries.begin(), aInventory.Entries.end(), [currentEntry](const Inventory::Entry& newEntry) { 
+                return newEntry.CanBeMerged(currentEntry);
+            });
 
-        if (duplicate != std::end(aInventory.Entries))
-        {
-            duplicate->Count -= currentEntry.Count;
-        }
-        else
-        {
-            // TODO: revisit
-            aInventory.Entries.push_back(currentEntry);
-            Inventory::Entry& back = aInventory.Entries.back();
-            back.Count *= -1;
+            if (duplicate != std::end(aInventory.Entries))
+            {
+                duplicate->Count -= currentEntry.Count;
+            }
+            else
+            {
+                aInventory.Entries.push_back(currentEntry);
+                Inventory::Entry& back = aInventory.Entries.back();
+                back.Count *= -1;
+            }
         }
     }
 

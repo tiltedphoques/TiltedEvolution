@@ -296,12 +296,14 @@ Inventory Actor::GetActorInventory() const noexcept
     return inventory;
 }
 
-void Actor::SetActorInventory(Inventory& aInventory) noexcept
+void Actor::SetActorInventory(Inventory& aInventory, bool aReset) noexcept
 {
-    UnEquipAll();
+    if (aReset)
+        UnEquipAll();
 
     SetInventory(aInventory);
 
+    // TODO: if aReset is false, diff currently equipped weapons first
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
@@ -335,38 +337,7 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     if (ammoId)
     {
         TESForm* pAmmo = TESForm::GetById(ammoId);
-
-        auto count = GetItemCountInInventory(pAmmo);
-
-        /*
-        const auto pContainerChanges = GetContainerChanges()->entries;
-        for (auto pChange : *pContainerChanges)
-        {
-            if (pChange && pChange->form && pChange->form->formID == ammoId)
-            {
-                if (pChange->form->formID != ammoId)
-                    continue;
-
-                const auto pDataLists = pChange->dataList;
-                for (auto* pDataList : *pDataLists)
-                {
-                    if (pDataList)
-                    {
-                        if (pDataList->Contains(ExtraData::Count))
-                        {
-                            BSExtraData* pExtraData = pDataList->GetByType(ExtraData::Count);
-                            ExtraCount* pExtraCount = RTTI_CAST(pExtraData, BSExtraData, ExtraCount);
-                            if (pExtraCount)
-                            {
-                                pExtraCount->count = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        */
-
+        int64_t count = GetItemCountInInventory(pAmmo);
         pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
     }
 }

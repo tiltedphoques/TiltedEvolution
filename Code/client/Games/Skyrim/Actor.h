@@ -206,7 +206,7 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
-    void SetActorInventory(Inventory& aInventory) noexcept;
+    void SetActorInventory(Inventory& aInventory, bool aReset = true) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

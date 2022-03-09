@@ -117,11 +117,13 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
+            PlaceActorInWorld();
+            /*
             //Actor* pActor = RTTI_CAST(TESForm::GetById(0x1348C), TESForm, Actor);
             TESObjectREFR* pActor = RTTI_CAST(TESForm::GetById(0x2015bc4), TESForm, TESObjectREFR);
             auto container = PlayerCharacter::Get()->GetActorInventory();
             pActor->SetInventory(container);
+            */
         }
     }
     else
