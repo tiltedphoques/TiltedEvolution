@@ -1,3 +1,22 @@
+# [1.18.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.17.0...v1.18.0) (2022-03-09)
+
+
+### Bug Fixes
+
+* build errors ([4e42a81](https://github.com/tiltedphoques/TiltedEvolution/commit/4e42a8192c78a01225efbb430f8beffb907637f2))
+* health and death sync bug ([126edee](https://github.com/tiltedphoques/TiltedEvolution/commit/126edee366be750c7acb718f0916dcd314617f5f))
+* null crash ([a5a582c](https://github.com/tiltedphoques/TiltedEvolution/commit/a5a582c2af4999dc7c34764823e8e68a2fdd2b9e))
+* queued effects ([96d835e](https://github.com/tiltedphoques/TiltedEvolution/commit/96d835eb9d8b5877ad9f032dc1027e35e93d346e))
+* slow time shout sync ([a3d9f5d](https://github.com/tiltedphoques/TiltedEvolution/commit/a3d9f5dd89d719bc4e8ee08a0177d6b83c8de6d4))
+
+
+### Features
+
+* heal other players through spells ([be4436f](https://github.com/tiltedphoques/TiltedEvolution/commit/be4436f62032a914f03956267744cfdb0e8f4870))
+* Menu/UI reverse, port primitives from LCR ([a0f675a](https://github.com/tiltedphoques/TiltedEvolution/commit/a0f675a5f6c0a1b8c134c50dac661fbd0aa2c86c))
+* Unpause skills + mapmenu ([b829f47](https://github.com/tiltedphoques/TiltedEvolution/commit/b829f47c54884e1b4fe3209a4420da07c34845f9))
+* Unpausing non Offscreen Render target game menus. ([59e0cef](https://github.com/tiltedphoques/TiltedEvolution/commit/59e0cefbac5c217aca89358ed722a2e61f34aedb))
+
 # [1.17.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.16.0...v1.17.0) (2022-02-12)
 
 
