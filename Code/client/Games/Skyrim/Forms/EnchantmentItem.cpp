@@ -3,14 +3,10 @@
 #include <Systems/ModSystem.h>
 #include <Magic/EffectItem.h>
 #include <World.h>
+#include <Games/BGSCreatedObjectManager.h>
 
 EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData) noexcept
 {
-    /*
-    TP_THIS_FUNCTION(TCreateNewEnchantment, EnchantmentItem*, GameArray<EffectItem>, bool abIsWeapon);
-    POINTER_SKYRIMSE(TCreateNewEnchantment, createNewEnchantment, 36178);
-    */
-
     TP_THIS_FUNCTION(TAddWeaponEnchantment, EnchantmentItem*, void, GameArray<EffectItem>*);
     POINTER_SKYRIMSE(TAddWeaponEnchantment, addWeaponEnchantment, 36165);
     TP_THIS_FUNCTION(TAddArmorEnchantment, EnchantmentItem*, void, GameArray<EffectItem>*);
@@ -34,18 +30,12 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
         if (!effectItem.pEffectSetting)
             spdlog::error("Effect setting not found: {:X}:{:X}", effect.EffectId.ModId, effect.EffectId.BaseId);
 
-        // TODO: TESCondition
+        // TODO: TESCondition?
 
         effects[i] = effectItem;
     }
 
-    /*
-    EnchantmentItem* pItem = ThisCall(createNewEnchantment, &effects, aData.IsWeapon);
-    */
-
-    POINTER_SKYRIMSE(void*, pObjManager, 400320);
-
-    void* objManager = *pObjManager.Get();
+    BGSCreatedObjectManager* objManager = BGSCreatedObjectManager::Get();
 
     EnchantmentItem* pItem = nullptr;
     if (aData.IsWeapon)
@@ -60,29 +50,3 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
     return pItem;
 }
 
-void EnchantmentItem::Init(const Inventory::EnchantmentData& aData)
-{
-    /*
-    iCostOverride = aData.CostOverride;
-    iFlags = aData.Flags;
-    eCastingType = static_cast<MagicSystem::CastingType>(aData.CastingType);
-    iChargeOverride = aData.ChargeOverride;
-    eDelivery = static_cast<MagicSystem::Delivery>(aData.Delivery);
-    eSpellType = static_cast<MagicSystem::SpellType>(aData.SpellType);
-    fChargeTime = aData.ChargeTime;
-
-    ModSystem& modSystem = World::Get().GetModSystem();
-
-    TP_ASSERT(aData.BaseEnchantmentId.ModId != 0xFFFFFFFF, "Base enchantment is a temporary!");
-    uint32_t baseEnchantId = modSystem.GetGameId(aData.BaseEnchantmentId);
-    pBaseEnchantment = RTTI_CAST(TESForm::GetById(baseEnchantId), TESForm, EnchantmentItem);
-    if (!pBaseEnchantment)
-        spdlog::error("{}: base enchantment not found.", __FUNCTION__);
-
-    TP_ASSERT(aData.WornRestrictionsId.ModId != 0xFFFFFFFF, "Worn restrictions is a temporary!");
-    uint32_t restrictionsId = modSystem.GetGameId(aData.WornRestrictionsId);
-    pWornRestrictions = RTTI_CAST(TESForm::GetById(restrictionsId), TESForm, BGSListForm);
-    if (!pWornRestrictions)
-        spdlog::error("{}: worn restrictions not found.", __FUNCTION__);
-    */
-}

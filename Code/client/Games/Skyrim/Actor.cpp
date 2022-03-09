@@ -691,8 +691,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealDamageActor = s_damageActor.Get();
     RealApplyActorEffect = s_applyActorEffect.Get();
     RealRegenAttributes = s_regenAttributes.Get();
-    // TODO: re-enable this hook (obviously interferes with AddItem())
-    //RealAddInventoryItem = s_addInventoryItem.Get();
+    RealAddInventoryItem = s_addInventoryItem.Get();
     RealPickUpItem = s_pickUpItem.Get();
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
@@ -705,7 +704,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealDamageActor, HookDamageActor);
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
     TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
-    //TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
+    TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
     TP_HOOK(&RealPickUpItem, HookPickUpItem);
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);

@@ -10,8 +10,6 @@ struct EnchantmentItem : MagicItem
 {
     static EnchantmentItem* Create(const Inventory::EnchantmentData& aData) noexcept;
 
-    void Init(const Inventory::EnchantmentData& aData);
-
     int32_t iCostOverride;
     int32_t iFlags;
     MagicSystem::CastingType eCastingType;
@@ -20,7 +18,6 @@ struct EnchantmentItem : MagicItem
     MagicSystem::SpellType eSpellType;
     float fChargeTime;
     EnchantmentItem* pBaseEnchantment;
-    // TODO: use BGSListForm::SaveGame() and BGSListForm::LoadGame()?
     BGSListForm* pWornRestrictions;
 };
 

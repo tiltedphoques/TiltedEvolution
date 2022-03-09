@@ -273,7 +273,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
             extraInventory.Entries.push_back(std::move(entry));
     }
 
-    spdlog::info("ExtraInventory count: {}", extraInventory.Entries.size());
+    spdlog::debug("ExtraInventory count: {}", extraInventory.Entries.size());
 
     Inventory minimizedExtraInventory{};
 
@@ -292,7 +292,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
         duplicate->Count += entry.Count;
     }
 
-    spdlog::info("MinExtraInventory count: {}", minimizedExtraInventory.Entries.size());
+    spdlog::debug("MinExtraInventory count: {}", minimizedExtraInventory.Entries.size());
 
     for (auto& entry : minimizedExtraInventory.Entries)
     {
@@ -310,18 +310,18 @@ Inventory TESObjectREFR::GetInventory() const noexcept
         duplicate->Count = 0;
     }
 
-    spdlog::info("MinExtraInventory count after: {}", minimizedExtraInventory.Entries.size());
+    spdlog::debug("MinExtraInventory count after: {}", minimizedExtraInventory.Entries.size());
 
     inventory.Entries.insert(inventory.Entries.end(), minimizedExtraInventory.Entries.begin(),
                                  minimizedExtraInventory.Entries.end());
 
-    spdlog::info("Inventory count before: {}", inventory.Entries.size());
+    spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
     inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), inventory.Entries.end(),
                                            [](const Inventory::Entry& entry) { return entry.Count == 0; }),
                             inventory.Entries.end());
 
-    spdlog::info("Inventory count after: {}", inventory.Entries.size());
+    spdlog::debug("Inventory count after: {}", inventory.Entries.size());
 
     return inventory;
 }
@@ -468,7 +468,7 @@ void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
     }
 
     AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
-    spdlog::info("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
+    spdlog::debug("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
                  pExtraDataList ? (int)pExtraDataList->GetCount() : -1, arEntry.Count);
 }
 
