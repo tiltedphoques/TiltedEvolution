@@ -207,7 +207,7 @@ Inventory Actor::GetInventory() const noexcept
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
     modSystem.GetServerModId(ammoId, inventory.Ammo);
 
-    inventory.IsWeaponDrawn = actorState.IsWeaponDrawn();
+    inventory.IsWeaponDrawn = actorState.IsWeaponFullyDrawn();
 
     return inventory;
 }
