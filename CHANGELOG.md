@@ -1,3 +1,16 @@
+## [1.18.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.18.0...v1.18.1) (2022-03-09)
+
+
+### Bug Fixes
+
+* w2s component view inline bug ([03975c7](https://github.com/tiltedphoques/TiltedEvolution/commit/03975c70ab4ca24ced1066482643404cb65d13f5))
+* weapon draw sync ([d764a31](https://github.com/tiltedphoques/TiltedEvolution/commit/d764a31baaab762263c8497fb428a6b4318c05ab))
+
+
+### Reverts
+
+* Revert "feat: flush out npc idles" ([f7ab817](https://github.com/tiltedphoques/TiltedEvolution/commit/f7ab8178b15e93ee29a488a5f6b125e60a5bad55))
+
 # [1.18.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.17.0...v1.18.0) (2022-03-09)
 
 
