@@ -19,15 +19,18 @@ public:
     }
 
     virtual void DrawWithin() = 0;
+    bool DoWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
     void CreateWindowX(HINSTANCE hs);
     void InitD3D();
     void CreateShaders();
+    void Resize();
 
 private:
     bool m_bIsRunning = true;
     bool m_bDrawRectangle = true;
+    bool m_bResizing = false;
 
     struct ShaderData {
         ID3D11Buffer* vertexBuffer = nullptr;

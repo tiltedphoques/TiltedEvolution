@@ -31,6 +31,7 @@ target("UiProcess")
 
 target("UITestRunner")
     set_kind("binary")
+    add_headerfiles("ui_test_runner/*.h", {prefixdir = "UITestRunner"})
     add_files("ui_test_runner/*.cpp")
     add_deps("TiltedUi")
     add_defines("RUNNER_PATH=LR\"($(scriptdir))\"")

@@ -7,11 +7,42 @@
 
 static constexpr wchar_t kWindowTitle[] = L"UITestRunner";
 
-static bool global_windowDidResize = false;
-
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    LRESULT result = 0;
+    auto* pSelf = reinterpret_cast<GraphicsRenderer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    if (!pSelf && msg == WM_NCCREATE)
+    {
+        pSelf = reinterpret_cast<GraphicsRenderer*>(((LPCREATESTRUCT)lparam)->lpCreateParams);
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)pSelf);
+    }
+
+    if (msg == WM_NCDESTROY)
+    {
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+        return DefWindowProcW(hwnd, msg, wparam, lparam);
+    }
+
+    if (pSelf)
+    {
+        if (pSelf->DoWndProc(hwnd, msg, wparam, lparam))
+            return 0;
+    }
+
+    return DefWindowProcW(hwnd, msg, wparam, lparam);
+}
+
+GraphicsRenderer::GraphicsRenderer()
+{
+
+}
+
+GraphicsRenderer::~GraphicsRenderer()
+{
+
+}
+
+bool GraphicsRenderer::DoWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
+{
     switch (msg)
     {
     case WM_KEYDOWN:
@@ -27,23 +58,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     }
     case WM_SIZE:
     {
-        global_windowDidResize = true;
+        m_bResizing = true;
         break;
     }
-    default:
-        result = DefWindowProcW(hwnd, msg, wparam, lparam);
     }
-    return result;
-}
 
-GraphicsRenderer::GraphicsRenderer()
-{
-
-}
-
-GraphicsRenderer::~GraphicsRenderer()
-{
-
+    return false;
 }
 
 void GraphicsRenderer::Initialize(HINSTANCE hs) {
@@ -81,7 +101,7 @@ void GraphicsRenderer::CreateWindowX(HINSTANCE hs)
         CW_USEDEFAULT, CW_USEDEFAULT,
         initialWidth,
         initialHeight,
-        0, 0, hs, 0);
+        0, 0, hs, (void*)this);
 
     if (!m_hwnd) {
         MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
@@ -96,7 +116,7 @@ void GraphicsRenderer::InitD3D()
         ID3D11DeviceContext* baseDeviceContext;
         D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
         UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#if defined(DEBUG_BUILD)
+#if defined(DEBUG)
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -287,6 +307,33 @@ void GraphicsRenderer::CreateShaders()
     }
 }
 
+void GraphicsRenderer::Resize() {
+    RECT rc;
+    GetClientRect(m_hwnd, &rc);
+    auto newWidth = rc.right - rc.left;
+    auto newHeight = rc.bottom - rc.top;
+    if (!newWidth || !newHeight)
+        return;
+
+    m_pDeviceContext->OMSetRenderTargets(0, 0, 0);
+    m_pd3d11FrameBufferView->Release();
+
+    DXGI_SWAP_CHAIN_DESC newMode{};
+    m_pSwapchain->GetDesc(&newMode);
+
+    HRESULT res = m_pSwapchain->ResizeBuffers(0, newWidth, newHeight, newMode.BufferDesc.Format, newMode.Flags);
+    assert(SUCCEEDED(res));
+
+    ID3D11Texture2D* d3d11FrameBuffer;
+    res = m_pSwapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&d3d11FrameBuffer);
+    assert(SUCCEEDED(res));
+
+    res = m_pDevice->CreateRenderTargetView(d3d11FrameBuffer, NULL,
+        &m_pd3d11FrameBufferView);
+    assert(SUCCEEDED(res));
+    d3d11FrameBuffer->Release();
+}
+
 bool GraphicsRenderer::Run()
 {
     MSG msg = {};
@@ -298,24 +345,9 @@ bool GraphicsRenderer::Run()
         DispatchMessageW(&msg);
     }
 
-    if (global_windowDidResize)
-    {
-        m_pDeviceContext->OMSetRenderTargets(0, 0, 0);
-        m_pd3d11FrameBufferView->Release();
-
-        HRESULT res = m_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
-        assert(SUCCEEDED(res));
-
-        ID3D11Texture2D* d3d11FrameBuffer;
-        res = m_pSwapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&d3d11FrameBuffer);
-        assert(SUCCEEDED(res));
-
-        res = m_pDevice->CreateRenderTargetView(d3d11FrameBuffer, NULL,
-            &m_pd3d11FrameBufferView);
-        assert(SUCCEEDED(res));
-        d3d11FrameBuffer->Release();
-
-        global_windowDidResize = false;
+    if (m_bResizing) {
+        Resize();
+        m_bResizing = false;
     }
 
     FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
@@ -326,6 +358,8 @@ bool GraphicsRenderer::Run()
     D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
     m_pDeviceContext->RSSetViewports(1, &viewport);
 
+    // TODO: for the game we need to push and pop the pipeline, else we might never get stuff drawn!
+    //m_pDeviceContext->OMSetRenderTargets(1, &m_pd3d11FrameBufferView, nullptr);
     DrawWithin();
 
     if (m_bDrawRectangle)

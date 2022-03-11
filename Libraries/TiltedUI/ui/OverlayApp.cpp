@@ -15,6 +15,10 @@ namespace TiltedPhoques
 
     }
 
+    OverlayApp::~OverlayApp() {
+        Shutdown();
+    }
+
     bool OverlayApp::Initialize(const std::string_view acUri) noexcept
     {
         CefMainArgs args(GetModuleHandleW(nullptr));

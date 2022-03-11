@@ -211,6 +211,8 @@ namespace TiltedPhoques
             return;
         }
 
+        // New feature: spaces!
+
         D3D11_SHADER_RESOURCE_VIEW_DESC sharedResourceViewDesc = {};
         sharedResourceViewDesc.Format = textDesc.Format;
         sharedResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;

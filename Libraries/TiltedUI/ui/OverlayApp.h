@@ -21,7 +21,7 @@ namespace TiltedPhoques
         };
 
         explicit OverlayApp(RenderProvider *apRenderProvider, OverlayClient *apCustomClient, std::wstring aProcessName = L"TPProcess.exe") noexcept;
-        virtual ~OverlayApp() = default;
+        virtual ~OverlayApp();
 
         TP_NOCOPYMOVE(OverlayApp);
 
