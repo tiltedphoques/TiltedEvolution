@@ -3,7 +3,7 @@
 #include <Services/InputService.h>
 #include <Services/OverlayService.h>
 
-#include <OverlayApp.hpp>
+#include <OverlayApp.h>
 
 #include <DInputHook.hpp>
 #include <WindowsHook.hpp>

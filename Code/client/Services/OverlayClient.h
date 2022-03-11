@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OverlayClient.hpp"
+#include <OverlayClient.h>
 
 struct TransportService;
 

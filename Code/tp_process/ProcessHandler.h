@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OverlayRenderProcessHandler.hpp>
+#include <OverlayRenderProcessHandler.h>
 
 struct ProcessHandler : TiltedPhoques::OverlayRenderProcessHandler
 {

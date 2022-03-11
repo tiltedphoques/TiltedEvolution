@@ -2,14 +2,15 @@
 
 #include <Services/OverlayService.h>
 
-#include <OverlayApp.hpp>
+#include <OverlayApp.h>
 
 #include <D3D11Hook.hpp>
-#include <OverlayRenderHandlerD3D11.hpp>
+#include <OverlayRenderHandlerD3D11.h>
 
 #include <Systems/RenderSystemD3D11.h>
 
 #include <World.h>
+#include <BSGraphics/BSGraphicsRenderer.h>
 
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
@@ -24,17 +25,19 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
 
     OverlayRenderHandler* Create() override
     {
-        return new OverlayRenderHandlerD3D11(this);
+        auto it = new OverlayRenderHandlerD3D11(this);
+        it->SetVisible(true);
+        return it;
     }
 
-    [[nodiscard]] HWND GetWindow() override
+    HWND GetWindow() override
     {
-        return m_pRenderSystem->GetWindow();
+        return BSGraphics::GetMainWindow()->hWnd;
     }
 
-    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override
+    IDXGISwapChain* GetSwapChain() const noexcept override
     {
-        return m_pRenderSystem->GetSwapChain();
+        return BSGraphics::GetMainWindow()->pSwapChain;
     }
 
 private:
@@ -56,8 +59,7 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
     m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(apRenderSystem);
     m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
 
-    // NULL PATH FOR NOW
-    if (!m_pOverlay->Initialize(""))
+    if (!m_pOverlay->Initialize("http://www.http2demo.io/"))
         spdlog::error("Overlay could not be initialised");
 
     m_pOverlay->GetClient()->Create();
