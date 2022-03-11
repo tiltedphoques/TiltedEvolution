@@ -7,9 +7,6 @@
 
 #include <World.h>
 
-#include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
 #include <Systems/RenderSystemD3D11.h>
 
 #include <Services/OverlayService.h>
@@ -22,19 +19,6 @@ using TiltedPhoques::Debug;
 
 TiltedOnlineApp::TiltedOnlineApp()
 {
-    Debug::CreateConsole();
-
-    auto logPath = TiltedPhoques::GetPath() / "logs";
-
-    std::error_code ec;
-    create_directory(logPath, ec);
-
-    auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
-    auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
-
-    auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{ console, rotatingLogger });
-    set_default_logger(logger);
 }
 
 TiltedOnlineApp::~TiltedOnlineApp() = default;

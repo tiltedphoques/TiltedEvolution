@@ -32,6 +32,8 @@ LRESULT CALLBACK Hook_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
                         const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
 {
+    self->Data.uiAdapter = 1337;
+
     // Append our window name.
     aOSData->pClassName = "Skyrim Together EVO Test";
 

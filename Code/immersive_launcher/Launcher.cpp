@@ -1,4 +1,9 @@
+
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
+
+#define SPDLOG_WCHAR_FILENAMES
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include "TargetConfig.h"
 #include "launcher.h"
@@ -16,11 +21,30 @@
 // These symbols are defined within the client code
 extern void InstallStartHook();
 extern void RunTiltedApp();
-extern void RunTiltedInit(const std::filesystem::path& acGamePath, const TiltedPhoques::String& aExeVersion);
+extern void RunTiltedInit(const std::filesystem::path&, const TiltedPhoques::String&, std::shared_ptr<spdlog::logger>);
 
 namespace launcher
 {
-static LaunchContext* g_context = nullptr;
+namespace
+{
+void CreateLogger()
+{
+    auto logPath = TiltedPhoques::GetPath() / "logs";
+
+    std::error_code ec;
+    create_directory(logPath, ec);
+
+    auto rotatingLogger =
+        std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
+    auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
+
+    auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{console, rotatingLogger});
+    set_default_logger(logger);
+}
+
+LaunchContext* g_context = nullptr;
+} // namespace
 
 LaunchContext* GetLaunchContext()
 {
@@ -47,9 +71,10 @@ int StartUp(int argc, char** argv)
             askSelect = true;
     }
 
-#if (!IS_MASTER)
+    #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
+    CreateLogger();
 
     auto r = GetLastError();
 
@@ -86,7 +111,7 @@ int StartUp(int argc, char** argv)
     InstallStartHook();
     // Initialize all hooks before calling game init
     // TiltedPhoques::Initializer::RunAll();
-    RunTiltedInit(LC->gamePath, LC->Version);
+    RunTiltedInit(LC->gamePath, LC->Version, spdlog::default_logger());
 
     // This shouldn't return until the game is killed
     LC->gameMain();

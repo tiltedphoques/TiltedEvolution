@@ -1,12 +1,15 @@
 
-#include <TiltedOnlinePCH.h>
 #include <TiltedOnlineApp.h>
+#include <TiltedOnlinePCH.h>
 
 std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 
-void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion)
+void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion,
+                   std::shared_ptr<spdlog::logger> aLogPipe)
 {
-    if(!VersionDb::Get().Load(acGamePath, aExeVersion))
+    spdlog::set_default_logger(aLogPipe);
+
+    if (!VersionDb::Get().Load(acGamePath, aExeVersion))
     {
         MessageBoxA(
             NULL,
