@@ -40,7 +40,6 @@ std::string GetCPUName()
         else if (i == 0x80000004)
             memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
     }
-
     return CPUBrandString;
 }
 
@@ -76,7 +75,8 @@ bool TestD3D11Support()
     SelectBestVideocard(pFactory.Get(), videoCards);
 
     ComPtr<IDXGIAdapter1> pAdapter = nullptr;
-    pFactory->EnumAdapters1(videoCards.begin()->second, pAdapter.ReleaseAndGetAddressOf());
+    // the lastt entry of the set contains the desired(best) index.
+    pFactory->EnumAdapters1(videoCards.end()->second, pAdapter.ReleaseAndGetAddressOf());
 
     DXGI_ADAPTER_DESC1 desc{};
     pAdapter->GetDesc1(&desc);
