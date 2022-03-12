@@ -298,6 +298,8 @@ Inventory Actor::GetActorInventory() const noexcept
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
+    spdlog::info("Setting inventory for actor {:X}", formID);
+
     UnEquipAll();
 
     SetInventory(aInventory);

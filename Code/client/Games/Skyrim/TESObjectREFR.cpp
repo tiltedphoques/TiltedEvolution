@@ -330,6 +330,8 @@ thread_local bool g_modifyingInventory = false;
 
 void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
 {
+    spdlog::info("Setting inventory for {:X}", formID);
+
     g_modifyingInventory = true;
 
     RemoveAllItems();
