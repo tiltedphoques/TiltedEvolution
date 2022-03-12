@@ -154,6 +154,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
+    RunWaitingUpdates();
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -894,14 +895,27 @@ void CharacterService::RunRemoteUpdates() const noexcept
 
         FaceGenSystem::Update(m_world, pActor, faceGenComponent);
     }
+}
+
+void CharacterService::RunWaitingUpdates() const noexcept
+{
+    // TODO: there's a bug here sometimes, WaitingFor3D keeps getting added, SetInventory and others get spammed (#64)
+    // ask cosi for a repro
+    // temporary fix is having a delay between check for waiting
+    static std::chrono::steady_clock::time_point lastWaitingSpawnTime;
+    constexpr auto cDelay= 250ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastWaitingSpawnTime < cDelay)
+        return;
+
+    lastWaitingSpawnTime = now;
 
     auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
 
     StackAllocator<1 << 13> allocator;
     ScopedAllocator _{allocator};
 
-    // TODO: there's a bug here sometimes, WaitingFor3D doesn't get removed, SetInventory and others get spammed
-    // ask cosi for a repro
     Vector<entt::entity> toRemove;
     for (auto entity : waitingView)
     {

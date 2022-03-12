@@ -70,6 +70,7 @@ private:
     void RunRemoteUpdates() const noexcept;
     void RunFactionsUpdates() const noexcept;
     void RunSpawnUpdates() const noexcept;
+    void RunWaitingUpdates() const noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
