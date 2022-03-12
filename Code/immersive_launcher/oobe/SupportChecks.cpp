@@ -15,6 +15,10 @@
 
 #include "SupportChecks.h"
 
+// TODO(Force): Try refactoring this
+// into 
+UINT g_SuggestedDeviceByLauncher = 0;
+
 namespace oobe
 {
 namespace
@@ -75,8 +79,9 @@ bool TestD3D11Support()
     SelectBestVideocard(pFactory.Get(), videoCards);
 
     ComPtr<IDXGIAdapter1> pAdapter = nullptr;
-    // the lastt entry of the set contains the desired(best) index.
-    pFactory->EnumAdapters1(videoCards.rbegin()->second, pAdapter.ReleaseAndGetAddressOf());
+    // the last entry of the set contains the desired(best) index.
+    g_SuggestedDeviceByLauncher = videoCards.rbegin()->second;
+    pFactory->EnumAdapters1(g_SuggestedDeviceByLauncher, pAdapter.ReleaseAndGetAddressOf());
 
     DXGI_ADAPTER_DESC1 desc{};
     pAdapter->GetDesc1(&desc);

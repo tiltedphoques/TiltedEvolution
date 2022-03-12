@@ -6,6 +6,8 @@
 
 #include "BSGraphics/BSGraphicsRenderer.h"
 
+extern UINT g_SuggestedDeviceByLauncher;
+
 namespace BSGraphics
 {
 static RenderSystemD3D11* g_sRs = nullptr;
@@ -32,11 +34,9 @@ LRESULT CALLBACK Hook_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
                         const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
 {
-    self->Data.uiAdapter = 1337;
-
-    // Append our window name.
+    // NOTE(Force): This forces the game to use the UI suggested by the launcher.
+    aOSData->uiAdapter = g_SuggestedDeviceByLauncher;
     aOSData->pClassName = "Skyrim Together EVO Test";
-
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;
 
