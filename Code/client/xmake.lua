@@ -37,8 +37,9 @@ target(name)
         add_deps("FalloutEncoding")
     end
     add_deps(
-        "UiProcess",
+        "Base",
         "Common",
+        "UiProcess",
         "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",

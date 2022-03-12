@@ -27,6 +27,7 @@
 #include <cstdint>
 
 // TiltedCore
+#include <TiltedCore/AllocatorSymbolOverride.hpp>
 #include <TiltedCore/StackAllocator.hpp>
 #include <TiltedCore/ScratchAllocator.hpp>
 #include <TiltedCore/Filesystem.hpp>

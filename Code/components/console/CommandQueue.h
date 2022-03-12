@@ -2,7 +2,7 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <base/fast_queue.hpp>
+#include <base/container/fast_queue.h>
 #include <console/ArgStack.h>
 #include <console/Command.h>
 
