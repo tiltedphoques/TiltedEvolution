@@ -293,6 +293,10 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
     pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
+
+    const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
+    if (health <= 0.f)
+        pActor->Kill();
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept

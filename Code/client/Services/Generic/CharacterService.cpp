@@ -125,16 +125,8 @@ void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const e
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
 
+    // TODO: why check for npc?
     auto* const pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
-
-    auto* pExtra = static_cast<ExtraLeveledCreature*>(pActor->GetExtraDataList()->GetByType(ExtraData::LeveledCreature));
-
-    auto* const pOwner = pNpc->actorData.owner;
-    if (pOwner)
-    {
-        //    spdlog::info("\tOwner: type {}, id {:X}", static_cast<uint32_t>(pOwner->formType), pOwner->formID);
-    }
-
     if(pNpc)
     {
         RequestServerAssignment(aRegistry, aEntity);
@@ -158,8 +150,6 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
 {
-    //m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
-
     // Go through all the forms that were previously detected
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
@@ -460,8 +450,8 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acActionEvent.ActorId, view](entt::entity entity)
     {
-            return view.get<FormIdComponent>(entity).Id == id;
-        });
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
 
     if(itor != std::end(view))
     {
@@ -560,6 +550,337 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
 
         m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
+}
+
+void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
+{
+    ModSystem& modSystem = m_world.Get().GetModSystem();
+
+    uint32_t shooterFormId = acEvent.ShooterID;
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == shooterFormId;
+    });
+
+    if (shooterEntityIt == std::end(view))
+        return;
+
+    LocalComponent& localComponent = view.get<LocalComponent>(*shooterEntityIt);
+
+    ProjectileLaunchRequest request{};
+
+    request.OriginX = acEvent.Origin.x;
+    request.OriginY = acEvent.Origin.y;
+    request.OriginZ = acEvent.Origin.z;
+
+    modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
+    modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
+    modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
+
+    request.ShooterID = localComponent.Id;
+
+    request.ZAngle = acEvent.ZAngle;
+    request.XAngle = acEvent.XAngle;
+    request.YAngle = acEvent.YAngle;
+
+    modSystem.GetServerModId(acEvent.ParentCellID, request.ParentCellID);
+    modSystem.GetServerModId(acEvent.SpellID, request.SpellID);
+
+    request.CastingSource = acEvent.CastingSource;
+
+    request.Area = acEvent.Area;
+    request.Power = acEvent.Power;
+    request.Scale = acEvent.Scale;
+
+    request.AlwaysHit = acEvent.AlwaysHit;
+    request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
+    request.AutoAim = acEvent.AutoAim;
+    request.DeferInitialization = acEvent.DeferInitialization;
+    request.ForceConeOfFire = acEvent.ForceConeOfFire;
+
+#if TP_SKYRIM64
+    request.UnkBool1 = acEvent.UnkBool1;
+    request.UnkBool2 = acEvent.UnkBool2;
+#else
+    request.ConeOfFireRadiusMult = acEvent.ConeOfFireRadiusMult;
+    request.Tracer = acEvent.Tracer;
+    request.IntentionalMiss = acEvent.IntentionalMiss;
+    request.Allow3D = acEvent.Allow3D;
+    request.Penetrates = acEvent.Penetrates;
+    request.IgnoreNearCollisions = acEvent.IgnoreNearCollisions;
+#endif
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
+{
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterID);
+        return;
+    }
+
+    FormIdComponent formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+
+#if TP_SKYRIM64
+    Projectile::LaunchData launchData{};
+#else
+    ProjectileLaunchData launchData{};
+#endif
+
+    launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
+
+    launchData.Origin.x = acMessage.OriginX;
+    launchData.Origin.y = acMessage.OriginY;
+    launchData.Origin.z = acMessage.OriginZ;
+
+    const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
+    launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
+
+#if TP_SKYRIM64
+    const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
+    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+#endif
+
+#if TP_FALLOUT4
+    Actor* pShooter = RTTI_CAST(launchData.pShooter, TESObjectREFR, Actor);
+    pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
+#endif
+
+    const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
+    launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
+
+    launchData.fZAngle = acMessage.ZAngle;
+    launchData.fXAngle = acMessage.XAngle;
+    launchData.fYAngle = acMessage.YAngle;
+
+    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = RTTI_CAST(TESForm::GetById(cParentCellId), TESForm, TESObjectCELL);
+
+    const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
+    launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+
+    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
+
+    launchData.iArea = acMessage.Area;
+    launchData.fPower = acMessage.Power;
+    launchData.fScale = acMessage.Scale;
+
+    launchData.bAlwaysHit = acMessage.AlwaysHit;
+    launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
+    launchData.bAutoAim = acMessage.AutoAim;
+
+    launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
+
+    // always use origin, or it'll recalculate it and it desyncs
+    launchData.bUseOrigin = true;
+
+#if TP_SKYRIM64
+    launchData.bUnkBool1 = acMessage.UnkBool1;
+    launchData.bUnkBool2 = acMessage.UnkBool2;
+#else
+    launchData.eTargetLimb = -1;
+
+    launchData.fConeOfFireRadiusMult = acMessage.ConeOfFireRadiusMult;
+    launchData.bTracer = acMessage.Tracer;
+    launchData.bIntentionalMiss = acMessage.IntentionalMiss;
+    launchData.bAllow3D = acMessage.Allow3D;
+    launchData.bPenetrates = acMessage.Penetrates;
+    launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
+#endif
+
+    BSPointerHandle<Projectile> result;
+
+    Projectile::Launch(&result, launchData);
+}
+
+void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
+{
+#if TP_SKYRIM64
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto riderIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.RiderID, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (riderIt == std::end(view))
+    {
+        spdlog::warn("Rider not found, form id: {:X}", acEvent.RiderID);
+        return;
+    }
+
+    const entt::entity cRiderEntity = *riderIt;
+
+    std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
+    if (!riderServerIdRes.has_value())
+        return;
+
+    const auto mountIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.MountID, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (mountIt == std::end(view))
+    {
+        spdlog::warn("Mount not found, form id: {:X}", acEvent.MountID);
+        return;
+    }
+
+    const entt::entity cMountEntity = *mountIt;
+
+    std::optional<uint32_t> mountServerIdRes = Utils::GetServerId(cMountEntity);
+    if (!mountServerIdRes.has_value())
+        return;
+
+    if (m_world.try_get<RemoteComponent>(cMountEntity))
+    {
+        const TESForm* pMountForm = TESForm::GetById(acEvent.MountID);
+        Actor* pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+        pMount->GetExtension()->SetRemote(false);
+
+        m_world.emplace<LocalComponent>(cMountEntity, mountServerIdRes.value());
+        m_world.emplace<LocalAnimationComponent>(cMountEntity);
+        m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+                       FaceGenComponent, CacheComponent, WaitingFor3D>(cMountEntity);
+
+        RequestOwnershipClaim request;
+        request.ServerId = mountServerIdRes.value();
+
+        m_transport.Send(request);
+    }
+
+    MountRequest request;
+    request.MountId = mountServerIdRes.value();
+    request.RiderId = riderServerIdRes.value();
+
+    m_transport.Send(request);
+#endif
+}
+
+void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcept
+{
+#if TP_SKYRIM64
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+
+    const auto riderIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.RiderId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (riderIt == std::end(remoteView))
+    {
+        spdlog::warn("Rider with remote id {:X} not found.", acMessage.RiderId);
+        return;
+    }
+
+    auto riderFormIdComponent = remoteView.get<FormIdComponent>(*riderIt);
+    TESForm* pRiderForm = TESForm::GetById(riderFormIdComponent.Id);
+    Actor* pRider = RTTI_CAST(pRiderForm, TESForm, Actor);
+
+    Actor* pMount = nullptr;
+
+    auto formView = m_world.view<FormIdComponent>();
+    for (auto entity : formView)
+    {
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
+            continue;
+
+        uint32_t serverId = serverIdRes.value();
+
+        if (serverId == acMessage.MountId)
+        {
+            auto mountFormIdComponent = formView.get<FormIdComponent>(entity);
+
+            if (m_world.all_of<LocalComponent>(entity))
+            {
+                m_world.remove<LocalAnimationComponent, LocalComponent>(entity);
+                m_world.emplace_or_replace<RemoteComponent>(entity, acMessage.MountId, mountFormIdComponent.Id);
+            }
+
+            TESForm* pMountForm = TESForm::GetById(mountFormIdComponent.Id);
+            pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+            pMount->GetExtension()->SetRemote(true);
+
+            InterpolationSystem::Setup(m_world, entity);
+            AnimationSystem::Setup(m_world, entity);
+
+            break;
+        }
+    }
+
+    pRider->InitiateMountPackage(pMount);
+#endif
+}
+
+void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto actorIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.ActorId, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (actorIt == std::end(view))
+        return;
+
+    const entt::entity cActorEntity = *actorIt;
+
+    std::optional<uint32_t> actorServerIdRes = Utils::GetServerId(cActorEntity);
+    if (!actorServerIdRes.has_value())
+        return;
+
+    NewPackageRequest request;
+    request.ActorId = actorServerIdRes.value();
+    if (!m_world.GetModSystem().GetServerModId(acEvent.PackageId, request.PackageId.ModId, request.PackageId.BaseId))
+        return;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ActorId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for package with remote id {:X} not found.", acMessage.ActorId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+
+    const uint32_t cPackageFormId = World::Get().GetModSystem().GetGameId(acMessage.PackageId);
+    const TESForm* pPackageForm = TESForm::GetById(cPackageFormId);
+    if (!pPackageForm)
+    {
+        spdlog::warn("Actor package not found, base id: {:X}, mod id: {:X}", acMessage.PackageId.BaseId,
+                     acMessage.PackageId.ModId);
+        return;
+    }
+
+    TESPackage* pPackage = RTTI_CAST(pPackageForm, TESForm, TESPackage);
+
+    pActor->SetPackage(pPackage);
 }
 
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1006,335 +1327,3 @@ void CharacterService::RunSpawnUpdates() const noexcept
         }
     }
 }
-
-void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
-{
-    ModSystem& modSystem = m_world.Get().GetModSystem();
-
-    uint32_t shooterFormId = acEvent.ShooterID;
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == shooterFormId;
-    });
-
-    if (shooterEntityIt == std::end(view))
-        return;
-
-    LocalComponent& localComponent = view.get<LocalComponent>(*shooterEntityIt);
-
-    ProjectileLaunchRequest request{};
-
-    request.OriginX = acEvent.Origin.x;
-    request.OriginY = acEvent.Origin.y;
-    request.OriginZ = acEvent.Origin.z;
-
-    modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
-    modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
-    modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
-
-    request.ShooterID = localComponent.Id;
-
-    request.ZAngle = acEvent.ZAngle;
-    request.XAngle = acEvent.XAngle;
-    request.YAngle = acEvent.YAngle;
-
-    modSystem.GetServerModId(acEvent.ParentCellID, request.ParentCellID);
-    modSystem.GetServerModId(acEvent.SpellID, request.SpellID);
-
-    request.CastingSource = acEvent.CastingSource;
-
-    request.Area = acEvent.Area;
-    request.Power = acEvent.Power;
-    request.Scale = acEvent.Scale;
-
-    request.AlwaysHit = acEvent.AlwaysHit;
-    request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
-    request.AutoAim = acEvent.AutoAim;
-    request.DeferInitialization = acEvent.DeferInitialization;
-    request.ForceConeOfFire = acEvent.ForceConeOfFire;
-
-#if TP_SKYRIM64
-    request.UnkBool1 = acEvent.UnkBool1;
-    request.UnkBool2 = acEvent.UnkBool2;
-#else
-    request.ConeOfFireRadiusMult = acEvent.ConeOfFireRadiusMult;
-    request.Tracer = acEvent.Tracer;
-    request.IntentionalMiss = acEvent.IntentionalMiss;
-    request.Allow3D = acEvent.Allow3D;
-    request.Penetrates = acEvent.Penetrates;
-    request.IgnoreNearCollisions = acEvent.IgnoreNearCollisions;
-#endif
-
-    m_transport.Send(request);
-}
-
-void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
-{
-    ModSystem& modSystem = World::Get().GetModSystem();
-
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterID);
-        return;
-    }
-
-    FormIdComponent formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-
-#if TP_SKYRIM64
-    Projectile::LaunchData launchData{};
-#else
-    ProjectileLaunchData launchData{};
-#endif
-
-    launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
-
-    launchData.Origin.x = acMessage.OriginX;
-    launchData.Origin.y = acMessage.OriginY;
-    launchData.Origin.z = acMessage.OriginZ;
-
-    const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
-    launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
-
-#if TP_SKYRIM64
-    const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
-    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
-#endif
-
-#if TP_FALLOUT4
-    Actor* pShooter = RTTI_CAST(launchData.pShooter, TESObjectREFR, Actor);
-    pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
-#endif
-
-    const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
-    launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
-
-    launchData.fZAngle = acMessage.ZAngle;
-    launchData.fXAngle = acMessage.XAngle;
-    launchData.fYAngle = acMessage.YAngle;
-
-    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = RTTI_CAST(TESForm::GetById(cParentCellId), TESForm, TESObjectCELL);
-
-    const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
-    launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
-
-    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
-
-    launchData.iArea = acMessage.Area;
-    launchData.fPower = acMessage.Power;
-    launchData.fScale = acMessage.Scale;
-
-    launchData.bAlwaysHit = acMessage.AlwaysHit;
-    launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
-    launchData.bAutoAim = acMessage.AutoAim;
-
-    launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
-
-    // always use origin, or it'll recalculate it and it desyncs
-    launchData.bUseOrigin = true;
-
-#if TP_SKYRIM64
-    launchData.bUnkBool1 = acMessage.UnkBool1;
-    launchData.bUnkBool2 = acMessage.UnkBool2;
-#else
-    launchData.eTargetLimb = -1;
-
-    launchData.fConeOfFireRadiusMult = acMessage.ConeOfFireRadiusMult;
-    launchData.bTracer = acMessage.Tracer;
-    launchData.bIntentionalMiss = acMessage.IntentionalMiss;
-    launchData.bAllow3D = acMessage.Allow3D;
-    launchData.bPenetrates = acMessage.Penetrates;
-    launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
-#endif
-
-    BSPointerHandle<Projectile> result;
-
-    Projectile::Launch(&result, launchData);
-}
-
-void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
-{
-#if TP_SKYRIM64
-    auto view = m_world.view<FormIdComponent>();
-
-    const auto riderIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.RiderID, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
-
-    if (riderIt == std::end(view))
-    {
-        spdlog::warn("Rider not found, form id: {:X}", acEvent.RiderID);
-        return;
-    }
-
-    const entt::entity cRiderEntity = *riderIt;
-
-    std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
-    if (!riderServerIdRes.has_value())
-        return;
-
-    const auto mountIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.MountID, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
-
-    if (mountIt == std::end(view))
-    {
-        spdlog::warn("Mount not found, form id: {:X}", acEvent.MountID);
-        return;
-    }
-
-    const entt::entity cMountEntity = *mountIt;
-
-    std::optional<uint32_t> mountServerIdRes = Utils::GetServerId(cMountEntity);
-    if (!mountServerIdRes.has_value())
-        return;
-
-    if (m_world.try_get<RemoteComponent>(cMountEntity))
-    {
-        const TESForm* pMountForm = TESForm::GetById(acEvent.MountID);
-        Actor* pMount = RTTI_CAST(pMountForm, TESForm, Actor);
-        pMount->GetExtension()->SetRemote(false);
-
-        m_world.emplace<LocalComponent>(cMountEntity, mountServerIdRes.value());
-        m_world.emplace<LocalAnimationComponent>(cMountEntity);
-        m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                       FaceGenComponent, CacheComponent, WaitingFor3D>(cMountEntity);
-
-        RequestOwnershipClaim request;
-        request.ServerId = mountServerIdRes.value();
-
-        m_transport.Send(request);
-    }
-
-    MountRequest request;
-    request.MountId = mountServerIdRes.value();
-    request.RiderId = riderServerIdRes.value();
-
-    m_transport.Send(request);
-#endif
-}
-
-void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcept
-{
-#if TP_SKYRIM64
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-
-    const auto riderIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.RiderId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (riderIt == std::end(remoteView))
-    {
-        spdlog::warn("Rider with remote id {:X} not found.", acMessage.RiderId);
-        return;
-    }
-
-    auto riderFormIdComponent = remoteView.get<FormIdComponent>(*riderIt);
-    TESForm* pRiderForm = TESForm::GetById(riderFormIdComponent.Id);
-    Actor* pRider = RTTI_CAST(pRiderForm, TESForm, Actor);
-
-    Actor* pMount = nullptr;
-
-    auto formView = m_world.view<FormIdComponent>();
-    for (auto entity : formView)
-    {
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
-
-        uint32_t serverId = serverIdRes.value();
-
-        if (serverId == acMessage.MountId)
-        {
-            auto mountFormIdComponent = formView.get<FormIdComponent>(entity);
-
-            if (m_world.all_of<LocalComponent>(entity))
-            {
-                m_world.remove<LocalAnimationComponent, LocalComponent>(entity);
-                m_world.emplace_or_replace<RemoteComponent>(entity, acMessage.MountId, mountFormIdComponent.Id);
-            }
-
-            TESForm* pMountForm = TESForm::GetById(mountFormIdComponent.Id);
-            pMount = RTTI_CAST(pMountForm, TESForm, Actor);
-            pMount->GetExtension()->SetRemote(true);
-
-            InterpolationSystem::Setup(m_world, entity);
-            AnimationSystem::Setup(m_world, entity);
-
-            break;
-        }
-    }
-
-    pRider->InitiateMountPackage(pMount);
-#endif
-}
-
-void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept
-{
-    if (!m_transport.IsConnected())
-        return;
-
-    auto view = m_world.view<FormIdComponent>();
-
-    const auto actorIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.ActorId, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
-
-    if (actorIt == std::end(view))
-        return;
-
-    const entt::entity cActorEntity = *actorIt;
-
-    std::optional<uint32_t> actorServerIdRes = Utils::GetServerId(cActorEntity);
-    if (!actorServerIdRes.has_value())
-        return;
-
-    NewPackageRequest request;
-    request.ActorId = actorServerIdRes.value();
-    if (!m_world.GetModSystem().GetServerModId(acEvent.PackageId, request.PackageId.ModId, request.PackageId.BaseId))
-        return;
-
-    m_transport.Send(request);
-}
-
-void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept
-{
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ActorId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Actor for package with remote id {:X} not found.", acMessage.ActorId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-
-    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-    const uint32_t cPackageFormId = World::Get().GetModSystem().GetGameId(acMessage.PackageId);
-    const TESForm* pPackageForm = TESForm::GetById(cPackageFormId);
-    if (!pPackageForm)
-    {
-        spdlog::warn("Actor package not found, base id: {:X}, mod id: {:X}", acMessage.PackageId.BaseId,
-                     acMessage.PackageId.ModId);
-        return;
-    }
-
-    TESPackage* pPackage = RTTI_CAST(pPackageForm, TESForm, TESPackage);
-
-    pActor->SetPackage(pPackage);
-}
-
