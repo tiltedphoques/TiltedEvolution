@@ -77,7 +77,8 @@ static void UnfreezeMenu(IMenu* apEntry)
 }
 
 static constexpr const char* kAllowList[] = {
-    "Console", "Journal Menu", "TweenMenu", "MagicMenu", "StatsMenu", "InventoryMenu", "MessageBoxMenu",
+    "Console",       "Journal Menu",   "TweenMenu",     "MagicMenu", "StatsMenu",
+    "InventoryMenu", "MessageBoxMenu", "Tutorial Menu", "ContainerMenu"
     //"MapMenu", // MapMenu is disabled till we find a proper fix for first person.
 };
 
@@ -85,12 +86,14 @@ static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
-    if (apMenu && World::Get()
-                      .GetTransport()
-                      .IsConnected() /*TODO(Force): Maybe consider some souls like option for singleplayer*/)
+    if (apMenu
+#if 1
+        && World::Get().GetTransport().IsConnected()
+#endif
+        /*TODO(Force): Maybe consider some souls like option for singleplayer*/)
     {
 #if 0
-        if (auto* pName = apSelf->LookupMenuNameByInstance(apEntry))
+        if (auto* pName = apSelf->LookupMenuNameByInstance(apMenu))
         {
             spdlog::info("Menu requested {}", pName->AsAscii());
         }

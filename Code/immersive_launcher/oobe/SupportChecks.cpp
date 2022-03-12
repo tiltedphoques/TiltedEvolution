@@ -76,7 +76,7 @@ bool TestD3D11Support()
 
     ComPtr<IDXGIAdapter1> pAdapter = nullptr;
     // the lastt entry of the set contains the desired(best) index.
-    pFactory->EnumAdapters1(videoCards.end()->second, pAdapter.ReleaseAndGetAddressOf());
+    pFactory->EnumAdapters1(videoCards.rbegin()->second, pAdapter.ReleaseAndGetAddressOf());
 
     DXGI_ADAPTER_DESC1 desc{};
     pAdapter->GetDesc1(&desc);
