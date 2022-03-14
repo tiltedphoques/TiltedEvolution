@@ -156,17 +156,17 @@ void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* a
 {
     auto& modSystem = World::Get().GetModSystem();
 
-    if (ExtraCount* pExtraCount = (ExtraCount*)apExtraDataList->GetByType(ExtraData::Count))
+    if (ExtraCount* pExtraCount = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Count), BSExtraData, ExtraCount))
     {
         arEntry.Count = pExtraCount->count;
     }
 
-    if (ExtraCharge* pExtraCharge = (ExtraCharge*)apExtraDataList->GetByType(ExtraData::Charge))
+    if (ExtraCharge* pExtraCharge = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Charge), BSExtraData, ExtraCharge))
     {
         arEntry.ExtraCharge = pExtraCharge->fCharge;
     }
 
-    if (ExtraEnchantment* pExtraEnchantment = (ExtraEnchantment*)apExtraDataList->GetByType(ExtraData::Enchantment))
+    if (ExtraEnchantment* pExtraEnchantment = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Enchantment), BSExtraData, ExtraEnchantment))
     {
         TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
 
@@ -197,24 +197,27 @@ void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* a
         arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
     }
 
-    if (ExtraHealth* pExtraHealth = (ExtraHealth*)apExtraDataList->GetByType(ExtraData::Health))
+    if (ExtraHealth* pExtraHealth = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Health), BSExtraData, ExtraHealth))
     {
         arEntry.ExtraHealth = pExtraHealth->fHealth;
     }
 
-    if (ExtraPoison* pExtraPoison = (ExtraPoison*)apExtraDataList->GetByType(ExtraData::Poison))
+    if (ExtraPoison* pExtraPoison = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Poison), BSExtraData, ExtraPoison))
     {
         TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
-        modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
-        arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+        if (pExtraPoison)
+        {
+            modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
+            arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+        }
     }
 
-    if (ExtraSoul* pExtraSoul = (ExtraSoul*)apExtraDataList->GetByType(ExtraData::Soul))
+    if (ExtraSoul* pExtraSoul = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Soul), BSExtraData, ExtraSoul))
     {
         arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
     }
 
-    if (ExtraTextDisplayData* pExtraTextDisplayData = (ExtraTextDisplayData*)apExtraDataList->GetByType(ExtraData::TextDisplayData))
+    if (ExtraTextDisplayData* pExtraTextDisplayData = RTTI_CAST(apExtraDataList->GetByType(ExtraData::TextDisplayData), BSExtraData, ExtraTextDisplayData))
     {
         if (pExtraTextDisplayData->DisplayName)
             arEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
@@ -337,7 +340,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
 thread_local bool g_modifyingInventory = false;
 
-void TESObjectREFR::SetInventory(Inventory& aInventory) noexcept
+void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for {:X}", formID);
 

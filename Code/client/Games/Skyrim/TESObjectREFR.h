@@ -187,7 +187,7 @@ struct TESObjectREFR : TESForm
     void EnableImpl() noexcept;
 
     Inventory GetInventory() const noexcept;
-    void SetInventory(Inventory& acContainer) noexcept;
+    void SetInventory(const Inventory& acContainer) noexcept;
 
     void AddItem(const Inventory::Entry& arEntry) noexcept;
 
