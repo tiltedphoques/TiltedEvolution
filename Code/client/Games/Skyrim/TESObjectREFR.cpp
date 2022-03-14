@@ -324,6 +324,8 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         Memory::Delete(pExtraDataList);
         pExtraDataList = nullptr;
     }
+
+    return pExtraDataList;
 }
 
 Inventory TESObjectREFR::GetInventory() const noexcept
@@ -435,6 +437,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
+// TODO: replace with ScopedOverride
 thread_local bool g_modifyingInventory = false;
 
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
