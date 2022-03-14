@@ -152,6 +152,80 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
+void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) const noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    if (ExtraCount* pExtraCount = (ExtraCount*)apExtraDataList->GetByType(ExtraData::Count))
+    {
+        arEntry.Count = pExtraCount->count;
+    }
+
+    if (ExtraCharge* pExtraCharge = (ExtraCharge*)apExtraDataList->GetByType(ExtraData::Charge))
+    {
+        arEntry.ExtraCharge = pExtraCharge->fCharge;
+    }
+
+    if (ExtraEnchantment* pExtraEnchantment = (ExtraEnchantment*)apExtraDataList->GetByType(ExtraData::Enchantment))
+    {
+        TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
+
+        modSystem.GetServerModId(pExtraEnchantment->pEnchantment->formID, arEntry.ExtraEnchantId);
+
+        if (pExtraEnchantment->pEnchantment->formID & 0xFF000000)
+        {
+            for (EffectItem* pEffectItem : pExtraEnchantment->pEnchantment->listOfEffects)
+            {
+                TP_ASSERT(pEffectItem, "pEffectItem is null.");
+                if (!pEffectItem)
+                    continue;
+
+                Inventory::EffectItem effect;
+                effect.Magnitude = pEffectItem->data.fMagnitude;
+                effect.Area = pEffectItem->data.iArea;
+                effect.Duration = pEffectItem->data.iDuration;
+                effect.RawCost = pEffectItem->fRawCost;
+                modSystem.GetServerModId(pEffectItem->pEffectSetting->formID, effect.EffectId);
+                arEntry.EnchantData.Effects.push_back(effect);
+            }
+
+            uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+            arEntry.EnchantData.IsWeapon = TESForm::GetById(objectId)->formType == FormType::Weapon;
+        }
+
+        arEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
+        arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
+    }
+
+    if (ExtraHealth* pExtraHealth = (ExtraHealth*)apExtraDataList->GetByType(ExtraData::Health))
+    {
+        arEntry.ExtraHealth = pExtraHealth->fHealth;
+    }
+
+    if (ExtraPoison* pExtraPoison = (ExtraPoison*)apExtraDataList->GetByType(ExtraData::Poison))
+    {
+        TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
+        modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
+        arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+    }
+
+    if (ExtraSoul* pExtraSoul = (ExtraSoul*)apExtraDataList->GetByType(ExtraData::Soul))
+    {
+        arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
+    }
+
+    if (ExtraTextDisplayData* pExtraTextDisplayData = (ExtraTextDisplayData*)apExtraDataList->GetByType(ExtraData::TextDisplayData))
+    {
+        if (pExtraTextDisplayData->DisplayName)
+            arEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
+        else
+            arEntry.ExtraTextDisplayName = "";
+    }
+
+    arEntry.ExtraWorn = apExtraDataList->Contains(ExtraData::Worn);
+    arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraData::WornLeft);
+}
+
 Inventory TESObjectREFR::GetInventory() const noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
@@ -197,72 +271,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
             innerEntry.BaseId = entry.BaseId;
             innerEntry.Count = 1;
 
-            if (ExtraCount* pExtraCount = (ExtraCount*)pExtraDataList->GetByType(ExtraData::Count))
-            {
-                innerEntry.Count = pExtraCount->count;
-            }
-
-            if (ExtraCharge* pExtraCharge = (ExtraCharge*)pExtraDataList->GetByType(ExtraData::Charge))
-            {
-                innerEntry.ExtraCharge = pExtraCharge->fCharge;
-            }
-
-            if (ExtraEnchantment* pExtraEnchantment = (ExtraEnchantment*)pExtraDataList->GetByType(ExtraData::Enchantment))
-            {
-                TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
-
-                modSystem.GetServerModId(pExtraEnchantment->pEnchantment->formID, innerEntry.ExtraEnchantId);
-
-                if (pExtraEnchantment->pEnchantment->formID & 0xFF000000)
-                {
-                    for (EffectItem* pEffectItem : pExtraEnchantment->pEnchantment->listOfEffects)
-                    {
-                        TP_ASSERT(pEffectItem, "pEffectItem is null.");
-
-                        Inventory::EffectItem effect;
-                        effect.Magnitude = pEffectItem->data.fMagnitude;
-                        effect.Area = pEffectItem->data.iArea;
-                        effect.Duration = pEffectItem->data.iDuration;
-                        effect.RawCost = pEffectItem->fRawCost;
-                        modSystem.GetServerModId(pEffectItem->pEffectSetting->formID, effect.EffectId);
-                        innerEntry.EnchantData.Effects.push_back(effect);
-                    }
-
-                    uint32_t objectId = modSystem.GetGameId(innerEntry.BaseId);
-                    innerEntry.EnchantData.IsWeapon = TESForm::GetById(objectId)->formType == FormType::Weapon;
-                }
-
-                innerEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
-                innerEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
-            }
-
-            if (ExtraHealth* pExtraHealth = (ExtraHealth*)pExtraDataList->GetByType(ExtraData::Health))
-            {
-                innerEntry.ExtraHealth = pExtraHealth->fHealth;
-            }
-
-            if (ExtraPoison* pExtraPoison = (ExtraPoison*)pExtraDataList->GetByType(ExtraData::Poison))
-            {
-                TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
-                modSystem.GetServerModId(pExtraPoison->pPoison->formID, innerEntry.ExtraPoisonId);
-                innerEntry.ExtraPoisonCount = pExtraPoison->uiCount;
-            }
-
-            if (ExtraSoul* pExtraSoul = (ExtraSoul*)pExtraDataList->GetByType(ExtraData::Soul))
-            {
-                innerEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
-            }
-
-            if (ExtraTextDisplayData* pExtraTextDisplayData = (ExtraTextDisplayData*)pExtraDataList->GetByType(ExtraData::TextDisplayData))
-            {
-                if (pExtraTextDisplayData->DisplayName)
-                    innerEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
-                else
-                    innerEntry.ExtraTextDisplayName = "";
-            }
-
-            innerEntry.ExtraWorn = pExtraDataList->Contains(ExtraData::Worn);
-            innerEntry.ExtraWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+            GetItemExtraData(innerEntry, pExtraDataList);
 
             entry.Count -= innerEntry.Count;
 
