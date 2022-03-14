@@ -116,7 +116,11 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+
+            auto* pItem = RTTI_CAST(TESForm::GetById(0x135B8), TESForm, TESBoundObject);
+            PlayerCharacter::Get()->RemoveItem(pItem, 1, ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
+            //EquipManager::Get()->UnEquip(PlayerCharacter::Get(), pItem, nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
         }
     }
     else

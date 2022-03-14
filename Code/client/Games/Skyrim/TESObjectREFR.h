@@ -17,6 +17,16 @@ struct TESWorldSpace;
 struct TESBoundObject;
 struct TESContainer;
 
+enum class ITEM_REMOVE_REASON
+{
+    kRemove,
+    kSteal,
+    kSelling,
+    kDropping,
+    kStoreInContainer,
+    kStoreInTeammate
+};
+
 struct TESObjectREFR : TESForm
 {
     enum ChangeFlags : uint32_t
@@ -69,7 +79,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_53();
     virtual void sub_54();
     virtual void sub_55();
-    virtual void sub_56();
+    virtual BSPointerHandle<TESObjectREFR> RemoveItem(TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc = nullptr, const NiPoint3* apRotate = nullptr);
     virtual void sub_57();
     virtual void sub_58();
     virtual void sub_59();
