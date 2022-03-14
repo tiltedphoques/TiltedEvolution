@@ -90,6 +90,8 @@ void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChang
     ApplyCachedObjectInventoryChanges();
 }
 
+extern thread_local bool g_modifyingInventory;
+
 void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept
 {
     std::optional<Actor*> actorResult = Utils::GetActorByServerId(acMessage.ActorId);
@@ -97,7 +99,10 @@ void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventor
         return;
 
     Actor* pActor = actorResult.value();
+
+    g_modifyingInventory = true;
     pActor->AddOrRemoveItem(acMessage.Item);
+    g_modifyingInventory = false;
 }
 
 void InventoryService::RunObjectInventoryUpdates() noexcept
