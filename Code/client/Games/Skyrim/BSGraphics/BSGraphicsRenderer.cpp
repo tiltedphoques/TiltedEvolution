@@ -35,7 +35,7 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
                         const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
 {
     // NOTE(Force): This forces the game to use the UI suggested by the launcher.
-    aOSData->uiAdapter = g_SuggestedDeviceByLauncher;
+    //aOSData->uiAdapter = g_SuggestedDeviceByLauncher;
     aOSData->pClassName = "Skyrim Together EVO Test";
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;

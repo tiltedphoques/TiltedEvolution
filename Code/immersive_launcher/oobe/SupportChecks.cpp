@@ -68,6 +68,8 @@ void SelectBestVideocard(IDXGIFactory1 *apFactory, TDeviceSet& aDevices)
 
 bool TestD3D11Support()
 {
+    return true;
+
     ComPtr<IDXGIFactory3> pFactory;
     if (FAILED(CreateDXGIFactory(IID_PPV_ARGS(&pFactory))))
     {
