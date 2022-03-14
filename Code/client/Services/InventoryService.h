@@ -28,7 +28,6 @@ struct InventoryService
 private:
 
     void RunObjectInventoryUpdates() noexcept;
-    void RunCharacterInventoryUpdates() noexcept;
     void RunWeaponStateUpdates() noexcept;
 
     void ApplyCachedObjectInventoryChanges() noexcept;
@@ -40,7 +39,7 @@ private:
 
     // TODO: these two can probably be merged now?
     Set<uint32_t> m_objectsWithInventoryChanges;
-    Set<uint32_t> m_charactersWithInventoryChanges;
+    Map<uint32_t, Inventory> m_charactersWithInventoryChanges;
     Map<GameId, Inventory> m_cachedObjectInventoryChanges;
     Map<uint32_t, Inventory> m_cachedCharacterInventoryChanges;
 

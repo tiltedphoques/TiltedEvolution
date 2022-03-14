@@ -36,10 +36,8 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunObjectInventoryUpdates();
-    RunCharacterInventoryUpdates();
 
     ApplyCachedObjectInventoryChanges();
-    ApplyCachedCharacterInventoryChanges();
 
     RunWeaponStateUpdates();
 }
@@ -49,20 +47,37 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     if (!m_transport.IsConnected())
         return;
 
-    const auto* pForm = TESForm::GetById(acEvent.FormId);
-    if (RTTI_CAST(pForm, TESForm, Actor))
-    {
-        m_charactersWithInventoryChanges.insert(acEvent.FormId);
-    }
-    else
+    const TESForm* pForm = TESForm::GetById(acEvent.FormId);
+    if (!RTTI_CAST(pForm, TESForm, Actor))
     {
         m_objectsWithInventoryChanges.insert(acEvent.FormId);
+        return;
     }
+
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) 
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (iter == std::end(view))
+        return;
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
+    if (!serverIdRes.has_value())
+        return;
+
+    RequestCharacterInventoryChanges request;
+    request.ActorId = serverIdRes.value();
+    request.Item = std::move(acEvent.Item);
+
+    m_transport.Send(request);
 }
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
+    //m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
@@ -77,12 +92,12 @@ void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChang
 
 void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept
 {
-    for (const auto& [id, inventory] : acMessage.Changes)
-    {
-        m_cachedCharacterInventoryChanges[id] = inventory;
-    }
+    std::optional<Actor*> actorResult = Utils::GetActorByServerId(acMessage.ActorId);
+    if (!actorResult.has_value())
+        return;
 
-    ApplyCachedCharacterInventoryChanges();
+    Actor* pActor = actorResult.value();
+    pActor->AddOrRemoveItem(acMessage.Item);
 }
 
 void InventoryService::RunObjectInventoryUpdates() noexcept
@@ -150,53 +165,6 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
         m_transport.Send(message);
 
         m_objectsWithInventoryChanges.clear();
-    }
-}
-
-void InventoryService::RunCharacterInventoryUpdates() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 250ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    if (!m_charactersWithInventoryChanges.empty())
-    {
-        RequestCharacterInventoryChanges message;
-
-        for (const auto formId : m_charactersWithInventoryChanges)
-        {
-            auto view = m_world.view<FormIdComponent>();
-
-            const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
-            {
-                return view.get<FormIdComponent>(entity).Id == formId;
-            });
-
-            if (iter == std::end(view))
-                continue;
-
-            std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
-            if (!serverIdRes.has_value())
-                continue;
-
-            uint32_t serverId = serverIdRes.value();
-
-            const auto* pForm = TESForm::GetById(formId);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                continue;
-
-            message.Changes[serverId] = pActor->GetActorInventory();
-        }
-
-        m_transport.Send(message);
-
-        m_charactersWithInventoryChanges.clear();
     }
 }
 

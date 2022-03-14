@@ -25,7 +25,6 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
 void InventoryService::OnUpdate(const UpdateEvent&) noexcept
 {
     ProcessObjectInventoryChanges();
-    ProcessCharacterInventoryChanges();
 }
 
 void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept
@@ -70,17 +69,14 @@ void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestChar
 
     auto& message = acMessage.Packet;
 
-    for (auto& [id, inventory] : message.Changes)
-    {
-        auto iter = view.find(static_cast<entt::entity>(id));
+    // TODO: update server inventory
 
-        if (iter == std::end(view))
-            continue;
+    NotifyCharacterInventoryChanges notify;
+    notify.ActorId = message.ActorId;
+    notify.Item = message.Item;
 
-        auto& inventoryComponent = view.get<InventoryComponent>(*iter);
-        inventoryComponent.Content = inventory;
-        inventoryComponent.DirtyInventory = true;
-    }
+    const entt::entity cOrigin = static_cast<entt::entity>(message.ActorId);
+    GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
 }
 
 void InventoryService::ProcessObjectInventoryChanges() noexcept
@@ -118,54 +114,6 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
 
             auto& message = messages[pPlayer];
             auto& change = message.Changes[formIdComponent.Id];
-
-            change = inventoryComponent.Content;
-        }
-
-        inventoryComponent.DirtyInventory = false;
-    }
-
-    for (auto [pPlayer, message] : messages)
-    {
-        if (!message.Changes.empty())
-            pPlayer->Send(message);
-    }
-}
-
-void InventoryService::ProcessCharacterInventoryChanges() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, InventoryComponent, OwnerComponent>();
-
-    Map<Player*, NotifyCharacterInventoryChanges> messages;
-
-    for (auto entity : characterView)
-    {
-        auto& inventoryComponent = characterView.get<InventoryComponent>(entity);
-        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
-        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
-
-        if (inventoryComponent.DirtyInventory == false)
-            continue;
-
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (pPlayer == ownerComponent.GetOwner())
-                continue;
-
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
-                continue;
-
-            auto& message = messages[pPlayer];
-            auto& change = message.Changes[World::ToInteger(entity)];
 
             change = inventoryComponent.Content;
         }

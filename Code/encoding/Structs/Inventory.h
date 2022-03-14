@@ -54,7 +54,7 @@ struct Inventory
 
         int32_t ExtraSoulLevel{};
 
-        String ExtraTextDisplayName{};
+        //String ExtraTextDisplayName{};
 
         bool ExtraEnchantRemoveUnequip{};
         bool ExtraWorn{};

@@ -43,7 +43,7 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
 
     Serialization::WriteVarInt(aWriter, ExtraSoulLevel);
 
-    Serialization::WriteString(aWriter, ExtraTextDisplayName);
+    //Serialization::WriteString(aWriter, ExtraTextDisplayName);
 
     Serialization::WriteBool(aWriter, EnchantData.IsWeapon);
     Serialization::WriteBool(aWriter, ExtraEnchantRemoveUnequip);
@@ -75,7 +75,7 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
 
     ExtraSoulLevel = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
-    ExtraTextDisplayName = Serialization::ReadString(aReader);
+    //ExtraTextDisplayName = Serialization::ReadString(aReader);
 
     EnchantData.IsWeapon = Serialization::ReadBool(aReader);
     ExtraEnchantRemoveUnequip = Serialization::ReadBool(aReader);
@@ -97,7 +97,6 @@ bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
 {
     return BaseId == acRhs.BaseId &&
            Count == acRhs.Count &&
-           ExtraTextDisplayName == acRhs.ExtraTextDisplayName &&
            IsExtraDataEquals(acRhs);
 }
 

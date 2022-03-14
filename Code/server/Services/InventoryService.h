@@ -27,7 +27,6 @@ public:
 private:
 
     void ProcessObjectInventoryChanges() noexcept;
-    void ProcessCharacterInventoryChanges() noexcept;
 
     World& m_world;
 

@@ -4,8 +4,6 @@
 #include <TiltedCore/Buffer.hpp>
 #include <Structs/Inventory.h>
 
-using TiltedPhoques::Map;
-
 struct NotifyCharacterInventoryChanges final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyCharacterInventoryChanges;
@@ -19,9 +17,11 @@ struct NotifyCharacterInventoryChanges final : ServerMessage
 
     bool operator==(const NotifyCharacterInventoryChanges& acRhs) const noexcept
     {
-        return Changes == acRhs.Changes &&
-            GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+               ActorId == acRhs.ActorId &&
+               Item == acRhs.Item;
     }
     
-    Map<uint32_t, Inventory> Changes{};
+    uint32_t ActorId{};
+    Inventory::Entry Item{};
 };

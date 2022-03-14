@@ -90,7 +90,7 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
-TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
 
 using TGetLocation = TESForm *(TESForm *);
@@ -625,17 +625,42 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
 
 extern thread_local bool g_modifyingInventory;
 
-void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
 {
     if (!g_modifyingInventory)
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    {
+        auto& modSystem = World::Get().GetModSystem();
+
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apItem->formID, item.BaseId);
+        item.Count = aCount;
+        
+        if (apExtraData)
+            apThis->GetItemFromExtraData(item, apExtraData);
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
+
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
     if (!g_modifyingInventory)
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    {
+        auto& modSystem = World::Get().GetModSystem();
+
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apObject->formID, item.BaseId);
+        item.Count = aCount;
+        
+        // TODO: not sure about this
+        if (apObject->GetExtraDataList())
+            apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
+
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 

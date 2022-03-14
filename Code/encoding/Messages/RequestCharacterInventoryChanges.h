@@ -3,8 +3,6 @@
 #include "Message.h"
 #include <Structs/Inventory.h>
 
-using TiltedPhoques::Map;
-
 struct RequestCharacterInventoryChanges final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kRequestCharacterInventoryChanges;
@@ -20,9 +18,11 @@ struct RequestCharacterInventoryChanges final : ClientMessage
 
     bool operator==(const RequestCharacterInventoryChanges& acRhs) const noexcept
     {
-        return Changes == acRhs.Changes &&
-            GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+               ActorId == acRhs.ActorId &&
+               Item == acRhs.Item;
     }
     
-    Map<uint32_t, Inventory> Changes;
+    uint32_t ActorId{};
+    Inventory::Entry Item{};
 };
