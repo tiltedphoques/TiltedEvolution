@@ -12,6 +12,7 @@ struct PlayerCharacter : Actor
     static PlayerCharacter* Get() noexcept;
 
     const GameArray<TintMask*>& GetTints() const noexcept;
+    void AddSkillExperience(int32_t aSkill, float aExperience) noexcept;
 
     struct Objective
     {
