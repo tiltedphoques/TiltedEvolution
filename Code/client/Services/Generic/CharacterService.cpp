@@ -1359,7 +1359,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
 void CharacterService::RunExperienceUpdates() noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 500ms;
+    constexpr auto cDelayBetweenSnapshots = 1000ms;
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenSnapshots)
@@ -1369,6 +1369,8 @@ void CharacterService::RunExperienceUpdates() noexcept
 
     if (m_cachedExperience == 0.f)
         return;
+
+    // TODO: if not in party, return
 
     SyncExperienceRequest message;
     message.Experience = m_cachedExperience;

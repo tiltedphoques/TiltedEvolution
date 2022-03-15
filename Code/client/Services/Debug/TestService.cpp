@@ -171,6 +171,11 @@ void TestService::OnDraw() noexcept
         DrawPlayerDebugView();
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Skills"))
+    {
+        DrawSkillView();
+        ImGui::EndMenu();
+    }
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);

@@ -31,6 +31,7 @@ private:
     void DrawAnimDebugView();
     void DrawContainerDebugView();
     void DrawFormDebugView();
+    void DrawSkillView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
