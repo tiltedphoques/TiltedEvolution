@@ -152,6 +152,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
+    RunExperienceUpdates();
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -891,13 +892,22 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
 
 void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept
 {
-    m_cachedExperience += 0.f;
+    spdlog::info("AddExperienceEvent: {}", acEvent.Experience);
+    m_cachedExperience += acEvent.Experience;
 }
 
 void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     ActorExtension* pPlayerEx = pPlayer->GetExtension();
+
+    if (pPlayerEx->LastUsedCombatSkill == -1)
+    {
+        //TODO: remove
+        spdlog::warn("Player has no selected combat skill for xp sync.");
+        return;
+    }
+
     pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
 }
 
@@ -1357,10 +1367,14 @@ void CharacterService::RunExperienceUpdates() noexcept
 
     lastSendTimePoint = now;
 
+    if (m_cachedExperience == 0.f)
+        return;
+
     SyncExperienceRequest message;
     message.Experience = m_cachedExperience;
 
     m_cachedExperience = 0.f;
 
     m_transport.Send(message);
+    spdlog::info("Sending over experience {}", message.Experience);
 }
