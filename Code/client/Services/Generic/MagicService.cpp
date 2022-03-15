@@ -17,6 +17,10 @@
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
 #include <Games/ActorExtension.h>
+
+#include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
+
 #if TP_SKYRIM64
 #include <Forms/SpellItem.h>
 #include <PlayerCharacter.h>
@@ -405,8 +409,14 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     data.fUnkFloat1 = 1.0f;
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
+    if (pEffect->IsVampireLordEffect())
+        pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
+
+    if (pEffect->IsWerewolfEffect())
+        pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
+
     // This hack is here because slow time seems to be twice as slow when cast by an npc
-    if (pEffect->pEffectSetting->eArchetype == EffectArchetypes::SLOW_TIME)
+    if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
 
     pActor->magicTarget.AddTarget(data);

@@ -13,6 +13,9 @@ struct EffectItem
 {
     bool IsHealingEffect() const noexcept;
     bool IsSummonEffect() const noexcept;
+    bool IsSlowEffect() const noexcept;
+    bool IsWerewolfEffect() const noexcept;
+    bool IsVampireLordEffect() const noexcept;
 
     EffectItemData data;
     uint32_t padC;
