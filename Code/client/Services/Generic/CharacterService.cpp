@@ -892,7 +892,6 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
 
 void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept
 {
-    spdlog::info("AddExperienceEvent: {}", acEvent.Experience);
     m_cachedExperience += acEvent.Experience;
 }
 
@@ -902,11 +901,7 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     ActorExtension* pPlayerEx = pPlayer->GetExtension();
 
     if (pPlayerEx->LastUsedCombatSkill == -1)
-    {
-        //TODO: remove
-        spdlog::warn("Player has no selected combat skill for xp sync.");
         return;
-    }
 
     pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
 }
@@ -1370,7 +1365,8 @@ void CharacterService::RunExperienceUpdates() noexcept
     if (m_cachedExperience == 0.f)
         return;
 
-    // TODO: if not in party, return
+    if (!World::Get().GetPartyService().IsInParty())
+        return;
 
     SyncExperienceRequest message;
     message.Experience = m_cachedExperience;
