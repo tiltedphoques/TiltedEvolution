@@ -33,6 +33,7 @@
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
+#include <Events/AddExperienceEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -55,6 +56,8 @@
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
+#include <Messages/SyncExperienceRequest.h>
+#include <Messages/NotifySyncExperience.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -93,6 +96,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
+
+    m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
+    m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -883,6 +889,18 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
     pActor->SetPackage(pPackage);
 }
 
+void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept
+{
+    m_cachedExperience += 0.f;
+}
+
+void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept
+{
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    ActorExtension* pPlayerEx = pPlayer->GetExtension();
+    pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
+}
+
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
@@ -1326,4 +1344,23 @@ void CharacterService::RunSpawnUpdates() const noexcept
             }
         }
     }
+}
+
+void CharacterService::RunExperienceUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 500ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    SyncExperienceRequest message;
+    message.Experience = m_cachedExperience;
+
+    m_cachedExperience = 0.f;
+
+    m_transport.Send(message);
 }

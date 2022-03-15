@@ -35,6 +35,8 @@
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
+#include <Messages/SyncExperienceRequest.h>
+#include <Messages/NotifySyncExperience.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -53,6 +55,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
+    , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
 {
 }
 
@@ -512,6 +515,16 @@ void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>&
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
     GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
+}
+
+void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept
+{
+    NotifySyncExperience notify;
+    notify.Experience = acMessage.Packet.Experience;
+
+    const auto& partyComponent = acMessage.pPlayer->GetParty();
+
+    GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept

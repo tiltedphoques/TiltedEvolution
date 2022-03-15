@@ -3,6 +3,7 @@
 #include <PlayerCharacter.h>
 
 #include <Events/InventoryChangeEvent.h>
+#include <Events/AddExperienceEvent.h>
 
 #include <World.h>
 
@@ -17,6 +18,7 @@ static TAddSkillExperience* RealAddSkillExperience = nullptr;
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
 {
+    spdlog::info("Adding {} experience to skill {}", aExperience, aSkill);
     ThisCall(RealAddSkillExperience, this, aSkill, aExperience);
 }
 
@@ -35,11 +37,11 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
 
     if (combatSkills.contains(aSkill))
     {
-        spdlog::info("Set new last used combat skill.");
+        spdlog::info("Set new last used combat skill to {}.", aSkill);
         apThis->GetExtension()->LastUsedCombatSkill = aSkill;
-    }
 
-    // TODO: send event
+        World::Get().GetRunner().Trigger(AddExperienceEvent(aExperience));
+    }
 
     spdlog::info("Skill: {}, experience: {}", aSkill, aExperience);
     ThisCall(RealAddSkillExperience, apThis, aSkill, aExperience);
