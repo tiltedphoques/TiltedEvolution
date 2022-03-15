@@ -525,11 +525,7 @@ void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceR
     const auto& partyComponent = acMessage.pPlayer->GetParty();
 
     if (!partyComponent.JoinedPartyId.has_value())
-    {
-        //TODO: remove
-        spdlog::warn("Player is not in party, cancel syncing experience.");
         return;
-    }
 
     spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());

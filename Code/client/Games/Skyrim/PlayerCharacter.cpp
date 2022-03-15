@@ -1,6 +1,6 @@
-#include <TiltedOnlinePCH.h>
-
 #include <PlayerCharacter.h>
+
+#include <Games/Overrides.h>
 
 #include <Events/InventoryChangeEvent.h>
 #include <Events/AddExperienceEvent.h>
@@ -19,16 +19,15 @@ static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
 
 // TODO: scoped override
-static thread_local bool g_cancelExperienceCalc = false;
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
 {
     Skills::Skill skill = Skills::GetSkillFromActorValue(aSkill);
     float oldExperience = GetSkillExperience(skill);
 
-    g_cancelExperienceCalc = true;
+    ScopedExperienceOverride _;
+
     ThisCall(RealAddSkillExperience, this, aSkill, aExperience);
-    g_cancelExperienceCalc = false;
 
     float newExperience = GetSkillExperience(skill);
     float deltaExperience = newExperience - oldExperience;
@@ -72,7 +71,7 @@ bool TP_MAKE_THISCALL(HookCalculateExperience, int32_t, float* aFactor, float* a
 {
     bool result = ThisCall(RealCalculateExperience, apThis, aFactor, aBonus, aUnk1, aUnk2);
 
-    if (g_cancelExperienceCalc)
+    if (ScopedExperienceOverride::IsOverriden())
     {
         *aFactor = 1.f;
         *aBonus = 0.f;
