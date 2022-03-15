@@ -475,10 +475,12 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     if (arEntry.Count > 0)
     {
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
+        spdlog::critical("Adding item {:X} with count {} to {:X}", pObject->formID, arEntry.Count, formID);
     }
     else if (arEntry.Count < 0)
     {
-        RemoveItem(pObject, arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+        RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+        spdlog::warn("Removing item {:X} with count {} from {:X}", pObject->formID, arEntry.Count, formID);
     }
 }
 

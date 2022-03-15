@@ -73,6 +73,9 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     request.Item = std::move(acEvent.Item);
 
     m_transport.Send(request);
+
+    spdlog::info("Sending item request, item: {:X}, count: {}, actor: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count,
+                 acEvent.FormId);
 }
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept

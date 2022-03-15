@@ -49,6 +49,7 @@ std::optional<Actor*> GetActorByServerId(const uint32_t aServerId) noexcept
         }
     }
 
+    spdlog::warn("Actor not found for server id {:X}", aServerId);
     return std::nullopt;
 }
 }
