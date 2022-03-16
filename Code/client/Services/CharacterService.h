@@ -27,6 +27,7 @@ struct MountEvent;
 struct NotifyMount;
 struct InitPackageEvent;
 struct NotifyNewPackage;
+struct NotifyRespawn;
 
 struct Actor;
 struct World;
@@ -58,6 +59,7 @@ struct CharacterService
     void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
     void OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept;
+    void OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept;
 
 private:
 
@@ -94,4 +96,5 @@ private:
     entt::scoped_connection m_notifyMountConnection;
     entt::scoped_connection m_initPackageConnection;
     entt::scoped_connection m_newPackageConnection;
+    entt::scoped_connection m_notifyRespawnConnection;
 };

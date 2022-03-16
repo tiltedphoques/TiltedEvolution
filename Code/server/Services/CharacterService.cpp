@@ -35,6 +35,8 @@
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
+#include <Messages/RequestRespawn.h>
+#include <Messages/NotifyRespawn.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -53,6 +55,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
+    , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
 {
 }
 
@@ -438,6 +441,33 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
         auto& characterComponent = view.get<CharacterComponent>(*it);
         characterComponent.FactionsContent = factions;
         characterComponent.DirtyFactions = true;
+    }
+}
+
+void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept
+{
+    auto view = m_world.view<OwnerComponent>();
+    auto it = view.find(static_cast<entt::entity>(acMessage.Packet.ActorId));
+    if (it == view.end())
+    {
+        spdlog::warn("No OwnerComponent found for actor id {:X}", acMessage.Packet.ActorId);
+        return;
+    }
+
+    auto& ownerComponent = view.get<OwnerComponent>(*it);
+    if (ownerComponent.GetOwner() == acMessage.pPlayer)
+    {
+        NotifyRespawn notify;
+        notify.ActorId = acMessage.Packet.ActorId;
+
+        GameServer::Get()->SendToPlayersInRange(notify, *it, acMessage.GetSender());
+    }
+    else
+    {
+        CharacterSpawnRequest message;
+        Serialize(m_world, *it, &message);
+
+        acMessage.GetSender()->Send(message);
     }
 }
 
