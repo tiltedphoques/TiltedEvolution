@@ -13,17 +13,16 @@
 
 void TestService::DrawFormDebugView()
 {
-    static uint32_t formId = 0;
     static Actor* pActor = nullptr;
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &formId, 0, 0, "%" PRIx32,
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
                        ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
-        if (formId)
+        if (m_formId)
         {
-            TESForm* pFetchForm = TESForm::GetById(formId);
+            TESForm* pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
                 pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
         }
