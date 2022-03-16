@@ -3,10 +3,8 @@
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
 
-#include <BSAnimationGraphManager.h>
-#include <Structs/AnimationGraphDescriptorManager.h>
-
 #include <Events/InventoryChangeEvent.h>
+#include <Events/LeaveBeastFormEvent.h>
 
 #include <World.h>
 
@@ -26,7 +24,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
 {
     spdlog::warn("Setting beast form: {}", aEntering);
 
-    // TODO: send respawn event
+    World::Get().GetRunner().Trigger(LeaveBeastFormEvent());
 
     ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }
