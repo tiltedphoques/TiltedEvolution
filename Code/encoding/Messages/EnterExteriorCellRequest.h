@@ -5,7 +5,6 @@
 #include <Structs/GridCellCoords.h>
 
 using TiltedPhoques::String;
-using TiltedPhoques::Map;
 
 struct EnterExteriorCellRequest final : ClientMessage
 {

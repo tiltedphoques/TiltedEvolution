@@ -86,11 +86,11 @@ private:
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
 
     Info m_info{};
-    std::unique_ptr<World> m_pWorld;
+    UniquePtr<World> m_pWorld;
     Console::ConsoleRegistry& m_commands;
 
-    Set<ConnectionId_t> m_adminSessions;
-    Map<ConnectionId_t, entt::entity> m_connectionToEntity;
+    TiltedPhoques::Set<ConnectionId_t> m_adminSessions;
+    TiltedPhoques::Map<ConnectionId_t, entt::entity> m_connectionToEntity;
 
     bool m_requestStop;
 

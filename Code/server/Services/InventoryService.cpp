@@ -96,7 +96,7 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
 
     const auto objectView = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent, CellIdComponent>();
 
-    Map<Player*, NotifyObjectInventoryChanges> messages;
+    TiltedPhoques::Map<Player*, NotifyObjectInventoryChanges> messages;
 
     for (auto entity : objectView)
     {
@@ -145,7 +145,7 @@ void InventoryService::ProcessCharacterInventoryChanges() noexcept
 
     const auto characterView = m_world.view<CharacterComponent, CellIdComponent, InventoryComponent, OwnerComponent>();
 
-    Map<Player*, NotifyCharacterInventoryChanges> messages;
+    TiltedPhoques::Map<Player*, NotifyCharacterInventoryChanges> messages;
 
     for (auto entity : characterView)
     {

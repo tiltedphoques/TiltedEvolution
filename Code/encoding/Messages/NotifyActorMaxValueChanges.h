@@ -2,7 +2,6 @@
 
 #include "Message.h"
 
-using TiltedPhoques::Map;
 
 struct NotifyActorMaxValueChanges final : ServerMessage
 {
@@ -23,5 +22,5 @@ struct NotifyActorMaxValueChanges final : ServerMessage
     }
 
     uint32_t Id;
-    Map<uint32_t, float> Values;
+    TiltedPhoques::Map<uint32_t, float> Values;
 };

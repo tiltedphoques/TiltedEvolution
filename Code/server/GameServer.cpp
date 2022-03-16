@@ -69,7 +69,7 @@ GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
     spdlog::info("Server started on port {}", GetPort());
     UpdateTitle();
 
-    m_pWorld = std::make_unique<World>();
+    m_pWorld = MakeUnique<World>();
 
     BindMessageHandlers();
 }
@@ -282,7 +282,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{1 << 18};
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -292,7 +292,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -300,7 +300,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
 void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{1 << 18};
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -310,7 +310,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
     acServerMessage.Serialize(writer);
 
-    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();

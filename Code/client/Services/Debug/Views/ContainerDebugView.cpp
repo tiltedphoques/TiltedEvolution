@@ -2,11 +2,11 @@
 #include <imgui.h>
 #include <Services/TestService.h>
 
-#if (TP_SKYRIM64)
+#if TP_SKYRIM64
 #include <PlayerCharacter.h>
 #endif
 
-#if (TP_FALLOUT4)
+#if TP_FALLOUT4
 #include <Games/Fallout4/PlayerCharacter.h>
 #endif
 
@@ -114,7 +114,7 @@ void TestService::DrawContainerDebugView()
 
                 ImGui::BeginChild("Items", ImVec2(0, 200), true);
 
-                for (int i = 0; i < pContainer->count; ++i)
+                for (uint32_t i = 0; i < pContainer->count; ++i)
                 {
                     auto pEntry = pContainer->entries[i];
                     if (!pEntry || !pEntry->form)

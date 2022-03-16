@@ -21,6 +21,6 @@ public:
 
     Vector<NAVM const*> m_navMeshRefs;
 
-    void ParseChunks(WRLD& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseChunks(WRLD& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
     void ParseGRUP() noexcept;
 };

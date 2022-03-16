@@ -3,8 +3,6 @@
 #include "Message.h"
 #include <Structs/Factions.h>
 
-using TiltedPhoques::Map;
-
 struct NotifyFactionsChanges final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyFactionsChanges;
@@ -22,5 +20,5 @@ struct NotifyFactionsChanges final : ServerMessage
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<uint32_t, Factions> Changes{};
+    TiltedPhoques::Map<uint32_t, Factions> Changes{};
 };
