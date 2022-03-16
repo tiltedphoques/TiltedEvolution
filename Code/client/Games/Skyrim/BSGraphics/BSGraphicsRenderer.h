@@ -124,4 +124,15 @@ struct ApplicationWindowProperties
     uint32_t uiPresentInterval;
 };
 
+struct State
+{
+    char pad0[0x24];
+    uint32_t uiBackBufferWidth;
+    uint32_t uiBackBufferHeight;
+    uint32_t uiScreenWidth;
+    uint32_t uiScreenHeight;
+};
+
+static_assert(offsetof(State, State::uiBackBufferWidth) == 0x24);
+static_assert(offsetof(State, State::uiBackBufferHeight) == 0x28);
 } // namespace BSGraphics

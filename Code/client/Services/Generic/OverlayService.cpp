@@ -9,19 +9,22 @@
 
 #include <Systems/RenderSystemD3D11.h>
 
-#include <World.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
+#include <World.h>
 
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
 
-using TiltedPhoques::OverlayRenderHandlerD3D11;
 using TiltedPhoques::OverlayRenderHandler;
+using TiltedPhoques::OverlayRenderHandlerD3D11;
 
+#define DISABLE_CEF
 
 struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHandlerD3D11::Renderer
 {
-    explicit D3D11RenderProvider(RenderSystemD3D11* apRenderSystem) : m_pRenderSystem(apRenderSystem) {}
+    explicit D3D11RenderProvider(RenderSystemD3D11* apRenderSystem) : m_pRenderSystem(apRenderSystem)
+    {
+    }
 
     OverlayRenderHandler* Create() override
     {
@@ -40,8 +43,7 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
         return BSGraphics::GetMainWindow()->pSwapChain;
     }
 
-private:
-
+  private:
     RenderSystemD3D11* m_pRenderSystem;
 };
 
@@ -56,6 +58,7 @@ OverlayService::~OverlayService() noexcept
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 {
+#ifndef DISABLE_CEF
     m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(apRenderSystem);
     m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
 
@@ -63,14 +66,19 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
         spdlog::error("Overlay could not be initialised");
 
     m_pOverlay->GetClient()->Create();
+#endif
 }
 
 void OverlayService::Render() const noexcept
 {
-    m_pOverlay->GetClient()->Render();
+#ifndef DISABLE_CEF
+// m_pOverlay->GetClient()->Render();
+#endif
 }
 
 void OverlayService::Reset() const noexcept
 {
-    m_pOverlay->GetClient()->Reset();
+#ifndef DISABLE_CEF
+// m_pOverlay->GetClient()->Reset();
+#endif
 }
