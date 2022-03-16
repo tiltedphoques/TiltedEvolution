@@ -11,6 +11,7 @@
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Skyrim/Actor.h>
+#include <Games/ActorExtension.h>
 #endif
 
 #if (TP_FALLOUT4)
@@ -68,6 +69,8 @@ void TestService::DrawAnimDebugView()
         s_blacklist.clear();
         return;
     }
+
+    spdlog::info("{}", pActor->GetExtension()->GraphDescriptorHash);
 
     if (ImGui::Button("Clear all"))
     {

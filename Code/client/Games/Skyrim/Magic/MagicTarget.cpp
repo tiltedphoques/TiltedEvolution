@@ -6,6 +6,9 @@
 #include <Games/ActorExtension.h>
 #include "EffectItem.h"
 
+#include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
+
 #include <Events/AddTargetEvent.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
@@ -35,6 +38,12 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     if (!pTargetActorEx)
         return ThisCall(RealAddTarget, apThis, arData);
+
+    if (arData.pEffectItem->IsWerewolfEffect())
+        pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
+
+    if (arData.pEffectItem->IsVampireLordEffect())
+        pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
     AddTargetEvent addTargetEvent{};
     addTargetEvent.TargetID = pTargetActor->formID;

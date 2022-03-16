@@ -26,11 +26,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
 {
     spdlog::warn("Setting beast form: {}", aEntering);
 
-    BSAnimationGraphManager* pManager = nullptr;
-    PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager);
-    auto hash = pManager->GetDescriptorKey();
-    auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
-    spdlog::info("Key: {}", hash);
+    // TODO: send respawn event
 
     ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }
