@@ -3,6 +3,8 @@
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
 
+#include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
+
 #include <Events/InventoryChangeEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
 
@@ -22,9 +24,11 @@ char TP_MAKE_THISCALL(HookPickUpItem, PlayerCharacter, TESObjectREFR* apObject, 
 
 void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool aEntering)
 {
-    spdlog::warn("Setting beast form: {}", aEntering);
-
-    World::Get().GetRunner().Trigger(LeaveBeastFormEvent());
+    if (!aEntering)
+    {
+        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
+        World::Get().GetRunner().Trigger(LeaveBeastFormEvent());
+    }
 
     ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }

@@ -70,7 +70,8 @@ void TestService::DrawAnimDebugView()
         return;
     }
 
-    spdlog::info("{}", pActor->GetExtension()->GraphDescriptorHash);
+    if (ImGui::Button("Show cached hash"))
+        spdlog::info("{}", pActor->GetExtension()->GraphDescriptorHash);
 
     if (ImGui::Button("Clear all"))
     {

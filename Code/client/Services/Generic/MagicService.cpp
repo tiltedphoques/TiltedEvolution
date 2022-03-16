@@ -409,11 +409,11 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     data.fUnkFloat1 = 1.0f;
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
-    if (pEffect->IsVampireLordEffect())
-        pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
-
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
+
+    if (pEffect->IsVampireLordEffect())
+        pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
