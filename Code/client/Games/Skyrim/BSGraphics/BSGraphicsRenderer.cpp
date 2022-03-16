@@ -49,6 +49,15 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     g_sRs->OnDeviceCreation(self->Data.RenderWindowA[0].pSwapChain);
 }
 
+void (*Renderer_ResetWindow)(BSGraphics::Renderer*, uint32_t);
+
+void Hook_Renderer_ResetWindow(BSGraphics::Renderer* self, uint32_t auiIndex)
+{
+    Renderer_ResetWindow(self, auiIndex);
+
+    g_sRs->OnReset(self->Data.RenderWindowA[0].pSwapChain);
+}
+
 void (*StopTimer)(int) = nullptr;
 
 // Insert us at the End
@@ -81,5 +90,8 @@ static TiltedPhoques::Initializer s_viewportHooks([]() {
     // Once we find a proper way to locate it for different versions, go back to swapcall
     //TiltedPhoques::SwapCall(mem::pointer(initLoc.GetPtr()) + 0xD1A, Renderer_Init, &Hook_Renderer_Init);
     TP_HOOK_IMMEDIATE(&Renderer_Init, &Hook_Renderer_Init);
+
+    TiltedPhoques::SwapCall(0x140DA59B5, Renderer_ResetWindow, &Hook_Renderer_ResetWindow);
+    TiltedPhoques::SwapCall(0x140DA59EF, Renderer_ResetWindow, &Hook_Renderer_ResetWindow);
 });
 } // namespace BSGraphics
