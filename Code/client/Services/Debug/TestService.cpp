@@ -38,6 +38,8 @@
 
 #include <AI/AIProcess.h>
 
+#include <Messages/RequestRespawn.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
@@ -118,7 +120,23 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            if (m_formId)
+            {
+                auto view = m_world.view<FormIdComponent>();
+                const auto it = std::find_if(view.begin(), view.end(), [view, Id = m_formId](auto entity)
+                {
+                    return view.get<FormIdComponent>(entity).Id == Id;
+                });
+                uint32_t serverId = Utils::GetServerId(*it).value();
+
+                RequestRespawn request;
+                request.ActorId = serverId;
+
+                Actor* pActor = Utils::GetActorByServerId(serverId).value();
+                pActor->Delete();
+
+                m_transport.Send(request);
+            }
         }
     }
     else

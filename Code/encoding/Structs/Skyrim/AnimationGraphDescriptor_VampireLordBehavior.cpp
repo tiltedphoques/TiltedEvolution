@@ -81,9 +81,7 @@ enum Variables
 
 AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLordBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 16269673692629748097;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
         AnimationGraphDescriptor(
         {kbEquipOk,
             kbAnimationDriven,
