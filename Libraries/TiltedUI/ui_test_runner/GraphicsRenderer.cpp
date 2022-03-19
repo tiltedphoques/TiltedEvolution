@@ -185,7 +185,7 @@ void GraphicsRenderer::InitD3D()
         DXGI_SWAP_CHAIN_DESC1 d3d11SwapChainDesc = {};
         d3d11SwapChainDesc.Width = 0; // use window width
         d3d11SwapChainDesc.Height = 0; // use window height
-        d3d11SwapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        d3d11SwapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         d3d11SwapChainDesc.SampleDesc.Count = 1;
         d3d11SwapChainDesc.SampleDesc.Quality = 0;
         d3d11SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -193,7 +193,7 @@ void GraphicsRenderer::InitD3D()
         d3d11SwapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         d3d11SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
         d3d11SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        d3d11SwapChainDesc.Flags = 0;
+        d3d11SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
         HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(m_pDevice, m_hwnd, &d3d11SwapChainDesc, 0, 0, &m_pSwapchain);
         assert(SUCCEEDED(hResult));
