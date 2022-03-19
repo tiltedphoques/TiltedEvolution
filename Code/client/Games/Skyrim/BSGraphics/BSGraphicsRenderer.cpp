@@ -5,6 +5,7 @@
 #include "World.h"
 
 #include "BSGraphics/BSGraphicsRenderer.h"
+#include "Interface/UI.h"
 
 extern UINT g_SuggestedDeviceByLauncher;
 
@@ -49,90 +50,6 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     g_sRs->OnDeviceCreation(self->Data.RenderWindowA[0].pSwapChain);
 }
 
-struct Scaleform_Render_Viewport
-{
-    int BufferWidth;
-    int BufferHeight;
-    int Left;
-    int Top;
-    int Width;
-    int Height;
-    int ScissorLeft;
-    int ScissorTop;
-    int ScissorWidth;
-    int ScissorHeight;
-    unsigned int Flags;
-};
-
-struct Scaleform_GFx_Viewport : Scaleform_Render_Viewport
-{
-    float Scale;
-    float AspectRatio;
-};
-
-template <typename T> struct Scaleform_Render_Rect
-{
-    T a, b, c, d;
-};
-
-enum Scaleform_GFx_Movie_ScaleModeType : __int32
-{
-    SM_NoScale = 0x0,
-    SM_ShowAll = 0x1,
-    SM_ExactFit = 0x2,
-    SM_NoBorder = 0x3,
-};
-
-int (*Scaleform_GFx_MovieImpl_SetViewport)(void*, const Scaleform_GFx_Viewport*);
-void (*sub_140F67210)(void*, const Scaleform_Render_Rect<float>*);
-void (*Scaleform_GFx_MovieImpl_SetViewScaleMode)(void*, Scaleform_GFx_Movie_ScaleModeType);
-
-float (*CalculateSafeZoneInterface_X)();
-float (*CalculateSafeZoneInterface_Y)();
-
-int Hook_Scaleform_GFx_MovieImpl_SetViewport(void* a1, const Scaleform_GFx_Viewport* a2)
-{
-    return Scaleform_GFx_MovieImpl_SetViewport(a1, a2);
-}
-
-static bool onceISay = false;
-
-static void ResizeMovieViewport(void* apMovie)
-{
-#if 1
-    // the games function comes with ultrawide support.
-    float safeZoneX = CalculateSafeZoneInterface_X();
-    float safeZoneY = CalculateSafeZoneInterface_Y();
-
-    auto* pState = (BSGraphics::State*)0x1430C6D90;
-
-    float v22 = (float)pState->uiBackBufferWidth - safeZoneX;
-    float v23 = (float)pState->uiBackBufferHeight - safeZoneY;
-    float v24 = 1.0 / (float)pState->uiBackBufferWidth;
-    float v61 = v24 * v22;
-    float v25 = 1.0 / (float)pState->uiBackBufferHeight;
-
-    Scaleform_GFx_Viewport newVp{};
-    newVp.Width = pState->uiBackBufferWidth;
-    newVp.Height = pState->uiBackBufferHeight;
-    newVp.Flags = 1065353216;
-    newVp.Scale = 1.f;
-    newVp.AspectRatio = 1.f;
-    void* movieView = *(void**)0x142FE9150;
-    if (movieView && onceISay)
-    {
-        Scaleform_GFx_MovieImpl_SetViewScaleMode(movieView, Scaleform_GFx_Movie_ScaleModeType::SM_ShowAll);
-
-        const Scaleform_Render_Rect<float> bounds{.a = v24, .b = v25, .c = safeZoneX, .d = safeZoneY
-
-        };
-        sub_140F67210(movieView, &bounds);
-
-        Scaleform_GFx_MovieImpl_SetViewport(movieView, &newVp);
-    }
-#endif
-}
-
 void (*Renderer_ResetWindow)(BSGraphics::Renderer*, uint32_t);
 
 void Hook_Renderer_ResetWindow(BSGraphics::Renderer* self, uint32_t auiIndex)
@@ -141,17 +58,7 @@ void Hook_Renderer_ResetWindow(BSGraphics::Renderer* self, uint32_t auiIndex)
 
     g_sRs->OnReset(self->Data.RenderWindowA[0].pSwapChain);
 
-
-    ResizeMovieViewport(nullptr);
-#if 0
-    for (void* ptr : g_knownMovies)
-    {
-        if (!IsBadReadPtr(ptr, 8))
-        {
-            Scaleform_GFx_MovieImpl_SetViewport(ptr, &newVp);
-        }
-    }
-#endif
+    UI::Get()->ResizeMovies();
 }
 
 void (*StopTimer)(int) = nullptr;
@@ -192,15 +99,6 @@ static TiltedPhoques::Initializer s_viewportHooks([]() {
     // TiltedPhoques::Put(0x1430C6DE1, true);
     // TiltedPhoques::Put(0x140F11094, 0xC3);
 
-    Scaleform_GFx_MovieImpl_SetViewport =
-        static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewport)>((void*)(0x140F71A30));
-    sub_140F67210 = static_cast<decltype(sub_140F67210)>((void*)(0x140F67210));
-
-    CalculateSafeZoneInterface_X = static_cast<decltype(CalculateSafeZoneInterface_X)>((void*)(0x140F11310));
-    CalculateSafeZoneInterface_Y = static_cast<decltype(CalculateSafeZoneInterface_Y)>((void*)(0x140F11360));
-    Scaleform_GFx_MovieImpl_SetViewScaleMode =
-        static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewScaleMode)>((void*)(0x140F71A10));
-
-    TP_HOOK_IMMEDIATE(&Scaleform_GFx_MovieImpl_SetViewport, &Hook_Scaleform_GFx_MovieImpl_SetViewport);
+    //TP_HOOK_IMMEDIATE(&Scaleform_GFx_MovieImpl_SetViewport, &Hook_Scaleform_GFx_MovieImpl_SetViewport);
 });
 } // namespace BSGraphics

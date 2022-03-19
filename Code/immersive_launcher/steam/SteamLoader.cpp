@@ -5,6 +5,8 @@
 #include "Utils/Registry.h"
 #include <cstdio>
 
+#include <spdlog/spdlog.h>
+
 namespace steam
 {
 constexpr wchar_t kSteamDllName[] = L"steamclient64.dll";
@@ -34,5 +36,7 @@ void Load(const fs::path& aGameDir)
 
     fs::path clientPath = steamPath / kSteamDllName;
     LoadLibraryW(clientPath.c_str());
+
+    spdlog::info("Loaded steam");
 }
 } // namespace steam

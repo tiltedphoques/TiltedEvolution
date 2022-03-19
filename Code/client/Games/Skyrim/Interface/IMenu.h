@@ -181,6 +181,11 @@ class IMenu : public FxDelegateHandler
         return uiMenuFlags & kFreezeFramePause;
     }
 
+    inline void* GetMovie()
+    {
+        return uiMovie;
+    }
+
   public:
     void* uiMovie{nullptr};
     int8_t depthPriority{3};
@@ -192,6 +197,5 @@ class IMenu : public FxDelegateHandler
     void* fxDelegate{nullptr};
 };
 
-constexpr auto x = offsetof(IMenu, IMenu::uiMenuFlags);
-
+static_assert(offsetof(IMenu, IMenu::uiMovie) == 0x10);
 static_assert(offsetof(IMenu, IMenu::uiMenuFlags) == 0x1C);

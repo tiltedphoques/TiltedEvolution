@@ -47,6 +47,7 @@ class UI
     IMenu* FindMenuByName(const BSFixedString& acName);
     BSFixedString* LookupMenuNameByInstance(IMenu* apMenu);
 
+    void ResizeMovies();
   public:
     using TCreate = IMenu*(UIMessage*);
 
