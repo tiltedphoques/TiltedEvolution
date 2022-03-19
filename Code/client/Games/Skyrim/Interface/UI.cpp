@@ -137,9 +137,14 @@ void UI::ResizeMovies()
     float v61 = v24 * v22;
     float v25 = 1.0 / (float)pState->uiBackBufferHeight;
 
+    // https://help.autodesk.com/view/SCLFRM/ENU/?guid=__cpp_ref_06771_html
     Scaleform_GFx_Viewport newVp{};
     newVp.Width = pState->uiBackBufferWidth;
     newVp.Height = pState->uiBackBufferHeight;
+    //newVp.BufferHeight = pState->uiBackBufferHeight;
+    //newVp.BufferWidth = pState->uiBackBufferWidth;
+    //newVp.ScissorHeight = pState->uiBackBufferHeight;
+    //newVp.ScissorWidth = pState->uiBackBufferWidth;
     newVp.Flags = 1065353216;
     newVp.Scale = 1.f;
     newVp.AspectRatio = 1.f;
@@ -262,12 +267,50 @@ struct Scaleform_String
     };
 };
 
+namespace Scaleform
+{
+struct ArrayDefaultPolicy
+{
+    size_t Capacity;
+};
+
+template<typename T, size_t N>
+struct AllocatorGH
+{
+};
+
+template<typename TSize, class TAllocator> 
+struct ArrayDataBase
+{
+    unsigned int* Data;
+    unsigned __int64 Size;
+    Scaleform::ArrayDefaultPolicy Policy;
+};
+
+template <typename TSize, class TAllocator, typename TPolicy> 
+struct ArrayData : ArrayDataBase<TSize, TAllocator>
+{
+};
+
+template<class TData>
+struct ArrayBase
+{
+    TData Data;
+};
+
+template <typename T, size_t TSize, class TPolicy = ArrayDefaultPolicy>
+struct Array : Scaleform::ArrayBase<ArrayData<T, Scaleform::AllocatorGH<T, TSize>, TPolicy>>
+{
+};
+
+}
+
 struct Scaleform_GFx_ExporterInfoImpl
 {
     Scaleform_GFx_ExporterInfo SI;
     Scaleform_String Prefix;
     Scaleform_String SWFName;
-    char padx[0x18];
+    Scaleform::Array<uint32_t, 2> CodeOffsets;
 };
 
 
@@ -315,34 +358,42 @@ void GetRectSize(const Scaleform_Render_Rect<float>& in, Scaleform_Render_Size<f
     out.Height = in.y2 - in.y1;
 }
 
+// this translates this in pixel coords.
+void Scaleform_GFx_MovieDataDef_GetFrameRect(const Scaleform_GFx_MovieHeaderData& header, Scaleform_Render_Rect<float>& result)
+{
+    //constexpr float k = 0.050000001f *4;
+    // its / 20 btw.
+    result.x1 = header.FrameRect.x1 * 0.050000001f;
+    result.x2 = header.FrameRect.x2 * 0.050000001f;
+    result.y1 = header.FrameRect.y1 * 0.050000001f;
+    result.y2 = header.FrameRect.y2 * 0.050000001f;
+}
+
+//MovieDataDef::get
+// TODO: https://www.nexusmods.com/fallout4/articles/149
+
 // it must be something else on the left side.
 void operatorEquals(Scaleform_GFx_MovieDataDef_LoadTaskData* pTaskData, Scaleform_GFx_MovieHeaderData* rhs)
 {
     auto* pState = (BSGraphics::State*)0x1430C6D90;
-    if (rhs->FrameRect.x2 == 25600.0000)
+
+    Scaleform_Render_Rect<float> translate{};
+    Scaleform_GFx_MovieDataDef_GetFrameRect(*rhs, translate);
+
+    if (strstr(&pTaskData->FileURL.pData->Data[0], "Map.swf"))
     {
-        //rhs->FrameRect.x2 = static_cast<float>(pState->uiBackBufferWidth) * 10.f;
-        //rhs->FrameRect.y2 = static_cast<float>(pState->uiBackBufferHeight) * 10.f;
+        // need to patch the other code stuff aswell...
+        rhs->FrameRect.x1 = static_cast<float>((pState->uiBackBufferWidth / 2.f) / 2.f) * 20.f;
+        rhs->FrameRect.x2 = static_cast<float>(pState->uiBackBufferWidth) * 20.f;
+        rhs->FrameRect.y2 = static_cast<float>(pState->uiBackBufferHeight) * 20.f;
     }
 
     // uncap menu FPS.
     rhs->FPS = 60.f;
 
-    //rhs->FrameRect.x2 = static_cast<float>(pState->uiBackBufferWidth) * 10.f;
-    //rhs->FrameRect.y2 = static_cast<float>(pState->uiBackBufferHeight) * 10.f;
 
     // copy onto task data.
     realp(pTaskData, rhs);
-
-    // Scaleform_Render_Size<float> out;
-    // GetRectSize(rhs->FrameRect, out);
-
-    // auto fRect = rhs->FrameRect;
-    // fRect.x2 = pState->uiBackBufferWidth;
-    // fRect.y2 = pState->uiBackBufferHeight;
-
-    // lhs->FrameRect = fRect;
-    // rhs->FrameRect = fRect;
 }
 
 static TiltedPhoques::Initializer s_s([]() {
@@ -377,4 +428,6 @@ static TiltedPhoques::Initializer s_s([]() {
     CalculateSafeZoneInterface_Y = static_cast<decltype(CalculateSafeZoneInterface_Y)>((void*)(0x140F11360));
     Scaleform_GFx_MovieImpl_SetViewScaleMode =
         static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewScaleMode)>((void*)(0x140F71A10));
+
+    TiltedPhoques::Put(0x141E88B88, 100.f);
 });
