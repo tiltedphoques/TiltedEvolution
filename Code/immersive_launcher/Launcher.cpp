@@ -23,6 +23,8 @@ extern void InstallStartHook();
 extern void RunTiltedApp();
 extern void RunTiltedInit(const std::filesystem::path&, const TiltedPhoques::String&, std::shared_ptr<spdlog::logger>);
 
+HICON g_SharedWindowIcon = nullptr;
+
 namespace launcher
 {
 namespace
@@ -76,7 +78,8 @@ int StartUp(int argc, char** argv)
 #endif
     CreateLogger();
 
-    auto r = GetLastError();
+    // TODO(Force): Make some InitSharedResources func.
+    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
 
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();

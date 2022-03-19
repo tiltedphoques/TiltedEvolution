@@ -372,7 +372,7 @@ void Scaleform_GFx_MovieDataDef_GetFrameRect(const Scaleform_GFx_MovieHeaderData
 //MovieDataDef::get
 // TODO: https://www.nexusmods.com/fallout4/articles/149
 
-// it must be something else on the left side.
+// Scaleform::GFx::MovieDataDef::LoadTaskData::BeginSWFLoading
 void operatorEquals(Scaleform_GFx_MovieDataDef_LoadTaskData* pTaskData, Scaleform_GFx_MovieHeaderData* rhs)
 {
     auto* pState = (BSGraphics::State*)0x1430C6D90;

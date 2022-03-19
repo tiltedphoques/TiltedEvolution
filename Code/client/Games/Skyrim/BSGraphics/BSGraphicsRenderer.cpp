@@ -7,7 +7,7 @@
 #include "BSGraphics/BSGraphicsRenderer.h"
 #include "Interface/UI.h"
 
-extern UINT g_SuggestedDeviceByLauncher;
+extern HICON g_SharedWindowIcon;
 
 namespace BSGraphics
 {
@@ -37,6 +37,11 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
 {
     // NOTE(Force): This forces the game to use the UI suggested by the launcher.
     // aOSData->uiAdapter = g_SuggestedDeviceByLauncher;
+
+    // we feed this a shared icon as the resource directory of our former launcher data is already overwritten with the
+    // game.
+    aOSData->hIcon = g_SharedWindowIcon;
+
     aOSData->pClassName = "Skyrim Together EVO Test";
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;
@@ -99,6 +104,6 @@ static TiltedPhoques::Initializer s_viewportHooks([]() {
     // TiltedPhoques::Put(0x1430C6DE1, true);
     // TiltedPhoques::Put(0x140F11094, 0xC3);
 
-    //TP_HOOK_IMMEDIATE(&Scaleform_GFx_MovieImpl_SetViewport, &Hook_Scaleform_GFx_MovieImpl_SetViewport);
+    // TP_HOOK_IMMEDIATE(&Scaleform_GFx_MovieImpl_SetViewport, &Hook_Scaleform_GFx_MovieImpl_SetViewport);
 });
 } // namespace BSGraphics
