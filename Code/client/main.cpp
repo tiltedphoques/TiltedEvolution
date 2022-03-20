@@ -18,6 +18,8 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
         exit(-1);
     }
 
+    // VersionDb::Get().Dump(R"(S:\Work\Tilted\Reverse\addresslib.txt)");
+
     g_appInstance = std::make_unique<TiltedOnlineApp>();
 
     TiltedOnlineApp::InstallHooks2();

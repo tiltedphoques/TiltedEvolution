@@ -114,8 +114,11 @@ int StartUp(int argc, char** argv)
     InstallStartHook();
     // Initialize all hooks before calling game init
     // TiltedPhoques::Initializer::RunAll();
+
+    spdlog::info("Initializing Skyrim Together: Expanded and Enhanced Edition");
     RunTiltedInit(LC->gamePath, LC->Version, spdlog::default_logger());
 
+    spdlog::info("Starting game");
     // This shouldn't return until the game is killed
     LC->gameMain();
     return 0;

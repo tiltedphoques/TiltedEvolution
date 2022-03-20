@@ -213,7 +213,7 @@ void UIMessageQueue__AddMessage(void* a1, const BSFixedString* a2, UIMessage::UI
     UIMessageQueue__AddMessage_Real(a1, a2, a3, a4);
 }
 
-enum Scaleform_GFx_FileTypeConstants_FileFormatType : __int32
+enum Scaleform_GFx_FileTypeConstants_FileFormatType : int
 {
     File_Unopened = 0x0,
     File_Unknown = 0x1,
@@ -350,8 +350,6 @@ struct Scaleform_GFx_MovieDataDef_LoadTaskData : Scaleform_GFx_MovieDataDef_Load
     Scaleform_GFx_MovieHeaderData Header;
 };
 
-void (*realp)(Scaleform_GFx_MovieDataDef_LoadTaskData*, Scaleform_GFx_MovieHeaderData*);
-
 void GetRectSize(const Scaleform_Render_Rect<float>& in, Scaleform_Render_Size<float>& out)
 {
     out.Width = in.x2 - in.x1;
@@ -372,8 +370,12 @@ void Scaleform_GFx_MovieDataDef_GetFrameRect(const Scaleform_GFx_MovieHeaderData
 //MovieDataDef::get
 // TODO: https://www.nexusmods.com/fallout4/articles/149
 
+void (*MovieDataDef_LoadTaskData_BeginSWFLoading)(Scaleform_GFx_MovieDataDef_LoadTaskData*,
+                                                  Scaleform_GFx_MovieHeaderData*){nullptr};
+
 // Scaleform::GFx::MovieDataDef::LoadTaskData::BeginSWFLoading
-void operatorEquals(Scaleform_GFx_MovieDataDef_LoadTaskData* pTaskData, Scaleform_GFx_MovieHeaderData* rhs)
+void Hook_MovieDataDef_LoadTaskData_BeginSWFLoading(Scaleform_GFx_MovieDataDef_LoadTaskData* pTaskData,
+                                               Scaleform_GFx_MovieHeaderData* rhs)
 {
     auto* pState = (BSGraphics::State*)0x1430C6D90;
 
@@ -391,13 +393,12 @@ void operatorEquals(Scaleform_GFx_MovieDataDef_LoadTaskData* pTaskData, Scalefor
     // uncap menu FPS.
     rhs->FPS = 60.f;
 
-
-    // copy onto task data.
-    realp(pTaskData, rhs);
+    MovieDataDef_LoadTaskData_BeginSWFLoading(pTaskData, rhs);
 }
 
 static TiltedPhoques::Initializer s_s([]() {
-    TiltedPhoques::SwapCall(0x14102CC71, realp, &operatorEquals);
+    TiltedPhoques::SwapCall(0x14102CC71, MovieDataDef_LoadTaskData_BeginSWFLoading,
+                            &Hook_MovieDataDef_LoadTaskData_BeginSWFLoading);
 
     // pray that this doesnt fail!
     VersionDbPtr<uint8_t> ProcessHook(82082);

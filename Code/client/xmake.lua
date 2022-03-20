@@ -24,14 +24,14 @@ target(name)
     -- only include selected files
     if name == "SkyrimTogetherClient" then
         add_files("Games/Skyrim/**.cpp")
-        add_headerfiles("Games/Skyrim/**.h")
+        add_headerfiles("Games/Skyrim/**.h|Games/Skyrim/**.inl")
         -- rather hacky:
         add_includedirs("Games/Skyrim")
         add_deps("SkyrimEncoding")
     end
     if name == "FalloutTogetherClient" then
         add_files("Games/Fallout4/**.cpp")
-        add_headerfiles("Games/Fallout4/**.h")
+        add_headerfiles("Games/Fallout4/**.h|Games/Skyrim/**.inl")
         -- rather hacky:
         add_includedirs("Games/Fallout4")
         add_deps("FalloutEncoding")
