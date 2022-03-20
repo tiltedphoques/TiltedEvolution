@@ -1,3 +1,15 @@
+# [1.21.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.20.0...v1.21.0) (2022-03-20)
+
+
+### Bug Fixes
+
+* bug in xp sync ([edb1feb](https://github.com/tiltedphoques/TiltedEvolution/commit/edb1febba167671b3b20fd4f8b8ebe9300203e11))
+
+
+### Features
+
+* sync combat xp with party ([a1c8149](https://github.com/tiltedphoques/TiltedEvolution/commit/a1c8149c9ebffcf71bfc5986e69fb3f246eeb893))
+
 # [1.20.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.19.0...v1.20.0) (2022-03-20)
 
 
