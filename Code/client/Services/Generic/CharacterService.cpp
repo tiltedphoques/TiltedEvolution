@@ -33,6 +33,7 @@
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
+#include <Events/LeaveBeastFormEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -55,6 +56,8 @@
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
+#include <Messages/RequestRespawn.h>
+#include <Messages/NotifyRespawn.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -93,6 +96,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
+
+    m_notifyRespawnConnection = m_dispatcher.sink<NotifyRespawn>().connect<&CharacterService::OnNotifyRespawn>(this);
+    m_leaveBeastFormConnection = m_dispatcher.sink<LeaveBeastFormEvent>().connect<&CharacterService::OnLeaveBeastForm>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -550,6 +556,50 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
 
         m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
+}
+
+void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept
+{
+    std::optional<Actor*> actorResult = Utils::GetActorByServerId(acMessage.ActorId);
+    if (!actorResult.has_value())
+        return;
+
+    Actor* pActor = actorResult.value();
+    pActor->Delete();
+
+    // TODO: delete components?
+
+    RequestRespawn request;
+    request.ActorId = acMessage.ActorId;
+    m_transport.Send(request);
+}
+
+void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept
+{
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto it = std::find_if(view.begin(), view.end(), [view](auto entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == 0x14;
+    });
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
+    if (!serverIdRes.has_value())
+        return;
+
+    uint32_t serverId = serverIdRes.value();
+
+    RequestRespawn request;
+    request.ActorId = serverId;
+
+    std::optional<Actor*> actorResult = Utils::GetActorByServerId(serverId);
+    if (actorResult.has_value())
+    {
+        Actor* pActor = actorResult.value();
+        pActor->Delete();
+    }
+
+    m_transport.Send(request);
 }
 
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept

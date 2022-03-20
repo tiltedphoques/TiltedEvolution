@@ -5,11 +5,26 @@
 
 bool EffectItem::IsHealingEffect() const noexcept
 {
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::VALUE_MODIFIER && data.fMagnitude > 0.0f;
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kValueModifier && data.fMagnitude > 0.0f;
 }
 
 bool EffectItem::IsSummonEffect() const noexcept
 {
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::SUMMON_CREATURE;
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSummonCreature;
+}
+
+bool EffectItem::IsSlowEffect() const noexcept
+{
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSlowTime;
+}
+
+bool EffectItem::IsWerewolfEffect() const noexcept
+{
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kWerewolf;
+}
+
+bool EffectItem::IsVampireLordEffect() const noexcept
+{
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kVampireLord;
 }
 

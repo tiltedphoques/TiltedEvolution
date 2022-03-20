@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.18.1...v1.19.0) (2022-03-16)
+
+
+### Features
+
+* werewolf and vampire lord sync ([d0a387d](https://github.com/tiltedphoques/TiltedEvolution/commit/d0a387d7d64c8f5545f77a2bd3cf8f43631a435c))
+
 ## [1.18.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.18.0...v1.18.1) (2022-03-09)
 
 
