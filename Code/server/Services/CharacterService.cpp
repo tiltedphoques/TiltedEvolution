@@ -444,6 +444,79 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
     }
 }
 
+void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
+{
+    auto packet = acMessage.Packet;
+
+    NotifyProjectileLaunch notify{};
+
+    notify.ShooterID = packet.ShooterID;
+
+    notify.OriginX = packet.OriginX;
+    notify.OriginY = packet.OriginY;
+    notify.OriginZ = packet.OriginZ;
+
+    notify.ProjectileBaseID = packet.ProjectileBaseID;
+    notify.WeaponID = packet.WeaponID;
+    notify.AmmoID = packet.AmmoID;
+
+    notify.ZAngle = packet.ZAngle;
+    notify.XAngle = packet.XAngle;
+    notify.YAngle = packet.YAngle;
+
+    notify.ParentCellID = packet.ParentCellID;
+
+    notify.SpellID = packet.SpellID;
+    notify.CastingSource = packet.CastingSource;
+
+    notify.Area = packet.Area;
+    notify.Power = packet.Power;
+    notify.Scale = packet.Scale;
+
+    notify.AlwaysHit = packet.AlwaysHit;
+    notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
+    notify.AutoAim = packet.AutoAim;
+    notify.DeferInitialization = packet.DeferInitialization;
+    notify.ForceConeOfFire = packet.ForceConeOfFire;
+
+    notify.UnkBool1 = packet.UnkBool1;
+    notify.UnkBool2 = packet.UnkBool2;
+
+    notify.ConeOfFireRadiusMult = packet.ConeOfFireRadiusMult;
+    notify.Tracer = packet.Tracer;
+    notify.IntentionalMiss = packet.IntentionalMiss;
+    notify.Allow3D = packet.Allow3D;
+    notify.Penetrates = packet.Penetrates;
+    notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
+
+    const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
+    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender());
+}
+
+void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyMount notify;
+    notify.RiderId = message.RiderId;
+    notify.MountId = message.MountId;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
+}
+
+void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyNewPackage notify;
+    notify.ActorId = message.ActorId;
+    notify.PackageId = message.PackageId;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
+}
+
 void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept
 {
     auto view = m_world.view<OwnerComponent>();
@@ -685,75 +758,3 @@ void CharacterService::ProcessMovementChanges() const noexcept
     }
 }
 
-void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
-{
-    auto packet = acMessage.Packet;
-
-    NotifyProjectileLaunch notify{};
-
-    notify.ShooterID = packet.ShooterID;
-
-    notify.OriginX = packet.OriginX;
-    notify.OriginY = packet.OriginY;
-    notify.OriginZ = packet.OriginZ;
-
-    notify.ProjectileBaseID = packet.ProjectileBaseID;
-    notify.WeaponID = packet.WeaponID;
-    notify.AmmoID = packet.AmmoID;
-
-    notify.ZAngle = packet.ZAngle;
-    notify.XAngle = packet.XAngle;
-    notify.YAngle = packet.YAngle;
-
-    notify.ParentCellID = packet.ParentCellID;
-
-    notify.SpellID = packet.SpellID;
-    notify.CastingSource = packet.CastingSource;
-
-    notify.Area = packet.Area;
-    notify.Power = packet.Power;
-    notify.Scale = packet.Scale;
-
-    notify.AlwaysHit = packet.AlwaysHit;
-    notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
-    notify.AutoAim = packet.AutoAim;
-    notify.DeferInitialization = packet.DeferInitialization;
-    notify.ForceConeOfFire = packet.ForceConeOfFire;
-
-    notify.UnkBool1 = packet.UnkBool1;
-    notify.UnkBool2 = packet.UnkBool2;
-
-    notify.ConeOfFireRadiusMult = packet.ConeOfFireRadiusMult;
-    notify.Tracer = packet.Tracer;
-    notify.IntentionalMiss = packet.IntentionalMiss;
-    notify.Allow3D = packet.Allow3D;
-    notify.Penetrates = packet.Penetrates;
-    notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
-
-    const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
-    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender());
-}
-
-void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
-{
-    auto& message = acMessage.Packet;
-
-    NotifyMount notify;
-    notify.RiderId = message.RiderId;
-    notify.MountId = message.MountId;
-
-    const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
-}
-
-void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept
-{
-    auto& message = acMessage.Packet;
-
-    NotifyNewPackage notify;
-    notify.ActorId = message.ActorId;
-    notify.PackageId = message.PackageId;
-
-    const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
-}

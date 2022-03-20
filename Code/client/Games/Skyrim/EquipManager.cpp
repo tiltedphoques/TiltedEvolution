@@ -14,7 +14,7 @@
 
 struct EquipData
 {
-    BSExtraDataList* extraDataList; // 0
+    ExtraDataList* extraDataList; // 0
     int count; // 8
     int padC; // C
     struct BGSEquipSlot* slot; // 10
@@ -28,7 +28,7 @@ struct EquipData
 
 struct UnEquipData
 {
-    BSExtraDataList* extraDataList; // 0
+    ExtraDataList* extraDataList; // 0
     int count; // 8
     int padC; // C
     struct BGSEquipSlot* slot; // 10
@@ -108,9 +108,9 @@ void* EquipManager::UnEquipShout(Actor* apActor, TESForm* apShout)
 }
 
 
-void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3)
+void* EquipManager::Equip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3)
 {
-    TP_THIS_FUNCTION(TEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, BSExtraDataList * apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3);
+    TP_THIS_FUNCTION(TEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, ExtraDataList * apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3);
     POINTER_SKYRIMSE(TEquipInternal, s_equipFunc, 38894);
 
     ScopedEquipOverride equipOverride;
@@ -120,9 +120,9 @@ void* EquipManager::Equip(Actor* apActor, TESForm* apItem, BSExtraDataList* apEx
     return result;
 }
 
-void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, BSExtraDataList* apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4)
+void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4)
 {
-    TP_THIS_FUNCTION(TUnEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, BSExtraDataList * apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4);
+    TP_THIS_FUNCTION(TUnEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, ExtraDataList * apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4);
     POINTER_SKYRIMSE(TUnEquipInternal, s_unequipFunc, 38901);
 
     ScopedEquipOverride equipOverride;

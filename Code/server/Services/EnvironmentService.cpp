@@ -84,7 +84,7 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             objectData.CurrentLockData = objectComponent.CurrentLockData;
 
             auto& inventoryComponent = view.get<InventoryComponent>(*iter);
-            objectData.CurrentInventory.Buffer = inventoryComponent.Content.Buffer;
+            objectData.CurrentInventory = inventoryComponent.Content;
 
             response.Objects.push_back(objectData);
         }

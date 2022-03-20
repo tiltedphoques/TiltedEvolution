@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Actor.h>
+
 struct World;
 struct ImguiService;
 struct UpdateEvent;
@@ -7,11 +9,10 @@ struct UpdateEvent;
 struct TransportService;
 struct BSAnimationGraphManager;
 
-struct Actor;
 struct TestService
 {
     TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
-    ~TestService() noexcept;
+    ~TestService() noexcept = default;
 
     TP_NOCOPYMOVE(TestService);
 

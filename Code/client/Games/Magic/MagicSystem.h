@@ -56,6 +56,25 @@ enum Delivery : int32_t
     DELIVERY_COUNT = 0x5,
 };
 
+enum SpellType : int32_t
+{
+    SPELL = 0x0,
+    DISEASE = 0x1,
+    POWER = 0x2,
+    LESSER_POWER = 0x3,
+    ABILITY = 0x4,
+    POISON = 0x5,
+    ENCHANTMENT = 0x6,
+    POTION = 0x7,
+    WORTCRAFT = 0x8,
+    LEVELED_SPELL = 0x9,
+    ADDICTION = 0xA,
+    VOICE_POWER = 0xB,
+    STAFF_ENCHANTMENT = 0xC,
+    SCROLL = 0xD,
+    SPELL_TYPE_COUNT = 0xE,
+};
+
 }
 
 namespace EffectArchetypes

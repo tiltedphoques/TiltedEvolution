@@ -1,7 +1,7 @@
 #pragma once
 
 struct TESForm;
-struct BSExtraDataList;
+struct ExtraDataList;
 struct Actor;
 struct BGSObjectInstance;
 struct BGSEquipSlot;

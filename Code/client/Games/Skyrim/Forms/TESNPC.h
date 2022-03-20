@@ -16,7 +16,7 @@ struct BGSRelationship;
 
 struct TESNPC : TESActorBase
 {
-    static constexpr uint32_t Type = FormType::Npc;
+    static constexpr FormType Type = FormType::Npc;
 
     static TESNPC* Create(const String& acBuffer, uint32_t aChangeFlags) noexcept;
 

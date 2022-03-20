@@ -142,7 +142,7 @@ void InventoryService::RunObjectInventoryUpdates() noexcept
                     continue;
             }
 
-            objectData.CurrentInventory.Buffer = pObject->SerializeInventory();
+            objectData.CurrentInventory = pObject->GetInventory();
 
             message.Changes[gameId] = objectData;
         }
@@ -191,7 +191,7 @@ void InventoryService::RunCharacterInventoryUpdates() noexcept
             if (!pActor)
                 continue;
 
-            message.Changes[serverId] = pActor->GetInventory();
+            message.Changes[serverId] = pActor->GetActorInventory();
         }
 
         m_transport.Send(message);
@@ -208,24 +208,24 @@ void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
     if (UI::Get()->GetMenuOpen(BSFixedString("ContainerMenu")))
         return;
 
-    for (const auto& [id, inventory] : m_cachedObjectInventoryChanges)
+    for (auto& idInventory : m_cachedObjectInventoryChanges)
     {
-        const auto cObjectId = World::Get().GetModSystem().GetGameId(id);
+        const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(idInventory.first);
         if (cObjectId == 0)
         {
             spdlog::error("Failed to retrieve object to sync inventory.");
             continue;
         }
 
-        auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+        TESObjectREFR* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
         if (!pObject)
         {
             spdlog::error("Failed to retrieve object to sync inventory.");
             continue;
         }
 
-        pObject->RemoveAllItems();
-        pObject->DeserializeInventory(inventory.Buffer);
+        Inventory inventory = idInventory.second;
+        pObject->SetInventory(inventory);
     }
 
     m_cachedObjectInventoryChanges.clear();
@@ -240,9 +240,9 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
         return;
 
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
-    for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
+    for (auto& idInventory : m_cachedCharacterInventoryChanges)
     {
-        const auto it = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) { 
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = idInventory.first, view](entt::entity entity) { 
             return view.get<RemoteComponent>(entity).Id == id;
         });
 
@@ -250,14 +250,16 @@ void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
             continue;
 
         const auto& formIdComponent = view.get<FormIdComponent>(*it);
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         if (!pActor)
             continue;
+
+        Inventory inventory = idInventory.second;
 
         auto& remoteComponent = m_world.get<RemoteComponent>(*it);
         remoteComponent.SpawnRequest.InventoryContent = inventory;
 
-        pActor->SetInventory(inventory);
+        pActor->SetActorInventory(inventory);
     }
 
     m_cachedCharacterInventoryChanges.clear();
@@ -284,7 +286,7 @@ void InventoryService::RunWeaponStateUpdates() noexcept
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
