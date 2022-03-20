@@ -75,9 +75,7 @@ enum Variables
 
 AnimationGraphDescriptor_WerewolfBehavior::AnimationGraphDescriptor_WerewolfBehavior(AnimationGraphDescriptorManager& aManager)
 {
-    uint64_t key = 9732983738769370819;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
         AnimationGraphDescriptor(
         {kbEquipOk,
             kbAnimationDriven,

@@ -41,6 +41,8 @@ private:
 
     Vector<GamePtr<Actor>> m_actors;
 
+    uint32_t m_formId = 0;
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
     bool m_showDebugStuff = false;

@@ -39,6 +39,7 @@ enum ClientOpcode : unsigned char
     kDrawWeaponRequest,
     kMountRequest,
     kNewPackageRequest,
+    kRequestRespawn,
     kSyncExperienceRequest,
     kClientOpcodeMax
 };
@@ -79,6 +80,7 @@ enum ServerOpcode : unsigned char
     kNotifyDrawWeapon,
     kNotifyMount,
     kNotifyNewPackage,
+    kNotifyRespawn,
     kNotifySyncExperience,
     kServerOpcodeMax
 };

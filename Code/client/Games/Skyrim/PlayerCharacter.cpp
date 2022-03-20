@@ -1,8 +1,12 @@
 #include <PlayerCharacter.h>
+#include <Games/ActorExtension.h>
+
+#include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
 
 #include <Games/Overrides.h>
 
 #include <Events/InventoryChangeEvent.h>
+#include <Events/LeaveBeastFormEvent.h>
 #include <Events/AddExperienceEvent.h>
 
 #include <World.h>
@@ -11,14 +15,14 @@
 #include <Games/ActorExtension.h>
 
 TP_THIS_FUNCTION(TPickUpItem, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
+TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
 TP_THIS_FUNCTION(TAddSkillExperience, void, PlayerCharacter, int32_t aSkill, float aExperience);
 TP_THIS_FUNCTION(TCalculateExperience, bool, int32_t, float* aFactor, float* aBonus, float* aUnk1, float* aUnk2);
 
 static TPickUpItem* RealPickUpItem = nullptr;
+static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
-
-// TODO: scoped override
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
 {
@@ -39,6 +43,17 @@ char TP_MAKE_THISCALL(HookPickUpItem, PlayerCharacter, TESObjectREFR* apObject, 
 {
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
+}
+
+void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool aEntering)
+{
+    if (!aEntering)
+    {
+        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
+        World::Get().GetRunner().Trigger(LeaveBeastFormEvent());
+    }
+
+    ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }
 
 void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, float aExperience)
@@ -83,14 +98,17 @@ bool TP_MAKE_THISCALL(HookCalculateExperience, int32_t, float* aFactor, float* a
 static TiltedPhoques::Initializer s_playerCharacterHooks([]()
 {
     POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 40533);
+    POINTER_SKYRIMSE(TSetBeastForm, s_setBeastForm, 55497);
     POINTER_SKYRIMSE(TAddSkillExperience, s_addSkillExperience, 40488);
     POINTER_SKYRIMSE(TCalculateExperience, s_calculateExperience, 27244);
 
     RealPickUpItem = s_pickUpItem.Get();
+    RealSetBeastForm = s_setBeastForm.Get();
     RealAddSkillExperience = s_addSkillExperience.Get();
     RealCalculateExperience = s_calculateExperience.Get();
 
     TP_HOOK(&RealPickUpItem, HookPickUpItem);
+    TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
     TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
     TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
 });
