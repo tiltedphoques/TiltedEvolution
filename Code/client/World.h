@@ -2,6 +2,7 @@
 
 #include <Services/RunnerService.h>
 #include <Services/TransportService.h>
+#include <Services/PartyService.h>
 
 #include <Systems/ModSystem.h>
 
@@ -16,6 +17,8 @@ struct World : entt::registry
     RunnerService& GetRunner() noexcept;
     TransportService& GetTransport() noexcept;
     ModSystem& GetModSystem() noexcept;
+
+    const PartyService& GetPartyService() const noexcept { return ctx<const PartyService>(); }
 
     auto &GetDispatcher() noexcept
     {

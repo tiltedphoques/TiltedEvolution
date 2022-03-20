@@ -20,7 +20,7 @@ void TestService::DrawPlayerDebugView()
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer)
     {
-    // TODO: maybe draw somethin?
+        // TODO: maybe draw somethin?
         return;
     }
 

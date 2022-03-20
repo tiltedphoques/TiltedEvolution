@@ -16,6 +16,11 @@ struct PartyService
 
     TP_NOCOPYMOVE(PartyService);
 
+    [[nodiscard]] bool IsInParty() const noexcept
+    {
+        return m_inParty;
+    }
+
 protected:
 
     void OnUpdate(const UpdateEvent& acPlayerList) noexcept;

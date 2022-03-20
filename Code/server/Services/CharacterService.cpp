@@ -37,6 +37,8 @@
 #include <Messages/NotifyNewPackage.h>
 #include <Messages/RequestRespawn.h>
 #include <Messages/NotifyRespawn.h>
+#include <Messages/SyncExperienceRequest.h>
+#include <Messages/NotifySyncExperience.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -56,6 +58,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
+    , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
 {
 }
 
@@ -542,6 +545,20 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
 
         acMessage.GetSender()->Send(message);
     }
+}
+
+void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept
+{
+    NotifySyncExperience notify;
+    notify.Experience = acMessage.Packet.Experience;
+
+    const auto& partyComponent = acMessage.pPlayer->GetParty();
+
+    if (!partyComponent.JoinedPartyId.has_value())
+        return;
+
+    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+    GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
