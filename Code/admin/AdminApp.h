@@ -22,9 +22,8 @@ enum class ConnectionState
 struct AdminSessionOpen;
 struct ServerLogs;
 
-class AdminApp : public Platform::Application, public TiltedPhoques::Client
+struct AdminApp : Platform::Application, TiltedPhoques::Client
 {
-  public:
     explicit AdminApp(const Arguments& arguments);
 
     void drawEvent() override;
@@ -58,7 +57,7 @@ protected:
     void HandleMessage(const AdminSessionOpen& acMessage);
     void HandleMessage(const ServerLogs& acMessage);
 
-  private:
+private:
     ImGuiIntegration::Context m_imgui{NoCreate};
 
     bool m_authenticated;

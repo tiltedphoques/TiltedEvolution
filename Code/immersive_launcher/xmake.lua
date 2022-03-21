@@ -20,7 +20,7 @@ local function build_launcher()
     add_headerfiles("**.h")
     add_files(
         "**.cpp",
-        "resources/launcher.rc")
+        "launcher.rc")
     add_deps(
         "TiltedReverse",
         "TiltedHooks",
