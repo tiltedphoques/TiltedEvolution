@@ -12,5 +12,5 @@ public:
     // Master files
     Vector<Chunks::MAST> m_masterFiles{};
 
-    void ParseChunks(TES4& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseChunks(TES4& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };

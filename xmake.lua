@@ -9,10 +9,17 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
-add_rules("plugin.vsxmake.autoupdate")
-add_rules("c.unity_build")
+
+if has_config("unitybuild") then
+    add_rules("c.unity_build")
+    add_rules("c++.unity_build", {batchsize = 12})
+end
 
 add_requires("entt", "recastnavigation")
+
+if is_plat("windows") then
+    add_cxflags("/bigobj")
+end
 
 before_build(function (target)
     import("modules.version")

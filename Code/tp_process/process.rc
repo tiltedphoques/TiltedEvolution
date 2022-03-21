@@ -1,5 +1,5 @@
   
-#include "winuser.h"
+#include "winres.h"
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L

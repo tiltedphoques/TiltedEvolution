@@ -3,7 +3,6 @@
 #include "Message.h"
 
 using TiltedPhoques::String;
-using TiltedPhoques::Map;
 
 struct NotifyPlayerList final : ServerMessage
 {
@@ -25,5 +24,5 @@ struct NotifyPlayerList final : ServerMessage
             GetOpcode() == acRhs.GetOpcode();
     }
 
-    Map<uint32_t, String> Players{};
+    TiltedPhoques::Map<uint32_t, String> Players{};
 };

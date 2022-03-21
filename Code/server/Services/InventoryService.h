@@ -1,8 +1,6 @@
 #pragma once
 
 #include <Events/PacketEvent.h>
-#include <Structs/GameId.h>
-#include <Structs/Inventory.h>
 
 struct World;
 struct UpdateEvent;
@@ -11,8 +9,6 @@ struct RequestCharacterInventoryChanges;
 struct DrawWeaponRequest;
 struct UpdateEvent;
 struct PlayerLeaveCellEvent;
-
-using TiltedPhoques::Map;
 
 class InventoryService
 {

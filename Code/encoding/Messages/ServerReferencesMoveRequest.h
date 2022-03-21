@@ -4,7 +4,6 @@
 #include <Structs/ReferenceUpdate.h>
 
 using TiltedPhoques::String;
-using TiltedPhoques::Map;
 
 struct ServerReferencesMoveRequest final : ServerMessage
 {
@@ -25,5 +24,5 @@ struct ServerReferencesMoveRequest final : ServerMessage
     }
     
     uint64_t Tick{};
-    Map<uint32_t, ReferenceUpdate> Updates{};
+    TiltedPhoques::Map<uint32_t, ReferenceUpdate> Updates{};
 };

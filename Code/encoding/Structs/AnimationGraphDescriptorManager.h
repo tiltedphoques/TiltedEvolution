@@ -2,8 +2,6 @@
 
 #include <Structs/AnimationGraphDescriptor.h>
 
-using TiltedPhoques::Map;
-
 struct AnimationGraphDescriptorManager
 {
     TP_NOCOPYMOVE(AnimationGraphDescriptorManager);
@@ -25,5 +23,5 @@ private:
 
     AnimationGraphDescriptorManager() noexcept;
 
-    Map<uint64_t, AnimationGraphDescriptor> m_descriptors;
+    TiltedPhoques::Map<uint64_t, AnimationGraphDescriptor> m_descriptors;
 };

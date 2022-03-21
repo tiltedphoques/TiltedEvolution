@@ -18,10 +18,10 @@ struct ModsComponent
     const auto& GetStandardMods() const noexcept { return m_standardMods; }
     const auto& GetLiteMods() const noexcept { return m_liteMods; }
 
-    using TModList = Map<String, Entry>; 
+    using TModList = TiltedPhoques::Map<String, Entry>; 
 private:
 
     uint32_t m_seed = 0;
-    Map<String, Entry> m_standardMods;
-    Map<String, Entry> m_liteMods;
+    TiltedPhoques::Map<String, Entry> m_standardMods;
+    TiltedPhoques::Map<String, Entry> m_liteMods;
 };
