@@ -1,3 +1,5 @@
+## [1.22.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.22.0...v1.22.1) (2022-03-21)
+
 # [1.22.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.21.0...v1.22.0) (2022-03-21)
 
 
