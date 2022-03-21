@@ -9,7 +9,6 @@ local function build_launcher()
         "/SAFESEH:NO",
         "/LARGEADDRESSAWARE",
         "/INCREMENTAL:NO",
-        "/MANIFEST:NO",
         "/LAST:.zdata",
         "/SUBSYSTEM:WINDOWS",
         "/ENTRY:mainCRTStartup", { force = true })
