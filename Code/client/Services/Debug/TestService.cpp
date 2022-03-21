@@ -50,8 +50,6 @@
 #include <Games/Skyrim/Interface/UI.h>
 #endif
 
-//#include <Games/Skyrim/>
-
 #include <imgui.h>
 #include <inttypes.h>
 extern thread_local bool g_overrideFormId;
@@ -72,10 +70,10 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
-    // const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+    Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
+    pActor->SetActorInventory(inventory);
 
     m_actors.emplace_back(pActor);
 }
@@ -87,8 +85,6 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
 }
-
-TestService::~TestService() noexcept = default;
 
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
@@ -104,6 +100,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             static char s_address[256] = "127.0.0.1:10578";
             if (!m_transport.IsOnline())
                 m_transport.Connect(s_address);
+            else
+                m_transport.Close();
         }
     }
     else
@@ -120,23 +118,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            if (m_formId)
-            {
-                auto view = m_world.view<FormIdComponent>();
-                const auto it = std::find_if(view.begin(), view.end(), [view, Id = m_formId](auto entity)
-                {
-                    return view.get<FormIdComponent>(entity).Id == Id;
-                });
-                uint32_t serverId = Utils::GetServerId(*it).value();
-
-                RequestRespawn request;
-                request.ActorId = serverId;
-
-                Actor* pActor = Utils::GetActorByServerId(serverId).value();
-                pActor->Delete();
-
-                m_transport.Send(request);
-            }
+            PlaceActorInWorld();
         }
     }
     else
@@ -185,6 +167,11 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("Player"))
     {
         DrawPlayerDebugView();
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Skills"))
+    {
+        DrawSkillView();
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Components"))

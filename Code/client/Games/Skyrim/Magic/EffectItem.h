@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Components/TESCondition.h>
+
 struct EffectSetting;
 
 struct EffectItemData
@@ -21,4 +23,5 @@ struct EffectItem
     uint32_t padC;
     EffectSetting* pEffectSetting;
     float fRawCost;
+    TESCondition Condition{};
 };

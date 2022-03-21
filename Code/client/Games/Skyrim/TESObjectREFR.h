@@ -9,11 +9,23 @@
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
+#include <Structs/Inventory.h>
+#include <Games/ExtraDataList.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
 struct TESBoundObject;
 struct TESContainer;
+
+enum class ITEM_REMOVE_REASON
+{
+    kRemove,
+    kSteal,
+    kSelling,
+    kDropping,
+    kStoreInContainer,
+    kStoreInTeammate
+};
 
 struct TESObjectREFR : TESForm
 {
@@ -67,11 +79,11 @@ struct TESObjectREFR : TESForm
     virtual void sub_53();
     virtual void sub_54();
     virtual void sub_55();
-    virtual void sub_56();
+    virtual BSPointerHandle<TESObjectREFR> RemoveItem(TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc = nullptr, const NiPoint3* apRotate = nullptr);
     virtual void sub_57();
     virtual void sub_58();
     virtual void sub_59();
-    virtual void sub_5A();
+    virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
     virtual void sub_5B();
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual void sub_5D();
@@ -143,10 +155,11 @@ struct TESObjectREFR : TESForm
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;
     ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
-    BSExtraDataList* GetExtraDataList() noexcept;
+    ExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
+    void GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) const noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -173,6 +186,11 @@ struct TESObjectREFR : TESForm
     const float GetHeight() noexcept;
     void EnableImpl() noexcept;
 
+    Inventory GetInventory() const noexcept;
+    void SetInventory(const Inventory& acContainer) noexcept;
+
+    void AddItem(const Inventory::Entry& arEntry) noexcept;
+
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
     IAnimationGraphManagerHolder animationGraphHolder;
@@ -181,7 +199,7 @@ struct TESObjectREFR : TESForm
     NiPoint3 position;
     TESObjectCELL* parentCell;
     void* loadedState;
-    BSExtraDataList extraData;
+    ExtraDataList extraData;
     BSRecursiveLock refLock;
     uint16_t scale;
     uint16_t referenceFlags;

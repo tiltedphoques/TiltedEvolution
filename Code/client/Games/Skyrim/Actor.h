@@ -24,7 +24,7 @@ struct CombatController;
 
 struct Actor : TESObjectREFR
 {
-    static constexpr uint32_t Type = FormType::Character;
+    static constexpr FormType Type = FormType::Character;
 
     // Allocs and calls constructor
     static GamePtr<Actor> New() noexcept;
@@ -190,15 +190,14 @@ struct Actor : TESObjectREFR
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorMaxValue(uint32_t aId) const noexcept;
+    Inventory GetActorInventory() const noexcept;
 
-    Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
     void SetActorValue(uint32_t aId, float aValue) noexcept;
     void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
@@ -207,6 +206,7 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
+    void SetActorInventory(Inventory& aInventory) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

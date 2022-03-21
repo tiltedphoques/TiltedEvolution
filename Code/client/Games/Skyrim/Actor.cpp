@@ -26,6 +26,17 @@
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
 
+#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraCharge.h>
+#include <ExtraData/ExtraCount.h>
+#include <ExtraData/ExtraEnchantment.h>
+#include <ExtraData/ExtraHealth.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraSoul.h>
+#include <ExtraData/ExtraTextDisplayData.h>
+#include <Forms/EnchantmentItem.h>
+#include <Forms/AlchemyItem.h>
+
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
@@ -79,7 +90,7 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
-TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
 
 using TGetLocation = TESForm *(TESForm *);
@@ -179,39 +190,6 @@ TESForm *Actor::GetCurrentLocation()
     return FUNC_GetActorLocation(this);
 }
 
-Inventory Actor::GetInventory() const noexcept
-{
-    auto& modSystem = World::Get().GetModSystem();
-
-    Inventory inventory;
-    inventory.Buffer = SerializeInventory();
-
-    auto pMainHandWeapon = GetEquippedWeapon(0);
-    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
-
-    auto pSecondaryHandWeapon = GetEquippedWeapon(1);
-    uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
-
-    mainId = magicItems[0] ? magicItems[0]->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
-
-    secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
-
-    uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
-    modSystem.GetServerModId(shoutId, inventory.Shout);
-
-    auto pAmmo = GetEquippedAmmo();
-    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
-    modSystem.GetServerModId(ammoId, inventory.Ammo);
-
-    inventory.IsWeaponDrawn = actorState.IsWeaponFullyDrawn();
-
-    return inventory;
-}
-
 Factions Actor::GetFactions() const noexcept
 {
     Factions result;
@@ -277,83 +255,9 @@ float Actor::GetActorMaxValue(uint32_t aId) const noexcept
     return actorValueOwner.GetMaxValue(aId);
 }
 
-void Actor::SetInventory(const Inventory& acInventory) noexcept
+void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
 {
-    spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
-    UnEquipAll();
-
-    auto* pEquipManager = EquipManager::Get();
-
-    if (!acInventory.Buffer.empty())
-        DeserializeInventory(acInventory.Buffer);
-
-    auto& modSystem = World::Get().GetModSystem();
-
-    uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandWeapon);
-
-    if (mainHandWeaponId)
-        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
-
-    uint32_t secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
-
-    if (secondaryHandWeaponId)
-        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-
-    mainHandWeaponId = modSystem.GetGameId(acInventory.LeftHandSpell);
-
-    if (mainHandWeaponId)
-        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
-
-    secondaryHandWeaponId = modSystem.GetGameId(acInventory.RightHandSpell);
-
-    if (secondaryHandWeaponId)
-        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
-
-    uint32_t shoutId = modSystem.GetGameId(acInventory.Shout);
-
-    if (shoutId)
-        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
-
-    uint32_t ammoId = modSystem.GetGameId(acInventory.Ammo);
-
-    if (ammoId)
-    {
-        auto* pAmmo = TESForm::GetById(ammoId);
-
-        auto count = GetItemCountInInventory(pAmmo);
-
-        const auto pContainerChanges = GetContainerChanges()->entries;
-        for (auto pChange : *pContainerChanges)
-        {
-            if (pChange && pChange->form && pChange->form->formID == ammoId)
-            {
-                if (pChange->form->formID != ammoId)
-                    continue;
-
-                const auto pDataLists = pChange->dataList;
-                for (auto* pDataList : *pDataLists)
-                {
-                    if (pDataList)
-                    {
-                        if (pDataList->Contains(ExtraData::Count))
-                        {
-                            BSExtraData* pExtraData = pDataList->GetByType(ExtraData::Count);
-                            ExtraCount* pExtraCount = RTTI_CAST(pExtraData, BSExtraData, ExtraCount);
-                            if (pExtraCount)
-                            {
-                                pExtraCount->count = 0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-    }
-
-    // TODO: check if weapon drawn state is the same
-    SetWeaponDrawnEx(acInventory.IsWeaponDrawn);
+    actorValueOwner.SetValue(aId, aValue);
 }
 
 void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
@@ -362,9 +266,80 @@ void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
     actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
 }
 
-void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
+Inventory Actor::GetActorInventory() const noexcept
 {
-    actorValueOwner.SetValue(aId, aValue);
+    Inventory inventory = GetInventory();
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    auto pMainHandWeapon = GetEquippedWeapon(0);
+    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+
+    auto pSecondaryHandWeapon = GetEquippedWeapon(1);
+    uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
+    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
+
+    mainId = magicItems[0] ? magicItems[0]->formID : 0;
+    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
+
+    secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
+    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
+
+    uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
+    modSystem.GetServerModId(shoutId, inventory.Shout);
+
+    auto pAmmo = GetEquippedAmmo();
+    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
+    modSystem.GetServerModId(ammoId, inventory.Ammo);
+
+    return inventory;
+}
+
+void Actor::SetActorInventory(Inventory& aInventory) noexcept
+{
+    spdlog::info("Setting inventory for actor {:X}", formID);
+
+    UnEquipAll();
+
+    SetInventory(aInventory);
+
+    auto* pEquipManager = EquipManager::Get();
+    auto& modSystem = World::Get().GetModSystem();
+
+    uint32_t mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandWeapon);
+
+    if (mainHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+
+    uint32_t secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandWeapon);
+
+    if (secondaryHandWeaponId)
+        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+
+    mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandSpell);
+
+    if (mainHandWeaponId)
+        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
+
+    secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandSpell);
+
+    if (secondaryHandWeaponId)
+        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+
+    uint32_t shoutId = modSystem.GetGameId(aInventory.Shout);
+
+    if (shoutId)
+        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+
+    uint32_t ammoId = modSystem.GetGameId(aInventory.Ammo);
+
+    if (ammoId)
+    {
+        TESForm* pAmmo = TESForm::GetById(ammoId);
+        int64_t count = GetItemCountInInventory(pAmmo);
+        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+    }
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -450,10 +425,8 @@ void Actor::UnEquipAll() noexcept
         }
     }
 
-    RemoveAllItems();
-
     // Taken from skyrim's code shouts can be two form types apparently
-    if (equippedShout && (equippedShout->formType - 41) <= 1)
+    if (equippedShout && ((int)equippedShout->formType - 41) <= 1)
     {
         EquipManager::Get()->UnEquipShout(this, equippedShout);
         equippedShout = nullptr;
@@ -650,15 +623,19 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
-void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+extern thread_local bool g_modifyingInventory;
+
+void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!g_modifyingInventory)
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!g_modifyingInventory)
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 

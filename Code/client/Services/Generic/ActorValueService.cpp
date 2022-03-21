@@ -293,6 +293,10 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
     pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
+
+    const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
+    if (health <= 0.f)
+        pActor->Kill();
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
@@ -317,7 +321,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
     {
 #if TP_SKYRIM64
         // Syncing dragon souls triggers "Dragon soul collected" event
-        if (key == ActorValueInfo::kDragonSouls)
+        if (key == ActorValueInfo::kDragonSouls || key == ActorValueInfo::kHealth)
             continue;
 
         spdlog::debug("Actor value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);

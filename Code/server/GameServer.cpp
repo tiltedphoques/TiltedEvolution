@@ -351,6 +351,28 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
+void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
+{
+    if (!acPartyComponent.JoinedPartyId.has_value())
+    {
+        spdlog::warn("Part does not exist, canceling broadcast.");
+        return;
+    }
+
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
+    {
+        if (pPlayer == apExcludeSender)
+            continue;
+
+        const auto& partyComponent = pPlayer->GetParty();
+        if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
+        {
+            spdlog::info("Sent to party member");
+            pPlayer->Send(acServerMessage);
+        }
+    }
+}
+
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                                              const UniquePtr<AuthenticationRequest>& acRequest)
 {

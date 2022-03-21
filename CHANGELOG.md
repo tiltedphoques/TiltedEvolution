@@ -1,3 +1,45 @@
+# [1.21.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.20.0...v1.21.0) (2022-03-20)
+
+
+### Bug Fixes
+
+* bug in xp sync ([edb1feb](https://github.com/tiltedphoques/TiltedEvolution/commit/edb1febba167671b3b20fd4f8b8ebe9300203e11))
+
+
+### Features
+
+* sync combat xp with party ([a1c8149](https://github.com/tiltedphoques/TiltedEvolution/commit/a1c8149c9ebffcf71bfc5986e69fb3f246eeb893))
+
+# [1.20.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.19.0...v1.20.0) (2022-03-20)
+
+
+### Bug Fixes
+
+* build error ([e52d8bf](https://github.com/tiltedphoques/TiltedEvolution/commit/e52d8bf567705daeeb004ab4ac81d92d6739fd3d))
+* build errors ([8f0cd0a](https://github.com/tiltedphoques/TiltedEvolution/commit/8f0cd0a1ea2573ffbfe04117398f5d11706f07f4))
+* build errors ([8935919](https://github.com/tiltedphoques/TiltedEvolution/commit/893591952a9a2e3be52619614b1fb7ea7575394e))
+* build fixes ([86319bc](https://github.com/tiltedphoques/TiltedEvolution/commit/86319bc55ac581e7f6cd442ca9e4a56274a2b43c))
+* deadlock issue with AddItem ([c5412d2](https://github.com/tiltedphoques/TiltedEvolution/commit/c5412d2c12943d8c086f3e54e185aaff6372799b))
+* death bug ([b4fab96](https://github.com/tiltedphoques/TiltedEvolution/commit/b4fab965b62ef8a9845a9e2ec2ed95c5229bc1d0))
+* forgot TESCondition ([ff9adeb](https://github.com/tiltedphoques/TiltedEvolution/commit/ff9adeb74af8dfab937aa6a3eb334e6b66d5f122))
+* health on remote actors going back up ([b63ce95](https://github.com/tiltedphoques/TiltedEvolution/commit/b63ce9599ada077b0cfb7c0552179e11519df618))
+* memory leak ([6bd8c51](https://github.com/tiltedphoques/TiltedEvolution/commit/6bd8c517e69c08b48860d4d482ac91d1b285483b))
+* object, not a ptr ([bfdc267](https://github.com/tiltedphoques/TiltedEvolution/commit/bfdc267c3c3e62dbc9f064f8735e7a6069a4a1bf))
+* permanent fix for waiting spawn ([1f1b605](https://github.com/tiltedphoques/TiltedEvolution/commit/1f1b6055e42c7685522e41d87bb1fd46d20e9e2c))
+* serialization bugs ([d2f4077](https://github.com/tiltedphoques/TiltedEvolution/commit/d2f4077f22b245d823e1dc576a7358af67b778e0))
+* SpellItem struct ([3687b61](https://github.com/tiltedphoques/TiltedEvolution/commit/3687b615432ff7e2ad260b3fd7fa1aa6d3880b3b))
+* temp fix for waiting spawn ([b614ba9](https://github.com/tiltedphoques/TiltedEvolution/commit/b614ba93fa857676f35357bb84776f98f97099f9))
+
+
+### Features
+
+* Actor::SetFullContainer() ([1110e42](https://github.com/tiltedphoques/TiltedEvolution/commit/1110e42b206e34beccc6c57e4d9cf0bea360a3b3))
+* GetContainer() proof of concept ([b4aa6ef](https://github.com/tiltedphoques/TiltedEvolution/commit/b4aa6ef089d45d8a87b51fe5a1d52941c32c1b38))
+* serializing custom enchantments ([0bc2e1b](https://github.com/tiltedphoques/TiltedEvolution/commit/0bc2e1b7f844022d2297b6d0910126365157e067))
+* successfully transfer inventory to dummy ([2695ed0](https://github.com/tiltedphoques/TiltedEvolution/commit/2695ed069a1a7de54e2f1ee1c76a016c03b067ca))
+* sync enchantments ([1c9be42](https://github.com/tiltedphoques/TiltedEvolution/commit/1c9be4236a64b2ba4aa4b90d7e37b4ffec4afd10))
+* TESObjectREFR::AddItem() ([f96ae17](https://github.com/tiltedphoques/TiltedEvolution/commit/f96ae176aab5a8b30da41d2af8f542e2f3d47ff0))
+
 # [1.19.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.18.1...v1.19.0) (2022-03-16)
 
 

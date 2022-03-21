@@ -38,6 +38,7 @@ private:
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
+    // TODO: these two can probably be merged now?
     Set<uint32_t> m_objectsWithInventoryChanges;
     Set<uint32_t> m_charactersWithInventoryChanges;
     Map<GameId, Inventory> m_cachedObjectInventoryChanges;
