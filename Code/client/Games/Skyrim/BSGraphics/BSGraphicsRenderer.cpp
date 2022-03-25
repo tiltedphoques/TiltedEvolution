@@ -49,7 +49,7 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     aOSData->hIcon = g_SharedWindowIcon;
 
     //aOSData->pClassName = "Skyrim Together EVO Test";
-    aOSData->pClassName = "Skyrim Together: Expanden and Enhanced Edition";
+    aOSData->pClassName = "Skyrim Together: Expanded and Enhanced Edition";
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;
 

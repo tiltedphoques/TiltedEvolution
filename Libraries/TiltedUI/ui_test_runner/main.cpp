@@ -42,11 +42,11 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
 
         if (eventName == "connect")
         {
-            
+
         }
         if (eventName == "disconnect")
         {
-            
+
         }
 
         return true;
@@ -57,7 +57,7 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
 
 class UITestRunner;
 
-class D3D11RenderProvider final : TiltedPhoques::OverlayApp::RenderProvider, TiltedPhoques::OverlayRenderHandlerD3D11::Renderer
+class D3D11RenderProvider final : TiltedPhoques::RenderProvider, TiltedPhoques::OverlayRenderHandlerD3D11::Renderer
 {
 public:
     explicit D3D11RenderProvider(UITestRunner& aRunner) : m_runner(aRunner) {}
@@ -70,7 +70,7 @@ private:
     UITestRunner& m_runner;
 };
 
-class UITestRunner final : public GraphicsRenderer 
+class UITestRunner final : public GraphicsRenderer
 {
     friend class D3D11RenderProvider;
 public:
@@ -79,12 +79,11 @@ public:
         GraphicsRenderer::Initialize(GetModuleHandleW(nullptr));
 
         m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(*this);
-        m_pOverlay = new TiltedPhoques::OverlayApp((TiltedPhoques::OverlayApp::RenderProvider*)m_pProvider.get(), new ::OverlayClient(m_pProvider->Create()));
-
-        if (!m_pOverlay->Initialize("http://www.http2demo.io/"))
+        m_pOverlay = new TiltedPhoques::OverlayApp((TiltedPhoques::RenderProvider*)m_pProvider.get(), /*new ::OverlayClient(m_pProvider->Create())*/ nullptr);
+        if (!m_pOverlay->Initialize())
             __debugbreak();
 
-        m_pOverlay->GetClient()->Create();
+        m_pMainFrame = m_pOverlay->CreateSpace();
     }
 
     bool Draw()
@@ -93,24 +92,24 @@ public:
             m_bShowCEF = !m_bShowCEF;
             UpdateWindowTitle();
 
-            m_pOverlay->GetClient()->Reset();
+            //m_pMainFrame->GetClient()->Reset();
         }
 
         if (GetAsyncKeyState(VK_F4) & 1) {
-            m_pOverlay->ShowDevTools();
+            m_pMainFrame->ShowDevTools();
         }
 
         if (GetAsyncKeyState(VK_F5) & 1) {
             GraphicsRenderer::ToggleRect();
         }
 
-        return GraphicsRenderer::Run(); 
+        return GraphicsRenderer::Run();
     }
 
     void DrawWithin() override
     {
         if (m_bShowCEF) {
-            m_pOverlay->GetClient()->Render();
+            m_pMainFrame->GetClient()->Render();
         }
     }
 
@@ -123,6 +122,7 @@ public:
 private:
     CefRefPtr<TiltedPhoques::OverlayApp> m_pOverlay{ nullptr };
     TiltedPhoques::UniquePtr<D3D11RenderProvider> m_pProvider;
+    TiltedPhoques::OverlaySpace* m_pMainFrame{ nullptr };
     bool m_bShowCEF = false;
 };
 
