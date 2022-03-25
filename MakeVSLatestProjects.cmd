@@ -1,4 +1,4 @@
 @echo off
 
-xmake project -k vsxmake2022
+xmake project -k vs
 timeout /t 3 /nobreak
