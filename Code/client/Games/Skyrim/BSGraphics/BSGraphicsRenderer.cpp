@@ -20,6 +20,12 @@ RendererWindow* GetMainWindow()
     return g_RenderWindow;
 }
 
+State* State::Get()
+{
+    static const VersionDbPtr<uint8_t> stateGet(411479);
+    return (State*)stateGet.Get();
+}
+
 void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*,
                       BSGraphics::RendererInitReturn*) = nullptr;
 
@@ -42,7 +48,8 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     // game.
     aOSData->hIcon = g_SharedWindowIcon;
 
-    aOSData->pClassName = "Skyrim Together EVO Test";
+    //aOSData->pClassName = "Skyrim Together EVO Test";
+    aOSData->pClassName = "Skyrim Together: Expanden and Enhanced Edition";
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;
 

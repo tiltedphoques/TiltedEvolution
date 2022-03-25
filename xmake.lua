@@ -31,6 +31,7 @@ before_build(function (target)
 end)
 
 if is_mode("debug") then
+    add_cxflags("/FS")
     add_defines("DEBUG")
 end
 

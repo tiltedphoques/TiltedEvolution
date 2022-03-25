@@ -131,6 +131,8 @@ struct State
     uint32_t uiBackBufferHeight;
     uint32_t uiScreenWidth;
     uint32_t uiScreenHeight;
+
+    static State* Get();
 };
 
 static_assert(offsetof(State, State::uiBackBufferWidth) == 0x24);

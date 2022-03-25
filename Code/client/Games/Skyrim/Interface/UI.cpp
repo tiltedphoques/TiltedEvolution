@@ -3,13 +3,14 @@
 #include <Games/Skyrim/Interface/UI.h>
 #include <Misc/BSFixedString.h>
 #include <TiltedOnlinePCH.h>
-
 #include <World.h>
+
+#include "Sdk/Scaleform/GFxMovieDef.h"
+#include "Sdk/Scaleform/GFxPlayer.h"
+#include "Sdk/Scaleform/Render/Render_Viewport.h"
 
 namespace
 {
-bool g_RequestUnpauseAll{false};
-
 // TODO(Force): Replace with niRTTI once we found all.
 static constexpr const char* kMenuUnpauseAllowList[] = {
     "Console",       "Journal Menu",   "TweenMenu",     "MagicMenu",    "StatsMenu",
@@ -79,46 +80,9 @@ IMenu* UI::FindMenuByName(const BSFixedString& acName)
     return nullptr;
 }
 
-struct Scaleform_Render_Viewport
-{
-    int BufferWidth;
-    int BufferHeight;
-    int Left;
-    int Top;
-    int Width;
-    int Height;
-    int ScissorLeft;
-    int ScissorTop;
-    int ScissorWidth;
-    int ScissorHeight;
-    unsigned int Flags;
-};
-
-struct Scaleform_GFx_Viewport : Scaleform_Render_Viewport
-{
-    float Scale;
-    float AspectRatio;
-};
-
-template <typename T> struct Scaleform_Render_Rect
-{
-    T x1;
-    T y1;
-    T x2;
-    T y2;
-};
-
-enum Scaleform_GFx_Movie_ScaleModeType : __int32
-{
-    SM_NoScale = 0x0,
-    SM_ShowAll = 0x1,
-    SM_ExactFit = 0x2,
-    SM_NoBorder = 0x3,
-};
-
-int (*Scaleform_GFx_MovieImpl_SetViewport)(void*, const Scaleform_GFx_Viewport*);
-void (*sub_140F67210)(void*, const Scaleform_Render_Rect<float>*);
-void (*Scaleform_GFx_MovieImpl_SetViewScaleMode)(void*, Scaleform_GFx_Movie_ScaleModeType);
+int (*Scaleform_GFx_MovieImpl_SetViewport)(void*, const Scaleform::Render::Viewport*);
+void (*sub_140F67210)(void*, const Scaleform::Render::RectF*);
+void (*Scaleform_GFx_MovieImpl_SetViewScaleMode)(void*, Scaleform::GFx::Movie::ScaleModeType);
 
 float (*CalculateSafeZoneInterface_X)();
 float (*CalculateSafeZoneInterface_Y)();
@@ -129,7 +93,7 @@ void UI::ResizeMovies()
     float safeZoneX = CalculateSafeZoneInterface_X();
     float safeZoneY = CalculateSafeZoneInterface_Y();
 
-    auto* pState = (BSGraphics::State*)0x1430C6D90;
+    auto* pState = BSGraphics::State::Get();
 
     float v22 = (float)pState->uiBackBufferWidth - safeZoneX;
     float v23 = (float)pState->uiBackBufferHeight - safeZoneY;
@@ -138,7 +102,7 @@ void UI::ResizeMovies()
     float v25 = 1.0 / (float)pState->uiBackBufferHeight;
 
     // https://help.autodesk.com/view/SCLFRM/ENU/?guid=__cpp_ref_06771_html
-    Scaleform_GFx_Viewport newVp{};
+    Scaleform::Render::Viewport newVp{};
     newVp.Width = pState->uiBackBufferWidth;
     newVp.Height = pState->uiBackBufferHeight;
     //newVp.BufferHeight = pState->uiBackBufferHeight;
@@ -146,18 +110,16 @@ void UI::ResizeMovies()
     //newVp.ScissorHeight = pState->uiBackBufferHeight;
     //newVp.ScissorWidth = pState->uiBackBufferWidth;
     newVp.Flags = 1065353216;
-    newVp.Scale = 1.f;
-    newVp.AspectRatio = 1.f;
     // void* movieView = *(void**)0x142FE9150;
 
     // getframesize hook
 
-    const Scaleform_Render_Rect<float> bounds{v24, v25, safeZoneX, safeZoneY};
+    const Scaleform::Render::RectF bounds{v24, v25, safeZoneX, safeZoneY};
     for (IMenu* pMenu : menuStack)
     {
         if (pMenu->GetMovie())
         {
-            Scaleform_GFx_MovieImpl_SetViewScaleMode(pMenu->GetMovie(), Scaleform_GFx_Movie_ScaleModeType::SM_ShowAll);
+            Scaleform_GFx_MovieImpl_SetViewScaleMode(pMenu->GetMovie(), Scaleform::GFx::Movie::ScaleModeType::SM_ShowAll);
             sub_140F67210(pMenu->GetMovie(), &bounds);
             Scaleform_GFx_MovieImpl_SetViewport(pMenu->GetMovie(), &newVp);
         }
@@ -213,192 +175,18 @@ void UIMessageQueue__AddMessage(void* a1, const BSFixedString* a2, UIMessage::UI
     UIMessageQueue__AddMessage_Real(a1, a2, a3, a4);
 }
 
-enum Scaleform_GFx_FileTypeConstants_FileFormatType : int
-{
-    File_Unopened = 0x0,
-    File_Unknown = 0x1,
-    File_SWF = 0x2,
-    File_GFX = 0x3,
-    File_JPEG = 0xA,
-    File_PNG = 0xB,
-    File_GIF = 0xC,
-    File_TGA = 0xD,
-    File_DDS = 0xE,
-    File_HDR = 0xF,
-    File_BMP = 0x10,
-    File_DIB = 0x11,
-    File_PFM = 0x12,
-    File_TIFF = 0x13,
-    File_WAVE = 0x14,
-    File_PVR = 0x15,
-    File_ETC = 0x16,
-    File_SIF = 0x17,
-    File_GXT = 0x18,
-    File_GTX = 0x19,
-    File_GNF = 0x1A,
-    File_KTX = 0x1B,
-    File_NextAvail = 0x1C,
-    File_DDSBC = 0xFFFD,
-    File_MultiFormat = 0xFFFE,
-    File_Original = 0xFFFF,
-};
-
-const struct Scaleform_GFx_ExporterInfo
-{
-    Scaleform_GFx_FileTypeConstants_FileFormatType Format;
-    const char* pPrefix;
-    const char* pSWFName;
-    unsigned __int16 Version;
-    unsigned int ExportFlags;
-};
-
-struct __declspec(align(4)) Scaleform_String_DataDesc
-{
-    unsigned __int64 Size;
-    volatile int RefCount;
-    char Data[1];
-};
-
-struct Scaleform_String
-{
-    union {
-        Scaleform_String_DataDesc* pData;
-        unsigned __int64 HeapTypeBits;
-    };
-};
-
-namespace Scaleform
-{
-struct ArrayDefaultPolicy
-{
-    size_t Capacity;
-};
-
-template<typename T, size_t N>
-struct AllocatorGH
-{
-};
-
-template<typename TSize, class TAllocator> 
-struct ArrayDataBase
-{
-    unsigned int* Data;
-    unsigned __int64 Size;
-    Scaleform::ArrayDefaultPolicy Policy;
-};
-
-template <typename TSize, class TAllocator, typename TPolicy> 
-struct ArrayData : ArrayDataBase<TSize, TAllocator>
-{
-};
-
-template<class TData>
-struct ArrayBase
-{
-    TData Data;
-};
-
-template <typename T, size_t TSize, class TPolicy = ArrayDefaultPolicy>
-struct Array : Scaleform::ArrayBase<ArrayData<T, Scaleform::AllocatorGH<T, TSize>, TPolicy>>
-{
-};
-
-}
-
-struct Scaleform_GFx_ExporterInfoImpl
-{
-    Scaleform_GFx_ExporterInfo SI;
-    Scaleform_String Prefix;
-    Scaleform_String SWFName;
-    Scaleform::Array<uint32_t, 2> CodeOffsets;
-};
 
 
-struct Scaleform_GFx_MovieHeaderData
-{
-    unsigned int FileLength;
-    int Version;
-    Scaleform_Render_Rect<float> FrameRect;
-    float FPS;
-    unsigned int FrameCount;
-    unsigned int SWFFlags;
-    Scaleform_GFx_ExporterInfoImpl mExporterInfo;
-};
-
-template <typename T> struct Scaleform_Render_Size
-{
-    T Width;
-    T Height;
-};
-
-struct Scaleform_GFx_MovieDataDef_LoadTaskDataBase{
-    char pad0[0x38];
-};
-
-
-
-struct Scaleform_StringLH : Scaleform_String
-{
-};
-
-
-struct Scaleform_GFx_MovieDataDef_LoadTaskData : Scaleform_GFx_MovieDataDef_LoadTaskDataBase
-{
-    void* pHeap;
-    void* pImageHeap;
-    Scaleform_StringLH FileURL;
-    Scaleform_GFx_MovieHeaderData Header;
-};
-
-void GetRectSize(const Scaleform_Render_Rect<float>& in, Scaleform_Render_Size<float>& out)
+void GetRectSize(const Scaleform::Render::RectF& in, Scaleform::Render::SizeF& out)
 {
     out.Width = in.x2 - in.x1;
     out.Height = in.y2 - in.y1;
 }
 
-// this translates this in pixel coords.
-void Scaleform_GFx_MovieDataDef_GetFrameRect(const Scaleform_GFx_MovieHeaderData& header, Scaleform_Render_Rect<float>& result)
-{
-    //constexpr float k = 0.050000001f *4;
-    // its / 20 btw.
-    result.x1 = header.FrameRect.x1 * 0.050000001f;
-    result.x2 = header.FrameRect.x2 * 0.050000001f;
-    result.y1 = header.FrameRect.y1 * 0.050000001f;
-    result.y2 = header.FrameRect.y2 * 0.050000001f;
-}
 
-//MovieDataDef::get
-// TODO: https://www.nexusmods.com/fallout4/articles/149
-
-void (*MovieDataDef_LoadTaskData_BeginSWFLoading)(Scaleform_GFx_MovieDataDef_LoadTaskData*,
-                                                  Scaleform_GFx_MovieHeaderData*){nullptr};
-
-// Scaleform::GFx::MovieDataDef::LoadTaskData::BeginSWFLoading
-void Hook_MovieDataDef_LoadTaskData_BeginSWFLoading(Scaleform_GFx_MovieDataDef_LoadTaskData* pTaskData,
-                                               Scaleform_GFx_MovieHeaderData* rhs)
-{
-    auto* pState = (BSGraphics::State*)0x1430C6D90;
-
-    Scaleform_Render_Rect<float> translate{};
-    Scaleform_GFx_MovieDataDef_GetFrameRect(*rhs, translate);
-
-    if (strstr(&pTaskData->FileURL.pData->Data[0], "Map.swf"))
-    {
-        // need to patch the other code stuff aswell...
-        rhs->FrameRect.x1 = static_cast<float>((pState->uiBackBufferWidth / 2.f) / 2.f) * 20.f;
-        rhs->FrameRect.x2 = static_cast<float>(pState->uiBackBufferWidth) * 20.f;
-        rhs->FrameRect.y2 = static_cast<float>(pState->uiBackBufferHeight) * 20.f;
-    }
-
-    // uncap menu FPS.
-    rhs->FPS = 60.f;
-
-    MovieDataDef_LoadTaskData_BeginSWFLoading(pTaskData, rhs);
-}
 
 static TiltedPhoques::Initializer s_s([]() {
-    TiltedPhoques::SwapCall(0x14102CC71, MovieDataDef_LoadTaskData_BeginSWFLoading,
-                            &Hook_MovieDataDef_LoadTaskData_BeginSWFLoading);
+    
 
     // pray that this doesnt fail!
     VersionDbPtr<uint8_t> ProcessHook(82082);
@@ -421,14 +209,20 @@ static TiltedPhoques::Initializer s_s([]() {
     // use 8 threads by default!
     // TiltedPhoques::Put<uint8_t>(0x141E45770, 8);
 
+    VersionDbPtr<uint8_t> setVP(83989);
     Scaleform_GFx_MovieImpl_SetViewport =
-        static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewport)>((void*)(0x140F71A30));
-    sub_140F67210 = static_cast<decltype(sub_140F67210)>((void*)(0x140F67210));
+        static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewport)>(setVP.GetPtr());
 
-    CalculateSafeZoneInterface_X = static_cast<decltype(CalculateSafeZoneInterface_X)>((void*)(0x140F11310));
-    CalculateSafeZoneInterface_Y = static_cast<decltype(CalculateSafeZoneInterface_Y)>((void*)(0x140F11360));
+    VersionDbPtr<uint8_t> unk1(83852);
+    sub_140F67210 = static_cast<decltype(sub_140F67210)>(unk1.GetPtr());
+
+    VersionDbPtr<uint8_t> safeZoneX(82329);
+    CalculateSafeZoneInterface_X = static_cast<decltype(CalculateSafeZoneInterface_X)>(safeZoneX.GetPtr());
+
+    VersionDbPtr<uint8_t> safeZoneY(82330);
+    CalculateSafeZoneInterface_Y = static_cast<decltype(CalculateSafeZoneInterface_Y)>(safeZoneY.GetPtr());
+
+    VersionDbPtr<uint8_t> setViewScaleMode(83988);
     Scaleform_GFx_MovieImpl_SetViewScaleMode =
-        static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewScaleMode)>((void*)(0x140F71A10));
-
-    TiltedPhoques::Put(0x141E88B88, 100.f);
+        static_cast<decltype(Scaleform_GFx_MovieImpl_SetViewScaleMode)>(setViewScaleMode.GetPtr());
 });
