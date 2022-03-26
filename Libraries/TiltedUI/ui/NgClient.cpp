@@ -7,6 +7,13 @@
 
 namespace TiltedPhoques
 {
+    /*
+      virtual bool GetScreenInfo(CefRefPtr<CefBrowser> browser,
+                             CefScreenInfo& screen_info) {
+    return false;
+  }
+    */
+
     NgClient::NgClient(OverlayRenderHandler* apHandler, bool useSharedRes) noexcept
         : m_pRenderHandler(apHandler)
         , m_pLoadHandler(new NgLoadHandler)

@@ -5,33 +5,8 @@
 #include "shader.inl"
 #include "GraphicsRenderer.h"
 
-static constexpr wchar_t kWindowTitle[] = L"UITestRunner";
 
-static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-    auto* pSelf = reinterpret_cast<GraphicsRenderer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-    if (!pSelf && msg == WM_NCCREATE)
-    {
-        pSelf = reinterpret_cast<GraphicsRenderer*>(((LPCREATESTRUCT)lparam)->lpCreateParams);
-        SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)pSelf);
-    }
-
-    if (msg == WM_NCDESTROY)
-    {
-        SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
-        return DefWindowProcW(hwnd, msg, wparam, lparam);
-    }
-
-    if (pSelf)
-    {
-        if (pSelf->DoWndProc(hwnd, msg, wparam, lparam))
-            return 0;
-    }
-
-    return DefWindowProcW(hwnd, msg, wparam, lparam);
-}
-
-GraphicsRenderer::GraphicsRenderer()
+GraphicsRenderer::GraphicsRenderer(HINSTANCE hs) : m_window(hs)
 {
 
 }
@@ -41,72 +16,9 @@ GraphicsRenderer::~GraphicsRenderer()
 
 }
 
-bool GraphicsRenderer::DoWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
-{
-    switch (msg)
-    {
-    case WM_KEYDOWN:
-    {
-        if (wparam == VK_ESCAPE)
-            DestroyWindow(hwnd);
-        break;
-    }
-    case WM_DESTROY:
-    {
-        PostQuitMessage(0);
-        break;
-    }
-    case WM_SIZE:
-    {
-        m_bResizing = true;
-        break;
-    }
-    }
-
-    return false;
-}
-
-void GraphicsRenderer::Initialize(HINSTANCE hs) {
-    CreateWindowX(hs);
+void GraphicsRenderer::Initialize() {
     InitD3D();
     CreateShaders();
-}
-
-void GraphicsRenderer::CreateWindowX(HINSTANCE hs)
-{
-    WNDCLASSEXW winClass = {};
-    winClass.cbSize = sizeof(WNDCLASSEXW);
-    winClass.style = CS_HREDRAW | CS_VREDRAW;
-    winClass.lpfnWndProc = &WndProc;
-    winClass.hInstance = hs;
-    winClass.hIcon = LoadIconA(0, IDI_APPLICATION);
-    winClass.hCursor = LoadCursorA(0, IDC_ARROW);
-    winClass.lpszClassName = L"MyWindowClass";
-    winClass.hIconSm = LoadIconA(0, IDI_APPLICATION);
-
-    if (!RegisterClassExW(&winClass)) {
-        MessageBoxA(0, "RegisterClassEx failed", "Fatal Error", MB_OK);
-        return;
-    }
-
-    RECT initialRect = { 0, 0, 1024, 768 };
-    AdjustWindowRectEx(&initialRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
-    LONG initialWidth = initialRect.right - initialRect.left;
-    LONG initialHeight = initialRect.bottom - initialRect.top;
-
-    m_hwnd = CreateWindowExW(WS_EX_OVERLAPPEDWINDOW,
-        winClass.lpszClassName,
-        kWindowTitle,
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        initialWidth,
-        initialHeight,
-        0, 0, hs, (void*)this);
-
-    if (!m_hwnd) {
-        MessageBoxA(0, "CreateWindowEx failed", "Fatal Error", MB_OK);
-        return;
-    }
 }
 
 void GraphicsRenderer::InitD3D()
@@ -195,7 +107,7 @@ void GraphicsRenderer::InitD3D()
         d3d11SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         d3d11SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-        HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(m_pDevice, m_hwnd, &d3d11SwapChainDesc, 0, 0, &m_pSwapchain);
+        HRESULT hResult = dxgiFactory->CreateSwapChainForHwnd(m_pDevice, m_window.hwnd(), &d3d11SwapChainDesc, 0, 0, &m_pSwapchain);
         assert(SUCCEEDED(hResult));
 
         dxgiFactory->Release();
@@ -309,7 +221,7 @@ void GraphicsRenderer::CreateShaders()
 
 void GraphicsRenderer::Resize() {
     RECT rc;
-    GetClientRect(m_hwnd, &rc);
+    GetClientRect(m_window.hwnd(), &rc);
     auto newWidth = rc.right - rc.left;
     auto newHeight = rc.bottom - rc.top;
     if (!newWidth || !newHeight)
@@ -345,16 +257,16 @@ bool GraphicsRenderer::Run()
         DispatchMessageW(&msg);
     }
 
-    if (m_bResizing) {
+    if (m_window.resizing()) {
         Resize();
-        m_bResizing = false;
+        m_window.ResetResized();
     }
 
     FLOAT backgroundColor[4] = { 0.1f, 0.2f, 0.6f, 1.0f };
     m_pDeviceContext->ClearRenderTargetView(m_pd3d11FrameBufferView, backgroundColor);
 
     RECT winRect;
-    GetClientRect(m_hwnd, &winRect);
+    GetClientRect(m_window.hwnd(), &winRect);
     D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (FLOAT)(winRect.right - winRect.left), (FLOAT)(winRect.bottom - winRect.top), 0.0f, 1.0f };
     m_pDeviceContext->RSSetViewports(1, &viewport);
 

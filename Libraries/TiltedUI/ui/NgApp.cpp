@@ -58,8 +58,11 @@ namespace TiltedPhoques
         aCommandLine->AppendSwitchWithValue("default-encoding", "utf-8");
         aCommandLine->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
         aCommandLine->AppendSwitchWithValue("disable-features", "HardwareMediaKeyHandling");
+
+        // gpu stuff:
         aCommandLine->AppendSwitch("disable-gpu-process-crash-limit");
         aCommandLine->AppendSwitchWithValue("use-angle", "d3d11");
+        aCommandLine->AppendSwitch("enable-gpu-rasterization");
 
         // Disable CORS
         aCommandLine->AppendSwitch("disable-web-security");

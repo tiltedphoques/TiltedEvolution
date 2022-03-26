@@ -21,6 +21,7 @@ namespace TiltedPhoques
         CefBrowserSettings settings{};
         settings.javascript_close_windows = STATE_DISABLED;
         settings.windowless_frame_rate = 240;
+        CefString(&settings.default_encoding).FromString("utf-8");
 
         CefWindowInfo info;
         info.SetAsWindowless(apRenderer->GetWindow());
@@ -29,9 +30,10 @@ namespace TiltedPhoques
 
         // TO BE PUT BACK
         // (currentPath / L"UI" / acPath / L"index.html").wstring()
+        auto rc = CefRequestContext::GetGlobalContext();
 
         bool ret = CefBrowserHost::CreateBrowser(info, m_pClient.get(),
-            "https://www.google.com/", settings, nullptr, nullptr);
+            "https://www.google.com/", settings, {}, rc);
 
         if (ret)
         {

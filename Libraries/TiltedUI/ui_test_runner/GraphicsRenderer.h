@@ -2,27 +2,29 @@
 
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
+#include "NativeWindow.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
 class GraphicsRenderer {
 public:
-    GraphicsRenderer();
+    explicit GraphicsRenderer(HINSTANCE hs);
     ~GraphicsRenderer();
 
-    void Initialize(HINSTANCE hs);
+    void Initialize();
     bool Run();
 
     void ToggleRect() {
         m_bDrawRectangle = !m_bDrawRectangle;
     }
 
-    virtual void DrawWithin() = 0;
-    bool DoWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    NativeWindow& window() {
+        return m_window;
+    }
 
+    virtual void DrawWithin() = 0;
 private:
-    void CreateWindowX(HINSTANCE hs);
     void InitD3D();
     void CreateShaders();
     void Resize();
@@ -30,7 +32,6 @@ private:
 private:
     bool m_bIsRunning = true;
     bool m_bDrawRectangle = true;
-    bool m_bResizing = false;
 
     struct ShaderData {
         ID3D11Buffer* vertexBuffer = nullptr;
@@ -48,6 +49,5 @@ protected:
     ID3D11DeviceContext1* m_pDeviceContext = nullptr;
     IDXGISwapChain1* m_pSwapchain = nullptr;
     ID3D11RenderTargetView* m_pd3d11FrameBufferView = nullptr;
-
-    HWND m_hwnd{};
+    NativeWindow m_window;
 };

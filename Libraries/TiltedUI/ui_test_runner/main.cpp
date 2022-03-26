@@ -27,11 +27,11 @@ class UITestRunner final : public GraphicsRenderer
 {
     friend class D3D11RenderProvider;
 public:
-    UITestRunner(int argc, char** argv)
+    UITestRunner(HINSTANCE hs) : GraphicsRenderer(hs)
     {
         using namespace TiltedPhoques;
 
-        GraphicsRenderer::Initialize(GetModuleHandleW(nullptr));
+        GraphicsRenderer::Initialize();
 
         m_pProvider = MakeUnique<D3D11RenderProvider>(*this);
         m_pDriver = new NgApp((RenderProvider*)m_pProvider.get());
@@ -74,8 +74,8 @@ public:
 
     void UpdateWindowTitle()
     {
-        auto title = fmt::format("UITestRunner{}", m_bShowCEF ? " - Cef active" : "");
-        SetWindowTextA(m_hwnd, title.c_str());
+        auto title = fmt::format("NG_UI Runner{}", m_bShowCEF ? " - Cef active" : "");
+        SetWindowTextA(m_window.hwnd(), title.c_str());
     }
 
 private:
@@ -94,7 +94,7 @@ TiltedPhoques::OverlayRenderHandler* D3D11RenderProvider::Create()
 
 HWND D3D11RenderProvider::GetWindow()
 {
-    return m_runner.m_hwnd;
+    return m_runner.window().hwnd();
 }
 
 IDXGISwapChain* D3D11RenderProvider::GetSwapChain() const noexcept
@@ -114,11 +114,11 @@ struct ComScope
     }
 };
 
-int main(int argc, char** argv) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
     ComScope cs;
     (void)cs;
 
-    UITestRunner runner(argc, argv);
+    UITestRunner runner(hInstance);
     while (true)
     {
         if (!runner.Draw()) break;

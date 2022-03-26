@@ -148,7 +148,7 @@ namespace TiltedPhoques
         const RectList& dirtyRects,
         void* share_handle)
     {
-
+        __debugbreak();
     }
 
     void OverlayRenderHandlerD3D11::GetRenderTargetSize()
