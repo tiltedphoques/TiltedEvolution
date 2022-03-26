@@ -1,6 +1,6 @@
 
-#include "OverlaySpace.h"
-#include "OverlayApp.h"
+#include "NgSpace.h"
+#include "NgApp.h"
 
 namespace TiltedPhoques
 {
@@ -13,9 +13,10 @@ namespace TiltedPhoques
         };
     }
     // ActivateContent
-    void OverlaySpace::LoadContent(RenderProvider* apRenderer)
+    void NgSpace::LoadContent(RenderProvider* apRenderer, bool enableSharedResources)
     {
-        m_pClient = new OverlayClient(apRenderer->Create());
+        m_usingSharedResources = enableSharedResources;
+        m_pClient = new NgClient(apRenderer->Create(), enableSharedResources);
 
         CefBrowserSettings settings{};
         settings.javascript_close_windows = STATE_DISABLED;
@@ -23,12 +24,13 @@ namespace TiltedPhoques
 
         CefWindowInfo info;
         info.SetAsWindowless(apRenderer->GetWindow());
-        //info.shared_texture_enabled = true;
+        info.shared_texture_enabled = enableSharedResources;
+        info.external_begin_frame_enabled = enableSharedResources;
 
-       // TO BE PUT BACK
-       // (currentPath / L"UI" / acPath / L"index.html").wstring()
+        // TO BE PUT BACK
+        // (currentPath / L"UI" / acPath / L"index.html").wstring()
 
-        const bool ret = CefBrowserHost::CreateBrowser(info, m_pClient.get(),
+        bool ret = CefBrowserHost::CreateBrowser(info, m_pClient.get(),
             "https://www.google.com/", settings, nullptr, nullptr);
 
         if (ret)
@@ -37,7 +39,7 @@ namespace TiltedPhoques
         }
     }
 
-    bool OverlaySpace::ShowDevTools()
+    bool NgSpace::ShowDevTools()
     {
         if (!m_pClient->GetBrowser())
             return false;
@@ -55,7 +57,7 @@ namespace TiltedPhoques
         return true;
     }
 
-    void OverlaySpace::ExecuteAsync(const std::string& acFunction, const CefRefPtr<CefListValue>& apArguments) const noexcept
+    void NgSpace::ExecuteAsync(const std::string& acFunction, const CefRefPtr<CefListValue>& apArguments) const noexcept
     {
         if (!m_pClient)
             return;
@@ -75,7 +77,7 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlaySpace::InjectKey(const cef_key_event_type_t aType, const uint32_t aModifiers, const uint16_t aKey, const uint16_t aScanCode) const noexcept
+    void NgSpace::InjectKey(const cef_key_event_type_t aType, const uint32_t aModifiers, const uint16_t aKey, const uint16_t aScanCode) const noexcept
     {
         if (m_pClient)
         {
@@ -91,7 +93,7 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlaySpace::InjectMouseButton(const uint16_t aX, const uint16_t aY, const cef_mouse_button_type_t aButton, const bool aUp, const uint32_t aModifier) const noexcept
+    void NgSpace::InjectMouseButton(const uint16_t aX, const uint16_t aY, const cef_mouse_button_type_t aButton, const bool aUp, const uint32_t aModifier) const noexcept
     {
         if (m_pClient)
         {
@@ -106,7 +108,7 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlaySpace::InjectMouseMove(const uint16_t aX, const uint16_t aY, const uint32_t aModifier) const noexcept
+    void NgSpace::InjectMouseMove(const uint16_t aX, const uint16_t aY, const uint32_t aModifier) const noexcept
     {
         if (m_pClient && m_pClient->GetOverlayRenderHandler())
         {
@@ -123,7 +125,7 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlaySpace::InjectMouseWheel(const uint16_t aX, const uint16_t aY, const int16_t aDelta, const uint32_t aModifier) const noexcept
+    void NgSpace::InjectMouseWheel(const uint16_t aX, const uint16_t aY, const int16_t aDelta, const uint32_t aModifier) const noexcept
     {
         if (m_pClient && m_pClient->GetOverlayRenderHandler())
         {

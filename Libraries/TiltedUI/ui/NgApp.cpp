@@ -1,23 +1,20 @@
-#include <OverlayApp.h>
-#include <filesystem>
-#include <iostream>
+
+#include <NgApp.h>
 #include <TiltedCore/Filesystem.hpp>
 
 namespace TiltedPhoques
 {
-    OverlayApp::OverlayApp(RenderProvider* apRenderProvider, OverlayClient* apCustomClient, std::wstring aProcessName) noexcept
-        : m_pBrowserProcessHandler(new OverlayBrowserProcessHandler)
+    NgApp::NgApp(RenderProvider* apRenderProvider) noexcept
+        : m_pBrowserProcessHandler(new NgBrowserProcessHandler)
         , m_pRenderProvider(apRenderProvider)
-        , m_processName(std::move(aProcessName))
     {
-        assert(apCustomClient == nullptr);
     }
 
-    OverlayApp::~OverlayApp() {
+    NgApp::~NgApp() {
         Shutdown();
     }
 
-    bool OverlayApp::Initialize() noexcept
+    bool NgApp::Initialize(const CreateInfo& aCreateInfo) noexcept
     {
         CefMainArgs args(GetModuleHandleW(nullptr));
 
@@ -30,28 +27,27 @@ namespace TiltedPhoques
 
 #ifdef DEBUG
         settings.log_severity = LOGSEVERITY_VERBOSE;
-        settings.remote_debugging_port = 8384;
+        settings.remote_debugging_port = aCreateInfo.remoteDebugPort;
 #else
-        settings.log_severity = LOGSEVERITY_VERBOSE;
+        //settings.log_severity = LOGSEVERITY_VERBOSE;
 #endif
-
         CefString(&settings.log_file).FromWString(currentPath / L"logs" / L"cef_debug.log");
         CefString(&settings.cache_path).FromWString(currentPath / L"cache");
         CefString(&settings.framework_dir_path).FromWString(currentPath);
         CefString(&settings.root_cache_path).FromWString(currentPath / L"cache");
         CefString(&settings.resources_dir_path).FromWString(currentPath);
         CefString(&settings.locales_dir_path).FromWString(currentPath / L"locales");
-        CefString(&settings.browser_subprocess_path).FromWString(currentPath / m_processName);
+        CefString(&settings.browser_subprocess_path).FromWString(currentPath / aCreateInfo.pWorkerName);
 
         return CefInitialize(args, settings, this, nullptr);
     }
 
-    void OverlayApp::Shutdown() noexcept
+    void NgApp::Shutdown() noexcept
     {
         CefShutdown();
     }
 
-    void OverlayApp::OnBeforeCommandLineProcessing(const CefString& aProcessType, CefRefPtr<CefCommandLine> aCommandLine)
+    void NgApp::OnBeforeCommandLineProcessing(const CefString& aProcessType, CefRefPtr<CefCommandLine> aCommandLine)
     {
         aCommandLine->AppendSwitch("allow-file-access-from-files");
         aCommandLine->AppendSwitch("allow-universal-access-from-files");
@@ -70,15 +66,15 @@ namespace TiltedPhoques
         //aCommandLine->AppendSwitch("in-process-gpu");
     }
 
-    OverlaySpace* OverlayApp::CreateSpace()
+    NgSpace* NgApp::CreateSpace()
     {
         assert(m_pRenderProvider);
 
-        auto* pSpace = new OverlaySpace();
+        auto* pSpace = new NgSpace();
 
         // TODO: make factory return this here.
         m_Spaces.push_back(pSpace);
-        pSpace->LoadContent(m_pRenderProvider);
+        pSpace->LoadContent(m_pRenderProvider, true);
 
         return pSpace;
     }

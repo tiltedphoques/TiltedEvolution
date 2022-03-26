@@ -9,6 +9,7 @@ target("TiltedUi")
     add_files("ui/*.cpp")
     add_includedirs("ui/", {public = true})
     add_headerfiles("ui/*.h", {prefixdir = "TiltedUi"})
+    add_headerfiles("ui/*.inl", {prefixdir = "UiProcess"})
     add_syslinks("dxguid", "d3d11")
     add_packages(
         "tiltedcore",

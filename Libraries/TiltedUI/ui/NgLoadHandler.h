@@ -5,12 +5,11 @@
 
 namespace TiltedPhoques
 {
-    struct OverlayLoadHandler final : CefLoadHandler
+    class NgLoadHandler final : public CefLoadHandler
     {
-        OverlayLoadHandler() = default;
-        virtual ~OverlayLoadHandler() = default;
-
-        TP_NOCOPYMOVE(OverlayLoadHandler);
+    public:
+        NgLoadHandler() = default;
+        virtual ~NgLoadHandler() = default;
 
         void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, TransitionType transition_type) override;
         void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode) override;
@@ -18,10 +17,10 @@ namespace TiltedPhoques
 
         [[nodiscard]] bool IsReady() const noexcept { return m_ready; }
 
-        IMPLEMENT_REFCOUNTING(OverlayLoadHandler);
+        TP_NOCOPYMOVE(NgLoadHandler);
+        IMPLEMENT_REFCOUNTING(NgLoadHandler);
 
     private:
-
         bool m_ready{ false };
     };
 }

@@ -7,7 +7,7 @@
 #include <WICTextureLoader.h>
 #include <DDSTextureLoader.h>
 
-#include <OverlayClient.h>
+#include <NgClient.h>
 #include <OverlayRenderHandlerD3D11.h>
 
 namespace TiltedPhoques
@@ -98,7 +98,7 @@ namespace TiltedPhoques
 
         if (FAILED(DirectX::CreateWICTextureFromFile(m_pDevice.Get(), m_pParent->GetCursorPathPNG().c_str(), nullptr, m_pCursorTexture.ReleaseAndGetAddressOf())))
         {
-            DirectX::CreateDDSTextureFromFile(m_pDevice.Get(), m_pParent->GetCursorPathDDS().c_str(), nullptr, m_pCursorTexture.ReleaseAndGetAddressOf());
+            // TODO(Force): load/use/default windows cursor instead.
         }
 
         std::unique_lock<std::mutex> _(m_textureLock);

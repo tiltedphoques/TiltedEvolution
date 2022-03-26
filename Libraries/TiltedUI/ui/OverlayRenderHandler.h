@@ -4,7 +4,7 @@
 
 namespace TiltedPhoques
 {
-    struct OverlayClient;
+    class NgClient;
     struct OverlayRenderHandler : CefRenderHandler
     {
         virtual void Reset() = 0;
@@ -32,7 +32,7 @@ namespace TiltedPhoques
             return std::make_pair(m_cursorX, m_cursorY);
         }
 
-        void SetParent(OverlayClient* apParent) noexcept
+        void SetParent(NgClient* apParent) noexcept
         {
             m_pParent = apParent;
         }
@@ -42,6 +42,6 @@ namespace TiltedPhoques
         bool m_visible{ true };
         uint16_t m_cursorX{ 0 };
         uint16_t m_cursorY{ 0 };
-        OverlayClient* m_pParent{ nullptr };
+        NgClient* m_pParent{ nullptr };
     };
 }

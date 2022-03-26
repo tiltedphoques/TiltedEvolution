@@ -4,10 +4,11 @@
 
 namespace TiltedPhoques
 {
-    struct OverlayBrowserProcessHandler : CefBrowserProcessHandler
+    class NgBrowserProcessHandler final : public CefBrowserProcessHandler
     {
+    public:
         void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> command_line) override;
 
-        IMPLEMENT_REFCOUNTING(OverlayBrowserProcessHandler);
+        IMPLEMENT_REFCOUNTING(NgBrowserProcessHandler);
     };
 }

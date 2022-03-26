@@ -5,15 +5,15 @@
 
 namespace TiltedPhoques
 {
-    struct OverlayContextHandler final : CefContextMenuHandler
+    class NgContextMenuHandler final : public CefContextMenuHandler
     {
-        OverlayContextHandler() = default;
-        virtual ~OverlayContextHandler() = default;
-
-        TP_NOCOPYMOVE(OverlayContextHandler);
+    public:
+        NgContextMenuHandler() = default;
+        virtual ~NgContextMenuHandler() = default;
 
         void OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefContextMenuParams> params, CefRefPtr<CefMenuModel> model) override;
 
-        IMPLEMENT_REFCOUNTING(OverlayContextHandler);
+        TP_NOCOPYMOVE(NgContextMenuHandler);
+        IMPLEMENT_REFCOUNTING(NgContextMenuHandler);
     };
 }

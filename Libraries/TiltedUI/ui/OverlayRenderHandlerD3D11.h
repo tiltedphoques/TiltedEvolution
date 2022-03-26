@@ -3,7 +3,7 @@
 #include <wrl.h>
 #include <mutex>
 
-#include <OverlayRenderHandler.hpp>
+#include <OverlayRenderHandler.h>
 #include <TiltedCore/Signal.hpp>
 
 namespace DirectX
@@ -20,8 +20,9 @@ struct ID3D11Device;
 
 namespace TiltedPhoques
 {
-    struct OverlayRenderHandlerD3D11 : OverlayRenderHandler
+    class OverlayRenderHandlerD3D11 final : public OverlayRenderHandler
     {
+    public:
         struct Renderer
         {
             Renderer() = default;

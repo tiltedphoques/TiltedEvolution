@@ -18,14 +18,10 @@
 using TiltedPhoques::OverlayRenderHandler;
 using TiltedPhoques::OverlayRenderHandlerD3D11;
 
-#define DISABLE_CEF
+#define ENABLE_NG_UI 1
 
-struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHandlerD3D11::Renderer
+struct D3D11RenderProvider final : TiltedPhoques::RenderProvider, OverlayRenderHandlerD3D11::Renderer
 {
-    explicit D3D11RenderProvider(RenderSystemD3D11* apRenderSystem) : m_pRenderSystem(apRenderSystem)
-    {
-    }
-
     OverlayRenderHandler* Create() override
     {
         auto it = new OverlayRenderHandlerD3D11(this);
@@ -42,9 +38,6 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     {
         return BSGraphics::GetMainWindow()->pSwapChain;
     }
-
-  private:
-    RenderSystemD3D11* m_pRenderSystem;
 };
 
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
@@ -58,27 +51,27 @@ OverlayService::~OverlayService() noexcept
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 {
-#ifndef DISABLE_CEF
-    m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(apRenderSystem);
+#if (ENABLE_NG_UI)
+    m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>();
     m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
 
-    if (!m_pOverlay->Initialize("http://www.http2demo.io/"))
+    if (!m_pOverlay->Initialize())
         spdlog::error("Overlay could not be initialised");
 
-    m_pOverlay->GetClient()->Create();
+    //m_pOverlay->GetClient()->Create();
 #endif
 }
 
 void OverlayService::Render() const noexcept
 {
-#ifndef DISABLE_CEF
-// m_pOverlay->GetClient()->Render();
+#if (ENABLE_NG_UI)
+    //m_pOverlay->GetClient()->Render();
 #endif
 }
 
 void OverlayService::Reset() const noexcept
 {
-#ifndef DISABLE_CEF
-// m_pOverlay->GetClient()->Reset();
+#if (ENABLE_NG_UI)
+    //m_pOverlay->GetClient()->Reset();
 #endif
 }

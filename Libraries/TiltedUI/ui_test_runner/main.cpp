@@ -2,58 +2,11 @@
 #include "GraphicsRenderer.h"
 
 #include <spdlog/spdlog.h>
-#include <OverlayApp.h>
-#include <OverlayRenderHandler.hpp>
+#include <NgApp.h>
+#include <OverlayRenderHandler.h>
 #include <OverlayRenderHandlerD3D11.h>
 
 #include <TiltedCore/Stl.hpp>
-
-struct OverlayClient : TiltedPhoques::OverlayClient
-{
-    OverlayClient(TiltedPhoques::OverlayRenderHandler* apHandler);
-    virtual ~OverlayClient() noexcept;
-
-    bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process,
-        CefRefPtr<CefProcessMessage> message) override;
-
-    TP_NOCOPYMOVE(OverlayClient);
-
-private:
-};
-
-OverlayClient::OverlayClient(TiltedPhoques::OverlayRenderHandler* apHandler)
-    : TiltedPhoques::OverlayClient(apHandler)
-{
-}
-
-OverlayClient::~OverlayClient() noexcept
-{
-}
-
-bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-    CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
-{
-    if (message->GetName() == "ui-event")
-    {
-        auto pArguments = message->GetArgumentList();
-
-        auto eventName = pArguments->GetString(0).ToString();
-        auto eventArgs = pArguments->GetList(1);
-
-        if (eventName == "connect")
-        {
-
-        }
-        if (eventName == "disconnect")
-        {
-
-        }
-
-        return true;
-    }
-
-    return false;
-}
 
 class UITestRunner;
 
@@ -76,14 +29,20 @@ class UITestRunner final : public GraphicsRenderer
 public:
     UITestRunner(int argc, char** argv)
     {
+        using namespace TiltedPhoques;
+
         GraphicsRenderer::Initialize(GetModuleHandleW(nullptr));
 
-        m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(*this);
-        m_pOverlay = new TiltedPhoques::OverlayApp((TiltedPhoques::RenderProvider*)m_pProvider.get(), /*new ::OverlayClient(m_pProvider->Create())*/ nullptr);
-        if (!m_pOverlay->Initialize())
+        m_pProvider = MakeUnique<D3D11RenderProvider>(*this);
+        m_pDriver = new NgApp((RenderProvider*)m_pProvider.get());
+        const NgApp::CreateInfo info{
+            .pWorkerName = L"TPProcess.exe",
+            .remoteDebugPort = 8384
+        };
+        if (!m_pDriver->Initialize(info))
             __debugbreak();
 
-        m_pMainFrame = m_pOverlay->CreateSpace();
+        m_pMainFrame = m_pDriver->CreateSpace();
     }
 
     bool Draw()
@@ -120,9 +79,9 @@ public:
     }
 
 private:
-    CefRefPtr<TiltedPhoques::OverlayApp> m_pOverlay{ nullptr };
+    CefRefPtr<TiltedPhoques::NgApp> m_pDriver{ nullptr };
     TiltedPhoques::UniquePtr<D3D11RenderProvider> m_pProvider;
-    TiltedPhoques::OverlaySpace* m_pMainFrame{ nullptr };
+    TiltedPhoques::NgSpace* m_pMainFrame{ nullptr };
     bool m_bShowCEF = false;
 };
 
@@ -147,7 +106,7 @@ struct ComScope
 {
     ComScope()
     {
-        CoInitialize(nullptr);
+        (void)CoInitialize(nullptr);
     }
     ~ComScope()
     {
