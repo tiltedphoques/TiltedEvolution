@@ -85,14 +85,14 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    auto* pPlayer = PlayerCharacter::Get();
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
     uint32_t baseId = 0;
     uint32_t modId = 0;
     if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, modId, baseId))
         return;
 
-    auto* pCell = RTTI_CAST(TESForm::GetById(baseId), TESForm, TESObjectCELL);
+    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(baseId), TESForm, TESObjectCELL);
     if (!pCell)
         return;
 
@@ -102,7 +102,7 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     AssignObjectsRequest request;
 
-    for (const auto& object : objects)
+    for (TESObjectREFR* pObject : objects)
     {
         ObjectData objectData;
         objectData.CellId.BaseId = baseId;
@@ -110,13 +110,13 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
         uint32_t baseId = 0;
         uint32_t modId = 0;
-        if (!m_world.GetModSystem().GetServerModId(object->formID, modId, baseId))
+        if (!m_world.GetModSystem().GetServerModId(pObject->formID, modId, baseId))
             return;
 
         objectData.Id.BaseId = baseId;
         objectData.Id.ModId = modId;
 
-        if (auto* pLock = object->GetLock())
+        if (Lock* pLock = pObject->GetLock())
         {
             objectData.CurrentLockData.IsLocked = pLock->flags;
             objectData.CurrentLockData.LockLevel = pLock->lockLevel;
@@ -130,19 +130,21 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
 void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessage) noexcept
 {
-    for (const auto& object : acMessage.Objects)
+    for (const ObjectData& objectData : acMessage.Objects)
     {
-        const auto cObjectId = World::Get().GetModSystem().GetGameId(object.Id);
+        const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(objectData.Id);
         if (cObjectId == 0)
             continue;
 
-        auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+        TESObjectREFR* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
         if (!pObject)
             continue;
 
-        if (object.CurrentLockData != LockData{})
+        CreateObjectEntity(pObject->formID, objectData.ServerId);
+
+        if (objectData.CurrentLockData != LockData{})
         {
-            auto* pLock = pObject->GetLock();
+            Lock* pLock = pObject->GetLock();
 
             if (!pLock)
             {
@@ -151,37 +153,19 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
                     continue;
             }
 
-            pLock->lockLevel = object.CurrentLockData.LockLevel;
-            pLock->SetLock(object.CurrentLockData.IsLocked);
+            pLock->lockLevel = objectData.CurrentLockData.LockLevel;
+            pLock->SetLock(objectData.CurrentLockData.IsLocked);
             pObject->LockChange();
         }
     }
 }
 
-BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
+entt::entity EnvironmentService::CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept
 {
-#if ENVIRONMENT_DEBUG
-    auto view = m_world.view<InteractiveObjectComponent>();
-
-    const auto itor =
-        std::find_if(std::begin(view), std::end(view), [id = acEvent->object->formID, view](entt::entity entity) {
-            return view.get<InteractiveObjectComponent>(entity).Id == id;
-        });
-
-    if (itor == std::end(view))
-    {
-        AddObjectComponent(acEvent->object);
-    }
-#endif
-
-    return BSTEventResult::kOk;
-}
-
-void EnvironmentService::AddObjectComponent(TESObjectREFR* apObject) noexcept
-{
-    auto entity = m_world.create();
-    auto& interactiveObjectComponent = m_world.emplace<InteractiveObjectComponent>(entity);
-    interactiveObjectComponent.Id = apObject->formID;
+    // TODO: check if object already exists?
+    entt::entity entity = m_world.create();
+    m_world.emplace<FormIdComponent>(entity, acFormId);
+    m_world.emplace<InteractiveObjectComponent>(entity, acServerId);
 }
 
 void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
@@ -440,6 +424,25 @@ void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         else
             pGameTime->GameHour->f = m_onlineTime.Time;
     }
+}
+
+BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
+{
+#if ENVIRONMENT_DEBUG
+    auto view = m_world.view<InteractiveObjectComponent>();
+
+    const auto itor =
+        std::find_if(std::begin(view), std::end(view), [id = acEvent->object->formID, view](entt::entity entity) {
+            return view.get<InteractiveObjectComponent>(entity).Id == id;
+        });
+
+    if (itor == std::end(view))
+    {
+        AddObjectComponent(acEvent->object);
+    }
+#endif
+
+    return BSTEventResult::kOk;
 }
 
 void EnvironmentService::OnDraw() noexcept

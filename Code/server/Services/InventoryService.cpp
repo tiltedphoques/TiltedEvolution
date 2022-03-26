@@ -62,6 +62,7 @@ void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestChar
     auto& message = acMessage.Packet;
 
     // TODO: update server inventory
+    // TODO: combine with object inventory changes
 
     NotifyCharacterInventoryChanges notify;
     notify.ActorId = message.ActorId;

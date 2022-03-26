@@ -59,23 +59,26 @@ void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEv
     }
 }
 
+// TODO: this whole system kinda relies on all objects in a cell being static.
+// This is fine for containers and doors, but if this system is expanded, think of temporaries.
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
     auto view = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent>();
 
     AssignObjectsResponse response;
 
-    for (const auto& object : acMessage.Packet.Objects)
+    for (const ObjectData& object : acMessage.Packet.Objects)
     {
         const auto iter = std::find_if(std::begin(view), std::end(view), [view, id = object.Id](auto entity)
         {
-            const auto formIdComponent = view.get<FormIdComponent>(entity);
+            const auto& formIdComponent = view.get<FormIdComponent>(entity);
             return formIdComponent.Id == id;
         });
 
         if (iter != std::end(view))
         {
             ObjectData objectData;
+            objectData.ServerId = World::ToInteger(*iter);
 
             auto& formIdComponent = view.get<FormIdComponent>(*iter);
             objectData.Id = formIdComponent.Id;
@@ -132,7 +135,7 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
 
     const auto iter = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id = acMessage.Packet.Id](auto entity)
     {
-        const auto formIdComponent = objectView.get<FormIdComponent>(entity);
+        const auto& formIdComponent = objectView.get<FormIdComponent>(entity);
         return formIdComponent.Id == id;
     });
 

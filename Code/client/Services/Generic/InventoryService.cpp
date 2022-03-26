@@ -49,7 +49,6 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     RTTI_CAST(pForm, TESForm, Actor) ?
         SendCharacterInventoryChange(acEvent) :
         SendObjectInventoryChange(acEvent);
-
 }
 
 void InventoryService::SendCharacterInventoryChange(const InventoryChangeEvent& acEvent) noexcept

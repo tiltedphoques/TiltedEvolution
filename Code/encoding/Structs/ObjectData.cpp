@@ -5,7 +5,8 @@ using TiltedPhoques::Serialization;
 
 bool ObjectData::operator==(const ObjectData& acRhs) const noexcept
 {
-    return Id == acRhs.Id &&
+    return ServerId == acRhs.ServerId &&
+           Id == acRhs.Id &&
            CellId == acRhs.CellId &&
            WorldSpaceId == acRhs.WorldSpaceId &&
            CurrentCoords == acRhs.CurrentCoords &&
@@ -20,6 +21,7 @@ bool ObjectData::operator!=(const ObjectData& acRhs) const noexcept
 
 void ObjectData::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
+    Serialization::WriteVarInt(aWriter, ServerId);
     Id.Serialize(aWriter);
     CellId.Serialize(aWriter);
     WorldSpaceId.Serialize(aWriter);
@@ -30,6 +32,7 @@ void ObjectData::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcep
 
 void ObjectData::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
+    ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Id.Deserialize(aReader);
     CellId.Deserialize(aReader);
     WorldSpaceId.Deserialize(aReader);

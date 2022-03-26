@@ -17,6 +17,7 @@ struct ObjectData
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
+    uint32_t ServerId{};
     GameId Id{};
     GameId CellId{};
     GameId WorldSpaceId{};
