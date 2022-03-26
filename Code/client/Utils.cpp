@@ -4,6 +4,7 @@
 
 namespace Utils
 {
+
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
 {
     const auto* pLocalComponent = World::Get().try_get<LocalComponent>(aEntity);
@@ -27,7 +28,7 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
     return {serverId};
 }
 
-std::optional<Actor*> GetActorByServerId(const uint32_t aServerId) noexcept
+TESForm* GetFormByServerId(const uint32_t acServerId) noexcept
 {
     auto view = World::Get().view<FormIdComponent>();
 
@@ -39,20 +40,20 @@ std::optional<Actor*> GetActorByServerId(const uint32_t aServerId) noexcept
 
         uint32_t serverId = serverIdRes.value();
 
-        if (serverId == aServerId)
+        if (serverId == acServerId)
         {
             const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-            Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            TESForm* pForm = TESForm::GetById(formIdComponent.Id);
 
-            if (pActor != nullptr)
+            if (pForm != nullptr)
             {
-                return {pActor};
+                return pForm;
             }
         }
     }
 
-    spdlog::warn("Actor not found for server id {:X}", aServerId);
-    return std::nullopt;
+    spdlog::warn("Form not found for server id {:X}", acServerId);
+    return nullptr;
 }
-}
+
+} // namespace Utils

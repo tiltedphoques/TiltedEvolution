@@ -356,11 +356,9 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
 #if TP_SKYRIM64
-    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.TargetId);
-    if (!pActorRes.has_value())
+    Actor* pActor = GetByServerId(Actor, acMessage.TargetId);
+    if (!pActor)
         return;
-
-    Actor* pActor = pActorRes.value();
 
     const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
     if (cSpellId == 0)

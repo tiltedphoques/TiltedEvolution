@@ -166,6 +166,7 @@ entt::entity EnvironmentService::CreateObjectEntity(const uint32_t acFormId, con
     entt::entity entity = m_world.create();
     m_world.emplace<FormIdComponent>(entity, acFormId);
     m_world.emplace<InteractiveObjectComponent>(entity, acServerId);
+    return entity;
 }
 
 void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
@@ -216,11 +217,9 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
 void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
-    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.ActivatorId);
-    if (!pActorRes.has_value())
+    Actor* pActor = GetByServerId(Actor, acMessage.ActivatorId);
+    if (!pActor)
         return;
-
-    Actor* pActor = pActorRes.value();
 
     const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
     if (cObjectId == 0)

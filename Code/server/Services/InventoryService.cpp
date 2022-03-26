@@ -6,8 +6,8 @@
 
 #include <Messages/RequestObjectInventoryChanges.h>
 #include <Messages/NotifyObjectInventoryChanges.h>
-#include <Messages/RequestCharacterInventoryChanges.h>
-#include <Messages/NotifyCharacterInventoryChanges.h>
+#include <Messages/RequestInventoryChanges.h>
+#include <Messages/NotifyInventoryChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 #include <Messages/NotifyDrawWeapon.h>
 
@@ -15,7 +15,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
-    m_characterInventoryConnection = aDispatcher.sink<PacketEvent<RequestCharacterInventoryChanges>>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
+    m_characterInventoryConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
 }
 
@@ -55,20 +55,19 @@ void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectI
     }
 }
 
-void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestCharacterInventoryChanges>& acMessage) noexcept
+void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept
 {
     auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
 
     auto& message = acMessage.Packet;
 
     // TODO: update server inventory
-    // TODO: combine with object inventory changes
 
-    NotifyCharacterInventoryChanges notify;
-    notify.ActorId = message.ActorId;
+    NotifyInventoryChanges notify;
+    notify.ServerId = message.ServerId;
     notify.Item = message.Item;
 
-    const entt::entity cOrigin = static_cast<entt::entity>(message.ActorId);
+    const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
 }
 

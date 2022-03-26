@@ -5,7 +5,7 @@
 struct World;
 struct UpdateEvent;
 struct RequestObjectInventoryChanges;
-struct RequestCharacterInventoryChanges;
+struct RequestInventoryChanges;
 struct DrawWeaponRequest;
 struct UpdateEvent;
 struct PlayerLeaveCellEvent;
@@ -16,7 +16,7 @@ public:
     InventoryService(World& aWorld, entt::dispatcher& aDispatcher);
 
     void OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept;
-    void OnCharacterInventoryChanges(const PacketEvent<RequestCharacterInventoryChanges>& acMessage) noexcept;
+    void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept;
     void OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept;
 
 private:

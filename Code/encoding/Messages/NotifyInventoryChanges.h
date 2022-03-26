@@ -4,24 +4,24 @@
 #include <TiltedCore/Buffer.hpp>
 #include <Structs/Inventory.h>
 
-struct NotifyCharacterInventoryChanges final : ServerMessage
+struct NotifyInventoryChanges final : ServerMessage
 {
-    static constexpr ServerOpcode Opcode = kNotifyCharacterInventoryChanges;
+    static constexpr ServerOpcode Opcode = kNotifyInventoryChanges;
 
-    NotifyCharacterInventoryChanges() : ServerMessage(Opcode)
+    NotifyInventoryChanges() : ServerMessage(Opcode)
     {
     }
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyCharacterInventoryChanges& acRhs) const noexcept
+    bool operator==(const NotifyInventoryChanges& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
-               ActorId == acRhs.ActorId &&
+               ServerId == acRhs.ServerId &&
                Item == acRhs.Item;
     }
     
-    uint32_t ActorId{};
+    uint32_t ServerId{};
     Inventory::Entry Item{};
 };

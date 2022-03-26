@@ -3,10 +3,10 @@
 
 Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>& aFormTypes) noexcept
 {
-    if (!refData.refArray)
-        return;
+    Vector<TESObjectREFR*> references{};
 
-    Vector<TESObjectREFR*> references;
+    if (!refData.refArray)
+        return references;
 
     for (uint32_t i = 0; i < refData.capacity; i++)
     {
@@ -20,4 +20,6 @@ Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>&
                 references.push_back(pRef);
         }
     }
+
+    return references;
 }

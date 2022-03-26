@@ -567,11 +567,10 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
 
 void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept
 {
-    std::optional<Actor*> actorResult = Utils::GetActorByServerId(acMessage.ActorId);
-    if (!actorResult.has_value())
+    Actor* pActor = GetByServerId(Actor, acMessage.ActorId);
+    if (!pActor)
         return;
 
-    Actor* pActor = actorResult.value();
     pActor->Delete();
 
     // TODO: delete components?
@@ -599,12 +598,9 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
     RequestRespawn request;
     request.ActorId = serverId;
 
-    std::optional<Actor*> actorResult = Utils::GetActorByServerId(serverId);
-    if (actorResult.has_value())
-    {
-        Actor* pActor = actorResult.value();
+    Actor* pActor = GetByServerId(Actor, serverId);
+    if (pActor)
         pActor->Delete();
-    }
 
     m_transport.Send(request);
 }
