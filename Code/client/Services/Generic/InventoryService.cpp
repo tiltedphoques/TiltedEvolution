@@ -46,11 +46,40 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
         return;
 
     const TESForm* pForm = TESForm::GetById(acEvent.FormId);
-    if (!RTTI_CAST(pForm, TESForm, Actor))
-    {
-        return;
-    }
+    RTTI_CAST(pForm, TESForm, Actor) ?
+        SendCharacterInventoryChange(acEvent) :
+        SendObjectInventoryChange(acEvent);
 
+}
+
+void InventoryService::SendCharacterInventoryChange(const InventoryChangeEvent& acEvent) noexcept
+{
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) 
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (iter == std::end(view))
+        return;
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
+    if (!serverIdRes.has_value())
+        return;
+
+    RequestCharacterInventoryChanges request;
+    request.ActorId = serverIdRes.value();
+    request.Item = std::move(acEvent.Item);
+
+    m_transport.Send(request);
+
+    spdlog::info("Sending item request, item: {:X}, count: {}, actor: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count,
+                 acEvent.FormId);
+}
+
+void InventoryService::SendObjectInventoryChange(const InventoryChangeEvent& acEvent) noexcept
+{
     auto view = m_world.view<FormIdComponent>();
 
     const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) 

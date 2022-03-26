@@ -27,6 +27,9 @@ struct InventoryService
 
 private:
 
+    void SendCharacterInventoryChange(const InventoryChangeEvent& acEvent) noexcept;
+    void SendObjectInventoryChange(const InventoryChangeEvent& acEvent) noexcept;
+
     void RunWeaponStateUpdates() noexcept;
 
     void ApplyCachedObjectInventoryChanges() noexcept;

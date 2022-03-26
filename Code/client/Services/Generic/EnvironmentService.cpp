@@ -96,9 +96,9 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     if (!pCell)
         return;
 
-    Vector<TESObjectREFR*> objects;
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    pCell->GetRefsByFormTypes(objects, formTypes);
+    // TODO: create entities for container objects?
+    Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request;
 
