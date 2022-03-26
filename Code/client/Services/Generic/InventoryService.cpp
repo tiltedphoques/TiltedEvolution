@@ -60,6 +60,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
     request.Item = std::move(acEvent.Item);
+    request.DropOrPickUp = acEvent.DropOrPickUp;
 
     m_transport.Send(request);
 
@@ -73,13 +74,38 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
 {
-    TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
-    if (!pObject)
-        return;
+    if (acMessage.DropOrPickUp)
+    {
+        Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+        if (!pActor)
+            return;
 
-    ScopedInventoryOverride _;
+        ScopedInventoryOverride _;
 
-    pObject->AddOrRemoveItem(acMessage.Item);
+        ExtraDataList* pExtraData = pActor->GetExtraDataFromItem(acMessage.Item);
+        ModSystem& modSystem = World::Get().GetModSystem();
+
+        uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
+        TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
+        if (!pObject)
+        {
+            spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
+                         acMessage.Item.BaseId.BaseId);
+            return;
+        }
+
+        pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
+    }
+    else
+    {
+        TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
+        if (!pObject)
+            return;
+
+        ScopedInventoryOverride _;
+
+        pObject->AddOrRemoveItem(acMessage.Item);
+    }
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

@@ -93,7 +93,8 @@ TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
 TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
-TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
+TP_THIS_FUNCTION(TPickUpObject, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
+TP_THIS_FUNCTION(TDropObject, void*, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation);
 
 using TGetLocation = TESForm *(TESForm *);
 static TGetLocation *FUNC_GetActorLocation;
@@ -103,7 +104,8 @@ TCharacterConstructor2* RealCharacterConstructor2;
 TCharacterDestructor* RealCharacterDestructor;
 
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
-static TPickUpItem* RealPickUpItem = nullptr;
+static TPickUpObject* RealPickUpObject = nullptr;
+static TDropObject* RealDropObject = nullptr;
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -657,7 +659,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
-void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
+void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
     if (!ScopedInventoryOverride::IsOverriden())
     {
@@ -678,7 +680,36 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
         }
     }
 
-    return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
+    return ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
+}
+
+void Actor::PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept
+{
+    ThisCall(RealPickUpObject, this, apObject, aCount, aUnk1, aUnk2);
+}
+
+void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation)
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory::Entry item{};
+    modSystem.GetServerModId(apObject->formID, item.BaseId);
+    item.Count = aCount;
+
+    if (apExtraData)
+        apThis->GetItemFromExtraData(item, apExtraData);
+
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), true));
+
+    ScopedInventoryOverride _;
+
+    return ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
+}
+
+void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+{
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
@@ -745,7 +776,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 35086);
     POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 37448);
     POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 37525);
-    POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 37521);
+    POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 37521);
+    POINTER_SKYRIMSE(TDropObject, s_dropObject, 40454);
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 42704);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
@@ -759,7 +791,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealApplyActorEffect = s_applyActorEffect.Get();
     RealRegenAttributes = s_regenAttributes.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();
-    RealPickUpItem = s_pickUpItem.Get();
+    RealPickUpObject = s_pickUpObject.Get();
+    RealDropObject = s_dropObject.Get();
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
@@ -772,7 +805,8 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
     TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
     TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
-    TP_HOOK(&RealPickUpItem, HookPickUpItem);
+    TP_HOOK(&RealPickUpObject, HookPickUpObject);
+    TP_HOOK(&RealDropObject, HookDropObject);
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);

@@ -5,6 +5,7 @@ void NotifyInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
 {
     Serialization::WriteVarInt(aWriter, ServerId);
     Item.Serialize(aWriter);
+    Serialization::WriteBool(aWriter, DropOrPickUp);
 }
 
 void NotifyInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -13,4 +14,5 @@ void NotifyInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
 
     ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Item.Deserialize(aReader);
+    DropOrPickUp = Serialization::ReadBool(aReader);
 }
