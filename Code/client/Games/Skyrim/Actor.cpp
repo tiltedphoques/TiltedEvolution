@@ -651,7 +651,7 @@ void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t a
         auto& modSystem = World::Get().GetModSystem();
 
         Inventory::Entry item{};
-        modSystem.GetServerModId(apObject->formID, item.BaseId);
+        modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
         item.Count = aCount;
         
         // TODO: not sure about this
