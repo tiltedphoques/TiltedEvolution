@@ -35,6 +35,10 @@
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
+#include <Messages/RequestRespawn.h>
+#include <Messages/NotifyRespawn.h>
+#include <Messages/SyncExperienceRequest.h>
+#include <Messages/NotifySyncExperience.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -53,6 +57,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
+    , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
+    , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
 {
 }
 
@@ -514,6 +520,47 @@ void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>&
     GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
 }
 
+void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept
+{
+    auto view = m_world.view<OwnerComponent>();
+    auto it = view.find(static_cast<entt::entity>(acMessage.Packet.ActorId));
+    if (it == view.end())
+    {
+        spdlog::warn("No OwnerComponent found for actor id {:X}", acMessage.Packet.ActorId);
+        return;
+    }
+
+    auto& ownerComponent = view.get<OwnerComponent>(*it);
+    if (ownerComponent.GetOwner() == acMessage.pPlayer)
+    {
+        NotifyRespawn notify;
+        notify.ActorId = acMessage.Packet.ActorId;
+
+        GameServer::Get()->SendToPlayersInRange(notify, *it, acMessage.GetSender());
+    }
+    else
+    {
+        CharacterSpawnRequest message;
+        Serialize(m_world, *it, &message);
+
+        acMessage.GetSender()->Send(message);
+    }
+}
+
+void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept
+{
+    NotifySyncExperience notify;
+    notify.Experience = acMessage.Packet.Experience;
+
+    const auto& partyComponent = acMessage.pPlayer->GetParty();
+
+    if (!partyComponent.JoinedPartyId.has_value())
+        return;
+
+    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+    GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
+}
+
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
@@ -615,7 +662,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
 
     const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent>();
 
-    Map<Player*, NotifyFactionsChanges> messages;
+    TiltedPhoques::Map<Player*, NotifyFactionsChanges> messages;
 
     for (auto entity : characterView)
     {
@@ -664,7 +711,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
 
-    Map<Player*, ServerReferencesMoveRequest> messages;
+    TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {

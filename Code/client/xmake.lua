@@ -82,4 +82,4 @@ target(name)
 end
 
 build_client("SkyrimTogetherClient", "TP_SKYRIM=1")
-build_client("FalloutTogetherClient", "TP_FALLOUT=1")
+--build_client("FalloutTogetherClient", "TP_FALLOUT=1")

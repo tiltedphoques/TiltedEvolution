@@ -38,6 +38,8 @@
 
 #include <AI/AIProcess.h>
 
+#include <Messages/RequestRespawn.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
@@ -116,11 +118,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
-
-            auto* pItem = RTTI_CAST(TESForm::GetById(0x135B8), TESForm, TESBoundObject);
-            PlayerCharacter::Get()->RemoveItem(pItem, 1, ITEM_REMOVE_REASON::kRemove, nullptr, nullptr);
-            //EquipManager::Get()->UnEquip(PlayerCharacter::Get(), pItem, nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
+            PlaceActorInWorld();
         }
     }
     else
@@ -169,6 +167,11 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("Player"))
     {
         DrawPlayerDebugView();
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Skills"))
+    {
+        DrawSkillView();
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Components"))

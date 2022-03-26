@@ -69,7 +69,7 @@ GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
     spdlog::info("Server started on port {}", GetPort());
     UpdateTitle();
 
-    m_pWorld = std::make_unique<World>();
+    m_pWorld = MakeUnique<World>();
 
     BindMessageHandlers();
 }
@@ -282,7 +282,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{1 << 18};
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -292,7 +292,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -300,7 +300,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
 void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{1 << 18};
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -310,7 +310,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
     acServerMessage.Serialize(writer);
 
-    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -348,6 +348,28 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     {
         if (pCellComp->IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
+    }
+}
+
+void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
+{
+    if (!acPartyComponent.JoinedPartyId.has_value())
+    {
+        spdlog::warn("Part does not exist, canceling broadcast.");
+        return;
+    }
+
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
+    {
+        if (pPlayer == apExcludeSender)
+            continue;
+
+        const auto& partyComponent = pPlayer->GetParty();
+        if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
+        {
+            spdlog::info("Sent to party member");
+            pPlayer->Send(acServerMessage);
+        }
     }
 }
 

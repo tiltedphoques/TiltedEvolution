@@ -92,7 +92,7 @@ void InventoryService::ProcessObjectInventoryChanges() noexcept
 
     const auto objectView = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent, CellIdComponent>();
 
-    Map<Player*, NotifyObjectInventoryChanges> messages;
+    TiltedPhoques::Map<Player*, NotifyObjectInventoryChanges> messages;
 
     for (auto entity : objectView)
     {

@@ -33,6 +33,8 @@
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
+#include <Events/LeaveBeastFormEvent.h>
+#include <Events/AddExperienceEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -55,6 +57,10 @@
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
+#include <Messages/RequestRespawn.h>
+#include <Messages/NotifyRespawn.h>
+#include <Messages/SyncExperienceRequest.h>
+#include <Messages/NotifySyncExperience.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -93,6 +99,12 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
+
+    m_notifyRespawnConnection = m_dispatcher.sink<NotifyRespawn>().connect<&CharacterService::OnNotifyRespawn>(this);
+    m_leaveBeastFormConnection = m_dispatcher.sink<LeaveBeastFormEvent>().connect<&CharacterService::OnLeaveBeastForm>(this);
+
+    m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
+    m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
 }
 
 void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -146,6 +158,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
+    RunExperienceUpdates();
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -552,6 +565,50 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
     }
 }
 
+void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept
+{
+    std::optional<Actor*> actorResult = Utils::GetActorByServerId(acMessage.ActorId);
+    if (!actorResult.has_value())
+        return;
+
+    Actor* pActor = actorResult.value();
+    pActor->Delete();
+
+    // TODO: delete components?
+
+    RequestRespawn request;
+    request.ActorId = acMessage.ActorId;
+    m_transport.Send(request);
+}
+
+void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept
+{
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto it = std::find_if(view.begin(), view.end(), [view](auto entity)
+    {
+        return view.get<FormIdComponent>(entity).Id == 0x14;
+    });
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
+    if (!serverIdRes.has_value())
+        return;
+
+    uint32_t serverId = serverIdRes.value();
+
+    RequestRespawn request;
+    request.ActorId = serverId;
+
+    std::optional<Actor*> actorResult = Utils::GetActorByServerId(serverId);
+    if (actorResult.has_value())
+    {
+        Actor* pActor = actorResult.value();
+        pActor->Delete();
+    }
+
+    m_transport.Send(request);
+}
+
 void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {
     ModSystem& modSystem = m_world.Get().GetModSystem();
@@ -881,6 +938,22 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
     TESPackage* pPackage = RTTI_CAST(pPackageForm, TESForm, TESPackage);
 
     pActor->SetPackage(pPackage);
+}
+
+void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept
+{
+    m_cachedExperience += acEvent.Experience;
+}
+
+void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept
+{
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    ActorExtension* pPlayerEx = pPlayer->GetExtension();
+
+    if (pPlayerEx->LastUsedCombatSkill == -1)
+        return;
+
+    pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
 }
 
 void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
@@ -1326,4 +1399,30 @@ void CharacterService::RunSpawnUpdates() const noexcept
             }
         }
     }
+}
+
+void CharacterService::RunExperienceUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    if (m_cachedExperience == 0.f)
+        return;
+
+    if (!World::Get().GetPartyService().IsInParty())
+        return;
+
+    SyncExperienceRequest message;
+    message.Experience = m_cachedExperience;
+
+    m_cachedExperience = 0.f;
+
+    m_transport.Send(message);
+    spdlog::info("Sending over experience {}", message.Experience);
 }
