@@ -113,43 +113,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
         entry.Serialize(aWriter);
     }
 
-    bool isRightWeaponSet = RightHandWeapon != GameId{};
-#if TP_SKYRIM
-    bool isLeftWeaponSet = LeftHandWeapon != GameId{};
-    bool isLeftSpellSet = LeftHandSpell != GameId{};
-    bool isRightSpellSet = RightHandSpell != GameId{};
-    bool isShoutSet = Shout != GameId{};
-    bool isAmmoSet = Ammo != GameId{};
-#endif
-
-    Serialization::WriteBool(aWriter, isRightWeaponSet);
-#if TP_SKYRIM
-    Serialization::WriteBool(aWriter, isLeftWeaponSet);
-    Serialization::WriteBool(aWriter, isLeftSpellSet);
-    Serialization::WriteBool(aWriter, isRightSpellSet);
-    Serialization::WriteBool(aWriter, isShoutSet);
-    Serialization::WriteBool(aWriter, isAmmoSet);
-#endif
-
-    if (isRightWeaponSet)
-        RightHandWeapon.Serialize(aWriter);
-
-#if TP_SKYRIM
-    if (isLeftWeaponSet)
-        LeftHandWeapon.Serialize(aWriter);
-
-    if (isLeftSpellSet)
-        LeftHandSpell.Serialize(aWriter);
-
-    if (isRightSpellSet)
-        RightHandSpell.Serialize(aWriter);
-
-    if (isShoutSet)
-        Shout.Serialize(aWriter);
-
-    if (isAmmoSet)
-        Ammo.Serialize(aWriter);
-#endif
+    CurrentEquipment.Serialize(aWriter);
 }
 
 void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -162,32 +126,5 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
         Entries.push_back(entry);
     }
 
-    bool isRightWeaponSet = Serialization::ReadBool(aReader);
-#if TP_SKYRIM
-    bool isLeftWeaponSet = Serialization::ReadBool(aReader);
-    bool isLeftSpellSet = Serialization::ReadBool(aReader);
-    bool isRightSpellSet = Serialization::ReadBool(aReader);
-    bool isShoutSet = Serialization::ReadBool(aReader);
-    bool isAmmoSet = Serialization::ReadBool(aReader);
-#endif
-
-    if (isRightWeaponSet)
-        RightHandWeapon.Deserialize(aReader);
-
-#if TP_SKYRIM
-    if (isLeftWeaponSet)
-        LeftHandWeapon.Deserialize(aReader);
-
-    if (isLeftSpellSet)
-        LeftHandSpell.Deserialize(aReader);
-
-    if (isRightSpellSet)
-        RightHandSpell.Deserialize(aReader);
-
-    if (isShoutSet)
-        Shout.Deserialize(aReader);
-
-    if (isAmmoSet)
-        Ammo.Deserialize(aReader);
-#endif
+    CurrentEquipment.Deserialize(aReader);
 }

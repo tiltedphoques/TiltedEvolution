@@ -1,7 +1,7 @@
 #pragma once
 
 #include <TiltedCore/Stl.hpp>
-#include <Structs/GameId.h>
+#include "Equipment.h"
 
 using TiltedPhoques::Buffer;
 using TiltedPhoques::String;
@@ -102,13 +102,5 @@ struct Inventory
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
     Vector<Entry> Entries{};
-
-    GameId RightHandWeapon{};
-#if TP_SKYRIM
-    GameId LeftHandWeapon{};
-    GameId LeftHandSpell{};
-    GameId RightHandSpell{};
-    GameId Shout{};
-    GameId Ammo{};
-#endif
+    Equipment CurrentEquipment{};
 };

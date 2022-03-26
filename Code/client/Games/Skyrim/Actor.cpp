@@ -270,30 +270,39 @@ Inventory Actor::GetActorInventory() const noexcept
 {
     Inventory inventory = GetInventory();
 
+    inventory.CurrentEquipment = GetEquipment();
+
+    return inventory;
+}
+
+Equipment Actor::GetEquipment() const noexcept
+{
+    Equipment equipment;
+
     auto& modSystem = World::Get().GetModSystem();
 
     auto pMainHandWeapon = GetEquippedWeapon(0);
     uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+    modSystem.GetServerModId(mainId, equipment.LeftHandWeapon);
 
     auto pSecondaryHandWeapon = GetEquippedWeapon(1);
     uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
+    modSystem.GetServerModId(secondaryId, equipment.RightHandWeapon);
 
     mainId = magicItems[0] ? magicItems[0]->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
+    modSystem.GetServerModId(mainId, equipment.LeftHandSpell);
 
     secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
+    modSystem.GetServerModId(secondaryId, equipment.RightHandSpell);
 
     uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
-    modSystem.GetServerModId(shoutId, inventory.Shout);
+    modSystem.GetServerModId(shoutId, equipment.Shout);
 
     auto pAmmo = GetEquippedAmmo();
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
-    modSystem.GetServerModId(ammoId, inventory.Ammo);
+    modSystem.GetServerModId(ammoId, equipment.Ammo);
 
-    return inventory;
+    return equipment;
 }
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
@@ -303,36 +312,40 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     UnEquipAll();
 
     SetInventory(aInventory);
+    SetEquipment(aInventory.CurrentEquipment);
+}
 
+void Actor::SetEquipment(const Equipment& acEquipment) noexcept
+{
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
-    uint32_t mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandWeapon);
+    uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandWeapon);
 
     if (mainHandWeaponId)
         pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
 
-    uint32_t secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandWeapon);
+    uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandWeapon);
 
     if (secondaryHandWeaponId)
         pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
 
-    mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandSpell);
+    mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
 
     if (mainHandWeaponId)
         pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
 
-    secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandSpell);
+    secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
 
     if (secondaryHandWeaponId)
         pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
 
-    uint32_t shoutId = modSystem.GetGameId(aInventory.Shout);
+    uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
 
     if (shoutId)
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
 
-    uint32_t ammoId = modSystem.GetGameId(aInventory.Ammo);
+    uint32_t ammoId = modSystem.GetGameId(acEquipment.Ammo);
 
     if (ammoId)
     {
