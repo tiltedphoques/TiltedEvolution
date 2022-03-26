@@ -8,10 +8,5 @@
 
 struct InventoryComponent
 {
-    InventoryComponent(Inventory&& aInventory)
-        : Content(std::move(aInventory))
-    {
-    }
-
     Inventory Content{};
 };

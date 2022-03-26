@@ -5,3 +5,4 @@
 thread_local uint32_t ScopedEquipOverride::s_refCount = 0;
 thread_local uint32_t ScopedSaveLoadOverride::s_refCount = 0;
 thread_local uint32_t ScopedExperienceOverride::s_refCount = 0;
+thread_local uint32_t ScopedActivateOverride::s_refCount = 0;

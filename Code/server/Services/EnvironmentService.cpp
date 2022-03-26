@@ -101,7 +101,8 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             objectComponent.CurrentLockData = object.CurrentLockData;
 
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
-            m_world.emplace<InventoryComponent>(cEntity, object.CurrentInventory);
+            auto& inventoryComp = m_world.emplace<InventoryComponent>(cEntity);
+            inventoryComp.Content = object.CurrentInventory;
         }
     }
 

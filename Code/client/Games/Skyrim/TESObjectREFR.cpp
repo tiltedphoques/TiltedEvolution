@@ -487,6 +487,8 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
+    ScopedActivateOverride _;
+
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
@@ -553,11 +555,9 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
     return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
 
-// TODO: activation sync is doubling item sync when picking up items
-// maybe just don't sync PlayerCharacter::PickupItem()?
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
 {
-    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    Actor* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 

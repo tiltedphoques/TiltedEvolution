@@ -43,19 +43,24 @@ extern thread_local bool g_modifyingInventory;
 
 char TP_MAKE_THISCALL(HookPickUpItem, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
+    // TODO: this modifyingInventory check prolly isn't necessary here
     if (!g_modifyingInventory)
     {
-        auto& modSystem = World::Get().GetModSystem();
+        // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
+        if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
+        {
+            auto& modSystem = World::Get().GetModSystem();
 
-        Inventory::Entry item{};
-        modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
-        item.Count = aCount;
+            Inventory::Entry item{};
+            modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+            item.Count = aCount;
 
-        // TODO: not sure about this
-        if (apObject->GetExtraDataList())
-            apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
+            // TODO: not sure about this
+            if (apObject->GetExtraDataList())
+                apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+            World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        }
     }
 
     return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);

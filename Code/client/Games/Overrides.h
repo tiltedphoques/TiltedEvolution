@@ -30,8 +30,10 @@ namespace details
     struct Equip {};
     struct SaveLoad {};
     struct Experience {};
+    struct Activate {};
 }
 
 using ScopedEquipOverride = ScopedOverride<details::Equip>;
 using ScopedSaveLoadOverride = ScopedOverride<details::SaveLoad>;
 using ScopedExperienceOverride = ScopedOverride<details::Experience>;
+using ScopedActivateOverride = ScopedOverride<details::Activate>;
