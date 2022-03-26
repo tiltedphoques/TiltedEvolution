@@ -428,6 +428,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
+    // TODO: filter out quest items
     inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), inventory.Entries.end(),
                                            [](const Inventory::Entry& entry) { return entry.Count == 0; }),
                             inventory.Entries.end());
@@ -552,6 +553,8 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
     return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
 
+// TODO: activation sync is doubling item sync when picking up items
+// maybe just don't sync PlayerCharacter::PickupItem()?
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
 {
     auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);

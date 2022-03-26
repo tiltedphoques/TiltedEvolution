@@ -35,8 +35,6 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    RunObjectInventoryUpdates();
-
     ApplyCachedObjectInventoryChanges();
 
     RunWeaponStateUpdates();
@@ -50,7 +48,6 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     const TESForm* pForm = TESForm::GetById(acEvent.FormId);
     if (!RTTI_CAST(pForm, TESForm, Actor))
     {
-        m_objectsWithInventoryChanges.insert(acEvent.FormId);
         return;
     }
 
@@ -80,7 +77,6 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    //m_charactersWithInventoryChanges.insert(acEvent.ActorId);
 }
 
 void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
@@ -106,74 +102,6 @@ void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventor
     g_modifyingInventory = true;
     pActor->AddOrRemoveItem(acMessage.Item);
     g_modifyingInventory = false;
-}
-
-void InventoryService::RunObjectInventoryUpdates() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 250ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    if (!m_objectsWithInventoryChanges.empty())
-    {
-        RequestObjectInventoryChanges message;
-
-        for (const auto objectId : m_objectsWithInventoryChanges)
-        {
-            const auto* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESObjectREFR);
-
-            if (!pObject)
-                continue;
-
-        #if TP_FALLOUT4
-            if (!pObject->inventory)
-                continue;
-        #endif
-
-            ObjectData objectData;
-
-            GameId gameId(0, 0);
-            if (!m_world.GetModSystem().GetServerModId(pObject->formID, gameId.ModId, gameId.BaseId))
-                continue;
-
-            if (const auto pWorldSpace = pObject->GetWorldSpace())
-            {
-                if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, objectData.WorldSpaceId.ModId, objectData.WorldSpaceId.BaseId))
-                    continue;
-
-                const auto* pTES = TES::Get();
-                const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
-                if (!pCell)
-                {
-                    spdlog::warn("Cell not found for coordinates ({}, {}) in worldspace {:X}", pTES->currentGridX, pTES->currentGridY, pWorldSpace->formID);
-                    continue;
-                }
-
-                if (!m_world.GetModSystem().GetServerModId(pCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
-                    continue;
-
-                objectData.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
-            }
-            else if (const auto pParentCell = pObject->GetParentCell())
-            {
-                if (!m_world.GetModSystem().GetServerModId(pParentCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
-                    continue;
-            }
-
-            objectData.CurrentInventory = pObject->GetInventory();
-
-            message.Changes[gameId] = objectData;
-        }
-
-        m_transport.Send(message);
-
-        m_objectsWithInventoryChanges.clear();
-    }
 }
 
 void InventoryService::ApplyCachedObjectInventoryChanges() noexcept

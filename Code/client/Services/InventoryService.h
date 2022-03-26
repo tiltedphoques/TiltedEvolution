@@ -27,7 +27,6 @@ struct InventoryService
 
 private:
 
-    void RunObjectInventoryUpdates() noexcept;
     void RunWeaponStateUpdates() noexcept;
 
     void ApplyCachedObjectInventoryChanges() noexcept;

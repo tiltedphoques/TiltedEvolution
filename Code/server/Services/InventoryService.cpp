@@ -4,8 +4,6 @@
 #include <World.h>
 #include <GameServer.h>
 
-#include <Events/UpdateEvent.h>
-
 #include <Messages/RequestObjectInventoryChanges.h>
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestCharacterInventoryChanges.h>
@@ -16,15 +14,9 @@
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
 {
-    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
     m_characterInventoryConnection = aDispatcher.sink<PacketEvent<RequestCharacterInventoryChanges>>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
-}
-
-void InventoryService::OnUpdate(const UpdateEvent&) noexcept
-{
-    ProcessObjectInventoryChanges();
 }
 
 void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept
@@ -77,55 +69,6 @@ void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestChar
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ActorId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
-}
-
-void InventoryService::ProcessObjectInventoryChanges() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    const auto objectView = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent, CellIdComponent>();
-
-    TiltedPhoques::Map<Player*, NotifyObjectInventoryChanges> messages;
-
-    for (auto entity : objectView)
-    {
-        auto& formIdComponent = objectView.get<FormIdComponent>(entity);
-        auto& inventoryComponent = objectView.get<InventoryComponent>(entity);
-        auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
-        auto& objectComponent = objectView.get<ObjectComponent>(entity);
-
-        if (inventoryComponent.DirtyInventory == false)
-            continue;
-
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (pPlayer == objectComponent.pLastSender)
-                continue;
-
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
-                continue;
-
-            auto& message = messages[pPlayer];
-            auto& change = message.Changes[formIdComponent.Id];
-
-            change = inventoryComponent.Content;
-        }
-
-        inventoryComponent.DirtyInventory = false;
-    }
-
-    for (auto [pPlayer, message] : messages)
-    {
-        if (!message.Changes.empty())
-            pPlayer->Send(message);
-    }
 }
 
 void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept
