@@ -39,12 +39,10 @@ void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noex
     spdlog::info("Added {} experience to skill {}", deltaExperience, aSkill);
 }
 
-extern thread_local bool g_modifyingInventory;
-
 char TP_MAKE_THISCALL(HookPickUpItem, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
     // TODO: this modifyingInventory check prolly isn't necessary here
-    if (!g_modifyingInventory)
+    if (!ScopedInventoryOverride::IsOverriden())
     {
         // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
         if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())

@@ -19,6 +19,7 @@
 #include <Structs/ObjectData.h>
 #include <Forms/TESWorldSpace.h>
 #include <Games/TES.h>
+#include <Games/Overrides.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -70,17 +71,15 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 {
 }
 
-extern thread_local bool g_modifyingInventory;
-
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
 {
     TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
     if (!pObject)
         return;
 
-    g_modifyingInventory = true;
+    ScopedInventoryOverride _;
+
     pObject->AddOrRemoveItem(acMessage.Item);
-    g_modifyingInventory = false;
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

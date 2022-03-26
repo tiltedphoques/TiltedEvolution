@@ -638,11 +638,9 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
-extern thread_local bool g_modifyingInventory;
-
 void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
 {
-    if (!g_modifyingInventory)
+    if (!ScopedInventoryOverride::IsOverriden())
     {
         auto& modSystem = World::Get().GetModSystem();
 
@@ -661,7 +659,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
 
 void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
-    if (!g_modifyingInventory)
+    if (!ScopedInventoryOverride::IsOverriden())
     {
         // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
         if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())

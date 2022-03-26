@@ -438,14 +438,11 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
-// TODO: replace with ScopedOverride
-thread_local bool g_modifyingInventory = false;
-
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for {:X}", formID);
 
-    g_modifyingInventory = true;
+    ScopedInventoryOverride _;
 
     RemoveAllItems();
 
@@ -454,8 +451,6 @@ void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
         if (entry.Count != 0)
             AddOrRemoveItem(entry);
     }
-
-    g_modifyingInventory = false;
 }
 
 void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
@@ -566,7 +561,7 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
 
 void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
 {
-    if (!g_modifyingInventory)
+    if (!ScopedInventoryOverride::IsOverriden())
     {
         auto& modSystem = World::Get().GetModSystem();
 
@@ -585,7 +580,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
 
 BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
 {
-    if (!g_modifyingInventory)
+    if (!ScopedInventoryOverride::IsOverriden())
     {
         auto& modSystem = World::Get().GetModSystem();
 

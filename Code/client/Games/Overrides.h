@@ -31,9 +31,11 @@ namespace details
     struct SaveLoad {};
     struct Experience {};
     struct Activate {};
+    struct Inventory {};
 }
 
 using ScopedEquipOverride = ScopedOverride<details::Equip>;
 using ScopedSaveLoadOverride = ScopedOverride<details::SaveLoad>;
 using ScopedExperienceOverride = ScopedOverride<details::Experience>;
 using ScopedActivateOverride = ScopedOverride<details::Activate>;
+using ScopedInventoryOverride = ScopedOverride<details::Inventory>;
