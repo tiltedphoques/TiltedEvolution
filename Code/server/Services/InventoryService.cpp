@@ -14,45 +14,8 @@
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
 {
-    m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
-    m_characterInventoryConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
+    m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
-}
-
-void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept
-{
-    auto& message = acMessage.Packet;
-
-    for (auto& [id, objectData] : message.Changes)
-    {
-        auto view = m_world.view<FormIdComponent, ObjectComponent>();
-
-        auto formIdIt = std::find_if(std::begin(view), std::end(view), [view, id = id](auto entity) {
-            const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            return formIdComponent.Id == id;
-        });
-
-        if (formIdIt == std::end(view))
-        {
-            const auto entity = m_world.create();
-            m_world.emplace<FormIdComponent>(entity, id.BaseId, id.ModId);
-            m_world.emplace<ObjectComponent>(entity, acMessage.pPlayer);
-            m_world.emplace<CellIdComponent>(entity, objectData.CellId, objectData.WorldSpaceId, objectData.CurrentCoords);
-
-            auto& inventoryComponent = m_world.emplace<InventoryComponent>(entity);
-            inventoryComponent.Content = objectData.CurrentInventory;
-            inventoryComponent.DirtyInventory = true;
-        }
-        else
-        {
-            auto& objectComponent = m_world.get<ObjectComponent>(*formIdIt);
-            objectComponent.pLastSender = acMessage.pPlayer;
-
-            auto& inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
-            inventoryComponent.Content = objectData.CurrentInventory;
-            inventoryComponent.DirtyInventory = true;
-        }
-    }
 }
 
 void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept

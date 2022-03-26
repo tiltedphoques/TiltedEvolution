@@ -41,7 +41,7 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 
 void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
-    for (auto pPlayer : m_world.GetPlayerManager())
+    for (Player* pPlayer : m_world.GetPlayerManager())
     {
         if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
             return;
@@ -101,7 +101,7 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             objectComponent.CurrentLockData = object.CurrentLockData;
 
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
-            m_world.emplace<InventoryComponent>(cEntity);
+            m_world.emplace<InventoryComponent>(cEntity, object.CurrentInventory);
         }
     }
 
@@ -146,7 +146,7 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    for(auto pPlayer : m_world.GetPlayerManager())
+    for(Player* pPlayer : m_world.GetPlayerManager())
     {
         if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
@@ -216,14 +216,14 @@ void EnvironmentService::OnUpdate(const UpdateEvent &) noexcept
 
 void EnvironmentService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>& acMessage) noexcept
 {
-    auto packet = acMessage.Packet;
+    auto& packet = acMessage.Packet;
 
     NotifyScriptAnimation message{};
     message.FormID = packet.FormID;
     message.Animation = packet.Animation;
     message.EventName = packet.EventName;
 
-    for(auto pPlayer : m_world.GetPlayerManager())
+    for(Player* pPlayer : m_world.GetPlayerManager())
     {
         pPlayer->Send(message);
     }

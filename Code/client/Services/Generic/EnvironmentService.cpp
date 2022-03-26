@@ -87,12 +87,11 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, modId, baseId))
+    GameId cellId{};
+    if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
         return;
 
-    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(baseId), TESForm, TESObjectCELL);
+    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(cellId.BaseId), TESForm, TESObjectCELL);
     if (!pCell)
         return;
 
@@ -105,22 +104,19 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     for (TESObjectREFR* pObject : objects)
     {
         ObjectData objectData;
-        objectData.CellId.BaseId = baseId;
-        objectData.CellId.ModId = modId;
+        objectData.CellId = cellId;
 
-        uint32_t baseId = 0;
-        uint32_t modId = 0;
-        if (!m_world.GetModSystem().GetServerModId(pObject->formID, modId, baseId))
-            return;
-
-        objectData.Id.BaseId = baseId;
-        objectData.Id.ModId = modId;
+        if (!m_world.GetModSystem().GetServerModId(pObject->formID, objectData.Id))
+            continue;
 
         if (Lock* pLock = pObject->GetLock())
         {
             objectData.CurrentLockData.IsLocked = pLock->flags;
             objectData.CurrentLockData.LockLevel = pLock->lockLevel;
         }
+
+        if (pObject->formType == FormType::Container)
+            objectData.CurrentInventory = pObject->GetInventory();
 
         request.Objects.push_back(objectData);
     }
@@ -183,7 +179,7 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    if (auto* pLock = acEvent.pObject->GetLock())
+    if (Lock* pLock = acEvent.pObject->GetLock())
     {
         if (pLock->flags & 0xFF)
             return;
