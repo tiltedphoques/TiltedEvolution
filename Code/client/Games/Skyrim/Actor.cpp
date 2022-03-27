@@ -694,7 +694,7 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
 
     Inventory::Entry item{};
     modSystem.GetServerModId(apObject->formID, item.BaseId);
-    item.Count = aCount;
+    item.Count = -aCount;
 
     if (apExtraData)
         apThis->GetItemFromExtraData(item, apExtraData);

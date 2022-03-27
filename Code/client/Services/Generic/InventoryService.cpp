@@ -94,6 +94,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
             return;
         }
 
+        if (acMessage.Item.Count < 0)
         pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
     }
     else
