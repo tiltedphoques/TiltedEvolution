@@ -4,6 +4,8 @@
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/RequestEquipmentChanges.h>
+#include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 #include <Messages/NotifyDrawWeapon.h>
 
@@ -31,6 +33,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
     m_drawWeaponConnection = m_dispatcher.sink<NotifyDrawWeapon>().connect<&InventoryService::OnNotifyDrawWeapon>(this);
+    m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -70,6 +73,34 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.ActorId](auto entity) 
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (iter == std::end(view))
+        return;
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
+    if (!serverIdRes.has_value())
+        return;
+
+    Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.ActorId), TESForm, Actor);
+    if (!pActor)
+        return;
+
+    RequestEquipmentChanges request;
+    request.ServerId = serverIdRes.value();
+    request.CurrentEquipment = pActor->GetEquipment();
+
+    m_transport.Send(request);
+
+    spdlog::info("Sending equipment request, actor: {:X}", acEvent.ActorId);
 }
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
@@ -95,7 +126,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
         }
 
         if (acMessage.Item.Count < 0)
-        pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
+            pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
     }
     else
     {
@@ -107,6 +138,15 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
         pObject->AddOrRemoveItem(acMessage.Item);
     }
+}
+
+void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
+{
+    Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+    if (!pActor)
+        return;
+
+    pActor->SetEquipment(acMessage.CurrentEquipment);
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

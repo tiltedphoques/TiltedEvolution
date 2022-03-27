@@ -9,6 +9,7 @@ struct NotifyInventoryChanges;
 struct NotifyDrawWeapon;
 struct InventoryChangeEvent;
 struct EquipmentChangeEvent;
+struct NotifyEquipmentChanges;
 
 struct InventoryService
 {
@@ -22,6 +23,7 @@ struct InventoryService
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
 
     void OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept;
+    void OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept;
     void OnNotifyDrawWeapon(const NotifyDrawWeapon& acMessage) noexcept;
 
 private:
@@ -32,13 +34,10 @@ private:
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
-    // TODO: these two can probably be merged now?
-    Map<GameId, Inventory> m_cachedObjectInventoryChanges;
-    Map<uint32_t, Inventory> m_cachedCharacterInventoryChanges;
-
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryChangeConnection;
+    entt::scoped_connection m_equipmentChangeConnection;
     entt::scoped_connection m_drawWeaponConnection;
 };

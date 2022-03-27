@@ -8,6 +8,8 @@
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/RequestEquipmentChanges.h>
+#include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 #include <Messages/NotifyDrawWeapon.h>
 
@@ -15,6 +17,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
+    m_equipmentChangeConnection = aDispatcher.sink<PacketEvent<RequestEquipmentChanges>>().connect<&InventoryService::OnEquipmentChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
 }
 
@@ -30,6 +33,22 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;
     notify.DropOrPickUp = message.DropOrPickUp;
+
+    const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
+}
+
+void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept
+{
+    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+
+    auto& message = acMessage.Packet;
+
+    // TODO: update server equipment
+
+    NotifyEquipmentChanges notify;
+    notify.ServerId = message.ServerId;
+    notify.CurrentEquipment = message.CurrentEquipment;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());

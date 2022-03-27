@@ -42,6 +42,7 @@
 #include <Messages/NewPackageRequest.h>
 #include <Messages/RequestRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
+#include <Messages/RequestEquipmentChanges.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -61,7 +62,7 @@ struct ClientMessageFactory
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,
-                                 RequestRespawn, SyncExperienceRequest>;
+                                 RequestRespawn, SyncExperienceRequest, RequestEquipmentChanges>;
 
         return s_visitor(std::forward<T>(func));
     }
