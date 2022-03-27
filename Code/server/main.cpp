@@ -20,6 +20,8 @@
 #include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
 
+#include <bridge.rs.h>
+
 constexpr char kSettingsFileName[] =
 #if SKYRIM
     "STServer.ini"
@@ -185,7 +187,7 @@ void DediRunner::StartTerminalIO()
                 PrintExecutorArrowHack();
             }
 
-            // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
+            // best way to ensure this thread exits immediately tbh ï¿½\_("")_/ï¿½.
             if (s == "/quit")
                 return;
         }
@@ -271,6 +273,8 @@ static bool IsEULAAccepted()
 
 int main(int argc, char** argv)
 {
+    say_hello_rs();
+
     if (!IsEULAAccepted())
     {
         fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");

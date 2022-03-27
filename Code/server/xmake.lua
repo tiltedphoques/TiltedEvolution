@@ -10,7 +10,8 @@ target(name)
         "../../Libraries/")
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
-    add_files("**.cpp")
+    add_files("**.cpp", "**.rsx")
+    add_rules("rust.cxxbridge")
 
     if name == "SkyrimTogetherServer" then
         add_deps("SkyrimEncoding")
@@ -26,7 +27,8 @@ target(name)
         "Base",
         "AdminProtocol",
         "TiltedScript",
-        "TiltedConnect"
+        "TiltedConnect",
+        "ServerServices"
     )
     add_packages(
         "gamenetworkingsockets",
