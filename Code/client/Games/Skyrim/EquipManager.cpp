@@ -187,12 +187,15 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         return nullptr;
 
     const auto pExtension = apActor->GetExtension();
-    if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
-        return nullptr;
+    if (pExtension->IsRemote())
+    {
+        spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}", apActor->formID, apItem->formID);
+        if (!ScopedEquipOverride::IsOverriden())
+            return nullptr;
+    }
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        spdlog::warn("Sending Unequip event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
@@ -202,8 +205,6 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
         World::Get().GetRunner().Trigger(evt);
     }
-
-    spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}", apActor->formID, apItem->formID);
 
     return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
 }
@@ -244,7 +245,6 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        spdlog::warn("Sending UnequipSpell event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
@@ -293,7 +293,6 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        spdlog::warn("Sending UnequipShout event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;

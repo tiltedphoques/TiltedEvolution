@@ -112,8 +112,6 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsShout = acEvent.IsShout;
 
     m_transport.Send(request);
-
-    spdlog::info("Sending equipment request, actor: {:X}", acEvent.ActorId);
 }
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
@@ -166,8 +164,6 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
 
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
-
-    spdlog::critical("pEquipSlot: {:X}, pItem: {:X}", (uint64_t)pEquipSlot, (uint64_t)pItem);
 
     auto* pEquipManager = EquipManager::Get();
 
