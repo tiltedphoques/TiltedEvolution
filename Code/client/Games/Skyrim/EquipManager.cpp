@@ -79,6 +79,34 @@ EquipManager* EquipManager::Get() noexcept
     return *s_singleton.Get();
 }
 
+// TODO: this equip func doesn't seem to work too well for armor
+void* EquipManager::Equip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3)
+{
+    TP_THIS_FUNCTION(TEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, ExtraDataList * apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3);
+    POINTER_SKYRIMSE(TEquipInternal, s_equipFunc, 38894);
+
+    ScopedEquipOverride equipOverride;
+
+    const auto result = ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, aSlot, aUnk1, aPreventEquip, aUnk2, aUnk3);
+
+    return result;
+}
+
+// TODO: crash in TESObjectREFR::UnequipItem() virtual func (offset 0xA1) when remote players shoots last arrow in quiver (and switching)
+// This might be caused by the server deleting it and the client detecting the last arrow being shot
+// Maybe hook UnequipItem() and cancel it remotely?
+void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4)
+{
+    TP_THIS_FUNCTION(TUnEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, ExtraDataList * apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4);
+    POINTER_SKYRIMSE(TUnEquipInternal, s_unequipFunc, 38901);
+
+    ScopedEquipOverride equipOverride;
+
+    const auto result = ThisCall(s_unequipFunc, this, apActor, apItem, apExtraDataList, aCount, aSlot, aUnk1, aPreventEquip, aUnk2, aUnk3, aUnk4);
+
+    return result;
+}
+
 void* EquipManager::EquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
 {
     TP_THIS_FUNCTION(TEquipSpellInternal, void*, EquipManager, Actor*, TESForm*, uint32_t);
@@ -127,51 +155,26 @@ void* EquipManager::UnEquipShout(Actor* apActor, TESForm* apShout)
     return result;
 }
 
-
-void* EquipManager::Equip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3)
-{
-    TP_THIS_FUNCTION(TEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, ExtraDataList * apExtraDataList, int aCount, void* aSlot, bool aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3);
-    POINTER_SKYRIMSE(TEquipInternal, s_equipFunc, 38894);
-
-    ScopedEquipOverride equipOverride;
-
-    const auto result = ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, aSlot, aUnk1, aPreventEquip, aUnk2, aUnk3);
-
-    return result;
-}
-
-void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4)
-{
-    TP_THIS_FUNCTION(TUnEquipInternal, void*, EquipManager, Actor * apActor, TESForm * apItem, ExtraDataList * apExtraDataList, int aCount, void* aSlot, int aUnk1, bool aPreventEquip, bool aUnk2, bool aUnk3, void* aUnk4);
-    POINTER_SKYRIMSE(TUnEquipInternal, s_unequipFunc, 38901);
-
-    ScopedEquipOverride equipOverride;
-
-    const auto result = ThisCall(s_unequipFunc, this, apActor, apItem, apExtraDataList, aCount, aSlot, aUnk1, aPreventEquip, aUnk2, aUnk3, aUnk4);
-
-    return result;
-}
-
 void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData)
 {
-    spdlog::info("Equip, slot: {:X}", apData->slot->formID);
     if (!apActor)
         return nullptr;
 
     const auto pExtension = apActor->GetExtension();
-    if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
+    if (pExtension->IsRemote())
     {
         spdlog::info("Actor[{:X}]::Equip(), item form id: {:X}", apActor->formID, apItem->formID);
-        return nullptr;
+        if (!ScopedEquipOverride::IsOverriden())
+            return nullptr;
     }
 
     if (pExtension->IsLocal())
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.IsLeft = apData->slot == DefaultObjectManager::Get().leftEquipSlot;
-        evt.IsSpell = false;
-        evt.IsShout = false;
+        evt.Count = apData->count;
+        evt.ItemId = apItem->formID;
+        evt.EquipSlotId = apData->slot ? apData->slot->formID : 0;
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -183,7 +186,6 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
 
 void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, UnEquipData* apData)
 {
-    spdlog::info("Unequip, slot: {:X}", apData->slot->formID);
     if (!apActor)
         return nullptr;
 
@@ -196,19 +198,21 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         spdlog::warn("Sending Unequip event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.IsLeft = apData->slot == DefaultObjectManager::Get().leftEquipSlot;
-        evt.IsSpell = false;
-        evt.IsShout = false;
+        evt.Count = apData->count;
+        evt.ItemId = apItem->formID;
+        evt.EquipSlotId = apData->slot ? apData->slot->formID : 0;
+        evt.Unequip = true;
 
         World::Get().GetRunner().Trigger(evt);
     }
+
+    spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}", apActor->formID, apItem->formID);
 
     return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
 }
 
 void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, MagicEquipParams* apParams)
 {
-    spdlog::info("EquipSpell, slot: {:X}", apParams->pEquipSlot->formID);
     if (!apActor)
         return nullptr;
 
@@ -220,9 +224,9 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.IsLeft = apParams->pEquipSlot == DefaultObjectManager::Get().leftEquipSlot;
+        evt.ItemId = apSpell->formID;
+        evt.EquipSlotId = apParams->pEquipSlot->formID;
         evt.IsSpell = true;
-        evt.IsShout = false;
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -234,7 +238,6 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
 
 void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, MagicEquipParams* apParams)
 {
-    spdlog::info("UnequipSpell, slot: {:X}", apParams->pEquipSlot->formID);
     if (!apActor)
         return nullptr;
 
@@ -247,9 +250,10 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
         spdlog::warn("Sending UnequipSpell event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.IsLeft = apParams->pEquipSlot == DefaultObjectManager::Get().leftEquipSlot;
+        evt.ItemId = apSpell->formID;
+        evt.EquipSlotId = apParams->pEquipSlot->formID;
+        evt.Unequip = true;
         evt.IsSpell = true;
-        evt.IsShout = false;
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -259,7 +263,6 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
 
 void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* apShout, ShoutEquipParams* apParams)
 {
-    spdlog::info("EquipShout");
     if (!apActor)
         return nullptr;
 
@@ -271,8 +274,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
     {
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.IsLeft = false;
-        evt.IsSpell = false;
+        evt.ItemId = apShout->formID;
         evt.IsShout = true;
 
         World::Get().GetRunner().Trigger(evt);
@@ -285,7 +287,6 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
 
 void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* apShout, ShoutEquipParams* apParams)
 {
-    spdlog::info("UnequipShout");
     if (!apActor)
         return nullptr;
 
@@ -298,8 +299,8 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
         spdlog::warn("Sending UnequipShout event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
-        evt.IsLeft = false;
-        evt.IsSpell = false;
+        evt.ItemId = apShout->formID;
+        evt.Unequip = true;
         evt.IsShout = true;
 
         World::Get().GetRunner().Trigger(evt);

@@ -4,7 +4,12 @@
 void RequestEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, ServerId);
-    CurrentEquipment.Serialize(aWriter);
+    ItemId.Serialize(aWriter);
+    EquipSlotId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, Count);
+    Serialization::WriteBool(aWriter, Unequip);
+    Serialization::WriteBool(aWriter, IsSpell);
+    Serialization::WriteBool(aWriter, IsShout);
 }
 
 void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,5 +17,10 @@ void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     ClientMessage::DeserializeRaw(aReader);
 
     ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    CurrentEquipment.Deserialize(aReader);
+    ItemId.Deserialize(aReader);
+    EquipSlotId.Deserialize(aReader);
+    Count = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Unequip = Serialization::ReadBool(aReader);
+    IsSpell = Serialization::ReadBool(aReader);
+    IsShout = Serialization::ReadBool(aReader);
 }

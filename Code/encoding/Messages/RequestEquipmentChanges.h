@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/Equipment.h>
+#include <Structs/Gameid.h>
 
 struct RequestEquipmentChanges final : ClientMessage
 {
@@ -20,9 +20,19 @@ struct RequestEquipmentChanges final : ClientMessage
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
-               CurrentEquipment == acRhs.CurrentEquipment;
+               ItemId == acRhs.ItemId &&
+               EquipSlotId == acRhs.EquipSlotId &&
+               Count == acRhs.Count &&
+               Unequip == acRhs.Unequip &&
+               IsSpell == acRhs.IsSpell &&
+               IsShout == acRhs.IsShout;
     }
     
     uint32_t ServerId{};
-    Equipment CurrentEquipment{};
+    GameId ItemId{};
+    GameId EquipSlotId{};
+    uint32_t Count{};
+    bool Unequip = false;
+    bool IsSpell = false;
+    bool IsShout = false;
 };

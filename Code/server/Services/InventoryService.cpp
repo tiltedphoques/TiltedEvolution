@@ -48,7 +48,12 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
 
     NotifyEquipmentChanges notify;
     notify.ServerId = message.ServerId;
-    notify.CurrentEquipment = message.CurrentEquipment;
+    notify.ItemId = message.ItemId;
+    notify.EquipSlotId = message.EquipSlotId;
+    notify.Count = message.Count;
+    notify.Unequip = message.Unequip;
+    notify.IsSpell = message.IsSpell;
+    notify.IsShout = message.IsShout;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());

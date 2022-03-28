@@ -319,12 +319,11 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     SetEquipment(aInventory.CurrentEquipment);
 }
 
+// TODO: remove all the unequip stuff, not needed anymore
 void Actor::SetEquipment(const Equipment& acEquipment) noexcept
 {
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
-
-    // TODO: now, you gotta set armor and trinkets too
 
     const Equipment cCurrentEquipment = GetEquipment();
 
@@ -332,7 +331,6 @@ void Actor::SetEquipment(const Equipment& acEquipment) noexcept
     {
         if (acEquipment.LeftHandWeapon)
         {
-            // TODO: isn't the right hand the main weapon?
             uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandWeapon);
             pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
         }

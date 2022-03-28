@@ -22,6 +22,8 @@
 #include <Forms/TESWorldSpace.h>
 #include <Games/TES.h>
 #include <Games/Overrides.h>
+#include <EquipManager.h>
+#include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -94,9 +96,20 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     if (!pActor)
         return;
 
+    auto& modSystem = World::Get().GetModSystem();
+
     RequestEquipmentChanges request;
     request.ServerId = serverIdRes.value();
-    request.CurrentEquipment = pActor->GetEquipment();
+
+    if (!modSystem.GetServerModId(acEvent.EquipSlotId, request.EquipSlotId))
+        return;
+    if (!modSystem.GetServerModId(acEvent.ItemId, request.ItemId))
+        return;
+
+    request.Count = acEvent.Count;
+    request.Unequip = acEvent.Unequip;
+    request.IsSpell = acEvent.IsSpell;
+    request.IsShout = acEvent.IsShout;
 
     m_transport.Send(request);
 
@@ -146,7 +159,45 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     if (!pActor)
         return;
 
-    //pActor->SetEquipment(acMessage.CurrentEquipment);
+    auto& modSystem = World::Get().GetModSystem();
+
+    uint32_t itemId = modSystem.GetGameId(acMessage.ItemId);
+    TESForm* pItem = TESForm::GetById(itemId);
+
+    uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
+    TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
+
+    spdlog::critical("pEquipSlot: {:X}, pItem: {:X}", (uint64_t)pEquipSlot, (uint64_t)pItem);
+
+    auto* pEquipManager = EquipManager::Get();
+
+    if (acMessage.IsSpell)
+    {
+        uint32_t spellSlotId = 0;
+        if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
+            spellSlotId = 1;
+
+        if (acMessage.Unequip)
+            pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
+        else
+            pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
+    }
+    else if (acMessage.IsShout)
+    {
+        if (acMessage.Unequip)
+            pEquipManager->UnEquipShout(pActor, pItem);
+        else
+            pEquipManager->EquipShout(pActor, pItem);
+    }
+    else
+    {
+        // TODO: ExtraData necessary? probably
+        // TODO: verify the bool params
+        if (acMessage.Unequip)
+            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, true, false, true, false, nullptr);
+        else
+            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+    }
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

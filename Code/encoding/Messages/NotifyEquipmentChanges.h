@@ -2,8 +2,7 @@
 
 #include "Message.h"
 #include <TiltedCore/Buffer.hpp>
-#include <Structs/Equipment.h>
-#include <Structs/Inventory.h>
+#include <Structs/GameId.h>
 
 struct NotifyEquipmentChanges final : ServerMessage
 {
@@ -20,15 +19,19 @@ struct NotifyEquipmentChanges final : ServerMessage
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
-               EquippedItem == acRhs.EquippedItem &&
-               IsLeft == acRhs.IsLeft &&
+               ItemId == acRhs.ItemId &&
+               EquipSlotId == acRhs.EquipSlotId &&
+               Count == acRhs.Count &&
+               Unequip == acRhs.Unequip &&
                IsSpell == acRhs.IsSpell &&
                IsShout == acRhs.IsShout;
     }
     
     uint32_t ServerId{};
-    Inventory::Entry EquippedItem{};
-    bool IsLeft = false;
+    GameId ItemId{};
+    GameId EquipSlotId{};
+    uint32_t Count{};
+    bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;
 };
