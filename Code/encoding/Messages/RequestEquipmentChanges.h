@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/Gameid.h>
+#include <Structs/GameId.h>
 
 struct RequestEquipmentChanges final : ClientMessage
 {
