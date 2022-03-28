@@ -1,5 +1,7 @@
   
-#include "winuser.h"
+#include <winres.h>
+#include <BuildInfo.h>
+#include <BranchInfo.h>
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L
@@ -16,9 +18,9 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Tilted Phoques SRL"
+            VALUE "CompanyName", "Together Team"
             VALUE "ProductName", "TPProcess"
-            VALUE "FileDescription", "TiltedUI Worker"
+            VALUE "FileDescription", "NG_UI OSR Worker"
             VALUE "OriginalFilename", "TPProcess.exe"
         END
     END
@@ -29,3 +31,11 @@ BEGIN
 END
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "process.manifest"
+
+#if (IS_TESTING)
+102 ICON "team_pre.ico"
+#elif (IS_SHIPPING)
+102 ICON "team.ico"
+#else
+102 ICON "team_dev.ico"
+#endif

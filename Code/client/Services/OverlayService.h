@@ -4,7 +4,7 @@
 
 namespace TiltedPhoques
 {
-    struct OverlayApp;
+    struct NgApp;
 }
 
 struct RenderSystemD3D11;
@@ -12,7 +12,7 @@ struct D3D11RenderProvider;
 struct World;
 struct TransportService;
 
-using TiltedPhoques::OverlayApp;
+using TiltedPhoques::NgApp;
 
 struct OverlayService
 {
@@ -26,11 +26,14 @@ struct OverlayService
     void Render() const noexcept;
     void Reset() const noexcept;
 
-    OverlayApp* GetOverlayApp() const noexcept { return m_pOverlay.get(); }
+    NgApp* GetOverlayApp() const noexcept
+    {
+        return m_pOverlay.get();
+    }
 
 private:
 
-    CefRefPtr<OverlayApp> m_pOverlay{nullptr};
+    CefRefPtr<NgApp> m_pOverlay{nullptr};
     UniquePtr<D3D11RenderProvider> m_pProvider;
 
     World& m_world;

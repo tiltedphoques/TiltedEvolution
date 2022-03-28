@@ -273,7 +273,7 @@ int main(int argc, char** argv)
 {
     if (!IsEULAAccepted())
     {
-        fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
+        fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt Xx");
         return 0;
     }
 

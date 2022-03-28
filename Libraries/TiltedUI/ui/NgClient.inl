@@ -3,7 +3,7 @@
 
 namespace TiltedPhoques
 {
-    inline [[nodiscard]] CefRefPtr<OverlayRenderHandler> NgClient::GetOverlayRenderHandler() {
+    inline [[nodiscard]] CefRefPtr<NgRenderHandler> NgClient::GetOverlayRenderHandler() {
         return m_pRenderHandler;
     }
 

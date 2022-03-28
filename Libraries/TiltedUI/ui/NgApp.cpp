@@ -11,14 +11,17 @@ namespace TiltedPhoques
     }
 
     NgApp::~NgApp() {
+        // manually destruct spaces before we shutdown to 
+        // work around the "reference held" error.
+        for (auto& it : m_Spaces)
+            it.reset();
+
         Shutdown();
     }
 
-    bool NgApp::Initialize(const CreateInfo& aCreateInfo) noexcept
+    bool NgApp::Initialize(const Settings& aSettings) noexcept
     {
-        CefMainArgs args(GetModuleHandleW(nullptr));
-
-        const auto currentPath = TiltedPhoques::GetPath();
+        m_Settings = aSettings;
 
         CefSettings settings;
         settings.no_sandbox = true;
@@ -27,18 +30,20 @@ namespace TiltedPhoques
 
 #ifdef DEBUG
         settings.log_severity = LOGSEVERITY_VERBOSE;
-        settings.remote_debugging_port = aCreateInfo.remoteDebugPort;
+        settings.remote_debugging_port = aSettings.devtoolsPort;
 #else
         //settings.log_severity = LOGSEVERITY_VERBOSE;
 #endif
+        const auto currentPath = TiltedPhoques::GetPath();
         CefString(&settings.log_file).FromWString(currentPath / L"logs" / L"cef_debug.log");
         CefString(&settings.cache_path).FromWString(currentPath / L"cache");
         CefString(&settings.framework_dir_path).FromWString(currentPath);
         CefString(&settings.root_cache_path).FromWString(currentPath / L"cache");
         CefString(&settings.resources_dir_path).FromWString(currentPath);
         CefString(&settings.locales_dir_path).FromWString(currentPath / L"locales");
-        CefString(&settings.browser_subprocess_path).FromWString(currentPath / aCreateInfo.pWorkerName);
+        CefString(&settings.browser_subprocess_path).FromWString(currentPath / aSettings.pWorkerName);
 
+        CefMainArgs args(aSettings.instanceArgs);
         return CefInitialize(args, settings, this, nullptr);
     }
 
@@ -63,22 +68,26 @@ namespace TiltedPhoques
         aCommandLine->AppendSwitch("disable-gpu-process-crash-limit");
         aCommandLine->AppendSwitchWithValue("use-angle", "d3d11");
         aCommandLine->AppendSwitch("enable-gpu-rasterization");
+        aCommandLine->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
 
         // Disable CORS
-        aCommandLine->AppendSwitch("disable-web-security");
-        //aCommandLine->AppendSwitch("in-process-gpu");
+        if (m_Settings.disableCors)
+            aCommandLine->AppendSwitch("disable-web-security");
     }
 
-    NgSpace* NgApp::CreateSpace()
+    NgSpace* NgApp::CreateSpace(const CefString& acUrl)
     {
         assert(m_pRenderProvider);
 
-        auto* pSpace = new NgSpace();
+        NgSpace* pSpaceRef = nullptr;
 
-        // TODO: make factory return this here.
-        m_Spaces.push_back(pSpace);
-        pSpace->LoadContent(m_pRenderProvider, true);
+        auto pSpace = std::make_unique<NgSpace>();
+        if (pSpace->LoadContent(m_pRenderProvider, acUrl, m_Settings.useSharedResources))
+        {
+            pSpaceRef = pSpace.get();
+            m_Spaces.push_back(std::move(pSpace));
+        }
 
-        return pSpace;
+        return pSpaceRef;
     }
 }

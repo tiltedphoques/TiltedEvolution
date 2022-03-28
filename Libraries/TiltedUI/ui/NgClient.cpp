@@ -14,7 +14,7 @@ namespace TiltedPhoques
   }
     */
 
-    NgClient::NgClient(OverlayRenderHandler* apHandler, bool useSharedRes) noexcept
+    NgClient::NgClient(NgRenderHandler* apHandler, bool useSharedRes) noexcept
         : m_pRenderHandler(apHandler)
         , m_pLoadHandler(new NgLoadHandler)
         , m_pBrowser(nullptr)

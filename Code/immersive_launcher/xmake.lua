@@ -16,7 +16,8 @@ local function build_launcher()
     add_includedirs(
         ".",
         "../",
-        "../../Libraries/")
+        "../../Libraries/",
+        "../../build/")
     add_headerfiles("**.h")
     add_files(
         "**.cpp",

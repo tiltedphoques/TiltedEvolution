@@ -189,6 +189,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pApp)
         return;
 
+    #if 0
     const auto pClient = pApp->GetClient();
     if (!pClient)
         return;
@@ -198,6 +199,9 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
         return;
 
     const auto active = pRenderer->IsVisible();
+    #endif
+
+    bool active = true;
 
     if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
     {
@@ -217,7 +221,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     }
     else if (active)
     {
-        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
+        //pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
     }
 }
 
@@ -229,6 +233,7 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
     if (!pApp)
         return;
 
+    #if 0
     const auto pClient = pApp->GetClient();
     if (!pClient)
         return;
@@ -243,6 +248,7 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
     {
         pApp->InjectMouseMove(aX, aY, GetCefModifiers(0));
     }
+    #endif
 }
 
 void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButton, bool aDown)
@@ -253,6 +259,7 @@ void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButto
     if (!pApp)
         return;
 
+    #if 0
     const auto pClient = pApp->GetClient();
     if (!pClient)
         return;
@@ -267,6 +274,7 @@ void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButto
     {
         pApp->InjectMouseButton(aX, aY, aButton, !aDown, GetCefModifiers(0));
     }
+    #endif
 }
 
 void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
@@ -277,6 +285,7 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     if (!pApp)
         return;
 
+    #if 0
     const auto pClient = pApp->GetClient();
     if (!pClient)
         return;
@@ -291,6 +300,7 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     {
         pApp->InjectMouseWheel(aX, aY, aZ, GetCefModifiers(0));
     }
+    #endif
 }
 
 LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -299,6 +309,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     if (!pApp)
         return 0;
 
+    #if 0
     const auto pClient = pApp->GetClient();
     if (!pClient)
         return 0;
@@ -306,19 +317,20 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     const auto pRenderer = pClient->GetOverlayRenderHandler();
     if (!pRenderer)
         return 0;
+    #endif
 
     auto &discord = World::Get().ctx<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
-    const auto isVisible = pRenderer->IsVisible();
-    if(isVisible)
+    //const auto isVisible = pRenderer->IsVisible();
+    if(true)
     {
         auto& imgui = World::Get().ctx<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
     }
 
 #if defined(TP_SKYRIM)
-    pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
+    //pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
 #else
     POINTER_FALLOUT4(uint8_t, s_viewportLock, 0x3846670);
     *s_viewportLock = isVisible ? 1 : 0;
@@ -338,7 +350,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
         GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
 
-        if (isVisible)
+        if (true)
         {
             auto& imgui = World::Get().ctx<ImguiService>();
             imgui.RawInputHandler(input);

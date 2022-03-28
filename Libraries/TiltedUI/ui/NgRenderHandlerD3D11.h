@@ -3,7 +3,7 @@
 #include <wrl.h>
 #include <mutex>
 
-#include <OverlayRenderHandler.h>
+#include <NgRenderHandler.h>
 #include <TiltedCore/Signal.hpp>
 
 namespace DirectX
@@ -20,7 +20,7 @@ struct ID3D11Device;
 
 namespace TiltedPhoques
 {
-    class OverlayRenderHandlerD3D11 final : public OverlayRenderHandler
+    class NgRenderHandlerD3D11 final : public NgRenderHandler
     {
     public:
         struct Renderer
@@ -32,16 +32,16 @@ namespace TiltedPhoques
             TP_NOCOPYMOVE(Renderer);
         };
 
-        explicit OverlayRenderHandlerD3D11(Renderer* apRenderer) noexcept;
-        virtual ~OverlayRenderHandlerD3D11();
+        explicit NgRenderHandlerD3D11(Renderer* apRenderer) noexcept;
+        virtual ~NgRenderHandlerD3D11();
 
-        TP_NOCOPYMOVE(OverlayRenderHandlerD3D11);
+        void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
+        //bool GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& screen_info) override;
 
         void Create() override;
         void Render() override;
         void Reset() override;
 
-        void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
         void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects, const void* buffer, int width, int height) override;
 
         void OnAcceleratedPaint(
@@ -50,8 +50,8 @@ namespace TiltedPhoques
             const RectList& dirtyRects,
             void* share_handle) override;
 
-        IMPLEMENT_REFCOUNTING(OverlayRenderHandlerD3D11);
-
+        TP_NOCOPYMOVE(NgRenderHandlerD3D11);
+        IMPLEMENT_REFCOUNTING(NgRenderHandlerD3D11);
     protected:
 
         void GetRenderTargetSize();

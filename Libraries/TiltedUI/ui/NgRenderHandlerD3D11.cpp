@@ -7,21 +7,36 @@
 #include <WICTextureLoader.h>
 #include <DDSTextureLoader.h>
 
-#include <NgClient.h>
-#include <OverlayRenderHandlerD3D11.h>
+#include "NgClient.h"
+#include "NgRenderHandlerD3D11.h"
 
 namespace TiltedPhoques
 {
-    OverlayRenderHandlerD3D11::OverlayRenderHandlerD3D11(Renderer* apRenderer) noexcept
+    NgRenderHandlerD3D11::NgRenderHandlerD3D11(Renderer* apRenderer) noexcept
         : m_pRenderer(apRenderer)
     {
         // So we need to lock this until we have the window dimension as a background CEF thread will attempt to get it before we have it
         m_createLock.lock();
     }
 
-    OverlayRenderHandlerD3D11::~OverlayRenderHandlerD3D11() = default;
+    NgRenderHandlerD3D11::~NgRenderHandlerD3D11() = default;
 
-    void OverlayRenderHandlerD3D11::Render()
+    void NgRenderHandlerD3D11::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
+    {
+        rect = CefRect(0, 0, m_width, m_height);
+    }
+
+#if 0
+    bool NgRenderHandlerD3D11::GetScreenInfo(CefRefPtr<CefBrowser> browser, CefScreenInfo& aInfo)
+    {
+        aInfo = {};
+        aInfo.device_scale_factor = 1.5f;
+
+        return true;
+    }
+#endif
+
+    void NgRenderHandlerD3D11::Render()
     {
         // We need contexts first
         if (!m_pImmediateContext || !m_pContext)
@@ -71,12 +86,12 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlayRenderHandlerD3D11::Reset()
+    void NgRenderHandlerD3D11::Reset()
     {
         Create();
     }
 
-    void OverlayRenderHandlerD3D11::Create()
+    void NgRenderHandlerD3D11::Create()
     {
         const auto hr = m_pRenderer->GetSwapChain()->GetDevice(IID_ID3D11Device, reinterpret_cast<void**>(m_pDevice.ReleaseAndGetAddressOf()));
 
@@ -107,14 +122,7 @@ namespace TiltedPhoques
             CreateRenderTexture();
     }
 
-    void OverlayRenderHandlerD3D11::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
-    {
-        std::scoped_lock _(m_createLock);
-        GetRenderTargetSize();
-        rect = CefRect(0, 0, m_width, m_height);
-    }
-
-    void OverlayRenderHandlerD3D11::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+    void NgRenderHandlerD3D11::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
         const RectList& dirtyRects, const void* buffer, int width, int height)
     {
         if (type == PET_VIEW && m_width == width && m_height == height)
@@ -130,7 +138,7 @@ namespace TiltedPhoques
             if (SUCCEEDED(result))
             {
                 const auto pDest = static_cast<uint8_t*>(mappedResource.pData);
-                std::memcpy(pDest, buffer, width * height * 4);
+                std::memcpy(pDest, buffer, static_cast<size_t>(width) * height * 4);
                 m_pContext->Unmap(m_pTexture.Get(), 0);
             }
             else
@@ -143,7 +151,7 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlayRenderHandlerD3D11::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
+    void NgRenderHandlerD3D11::OnAcceleratedPaint(CefRefPtr<CefBrowser> browser,
         PaintElementType type,
         const RectList& dirtyRects,
         void* share_handle)
@@ -151,7 +159,7 @@ namespace TiltedPhoques
         __debugbreak();
     }
 
-    void OverlayRenderHandlerD3D11::GetRenderTargetSize()
+    void NgRenderHandlerD3D11::GetRenderTargetSize()
     {
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRenderTargetView;
 
@@ -191,7 +199,7 @@ namespace TiltedPhoques
         }
     }
 
-    void OverlayRenderHandlerD3D11::CreateRenderTexture()
+    void NgRenderHandlerD3D11::CreateRenderTexture()
     {
         D3D11_TEXTURE2D_DESC textDesc;
         textDesc.Width = m_width;

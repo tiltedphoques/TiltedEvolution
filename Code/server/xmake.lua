@@ -7,10 +7,13 @@ target(name)
     add_defines(def)
     add_includedirs(
         ".",
-        "../../Libraries/")
+        "../../Libraries/",
+        "../../build/")
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
-    add_files("**.cpp")
+    add_files(
+        "**.cpp",
+        "resources/server.rc")
 
     if name == "SkyrimTogetherServer" then
         add_deps("SkyrimEncoding")

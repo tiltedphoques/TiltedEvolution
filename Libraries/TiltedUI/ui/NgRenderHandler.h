@@ -5,8 +5,9 @@
 namespace TiltedPhoques
 {
     class NgClient;
-    struct OverlayRenderHandler : CefRenderHandler
+    class NgRenderHandler : public CefRenderHandler
     {
+    public:
         virtual void Reset() = 0;
         virtual void Render() = 0;
         virtual void Create() = 0;
@@ -38,7 +39,6 @@ namespace TiltedPhoques
         }
 
     protected:
-
         bool m_visible{ true };
         uint16_t m_cursorX{ 0 };
         uint16_t m_cursorY{ 0 };

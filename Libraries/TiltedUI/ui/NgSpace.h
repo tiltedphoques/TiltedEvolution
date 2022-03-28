@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include "NgClient.h"
 
 namespace TiltedPhoques
@@ -9,9 +10,11 @@ namespace TiltedPhoques
     class NgSpace
     {
     public:
+        ~NgSpace();
+
         [[nodiscard]] NgClient* GetClient() const noexcept { return m_pClient.get(); };
 
-        void LoadContent(RenderProvider* apRenderer, bool enableSharedResources);
+        bool LoadContent(RenderProvider* apRenderer, const CefString& acUrl, bool enableSharedResources);
 
         // Dev tools are a per space thing, like each tab in chrome can have its own dev tools
         bool ShowDevTools();
@@ -32,5 +35,6 @@ namespace TiltedPhoques
         bool m_visible{ true };
         uint16_t m_cursorX{ 0 };
         uint16_t m_cursorY{ 0 };
+        std::recursive_mutex m_spaceLock;
     };
 }

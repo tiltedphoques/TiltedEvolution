@@ -2,6 +2,12 @@
 #include "NgSpace.h"
 #include "NgApp.h"
 
+#include <base/cef_callback.h>
+#include <wrapper/cef_helpers.h>
+#include <base/cef_ref_counted.h>
+#include <wrapper/cef_closure_task.h>
+#include <cef_request_context_handler.h>
+
 namespace TiltedPhoques
 {
     namespace
@@ -11,9 +17,34 @@ namespace TiltedPhoques
         private:
             IMPLEMENT_REFCOUNTING(DevToolsClient);
         };
+
+        void DoCloseBrowser(CefRefPtr<CefBrowser> browser)
+        {
+            browser->GetHost()->CloseBrowser(true);
+        }
     }
+
+    NgSpace::~NgSpace()
+    {
+#if 1
+        if (m_pClient)
+        {
+            std::unique_lock _(m_spaceLock);
+
+            if (!CefCurrentlyOn(TID_UI))
+            {
+                CefPostTask(TID_UI, base::BindOnce(&DoCloseBrowser, m_pClient->GetBrowser()));
+            }
+            else
+            {
+                m_pClient->GetBrowser()->GetHost()->CloseBrowser(true);
+            }
+        }
+#endif
+    }
+
     // ActivateContent
-    void NgSpace::LoadContent(RenderProvider* apRenderer, bool enableSharedResources)
+    bool NgSpace::LoadContent(RenderProvider* apRenderer, const CefString& acUrl, bool enableSharedResources)
     {
         m_usingSharedResources = enableSharedResources;
         m_pClient = new NgClient(apRenderer->Create(), enableSharedResources);
@@ -32,13 +63,15 @@ namespace TiltedPhoques
         // (currentPath / L"UI" / acPath / L"index.html").wstring()
         auto rc = CefRequestContext::GetGlobalContext();
 
-        bool ret = CefBrowserHost::CreateBrowser(info, m_pClient.get(),
-            "https://www.google.com/", settings, {}, rc);
+        bool browserResult = CefBrowserHost::CreateBrowser(info, m_pClient.get(),
+            acUrl, settings, {}, rc);
 
-        if (ret)
+        if (browserResult)
         {
             m_pClient->Create();
         }
+
+        return browserResult;
     }
 
     bool NgSpace::ShowDevTools()

@@ -2,7 +2,7 @@
 
 #include <include/cef_client.h>
 #include <NgLoadHandler.h>
-#include <OverlayRenderHandler.h>
+#include <NgRenderHandler.h>
 
 #include <TiltedCore/Meta.hpp>
 
@@ -11,9 +11,9 @@ namespace TiltedPhoques
     class NgClient final : public CefClient, CefLifeSpanHandler
     {
     public:
-        explicit NgClient(OverlayRenderHandler* apHandler, bool useSharedRes) noexcept;
+        explicit NgClient(NgRenderHandler* apHandler, bool useSharedRes) noexcept;
 
-        inline [[nodiscard]] CefRefPtr<OverlayRenderHandler> GetOverlayRenderHandler();
+        inline [[nodiscard]] CefRefPtr<NgRenderHandler> GetOverlayRenderHandler();
         inline [[nodiscard]] CefRefPtr<CefBrowser> GetBrowser() const noexcept;
         inline [[nodiscard]] const std::wstring& GetCursorPathPNG() const noexcept;
 
@@ -54,7 +54,7 @@ namespace TiltedPhoques
             return m_pContextMenuHandler;
         }
     private:
-        CefRefPtr<OverlayRenderHandler> m_pRenderHandler;
+        CefRefPtr<NgRenderHandler> m_pRenderHandler;
         CefRefPtr<NgLoadHandler> m_pLoadHandler;
         CefRefPtr<CefBrowser> m_pBrowser;
         CefRefPtr<CefContextMenuHandler> m_pContextMenuHandler;

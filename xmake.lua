@@ -20,13 +20,13 @@ before_build(function (target)
     bool_to_number={ [true]=1, [false]=0 }
     local contents = string.format([[
     #pragma once
-    #define IS_MASTER %d
-    #define IS_BRANCH_BETA %d
-    #define IS_BRANCH_PREREL %d
+    #define IS_TESTING %d
+    #define IS_SHIPPING %d
+    #define IS_DEV %d
     ]], 
+    bool_to_number[branch == "testing"], 
     bool_to_number[branch == "master"], 
-    bool_to_number[branch == "bluedove"], 
-    bool_to_number[branch == "prerel"])
+    bool_to_number[branch ~= "testing" and branch ~= "master"])
     io.writefile("build/BranchInfo.h", contents)
 end)
 

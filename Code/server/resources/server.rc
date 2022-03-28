@@ -2,6 +2,25 @@
 #include <BuildInfo.h>
 #include <BranchInfo.h>
 
+// THERE IS NO BETTER WAY
+#if defined(TARGET_ST)
+#if (IS_TESTING)
+IDI_ICON1     ICON DISCARDABLE     "st_pre.ico"
+#elif (IS_SHIPPING)
+IDI_ICON1     ICON DISCARDABLE     "st.ico"
+#else
+IDI_ICON1     ICON DISCARDABLE     "st_dev.ico"
+#endif
+#elif defined(TARGET_FT)
+#if (IS_TESTING)
+IDI_ICON1     ICON DISCARDABLE     "ft_pre.ico"
+#elif (IS_SHIPPING)
+IDI_ICON1     ICON DISCARDABLE     "ft.ico"
+#else
+IDI_ICON1     ICON DISCARDABLE     "ft_dev.ico"
+#endif
+#endif
+
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
@@ -20,7 +39,7 @@ BEGIN
             VALUE "CompanyName", "Together Team"
             VALUE "ProductName", "2Gether4Ever"
             VALUE "FileDescription", "Multiplayer mod for Bethesda games."
-            VALUE "OriginalFilename", "together_launcher.exe"
+            VALUE "OriginalFilename", "together_server.exe"
             VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
         END
     END
@@ -30,23 +49,4 @@ BEGIN
     END
 END
 
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "launcher.manifest"
-
-// THERE IS NO BETTER WAY
-#if defined(TARGET_ST)
-#if (IS_TESTING)
-102 ICON "st_pre.ico"
-#elif (IS_SHIPPING)
-102 ICON "st.ico"
-#else
-102 ICON "st_dev.ico"
-#endif
-#elif defined(TARGET_FT)
-#if (IS_TESTING)
-102 ICON "ft_pre.ico"
-#elif (IS_SHIPPING)
-102 ICON "ft.ico"
-#else
-102 ICON "ft_dev.ico"
-#endif
-#endif
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "server.manifest"

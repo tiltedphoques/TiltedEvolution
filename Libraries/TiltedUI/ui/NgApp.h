@@ -13,7 +13,7 @@ namespace TiltedPhoques
     {
         RenderProvider() = default;
         virtual ~RenderProvider() = default;
-        virtual OverlayRenderHandler* Create() = 0;
+        virtual NgRenderHandler* Create() = 0;
         virtual HWND GetWindow() = 0;
 
         TP_NOCOPYMOVE(RenderProvider);
@@ -25,14 +25,17 @@ namespace TiltedPhoques
         explicit NgApp(RenderProvider* apRenderProvider) noexcept;
         virtual ~NgApp();
 
-        struct CreateInfo {
+        struct Settings {
             const wchar_t* pWorkerName;
-            int remoteDebugPort;
+            int devtoolsPort;
+            bool useSharedResources;
+            bool disableCors;
+            HINSTANCE instanceArgs;
         };
-        bool Initialize(const CreateInfo& aCreateInfo) noexcept;
+        bool Initialize(const Settings& aCreateInfo) noexcept;
         void Shutdown() noexcept;
 
-        NgSpace* CreateSpace();
+        NgSpace* CreateSpace(const CefString& acUrl);
 
         TP_NOCOPYMOVE(NgApp);
         IMPLEMENT_REFCOUNTING(NgApp);
@@ -45,6 +48,7 @@ namespace TiltedPhoques
     private:
         CefRefPtr<NgBrowserProcessHandler> m_pBrowserProcessHandler;
         RenderProvider* m_pRenderProvider;
-        std::vector<NgSpace*> m_Spaces;
+        std::vector<std::unique_ptr<NgSpace>> m_Spaces;
+        Settings m_Settings{};
     };
 }

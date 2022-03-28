@@ -3,19 +3,19 @@
 
 #include <spdlog/spdlog.h>
 #include <NgApp.h>
-#include <OverlayRenderHandler.h>
-#include <OverlayRenderHandlerD3D11.h>
+#include <NgRenderHandler.h>
+#include <NgRenderHandlerD3D11.h>
 
 #include <TiltedCore/Stl.hpp>
 
 class UITestRunner;
 
-class D3D11RenderProvider final : TiltedPhoques::RenderProvider, TiltedPhoques::OverlayRenderHandlerD3D11::Renderer
+class D3D11RenderProvider final : TiltedPhoques::RenderProvider, TiltedPhoques::NgRenderHandlerD3D11::Renderer
 {
 public:
     explicit D3D11RenderProvider(UITestRunner& aRunner) : m_runner(aRunner) {}
 
-    TiltedPhoques::OverlayRenderHandler* Create() override;
+    TiltedPhoques::NgRenderHandler* Create() override;
     HWND GetWindow() override;
     IDXGISwapChain* GetSwapChain() const noexcept override;
 
@@ -27,22 +27,22 @@ class UITestRunner final : public GraphicsRenderer
 {
     friend class D3D11RenderProvider;
 public:
-    UITestRunner(HINSTANCE hs) : GraphicsRenderer(hs)
+    UITestRunner(HINSTANCE hs) : GraphicsRenderer(hs), m_provider(*this), m_App((TiltedPhoques::RenderProvider*)&m_provider)
     {
         using namespace TiltedPhoques;
-
         GraphicsRenderer::Initialize();
 
-        m_pProvider = MakeUnique<D3D11RenderProvider>(*this);
-        m_pDriver = new NgApp((RenderProvider*)m_pProvider.get());
-        const NgApp::CreateInfo info{
-            .pWorkerName = L"TPProcess.exe",
-            .remoteDebugPort = 8384
+        const NgApp::Settings config{
+         .pWorkerName = L"TPProcess.exe",
+         .devtoolsPort = 8384,
+         .useSharedResources = true,
+         .disableCors = true, // as this is an internal tool, we can disable it for development.
+         .instanceArgs = hs,
         };
-        if (!m_pDriver->Initialize(info))
+        if (!m_App.Initialize(config))
             __debugbreak();
 
-        m_pMainFrame = m_pDriver->CreateSpace();
+        m_pMainFrame = m_App.CreateSpace("https://madebyevan.com/webgl-water/");
     }
 
     bool Draw()
@@ -79,15 +79,15 @@ public:
     }
 
 private:
-    CefRefPtr<TiltedPhoques::NgApp> m_pDriver{ nullptr };
-    TiltedPhoques::UniquePtr<D3D11RenderProvider> m_pProvider;
+    D3D11RenderProvider m_provider;
+    TiltedPhoques::NgApp m_App;
     TiltedPhoques::NgSpace* m_pMainFrame{ nullptr };
     bool m_bShowCEF = false;
 };
 
-TiltedPhoques::OverlayRenderHandler* D3D11RenderProvider::Create()
+TiltedPhoques::NgRenderHandler* D3D11RenderProvider::Create()
 {
-    auto it = new TiltedPhoques::OverlayRenderHandlerD3D11(this);
+    auto it = new TiltedPhoques::NgRenderHandlerD3D11(this);
     it->SetVisible(true);
     return it;
 }
