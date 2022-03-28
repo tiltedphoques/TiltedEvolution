@@ -146,7 +146,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     if (!pActor)
         return;
 
-    pActor->SetEquipment(acMessage.CurrentEquipment);
+    //pActor->SetEquipment(acMessage.CurrentEquipment);
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

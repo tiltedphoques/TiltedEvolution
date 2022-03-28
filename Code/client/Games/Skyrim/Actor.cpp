@@ -332,6 +332,7 @@ void Actor::SetEquipment(const Equipment& acEquipment) noexcept
     {
         if (acEquipment.LeftHandWeapon)
         {
+            // TODO: isn't the right hand the main weapon?
             uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandWeapon);
             pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
         }
