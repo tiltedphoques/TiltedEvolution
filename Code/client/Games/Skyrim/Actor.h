@@ -36,7 +36,7 @@ struct Actor : TESObjectREFR
     virtual void sub_9E();
     virtual void sub_9F();
     virtual void sub_A0();
-    virtual void sub_A1();
+    virtual void UnequipObject(void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* aUnk3);
     virtual void sub_A2();
     virtual void sub_A3();
     virtual void sub_A4();

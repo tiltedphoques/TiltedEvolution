@@ -240,11 +240,7 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
     if (!arEntry.ContainsExtraData())
         return pExtraDataList;
 
-    pExtraDataList = Memory::Allocate<ExtraDataList>();
-    pExtraDataList->data = nullptr;
-    pExtraDataList->lock.m_counter = pExtraDataList->lock.m_tid = 0;
-    pExtraDataList->bitfield = Memory::Allocate<ExtraDataList::Bitfield>();
-    memset(pExtraDataList->bitfield, 0, 0x18);
+    pExtraDataList = ExtraDataList::New();
 
     if (arEntry.ExtraCharge > 0.f)
     {

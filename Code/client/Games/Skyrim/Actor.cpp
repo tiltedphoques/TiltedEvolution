@@ -821,6 +821,17 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
     return ThisCall(RealInitiateMountPackage, apThis, apMount);
 }
 
+TP_THIS_FUNCTION(TUnequipObject, void, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3);
+static TUnequipObject* RealUnequipObject = nullptr;
+
+// TODO: crash in TESObjectREFR::UnequipItem() virtual func (offset 0xA1) when remote players shoots last arrow in quiver (and switching)
+// this thing gets called infinitely until it crashes
+// why?
+void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3)
+{
+    ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
@@ -838,6 +849,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 42704);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
+    POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -853,6 +865,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
+    RealUnequipObject = s_unequipObject.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -867,4 +880,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
+    TP_HOOK(&RealUnequipObject, HookUnequipObject);
 });
