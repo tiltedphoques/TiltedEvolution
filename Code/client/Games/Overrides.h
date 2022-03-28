@@ -28,6 +28,7 @@ private:
 namespace details
 {
     struct Equip {};
+    struct Unequip {};
     struct SaveLoad {};
     struct Experience {};
     struct Activate {};
@@ -35,6 +36,7 @@ namespace details
 }
 
 using ScopedEquipOverride = ScopedOverride<details::Equip>;
+using ScopedUnequipOverride = ScopedOverride<details::Unequip>;
 using ScopedSaveLoadOverride = ScopedOverride<details::SaveLoad>;
 using ScopedExperienceOverride = ScopedOverride<details::Experience>;
 using ScopedActivateOverride = ScopedOverride<details::Activate>;

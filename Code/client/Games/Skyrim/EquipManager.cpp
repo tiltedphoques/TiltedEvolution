@@ -176,6 +176,8 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
         World::Get().GetRunner().Trigger(evt);
     }
 
+    ScopedUnequipOverride _;
+
     return ThisCall(RealEquip, apThis, apActor, apItem, apData);
 }
 
@@ -189,8 +191,9 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
-    if (pExtension->IsLocal())
+    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
+        spdlog::warn("Sending Unequip event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
         evt.IsLeft = apData->slot == DefaultObjectManager::Get().leftEquipSlot;
@@ -224,6 +227,8 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
         World::Get().GetRunner().Trigger(evt);
     }
 
+    ScopedUnequipOverride _;
+
     return ThisCall(RealEquipSpell, apThis, apActor, apSpell, apParams);
 }
 
@@ -237,8 +242,9 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
-    if (pExtension->IsLocal())
+    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
+        spdlog::warn("Sending UnequipSpell event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
         evt.IsLeft = apParams->pEquipSlot == DefaultObjectManager::Get().leftEquipSlot;
@@ -272,6 +278,8 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
         World::Get().GetRunner().Trigger(evt);
     }
 
+    ScopedUnequipOverride _;
+
     return ThisCall(RealEquipShout, apThis, apActor, apShout, apParams);
 }
 
@@ -285,8 +293,9 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
-    if (pExtension->IsLocal())
+    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
+        spdlog::warn("Sending UnequipShout event");
         EquipmentChangeEvent evt;
         evt.ActorId = apActor->formID;
         evt.IsLeft = false;
