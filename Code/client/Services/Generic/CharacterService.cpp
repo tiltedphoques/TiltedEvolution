@@ -835,7 +835,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
         return;
     }
 
-    auto riderFormIdComponent = remoteView.get<FormIdComponent>(*riderIt);
+    auto& riderFormIdComponent = remoteView.get<FormIdComponent>(*riderIt);
     TESForm* pRiderForm = TESForm::GetById(riderFormIdComponent.Id);
     Actor* pRider = RTTI_CAST(pRiderForm, TESForm, Actor);
 
@@ -852,7 +852,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
 
         if (serverId == acMessage.MountId)
         {
-            auto mountFormIdComponent = formView.get<FormIdComponent>(entity);
+            auto& mountFormIdComponent = formView.get<FormIdComponent>(entity);
 
             if (m_world.all_of<LocalComponent>(entity))
             {
