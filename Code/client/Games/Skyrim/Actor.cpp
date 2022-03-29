@@ -812,12 +812,9 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Acto
 
 bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 {
-    if (!apMount || apThis->GetExtension()->IsRemote())
-    {
-        return ThisCall(RealInitiateMountPackage, apThis, apMount);
-    }
+    if (apMount && apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
 
-    World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
     return ThisCall(RealInitiateMountPackage, apThis, apMount);
 }
 
