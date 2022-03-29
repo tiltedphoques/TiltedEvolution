@@ -87,7 +87,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pFactionExtras = Cast<ExtraFactionChanges>(extraData->GetByType(ExtraData::Faction));
+    auto* pFactionExtras = Cast<ExtraFactionChanges>(extraData->GetByType(ExtraDataType::Faction));
     if (pFactionExtras)
     {
         for (auto i = 0u; i < pFactionExtras->entries.length; ++i)

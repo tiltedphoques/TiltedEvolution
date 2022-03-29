@@ -116,7 +116,7 @@ struct TESForm : BaseFormComponent
     uintptr_t unk8;
     uint32_t flags;
     uint32_t formID;
-    uint16_t unk10;
+    uint16_t sInGameFormFlags;
     FormType formType;
     uint8_t unk1B;
     uint8_t tp_flags; // This is actually padding so we can use it for any purpose

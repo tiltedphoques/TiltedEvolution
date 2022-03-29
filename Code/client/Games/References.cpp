@@ -10,7 +10,7 @@
 #include <Forms/TESNPC.h>
 #include <Forms/TESPackage.h>
 #include <SaveLoad.h>
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 
 #include <BSAnimationGraphManager.h>
 #include <Misc/GameVM.h>

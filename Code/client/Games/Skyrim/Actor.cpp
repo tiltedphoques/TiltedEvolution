@@ -25,7 +25,7 @@
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
 
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 #include <ExtraData/ExtraCharge.h>
 #include <ExtraData/ExtraCount.h>
 #include <ExtraData/ExtraEnchantment.h>
@@ -221,7 +221,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraData::Faction));
+    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraDataType::Faction));
     if (pChanges)
     {
         for (auto i = 0u; i < pChanges->entries.length; ++i)
@@ -451,13 +451,13 @@ void Actor::UnEquipAll() noexcept
                     BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                     // Right slot
-                    if (pDataList->Contains(ExtraData::Worn))
+                    if (pDataList->Contains(ExtraDataType::Worn))
                     {
                         EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
                     }
 
                     // Left slot
-                    if (pDataList->Contains(ExtraData::WornLeft))
+                    if (pDataList->Contains(ExtraDataType::WornLeft))
                     {
                         EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false, nullptr);
                     }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct ExtraOutfitItem : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::OutfitItem;
+    inline static constexpr auto eExtraData = ExtraDataType::OutfitItem;
 
     TESForm* pOutfit;
 };

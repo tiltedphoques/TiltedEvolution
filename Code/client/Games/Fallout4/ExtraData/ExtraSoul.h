@@ -20,5 +20,5 @@ struct ExtraSoul : BSExtraData
     SOUL_LEVEL cSoul{};
 };
 
-static_assert(sizeof(ExtraSoul) == 0x18);
+static_assert(sizeof(ExtraSoul) == 0x20);
 

@@ -9,7 +9,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/ScriptAnimationEvent.h>
 
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 #include <ExtraData/ExtraCharge.h>
 #include <ExtraData/ExtraCount.h>
 #include <ExtraData/ExtraEnchantment.h>
@@ -20,6 +20,7 @@
 #include <ExtraData/ExtraWorn.h>
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
+#include <Forms/AlchemyItem.h>
 #include <EquipManager.h>
 #include <DefaultObjectManager.h>
 
@@ -162,17 +163,17 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
 {
     auto& modSystem = World::Get().GetModSystem();
 
-    if (ExtraCount* pExtraCount = Cast<ExtraCount>(apExtraDataList->GetByType(ExtraData::Count)))
+    if (ExtraCount* pExtraCount = Cast<ExtraCount>(apExtraDataList->GetByType(ExtraDataType::Count)))
     {
         arEntry.Count = pExtraCount->count;
     }
 
-    if (ExtraCharge* pExtraCharge = Cast<ExtraCharge>(apExtraDataList->GetByType(ExtraData::Charge)))
+    if (ExtraCharge* pExtraCharge = Cast<ExtraCharge>(apExtraDataList->GetByType(ExtraDataType::Charge)))
     {
         arEntry.ExtraCharge = pExtraCharge->fCharge;
     }
 
-    if (ExtraEnchantment* pExtraEnchantment = Cast<ExtraEnchantment>(apExtraDataList->GetByType(ExtraData::Enchantment)))
+    if (ExtraEnchantment* pExtraEnchantment = Cast<ExtraEnchantment>(apExtraDataList->GetByType(ExtraDataType::Enchantment)))
     {
         TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
 
@@ -203,12 +204,12 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
     }
 
-    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraData::Health)))
+    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraDataType::Health)))
     {
         arEntry.ExtraHealth = pExtraHealth->fHealth;
     }
 
-    if (ExtraPoison* pExtraPoison = Cast<ExtraPoison>(apExtraDataList->GetByType(ExtraData::Poison)))
+    if (ExtraPoison* pExtraPoison = Cast<ExtraPoison>(apExtraDataList->GetByType(ExtraDataType::Poison)))
     {
         TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
         if (pExtraPoison && pExtraPoison->pPoison)
@@ -218,13 +219,13 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         }
     }
 
-    if (ExtraSoul* pExtraSoul = Cast<ExtraSoul>(apExtraDataList->GetByType(ExtraData::Soul)))
+    if (ExtraSoul* pExtraSoul = Cast<ExtraSoul>(apExtraDataList->GetByType(ExtraDataType::Soul)))
     {
         arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
     }
 
     /*
-    if (ExtraTextDisplayData* pExtraTextDisplayData = Cast<ExtraTextDisplayData>(apExtraDataList->GetByType(ExtraData::TextDisplayData)))
+    if (ExtraTextDisplayData* pExtraTextDisplayData = Cast<ExtraTextDisplayData>(apExtraDataList->GetByType(ExtraDataType::TextDisplayData)))
     {
         if (pExtraTextDisplayData->DisplayName)
             arEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
@@ -233,8 +234,8 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
     }
     */
 
-    arEntry.ExtraWorn = apExtraDataList->Contains(ExtraData::Worn);
-    arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraData::WornLeft);
+    arEntry.ExtraWorn = apExtraDataList->Contains(ExtraDataType::Worn);
+    arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraDataType::WornLeft);
 
     arEntry.IsQuestItem = apExtraDataList->HasQuestObjectAlias();
 }
@@ -318,7 +319,7 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
         pExtraText->iOwnerInstance = -2;
         pExtraText->fTemperFactor = 1.0F;
-        pExtraDataList->Add(ExtraData::TextDisplayData, pExtraText);
+        pExtraDataList->Add(ExtraDataType::TextDisplayData, pExtraText);
     }
     */
 

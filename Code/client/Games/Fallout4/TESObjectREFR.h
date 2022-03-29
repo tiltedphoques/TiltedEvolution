@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 #include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Forms/ActorValueInfo.h>

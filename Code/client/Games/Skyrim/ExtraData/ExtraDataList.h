@@ -1,26 +1,26 @@
 #pragma once
 
-#include <Games/ExtraData.h>
-#include <ExtraData/ExtraSoul.h>
-#include <ExtraData/ExtraCharge.h>
+#include "ExtraData.h"
 
-#include <Forms/AlchemyItem.h>
-#include <Forms/EnchantmentItem.h>
+#include <ExtraData/ExtraSoul.h>
+
+struct AlchemyItem;
+struct EnchantmentItem;
 
 struct ExtraDataList
 {
     static ExtraDataList* New() noexcept;
 
-    bool Contains(ExtraData aType) const;
-    void Set(ExtraData aType, bool aSet);
+    bool Contains(ExtraDataType aType) const;
+    void Set(ExtraDataType aType, bool aSet);
 
-    bool Add(ExtraData aType, BSExtraData* apNewData);
-    bool Remove(ExtraData aType, BSExtraData* apNewData);
+    bool Add(ExtraDataType aType, BSExtraData* apNewData);
+    bool Remove(ExtraDataType aType, BSExtraData* apNewData);
 
     uint32_t GetCount() const;
 
-    void SetType(ExtraData aType, bool aClear);
-    BSExtraData* GetByType(ExtraData type) const;
+    void SetType(ExtraDataType aType, bool aClear);
+    BSExtraData* GetByType(ExtraDataType type) const;
 
     void SetSoulData(SOUL_LEVEL aSoulLevel) noexcept;
     void SetChargeData(float aCharge) noexcept;
