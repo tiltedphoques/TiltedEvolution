@@ -128,3 +128,23 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 
     CurrentEquipment.Deserialize(aReader);
 }
+
+// TODO: unit testing
+void Inventory::AddOrRemoveEntry(const Entry& acEntry) noexcept
+{
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acEntry](Entry& entry)
+    {
+        return entry.CanBeMerged(acEntry);
+    });
+
+    if (duplicate != Entries.end())
+    {
+        duplicate->Count += acEntry.Count;
+        if (duplicate->Count == 0)
+            Entries.erase(duplicate);
+    }
+    else
+    {
+        Entries.push_back(acEntry);
+    }
+}

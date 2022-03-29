@@ -110,6 +110,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.Unequip = acEvent.Unequip;
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
+    request.IsAmmo = acEvent.IsAmmo;
 
     m_transport.Send(request);
 }

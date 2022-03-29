@@ -147,6 +147,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
         evt.EquipSlotId = apData->pSlot ? apData->pSlot->formID : 0;
+        evt.IsAmmo = apItem->formType == FormType::Ammo;
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -177,6 +178,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         evt.ItemId = apItem->formID;
         evt.EquipSlotId = apData->pSlot ? apData->pSlot->formID : 0;
         evt.Unequip = true;
+        evt.IsAmmo = apItem->formType == FormType::Ammo;
 
         World::Get().GetRunner().Trigger(evt);
     }

@@ -1,5 +1,6 @@
 #include <Structs/Equipment.h>
 #include <TiltedCore/Serialization.hpp>
+#include <Messages/RequestEquipmentChanges.h>
 
 using TiltedPhoques::Serialization;
 
@@ -92,4 +93,30 @@ void Equipment::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     if (isAmmoSet)
         Ammo.Deserialize(aReader);
 #endif
+}
+
+void Equipment::UpdateEquipment(const RequestEquipmentChanges& acChanges) noexcept
+{
+    if (acChanges.EquipSlotId == 0x13F42) // if right-hand
+    {
+        if (acChanges.IsSpell)
+            RightHandSpell = acChanges.Unequip ? GameId{} : acChanges.ItemId;
+        else
+            RightHandWeapon = acChanges.Unequip ? GameId{} : acChanges.ItemId;
+    }
+    else if (acChanges.EquipSlotId == 0x13F43) // else if left-hand
+    {
+        if (acChanges.IsSpell)
+            LeftHandSpell = acChanges.Unequip ? GameId{} : acChanges.ItemId;
+        else
+            LeftHandWeapon = acChanges.Unequip ? GameId{} : acChanges.ItemId;
+    }
+    else if (acChanges.IsShout)
+    {
+        Shout = acChanges.Unequip ? GameId{} : acChanges.ItemId;
+    }
+    else if (acChanges.IsAmmo)
+    {
+        Ammo = acChanges.Unequip ? GameId{} : acChanges.ItemId;
+    }
 }

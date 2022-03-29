@@ -2,6 +2,8 @@
 
 #include <Structs/GameId.h>
 
+struct RequestEquipmentChanges;
+
 struct Equipment
 {
     bool operator==(const Equipment& acRhs) const noexcept;
@@ -9,6 +11,8 @@ struct Equipment
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
+
+    void UpdateEquipment(const RequestEquipmentChanges& acChanges) noexcept;
 
     GameId RightHandWeapon{};
 #if TP_SKYRIM

@@ -25,7 +25,8 @@ struct RequestEquipmentChanges final : ClientMessage
                Count == acRhs.Count &&
                Unequip == acRhs.Unequip &&
                IsSpell == acRhs.IsSpell &&
-               IsShout == acRhs.IsShout;
+               IsShout == acRhs.IsShout &&
+               IsAmmo == acRhs.IsAmmo;
     }
     
     uint32_t ServerId{};
@@ -35,4 +36,5 @@ struct RequestEquipmentChanges final : ClientMessage
     bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;
+    bool IsAmmo = false;
 };

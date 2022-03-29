@@ -23,11 +23,17 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
 
 void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept
 {
-    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
-
     auto& message = acMessage.Packet;
 
-    // TODO: update server inventory
+    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+
+    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
+
+    if (it != view.end())
+    {
+        auto& inventoryComponent = view.get<InventoryComponent>(*it);
+        inventoryComponent.Content.AddOrRemoveEntry(message.Item);
+    }
 
     NotifyInventoryChanges notify;
     notify.ServerId = message.ServerId;
@@ -40,11 +46,17 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
 void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept
 {
-    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
-
     auto& message = acMessage.Packet;
 
-    // TODO: update server equipment
+    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+
+    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
+
+    if (it != view.end())
+    {
+        auto& inventoryComponent = view.get<InventoryComponent>(*it);
+        inventoryComponent.Content.CurrentEquipment.UpdateEquipment(message);
+    }
 
     NotifyEquipmentChanges notify;
     notify.ServerId = message.ServerId;

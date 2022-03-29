@@ -101,6 +101,8 @@ struct Inventory
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
+    void AddOrRemoveEntry(const Entry& acEntry) noexcept;
+
     Vector<Entry> Entries{};
     Equipment CurrentEquipment{};
 };

@@ -9,4 +9,5 @@ struct EquipmentChangeEvent
     bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;
+    bool IsAmmo = false;
 };
