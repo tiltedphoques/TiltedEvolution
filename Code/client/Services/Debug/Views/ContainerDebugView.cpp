@@ -1,139 +1,99 @@
-
 #include <imgui.h>
+#include <inttypes.h>
 #include <Services/TestService.h>
 
-#if TP_SKYRIM64
 #include <PlayerCharacter.h>
-#endif
-
-#if TP_FALLOUT4
-#include <Games/Fallout4/PlayerCharacter.h>
-#endif
 
 void TestService::DrawContainerDebugView()
 {
-#if (TP_SKYRIM64)
-    if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))
+    static TESForm* pFetchForm = nullptr;
+    static Actor* pActor = nullptr;
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
+                       ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
     {
-        if (ImGui::BeginTabItem("ExtraContainerChanges"))
+        if (m_formId)
         {
-            static uint32_t s_selectedInvFormId = 0;
-
-            auto* pContainerActor = PlayerCharacter::Get();
-
-            const auto pContainerChanges = pContainerActor->GetContainerChanges()->entries;
-
-            ImGui::BeginChild("Items", ImVec2(0, 200), true);
-
-            int i = 0;
-            for (auto pChange : *pContainerChanges)
-            {
-                if (pChange && pChange->form && pChange->dataList)
-                {
-                    char name[256];
-                    sprintf_s(name, std::size(name), "%x", pChange->form->formID);
-
-                    if (ImGui::Selectable(name, s_selectedInvFormId == pChange->form->formID))
-                    {
-                        s_selectedInvFormId = pChange->form->formID;
-                    }
-                }
-            }
-
-            ImGui::EndChild();
-
-            int itemCount = 0;
-            int dataListCount = 0;
-
-            ImVec4 red{255.f, 0.f, 0.f, 255.f};
-            ImVec4 green{0.f, 255.f, 0.f, 255.f};
-
-            for (auto pChange : *pContainerChanges)
-            {
-                if (pChange && pChange->form && pChange->form->formID == s_selectedInvFormId)
-                {
-                    itemCount++;
-
-                    const auto pDataLists = pChange->dataList;
-                    for (auto* pDataList : *pDataLists)
-                    {
-                        if (pDataList)
-                        {
-                            dataListCount++;
-
-                            char name[256];
-                            sprintf_s(name, std::size(name), "Item %d", itemCount);
-
-                            if (ImGui::CollapsingHeader(name, ImGuiTreeNodeFlags_DefaultOpen))
-                            {
-                                BSScopedLock<BSRecursiveLock> _(pDataList->lock);
-
-                                bool charge = pDataList->Contains(ExtraData::Charge);
-                                ImGui::TextColored(charge ? green : red, "charge");
-                                bool count = pDataList->Contains(ExtraData::Count);
-                                ImGui::TextColored(count ? green : red, "count");
-                                bool enchantment = pDataList->Contains(ExtraData::Enchantment);
-                                ImGui::TextColored(enchantment ? green : red, "enchantment");
-                                bool health = pDataList->Contains(ExtraData::Health);
-                                ImGui::TextColored(health ? green : red, "health");
-                                bool poison = pDataList->Contains(ExtraData::Poison);
-                                ImGui::TextColored(poison ? green : red, "poison");
-                                bool soul = pDataList->Contains(ExtraData::Soul);
-                                ImGui::TextColored(soul ? green : red, "soul");
-                                bool textDisplayData = pDataList->Contains(ExtraData::TextDisplayData);
-                                ImGui::TextColored(textDisplayData ? green : red, "textDisplayData");
-                                bool worn = pDataList->Contains(ExtraData::Worn);
-                                ImGui::TextColored(worn ? green : red, "worn");
-                                bool wornLeft = pDataList->Contains(ExtraData::WornLeft);
-                                ImGui::TextColored(wornLeft ? green : red, "wornLeft");
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (ImGui::CollapsingHeader("Metadata", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::InputInt("Item count", &itemCount, 0, 0,
-                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-                ImGui::InputInt("Data list count", &dataListCount, 0, 0,
-                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-            }
-
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("TESContainer"))
-        {
-            static uint32_t s_selectedInvFormId = 0;
-
-            PlayerCharacter* pPlayer = PlayerCharacter::Get();
-            TESContainer* pContainer = pPlayer->GetContainer();
-            if (pContainer && pContainer->entries)
-            {
-                ImGui::Text("Items (%d)", pContainer->count);
-
-                ImGui::BeginChild("Items", ImVec2(0, 200), true);
-
-                for (uint32_t i = 0; i < pContainer->count; ++i)
-                {
-                    auto pEntry = pContainer->entries[i];
-                    if (!pEntry || !pEntry->form)
-                        continue;
-
-                    char name[256];
-                    sprintf_s(name, std::size(name), "%x (%d)", pEntry->form->formID, pEntry->count);
-
-                    if (ImGui::Selectable(name, s_selectedInvFormId == pEntry->form->formID))
-                    {
-                        s_selectedInvFormId = pEntry->form->formID;
-                    }
-                }
-
-                ImGui::EndChild();
-            }
-
-            ImGui::EndTabItem();
+            pFetchForm = TESForm::GetById(m_formId);
+            if (pFetchForm)
+                pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
         }
     }
-    #endif
+
+    if (pActor)
+    {
+        static Inventory inventory{};
+
+        if (ImGui::Button("Fetch inventory"))
+            inventory = pActor->GetInventory();
+
+        int inventoryCount = inventory.Entries.size();
+
+        ImGui::InputInt("Inventory count", &inventoryCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::BeginChild("Items", ImVec2(0, 200), true);
+
+        for (Inventory::Entry& entry : inventory.Entries)
+        {
+            std::string itemLabel = fmt::format("{:X}", entry.BaseId.BaseId + entry.BaseId.ModId);
+            if (!ImGui::CollapsingHeader(itemLabel.c_str()))
+                continue;
+
+            int itemCount = entry.Count;
+            ImGui::InputInt("Item count", &itemCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            int isWorn = entry.ExtraWorn;
+            ImGui::InputInt("Is worn?", &isWorn, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            int isWornLeft = entry.ExtraWornLeft;
+            ImGui::InputInt("Is worn left?", &isWornLeft, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            int isWeapon = entry.EnchantData.IsWeapon;
+            ImGui::InputInt("Is weapon?", &isWeapon, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::InputFloat("Health", &entry.ExtraHealth, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+            int poisonId = entry.ExtraPoisonId.BaseId + entry.ExtraPoisonId.ModId;
+            ImGui::InputInt("Poison ID", &poisonId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+            int poisonCount = entry.ExtraPoisonCount;
+            ImGui::InputInt("Poison count", &poisonCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            int soulLevel = entry.ExtraSoulLevel;
+            ImGui::InputInt("Soul level", &soulLevel, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::InputFloat("Charge", &entry.ExtraCharge, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+            int enchantId = entry.ExtraEnchantId.BaseId + entry.ExtraEnchantId.ModId;
+            ImGui::InputInt("Enchant ID", &enchantId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+            int enchantCharge = entry.ExtraEnchantCharge;
+            ImGui::InputInt("Enchant charge", &enchantCharge, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+            int isEnchantRemoveUnequip = entry.ExtraEnchantRemoveUnequip;
+            ImGui::InputInt("Remove enchant on unequip?", &isEnchantRemoveUnequip, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            if (ImGui::CollapsingHeader("Effects"))
+            {
+                for (Inventory::EffectItem& effect : entry.EnchantData.Effects)
+                {
+                    std::string effectLabel = fmt::format("{:X}", effect.EffectId.BaseId + effect.EffectId.ModId);
+                    if (!ImGui::CollapsingHeader(effectLabel.c_str()))
+                        continue;
+
+                    ImGui::InputFloat("Magnitude", &effect.Magnitude, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+                    int area = effect.Area;
+                    ImGui::InputInt("Area", &area, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    int duration = effect.Duration;
+                    ImGui::InputInt("Duration", &duration, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    ImGui::InputFloat("Raw cost", &effect.RawCost, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
+                }
+            }
+
+            ImGui::Separator();
+        }
+
+        ImGui::EndChild();
+    }
 }
