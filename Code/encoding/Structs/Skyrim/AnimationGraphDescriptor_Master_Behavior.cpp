@@ -311,7 +311,8 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
+        {
+            kbEquipOk,
             kbMotionDriven,
             kIsBeastRace,
             kIsSneaking,
@@ -373,12 +374,13 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             kPitchOverride,
             kNotCasting
         },
-        {kDirection,
+        {
+            kTurnDelta,
+            kDirection,
             kSpeedSampled,
             kweapAdj,
             kSpeed,
             // TODO: this was added extra for spell cast sync
-            kTimeDelta,
             kCastBlend,
             kPitchOffset,
             kSpeedDamped,
@@ -388,7 +390,7 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             k1stPRotDamped,
             kCastBlendDamped
         },
-        {kTurnDelta,
+        {
             kiRightHandEquipped,
             kiLeftHandEquipped,
             ki1HMState,
