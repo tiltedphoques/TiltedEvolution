@@ -190,7 +190,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
         // TODO: ExtraData necessary? probably
         // TODO: verify the bool params
         if (acMessage.Unequip)
-            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, true, false, true, false, nullptr);
+            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
         else
             pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
     }

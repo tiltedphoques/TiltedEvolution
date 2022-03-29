@@ -3,6 +3,9 @@
 #include <Services/TestService.h>
 
 #include <PlayerCharacter.h>
+#include <EquipManager.h>
+#include <World.h>
+#include <DefaultObjectManager.h>
 
 void TestService::DrawContainerDebugView()
 {
@@ -40,6 +43,30 @@ void TestService::DrawContainerDebugView()
             std::string itemLabel = fmt::format("{:X}", entry.BaseId.BaseId + entry.BaseId.ModId);
             if (!ImGui::CollapsingHeader(itemLabel.c_str()))
                 continue;
+
+            if (ImGui::Button("Equip"))
+            {
+                World::Get().GetRunner().Queue([entry, actorId = pActor->formID]() {
+                    auto& modSystem = World::Get().GetModSystem();
+                    uint32_t itemId = modSystem.GetGameId(entry.BaseId);
+                    TESForm* pItem = TESForm::GetById(itemId);
+                    Actor* pActor = RTTI_CAST(TESForm::GetById(actorId), TESForm, Actor);
+                    EquipManager::Get()->Equip(pActor, pItem, nullptr, entry.Count,
+                                               DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+                });
+            }
+            if (ImGui::Button("Unequip"))
+            {
+                World::Get().GetRunner().Queue([entry, actorId = pActor->formID]() {
+                    auto& modSystem = World::Get().GetModSystem();
+                    uint32_t itemId = modSystem.GetGameId(entry.BaseId);
+                    TESForm* pItem = TESForm::GetById(itemId);
+                    Actor* pActor = RTTI_CAST(TESForm::GetById(actorId), TESForm, Actor);
+                    EquipManager::Get()->UnEquip(pActor, pItem, nullptr, entry.Count,
+                                                 DefaultObjectManager::Get().rightEquipSlot, false, true, false, false,
+                                                 nullptr);
+                });
+            }
 
             int itemCount = entry.Count;
             ImGui::InputInt("Item count", &itemCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
