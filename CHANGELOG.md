@@ -1,3 +1,21 @@
+# [1.23.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.22.1...v1.23.0) (2022-03-29)
+
+
+### Bug Fixes
+
+* activation duplication bug ([cf7a39e](https://github.com/tiltedphoques/TiltedEvolution/commit/cf7a39e10f75c47b8309ffb4de2da527f66cff30))
+* AE EquipManager hooks ([44fba81](https://github.com/tiltedphoques/TiltedEvolution/commit/44fba81663de586102937627fcecafea8f6a91c6))
+* drop object count ([972e864](https://github.com/tiltedphoques/TiltedEvolution/commit/972e864618020da081a1ca75ca34dc216840952d))
+* linux build ([76c7cf3](https://github.com/tiltedphoques/TiltedEvolution/commit/76c7cf33eb98e2f1af3dcd3802d43c5952f870d6))
+* null crash ([b87775d](https://github.com/tiltedphoques/TiltedEvolution/commit/b87775df2057e59b2d0824d1e6f6398611b564e3))
+* remove item ([573d136](https://github.com/tiltedphoques/TiltedEvolution/commit/573d1365a123881b834c1bf0cc84296e57a9333e))
+* send base id of object instead of refr id ([e5b00af](https://github.com/tiltedphoques/TiltedEvolution/commit/e5b00af16db2791797c565914346311da080ba6d))
+
+
+### Features
+
+* major improvements to equip sync ([04673a2](https://github.com/tiltedphoques/TiltedEvolution/commit/04673a2834d7e08a853cd248a7ba72642a647eb0))
+
 ## [1.22.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.22.0...v1.22.1) (2022-03-21)
 
 # [1.22.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.21.0...v1.22.0) (2022-03-21)
