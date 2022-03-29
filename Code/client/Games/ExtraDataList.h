@@ -9,6 +9,8 @@
 
 struct ExtraDataList
 {
+    static ExtraDataList* New() noexcept;
+
     bool Contains(ExtraData aType) const;
     void Set(ExtraData aType, bool aSet);
 

@@ -5,10 +5,11 @@ struct TransportService;
 
 struct UpdateEvent;
 struct NotifyObjectInventoryChanges;
-struct NotifyCharacterInventoryChanges;
+struct NotifyInventoryChanges;
 struct NotifyDrawWeapon;
 struct InventoryChangeEvent;
 struct EquipmentChangeEvent;
+struct NotifyEquipmentChanges;
 
 struct InventoryService
 {
@@ -21,33 +22,22 @@ struct InventoryService
     void OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept;
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
 
-    void OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept;
-    void OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept;
+    void OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept;
+    void OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept;
     void OnNotifyDrawWeapon(const NotifyDrawWeapon& acMessage) noexcept;
 
 private:
 
-    void RunObjectInventoryUpdates() noexcept;
-    void RunCharacterInventoryUpdates() noexcept;
     void RunWeaponStateUpdates() noexcept;
-
-    void ApplyCachedObjectInventoryChanges() noexcept;
-    void ApplyCachedCharacterInventoryChanges() noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
-    // TODO: these two can probably be merged now?
-    Set<uint32_t> m_objectsWithInventoryChanges;
-    Set<uint32_t> m_charactersWithInventoryChanges;
-    Map<GameId, Inventory> m_cachedObjectInventoryChanges;
-    Map<uint32_t, Inventory> m_cachedCharacterInventoryChanges;
-
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_equipmentConnection;
-    entt::scoped_connection m_objectInventoryChangeConnection;
-    entt::scoped_connection m_characterInventoryChangeConnection;
+    entt::scoped_connection m_inventoryChangeConnection;
+    entt::scoped_connection m_equipmentChangeConnection;
     entt::scoped_connection m_drawWeaponConnection;
 };

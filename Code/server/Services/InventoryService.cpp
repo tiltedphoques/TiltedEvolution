@@ -4,180 +4,59 @@
 #include <World.h>
 #include <GameServer.h>
 
-#include <Events/UpdateEvent.h>
-
 #include <Messages/RequestObjectInventoryChanges.h>
 #include <Messages/NotifyObjectInventoryChanges.h>
-#include <Messages/RequestCharacterInventoryChanges.h>
-#include <Messages/NotifyCharacterInventoryChanges.h>
+#include <Messages/RequestInventoryChanges.h>
+#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/RequestEquipmentChanges.h>
+#include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 #include <Messages/NotifyDrawWeapon.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
 {
-    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
-    m_objectInventoryConnection = aDispatcher.sink<PacketEvent<RequestObjectInventoryChanges>>().connect<&InventoryService::OnObjectInventoryChanges>(this);
-    m_characterInventoryConnection = aDispatcher.sink<PacketEvent<RequestCharacterInventoryChanges>>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
+    m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
+    m_equipmentChangeConnection = aDispatcher.sink<PacketEvent<RequestEquipmentChanges>>().connect<&InventoryService::OnEquipmentChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
 }
 
-void InventoryService::OnUpdate(const UpdateEvent&) noexcept
-{
-    ProcessObjectInventoryChanges();
-    ProcessCharacterInventoryChanges();
-}
-
-void InventoryService::OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept
-{
-    auto& message = acMessage.Packet;
-
-    for (auto& [id, objectData] : message.Changes)
-    {
-        auto view = m_world.view<FormIdComponent, ObjectComponent>();
-
-        auto formIdIt = std::find_if(std::begin(view), std::end(view), [view, id = id](auto entity) {
-            const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            return formIdComponent.Id == id;
-        });
-
-        if (formIdIt == std::end(view))
-        {
-            const auto entity = m_world.create();
-            m_world.emplace<FormIdComponent>(entity, id.BaseId, id.ModId);
-            m_world.emplace<ObjectComponent>(entity, acMessage.pPlayer);
-            m_world.emplace<CellIdComponent>(entity, objectData.CellId, objectData.WorldSpaceId, objectData.CurrentCoords);
-
-            auto& inventoryComponent = m_world.emplace<InventoryComponent>(entity);
-            inventoryComponent.Content = objectData.CurrentInventory;
-            inventoryComponent.DirtyInventory = true;
-        }
-        else
-        {
-            auto& objectComponent = m_world.get<ObjectComponent>(*formIdIt);
-            objectComponent.pLastSender = acMessage.pPlayer;
-
-            auto& inventoryComponent = m_world.get<InventoryComponent>(*formIdIt);
-            inventoryComponent.Content = objectData.CurrentInventory;
-            inventoryComponent.DirtyInventory = true;
-        }
-    }
-}
-
-void InventoryService::OnCharacterInventoryChanges(const PacketEvent<RequestCharacterInventoryChanges>& acMessage) noexcept
+void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept
 {
     auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
 
     auto& message = acMessage.Packet;
 
-    for (auto& [id, inventory] : message.Changes)
-    {
-        auto iter = view.find(static_cast<entt::entity>(id));
+    // TODO: update server inventory
 
-        if (iter == std::end(view))
-            continue;
+    NotifyInventoryChanges notify;
+    notify.ServerId = message.ServerId;
+    notify.Item = message.Item;
+    notify.DropOrPickUp = message.DropOrPickUp;
 
-        auto& inventoryComponent = view.get<InventoryComponent>(*iter);
-        inventoryComponent.Content = inventory;
-        inventoryComponent.DirtyInventory = true;
-    }
+    const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
 }
 
-void InventoryService::ProcessObjectInventoryChanges() noexcept
+void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept
 {
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
+    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
 
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
+    auto& message = acMessage.Packet;
 
-    lastSendTimePoint = now;
+    // TODO: update server equipment
 
-    const auto objectView = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent, CellIdComponent>();
+    NotifyEquipmentChanges notify;
+    notify.ServerId = message.ServerId;
+    notify.ItemId = message.ItemId;
+    notify.EquipSlotId = message.EquipSlotId;
+    notify.Count = message.Count;
+    notify.Unequip = message.Unequip;
+    notify.IsSpell = message.IsSpell;
+    notify.IsShout = message.IsShout;
 
-    TiltedPhoques::Map<Player*, NotifyObjectInventoryChanges> messages;
-
-    for (auto entity : objectView)
-    {
-        auto& formIdComponent = objectView.get<FormIdComponent>(entity);
-        auto& inventoryComponent = objectView.get<InventoryComponent>(entity);
-        auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
-        auto& objectComponent = objectView.get<ObjectComponent>(entity);
-
-        if (inventoryComponent.DirtyInventory == false)
-            continue;
-
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (pPlayer == objectComponent.pLastSender)
-                continue;
-
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
-                continue;
-
-            auto& message = messages[pPlayer];
-            auto& change = message.Changes[formIdComponent.Id];
-
-            change = inventoryComponent.Content;
-        }
-
-        inventoryComponent.DirtyInventory = false;
-    }
-
-    for (auto [pPlayer, message] : messages)
-    {
-        if (!message.Changes.empty())
-            pPlayer->Send(message);
-    }
-}
-
-void InventoryService::ProcessCharacterInventoryChanges() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 4;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, InventoryComponent, OwnerComponent>();
-
-    TiltedPhoques::Map<Player*, NotifyCharacterInventoryChanges> messages;
-
-    for (auto entity : characterView)
-    {
-        auto& inventoryComponent = characterView.get<InventoryComponent>(entity);
-        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
-        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
-
-        if (inventoryComponent.DirtyInventory == false)
-            continue;
-
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (pPlayer == ownerComponent.GetOwner())
-                continue;
-
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
-                continue;
-
-            auto& message = messages[pPlayer];
-            auto& change = message.Changes[World::ToInteger(entity)];
-
-            change = inventoryComponent.Content;
-        }
-
-        inventoryComponent.DirtyInventory = false;
-    }
-
-    for (auto [pPlayer, message] : messages)
-    {
-        if (!message.Changes.empty())
-            pPlayer->Send(message);
-    }
+    const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
 }
 
 void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept

@@ -4,16 +4,20 @@
 
 namespace Utils
 {
+
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
 {
     const auto* pLocalComponent = World::Get().try_get<LocalComponent>(aEntity);
     const auto* pRemoteComponent = World::Get().try_get<RemoteComponent>(aEntity);
+    const auto* pObjectComponent = World::Get().try_get<InteractiveObjectComponent>(aEntity);
 
     uint32_t serverId = -1;
     if (pLocalComponent)
         serverId = pLocalComponent->Id;
     else if (pRemoteComponent)
         serverId = pRemoteComponent->Id;
+    else if (pObjectComponent)
+        serverId = pObjectComponent->Id;
     else
     {
         const auto* pFormIdComponent = World::Get().try_get<FormIdComponent>(aEntity);
@@ -24,7 +28,7 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
     return {serverId};
 }
 
-std::optional<Actor*> GetActorByServerId(const uint32_t aServerId) noexcept
+TESForm* GetFormByServerId(const uint32_t acServerId) noexcept
 {
     auto view = World::Get().view<FormIdComponent>();
 
@@ -36,19 +40,20 @@ std::optional<Actor*> GetActorByServerId(const uint32_t aServerId) noexcept
 
         uint32_t serverId = serverIdRes.value();
 
-        if (serverId == aServerId)
+        if (serverId == acServerId)
         {
             const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-            Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+            TESForm* pForm = TESForm::GetById(formIdComponent.Id);
 
-            if (pActor != nullptr)
+            if (pForm != nullptr)
             {
-                return {pActor};
+                return pForm;
             }
         }
     }
 
-    return std::nullopt;
+    spdlog::warn("Form not found for server id {:X}", acServerId);
+    return nullptr;
 }
-}
+
+} // namespace Utils

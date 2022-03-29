@@ -285,11 +285,9 @@ void ActorValueService::RunActorValuesUpdates() noexcept
 
 void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept
 {
-    std::optional<Actor*> pActorRes = Utils::GetActorByServerId(acMessage.Id);
-    if (!pActorRes.has_value())
+    Actor* pActor = GetByServerId(Actor, acMessage.Id);
+    if (!pActor)
         return;
-
-    Actor* pActor = pActorRes.value();
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
     pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);

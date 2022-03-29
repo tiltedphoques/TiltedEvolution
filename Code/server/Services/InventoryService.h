@@ -5,9 +5,9 @@
 struct World;
 struct UpdateEvent;
 struct RequestObjectInventoryChanges;
-struct RequestCharacterInventoryChanges;
+struct RequestInventoryChanges;
+struct RequestEquipmentChanges;
 struct DrawWeaponRequest;
-struct UpdateEvent;
 struct PlayerLeaveCellEvent;
 
 class InventoryService
@@ -15,20 +15,15 @@ class InventoryService
 public:
     InventoryService(World& aWorld, entt::dispatcher& aDispatcher);
 
-    void OnUpdate(const UpdateEvent&) noexcept;
-    void OnObjectInventoryChanges(const PacketEvent<RequestObjectInventoryChanges>& acMessage) noexcept;
-    void OnCharacterInventoryChanges(const PacketEvent<RequestCharacterInventoryChanges>& acMessage) noexcept;
+    void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept;
+    void OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept;
     void OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept;
 
 private:
 
-    void ProcessObjectInventoryChanges() noexcept;
-    void ProcessCharacterInventoryChanges() noexcept;
-
     World& m_world;
 
-    entt::scoped_connection m_updateConnection;
-    entt::scoped_connection m_objectInventoryConnection;
-    entt::scoped_connection m_characterInventoryConnection;
+    entt::scoped_connection m_inventoryChangeConnection;
+    entt::scoped_connection m_equipmentChangeConnection;
     entt::scoped_connection m_drawWeaponConnection;
 };

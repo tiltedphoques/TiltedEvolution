@@ -23,7 +23,7 @@
 #include <EquipManager.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
-TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TRemoveInventoryItem, BSPointerHandle<TESObjectREFR>*, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate);
 TP_THIS_FUNCTION(TPlayAnimationAndWait, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName);
 TP_THIS_FUNCTION(TPlayAnimation, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName);
@@ -152,7 +152,7 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
-void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) const noexcept
+void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
 
@@ -205,7 +205,7 @@ void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* a
     if (ExtraPoison* pExtraPoison = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Poison), BSExtraData, ExtraPoison))
     {
         TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
-        if (pExtraPoison)
+        if (pExtraPoison && pExtraPoison->pPoison)
         {
             modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
             arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
@@ -217,6 +217,7 @@ void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* a
         arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
     }
 
+    /*
     if (ExtraTextDisplayData* pExtraTextDisplayData = RTTI_CAST(apExtraDataList->GetByType(ExtraData::TextDisplayData), BSExtraData, ExtraTextDisplayData))
     {
         if (pExtraTextDisplayData->DisplayName)
@@ -224,9 +225,103 @@ void TESObjectREFR::GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* a
         else
             arEntry.ExtraTextDisplayName = "";
     }
+    */
 
     arEntry.ExtraWorn = apExtraDataList->Contains(ExtraData::Worn);
     arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraData::WornLeft);
+}
+
+ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    ExtraDataList* pExtraDataList = nullptr;
+
+    if (!arEntry.ContainsExtraData())
+        return pExtraDataList;
+
+    pExtraDataList = ExtraDataList::New();
+
+    if (arEntry.ExtraCharge > 0.f)
+    {
+        pExtraDataList->SetChargeData(arEntry.ExtraCharge);
+    }
+
+    if (arEntry.ExtraEnchantId != 0)
+    {
+        EnchantmentItem* pEnchantment = nullptr;
+        if (arEntry.ExtraEnchantId.ModId == 0xFFFFFFFF)
+        {
+            pEnchantment = EnchantmentItem::Create(arEntry.EnchantData);
+        }
+        else
+        {
+            uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
+            pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem);
+        }
+
+        TP_ASSERT(pEnchantment, "No Enchantment created or found.");
+
+        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge,
+                                           arEntry.ExtraEnchantRemoveUnequip);
+    }
+
+    if (arEntry.ExtraPoisonId != 0)
+    {
+        // TODO: does poison have the same temp problem as enchants?
+        // doesn't seem to be the case, there are only like 3 poisons, and no custom ones
+        TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
+
+        uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
+        if (AlchemyItem* pPoison = RTTI_CAST(TESForm::GetById(poisonId), TESForm, AlchemyItem))
+        {
+            pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
+        }
+    }
+
+    if (arEntry.ExtraHealth > 0.f)
+    {
+        pExtraDataList->SetHealth(arEntry.ExtraHealth);
+    }
+
+    if (arEntry.ExtraSoulLevel > 0 && arEntry.ExtraSoulLevel <= 5)
+    {
+        pExtraDataList->SetSoulData(static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel));
+    }
+
+    if (arEntry.ExtraWorn)
+    {
+        pExtraDataList->SetWorn(false);
+    }
+
+    if (arEntry.ExtraWornLeft)
+    {
+        pExtraDataList->SetWorn(true);
+    }
+
+    // TODO: this is causing crashes
+    /*
+    if (!arEntry.ExtraTextDisplayName.empty())
+    {
+        ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
+        *((uint64_t*)pExtraText) = 0x1416244D0;
+        pExtraText->next = nullptr;
+        pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
+        pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
+        pExtraText->iOwnerInstance = -2;
+        pExtraText->fTemperFactor = 1.0F;
+        pExtraDataList->Add(ExtraData::TextDisplayData, pExtraText);
+    }
+    */
+
+    if (pExtraDataList->data == nullptr)
+    {
+        Memory::Delete(pExtraDataList->bitfield);
+        Memory::Delete(pExtraDataList);
+        pExtraDataList = nullptr;
+    }
+
+    return pExtraDataList;
 }
 
 Inventory TESObjectREFR::GetInventory() const noexcept
@@ -274,7 +369,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
             innerEntry.BaseId = entry.BaseId;
             innerEntry.Count = 1;
 
-            GetItemExtraData(innerEntry, pExtraDataList);
+            GetItemFromExtraData(innerEntry, pExtraDataList);
 
             entry.Count -= innerEntry.Count;
 
@@ -329,6 +424,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
+    // TODO: filter out quest items
     inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), inventory.Entries.end(),
                                            [](const Inventory::Entry& entry) { return entry.Count == 0; }),
                             inventory.Entries.end());
@@ -338,26 +434,22 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
-thread_local bool g_modifyingInventory = false;
-
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for {:X}", formID);
 
-    g_modifyingInventory = true;
+    ScopedInventoryOverride _;
 
     RemoveAllItems();
 
     for (const Inventory::Entry& entry : aInventory.Entries)
     {
         if (entry.Count != 0)
-            AddItem(entry);
+            AddOrRemoveItem(entry);
     }
-
-    g_modifyingInventory = false;
 }
 
-void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
+void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
 {
     ModSystem& modSystem = World::Get().GetModSystem();
 
@@ -365,107 +457,23 @@ void TESObjectREFR::AddItem(const Inventory::Entry& arEntry) noexcept
     TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
     if (!pObject)
     {
-        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
+        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
         return;
     }
 
-    ExtraDataList* pExtraDataList = nullptr;
+    ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
 
-    if (arEntry.ContainsExtraData())
-    {
-        pExtraDataList = Memory::Allocate<ExtraDataList>();
-        pExtraDataList->data = nullptr;
-        pExtraDataList->lock.m_counter = pExtraDataList->lock.m_tid = 0;
-        pExtraDataList->bitfield = Memory::Allocate<ExtraDataList::Bitfield>();
-        memset(pExtraDataList->bitfield, 0, 0x18);
-
-        if (arEntry.ExtraCharge > 0.f)
-        {
-            pExtraDataList->SetChargeData(arEntry.ExtraCharge);
-        }
-
-        if (arEntry.ExtraEnchantId != 0)
-        {
-            EnchantmentItem* pEnchantment = nullptr;
-            if (arEntry.ExtraEnchantId.ModId == 0xFFFFFFFF)
-            {
-                pEnchantment = EnchantmentItem::Create(arEntry.EnchantData);
-            }
-            else
-            {
-                uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
-                pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem);
-            }
-
-            TP_ASSERT(pEnchantment, "No Enchantment created or found.");
-
-            pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge,
-                                               arEntry.ExtraEnchantRemoveUnequip);
-        }
-
-        if (arEntry.ExtraPoisonId != 0)
-        {
-            // TODO: does poison have the same temp problem as enchants?
-            // doesn't seem to be the case, there are only like 3 poisons, and no custom ones
-            TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
-
-            uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
-            if (AlchemyItem* pPoison = RTTI_CAST(TESForm::GetById(poisonId), TESForm, AlchemyItem))
-            {
-                pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
-            }
-        }
-
-        if (arEntry.ExtraHealth > 0.f)
-        {
-            pExtraDataList->SetHealth(arEntry.ExtraHealth);
-        }
-
-        if (arEntry.ExtraSoulLevel > 0 && arEntry.ExtraSoulLevel <= 5)
-        {
-            pExtraDataList->SetSoulData(static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel));
-        }
-
-        if (arEntry.ExtraWorn)
-        {
-            pExtraDataList->SetWorn(false);
-        }
-
-        if (arEntry.ExtraWornLeft)
-        {
-            pExtraDataList->SetWorn(true);
-        }
-
-        // TODO: this is causing crashes
-        /*
-        if (!arEntry.ExtraTextDisplayName.empty())
-        {
-            ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
-            *((uint64_t*)pExtraText) = 0x1416244D0;
-            pExtraText->next = nullptr;
-            pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
-            pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
-            pExtraText->iOwnerInstance = -2;
-            pExtraText->fTemperFactor = 1.0F;
-            pExtraDataList->Add(ExtraData::TextDisplayData, pExtraText);
-        }
-        */
-
-        if (pExtraDataList->data == nullptr)
-        {
-            Memory::Delete(pExtraDataList->bitfield);
-            Memory::Delete(pExtraDataList);
-            pExtraDataList = nullptr;
-        }
-    }
-
-    AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
-    spdlog::debug("Added object to container, form id: {:X}, extra data count: {}, entry count: {}", pObject->formID,
-                 pExtraDataList ? (int)pExtraDataList->GetCount() : -1, arEntry.Count);
+    if (arEntry.Count > 0)
+        AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
+    else if (arEntry.Count < 0)
+        RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
+    ScopedActivateOverride _;
+
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
@@ -534,24 +542,48 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
 {
-    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    Actor* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 
     return ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
 }
 
-void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
 {
-    if (!g_modifyingInventory)
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
-    return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
+    if (!ScopedInventoryOverride::IsOverriden())
+    {
+        auto& modSystem = World::Get().GetModSystem();
+
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apItem->formID, item.BaseId);
+        item.Count = aCount;
+
+        if (apExtraData)
+            apThis->GetItemFromExtraData(item, apExtraData);
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
+
+    ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
 {
-    if (!g_modifyingInventory)
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!ScopedInventoryOverride::IsOverriden())
+    {
+        auto& modSystem = World::Get().GetModSystem();
+
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apItem->formID, item.BaseId);
+        item.Count = -aCount;
+        
+        if (apExtraList)
+            apThis->GetItemFromExtraData(item, apExtraList);
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
+
     return ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }
 

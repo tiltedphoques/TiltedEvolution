@@ -1,21 +1,25 @@
 #include <Forms/TESObjectCELL.h>
 #include <TESObjectREFR.h>
 
-void TESObjectCELL::GetRefsByFormTypes(Vector<TESObjectREFR*>& aRefs, const Vector<FormType>& aFormTypes) noexcept
+Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>& aFormTypes) noexcept
 {
+    Vector<TESObjectREFR*> references{};
+
     if (!refData.refArray)
-        return;
+        return references;
 
     for (uint32_t i = 0; i < refData.capacity; i++)
     {
-        auto ref = refData.refArray[i].Get();
-        if (!ref)
+        TESObjectREFR* pRef = refData.refArray[i].Get();
+        if (!pRef)
             continue;
 
-        for (auto formType : aFormTypes)
+        for (FormType formType : aFormTypes)
         {
-            if (ref->baseForm->formType == formType)
-                aRefs.push_back(ref);
+            if (pRef->baseForm->formType == formType)
+                references.push_back(pRef);
         }
     }
+
+    return references;
 }
