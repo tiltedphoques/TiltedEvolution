@@ -40,5 +40,5 @@ private:
 
     String m_directory = "";
     Vector<PluginData> m_loadOrder{};
-    Map<String, uint8_t> m_masterFiles{};
+    TiltedPhoques::Map<String, uint8_t> m_masterFiles{};
 };

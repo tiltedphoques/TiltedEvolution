@@ -3,8 +3,6 @@
 #include <TiltedCore/Buffer.hpp>
 #include <TiltedCore/Stl.hpp>
 
-using TiltedPhoques::Map;
-
 struct ActorValues
 {
     ActorValues() = default;
@@ -16,6 +14,6 @@ struct ActorValues
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    Map<uint32_t, float> ActorValuesList{};
-    Map<uint32_t, float> ActorMaxValuesList{};
+    TiltedPhoques::Map<uint32_t, float> ActorValuesList{};
+    TiltedPhoques::Map<uint32_t, float> ActorMaxValuesList{};
 };

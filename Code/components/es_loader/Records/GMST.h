@@ -14,5 +14,5 @@ public:
     // DATA
     Chunks::TypedValue m_value{};
 
-    void ParseChunks(GMST& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseChunks(GMST& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };

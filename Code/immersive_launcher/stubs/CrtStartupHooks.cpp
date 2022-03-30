@@ -1,8 +1,8 @@
 
 #include "launcher.h"
 #include <FunctionHook.hpp>
+#include <mutex>
 #include <TiltedCore/Initializer.hpp>
-#include <TiltedCore/Meta.hpp>
 
 static std::once_flag s_initGuard;
 static uint16_t(WINAPI* Real_crtGetShowWindowMode)() = nullptr;

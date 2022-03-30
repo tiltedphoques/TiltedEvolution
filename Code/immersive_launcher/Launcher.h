@@ -1,10 +1,7 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
-
 #include "Loader/ExeLoader.h"
 #include <TiltedCore/Filesystem.hpp>
-#include <TiltedCore/Platform.hpp>
 #include <TiltedCore/Stl.hpp>
 
 namespace launcher

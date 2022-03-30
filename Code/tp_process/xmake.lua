@@ -2,6 +2,11 @@
 target("TPProcess")
     set_kind("binary")
     set_group("Client")
+
+    if is_plat("windows") then
+        add_ldflags("/subsystem:windows")
+    end
+
     add_includedirs(
         ".",
         "../",

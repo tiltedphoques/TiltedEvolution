@@ -9,7 +9,6 @@ local function build_launcher()
         "/SAFESEH:NO",
         "/LARGEADDRESSAWARE",
         "/INCREMENTAL:NO",
-        "/MANIFEST:NO",
         "/LAST:.zdata",
         "/SUBSYSTEM:WINDOWS",
         "/ENTRY:mainCRTStartup", { force = true })
@@ -21,7 +20,7 @@ local function build_launcher()
     add_headerfiles("**.h")
     add_files(
         "**.cpp",
-        "resources/launcher.rc")
+        "launcher.rc")
     add_deps(
         "TiltedReverse",
         "TiltedHooks",
@@ -59,7 +58,7 @@ target("SkyrimImmersiveLauncher")
     add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
     build_launcher()
 
-target("FalloutImmersiveLauncher")
+--[[target("FalloutImmersiveLauncher")
     set_basename("FalloutTogether")
     add_defines(
         "TARGET_FT",
@@ -67,4 +66,5 @@ target("FalloutImmersiveLauncher")
     add_deps("FalloutTogetherClient")
     add_ldflags("/WHOLEARCHIVE:FalloutTogetherClient", { force = true })
     build_launcher()
+    ]]--
 

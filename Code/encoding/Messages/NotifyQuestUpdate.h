@@ -3,8 +3,6 @@
 #include "Message.h"
 #include <Structs/GameId.h>
 
-using TiltedPhoques::Map;
-
 struct NotifyQuestUpdate final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyQuestUpdate;

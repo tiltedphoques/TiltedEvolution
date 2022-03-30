@@ -11,5 +11,5 @@ public:
 
     Chunks::NVNM m_navMesh;
 
-    void ParseChunks(NAVM& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseChunks(NAVM& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };

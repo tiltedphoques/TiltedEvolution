@@ -4,8 +4,6 @@
 #include <TiltedCore/Buffer.hpp>
 #include <Structs/Inventory.h>
 
-using TiltedPhoques::Map;
-
 struct NotifyCharacterInventoryChanges final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyCharacterInventoryChanges;
@@ -23,5 +21,5 @@ struct NotifyCharacterInventoryChanges final : ServerMessage
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<uint32_t, Inventory> Changes{};
+    TiltedPhoques::Map<uint32_t, Inventory> Changes{};
 };

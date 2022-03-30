@@ -16,5 +16,5 @@ public:
     // Objects
     Vector<Chunks::CNTO> m_objects{};
 
-    void ParseChunks(CONT& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseChunks(CONT& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };

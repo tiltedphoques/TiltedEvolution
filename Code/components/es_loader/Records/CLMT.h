@@ -20,5 +20,5 @@ public:
     //TNAM
     Chunks::TNAM m_timing{};
 
-    void ParseChunks(CLMT& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseChunks(CLMT& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };
