@@ -5,7 +5,6 @@
 #include <TiltedCore/Stl.hpp>
 
 using TiltedPhoques::String;
-using TiltedPhoques::Map;
 
 struct ClientReferencesMoveRequest final : ClientMessage
 {
@@ -27,5 +26,5 @@ struct ClientReferencesMoveRequest final : ClientMessage
     }
     
     uint64_t Tick{};
-    Map<uint32_t, ReferenceUpdate> Updates{};
+    TiltedPhoques::Map<uint32_t, ReferenceUpdate> Updates{};
 };

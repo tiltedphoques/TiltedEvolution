@@ -50,6 +50,9 @@ struct TESObjectREFR : TESForm
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
     static uint32_t* GetNullHandle() noexcept;
 
+    static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
+    static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;
+
     virtual void sub_39();
     virtual void sub_3A();
     virtual void sub_3B();
@@ -159,7 +162,6 @@ struct TESObjectREFR : TESForm
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
-    void GetItemExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) const noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -189,7 +191,7 @@ struct TESObjectREFR : TESForm
     Inventory GetInventory() const noexcept;
     void SetInventory(const Inventory& acContainer) noexcept;
 
-    void AddItem(const Inventory::Entry& arEntry) noexcept;
+    void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

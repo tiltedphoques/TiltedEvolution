@@ -1,5 +1,15 @@
 #include "ExtraDataList.h"
 
+ExtraDataList* ExtraDataList::New() noexcept
+{
+    ExtraDataList* pExtraDataList = Memory::Allocate<ExtraDataList>();
+    pExtraDataList->data = nullptr;
+    pExtraDataList->lock.m_counter = pExtraDataList->lock.m_tid = 0;
+    pExtraDataList->bitfield = Memory::Allocate<ExtraDataList::Bitfield>();
+    memset(pExtraDataList->bitfield, 0, 0x18);
+    return pExtraDataList;
+}
+
 bool ExtraDataList::Contains(ExtraData aType) const
 {
     if(bitfield)

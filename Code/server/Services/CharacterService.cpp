@@ -662,7 +662,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
 
     const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent>();
 
-    Map<Player*, NotifyFactionsChanges> messages;
+    TiltedPhoques::Map<Player*, NotifyFactionsChanges> messages;
 
     for (auto entity : characterView)
     {
@@ -711,7 +711,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
 
-    Map<Player*, ServerReferencesMoveRequest> messages;
+    TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {

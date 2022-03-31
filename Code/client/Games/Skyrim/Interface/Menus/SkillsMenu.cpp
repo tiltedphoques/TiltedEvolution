@@ -2,7 +2,7 @@
 // The game calls it statsmenu.
 #include <Interface/Menus/SkillsMenu.h>
 
-static TiltedPhoques::Initializer s_init([]() {
+static TiltedPhoques::Initializer s_skillsMenuInit([]() {
     // https://github.com/Vermunds/SkyrimSoulsRE/blob/master/src/Menus/StatsMenuEx.cpp
     // Hoooks from souls RE
     // Fix for menu not appearing

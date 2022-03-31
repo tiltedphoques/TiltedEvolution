@@ -2,8 +2,6 @@
 
 #include "Message.h"
 
-using TiltedPhoques::Map;
-
 struct NotifyActorValueChanges final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyActorValueChanges;
@@ -23,5 +21,5 @@ struct NotifyActorValueChanges final : ServerMessage
     }
 
     uint32_t Id;
-    Map<uint32_t, float> Values;
+    TiltedPhoques::Map<uint32_t, float> Values;
 };

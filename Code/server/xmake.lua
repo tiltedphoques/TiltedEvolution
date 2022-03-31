@@ -42,4 +42,4 @@ target(name)
 end
 
 build_server("SkyrimTogetherServer", "TP_SKYRIM=1")
-build_server("FalloutTogetherServer", "TP_FALLOUT=1")
+--build_server("FalloutTogetherServer", "TP_FALLOUT=1")

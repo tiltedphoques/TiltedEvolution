@@ -36,7 +36,7 @@ struct Actor : TESObjectREFR
     virtual void sub_9E();
     virtual void sub_9F();
     virtual void sub_A0();
-    virtual void sub_A1();
+    virtual void UnequipObject(void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* aUnk3);
     virtual void sub_A2();
     virtual void sub_A3();
     virtual void sub_A4();
@@ -191,6 +191,7 @@ struct Actor : TESObjectREFR
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorMaxValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
+    Equipment GetEquipment() const noexcept;
 
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
@@ -207,6 +208,7 @@ struct Actor : TESObjectREFR
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetActorInventory(Inventory& aInventory) noexcept;
+    void SetEquipment(const Equipment& acEquipment) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
@@ -219,6 +221,8 @@ struct Actor : TESObjectREFR
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
+    void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
+    void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
 
 public:
 

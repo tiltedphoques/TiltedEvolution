@@ -71,7 +71,7 @@ private:
 
     bool m_eventCanceled{};
     String m_cancelReason;
-    Map<String, TCallbacks> m_callbacks;
+    TiltedPhoques::Map<String, TCallbacks> m_callbacks;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_rpcCallsRequest;

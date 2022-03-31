@@ -14,6 +14,7 @@
 void TestService::DrawFormDebugView()
 {
     static Actor* pActor = nullptr;
+    static TESForm* pFetchForm = nullptr;
 
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
                        ImGuiInputTextFlags_CharsHexadecimal);
@@ -22,15 +23,17 @@ void TestService::DrawFormDebugView()
     {
         if (m_formId)
         {
-            TESForm* pFetchForm = TESForm::GetById(m_formId);
+            pFetchForm = TESForm::GetById(m_formId);
+            /*
             if (pFetchForm)
                 pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+            */
         }
     }
 
-    if (pActor)
+    if (pFetchForm)
     {
-        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pActor, 0, 0, "%" PRIx64,
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
 
         for (ActiveEffect* pEffect : *pActor->currentProcess->middleProcess->ActiveEffects)

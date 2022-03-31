@@ -1,7 +1,7 @@
 #pragma once
 
 #include <TiltedCore/Stl.hpp>
-#include <Structs/GameId.h>
+#include "Equipment.h"
 
 using TiltedPhoques::Buffer;
 using TiltedPhoques::String;
@@ -54,7 +54,7 @@ struct Inventory
 
         int32_t ExtraSoulLevel{};
 
-        String ExtraTextDisplayName{};
+        //String ExtraTextDisplayName{};
 
         bool ExtraEnchantRemoveUnequip{};
         bool ExtraWorn{};
@@ -101,14 +101,8 @@ struct Inventory
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    Vector<Entry> Entries{};
+    void AddOrRemoveEntry(const Entry& acEntry) noexcept;
 
-    GameId RightHandWeapon{};
-#if TP_SKYRIM
-    GameId LeftHandWeapon{};
-    GameId LeftHandSpell{};
-    GameId RightHandSpell{};
-    GameId Shout{};
-    GameId Ammo{};
-#endif
+    Vector<Entry> Entries{};
+    Equipment CurrentEquipment{};
 };

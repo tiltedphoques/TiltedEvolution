@@ -180,11 +180,6 @@ void TestService::OnDraw() noexcept
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Containers"))
-    {
-        DrawContainerDebugView();
-        ImGui::EndMenu();
-    }
     if (ImGui::BeginMenu("Animation"))
     {
         ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
@@ -215,4 +210,8 @@ void TestService::OnDraw() noexcept
 
     if (m_showBuildTag)
         DrawBuildTag();
+
+    ImGui::Begin("Inventory");
+    DrawContainerDebugView();
+    ImGui::End();
 }

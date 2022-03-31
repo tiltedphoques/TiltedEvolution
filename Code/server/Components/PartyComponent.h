@@ -9,5 +9,5 @@ struct PartyComponent
     PartyComponent() {}
 
     std::optional<uint32_t> JoinedPartyId;
-    Map<Player*, uint64_t> Invitations;
+    TiltedPhoques::Map<Player*, uint64_t> Invitations;
 };

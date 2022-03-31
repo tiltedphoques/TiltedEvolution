@@ -37,6 +37,8 @@
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
 
+#include <Games/Overrides.h>
+
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
@@ -90,8 +92,9 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
-TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
-TP_THIS_FUNCTION(TPickUpItem, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
+TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TPickUpObject, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
+TP_THIS_FUNCTION(TDropObject, void*, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation);
 
 using TGetLocation = TESForm *(TESForm *);
 static TGetLocation *FUNC_GetActorLocation;
@@ -101,7 +104,8 @@ TCharacterConstructor2* RealCharacterConstructor2;
 TCharacterDestructor* RealCharacterDestructor;
 
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
-static TPickUpItem* RealPickUpItem = nullptr;
+static TPickUpObject* RealPickUpObject = nullptr;
+static TDropObject* RealDropObject = nullptr;
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -270,30 +274,39 @@ Inventory Actor::GetActorInventory() const noexcept
 {
     Inventory inventory = GetInventory();
 
+    inventory.CurrentEquipment = GetEquipment();
+
+    return inventory;
+}
+
+Equipment Actor::GetEquipment() const noexcept
+{
+    Equipment equipment;
+
     auto& modSystem = World::Get().GetModSystem();
 
     auto pMainHandWeapon = GetEquippedWeapon(0);
     uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandWeapon);
+    modSystem.GetServerModId(mainId, equipment.LeftHandWeapon);
 
     auto pSecondaryHandWeapon = GetEquippedWeapon(1);
     uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandWeapon);
+    modSystem.GetServerModId(secondaryId, equipment.RightHandWeapon);
 
     mainId = magicItems[0] ? magicItems[0]->formID : 0;
-    modSystem.GetServerModId(mainId, inventory.LeftHandSpell);
+    modSystem.GetServerModId(mainId, equipment.LeftHandSpell);
 
     secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
-    modSystem.GetServerModId(secondaryId, inventory.RightHandSpell);
+    modSystem.GetServerModId(secondaryId, equipment.RightHandSpell);
 
     uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
-    modSystem.GetServerModId(shoutId, inventory.Shout);
+    modSystem.GetServerModId(shoutId, equipment.Shout);
 
     auto pAmmo = GetEquippedAmmo();
     uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
-    modSystem.GetServerModId(ammoId, inventory.Ammo);
+    modSystem.GetServerModId(ammoId, equipment.Ammo);
 
-    return inventory;
+    return equipment;
 }
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
@@ -303,42 +316,103 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     UnEquipAll();
 
     SetInventory(aInventory);
+    SetEquipment(aInventory.CurrentEquipment);
+}
 
+// TODO: remove all the unequip stuff, not needed anymore
+void Actor::SetEquipment(const Equipment& acEquipment) noexcept
+{
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
-    uint32_t mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandWeapon);
+    const Equipment cCurrentEquipment = GetEquipment();
 
-    if (mainHandWeaponId)
-        pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
-
-    uint32_t secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandWeapon);
-
-    if (secondaryHandWeaponId)
-        pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-
-    mainHandWeaponId = modSystem.GetGameId(aInventory.LeftHandSpell);
-
-    if (mainHandWeaponId)
-        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
-
-    secondaryHandWeaponId = modSystem.GetGameId(aInventory.RightHandSpell);
-
-    if (secondaryHandWeaponId)
-        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
-
-    uint32_t shoutId = modSystem.GetGameId(aInventory.Shout);
-
-    if (shoutId)
-        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
-
-    uint32_t ammoId = modSystem.GetGameId(aInventory.Ammo);
-
-    if (ammoId)
+    if (acEquipment.LeftHandWeapon != cCurrentEquipment.LeftHandWeapon)
     {
-        TESForm* pAmmo = TESForm::GetById(ammoId);
-        int64_t count = GetItemCountInInventory(pAmmo);
-        pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        if (acEquipment.LeftHandWeapon)
+        {
+            uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandWeapon);
+            pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+        }
+        else
+        {
+            uint32_t mainHandWeaponId = modSystem.GetGameId(cCurrentEquipment.LeftHandWeapon);
+            pEquipManager->UnEquip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
+        }
+    }
+
+    if (acEquipment.RightHandWeapon != cCurrentEquipment.RightHandWeapon)
+    {
+        if (acEquipment.RightHandWeapon)
+        {
+            uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandWeapon);
+            pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        }
+        else
+        {
+            uint32_t secondaryHandWeaponId = modSystem.GetGameId(cCurrentEquipment.RightHandWeapon);
+            pEquipManager->UnEquip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
+        }
+    }
+
+    if (acEquipment.LeftHandSpell != cCurrentEquipment.LeftHandSpell)
+    {
+        if (acEquipment.LeftHandSpell)
+        {
+            uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
+            pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
+        }
+        else
+        {
+            uint32_t mainHandWeaponId = modSystem.GetGameId(cCurrentEquipment.LeftHandSpell);
+            pEquipManager->UnEquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
+        }
+    }
+
+    if (acEquipment.RightHandSpell != cCurrentEquipment.RightHandSpell)
+    {
+        if (acEquipment.RightHandSpell)
+        {
+            uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
+            pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+        }
+        else
+        {
+            uint32_t secondaryHandWeaponId = modSystem.GetGameId(cCurrentEquipment.RightHandSpell);
+            pEquipManager->UnEquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
+        }
+    }
+
+    if (acEquipment.Shout != cCurrentEquipment.Shout)
+    {
+        if (acEquipment.Shout)
+        {
+            uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
+            pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+        }
+        else
+        {
+            uint32_t shoutId = modSystem.GetGameId(cCurrentEquipment.Shout);
+            pEquipManager->UnEquipShout(this, TESForm::GetById(shoutId));
+        }
+    }
+
+    if (acEquipment.Ammo != cCurrentEquipment.Ammo)
+    {
+        if (acEquipment.Ammo)
+        {
+            uint32_t ammoId = modSystem.GetGameId(acEquipment.Ammo);
+            TESForm* pAmmo = TESForm::GetById(ammoId);
+            int64_t count = GetItemCountInInventory(pAmmo);
+            pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        }
+        else
+        {
+            uint32_t ammoId = modSystem.GetGameId(cCurrentEquipment.Ammo);
+            TESForm* pAmmo = TESForm::GetById(ammoId);
+            int64_t count = GetItemCountInInventory(pAmmo);
+            pEquipManager->UnEquip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
+        }
     }
 }
 
@@ -623,20 +697,76 @@ void* TP_MAKE_THISCALL(HookRegenAttributes, Actor, int aId, float aRegenValue)
     return ThisCall(RealRegenAttributes, apThis, aId, aRegenValue);
 }
 
-extern thread_local bool g_modifyingInventory;
-
-void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
 {
-    if (!g_modifyingInventory)
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+    if (!ScopedInventoryOverride::IsOverriden())
+    {
+        auto& modSystem = World::Get().GetModSystem();
+
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apItem->formID, item.BaseId);
+        item.Count = aCount;
+        
+        if (apExtraData)
+            apThis->GetItemFromExtraData(item, apExtraData);
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
+
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
-void* TP_MAKE_THISCALL(HookPickUpItem, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
+void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2)
 {
-    if (!g_modifyingInventory)
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
-    return ThisCall(RealPickUpItem, apThis, apObject, aCount, aUnk1, aUnk2);
+    if (!ScopedInventoryOverride::IsOverriden())
+    {
+        // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
+        if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
+        {
+            auto& modSystem = World::Get().GetModSystem();
+
+            Inventory::Entry item{};
+            modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+            item.Count = aCount;
+            
+            // TODO: not sure about this
+            if (apObject->GetExtraDataList())
+                apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
+
+            World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        }
+    }
+
+    return ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
+}
+
+void Actor::PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept
+{
+    ThisCall(RealPickUpObject, this, apObject, aCount, aUnk1, aUnk2);
+}
+
+void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation)
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory::Entry item{};
+    modSystem.GetServerModId(apObject->formID, item.BaseId);
+    item.Count = -aCount;
+
+    if (apExtraData)
+        apThis->GetItemFromExtraData(item, apExtraData);
+
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), true));
+
+    ScopedInventoryOverride _;
+
+    return ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
+}
+
+void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+{
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
@@ -682,13 +812,21 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Acto
 
 bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 {
-    if (!apMount)
-    {
-        return ThisCall(RealInitiateMountPackage, apThis, apMount);
-    }
+    if (apMount && apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
 
-    World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
     return ThisCall(RealInitiateMountPackage, apThis, apMount);
+}
+
+TP_THIS_FUNCTION(TUnequipObject, void, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3);
+static TUnequipObject* RealUnequipObject = nullptr;
+
+// TODO: crash in TESObjectREFR::UnequipItem() virtual func (offset 0xA1) when remote players shoots last arrow in quiver (and switching)
+// this thing gets called infinitely until it crashes
+// why?
+void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3)
+{
+    ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
 }
 
 static TiltedPhoques::Initializer s_actorHooks([]()
@@ -703,10 +841,12 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 35086);
     POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 37448);
     POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 37525);
-    POINTER_SKYRIMSE(TPickUpItem, s_pickUpItem, 37521);
+    POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 37521);
+    POINTER_SKYRIMSE(TDropObject, s_dropObject, 40454);
     POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 42704);
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
+    POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -717,10 +857,12 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealApplyActorEffect = s_applyActorEffect.Get();
     RealRegenAttributes = s_regenAttributes.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();
-    RealPickUpItem = s_pickUpItem.Get();
+    RealPickUpObject = s_pickUpObject.Get();
+    RealDropObject = s_dropObject.Get();
     RealUpdateDetectionState = s_updateDetectionState.Get();
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
+    RealUnequipObject = s_unequipObject.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -730,8 +872,10 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
     TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
     TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
-    TP_HOOK(&RealPickUpItem, HookPickUpItem);
+    TP_HOOK(&RealPickUpObject, HookPickUpObject);
+    TP_HOOK(&RealDropObject, HookDropObject);
     TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
+    TP_HOOK(&RealUnequipObject, HookUnequipObject);
 });

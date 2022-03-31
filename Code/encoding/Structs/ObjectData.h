@@ -1,13 +1,10 @@
 #pragma once
 
 #include <TiltedCore/Buffer.hpp>
-#include <TiltedCore/Stl.hpp>
 #include <Structs/GameId.h>
 #include <Structs/LockData.h>
 #include <Structs/Inventory.h>
 #include <Structs/GridCellCoords.h>
-
-using TiltedPhoques::Map;
 
 struct ObjectData
 {
@@ -20,6 +17,7 @@ struct ObjectData
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
+    uint32_t ServerId{};
     GameId Id{};
     GameId CellId{};
     GameId WorldSpaceId{};
