@@ -16,8 +16,7 @@
 
 #define ENABLE_NG_UI 0
 
-struct D3D11RenderProvider final : TiltedPhoques::RenderProvider,
-            TiltedPhoques::NgRenderHandlerD3D11::Renderer
+struct D3D11RenderProvider final : TiltedPhoques::RenderProvider, TiltedPhoques::NgRenderHandlerD3D11::Renderer
 
 {
     TiltedPhoques::NgRenderHandler* Create() override
@@ -58,7 +57,8 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
         .devtoolsPort = 8384,
         .useSharedResources = true,
         .disableCors = true, // as this is an internal tool, we can disable it for development.
-        .instanceArgs = hs,
+        .instanceArgs =
+            GetModuleHandleW(nullptr), // this will match the games address as we override the launcher code.
     };
     if (!m_pOverlay->Initialize())
         spdlog::error("Overlay could not be initialised");

@@ -11,11 +11,13 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
     {
         return 1;
     }
+
     std::string buf(sz, '\0');
     if (!GetFileVersionInfoW(filename, dwHandle, sz, &buf[0]))
     {
         return 2;
     }
+
     VS_FIXEDFILEINFO* pvi;
     sz = sizeof(VS_FIXEDFILEINFO);
     if (!VerQueryValueA(&buf[0], "\\", reinterpret_cast<LPVOID*>(&pvi), reinterpret_cast<unsigned int*>(&sz)))

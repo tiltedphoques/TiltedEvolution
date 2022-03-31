@@ -25,8 +25,6 @@ struct TiltedOnlineApp final : App
     static void InstallHooks2();
 
 protected:
-
-    void InstallHooks();
     void UninstallHooks();
 
 private:

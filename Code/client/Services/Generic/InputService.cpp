@@ -305,9 +305,19 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
 
 LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    const auto pApp = s_pOverlay->GetOverlayApp();
-    if (!pApp)
-        return 0;
+    auto& discord = World::Get().ctx<DiscordService>();
+    discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
+
+    // const auto isVisible = pRenderer->IsVisible();
+    if (true)
+    {
+        auto& imgui = World::Get().ctx<ImguiService>();
+        imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
+    }
+
+    //const auto pApp = s_pOverlay->GetOverlayApp();
+    //if (!pApp)
+    //    return 0;
 
     #if 0
     const auto pClient = pApp->GetClient();
@@ -318,16 +328,6 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     if (!pRenderer)
         return 0;
     #endif
-
-    auto &discord = World::Get().ctx<DiscordService>();
-    discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
-
-    //const auto isVisible = pRenderer->IsVisible();
-    if(true)
-    {
-        auto& imgui = World::Get().ctx<ImguiService>();
-        imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
-    }
 
 #if defined(TP_SKYRIM)
     //pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());

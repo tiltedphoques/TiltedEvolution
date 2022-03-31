@@ -109,7 +109,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
     if (GetAsyncKeyState(VK_F3) & 0x01)
     {
-        m_showDebugStuff = !m_showDebugStuff;
+        m_showDebugBar = !m_showDebugBar;
     }
 
     if (GetAsyncKeyState(VK_F8))
@@ -142,59 +142,64 @@ static bool g_EnableAnimWindow{false};
 
 void TestService::OnDraw() noexcept
 {
-    const auto view = m_world.view<FormIdComponent>();
-    if (view.empty() || !m_showDebugStuff)
+    if (!m_showDebugBar)
         return;
 
     ImGui::BeginMainMenuBar();
-    if (ImGui::BeginMenu("Server"))
-    {
-        static char s_address[256] = "127.0.0.1:10578";
-        ImGui::InputText("Address", s_address, std::size(s_address));
 
-        if (m_transport.IsOnline())
+    const auto view = m_world.view<FormIdComponent>();
+    if (!view.empty())
+    {
+        if (ImGui::BeginMenu("Server"))
         {
-            if (ImGui::Button("Disconnect"))
-                m_transport.Close();
+            static char s_address[256] = "127.0.0.1:10578";
+            ImGui::InputText("Address", s_address, std::size(s_address));
+
+            if (m_transport.IsOnline())
+            {
+                if (ImGui::Button("Disconnect"))
+                    m_transport.Close();
+            }
+            else
+            {
+                if (ImGui::Button("Connect"))
+                    m_transport.Connect(s_address);
+            }
+            ImGui::EndMenu();
         }
-        else
+        if (ImGui::BeginMenu("Player"))
         {
-            if (ImGui::Button("Connect"))
-                m_transport.Connect(s_address);
+            DrawPlayerDebugView();
+            ImGui::EndMenu();
         }
-        ImGui::EndMenu();
+        if (ImGui::BeginMenu("Skills"))
+        {
+            DrawSkillView();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Components"))
+        {
+            ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
+            ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Containers"))
+        {
+            DrawContainerDebugView();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Animation"))
+        {
+            ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Form"))
+        {
+            DrawFormDebugView();
+            ImGui::EndMenu();
+        }    
     }
-    if (ImGui::BeginMenu("Player"))
-    {
-        DrawPlayerDebugView();
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Skills"))
-    {
-        DrawSkillView();
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Components"))
-    {
-        ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
-        ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Containers"))
-    {
-        DrawContainerDebugView();
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Animation"))
-    {
-        ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Form"))
-    {
-        DrawFormDebugView();
-        ImGui::EndMenu();
-    }
+
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
@@ -205,6 +210,7 @@ void TestService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
+
     ImGui::EndMainMenuBar();
 
     if (g_EnableAnimWindow)

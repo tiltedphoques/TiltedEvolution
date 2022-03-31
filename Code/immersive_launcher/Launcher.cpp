@@ -2,6 +2,7 @@
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
 
 #define SPDLOG_WCHAR_FILENAMES
+#include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
