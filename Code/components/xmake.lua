@@ -45,5 +45,6 @@ function unittest(name)
 
 -- List all components required below:
 includes("console")
+includes("crash_reporter")
 includes("imgui")
 includes("es_loader")

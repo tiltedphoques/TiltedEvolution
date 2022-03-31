@@ -1,4 +1,4 @@
 @echo off
 
-xmake project -k vs
+xmake project -k vsxmake
 timeout /t 3 /nobreak
