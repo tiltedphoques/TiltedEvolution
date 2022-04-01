@@ -1,4 +1,5 @@
 
+#if 0
 #include "BSMain/SettingCollectionList.h"
 #include "BSMain/Setting.h"
 
@@ -49,3 +50,4 @@ static TiltedPhoques::Initializer s_InitSettingCollectionHook([]() {
     TP_HOOK_IMMEDIATE(&BSMain::SettingCollectionList_Setting_Add, &BSMain::Hook_SettingCollectionList_Setting_Add);
 #endif
 });
+#endif

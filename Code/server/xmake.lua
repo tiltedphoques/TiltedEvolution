@@ -22,6 +22,7 @@ target(name)
     add_deps(
         "Common",
         "Console",
+        "CrashReporter",
         "ESLoader",
         "Base",
         "AdminProtocol",

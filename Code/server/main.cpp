@@ -16,10 +16,14 @@
 
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
+
 #include <console/ConsoleRegistry.h>
 #include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
+#include <crash_reporter/CrashHandler.h>
 
+namespace
+{
 constexpr char kSettingsFileName[] =
 #if SKYRIM
     "STServer.ini"
@@ -40,6 +44,26 @@ constexpr char kLogFileName[] =
 #endif
     ;
 
+constexpr char kBranchName[] =
+#if (IS_MASTER)
+    "master"
+#elif (IS_BRANCH_BETA)
+    "beta"
+#elif (IS_BRANCH_PREREL)
+    "preview"
+#else
+    "devel"
+#endif
+    ;
+
+constexpr char kServerDSNURL[] =
+#if defined(TP_SKYRIM)
+    "https://6aff0a6955754bdebfffb064813b9042@o228105.ingest.sentry.io/6303666"
+#elif defined(TP_FALLOUT)
+    "https://2a3d561652734ca78e539c3fb5219a38@o228105.ingest.sentry.io/6303669"
+#endif
+    ;
+
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
 constexpr char kConfigPathName[] = "config";
@@ -52,8 +76,15 @@ constexpr char kConsoleOutName[] = "ConOut";
 
 namespace fs = std::filesystem;
 
-static Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
-static Console::Setting bConsole{"bConsole", "Enable the console", true};
+Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+Console::Setting bConsole{"bConsole", "Enable the console", true};
+
+// todo: guard this...
+Console::Command<> CrashServer("crash", "Crash the server on purpose", [](Console::ArgStack&) {
+    static int* pFakePtr{nullptr};
+    *pFakePtr = 1337;
+});
+} // namespace
 
 class DediRunner;
 
@@ -124,6 +155,8 @@ class DediRunner
     void StartTerminalIO();
     void RequestKill();
 
+    static void InstallCrashHandler();
+
   private:
     static void PrintExecutorArrowHack();
 
@@ -143,6 +176,24 @@ DediRunner::DediRunner(int argc, char** argv) : m_gameServer(m_console), m_conso
 
     // Post construction init stuff.
     m_gameServer.Initialize();
+}
+
+void DediRunner::InstallCrashHandler()
+{
+    auto path = TiltedPhoques::GetPath().string();
+    const CrashReporter::Settings sentryConfig{
+        .acBasePath = path.c_str(),
+        .acReleaseTag = BUILD_BRANCH "@" BUILD_COMMIT,
+        .acEnvironment = kBranchName,
+        .acDSN = kServerDSNURL,
+    };
+
+    bool result = CrashReporter::InstallCrashHandler(sentryConfig);
+
+    if (!result)
+    {
+        spdlog::error("Failed to start crash handler");
+    }
 }
 
 void DediRunner::PrintExecutorArrowHack()
@@ -199,13 +250,13 @@ void DediRunner::RequestKill()
     auto wait = std::move(m_pConIOThread);
     TP_UNUSED(wait);
 
-    // work around 
+    // work around
     // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
     // being set.
 #if defined(_WIN32)
     if (IsDebuggerPresent())
     {
-        std::this_thread::sleep_for(300ms);
+        std::this_thread::sleep_for(1000ms);
     }
 #endif
 }
@@ -214,16 +265,14 @@ static bool RegisterQuitHandler()
 {
 #if defined(_WIN32)
     return SetConsoleCtrlHandler(
-        [](DWORD aType) 
-        {
+        [](DWORD aType) {
             switch (aType)
             {
             case CTRL_C_EVENT:
             case CTRL_CLOSE_EVENT:
             case CTRL_BREAK_EVENT:
             case CTRL_LOGOFF_EVENT:
-            case CTRL_SHUTDOWN_EVENT: 
-            {
+            case CTRL_SHUTDOWN_EVENT: {
                 if (s_pRunner)
                 {
                     s_pRunner->RequestKill();
@@ -277,6 +326,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    DediRunner::InstallCrashHandler();
     RegisterQuitHandler();
 
     // Keep stack free.
@@ -286,6 +336,7 @@ int main(int argc, char** argv)
         cpRunner->StartTerminalIO();
     }
     cpRunner->RunGSThread();
+    CrashReporter::UnInstallCrashHandler();
 
     return 0;
 }
