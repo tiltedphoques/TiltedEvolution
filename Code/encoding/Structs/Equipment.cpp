@@ -97,14 +97,14 @@ void Equipment::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 
 void Equipment::UpdateEquipment(const RequestEquipmentChanges& acChanges) noexcept
 {
-    if (acChanges.EquipSlotId == 0x13F42) // if right-hand
+    if (acChanges.EquipSlotId.BaseId == 0x13F42) // if right-hand
     {
         if (acChanges.IsSpell)
             RightHandSpell = acChanges.Unequip ? GameId{} : acChanges.ItemId;
         else
             RightHandWeapon = acChanges.Unequip ? GameId{} : acChanges.ItemId;
     }
-    else if (acChanges.EquipSlotId == 0x13F43) // else if left-hand
+    else if (acChanges.EquipSlotId.BaseId == 0x13F43) // else if left-hand
     {
         if (acChanges.IsSpell)
             LeftHandSpell = acChanges.Unequip ? GameId{} : acChanges.ItemId;
