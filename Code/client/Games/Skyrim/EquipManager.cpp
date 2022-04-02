@@ -165,8 +165,10 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote())
     {
-        spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}", apActor->formID, apItem->formID);
-        if (!ScopedEquipOverride::IsOverriden())
+        spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}, IsOverridden: {}", apActor->formID, apItem->formID, ScopedEquipOverride::IsOverriden());
+        // The ScopedInventoryOverride check is here to allow the item to be unequipped if it is removed
+        // Without this check, the game will not accept null as a return, and it'll keep trying to unequip infinitely
+        if (!ScopedEquipOverride::IsOverriden() && !ScopedInventoryOverride::IsOverriden())
             return nullptr;
     }
 

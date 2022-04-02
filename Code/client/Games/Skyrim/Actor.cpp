@@ -821,9 +821,6 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 TP_THIS_FUNCTION(TUnequipObject, void, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3);
 static TUnequipObject* RealUnequipObject = nullptr;
 
-// TODO: crash in TESObjectREFR::UnequipItem() virtual func (offset 0xA1) when remote players shoots last arrow in quiver (and switching)
-// this thing gets called infinitely until it crashes
-// why?
 void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3)
 {
     ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
