@@ -61,19 +61,9 @@ class Sky
         return eMode;
     }
 
-    void Initialize(BSMultiBoundNode* apRoot, BSFogProperty* apFog);
-    void Update(float afTick);
-
-    float GetSunsetBegin();
-
-    float GetSunriseBegin() const;
-    float GetSunriseEnd() const;
-
-    float GetBeginSunriseColors() const;
-    float GetEndSunsetColors() const;
-    float GetCurrentGameHour() const;
-
     static Sky* GetInstance();
+
+    void SetWeather(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather);
 
   private:
     NiPointer<BSMultiBoundNode> spRoot;

@@ -23,6 +23,8 @@ SkyService::SkyService(World& aWorld, entt::dispatcher& aDispatcher)
 
 void SkyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 {
+    // TODO: send previous seed, so we can do corrections later on.
+
     ServerSkySeed seedMsg;
     seedMsg.Seed = m_weatherSeed;
     acEvent.pPlayer->Send(seedMsg);
