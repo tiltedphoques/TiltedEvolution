@@ -765,8 +765,9 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
 
 void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
+    spdlog::debug("Dropping object, form id: {:X}, count: {}, actor: {:X}", apObject->formID, aCount, formID);
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
+    ThisCall(RealDropObject, this, &result, apObject, apExtraData, -aCount, apLocation, apRotation);
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
