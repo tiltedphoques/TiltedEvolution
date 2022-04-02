@@ -25,7 +25,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 {
     auto& message = acMessage.Packet;
 
-    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+    auto view = m_world.view<InventoryComponent>();
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
 
@@ -48,7 +48,7 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
 {
     auto& message = acMessage.Packet;
 
-    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+    auto view = m_world.view<InventoryComponent>();
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
 

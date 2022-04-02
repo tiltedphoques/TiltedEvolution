@@ -24,4 +24,5 @@ struct ObjectData
     GridCellCoords CurrentCoords{};
     LockData CurrentLockData{};
     Inventory CurrentInventory{};
+    bool IsSenderFirst{};
 };
