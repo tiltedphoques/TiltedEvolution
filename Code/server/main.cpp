@@ -10,15 +10,14 @@
 
 #include <Setting.h>
 #include <fstream>
-#include <simpleini/SimpleIni.h>
 
 #include <TiltedCore/Filesystem.hpp>
 
 #include <base/Check.h>
-#include <base/simpleini/SimpleIni.h>
 #include <console/ConsoleRegistry.h>
 #include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
+#include <external/simpleini/SimpleIni.h>
 
 constexpr char kSettingsFileName[] =
 #if SKYRIM
@@ -199,7 +198,7 @@ void DediRunner::RequestKill()
     auto wait = std::move(m_pConIOThread);
     TP_UNUSED(wait);
 
-    // work around 
+    // work around
     // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
     // being set.
 #if defined(_WIN32)
@@ -214,16 +213,14 @@ static bool RegisterQuitHandler()
 {
 #if defined(_WIN32)
     return SetConsoleCtrlHandler(
-        [](DWORD aType) 
-        {
+        [](DWORD aType) {
             switch (aType)
             {
             case CTRL_C_EVENT:
             case CTRL_CLOSE_EVENT:
             case CTRL_BREAK_EVENT:
             case CTRL_LOGOFF_EVENT:
-            case CTRL_SHUTDOWN_EVENT: 
-            {
+            case CTRL_SHUTDOWN_EVENT: {
                 if (s_pRunner)
                 {
                     s_pRunner->RequestKill();

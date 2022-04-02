@@ -2,7 +2,7 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include <base/Check.h>
-#include <base/simpleini/SimpleIni.h>
+#include <base/external/simpleini/SimpleIni.h>
 
 #include <console/IniSettingsProvider.h>
 #include <console/Setting.h>
