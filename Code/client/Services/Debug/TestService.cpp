@@ -190,6 +190,11 @@ void TestService::OnDraw() noexcept
         DrawFormDebugView();
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Sky"))
+    {
+        DrawSkyDebugView();
+        ImGui::EndMenu();
+    }
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);

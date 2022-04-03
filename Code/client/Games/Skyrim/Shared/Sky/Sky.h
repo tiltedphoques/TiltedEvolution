@@ -10,16 +10,19 @@
 #include "Shared/Sky/Stars.h"
 #include "Shared/Sky/Sun.h"
 
+#include <Shared/TESForms/World/TESClimate.h>
+#include <Shared/TESForms/World/TESWeather.h>
+
 class ReferenceEffect;
 class SkySound;
 class BGSLightingTemplate;
 
 class BSFogProperty;
 class BSMultiBoundNode;
-class TESClimate;
 class TESWeather;
 class TESRegion;
 class TESImageSpace;
+class TESGlobal;
 
 // todo: find new home for this.
 struct ReferenceEffectController
@@ -39,6 +42,7 @@ class Sky
     friend class Moon;
     friend class Clouds;
     friend class Atmosphere;
+
   public:
     virtual ~Sky() = default;
 
@@ -61,9 +65,19 @@ class Sky
         return eMode;
     }
 
+    TESClimate* GetCurrentClimate() const noexcept
+    {
+        return pCurrentClimate;
+    }
+
+    TESWeather* GetCurrentWeather() const noexcept
+    {
+        return pCurrentWeather;
+    }
+
     static Sky* GetInstance();
 
-    void SetWeather(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather);
+    void SetWeatherExternal(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather);
 
   private:
     NiPointer<BSMultiBoundNode> spRoot;

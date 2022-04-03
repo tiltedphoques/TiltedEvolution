@@ -5,21 +5,21 @@
 #include <Services/SkyService.h>
 #include <World.h>
 
+static Sky* (*Sky_GetInstance)(){nullptr};
+static void (*Sky_SetWeather)(Sky*, TESWeather*, bool, bool){nullptr};
+static uint32_t (*BSRandom_UnsignedInt)(void*, uint32_t){nullptr};
+
 Sky* Sky::GetInstance()
 {
-    POINTER_SKYRIMSE(Sky*, s_instance, 13878);
-    return *s_instance.Get();
+    return Sky_GetInstance();
 }
 
-static void (*Sky_SetWeather)(Sky*, TESWeather*, bool, bool){nullptr};
-
-void Sky::SetWeather(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather)
+void Sky::SetWeatherExternal(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather)
 {
     Sky_SetWeather(this, newWeather, overrideWeather, updateLastWeather);
 }
 
-uint32_t (*BSRandom_UnsignedInt)(void*, uint32_t){nullptr};
-
+// sub called from Sky::Update->UpdateWeather
 uint32_t Hook_BSRandom_UnsignedInt(void* apGenerator, uint32_t aMax)
 {
     if (SkyService::UseOnlineTick())
@@ -31,8 +31,10 @@ uint32_t Hook_BSRandom_UnsignedInt(void* apGenerator, uint32_t aMax)
 }
 
 static TiltedPhoques::Initializer s_SkyInit([]() {
-    POINTER_SKYRIMSE(decltype(*Sky_SetWeather), s_setWeather, 26241);
-    Sky_SetWeather = s_setWeather.Get();
+    VersionDbPtr<uint8_t> s_setWeather(26241);
+    VersionDbPtr<uint8_t> s_getInstance(13878);
+    Sky_SetWeather = static_cast<decltype(Sky_SetWeather)>(s_setWeather.GetPtr());
+    Sky_GetInstance = static_cast<decltype(Sky_GetInstance)>(s_getInstance.GetPtr());
 
     // TODO(Force): examine if this is the only required location.
     TiltedPhoques::SwapCall(0x1402C226F, BSRandom_UnsignedInt, &Hook_BSRandom_UnsignedInt);

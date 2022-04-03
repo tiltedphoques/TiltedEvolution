@@ -37,9 +37,9 @@ void SkyService::OnSeedAssignment(const ServerSkySeed& acMessage) noexcept
     s_mOnline = true;
 
     // manually force update the weather.
-    // FindWeatherOfType
+    // GetRandomWeather here with the prev seed, so we can blend?!.
     // this immedeate call will hopefully use the custom seed~!
-    Sky::GetInstance()->SetWeather(, true, true);
+//    Sky::GetInstance()->SetWeather(, true, true);
 }
 
 void SkyService::OnDisconnected(const DisconnectedEvent&) noexcept
