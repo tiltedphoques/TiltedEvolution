@@ -85,6 +85,11 @@ class Sky
         return pDefaultWeather;
     }
 
+    TESRegion* GetCurrentRegion() const noexcept
+    {
+        return pCurrentRegion;
+    }
+
     static Sky* GetInstance();
 
     void SetWeatherExternal(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather);

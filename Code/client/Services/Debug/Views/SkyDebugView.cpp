@@ -3,8 +3,21 @@
 #include <Services/TestService.h>
 #include <imgui.h>
 
+#include <Shared/TESForms/World/TESRegion.h>
+
 // NOTE(Force): It looks like we can only apply new weathers that are present in TESWeatherList, however
 // we might be able to add our own at runtime?
+
+struct PlayerRegionState
+{
+    char pad0[72];
+    TESRegion* pLastKnownWeatherRegion;
+
+    static PlayerRegionState* Get()
+    {
+        return (PlayerRegionState*)0x141F5E388;
+    }
+};
 
 static void DrawWeatherInfo(const char* aWeatherName, TESWeather* apWeather)
 {
@@ -60,6 +73,23 @@ static void DrawClimateInfo(TESClimate* apClimate)
     }
 }
 
+static void DrawRegionInfo(const char* acRegionName, TESRegion* apRegion)
+{
+    if (ImGui::CollapsingHeader(acRegionName, ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::Text("Name %s\nFormID %x", apRegion->GetFormEditorID(), apRegion->formID);
+
+        static TESWeather* pCurrentWeather{nullptr};
+        if (ImGui::Button("New Random Weather"))
+        {
+            pCurrentWeather = apRegion->SelectWeather();
+        }
+
+        if (pCurrentWeather)
+            DrawWeatherInfo("Current Random Weather", pCurrentWeather);
+    }
+}
+
 void TestService::DrawSkyDebugView()
 {
     auto* pInstance = Sky::GetInstance();
@@ -67,18 +97,21 @@ void TestService::DrawSkyDebugView()
         return;
 
     if (TESClimate* pClimate = pInstance->GetCurrentClimate())
-    {
         DrawClimateInfo(pClimate);
-    }
 
     ImGui::Separator();
 
     if (TESWeather* pWeather = pInstance->GetCurrentWeather())
         DrawWeatherInfo("CurrentWeather", pWeather);
-
     if (TESWeather* pWeather = pInstance->GetLastWeather())
         DrawWeatherInfo("LastWeather", pWeather);
-
     if (TESWeather* pWeather = pInstance->GetDefaultWeather())
         DrawWeatherInfo("DefaultWeather", pWeather);
+
+    if (TESRegion* pRegion = pInstance->GetCurrentRegion())
+        DrawRegionInfo("Current Sky Region", pRegion);
+
+    // NOTE(Force): By setting pLastKnownWeatherRegion the game seems to update the region
+    if (TESRegion* pRegion = PlayerRegionState::Get()->pLastKnownWeatherRegion)
+        DrawRegionInfo("LastKnownWeatherRegion", pRegion);
 }
