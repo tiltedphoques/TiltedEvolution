@@ -66,7 +66,7 @@ class TESWeather : public TESForm
         kThunder = 3
     };
 
-    enum class WeatherDataFlag
+    enum WeatherDataFlag
     {
         kNone = 0,
         kPleasant = 1 << 0,

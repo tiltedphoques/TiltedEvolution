@@ -53,8 +53,6 @@ struct TESObjectREFR : TESForm
     static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
     static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;
 
-    virtual void sub_39();
-    virtual void sub_3A();
     virtual void sub_3B();
     virtual void sub_3C();
     virtual void sub_3D();

@@ -15,7 +15,7 @@ struct WeatherEntry
 };
 static_assert(sizeof(WeatherEntry) == 0x18);
 
-struct TESWeatherList : GameList<WeatherEntry*>
+struct TESWeatherList : GameList<WeatherEntry>
 {
     // typedef EffectArchetypes::ArchetypeFlag TESWeatherList::WarningStatus;
 };
