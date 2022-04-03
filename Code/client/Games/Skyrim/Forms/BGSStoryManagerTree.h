@@ -4,8 +4,6 @@
 
 struct BGSStoryManagerTreeForm : TESForm
 {
-    virtual void sub_39();
-    virtual void sub_40();
     virtual void sub_41();
     virtual void sub_42();
 

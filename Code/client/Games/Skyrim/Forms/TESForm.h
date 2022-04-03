@@ -82,15 +82,15 @@ struct TESForm : BaseFormComponent
     virtual void CopyFrom(TESForm* apForm);
     virtual void sub_30();
     virtual void sub_31();
-    virtual void sub_32();
-    virtual void sub_33();
+    virtual const char* GetFormEditorID();
+    virtual void SetFormEditorID(const char*);
     virtual void sub_34();
     virtual void sub_35();
     virtual void sub_36();
     virtual void ActivateReference();
     virtual void sub_38();
-    virtual const char* GetFormEditorID();
-    virtual bool SetFormEditorID(char const* apNameTag);
+    virtual void m57();
+    virtual bool m58();
 
     //void CopyFromEx(TESForm* rhs);
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
