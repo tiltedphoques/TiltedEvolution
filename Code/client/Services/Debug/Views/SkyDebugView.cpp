@@ -3,25 +3,60 @@
 #include <Services/TestService.h>
 #include <imgui.h>
 
-static void DrawWeatherInfo(const char *aWeatherName, TESWeather* apWeather)
+// NOTE(Force): It looks like we can only apply new weathers that are present in TESWeatherList, however
+// we might be able to add our own at runtime?
+
+static void DrawWeatherInfo(const char* aWeatherName, TESWeather* apWeather)
 {
     if (ImGui::CollapsingHeader(aWeatherName, ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::Text("Name %s\nFormID %d", apWeather->GetFormEditorID(), apWeather->formID);
+        ImGui::Text("Name %s\nFormID %x", apWeather->GetFormEditorID(), apWeather->formID);
         ImGui::Text("Aurora Name: %s", apWeather->aurora.name.AsAscii());
-        auto flag = apWeather->data.flags;
-        if (flag & TESWeather::WeatherDataFlag::kSnow)
+        const auto flags = apWeather->data.flags;
+        if (flags & TESWeather::WeatherDataFlag::kSnow)
             ImGui::Text("Is Snowy");
-        if (flag & TESWeather::WeatherDataFlag::kRainy)
+        if (flags & TESWeather::WeatherDataFlag::kRainy)
             ImGui::Text("Is Rainy");
-        if (flag & TESWeather::WeatherDataFlag::kPermAurora)
+        if (flags & TESWeather::WeatherDataFlag::kPermAurora)
             ImGui::Text("Is PermAurora");
-        if (flag & TESWeather::WeatherDataFlag::kCloudy)
+        if (flags & TESWeather::WeatherDataFlag::kCloudy)
             ImGui::Text("Is Cloudy");
-        if (flag & TESWeather::WeatherDataFlag::kAuroraFollowsSun)
+        if (flags & TESWeather::WeatherDataFlag::kAuroraFollowsSun)
             ImGui::Text("Is AuroraFollowsSun");
-        if (flag & TESWeather::WeatherDataFlag::kPleasant)
+        if (flags & TESWeather::WeatherDataFlag::kPleasant)
             ImGui::Text("Is Pleasant");
+
+        if (ImGui::Button("Apply"))
+            Sky::GetInstance()->SetWeatherExternal(apWeather, true, true);
+    }
+}
+
+static void DrawClimateInfo(TESClimate* apClimate)
+{
+    if (ImGui::CollapsingHeader("Current Climate", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::Text("Name %s\nFormID %x", apClimate->GetFormEditorID(), apClimate->formID);
+        ImGui::Text("Daylight object %s\nNighttime object %s", apClimate->txSkyObjects[0].name.AsAscii(),
+                    apClimate->txSkyObjects[1].name.AsAscii());
+
+        if (ImGui::CollapsingHeader("Timing Data", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Text("Sunrise: %d, %d", apClimate->timing.sunrise.begin, apClimate->timing.sunrise.end);
+            ImGui::Text("SunSet: %d, %d", apClimate->timing.sunset.begin, apClimate->timing.sunset.end);
+            ImGui::Text("Volatility: %d", apClimate->timing.volatility);
+            ImGui::Text("MoonPhaseLength: %d", apClimate->timing.moonPhaseLength);
+        }
+
+        ImGui::Text("Used weathers:");
+        int i = 0;
+        for (auto item : apClimate->weatherList)
+        {
+            char buf[8]{};
+            sprintf_s(buf, 8, "%d", i);
+            DrawWeatherInfo(buf, item->pWeather);
+            ImGui::Text("Chance %d", item->uiChance);
+            i++;
+        }
     }
 }
 
@@ -33,33 +68,17 @@ void TestService::DrawSkyDebugView()
 
     if (TESClimate* pClimate = pInstance->GetCurrentClimate())
     {
-        if (ImGui::CollapsingHeader("Current Climate", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::Text("Daylight object %s\nNighttime object %s",
-                        pClimate->txSkyObjects[0].name.AsAscii(), pClimate->txSkyObjects[1].name.AsAscii());
-
-            ImGui::Text("Used weathers:");
-            for (auto item : pClimate->weatherList)
-            {
-                DrawWeatherInfo("", item->pWeather);
-                ImGui::Text("Chance %d", item->uiChance);
-            }
-
-            ImGui::Text("Timing:");
-
-            ImGui::Text("Sunrise: %d, %d", pClimate->timing.sunrise.begin, pClimate->timing.sunrise.end);
-            ImGui::Text("SunSet: %d, %d", pClimate->timing.sunset.begin, pClimate->timing.sunset.end);
-            ImGui::Text("Volatility: %d", pClimate->timing.volatility);
-            ImGui::Text("MoonPhaseLength: %d", pClimate->timing.moonPhaseLength);
-        }
+        DrawClimateInfo(pClimate);
     }
+
+    ImGui::Separator();
 
     if (TESWeather* pWeather = pInstance->GetCurrentWeather())
-    {
         DrawWeatherInfo("CurrentWeather", pWeather);
-    }
 
-    if (ImGui::Button("Set Weather"))
-    {
-    }
+    if (TESWeather* pWeather = pInstance->GetLastWeather())
+        DrawWeatherInfo("LastWeather", pWeather);
+
+    if (TESWeather* pWeather = pInstance->GetDefaultWeather())
+        DrawWeatherInfo("DefaultWeather", pWeather);
 }

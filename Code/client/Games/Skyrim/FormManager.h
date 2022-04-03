@@ -4,6 +4,7 @@
 
 struct TESQuest;
 
+// Actually, TESDataHandler
 struct FormManager
 {
     static FormManager* Get();
