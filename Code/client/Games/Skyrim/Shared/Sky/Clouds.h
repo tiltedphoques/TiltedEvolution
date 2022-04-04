@@ -6,7 +6,7 @@ class NiTexture;
 
 struct NiColor
 {
-    float a, b, c, d;
+    float a, b, c;
 };
 
 class Clouds final : public SkyObject

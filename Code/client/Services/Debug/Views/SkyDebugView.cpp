@@ -35,7 +35,7 @@ struct PlayerRegionState
 
 static void DrawWeatherInfo(const char* aWeatherName, TESWeather* apWeather)
 {
-    if (ImGui::CollapsingHeader(aWeatherName, ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader(aWeatherName))
     {
         ImGui::Text("Name %s\nFormID %x", apWeather->GetFormEditorID(), apWeather->formID);
         ImGui::Text("Aurora Name: %s", apWeather->aurora.name.AsAscii());
@@ -60,7 +60,7 @@ static void DrawWeatherInfo(const char* aWeatherName, TESWeather* apWeather)
 
 static void DrawClimateInfo(TESClimate* apClimate)
 {
-    if (ImGui::CollapsingHeader("Current Climate", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("Current Climate"))
     {
         ImGui::Text("Name %s\nFormID %x", apClimate->GetFormEditorID(), apClimate->formID);
         ImGui::Text("Daylight object %s\nNighttime object %s", apClimate->txSkyObjects[0].name.AsAscii(),
@@ -110,10 +110,10 @@ void TestService::DrawSkyDebugView()
     if (!pInstance)
         return;
 
-    ImGui::Text("Sky");
-    ImGui::Text("CurrentGameHour: %f\nLastWeatherUpdate: %f\nCurrentWeatherPercent: %f",
+    ImGui::Text("CurrentGameHour: %f\nLastWeatherUpdate: %f\nCurrentWeatherPercent: %f\nCurrentWeatherDuration: %f",
                 pInstance->GetCurrentGameHour(), pInstance->GetLastWeatherUpdate(),
-                pInstance->GetCurrentWeatherPercent());
+                pInstance->GetCurrentWeatherPercent(), pInstance->GetCurrentWeatherDuration());
+    ImGui::Text("GetCurrentWeatherTimeElapsed: %f", pInstance->GetCurrentWeatherTimeElapsed());
 
     if (TESClimate* pClimate = pInstance->GetCurrentClimate())
         DrawClimateInfo(pClimate);
@@ -135,7 +135,7 @@ void TestService::DrawSkyDebugView()
         ImGui::TextColored(kRedColor, "No OverrideWeather");
     if (TESWeather* pWeather = pInstance->GetDefaultWeather())
         DrawWeatherInfo("DefaultWeather", pWeather);
- 
+
     if (TESRegion* pRegion = pInstance->GetCurrentRegion())
         DrawRegionInfo("Current Sky Region", pRegion);
     // NOTE(Force): By setting pLastKnownWeatherRegion the game seems to update the region

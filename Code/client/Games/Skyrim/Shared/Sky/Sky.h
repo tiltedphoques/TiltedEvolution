@@ -44,7 +44,9 @@ class Sky
     friend class Atmosphere;
 
   public:
-    virtual ~Sky() = default;
+    virtual ~Sky() = 0;
+
+    virtual void m1() = 0;
 
     enum SKY_MODE : int
     {
@@ -101,7 +103,6 @@ class Sky
         return pOverrideWeather;
     }
 
-
     TESRegion* GetCurrentRegion() const noexcept
     {
         return pCurrentRegion;
@@ -114,7 +115,7 @@ class Sky
 
     void ForceNextRoom()
     {
-       uiFlags |= NEXT_ROOM;
+        uiFlags |= NEXT_ROOM;
     }
 
     float GetCurrentGameHour()
@@ -127,10 +128,17 @@ class Sky
         return fLastWeatherUpdate;
     }
 
+    // CurrentWeatherPercent is only greater than one if pLastWeather exists
+    // and it indicates the amount of blend between the last and current(future) weather
     float GetCurrentWeatherPercent()
     {
         return fCurrentWeatherPct;
     }
+
+    float GetCurrentWeatherTimeElapsed();
+
+    // When the duration goes over specified length, a new weather is chosen
+    float GetCurrentWeatherDuration();
 
     void SetHideSky(bool abVal);
     void SetFastTravel(bool abOn);
@@ -139,7 +147,7 @@ class Sky
 
     void SetWeatherExternal(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather);
 
-  private:
+  public:
     NiPointer<BSMultiBoundNode> spRoot;
     NiPointer<NiNode> spMoonsRoot;
     NiPointer<NiNode> spAuroraRoot;
@@ -162,8 +170,10 @@ class Sky
     Moon* pMasser = nullptr;
     Moon* pSecunda = nullptr;
     Precipitation* pPrecip = nullptr;
-    NiColor SkyColor[19];
-    NiColor PrevSkyColorA[19];
+    NiColor SkyColor[17]; // 0xA8
+
+#if 0
+    NiColor PrevSkyColorA[17];
     NiColor PrevDirAmbColorsA[3][2];
     char PrevSpecTintFres[4 * 4];
     TESImageSpace* pPrevImageSpace = nullptr;
@@ -183,7 +193,18 @@ class Sky
     float fFogPower;
     float fFogClamp;
     float fFogHighDensityScale;
-    float fCurrentGameHour;
+#endif
+    uint32_t unk174;        // 174
+    uint64_t unk178;        // 178
+    uint64_t unk180;        // 180
+    uint64_t unk188;        // 188
+    uint64_t unk190;        // 190
+    uint64_t unk198;        // 198
+    uint32_t unk1A0;        // 1A0
+    uint32_t unk1A4;        // 1A4
+    float unk1A8;           // 1A8
+    float unk1AC;           // 1AC
+    float fCurrentGameHour; // 0x1B0
     float fLastWeatherUpdate;
     float fCurrentWeatherPct = 1.0f;
     float fLastWindDirection;
@@ -213,7 +234,10 @@ class Sky
     GameArray<NiPointer<NiTexture>> StoredCloudTexturesA;
     GameArray<NiPointer<NiTexture>> StoredWorldMapCloudTexturesA;
     // GameArray<Sky::SkyStaticRefData> SkyStaticRefDataA;
-
   private:
     static Sky* pInstance;
 };
+
+static_assert(offsetof(Sky, Sky::SkyColor) == 0xA8);
+static_assert(offsetof(Sky, Sky::fCurrentGameHour) == 0x1B0);
+static_assert(offsetof(Sky, Sky::fCurrentWeatherPct) == 0x1B8);

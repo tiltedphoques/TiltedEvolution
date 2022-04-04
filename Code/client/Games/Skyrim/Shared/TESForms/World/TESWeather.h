@@ -126,6 +126,9 @@ class TESWeather : public TESForm
         };
     };
 
+    // This struct doesnt exist per se in the game
+    // but rather the game uses enum indices to access these
+    // for ease of use we create this wrapper struct.
     struct Data // DATA
     {
       public:
@@ -139,10 +142,9 @@ class TESWeather : public TESForm
         };
         static_assert(sizeof(Color3) == 0x3);
 
-        // members
         int8_t windSpeed;                   // 00
-        int8_t unk01;                       // 01
-        int8_t unk02;                       // 02
+        int8_t windCloudSpeedY;             // 01
+        int8_t windCloudSpeedX;             // 02
         int8_t transDelta;                  // 03
         int8_t sunGlare;                    // 04
         int8_t sunDamage;                   // 05
@@ -157,7 +159,7 @@ class TESWeather : public TESForm
         int8_t visualEffectEnd;             // 10
         int8_t windDirection;               // 11
         int8_t windDirectionRange;          // 12
-        int8_t unk13;                       // 13
+        int8_t windTurbulence;              // 13
     };
     static_assert(sizeof(Data) == 0x14);
 
