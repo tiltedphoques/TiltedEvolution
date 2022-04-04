@@ -41,6 +41,7 @@
 #include <Messages/RequestRespawn.h>
 
 #if TP_SKYRIM64
+#include <TimeManager.h>
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
@@ -205,6 +206,7 @@ void TestService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
+    ImGui::Text("%f", TimeData::Get()->GameHour->f);
     ImGui::EndMainMenuBar();
 
     if (g_EnableAnimWindow)

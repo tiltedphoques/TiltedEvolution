@@ -14,12 +14,31 @@ Sky* Sky::GetInstance()
     return Sky_GetInstance();
 }
 
+void Sky::SetHideSky(bool abVal)
+{
+    if (abVal)
+        uiFlags |= HIDE_SKY;
+    else
+        uiFlags &= ~HIDE_SKY;
+}
+
+void Sky::SetFastTravel(bool abOn)
+{
+    if (abOn)
+        uiFlags |= FAST_TRAVEL;
+    else
+        uiFlags &= ~FAST_TRAVEL;
+}
+
+//(23.f - 1.f) * (255.0f) * 0.0039215689
+//constexpr float kWeatherDuration = (((23.f - 1.f) * (255.0f)) * 0.0039215689) + 1.f;
+
 void Sky::SetWeatherExternal(TESWeather* newWeather, bool overrideWeather, bool updateLastWeather)
 {
     Sky_SetWeather(this, newWeather, overrideWeather, updateLastWeather);
 }
 
-// sub called from Sky::Update->UpdateWeather
+// sub called from Sky::Update->Sky::UpdateWeather
 uint32_t Hook_BSRandom_UnsignedInt(void* apGenerator, uint32_t aMax)
 {
     if (SkyService::UseOnlineTick())

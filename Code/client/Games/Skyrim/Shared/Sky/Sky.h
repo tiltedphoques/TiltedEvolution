@@ -55,6 +55,17 @@ class Sky
         SM_COUNT = 0x4,
     };
 
+    enum SKY_FLAGS : int
+    {
+        USE_ACCEL = 8,
+        FAST_TRAVEL = 0x10,
+        HIDE_SKY = 0x80,
+        NEXT_ROOM = 0x100,
+        UPDATE_WEATHER_DATA = 0x200000,
+        USE_CACHED_STATIC_DATA = 0x400000,
+        SKIP_TRANSITION = 0x1000000,
+    };
+
     inline bool IsDisabled() const
     {
         return eMode != SM_FULL && eMode != SM_SKYDOME_ONLY;
@@ -85,10 +96,44 @@ class Sky
         return pDefaultWeather;
     }
 
+    TESWeather* GetOverrideWeather() const noexcept
+    {
+        return pOverrideWeather;
+    }
+
+
     TESRegion* GetCurrentRegion() const noexcept
     {
         return pCurrentRegion;
     }
+
+    void SkipWeatherTransition()
+    {
+        uiFlags |= SKIP_TRANSITION;
+    }
+
+    void ForceNextRoom()
+    {
+       uiFlags |= NEXT_ROOM;
+    }
+
+    float GetCurrentGameHour()
+    {
+        return fCurrentGameHour;
+    }
+
+    float GetLastWeatherUpdate()
+    {
+        return fLastWeatherUpdate;
+    }
+
+    float GetCurrentWeatherPercent()
+    {
+        return fCurrentWeatherPct;
+    }
+
+    void SetHideSky(bool abVal);
+    void SetFastTravel(bool abOn);
 
     static Sky* GetInstance();
 

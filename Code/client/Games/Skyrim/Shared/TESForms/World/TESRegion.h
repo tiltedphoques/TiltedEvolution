@@ -46,6 +46,9 @@ class TESRegion : public TESForm
     // This will select a new random weather.
     TESWeather* SelectWeather();
 
+    // apply new weather.
+    void SetCurrentWeather(TESWeather*);
+
   private:
     TESRegionDataList* pDataList;              // 20
     GameList<TESRegionPointList>* pPointLists; // 28

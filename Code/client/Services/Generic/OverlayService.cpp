@@ -53,6 +53,7 @@ OverlayService::~OverlayService() noexcept
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 {
+    #if 1
     m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(apRenderSystem);
     m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
 
@@ -61,14 +62,15 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
         spdlog::error("Overlay could not be initialised");
 
     m_pOverlay->GetClient()->Create();
+    #endif
 }
 
 void OverlayService::Render() const noexcept
 {
-    m_pOverlay->GetClient()->Render();
+    //m_pOverlay->GetClient()->Render();
 }
 
 void OverlayService::Reset() const noexcept
 {
-    m_pOverlay->GetClient()->Reset();
+    //m_pOverlay->GetClient()->Reset();
 }
