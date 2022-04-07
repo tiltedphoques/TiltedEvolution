@@ -468,12 +468,19 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
 
     if (arEntry.Count > 0)
     {
-        bool isWorn = pExtraDataList && pExtraDataList->Contains(ExtraData::Worn) && pObject->formType != FormType::Ammo;
+        bool isWorn = false;
+        bool isWornLeft = false;
+        if (pExtraDataList)
+        {
+            isWorn = pExtraDataList->Contains(ExtraData::Worn);
+            isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+        }
+
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
-        /*
         if (isWorn)
-            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-        */
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        else if (isWornLeft)
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
     }
     else if (arEntry.Count < 0)
     {

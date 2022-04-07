@@ -316,7 +316,7 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     UnEquipAll();
 
     SetInventory(aInventory);
-    SetEquipment(aInventory.CurrentEquipment);
+    //SetEquipment(aInventory.CurrentEquipment);
 }
 
 // TODO: remove all the unequip stuff, not needed anymore
