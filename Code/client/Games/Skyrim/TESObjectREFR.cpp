@@ -367,6 +367,9 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
         if (!aFilter(*pGameEntry->form))
             continue;
 
+        if (pGameEntry->IsQuestObject())
+            continue;
+
         Inventory::Entry entry;
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
         entry.Count = pGameEntry->count;
@@ -436,7 +439,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
     // TODO: filter out quest items
-    inventory.RemoveByFilter([](const Inventory::Entry& entry) { return entry.Count == 0; });
+    inventory.RemoveByFilter([](const auto& entry) { return entry.Count == 0; });
 
     spdlog::debug("Inventory count after: {}", inventory.Entries.size());
 
@@ -450,8 +453,15 @@ Inventory TESObjectREFR::GetArmor() const noexcept
 
 Inventory TESObjectREFR::GetWornArmor() const noexcept
 {
-    Inventory inventory = GetArmor();
-    inventory.RemoveByFilter([](const Inventory::Entry& entry) { return !entry.IsWorn(); });
+    Inventory wornArmor = GetArmor();
+    wornArmor.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    return wornArmor;
+}
+
+Inventory TESObjectREFR::GetEquippedItems() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
     return inventory;
 }
 
