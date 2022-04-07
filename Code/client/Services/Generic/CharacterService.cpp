@@ -227,7 +227,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (!pActor)
             return;
 
-        // TODO: verify these code paths (and simplify them maybe)
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
@@ -267,8 +266,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->SetActorValues(acMessage.AllActorValues);
 
-        //  TODO: verify this code path too while you're at it
-        // in fact, this whole function annoys me
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 

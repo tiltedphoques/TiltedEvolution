@@ -274,12 +274,12 @@ Inventory Actor::GetActorInventory() const noexcept
 {
     Inventory inventory = GetInventory();
 
-    inventory.CurrentMagicEquipment = GetEquipment();
+    inventory.CurrentMagicEquipment = GetMagicEquipment();
 
     return inventory;
 }
 
-MagicEquipment Actor::GetEquipment() const noexcept
+MagicEquipment Actor::GetMagicEquipment() const noexcept
 {
     MagicEquipment equipment;
 

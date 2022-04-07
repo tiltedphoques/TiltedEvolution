@@ -1,4 +1,4 @@
-#include <Structs/Equipment.h>
+#include <Structs/MagicEquipment.h>
 #include <TiltedCore/Serialization.hpp>
 #include <Messages/RequestEquipmentChanges.h>
 

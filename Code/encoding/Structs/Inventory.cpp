@@ -156,8 +156,6 @@ void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
         wornEntry->ExtraWorn = wornEntry->ExtraWornLeft = false;
     }
 
-    // TODO: this is definitely not the fastest algorithm in the west
-    // but it'll do for now, cause tracking inventory equipment is ass
     for (const auto& newEntry : acNewInventory.Entries)
     {
         if (!newEntry.IsWorn())

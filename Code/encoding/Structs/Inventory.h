@@ -1,7 +1,7 @@
 #pragma once
 
 #include <TiltedCore/Stl.hpp>
-#include "Equipment.h"
+#include "MagicEquipment.h"
 
 using TiltedPhoques::Buffer;
 using TiltedPhoques::String;

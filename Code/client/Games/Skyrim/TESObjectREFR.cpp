@@ -502,11 +502,6 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         {
             isWorn = pExtraDataList->Contains(ExtraData::Worn);
             isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
-
-            if (isWorn)
-                spdlog::error("Entry worn: {}", arEntry.ExtraWorn);
-            if (isWornLeft)
-                spdlog::critical("Entry worn left: {}", arEntry.ExtraWornLeft);
         }
 
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);

@@ -34,7 +34,7 @@ struct RequestEquipmentChanges final : ClientMessage
     uint32_t ServerId{};
     GameId ItemId{};
     GameId EquipSlotId{};
-    uint32_t Count{}; // TODO: count can probably be removed
+    uint32_t Count{};
     bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;
