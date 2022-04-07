@@ -11,9 +11,6 @@ struct Inventory
 {
     struct EffectItem
     {
-        EffectItem() = default;
-        ~EffectItem() = default;
-
         float Magnitude{};
         int32_t Area{};
         int32_t Duration{};
@@ -26,18 +23,12 @@ struct Inventory
 
     struct EnchantmentData
     {
-        EnchantmentData() = default;
-        ~EnchantmentData() = default;
-
         bool IsWeapon{};
         Vector<EffectItem> Effects{};
     };
 
     struct Entry
     {
-        Entry() = default;
-        ~Entry() = default;
-
         GameId BaseId{};
         int32_t Count{};
 
@@ -53,8 +44,6 @@ struct Inventory
         uint32_t ExtraPoisonCount{};
 
         int32_t ExtraSoulLevel{};
-
-        //String ExtraTextDisplayName{};
 
         bool ExtraEnchantRemoveUnequip{};
         bool ExtraWorn{};
@@ -86,14 +75,10 @@ struct Inventory
                    ExtraPoisonId == acRhs.ExtraPoisonId &&
                    ExtraPoisonCount == acRhs.ExtraPoisonCount &&
                    ExtraSoulLevel == acRhs.ExtraSoulLevel &&
-                   //ExtraTextDisplayName == acRhs.ExtraTextDisplayName &&
                    ExtraWorn == acRhs.ExtraWorn &&
                    ExtraWornLeft == acRhs.ExtraWornLeft;
         }
     };
-
-    Inventory() = default;
-    ~Inventory() = default;
 
     bool operator==(const Inventory& acRhs) const noexcept;
     bool operator!=(const Inventory& acRhs) const noexcept;
@@ -104,5 +89,5 @@ struct Inventory
     void AddOrRemoveEntry(const Entry& acEntry) noexcept;
 
     Vector<Entry> Entries{};
-    Equipment CurrentEquipment{};
+    MagicEquipment CurrentMagicEquipment{};
 };

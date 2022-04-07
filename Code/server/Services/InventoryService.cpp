@@ -17,7 +17,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
-    m_equipmentChangeConnection = aDispatcher.sink<PacketEvent<RequestEquipmentChanges>>().connect<&InventoryService::OnEquipmentChanges>(this);
+    m_equipmentChangeConnection = aDispatcher.sink<PacketEvent<RequestMagicEquipmentChanges>>().connect<&InventoryService::OnEquipmentChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
 }
 
@@ -44,7 +44,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
 }
 
-void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept
+void InventoryService::OnEquipmentChanges(const PacketEvent<RequestMagicEquipmentChanges>& acMessage) noexcept
 {
     auto& message = acMessage.Packet;
 
@@ -55,14 +55,16 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
     if (it != view.end())
     {
         auto& inventoryComponent = view.get<InventoryComponent>(*it);
-        inventoryComponent.Content.CurrentEquipment.UpdateEquipment(message);
-        spdlog::debug("Updating equipment, RightHandSpell: {:X}, RightHandWeapon: {:X}, LeftHandSpell: {:X}, LeftHandWeapon: {:X}, Shout: {:X}, Ammo: {:X}",
+        inventoryComponent.Content.CurrentMagicEquipment.UpdateEquipment(message);
+        /*
+        spdlog::info("Updating equipment, RightHandSpell: {:X}, RightHandWeapon: {:X}, LeftHandSpell: {:X}, LeftHandWeapon: {:X}, Shout: {:X}, Ammo: {:X}",
                      inventoryComponent.Content.CurrentEquipment.RightHandSpell.BaseId, inventoryComponent.Content.CurrentEquipment.RightHandWeapon.BaseId, 
                      inventoryComponent.Content.CurrentEquipment.LeftHandSpell.BaseId, inventoryComponent.Content.CurrentEquipment.LeftHandWeapon.BaseId,
                      inventoryComponent.Content.CurrentEquipment.Shout.BaseId, inventoryComponent.Content.CurrentEquipment.Ammo.BaseId);
+        */
     }
 
-    NotifyEquipmentChanges notify;
+    NotifyMagicEquipmentChanges notify;
     notify.ServerId = message.ServerId;
     notify.ItemId = message.ItemId;
     notify.EquipSlotId = message.EquipSlotId;

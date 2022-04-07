@@ -3,20 +3,20 @@
 #include "Message.h"
 #include <Structs/GameId.h>
 
-struct RequestEquipmentChanges final : ClientMessage
+struct RequestMagicEquipmentChanges final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kRequestEquipmentChanges;
+    static constexpr ClientOpcode Opcode = kRequestMagicEquipmentChanges;
 
-    RequestEquipmentChanges() : ClientMessage(Opcode)
+    RequestMagicEquipmentChanges() : ClientMessage(Opcode)
     {
     }
 
-    virtual ~RequestEquipmentChanges() = default;
+    virtual ~RequestMagicEquipmentChanges() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestEquipmentChanges& acRhs) const noexcept
+    bool operator==(const RequestMagicEquipmentChanges& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
@@ -32,7 +32,7 @@ struct RequestEquipmentChanges final : ClientMessage
     uint32_t ServerId{};
     GameId ItemId{};
     GameId EquipSlotId{};
-    uint32_t Count{};
+    uint32_t Count{}; // TODO: count can probably be removed
     bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;

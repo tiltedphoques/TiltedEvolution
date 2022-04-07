@@ -274,37 +274,25 @@ Inventory Actor::GetActorInventory() const noexcept
 {
     Inventory inventory = GetInventory();
 
-    inventory.CurrentEquipment = GetEquipment();
+    inventory.CurrentMagicEquipment = GetEquipment();
 
     return inventory;
 }
 
-Equipment Actor::GetEquipment() const noexcept
+MagicEquipment Actor::GetEquipment() const noexcept
 {
-    Equipment equipment;
+    MagicEquipment equipment;
 
     auto& modSystem = World::Get().GetModSystem();
 
-    auto pMainHandWeapon = GetEquippedWeapon(0);
-    uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, equipment.LeftHandWeapon);
-
-    auto pSecondaryHandWeapon = GetEquippedWeapon(1);
-    uint32_t secondaryId = pSecondaryHandWeapon ? pSecondaryHandWeapon->formID : 0;
-    modSystem.GetServerModId(secondaryId, equipment.RightHandWeapon);
-
-    mainId = magicItems[0] ? magicItems[0]->formID : 0;
+    uint32_t mainId = magicItems[0] ? magicItems[0]->formID : 0;
     modSystem.GetServerModId(mainId, equipment.LeftHandSpell);
 
-    secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
+    uint32_t secondaryId = magicItems[1] ? magicItems[1]->formID : 0;
     modSystem.GetServerModId(secondaryId, equipment.RightHandSpell);
 
     uint32_t shoutId = equippedShout ? equippedShout->formID : 0;
     modSystem.GetServerModId(shoutId, equipment.Shout);
-
-    auto pAmmo = GetEquippedAmmo();
-    uint32_t ammoId = pAmmo ? pAmmo->formID : 0;
-    modSystem.GetServerModId(ammoId, equipment.Ammo);
 
     return equipment;
 }
@@ -320,40 +308,12 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
 }
 
 // TODO: remove all the unequip stuff, not needed anymore
-void Actor::SetEquipment(const Equipment& acEquipment) noexcept
+void Actor::SetEquipment(const MagicEquipment& acEquipment) noexcept
 {
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
-    const Equipment cCurrentEquipment = GetEquipment();
-
-    if (acEquipment.LeftHandWeapon != cCurrentEquipment.LeftHandWeapon)
-    {
-        if (acEquipment.LeftHandWeapon)
-        {
-            uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandWeapon);
-            pEquipManager->Equip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
-        }
-        else
-        {
-            uint32_t mainHandWeaponId = modSystem.GetGameId(cCurrentEquipment.LeftHandWeapon);
-            pEquipManager->UnEquip(this, TESForm::GetById(mainHandWeaponId), nullptr, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
-        }
-    }
-
-    if (acEquipment.RightHandWeapon != cCurrentEquipment.RightHandWeapon)
-    {
-        if (acEquipment.RightHandWeapon)
-        {
-            uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandWeapon);
-            pEquipManager->Equip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-        }
-        else
-        {
-            uint32_t secondaryHandWeaponId = modSystem.GetGameId(cCurrentEquipment.RightHandWeapon);
-            pEquipManager->UnEquip(this, TESForm::GetById(secondaryHandWeaponId), nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
-        }
-    }
+    const MagicEquipment cCurrentEquipment = GetEquipment();
 
     if (acEquipment.LeftHandSpell != cCurrentEquipment.LeftHandSpell)
     {
@@ -394,24 +354,6 @@ void Actor::SetEquipment(const Equipment& acEquipment) noexcept
         {
             uint32_t shoutId = modSystem.GetGameId(cCurrentEquipment.Shout);
             pEquipManager->UnEquipShout(this, TESForm::GetById(shoutId));
-        }
-    }
-
-    if (acEquipment.Ammo != cCurrentEquipment.Ammo)
-    {
-        if (acEquipment.Ammo)
-        {
-            uint32_t ammoId = modSystem.GetGameId(acEquipment.Ammo);
-            TESForm* pAmmo = TESForm::GetById(ammoId);
-            int64_t count = GetItemCountInInventory(pAmmo);
-            pEquipManager->Equip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-        }
-        else
-        {
-            uint32_t ammoId = modSystem.GetGameId(cCurrentEquipment.Ammo);
-            TESForm* pAmmo = TESForm::GetById(ammoId);
-            int64_t count = GetItemCountInInventory(pAmmo);
-            pEquipManager->UnEquip(this, pAmmo, nullptr, count, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
         }
     }
 }

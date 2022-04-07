@@ -4,18 +4,18 @@
 #include <TiltedCore/Buffer.hpp>
 #include <Structs/GameId.h>
 
-struct NotifyEquipmentChanges final : ServerMessage
+struct NotifyMagicEquipmentChanges final : ServerMessage
 {
-    static constexpr ServerOpcode Opcode = kNotifyEquipmentChanges;
+    static constexpr ServerOpcode Opcode = kNotifyMagicEquipmentChanges;
 
-    NotifyEquipmentChanges() : ServerMessage(Opcode)
+    NotifyMagicEquipmentChanges() : ServerMessage(Opcode)
     {
     }
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyEquipmentChanges& acRhs) const noexcept
+    bool operator==(const NotifyMagicEquipmentChanges& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
@@ -30,7 +30,7 @@ struct NotifyEquipmentChanges final : ServerMessage
     uint32_t ServerId{};
     GameId ItemId{};
     GameId EquipSlotId{};
-    uint32_t Count{};
+    uint32_t Count{}; // TODO: count can probably be removed
     bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;

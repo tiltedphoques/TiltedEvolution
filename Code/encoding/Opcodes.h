@@ -40,7 +40,7 @@ enum ClientOpcode : unsigned char
     kNewPackageRequest,
     kRequestRespawn,
     kSyncExperienceRequest,
-    kRequestEquipmentChanges,
+    kRequestMagicEquipmentChanges,
     kClientOpcodeMax
 };
 
@@ -81,6 +81,6 @@ enum ServerOpcode : unsigned char
     kNotifyNewPackage,
     kNotifyRespawn,
     kNotifySyncExperience,
-    kNotifyEquipmentChanges,
+    kNotifyMagicEquipmentChanges,
     kServerOpcodeMax
 };

@@ -62,7 +62,7 @@ struct ClientMessageFactory
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,
-                                 RequestRespawn, SyncExperienceRequest, RequestEquipmentChanges>;
+                                 RequestRespawn, SyncExperienceRequest, RequestMagicEquipmentChanges>;
 
         return s_visitor(std::forward<T>(func));
     }

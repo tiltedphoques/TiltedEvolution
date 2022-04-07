@@ -113,7 +113,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
         entry.Serialize(aWriter);
     }
 
-    CurrentEquipment.Serialize(aWriter);
+    CurrentMagicEquipment.Serialize(aWriter);
 }
 
 void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -126,7 +126,7 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
         Entries.push_back(entry);
     }
 
-    CurrentEquipment.Deserialize(aReader);
+    CurrentMagicEquipment.Deserialize(aReader);
 }
 
 // TODO: unit testing
