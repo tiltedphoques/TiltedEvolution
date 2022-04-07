@@ -36,7 +36,7 @@ void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noex
     float newExperience = GetSkillExperience(skill);
     float deltaExperience = newExperience - oldExperience;
 
-    spdlog::info("Added {} experience to skill {}", deltaExperience, aSkill);
+    spdlog::debug("Added {} experience to skill {}", deltaExperience, aSkill);
 }
 
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
@@ -88,7 +88,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
     float newExperience = apThis->GetSkillExperience(skill);
     float deltaExperience = newExperience - oldExperience;
 
-    spdlog::info("Skill (AVI): {}, experience: {}", aSkill, deltaExperience);
+    spdlog::debug("Skill (AVI): {}, experience: {}", aSkill, deltaExperience);
 
     if (combatSkills.contains(aSkill))
     {
