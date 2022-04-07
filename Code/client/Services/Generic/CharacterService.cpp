@@ -1285,15 +1285,6 @@ void CharacterService::RunRemoteUpdates() const noexcept
         FaceGenSystem::Update(m_world, pActor, faceGenComponent);
     }
 
-    static std::chrono::steady_clock::time_point lastWaitingSpawnTime;
-    constexpr auto cDelay = 250ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastWaitingSpawnTime < cDelay)
-        return;
-
-    lastWaitingSpawnTime = now;
-
     auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
 
     StackAllocator<1 << 13> allocator;
@@ -1321,14 +1312,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
     }
 
     for (auto entity : toRemove)
-    {
-        // TODO: this used to be remove(), but this didn't work.
-        // Maybe check if other remove() instances are also compromised?
-        // Update: erase() is causing crashes if it's not present
-        //m_world.erase<WaitingFor3D>(entity);
-        // Temp fix: put in a timer to at least mitigate the spam a bit
         m_world.remove<WaitingFor3D>(entity);
-    }
 }
 
 void CharacterService::RunFactionsUpdates() const noexcept

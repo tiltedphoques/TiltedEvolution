@@ -21,6 +21,7 @@
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
 #include <EquipManager.h>
+#include <DefaultObjectManager.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
@@ -466,7 +467,14 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
 
     if (arEntry.Count > 0)
+    {
+        bool isWorn = pExtraDataList && pExtraDataList->Contains(ExtraData::Worn) && pObject->formType != FormType::Ammo;
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
+        /*
+        if (isWorn)
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        */
+    }
     else if (arEntry.Count < 0)
     {
         spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
