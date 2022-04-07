@@ -27,7 +27,8 @@ struct RequestEquipmentChanges final : ClientMessage
                Unequip == acRhs.Unequip &&
                IsSpell == acRhs.IsSpell &&
                IsShout == acRhs.IsShout &&
-               IsAmmo == acRhs.IsAmmo;
+               IsAmmo == acRhs.IsAmmo &&
+               CurrentInventory == acRhs.CurrentInventory;
     }
     
     uint32_t ServerId{};

@@ -111,7 +111,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
-    request.CurrentInventory = pActor->GetActorInventory();
+    request.CurrentInventory = pActor->GetEquippedItems();
 
     m_transport.Send(request);
 }
@@ -202,9 +202,9 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
                 for (const auto& armor : wornArmor.Entries)
                 {
                     uint32_t armorId = modSystem.GetGameId(armor.BaseId);
-                    TESForm* pArmor = TESForm::GetById(itemId);
+                    TESForm* pArmor = TESForm::GetById(armorId);
                     if (pArmor)
-                        pEquipManager->UnEquip(pActor, pItem, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
+                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
                 }
             }
 
@@ -213,9 +213,9 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             for (const auto& armor : wornArmor.Entries)
             {
                 uint32_t armorId = modSystem.GetGameId(armor.BaseId);
-                TESForm* pArmor = TESForm::GetById(itemId);
+                TESForm* pArmor = TESForm::GetById(armorId);
                 if (pArmor)
-                    pEquipManager->Equip(pActor, pItem, nullptr, 1, pEquipSlot, false, true, false, false);
+                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
             }
         }
     }

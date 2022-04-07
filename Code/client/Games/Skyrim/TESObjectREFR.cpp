@@ -438,7 +438,6 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
-    // TODO: filter out quest items
     inventory.RemoveByFilter([](const auto& entry) { return entry.Count == 0; });
 
     spdlog::debug("Inventory count after: {}", inventory.Entries.size());
