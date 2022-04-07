@@ -9,7 +9,7 @@ struct NotifyInventoryChanges;
 struct NotifyDrawWeapon;
 struct InventoryChangeEvent;
 struct EquipmentChangeEvent;
-struct NotifyMagicEquipmentChanges;
+struct NotifyEquipmentChanges;
 
 struct InventoryService
 {
@@ -23,7 +23,7 @@ struct InventoryService
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
 
     void OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept;
-    void OnNotifyEquipmentChanges(const NotifyMagicEquipmentChanges& acMessage) noexcept;
+    void OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept;
     void OnNotifyDrawWeapon(const NotifyDrawWeapon& acMessage) noexcept;
 
 private:

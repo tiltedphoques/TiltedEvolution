@@ -304,57 +304,30 @@ void Actor::SetActorInventory(Inventory& aInventory) noexcept
     UnEquipAll();
 
     SetInventory(aInventory);
-    //SetEquipment(aInventory.CurrentEquipment);
+    SetMagicEquipment(aInventory.CurrentMagicEquipment);
 }
 
-// TODO: remove all the unequip stuff, not needed anymore
-void Actor::SetEquipment(const MagicEquipment& acEquipment) noexcept
+void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
 {
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
-    const MagicEquipment cCurrentEquipment = GetEquipment();
-
-    if (acEquipment.LeftHandSpell != cCurrentEquipment.LeftHandSpell)
+    if (acEquipment.LeftHandSpell)
     {
-        if (acEquipment.LeftHandSpell)
-        {
-            uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
-            pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
-        }
-        else
-        {
-            uint32_t mainHandWeaponId = modSystem.GetGameId(cCurrentEquipment.LeftHandSpell);
-            pEquipManager->UnEquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
-        }
+        uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
+        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
     }
 
-    if (acEquipment.RightHandSpell != cCurrentEquipment.RightHandSpell)
+    if (acEquipment.RightHandSpell)
     {
-        if (acEquipment.RightHandSpell)
-        {
-            uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
-            pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
-        }
-        else
-        {
-            uint32_t secondaryHandWeaponId = modSystem.GetGameId(cCurrentEquipment.RightHandSpell);
-            pEquipManager->UnEquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
-        }
+        uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
+        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
     }
 
-    if (acEquipment.Shout != cCurrentEquipment.Shout)
+    if (acEquipment.Shout)
     {
-        if (acEquipment.Shout)
-        {
-            uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
-            pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
-        }
-        else
-        {
-            uint32_t shoutId = modSystem.GetGameId(cCurrentEquipment.Shout);
-            pEquipManager->UnEquipShout(this, TESForm::GetById(shoutId));
-        }
+        uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
+        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
     }
 }
 

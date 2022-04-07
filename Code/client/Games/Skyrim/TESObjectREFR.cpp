@@ -435,11 +435,29 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
+Inventory TESObjectREFR::GetArmor() const noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory inventory = GetInventory();
+
+    inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), 
+                            inventory.Entries.end(), 
+                            [&modSystem](const Inventory::Entry& entry) 
+                            { 
+                                uint32_t id = modSystem.GetGameId(entry.BaseId);
+                                TESForm* pForm = TESForm::GetById(id);
+                                return !pForm || pForm->formType != FormType::Armor;
+                            }),
+                            inventory.Entries.end());
+
+    return inventory;
+}
+
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for {:X}", formID);
 
-    // TODO: put this closer to source (?)
     ScopedInventoryOverride _;
 
     RemoveAllItems();
@@ -474,9 +492,15 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         {
             isWorn = pExtraDataList->Contains(ExtraData::Worn);
             isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+
+            if (isWorn)
+                spdlog::error("Entry worn: {}", arEntry.ExtraWorn);
+            if (isWornLeft)
+                spdlog::critical("Entry worn left: {}", arEntry.ExtraWornLeft);
         }
 
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
+
         if (isWorn)
             EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
         else if (isWornLeft)
@@ -501,7 +525,7 @@ void TESObjectREFR::EnableImpl() noexcept
     TP_THIS_FUNCTION(TEnableImpl, void, TESObjectREFR, bool aResetInventory);
 
     POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
-    
+
     ThisCall(s_enable, this, false);
 }
 

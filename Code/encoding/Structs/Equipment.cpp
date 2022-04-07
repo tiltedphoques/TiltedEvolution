@@ -51,16 +51,3 @@ void MagicEquipment::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     if (isShoutSet)
         Shout.Deserialize(aReader);
 }
-
-void MagicEquipment::UpdateEquipment(const RequestMagicEquipmentChanges& acChanges) noexcept
-{
-    if (acChanges.IsSpell)
-    {
-        if (acChanges.EquipSlotId.BaseId == 0x13F42) // if right-hand
-            RightHandSpell = acChanges.Unequip ? GameId{} : acChanges.ItemId;
-        else if (acChanges.EquipSlotId.BaseId == 0x13F43) // else if left-hand
-            LeftHandSpell = acChanges.Unequip ? GameId{} : acChanges.ItemId;
-    }
-    else if (acChanges.IsShout)
-        Shout = acChanges.Unequip ? GameId{} : acChanges.ItemId;
-}

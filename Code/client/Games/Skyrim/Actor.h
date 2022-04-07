@@ -208,7 +208,7 @@ struct Actor : TESObjectREFR
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetActorInventory(Inventory& aInventory) noexcept;
-    void SetEquipment(const MagicEquipment& acEquipment) noexcept;
+    void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;

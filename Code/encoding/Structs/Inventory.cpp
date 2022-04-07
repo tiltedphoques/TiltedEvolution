@@ -126,21 +126,53 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 }
 
 // TODO: unit testing
-void Inventory::AddOrRemoveEntry(const Entry& acEntry) noexcept
+void Inventory::AddOrRemoveEntry(const Entry& acNewEntry) noexcept
 {
-    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acEntry](Entry& entry)
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acNewEntry](Entry& entry)
     {
-        return entry.CanBeMerged(acEntry);
+        return entry.CanBeMerged(acNewEntry);
     });
 
     if (duplicate != Entries.end())
     {
-        duplicate->Count += acEntry.Count;
+        duplicate->Count += acNewEntry.Count;
         if (duplicate->Count == 0)
             Entries.erase(duplicate);
     }
     else
     {
-        Entries.push_back(acEntry);
+        Entries.push_back(acNewEntry);
     }
+}
+
+void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
+{
+    while (true)
+    {
+        auto wornEntry = std::find_if(Entries.begin(), Entries.end(), [](auto& aEntry) { return aEntry.IsWorn(); });
+        if (wornEntry == Entries.end())
+            break;
+
+        wornEntry->ExtraWorn = wornEntry->ExtraWornLeft = false;
+    }
+
+    // TODO: this is definitely not the fastest algorithm in the west
+    // but it'll do for now, cause tracking inventory equipment is ass
+    for (const auto& newEntry : acNewInventory.Entries)
+    {
+        if (!newEntry.IsWorn())
+            continue;
+
+        auto entry = std::find_if(Entries.begin(), Entries.end(),
+                                  [&newEntry](auto& aEntry) { return aEntry.BaseId == newEntry.BaseId; });
+
+        // This shouldn't happen
+        if (entry == Entries.end())
+            continue;
+
+        entry->ExtraWorn = newEntry.ExtraWorn;
+        entry->ExtraWornLeft = newEntry.ExtraWornLeft;
+    }
+
+    CurrentMagicEquipment = acNewInventory.CurrentMagicEquipment;
 }

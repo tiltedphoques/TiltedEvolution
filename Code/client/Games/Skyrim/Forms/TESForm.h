@@ -4,6 +4,7 @@
 
 enum class FormType : uint8_t
 {
+    Armor = 26,
     Book = 27,
     Container = 28,
     Door = 29,

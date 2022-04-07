@@ -2,7 +2,7 @@
 
 #include <Structs/GameId.h>
 
-struct RequestMagicEquipmentChanges;
+struct RequestEquipmentChanges;
 
 struct MagicEquipment
 {
@@ -11,8 +11,6 @@ struct MagicEquipment
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
-
-    void UpdateEquipment(const RequestMagicEquipmentChanges& acChanges) noexcept;
 
     GameId LeftHandSpell{};
     GameId RightHandSpell{};

@@ -4,18 +4,18 @@
 #include <TiltedCore/Buffer.hpp>
 #include <Structs/GameId.h>
 
-struct NotifyMagicEquipmentChanges final : ServerMessage
+struct NotifyEquipmentChanges final : ServerMessage
 {
-    static constexpr ServerOpcode Opcode = kNotifyMagicEquipmentChanges;
+    static constexpr ServerOpcode Opcode = kNotifyEquipmentChanges;
 
-    NotifyMagicEquipmentChanges() : ServerMessage(Opcode)
+    NotifyEquipmentChanges() : ServerMessage(Opcode)
     {
     }
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyMagicEquipmentChanges& acRhs) const noexcept
+    bool operator==(const NotifyEquipmentChanges& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&

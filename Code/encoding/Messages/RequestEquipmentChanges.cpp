@@ -1,7 +1,7 @@
 #include <Messages/RequestEquipmentChanges.h>
 #include <TiltedCore/Serialization.hpp>
 
-void RequestMagicEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+void RequestEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, ServerId);
     ItemId.Serialize(aWriter);
@@ -13,7 +13,7 @@ void RequestMagicEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& a
     Serialization::WriteBool(aWriter, IsAmmo);
 }
 
-void RequestMagicEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
+void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ClientMessage::DeserializeRaw(aReader);
 

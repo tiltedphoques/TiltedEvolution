@@ -67,6 +67,9 @@ struct Inventory
 
         bool IsExtraDataEquals(const Entry& acRhs) const noexcept
         {
+            // TODO: the whole server side state thing is very flawed
+            // since many of these things can and will change, like poison id or charge
+            // or the fact that the enchant id can be temp
             return ExtraCharge == acRhs.ExtraCharge &&
                    ExtraEnchantId == acRhs.ExtraEnchantId &&
                    ExtraEnchantCharge == acRhs.ExtraEnchantCharge &&
@@ -78,6 +81,11 @@ struct Inventory
                    ExtraWorn == acRhs.ExtraWorn &&
                    ExtraWornLeft == acRhs.ExtraWornLeft;
         }
+
+        bool IsWorn() const noexcept
+        {
+            return ExtraWorn || ExtraWornLeft;
+        }
     };
 
     bool operator==(const Inventory& acRhs) const noexcept;
@@ -86,7 +94,8 @@ struct Inventory
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    void AddOrRemoveEntry(const Entry& acEntry) noexcept;
+    void AddOrRemoveEntry(const Entry& acNewEntry) noexcept;
+    void UpdateEquipment(const Inventory& acNewInventory) noexcept;
 
     Vector<Entry> Entries{};
     MagicEquipment CurrentMagicEquipment{};

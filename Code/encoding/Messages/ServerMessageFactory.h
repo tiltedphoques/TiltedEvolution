@@ -58,7 +58,7 @@ struct ServerMessageFactory
                                  NotifyLockChange, AssignObjectsResponse, NotifyDeathStateChange, NotifyOwnershipTransfer,
                                  NotifyObjectInventoryChanges, NotifySpellCast, NotifyProjectileLaunch, NotifyInterruptCast,
                                  NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage,
-                                 NotifyRespawn, NotifySyncExperience, NotifyMagicEquipmentChanges>;
+                                 NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges>;
 
         return s_visitor(std::forward<T>(func));
     }

@@ -35,7 +35,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
     m_drawWeaponConnection = m_dispatcher.sink<NotifyDrawWeapon>().connect<&InventoryService::OnNotifyDrawWeapon>(this);
-    m_equipmentChangeConnection = m_dispatcher.sink<NotifyMagicEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
+    m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -98,7 +98,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
     auto& modSystem = World::Get().GetModSystem();
 
-    RequestMagicEquipmentChanges request;
+    RequestEquipmentChanges request;
     request.ServerId = serverIdRes.value();
 
     if (!modSystem.GetServerModId(acEvent.EquipSlotId, request.EquipSlotId))
@@ -111,6 +111,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
+    request.CurrentInventory = pActor->GetActorInventory();
 
     m_transport.Send(request);
 }
@@ -152,7 +153,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
     }
 }
 
-void InventoryService::OnNotifyEquipmentChanges(const NotifyMagicEquipmentChanges& acMessage) noexcept
+void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
     Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
     if (!pActor)

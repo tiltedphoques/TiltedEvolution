@@ -2,21 +2,22 @@
 
 #include "Message.h"
 #include <Structs/GameId.h>
+#include <Structs/Inventory.h>
 
-struct RequestMagicEquipmentChanges final : ClientMessage
+struct RequestEquipmentChanges final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kRequestMagicEquipmentChanges;
+    static constexpr ClientOpcode Opcode = kRequestEquipmentChanges;
 
-    RequestMagicEquipmentChanges() : ClientMessage(Opcode)
+    RequestEquipmentChanges() : ClientMessage(Opcode)
     {
     }
 
-    virtual ~RequestMagicEquipmentChanges() = default;
+    virtual ~RequestEquipmentChanges() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestMagicEquipmentChanges& acRhs) const noexcept
+    bool operator==(const RequestEquipmentChanges& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
@@ -37,4 +38,6 @@ struct RequestMagicEquipmentChanges final : ClientMessage
     bool IsSpell = false;
     bool IsShout = false;
     bool IsAmmo = false;
+
+    Inventory CurrentInventory{};
 };
