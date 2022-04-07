@@ -25,7 +25,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 {
     auto& message = acMessage.Packet;
 
-    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+    auto view = m_world.view<InventoryComponent>();
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
 
@@ -48,7 +48,7 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
 {
     auto& message = acMessage.Packet;
 
-    auto view = m_world.view<CharacterComponent, InventoryComponent, OwnerComponent>();
+    auto view = m_world.view<InventoryComponent>();
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
 
@@ -56,6 +56,10 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
     {
         auto& inventoryComponent = view.get<InventoryComponent>(*it);
         inventoryComponent.Content.CurrentEquipment.UpdateEquipment(message);
+        spdlog::debug("Updating equipment, RightHandSpell: {:X}, RightHandWeapon: {:X}, LeftHandSpell: {:X}, LeftHandWeapon: {:X}, Shout: {:X}, Ammo: {:X}",
+                     inventoryComponent.Content.CurrentEquipment.RightHandSpell.BaseId, inventoryComponent.Content.CurrentEquipment.RightHandWeapon.BaseId, 
+                     inventoryComponent.Content.CurrentEquipment.LeftHandSpell.BaseId, inventoryComponent.Content.CurrentEquipment.LeftHandWeapon.BaseId,
+                     inventoryComponent.Content.CurrentEquipment.Shout.BaseId, inventoryComponent.Content.CurrentEquipment.Ammo.BaseId);
     }
 
     NotifyEquipmentChanges notify;

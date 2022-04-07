@@ -97,7 +97,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            static char s_address[256] = "127.0.0.1:10578";
+            static char s_address[256] = "de.playtogether.gg:10100";
             if (!m_transport.IsOnline())
                 m_transport.Connect(s_address);
             else

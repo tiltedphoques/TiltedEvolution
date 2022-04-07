@@ -438,6 +438,7 @@ void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for {:X}", formID);
 
+    // TODO: put this closer to source (?)
     ScopedInventoryOverride _;
 
     RemoveAllItems();
@@ -467,7 +468,10 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     if (arEntry.Count > 0)
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
     else if (arEntry.Count < 0)
+    {
+        spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
         RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+    }
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
@@ -565,6 +569,8 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 
+    spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
+
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
@@ -583,6 +589,8 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
+
+    spdlog::debug("Removing inventory item {:X} from {:X}", apItem->formID, apThis->formID);
 
     return ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }

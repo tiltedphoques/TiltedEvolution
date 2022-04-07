@@ -766,8 +766,9 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
 
 void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
+    spdlog::debug("Dropping object, form id: {:X}, count: {}, actor: {:X}", apObject->formID, aCount, formID);
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
+    ThisCall(RealDropObject, this, &result, apObject, apExtraData, -aCount, apLocation, apRotation);
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
@@ -822,9 +823,6 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 TP_THIS_FUNCTION(TUnequipObject, void, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3);
 static TUnequipObject* RealUnequipObject = nullptr;
 
-// TODO: crash in TESObjectREFR::UnequipItem() virtual func (offset 0xA1) when remote players shoots last arrow in quiver (and switching)
-// this thing gets called infinitely until it crashes
-// why?
 void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3)
 {
     ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);

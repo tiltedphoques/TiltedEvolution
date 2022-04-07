@@ -11,7 +11,8 @@ bool ObjectData::operator==(const ObjectData& acRhs) const noexcept
            WorldSpaceId == acRhs.WorldSpaceId &&
            CurrentCoords == acRhs.CurrentCoords &&
            CurrentLockData == acRhs.CurrentLockData &&
-           CurrentInventory == acRhs.CurrentInventory;
+           CurrentInventory == acRhs.CurrentInventory &&
+           IsSenderFirst == acRhs.IsSenderFirst;
 }
 
 bool ObjectData::operator!=(const ObjectData& acRhs) const noexcept
@@ -28,6 +29,7 @@ void ObjectData::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcep
     CurrentCoords.Serialize(aWriter);
     CurrentLockData.Serialize(aWriter);
     CurrentInventory.Serialize(aWriter);
+    Serialization::WriteBool(aWriter, IsSenderFirst);
 }
 
 void ObjectData::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -39,4 +41,5 @@ void ObjectData::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     CurrentCoords.Deserialize(aReader);
     CurrentLockData.Deserialize(aReader);
     CurrentInventory.Deserialize(aReader);
+    IsSenderFirst = Serialization::ReadBool(aReader);
 }

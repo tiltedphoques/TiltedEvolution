@@ -77,8 +77,9 @@ static void UnfreezeMenu(IMenu* apEntry)
 }
 
 static constexpr const char* kAllowList[] = {
-    "Console", "Journal Menu", "TweenMenu", "MagicMenu", "StatsMenu", "InventoryMenu", "MessageBoxMenu",
+    "Console", "TweenMenu", "MagicMenu", "StatsMenu", "InventoryMenu", "MessageBoxMenu",
     //"MapMenu", // MapMenu is disabled till we find a proper fix for first person.
+    //"Journal Menu", // Journal menu, aka pause menu, is disabled until we find a fix for manual save crashing while unpaused.
 };
 
 static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);

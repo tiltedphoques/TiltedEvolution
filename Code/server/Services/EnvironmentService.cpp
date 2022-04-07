@@ -59,7 +59,7 @@ void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEv
     }
 }
 
-// TODO: this whole system kinda relies on all objects in a cell being static.
+// NOTE: this whole system kinda relies on all objects in a cell being static.
 // This is fine for containers and doors, but if this system is expanded, think of temporaries.
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
@@ -89,6 +89,8 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             auto& inventoryComponent = view.get<InventoryComponent>(*iter);
             objectData.CurrentInventory = inventoryComponent.Content;
 
+            objectData.IsSenderFirst = false;
+
             response.Objects.push_back(objectData);
         }
         else
@@ -103,6 +105,14 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
             auto& inventoryComp = m_world.emplace<InventoryComponent>(cEntity);
             inventoryComp.Content = object.CurrentInventory;
+
+            // TODO: maybe make this its own message instead of using IsSenderFirst
+            ObjectData objectData;
+            objectData.Id = object.Id;
+            objectData.ServerId = World::ToInteger(cEntity);
+            objectData.IsSenderFirst = true;
+
+            response.Objects.push_back(objectData);
         }
     }
 
