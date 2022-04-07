@@ -325,7 +325,11 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
     return pExtraDataList;
 }
 
-Inventory TESObjectREFR::GetInventory() const noexcept
+Inventory TESObjectREFR::GetInventory() const noexcept {
+    return GetInventory([](TESForm& aForm) { return true; });
+}
+
+Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
     Inventory inventory{};
@@ -341,6 +345,9 @@ Inventory TESObjectREFR::GetInventory() const noexcept
                 continue;
             }
 
+            if (!aFilter(*pGameEntry->form))
+                continue;
+
             Inventory::Entry entry;
             modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
             entry.Count = pGameEntry->count;
@@ -355,6 +362,9 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     for (auto pGameEntry : *pExtraContChangesEntries)
     {
         if (!pGameEntry)
+            continue;
+
+        if (!aFilter(*pGameEntry->form))
             continue;
 
         Inventory::Entry entry;
@@ -426,9 +436,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
     // TODO: filter out quest items
-    inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), inventory.Entries.end(),
-                                           [](const Inventory::Entry& entry) { return entry.Count == 0; }),
-                            inventory.Entries.end());
+    inventory.RemoveByFilter([](const Inventory::Entry& entry) { return entry.Count == 0; });
 
     spdlog::debug("Inventory count after: {}", inventory.Entries.size());
 
@@ -437,20 +445,13 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
 Inventory TESObjectREFR::GetArmor() const noexcept
 {
-    auto& modSystem = World::Get().GetModSystem();
+    return GetInventory([](TESForm& aForm) { return aForm.formType == FormType::Armor; });
+}
 
-    Inventory inventory = GetInventory();
-
-    inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), 
-                            inventory.Entries.end(), 
-                            [&modSystem](const Inventory::Entry& entry) 
-                            { 
-                                uint32_t id = modSystem.GetGameId(entry.BaseId);
-                                TESForm* pForm = TESForm::GetById(id);
-                                return !pForm || pForm->formType != FormType::Armor;
-                            }),
-                            inventory.Entries.end());
-
+Inventory TESObjectREFR::GetWornArmor() const noexcept
+{
+    Inventory inventory = GetArmor();
+    inventory.RemoveByFilter([](const Inventory::Entry& entry) { return !entry.IsWorn(); });
     return inventory;
 }
 

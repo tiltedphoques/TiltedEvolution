@@ -176,3 +176,8 @@ void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
 
     CurrentMagicEquipment = acNewInventory.CurrentMagicEquipment;
 }
+
+void Inventory::RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept
+{
+    Entries.erase(std::remove_if(Entries.begin(), Entries.end(), aFilter), Entries.end());
+}

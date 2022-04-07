@@ -94,6 +94,7 @@ struct Inventory
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
+    void RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept;
     void AddOrRemoveEntry(const Entry& acNewEntry) noexcept;
     void UpdateEquipment(const Inventory& acNewInventory) noexcept;
 
