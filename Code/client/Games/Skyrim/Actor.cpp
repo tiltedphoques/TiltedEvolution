@@ -39,7 +39,6 @@
 
 #include <Games/Overrides.h>
 
-#define SAVE_STUFF
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>

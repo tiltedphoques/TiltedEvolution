@@ -1304,6 +1304,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
         pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
         pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
+        pActor->SetWeaponDrawnEx(remoteComponent.SpawnRequest.IsWeaponDrawn);
 
         if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
             remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
