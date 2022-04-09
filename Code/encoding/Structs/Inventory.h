@@ -1,7 +1,7 @@
 #pragma once
 
 #include <TiltedCore/Stl.hpp>
-#include "Equipment.h"
+#include "MagicEquipment.h"
 
 using TiltedPhoques::Buffer;
 using TiltedPhoques::String;
@@ -11,9 +11,6 @@ struct Inventory
 {
     struct EffectItem
     {
-        EffectItem() = default;
-        ~EffectItem() = default;
-
         float Magnitude{};
         int32_t Area{};
         int32_t Duration{};
@@ -26,18 +23,12 @@ struct Inventory
 
     struct EnchantmentData
     {
-        EnchantmentData() = default;
-        ~EnchantmentData() = default;
-
         bool IsWeapon{};
         Vector<EffectItem> Effects{};
     };
 
     struct Entry
     {
-        Entry() = default;
-        ~Entry() = default;
-
         GameId BaseId{};
         int32_t Count{};
 
@@ -53,8 +44,6 @@ struct Inventory
         uint32_t ExtraPoisonCount{};
 
         int32_t ExtraSoulLevel{};
-
-        //String ExtraTextDisplayName{};
 
         bool ExtraEnchantRemoveUnequip{};
         bool ExtraWorn{};
@@ -78,6 +67,9 @@ struct Inventory
 
         bool IsExtraDataEquals(const Entry& acRhs) const noexcept
         {
+            // TODO: the whole server side state thing is very flawed
+            // since many of these things can and will change, like poison id or charge
+            // or the fact that the enchant id can be temp
             return ExtraCharge == acRhs.ExtraCharge &&
                    ExtraEnchantId == acRhs.ExtraEnchantId &&
                    ExtraEnchantCharge == acRhs.ExtraEnchantCharge &&
@@ -86,14 +78,15 @@ struct Inventory
                    ExtraPoisonId == acRhs.ExtraPoisonId &&
                    ExtraPoisonCount == acRhs.ExtraPoisonCount &&
                    ExtraSoulLevel == acRhs.ExtraSoulLevel &&
-                   //ExtraTextDisplayName == acRhs.ExtraTextDisplayName &&
                    ExtraWorn == acRhs.ExtraWorn &&
                    ExtraWornLeft == acRhs.ExtraWornLeft;
         }
-    };
 
-    Inventory() = default;
-    ~Inventory() = default;
+        bool IsWorn() const noexcept
+        {
+            return ExtraWorn || ExtraWornLeft;
+        }
+    };
 
     bool operator==(const Inventory& acRhs) const noexcept;
     bool operator!=(const Inventory& acRhs) const noexcept;
@@ -101,8 +94,10 @@ struct Inventory
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    void AddOrRemoveEntry(const Entry& acEntry) noexcept;
+    void RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept;
+    void AddOrRemoveEntry(const Entry& acNewEntry) noexcept;
+    void UpdateEquipment(const Inventory& acNewInventory) noexcept;
 
     Vector<Entry> Entries{};
-    Equipment CurrentEquipment{};
+    MagicEquipment CurrentMagicEquipment{};
 };

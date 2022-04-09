@@ -19,3 +19,12 @@ void ExtraContainerChanges::Data::Load(BGSLoadFormBuffer* apBuffer)
 
     ThisCall(s_load, this, apBuffer);
 }
+
+bool ExtraContainerChanges::Entry::IsQuestObject() noexcept
+{
+    TP_THIS_FUNCTION(TIsQuestObject, bool, ExtraContainerChanges::Entry);
+
+    POINTER_SKYRIMSE(TIsQuestObject, s_isQuestObject, 16005);
+
+    return ThisCall(s_isQuestObject, this);
+}

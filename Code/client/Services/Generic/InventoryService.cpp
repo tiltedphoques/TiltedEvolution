@@ -111,6 +111,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
+    request.CurrentInventory = pActor->GetEquippedItems();
 
     m_transport.Send(request);
 }
@@ -192,7 +193,31 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
         if (acMessage.Unequip)
             pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
         else
+        {
+            // Unequip all armor first, since the game won't auto unequip armor
+            Inventory wornArmor{};
+            if (pItem->formType == FormType::Armor)
+            {
+                wornArmor = pActor->GetWornArmor();
+                for (const auto& armor : wornArmor.Entries)
+                {
+                    uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+                    TESForm* pArmor = TESForm::GetById(armorId);
+                    if (pArmor)
+                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
+                }
+            }
+
             pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+
+            for (const auto& armor : wornArmor.Entries)
+            {
+                uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+                TESForm* pArmor = TESForm::GetById(armorId);
+                if (pArmor)
+                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+            }
+        }
     }
 }
 

@@ -13,6 +13,8 @@ struct ExtraContainerChanges : BSExtraData
 
     struct Entry
     {
+        bool IsQuestObject() noexcept;
+
         TESForm* form;
         GameList<ExtraDataList>* dataList;
         int32_t count;

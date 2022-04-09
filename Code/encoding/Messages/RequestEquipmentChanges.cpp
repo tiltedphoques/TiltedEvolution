@@ -11,6 +11,7 @@ void RequestEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteBool(aWriter, IsSpell);
     Serialization::WriteBool(aWriter, IsShout);
     Serialization::WriteBool(aWriter, IsAmmo);
+    CurrentInventory.Serialize(aWriter);
 }
 
 void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -25,4 +26,5 @@ void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     IsSpell = Serialization::ReadBool(aReader);
     IsShout = Serialization::ReadBool(aReader);
     IsAmmo = Serialization::ReadBool(aReader);
+    CurrentInventory.Deserialize(aReader);
 }

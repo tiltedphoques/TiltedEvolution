@@ -90,6 +90,23 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
+    static std::atomic<bool> s_f6Pressed = false;
+
+    if (GetAsyncKeyState(VK_F6))
+    {
+        if (!s_f6Pressed)
+        {
+            s_f6Pressed = true;
+
+            static char s_address[256] = "127.0.0.1:10578";
+            if (!m_transport.IsOnline())
+                m_transport.Connect(s_address);
+            else
+                m_transport.Close();
+        }
+    }
+    else
+        s_f6Pressed = false;
 
     if (GetAsyncKeyState(VK_F7))
     {
