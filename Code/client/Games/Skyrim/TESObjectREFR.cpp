@@ -325,7 +325,8 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
     return pExtraDataList;
 }
 
-Inventory TESObjectREFR::GetInventory() const noexcept {
+Inventory TESObjectREFR::GetInventory() const noexcept
+{
     return GetInventory([](TESForm& aForm) { return true; });
 }
 
