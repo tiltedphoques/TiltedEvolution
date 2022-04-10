@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Forms/TESForm.h>
+#include <Games/ExtraData.h>
 
 struct TESObjectREFR;
 struct TESWorldSpace;
@@ -39,6 +40,8 @@ struct TESObjectCELL : TESForm
             return capacity - available;
         }
     };
+
+    BSExtraData* GetRegionList(bool abCreateIfNotFound);
 
     ReferenceData refData;
     uint8_t unkB0[0x118 - 0xB0];

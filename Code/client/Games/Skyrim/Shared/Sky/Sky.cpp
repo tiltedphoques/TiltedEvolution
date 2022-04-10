@@ -70,6 +70,8 @@ float Sky::GetCurrentWeatherDuration()
 
     // starting from fallout 4, the constant 32 is replaced by fWeatherDurationMax
     // and the constant 1.f is replaced by fWeatherDurationMin
+
+    // constexpr auto f = 1.f / 255.f = 0.0039215689;
     duration = (((23.f - 1.f) * (255.f - vola)) * 0.0039215689) + 1.f;
     return duration < 0.1f ? 0.1f : duration;
 }

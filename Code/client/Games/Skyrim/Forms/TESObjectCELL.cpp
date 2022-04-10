@@ -1,5 +1,8 @@
 #include <Forms/TESObjectCELL.h>
+#include <Games/ExtraData.h>
 #include <TESObjectREFR.h>
+
+static BSExtraData* (*TESObjectCELL_GetRegionList)(TESObjectCELL*, bool){nullptr};
 
 Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>& aFormTypes) noexcept
 {
@@ -23,3 +26,13 @@ Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>&
 
     return references;
 }
+
+BSExtraData* TESObjectCELL::GetRegionList(bool abCreateIfNotFound)
+{
+    return TESObjectCELL_GetRegionList(this, abCreateIfNotFound);
+}
+
+static TiltedPhoques::Initializer s_InitCell([]() {
+    const VersionDbPtr<uint8_t> s_getregions(18999);
+    TESObjectCELL_GetRegionList = static_cast<decltype(TESObjectCELL_GetRegionList)>(s_getregions.GetPtr());
+});

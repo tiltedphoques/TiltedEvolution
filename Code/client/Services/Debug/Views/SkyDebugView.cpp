@@ -22,6 +22,8 @@ when going inside a cell such as bleakfalls barrow, the game calls TESObjectCELL
 and sets all weathers to null, to disable weather processing.
 */
 
+// TESObjectCell::GetRegionList()
+
 struct PlayerRegionState
 {
     char pad0[72];
