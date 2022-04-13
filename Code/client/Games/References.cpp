@@ -528,13 +528,13 @@ extern thread_local bool g_forceAnimation;
 
 void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
 {
-    spdlog::info("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    spdlog::debug("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
 
     if (actorState.IsWeaponDrawn() == aDraw)
     {
         actorState.SetWeaponDrawn(!aDraw);
 
-        spdlog::info("Setting weapon drawn after update: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+        spdlog::debug("Setting weapon drawn after update: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
     }
 
     g_forceAnimation = true;
