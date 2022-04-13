@@ -1,3 +1,22 @@
+# [1.24.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.23.0...v1.24.0) (2022-04-09)
+
+
+### Bug Fixes
+
+* armor unequip ([a39febb](https://github.com/tiltedphoques/TiltedEvolution/commit/a39febbde738b5b287b0450c0483071f412f3396))
+* definitively fix WaitingFor3D bug ([ef580ac](https://github.com/tiltedphoques/TiltedEvolution/commit/ef580ac32f9fdf201c1001e07a1be1d6257d7aa1))
+* dropping items ([aac8d8f](https://github.com/tiltedphoques/TiltedEvolution/commit/aac8d8f24a1c167b91366f1806af28d3f279f25d))
+* equipment update bug ([24d22c6](https://github.com/tiltedphoques/TiltedEvolution/commit/24d22c69b5e92e78cfea21a1c406c703e93a0dc1))
+* SetWeaponDrawn on 3D loaded ([e7919f9](https://github.com/tiltedphoques/TiltedEvolution/commit/e7919f90d0fb0d1f3b1e4973beb8feb84a5dacf8))
+* temp fix for entt problem ([4089d04](https://github.com/tiltedphoques/TiltedEvolution/commit/4089d041966b63fde65350a74e98d9183bcafd22))
+* unequip crash ([092a14f](https://github.com/tiltedphoques/TiltedEvolution/commit/092a14f2c3690cfa38c9ba55d824c7f19e567e42))
+
+
+### Features
+
+* armor equip sync ([24d255b](https://github.com/tiltedphoques/TiltedEvolution/commit/24d255b83e6e96aca5b19434ddbd93947065c726))
+* dont sync quest items ([e59d47f](https://github.com/tiltedphoques/TiltedEvolution/commit/e59d47f95d796922a4336108c0c91280857cfb99))
+
 # [1.23.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.22.1...v1.23.0) (2022-03-29)
 
 
