@@ -3,8 +3,17 @@ local function build_launcher()
     set_kind("binary")
     set_group("Client")
     set_symbols("debug", "hidden")
+
+    after_install(function(target)
+        local linkdir = target:pkg("crashpad"):get("linkdirs")
+        print(target:pkg("crashpad"))
+        local bindir = path.join(linkdir, "..", "bin")
+        os.cp(bindir, target:installdir())
+    end)
+
     add_ldflags(
-        "/IGNORE:4254",
+        "/FORCE:MULTIPLE",
+        "/IGNORE:4254,4006",
         "/DYNAMICBASE:NO",
         "/SAFESEH:NO",
         "/LARGEADDRESSAWARE",
@@ -25,7 +34,7 @@ local function build_launcher()
         "TiltedHooks",
         "TiltedUi",
         "ImGuiImpl",
-        "Common")
+        "CommonLib")
     add_links("ntdll_x64")
     add_linkdirs(".")
     add_syslinks(
@@ -36,7 +45,13 @@ local function build_launcher()
         "ole32",
         "dxgi",
         "d3d11",
-        "gdi32")
+        "gdi32",
+        "SetupAPI",
+        "Powrprof",
+        "Cfgmgr32",
+        "Propsys",
+        "delayimp")
+
     add_packages(
         "tiltedcore",
         "spdlog",
@@ -45,8 +60,11 @@ local function build_launcher()
         "cryptopp",
         "glm",
         "cef",
-        "mem")
+        "mem",
+        "crashpad")
 end
+
+add_requires("crashpad stable")
 
 target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")

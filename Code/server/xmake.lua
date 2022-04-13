@@ -20,10 +20,10 @@ target(name)
     end
 
     add_deps(
-        "Common",
+        "CommonLib",
         "Console",
         "ESLoader",
-        "Base",
+        "BaseLib",
         "AdminProtocol",
         "TiltedScript",
         "TiltedConnect"
