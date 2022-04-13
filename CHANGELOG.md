@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.24.0...v1.24.1) (2022-04-13)
+
+
+### Bug Fixes
+
+* awful fix for weapon draw sync not working ([370c261](https://github.com/tiltedphoques/TiltedEvolution/commit/370c2610fa43eacfe9a3f6e9e0319d1c934e8994))
+
 # [1.24.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.23.0...v1.24.0) (2022-04-09)
 
 
