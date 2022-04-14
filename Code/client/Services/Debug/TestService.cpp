@@ -40,6 +40,9 @@
 
 #include <Messages/RequestRespawn.h>
 
+#include <Interface/UI.h>
+#include <Interface/IMenu.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
@@ -134,8 +137,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-
-            PlaceActorInWorld();
         }
     }
     else
@@ -210,6 +211,16 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
+        if (ImGui::Button("Log all open windows"))
+        {
+            UI* pUI = UI::Get();
+            for (const auto& it : pUI->menuMap)
+            {
+                if (pUI->GetMenuOpen(it.key))
+                    spdlog::info("{}", it.key.AsAscii());
+            }
+        }
+
         if (ImGui::Button("Close all menus"))
         {
             UI::Get()->CloseAllMenus();
