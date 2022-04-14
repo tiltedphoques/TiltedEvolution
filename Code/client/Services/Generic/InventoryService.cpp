@@ -30,10 +30,16 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
+    m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
     m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
+}
+
+void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
+{
+    RunWeaponStateUpdates();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
@@ -210,6 +216,42 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
                 if (pArmor)
                     pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
             }
+        }
+    }
+}
+
+void InventoryService::RunWeaponStateUpdates() noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 500ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+
+    for (auto entity : view)
+    {
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        auto& localComponent = view.get<LocalComponent>(entity);
+
+        bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+        if (isWeaponDrawn != localComponent.IsWeaponDrawn)
+        {
+            localComponent.IsWeaponDrawn = isWeaponDrawn;
+
+            DrawWeaponRequest request;
+            request.Id = localComponent.Id;
+            request.IsWeaponDrawn = isWeaponDrawn;
+
+            m_transport.Send(request);
         }
     }
 }
