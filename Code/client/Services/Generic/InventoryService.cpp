@@ -64,7 +64,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
     request.Item = std::move(acEvent.Item);
-    request.DropOrPickUp = acEvent.DropOrPickUp;
+    request.Drop = acEvent.Drop;
 
     m_transport.Send(request);
 
@@ -117,7 +117,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
 {
-    if (acMessage.DropOrPickUp)
+    if (acMessage.Drop)
     {
         Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
         if (!pActor)
