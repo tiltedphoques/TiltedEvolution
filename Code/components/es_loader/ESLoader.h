@@ -46,7 +46,7 @@ class ESLoader
     fs::path GetPath(String& aFilename);
 
     String m_directory = "";
-    PluginCollection m_loadOrder{};
-    Map<String, uint8_t> m_masterFiles{};
+    Vector<PluginData> m_loadOrder{};
+    TiltedPhoques::Map<String, uint8_t> m_masterFiles{};
 };
 } // namespace ESLoader

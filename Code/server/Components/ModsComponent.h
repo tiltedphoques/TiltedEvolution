@@ -37,7 +37,8 @@ struct ModsComponent
 
     bool IsInstalled(const String& acpFileName) const noexcept;
 
-    using TModList = Map<String, Entry>;
+    using TModList = TiltedPhoques::Map<String, Entry>; 
+private:
 
   private:
     uint32_t m_seed = 0;

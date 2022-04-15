@@ -38,6 +38,8 @@
 
 #include <AI/AIProcess.h>
 
+#include <Messages/RequestRespawn.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
@@ -45,22 +47,33 @@
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Games/Skyrim/Interface/UI.h>
 #endif
-
-//#include <Games/Skyrim/>
 
 #include <imgui.h>
 #include <inttypes.h>
 extern thread_local bool g_overrideFormId;
 
+constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
+static void DrawBuildTag()
+{
+#ifndef TP_FALLOUT
+    auto* pWindow = BSGraphics::GetMainWindow();
+    const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
+    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
+                                            ImColor::ImColor(255.f, 0.f, 0.f),
+                                            kBuildTag);
+#endif
+}
+
 void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
-    // const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    pActor->SetInventory(PlayerCharacter::Get()->GetInventory());
+    Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
+    pActor->SetActorInventory(inventory);
 
     m_actors.emplace_back(pActor);
 }
@@ -73,87 +86,27 @@ TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, Transport
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
 }
 
-void TestService::RunDiff()
-{
-    /*
-    BSAnimationGraphManager* pManager = nullptr;
-    BSAnimationGraphManager* pActorManager = nullptr;
-
-    static Map<uint32_t, uint32_t> s_values;
-
-    if (m_actors.empty())
-        return;
-
-    auto pActor = m_actors[0];
-
-    AnimationVariables vars;
-
-    PlayerCharacter::Get()->SaveAnimationVariables(vars);
-    pActor->LoadAnimationVariables(vars);
-
-    if (PlayerCharacter::Get()->animationGraphHolder.GetBSAnimationGraph(&pManager) &&
-    pActor->animationGraphHolder.GetBSAnimationGraph(&pActorManager))
-    {
-        if (pManager->animationGraphIndex < pManager->animationGraphs.size)
-        {
-            const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-            const auto pActorGraph = pActorManager->animationGraphs.Get(pActorManager->animationGraphIndex);
-            if (pGraph && pActorGraph)
-            {
-                const auto pDb = pGraph->hkxDB;
-                const auto pBuckets = pDb->animationVariables.buckets;
-                const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
-                const auto pActorVariableSet = pActorGraph->behaviorGraph->animationVariables;
-
-                auto pDescriptor =
-                    AnimationGraphDescriptorManager::Get().GetDescriptor(pGraph->behaviorGraph->stateMachine->name);
-
-                if (pBuckets && pVariableSet && pActorVariableSet)
-                {
-                    for (auto i = 0u; i < pVariableSet->size; ++i)
-                    {
-                        //if (pVariableSet->data[i] != pActorVariableSet->data[i])
-                            //spdlog::info("Diff {} expected: {} got: {}", i, pVariableSet->data[i],
-    pActorVariableSet->data[i]);
-
-                        auto itor = s_values.find(i);
-                        if (itor == std::end(s_values))
-                        {
-                            s_values[i] = pVariableSet->data[i];
-
-                            if (!pDescriptor->IsSynced(i))
-                            {
-                                spdlog::info("Variable {} initialized to f: {} i: {}", i,
-    *(float*)&pVariableSet->data[i],
-                                             *(int32_t*)&pVariableSet->data[i]);
-                            }
-                        }
-                        else if (itor->second != pVariableSet->data[i] && !pDescriptor->IsSynced(i))
-                        {
-                            spdlog::warn("Variable {} changed to f: {} i: {}", i, *(float*)&pVariableSet->data[i],
-                                         *(int32_t*)&pVariableSet->data[i]);
-
-                            s_values[i] = pVariableSet->data[i];
-                            //itor->second = pVariableSet->data[i];
-                        }
-                    }
-                }
-            }
-        }
-
-        pManager->Release();
-    }
-    */
-}
-
-TestService::~TestService() noexcept = default;
-
 void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
+    static std::atomic<bool> s_f6Pressed = false;
 
-    RunDiff();
+    if (GetAsyncKeyState(VK_F6))
+    {
+        if (!s_f6Pressed)
+        {
+            s_f6Pressed = true;
+
+            static char s_address[256] = "127.0.0.1:10578";
+            if (!m_transport.IsOnline())
+                m_transport.Connect(s_address);
+            else
+                m_transport.Close();
+        }
+    }
+    else
+        s_f6Pressed = false;
 
     if (GetAsyncKeyState(VK_F7))
     {
@@ -161,10 +114,15 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            static char s_address[256] = "127.0.0.1:10578";
-            m_transport.Connect(s_address);
+            static char s_address[256] = "de.playtogether.gg:10100";
+            if (!m_transport.IsOnline())
+                m_transport.Connect(s_address);
+            else
+                m_transport.Close();
         }
     }
+    else
+        s_f7Pressed = false;
 
     if (GetAsyncKeyState(VK_F3) & 0x01)
     {
@@ -177,25 +135,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            auto* pActor = (Actor*)TESForm::GetById(0xFF000DA5);
-            pActor->SetWeaponDrawnEx(true);
-
-            // PlaceActorInWorld();
-
-            /*
-            const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
-
-            //const auto pNpc = TESNPC::Create(data, pPlayerBaseForm->GetChangeFlags());
-            auto pActor = Actor::Create(pPlayerBaseForm);
-            pActor->SaveInventory(0);
-
-        #if TP_SKYRIM64
-            auto& objManager = DefaultObjectManager::Get();
-            spdlog::info(objManager.isSomeActionReady);
-        #endif
-
-            TP_ASSERT(0, "{}", 5)
-            */
+            PlaceActorInWorld();
         }
     }
     else
@@ -246,20 +186,35 @@ void TestService::OnDraw() noexcept
         DrawPlayerDebugView();
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Skills"))
+    {
+        DrawSkillView();
+        ImGui::EndMenu();
+    }
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Containers"))
-    {
-        DrawContainerDebugView();
-        ImGui::EndMenu();
-    }
     if (ImGui::BeginMenu("Animation"))
     {
         ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Form"))
+    {
+        DrawFormDebugView();
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("UI"))
+    {
+        ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
+        if (ImGui::Button("Close all menus"))
+        {
+            UI::Get()->CloseAllMenus();
+        }
+
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
@@ -269,4 +224,11 @@ void TestService::OnDraw() noexcept
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();
+
+    if (m_showBuildTag)
+        DrawBuildTag();
+
+    ImGui::Begin("Inventory");
+    DrawContainerDebugView();
+    ImGui::End();
 }

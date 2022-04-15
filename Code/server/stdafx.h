@@ -48,7 +48,16 @@ extern "C"
 //#define SOL_USE_CXX_LUA_I_
 #include <sol/sol.hpp>
 
-using namespace TiltedPhoques;
 using namespace std::chrono_literals;
+
+using TiltedPhoques::Vector;
+using TiltedPhoques::UniquePtr;
+using TiltedPhoques::String;
+using TiltedPhoques::ConnectionId_t;
+using TiltedPhoques::MakeUnique;
+using TiltedPhoques::MakeShared;
+using TiltedPhoques::Server;
+using TiltedPhoques::ViewBuffer;
+using TiltedPhoques::ScopedAllocator;
 
 #undef GetClassName

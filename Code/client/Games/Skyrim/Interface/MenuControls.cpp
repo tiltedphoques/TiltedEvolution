@@ -8,6 +8,12 @@ void MenuControls::SetToggle(bool b)
 
 MenuControls* MenuControls::GetInstance()
 {
-    POINTER_SKYRIMSE(MenuControls*, s_instance, 0x142F9AB08 - 0x140000000);
+    POINTER_SKYRIMSE(MenuControls*, s_instance, 401263);
     return *(s_instance.Get());
 }
+
+#include <Services/TransportService.h>
+
+static TiltedPhoques::Initializer s_init([]() {
+
+});

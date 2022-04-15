@@ -2,8 +2,10 @@
 
 #include <Messages/RequestObjectInventoryChanges.h>
 #include <Messages/NotifyObjectInventoryChanges.h>
-#include <Messages/RequestCharacterInventoryChanges.h>
-#include <Messages/NotifyCharacterInventoryChanges.h>
+#include <Messages/RequestInventoryChanges.h>
+#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/RequestEquipmentChanges.h>
+#include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 #include <Messages/NotifyDrawWeapon.h>
 
@@ -12,13 +14,16 @@
 #include <Events/EquipmentChangeEvent.h>
 
 #include <World.h>
-#include <Games/Misc/UI.h>
+#include <Games/Skyrim/Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Actor.h>
 #include <Structs/ObjectData.h>
 #include <Forms/TESWorldSpace.h>
 #include <Games/TES.h>
+#include <Games/Overrides.h>
+#include <EquipManager.h>
+#include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -28,19 +33,13 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
-    m_objectInventoryChangeConnection = m_dispatcher.sink<NotifyObjectInventoryChanges>().connect<&InventoryService::OnObjectInventoryChanges>(this);
-    m_characterInventoryChangeConnection = m_dispatcher.sink<NotifyCharacterInventoryChanges>().connect<&InventoryService::OnCharacterInventoryChanges>(this);
+    m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
     m_drawWeaponConnection = m_dispatcher.sink<NotifyDrawWeapon>().connect<&InventoryService::OnNotifyDrawWeapon>(this);
+    m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    RunObjectInventoryUpdates();
-    RunCharacterInventoryUpdates();
-
-    ApplyCachedObjectInventoryChanges();
-    ApplyCachedCharacterInventoryChanges();
-
     RunWeaponStateUpdates();
 }
 
@@ -49,218 +48,177 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     if (!m_transport.IsConnected())
         return;
 
-    const auto* pForm = TESForm::GetById(acEvent.FormId);
-    if (RTTI_CAST(pForm, TESForm, Actor))
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) 
     {
-        m_charactersWithInventoryChanges.insert(acEvent.FormId);
-    }
-    else
-    {
-        m_objectsWithInventoryChanges.insert(acEvent.FormId);
-    }
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (iter == std::end(view))
+        return;
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
+    if (!serverIdRes.has_value())
+        return;
+
+    RequestInventoryChanges request;
+    request.ServerId = serverIdRes.value();
+    request.Item = std::move(acEvent.Item);
+    request.DropOrPickUp = acEvent.DropOrPickUp;
+
+    m_transport.Send(request);
+
+    spdlog::info("Sending item request, item: {:X}, count: {}, target object: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count,
+                 acEvent.FormId);
 }
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
 {
-    m_charactersWithInventoryChanges.insert(acEvent.ActorId);
-}
-
-void InventoryService::OnObjectInventoryChanges(const NotifyObjectInventoryChanges& acMessage) noexcept
-{
-    for (const auto& [id, inventory] : acMessage.Changes)
-    {
-        m_cachedObjectInventoryChanges[id] = inventory;
-    }
-
-    ApplyCachedObjectInventoryChanges();
-}
-
-void InventoryService::OnCharacterInventoryChanges(const NotifyCharacterInventoryChanges& acMessage) noexcept
-{
-    for (const auto& [id, inventory] : acMessage.Changes)
-    {
-        m_cachedCharacterInventoryChanges[id] = inventory;
-    }
-
-    ApplyCachedCharacterInventoryChanges();
-}
-
-void InventoryService::RunObjectInventoryUpdates() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 250ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    if (!m_objectsWithInventoryChanges.empty())
-    {
-        RequestObjectInventoryChanges message;
-
-        for (const auto objectId : m_objectsWithInventoryChanges)
-        {
-            const auto* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESObjectREFR);
-
-            if (!pObject)
-                continue;
-
-        #if TP_FALLOUT4
-            if (!pObject->inventory)
-                continue;
-        #endif
-
-            ObjectData objectData;
-
-            GameId gameId(0, 0);
-            if (!m_world.GetModSystem().GetServerModId(pObject->formID, gameId.ModId, gameId.BaseId))
-                continue;
-
-            if (const auto pWorldSpace = pObject->GetWorldSpace())
-            {
-                if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, objectData.WorldSpaceId.ModId, objectData.WorldSpaceId.BaseId))
-                    continue;
-
-                const auto* pTES = TES::Get();
-                const auto* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
-                if (!pCell)
-                {
-                    spdlog::warn("Cell not found for coordinates ({}, {}) in worldspace {:X}", pTES->currentGridX, pTES->currentGridY, pWorldSpace->formID);
-                    continue;
-                }
-
-                if (!m_world.GetModSystem().GetServerModId(pCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
-                    continue;
-
-                objectData.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
-            }
-            else if (const auto pParentCell = pObject->GetParentCell())
-            {
-                if (!m_world.GetModSystem().GetServerModId(pParentCell->formID, objectData.CellId.ModId, objectData.CellId.BaseId))
-                    continue;
-            }
-
-            objectData.CurrentInventory.Buffer = pObject->SerializeInventory();
-
-            message.Changes[gameId] = objectData;
-        }
-
-        m_transport.Send(message);
-
-        m_objectsWithInventoryChanges.clear();
-    }
-}
-
-void InventoryService::RunCharacterInventoryUpdates() noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 250ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    if (!m_charactersWithInventoryChanges.empty())
-    {
-        RequestCharacterInventoryChanges message;
-
-        for (const auto formId : m_charactersWithInventoryChanges)
-        {
-            auto view = m_world.view<FormIdComponent>();
-
-            const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
-            {
-                return view.get<FormIdComponent>(entity).Id == formId;
-            });
-
-            if (iter == std::end(view))
-                continue;
-
-            std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
-            if (!serverIdRes.has_value())
-                continue;
-
-            uint32_t serverId = serverIdRes.value();
-
-            const auto* pForm = TESForm::GetById(formId);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-            if (!pActor)
-                continue;
-
-            message.Changes[serverId] = pActor->GetInventory();
-        }
-
-        m_transport.Send(message);
-
-        m_charactersWithInventoryChanges.clear();
-    }
-}
-
-void InventoryService::ApplyCachedObjectInventoryChanges() noexcept
-{
     if (!m_transport.IsConnected())
         return;
 
-    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
+    auto view = m_world.view<FormIdComponent>();
+
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.ActorId](auto entity) 
+    {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (iter == std::end(view))
         return;
 
-    for (const auto& [id, inventory] : m_cachedObjectInventoryChanges)
-    {
-        const auto cObjectId = World::Get().GetModSystem().GetGameId(id);
-        if (cObjectId == 0)
-        {
-            spdlog::error("Failed to retrieve object to sync inventory.");
-            continue;
-        }
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
+    if (!serverIdRes.has_value())
+        return;
 
-        auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+    Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.ActorId), TESForm, Actor);
+    if (!pActor)
+        return;
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    RequestEquipmentChanges request;
+    request.ServerId = serverIdRes.value();
+
+    if (!modSystem.GetServerModId(acEvent.EquipSlotId, request.EquipSlotId))
+        return;
+    if (!modSystem.GetServerModId(acEvent.ItemId, request.ItemId))
+        return;
+
+    request.Count = acEvent.Count;
+    request.Unequip = acEvent.Unequip;
+    request.IsSpell = acEvent.IsSpell;
+    request.IsShout = acEvent.IsShout;
+    request.IsAmmo = acEvent.IsAmmo;
+    request.CurrentInventory = pActor->GetEquippedItems();
+
+    m_transport.Send(request);
+}
+
+void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
+{
+    if (acMessage.DropOrPickUp)
+    {
+        Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+        if (!pActor)
+            return;
+
+        ScopedInventoryOverride _;
+
+        ExtraDataList* pExtraData = pActor->GetExtraDataFromItem(acMessage.Item);
+        ModSystem& modSystem = World::Get().GetModSystem();
+
+        uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
+        TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
         if (!pObject)
         {
-            spdlog::error("Failed to retrieve object to sync inventory.");
-            continue;
+            spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
+                         acMessage.Item.BaseId.BaseId);
+            return;
         }
 
-        pObject->RemoveAllItems();
-        pObject->DeserializeInventory(inventory.Buffer);
+        if (acMessage.Item.Count < 0)
+            pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
     }
+    else
+    {
+        TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
+        if (!pObject)
+            return;
 
-    m_cachedObjectInventoryChanges.clear();
+        ScopedInventoryOverride _;
+
+        pObject->AddOrRemoveItem(acMessage.Item);
+    }
 }
 
-void InventoryService::ApplyCachedCharacterInventoryChanges() noexcept
+void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    if (!m_transport.IsConnected())
+    Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+    if (!pActor)
         return;
 
-    if (UI::Get()->IsOpen(BSFixedString("ContainerMenu")))
-        return;
+    auto& modSystem = World::Get().GetModSystem();
 
-    auto view = m_world.view<FormIdComponent, RemoteComponent>();
-    for (const auto& [id, inventory] : m_cachedCharacterInventoryChanges)
+    uint32_t itemId = modSystem.GetGameId(acMessage.ItemId);
+    TESForm* pItem = TESForm::GetById(itemId);
+
+    uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
+    TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
+
+    auto* pEquipManager = EquipManager::Get();
+
+    if (acMessage.IsSpell)
     {
-        const auto it = std::find_if(std::begin(view), std::end(view), [id = id, view](entt::entity entity) { 
-            return view.get<RemoteComponent>(entity).Id == id;
-        });
+        uint32_t spellSlotId = 0;
+        if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
+            spellSlotId = 1;
 
-        if (it == std::end(view))
-            continue;
-
-        const auto& formIdComponent = view.get<FormIdComponent>(*it);
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-        if (!pActor)
-            continue;
-
-        auto& remoteComponent = m_world.get<RemoteComponent>(*it);
-        remoteComponent.SpawnRequest.InventoryContent = inventory;
-
-        pActor->SetInventory(inventory);
+        if (acMessage.Unequip)
+            pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
+        else
+            pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
     }
+    else if (acMessage.IsShout)
+    {
+        if (acMessage.Unequip)
+            pEquipManager->UnEquipShout(pActor, pItem);
+        else
+            pEquipManager->EquipShout(pActor, pItem);
+    }
+    else
+    {
+        // TODO: ExtraData necessary? probably
+        if (acMessage.Unequip)
+            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
+        else
+        {
+            // Unequip all armor first, since the game won't auto unequip armor
+            Inventory wornArmor{};
+            if (pItem->formType == FormType::Armor)
+            {
+                wornArmor = pActor->GetWornArmor();
+                for (const auto& armor : wornArmor.Entries)
+                {
+                    uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+                    TESForm* pArmor = TESForm::GetById(armorId);
+                    if (pArmor)
+                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
+                }
+            }
 
-    m_cachedCharacterInventoryChanges.clear();
+            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+
+            for (const auto& armor : wornArmor.Entries)
+            {
+                uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+                TESForm* pArmor = TESForm::GetById(armorId);
+                if (pArmor)
+                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+            }
+        }
+    }
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept
@@ -284,7 +242,7 @@ void InventoryService::RunWeaponStateUpdates() noexcept
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();

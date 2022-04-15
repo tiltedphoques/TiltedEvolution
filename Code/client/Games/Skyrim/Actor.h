@@ -24,7 +24,7 @@ struct CombatController;
 
 struct Actor : TESObjectREFR
 {
-    static constexpr uint32_t Type = FormType::Character;
+    static constexpr FormType Type = FormType::Character;
 
     // Allocs and calls constructor
     static GamePtr<Actor> New() noexcept;
@@ -36,7 +36,7 @@ struct Actor : TESObjectREFR
     virtual void sub_9E();
     virtual void sub_9F();
     virtual void sub_A0();
-    virtual void sub_A1();
+    virtual void UnequipObject(void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* aUnk3);
     virtual void sub_A2();
     virtual void sub_A3();
     virtual void sub_A4();
@@ -190,15 +190,15 @@ struct Actor : TESObjectREFR
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorMaxValue(uint32_t aId) const noexcept;
+    Inventory GetActorInventory() const noexcept;
+    MagicEquipment GetMagicEquipment() const noexcept;
 
-    Inventory GetInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
     void SetActorValue(uint32_t aId, float aValue) noexcept;
     void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
@@ -207,17 +207,22 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
+    void SetActorInventory(Inventory& aInventory) noexcept;
+    void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
     void RemoveFromAllFactions() noexcept;
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
+    void GenerateMagicCasters() noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
+    void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
+    void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
 
 public:
 
@@ -263,12 +268,12 @@ public:
     uint32_t combatHandle;
     uint32_t killerHandle;
     uint32_t unk98;
-    float unk9C;
+    float fVoiceTimer;
     uint32_t unkA0;
     uint32_t unkA4;
-    uint32_t unkA8;
-    uint32_t unkAC;
-    uint32_t unkB0;
+    int32_t iThiefCrimeStamp;
+    int32_t iActionValue;
+    float fTimerOnAction;
     uint32_t unkB4[5];
     void* pad138[2];
     struct IMovementDrivenControl* movementDrivenControl; // MovementControllerNPC
@@ -286,7 +291,7 @@ public:
     ActorMagicCaster* leftHandCaster;
     ActorMagicCaster* rightHandCaster;
     ActorMagicCaster* shoutCaster;
-    uintptr_t unk114;
+    ActorMagicCaster* instantCaster;
     MagicItem* magicItems[4];
     TESForm* equippedShout;
     uint32_t someRefrHandle;
@@ -295,15 +300,15 @@ public:
     uint32_t flags2;
     void* unk200[4];
     struct BGSDialogueBranch* dialogueBranch;
-    ActorValueModifiers healthValues;
-    ActorValueModifiers staminaValues;
-    ActorValueModifiers magickaValues;
-    ActorValueModifiers unkSmallArray4;
-    float unk180;
-    uint32_t unk184;
+    ActorValueModifiers healthModifiers;
+    ActorValueModifiers staminaModifiers;
+    ActorValueModifiers magickaModifiers;
+    ActorValueModifiers voiceModifiers;
+    float fLastUpdate;
+    uint32_t iLastSeenTime;
     void* actorWeightData;
-    float  unk18C;
-    float  unk190;
+    float fArmorRating;
+    float fArmorBaseFactorSum;
     uint8_t unk194;
     uint8_t unk195;
     uint8_t unk196;
@@ -322,7 +327,7 @@ static_assert(offsetof(Actor, actorValueOwner) == 0xB0);
 static_assert(offsetof(Actor, actorState) == 0xB8);
 static_assert(offsetof(Actor, flags2) == 0x1FC);
 static_assert(offsetof(Actor, unk194) == 0x270);
-static_assert(offsetof(Actor, unk9C) == 0x108);
+static_assert(offsetof(Actor, fVoiceTimer) == 0x108);
 static_assert(offsetof(Actor, unk84) == 0xE8);
 static_assert(offsetof(Actor, unk17C) == 0x17C);
 static_assert(offsetof(Actor, pCombatController) == 0x158);

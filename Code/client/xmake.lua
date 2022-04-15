@@ -52,6 +52,7 @@ target(name)
         "tiltedcore",
         "spdlog",
         "hopscotch-map",
+        "cryptopp",
         "gamenetworkingsockets",
         "discord",
         "imgui",
@@ -61,7 +62,8 @@ target(name)
         "minhook",
         "entt",
         "glm",
-        "mem")
+        "mem",
+        "xbyak")
 
     if has_config("vivox") then
         add_files("Services/Vivox/**.cpp")
@@ -80,4 +82,4 @@ target(name)
 end
 
 build_client("SkyrimTogetherClient", "TP_SKYRIM=1")
-build_client("FalloutTogetherClient", "TP_FALLOUT=1")
+--build_client("FalloutTogetherClient", "TP_FALLOUT=1")

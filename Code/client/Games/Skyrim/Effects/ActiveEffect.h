@@ -40,13 +40,22 @@ struct ActiveEffect
 
     static ActiveEffect* Instantiate(Actor* apCaster, MagicItem* apSpell, EffectItem* apEffect);
 
-    uint8_t pad8[0x48];
+    uint8_t pad8[0x38];
+    MagicItem* pSpell;
+    void* pEffect;
     MagicTarget* pTarget;
-    uint8_t pad58[0x20];
-    float effectValue;
-    uint8_t pad_007C[4];
+    TESBoundObject* pSource;
+    void* pHitEffects;
+    MagicItem* pDisplacementSpell;
+    float fElapsedSeconds;
+    float fDuration;
+    float fMagnitude;
+    uint32_t uiFlags;
+    uint32_t eConditionStatus;
+    uint16_t usUniqueID;
+    MagicSystem::CastingSource eCastingSource;
 };
-static_assert(sizeof(ActiveEffect) == 0x80);
+static_assert(sizeof(ActiveEffect) == 0x90);
 
 namespace ActiveEffectFactory
 {

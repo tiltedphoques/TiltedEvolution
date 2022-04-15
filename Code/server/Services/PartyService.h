@@ -49,7 +49,7 @@ private:
 
     World& m_world;
 
-    Map<uint32_t, Party> m_parties;
+    TiltedPhoques::Map<uint32_t, Party> m_parties;
     uint32_t m_nextId{0};
     uint64_t m_nextInvitationExpire{0};
 

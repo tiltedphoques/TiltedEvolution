@@ -73,7 +73,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     spdlog::info("Server started on port {}", GetPort());
     UpdateTitle();
 
-    m_pWorld = std::make_unique<World>();
+    m_pWorld = MakeUnique<World>();
 
     BindMessageHandlers();
 }
@@ -321,7 +321,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
 void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{1 << 18};
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -331,7 +331,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -339,7 +339,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
 void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const
 {
-    static thread_local ScratchAllocator s_allocator{1 << 18};
+    static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
     ScopedAllocator _(s_allocator);
 
@@ -349,7 +349,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
     acServerMessage.Serialize(writer);
 
-    PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -357,39 +357,58 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
 void GameServer::SendToLoaded(const ServerMessage& acServerMessage) const
 {
-    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
         if (pPlayer->GetCellComponent())
             pPlayer->Send(acServerMessage);
     }
 }
 
-void GameServer::SendToPlayers(const ServerMessage& acServerMessage) const
+void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludedPlayer) const
 {
-    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        pPlayer->Send(acServerMessage);
+        if (pPlayer != apExcludedPlayer)
+            pPlayer->Send(acServerMessage);
     }
 }
 
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin) const
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludedPlayer) const
 {
-    const auto* cellIdComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
-    const auto* ownerComp = m_pWorld->try_get<OwnerComponent>(acOrigin);
+    const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
 
-    if (!cellIdComp || !ownerComp)
+    if (!pCellComp)
     {
-        spdlog::warn("Components not found for entity {:X}", static_cast<int>(acOrigin));
+        spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
         return;
     }
 
-    for (auto pPlayer : m_pWorld->GetPlayerManager())
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (ownerComp->GetOwner() == pPlayer)
+        if (pCellComp->IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
+            pPlayer->Send(acServerMessage);
+    }
+}
+
+void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
+{
+    if (!acPartyComponent.JoinedPartyId.has_value())
+    {
+        spdlog::warn("Part does not exist, canceling broadcast.");
+        return;
+    }
+
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
+    {
+        if (pPlayer == apExcludeSender)
             continue;
 
-        if (cellIdComp->IsInRange(pPlayer->GetCellComponent()))
+        const auto& partyComponent = pPlayer->GetParty();
+        if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
+        {
+            spdlog::info("Sent to party member");
             pPlayer->Send(acServerMessage);
+        }
     }
 }
 

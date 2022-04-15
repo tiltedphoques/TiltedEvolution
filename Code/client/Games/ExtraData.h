@@ -13,7 +13,7 @@ struct BSExtraData
     virtual ~BSExtraData() = 0;
     virtual ExtraData GetType() const noexcept = 0;
 
-    BSExtraData* next;
+    BSExtraData* next{};
 
 #if TP_FALLOUT4
     uint8_t pad10[2];
@@ -28,28 +28,3 @@ static_assert(offsetof(BSExtraData, form) == 0x18);
 static_assert(sizeof(BSExtraData) == 0x20);
 #endif
 
-struct BSExtraDataList
-{
-    bool Contains(ExtraData aType) const;
-    void Set(ExtraData aType, bool aSet);
-
-    bool Add(ExtraData aType, BSExtraData* apOther);
-    bool Remove(ExtraData aType, BSExtraData* apOther);
-
-    BSExtraData* GetByType(ExtraData type) const;
-#if TP_FALLOUT4
-    void* unk0;
-#endif
-    BSExtraData* data;
-
-    struct Bitfield
-    {
-        uint8_t data[0x18];
-    };
-#if TP_FALLOUT4
-    void* unk10;
-#endif
-
-    Bitfield* bitfield;
-    mutable BSRecursiveLock lock;
-};

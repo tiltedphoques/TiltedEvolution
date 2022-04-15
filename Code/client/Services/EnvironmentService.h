@@ -45,7 +45,7 @@ public:
     void ToggleGameClock(bool aEnable);
     float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
 
-    void AddObjectComponent(TESObjectREFR* apObject) noexcept;
+    entt::entity CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept;
 
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_weatherUpdateConnection;

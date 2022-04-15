@@ -261,7 +261,7 @@ static bool IsEULAAccepted()
         return false;
     }
 
-    const auto data = LoadFile(path);
+    const auto data = TiltedPhoques::LoadFile(path);
     CSimpleIni si;
     if (si.LoadData(data.c_str()) != SI_OK)
         return false;

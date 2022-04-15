@@ -15,15 +15,14 @@ class TESFile
 {
   public:
     TESFile() = default;
-    TESFile(Map<String, uint8_t> aMasterFiles);
+    TESFile(TiltedPhoques::Map<String, uint8_t> aMasterFiles);
 
     void Setup(uint8_t aStandardId);
     void Setup(uint16_t aLiteId);
     bool LoadFile(const std::filesystem::path& acPath) noexcept;
     bool IndexRecords(RecordCollection& aRecordCollection) noexcept;
 
-    static [[nodiscard]] uint32_t GetFormIdPrefix(uint32_t aFormId,
-                                                  Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    static [[nodiscard]] uint32_t GetFormIdPrefix(uint32_t aFormId, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 
   private:
     bool ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aRecordCollection) noexcept;
@@ -41,8 +40,8 @@ class TESFile
     };
     uint32_t m_formIdPrefix = 0;
 
-    Map<String, uint8_t> m_masterFiles{};
-    Map<uint8_t, uint32_t> m_parentToFormIdPrefix{};
+    TiltedPhoques::Map<String, uint8_t> m_masterFiles{};
+    TiltedPhoques::Map<uint8_t, uint32_t> m_parentToFormIdPrefix{};
 };
 
 } // namespace ESLoader

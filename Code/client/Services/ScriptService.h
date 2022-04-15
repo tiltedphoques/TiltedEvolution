@@ -40,6 +40,7 @@ private:
 
     void DisplayNetObjects() noexcept;
     void DisplayEntities() noexcept;
+    void DisplayObjects() noexcept;
     void DisplayEntityPanel(entt::entity aEntity) noexcept;
     void DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept;
     void DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept;

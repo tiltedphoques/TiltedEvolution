@@ -2,13 +2,13 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include <optional>
+#include <Windows.h>
 #include <TiltedCore/Stl.hpp>
 #include <TiltedCore/Filesystem.hpp>
 
 #include "TargetConfig.h"
 
 #include "utils/Registry.h"
-#include "utils/Error.h"
 #include "launcher.h"
 
 namespace oobe

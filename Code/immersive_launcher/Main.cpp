@@ -6,6 +6,8 @@
 
 #include "script_extender/SEMemoryBlock.h"
 
+#include <TiltedCore/Platform.hpp>
+
 extern void CoreStubsInit();
 
 extern "C"

@@ -3,8 +3,6 @@
 #include "Message.h"
 #include <Structs/ObjectData.h>
 
-using TiltedPhoques::Map;
-
 struct RequestObjectInventoryChanges final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kRequestObjectInventoryChanges;
@@ -24,5 +22,5 @@ struct RequestObjectInventoryChanges final : ClientMessage
             GetOpcode() == acRhs.GetOpcode();
     }
     
-    Map<GameId, ObjectData> Changes;
+    TiltedPhoques::Map<GameId, ObjectData> Changes;
 };

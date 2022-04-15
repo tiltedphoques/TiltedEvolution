@@ -14,7 +14,7 @@ struct MiddleProcess
     uint8_t pad0[0xB8];
     float direction; // B8
     uint8_t padBC[0x1A0 - 0xBC];
-    GameList<ActiveEffect*>* ActiveEffects;
+    GameList<ActiveEffect>* ActiveEffects;
     uint8_t pad1A8[0x220 - 0x1A8];
     InventoryEntry* leftEquippedObject;
     uint8_t pad228[0x260 - 0x228];

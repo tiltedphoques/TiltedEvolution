@@ -6,5 +6,10 @@
 
 struct InteractiveObjectComponent
 {
+    InteractiveObjectComponent(const uint32_t acId)
+        : Id(acId)
+    {
+    }
+
     uint32_t Id;
 };

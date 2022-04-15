@@ -1,3 +1,158 @@
+# [1.24.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.23.0...v1.24.0) (2022-04-09)
+
+
+### Bug Fixes
+
+* armor unequip ([a39febb](https://github.com/tiltedphoques/TiltedEvolution/commit/a39febbde738b5b287b0450c0483071f412f3396))
+* definitively fix WaitingFor3D bug ([ef580ac](https://github.com/tiltedphoques/TiltedEvolution/commit/ef580ac32f9fdf201c1001e07a1be1d6257d7aa1))
+* dropping items ([aac8d8f](https://github.com/tiltedphoques/TiltedEvolution/commit/aac8d8f24a1c167b91366f1806af28d3f279f25d))
+* equipment update bug ([24d22c6](https://github.com/tiltedphoques/TiltedEvolution/commit/24d22c69b5e92e78cfea21a1c406c703e93a0dc1))
+* SetWeaponDrawn on 3D loaded ([e7919f9](https://github.com/tiltedphoques/TiltedEvolution/commit/e7919f90d0fb0d1f3b1e4973beb8feb84a5dacf8))
+* temp fix for entt problem ([4089d04](https://github.com/tiltedphoques/TiltedEvolution/commit/4089d041966b63fde65350a74e98d9183bcafd22))
+* unequip crash ([092a14f](https://github.com/tiltedphoques/TiltedEvolution/commit/092a14f2c3690cfa38c9ba55d824c7f19e567e42))
+
+
+### Features
+
+* armor equip sync ([24d255b](https://github.com/tiltedphoques/TiltedEvolution/commit/24d255b83e6e96aca5b19434ddbd93947065c726))
+* dont sync quest items ([e59d47f](https://github.com/tiltedphoques/TiltedEvolution/commit/e59d47f95d796922a4336108c0c91280857cfb99))
+
+# [1.23.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.22.1...v1.23.0) (2022-03-29)
+
+
+### Bug Fixes
+
+* activation duplication bug ([cf7a39e](https://github.com/tiltedphoques/TiltedEvolution/commit/cf7a39e10f75c47b8309ffb4de2da527f66cff30))
+* AE EquipManager hooks ([44fba81](https://github.com/tiltedphoques/TiltedEvolution/commit/44fba81663de586102937627fcecafea8f6a91c6))
+* drop object count ([972e864](https://github.com/tiltedphoques/TiltedEvolution/commit/972e864618020da081a1ca75ca34dc216840952d))
+* linux build ([76c7cf3](https://github.com/tiltedphoques/TiltedEvolution/commit/76c7cf33eb98e2f1af3dcd3802d43c5952f870d6))
+* null crash ([b87775d](https://github.com/tiltedphoques/TiltedEvolution/commit/b87775df2057e59b2d0824d1e6f6398611b564e3))
+* remove item ([573d136](https://github.com/tiltedphoques/TiltedEvolution/commit/573d1365a123881b834c1bf0cc84296e57a9333e))
+* send base id of object instead of refr id ([e5b00af](https://github.com/tiltedphoques/TiltedEvolution/commit/e5b00af16db2791797c565914346311da080ba6d))
+
+
+### Features
+
+* major improvements to equip sync ([04673a2](https://github.com/tiltedphoques/TiltedEvolution/commit/04673a2834d7e08a853cd248a7ba72642a647eb0))
+
+## [1.22.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.22.0...v1.22.1) (2022-03-21)
+
+# [1.22.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.21.0...v1.22.0) (2022-03-21)
+
+
+### Features
+
+* adapt code base to support unitybuild ([2e98a3e](https://github.com/tiltedphoques/TiltedEvolution/commit/2e98a3ef93f68d7dd2620f6d5ccea6a537e3db7e))
+
+# [1.21.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.20.0...v1.21.0) (2022-03-20)
+
+
+### Bug Fixes
+
+* bug in xp sync ([edb1feb](https://github.com/tiltedphoques/TiltedEvolution/commit/edb1febba167671b3b20fd4f8b8ebe9300203e11))
+
+
+### Features
+
+* sync combat xp with party ([a1c8149](https://github.com/tiltedphoques/TiltedEvolution/commit/a1c8149c9ebffcf71bfc5986e69fb3f246eeb893))
+
+# [1.20.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.19.0...v1.20.0) (2022-03-20)
+
+
+### Bug Fixes
+
+* build error ([e52d8bf](https://github.com/tiltedphoques/TiltedEvolution/commit/e52d8bf567705daeeb004ab4ac81d92d6739fd3d))
+* build errors ([8f0cd0a](https://github.com/tiltedphoques/TiltedEvolution/commit/8f0cd0a1ea2573ffbfe04117398f5d11706f07f4))
+* build errors ([8935919](https://github.com/tiltedphoques/TiltedEvolution/commit/893591952a9a2e3be52619614b1fb7ea7575394e))
+* build fixes ([86319bc](https://github.com/tiltedphoques/TiltedEvolution/commit/86319bc55ac581e7f6cd442ca9e4a56274a2b43c))
+* deadlock issue with AddItem ([c5412d2](https://github.com/tiltedphoques/TiltedEvolution/commit/c5412d2c12943d8c086f3e54e185aaff6372799b))
+* death bug ([b4fab96](https://github.com/tiltedphoques/TiltedEvolution/commit/b4fab965b62ef8a9845a9e2ec2ed95c5229bc1d0))
+* forgot TESCondition ([ff9adeb](https://github.com/tiltedphoques/TiltedEvolution/commit/ff9adeb74af8dfab937aa6a3eb334e6b66d5f122))
+* health on remote actors going back up ([b63ce95](https://github.com/tiltedphoques/TiltedEvolution/commit/b63ce9599ada077b0cfb7c0552179e11519df618))
+* memory leak ([6bd8c51](https://github.com/tiltedphoques/TiltedEvolution/commit/6bd8c517e69c08b48860d4d482ac91d1b285483b))
+* object, not a ptr ([bfdc267](https://github.com/tiltedphoques/TiltedEvolution/commit/bfdc267c3c3e62dbc9f064f8735e7a6069a4a1bf))
+* permanent fix for waiting spawn ([1f1b605](https://github.com/tiltedphoques/TiltedEvolution/commit/1f1b6055e42c7685522e41d87bb1fd46d20e9e2c))
+* serialization bugs ([d2f4077](https://github.com/tiltedphoques/TiltedEvolution/commit/d2f4077f22b245d823e1dc576a7358af67b778e0))
+* SpellItem struct ([3687b61](https://github.com/tiltedphoques/TiltedEvolution/commit/3687b615432ff7e2ad260b3fd7fa1aa6d3880b3b))
+* temp fix for waiting spawn ([b614ba9](https://github.com/tiltedphoques/TiltedEvolution/commit/b614ba93fa857676f35357bb84776f98f97099f9))
+
+
+### Features
+
+* Actor::SetFullContainer() ([1110e42](https://github.com/tiltedphoques/TiltedEvolution/commit/1110e42b206e34beccc6c57e4d9cf0bea360a3b3))
+* GetContainer() proof of concept ([b4aa6ef](https://github.com/tiltedphoques/TiltedEvolution/commit/b4aa6ef089d45d8a87b51fe5a1d52941c32c1b38))
+* serializing custom enchantments ([0bc2e1b](https://github.com/tiltedphoques/TiltedEvolution/commit/0bc2e1b7f844022d2297b6d0910126365157e067))
+* successfully transfer inventory to dummy ([2695ed0](https://github.com/tiltedphoques/TiltedEvolution/commit/2695ed069a1a7de54e2f1ee1c76a016c03b067ca))
+* sync enchantments ([1c9be42](https://github.com/tiltedphoques/TiltedEvolution/commit/1c9be4236a64b2ba4aa4b90d7e37b4ffec4afd10))
+* TESObjectREFR::AddItem() ([f96ae17](https://github.com/tiltedphoques/TiltedEvolution/commit/f96ae176aab5a8b30da41d2af8f542e2f3d47ff0))
+
+# [1.19.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.18.1...v1.19.0) (2022-03-16)
+
+
+### Features
+
+* werewolf and vampire lord sync ([d0a387d](https://github.com/tiltedphoques/TiltedEvolution/commit/d0a387d7d64c8f5545f77a2bd3cf8f43631a435c))
+
+## [1.18.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.18.0...v1.18.1) (2022-03-09)
+
+
+### Bug Fixes
+
+* w2s component view inline bug ([03975c7](https://github.com/tiltedphoques/TiltedEvolution/commit/03975c70ab4ca24ced1066482643404cb65d13f5))
+* weapon draw sync ([d764a31](https://github.com/tiltedphoques/TiltedEvolution/commit/d764a31baaab762263c8497fb428a6b4318c05ab))
+
+
+### Reverts
+
+* Revert "feat: flush out npc idles" ([f7ab817](https://github.com/tiltedphoques/TiltedEvolution/commit/f7ab8178b15e93ee29a488a5f6b125e60a5bad55))
+
+# [1.18.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.17.0...v1.18.0) (2022-03-09)
+
+
+### Bug Fixes
+
+* build errors ([4e42a81](https://github.com/tiltedphoques/TiltedEvolution/commit/4e42a8192c78a01225efbb430f8beffb907637f2))
+* health and death sync bug ([126edee](https://github.com/tiltedphoques/TiltedEvolution/commit/126edee366be750c7acb718f0916dcd314617f5f))
+* null crash ([a5a582c](https://github.com/tiltedphoques/TiltedEvolution/commit/a5a582c2af4999dc7c34764823e8e68a2fdd2b9e))
+* queued effects ([96d835e](https://github.com/tiltedphoques/TiltedEvolution/commit/96d835eb9d8b5877ad9f032dc1027e35e93d346e))
+* slow time shout sync ([a3d9f5d](https://github.com/tiltedphoques/TiltedEvolution/commit/a3d9f5dd89d719bc4e8ee08a0177d6b83c8de6d4))
+
+
+### Features
+
+* heal other players through spells ([be4436f](https://github.com/tiltedphoques/TiltedEvolution/commit/be4436f62032a914f03956267744cfdb0e8f4870))
+* Menu/UI reverse, port primitives from LCR ([a0f675a](https://github.com/tiltedphoques/TiltedEvolution/commit/a0f675a5f6c0a1b8c134c50dac661fbd0aa2c86c))
+* Unpause skills + mapmenu ([b829f47](https://github.com/tiltedphoques/TiltedEvolution/commit/b829f47c54884e1b4fe3209a4420da07c34845f9))
+* Unpausing non Offscreen Render target game menus. ([59e0cef](https://github.com/tiltedphoques/TiltedEvolution/commit/59e0cefbac5c217aca89358ed722a2e61f34aedb))
+
+# [1.17.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.16.0...v1.17.0) (2022-02-12)
+
+
+### Features
+
+* lazy loading from version db to give the process time to initialize it ([225bbad](https://github.com/tiltedphoques/TiltedEvolution/commit/225bbad523baa9f1b1b0e95824031b78f0aa8eee))
+
+# [1.16.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.15.0...v1.16.0) (2022-02-12)
+
+
+### Bug Fixes
+
+* More scaling stuff. ([d3d6053](https://github.com/tiltedphoques/TiltedEvolution/commit/d3d605371ca8bd45e676c5daf899a55a614a3d8d))
+
+
+### Features
+
+* clipboard driver 1 ([226efd1](https://github.com/tiltedphoques/TiltedEvolution/commit/226efd12166d4b23aa272f3a58e0ab8fda73b5e3))
+
+# [1.15.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.14.0...v1.15.0) (2022-02-12)
+
+
+### Features
+
+* address library for RTTI as well ([35fb2ba](https://github.com/tiltedphoques/TiltedEvolution/commit/35fb2ba313deb34710a5499a9eb0b7fe9b04a6d0))
+* Use address library instead of hardcoded addresses ([6b2afeb](https://github.com/tiltedphoques/TiltedEvolution/commit/6b2afebce3cf1545137c84adfd75ae4840828625))
+* weird pointers now use address library as well ([543a379](https://github.com/tiltedphoques/TiltedEvolution/commit/543a3793b11294e11db3082b6e6fca5744e84b4c))
+
 # [1.14.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.13.0...v1.14.0) (2022-02-12)
 
 

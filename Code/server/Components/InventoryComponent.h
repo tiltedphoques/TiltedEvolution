@@ -9,5 +9,4 @@
 struct InventoryComponent
 {
     Inventory Content{};
-    bool DirtyInventory{false};
 };
