@@ -198,9 +198,8 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
         return;
 
     const auto active = overlay.GetActive();
-    const auto active2 = pRenderer->IsVisible();
 
-    spdlog::info("{} {} {} {}", aType, aKey, active, active2);
+    spdlog::info("{} {} {}", aType, aKey, active);
 
     if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
     {
