@@ -204,22 +204,19 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
     {
-        
 #if defined(TP_SKYRIM)
-        TiltedPhoques::DInputHook::Get().SetEnabled(!TiltedPhoques::DInputHook::Get().IsEnabled());
+        TiltedPhoques::DInputHook::Get().SetEnabled(!active);
         overlay.SetActive(!active);
-        overlay.SetInGame(true);
 #else
         pRenderer->SetVisible(!active);
 #endif
-        #if 1
+
         if (active)
             while (ShowCursor(FALSE) >= 0)
                 ;
         else
             while (ShowCursor(TRUE) <= 0)
                 ;
-        #endif
     }
     else if (active)
     {
@@ -324,7 +321,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
 
 #if defined(TP_SKYRIM)
-    pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
+    //pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
 #else
     POINTER_FALLOUT4(uint8_t, s_viewportLock, 0x3846670);
     *s_viewportLock = isVisible ? 1 : 0;

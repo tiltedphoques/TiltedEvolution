@@ -14,6 +14,8 @@
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
 
+#include <PlayerCharacter.h>
+
 using TiltedPhoques::OverlayRenderHandlerD3D11;
 using TiltedPhoques::OverlayRenderHandler;
 
@@ -66,7 +68,7 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
     m_pOverlay->GetClient()->Create();
 }
 
-void OverlayService::Render() const noexcept
+void OverlayService::Render() noexcept
 {
     static bool s_bi = false;
     if (!s_bi)
@@ -75,6 +77,13 @@ void OverlayService::Render() const noexcept
 
         s_bi = true;
     }
+
+    auto pPlayer = PlayerCharacter::Get();
+    bool inGame = pPlayer && pPlayer->parentCell;
+    if (inGame && !m_inGame)
+        SetInGame(true);
+    else if (!inGame && m_inGame)
+        SetInGame(false);
 
     m_pOverlay->GetClient()->Render();
 }

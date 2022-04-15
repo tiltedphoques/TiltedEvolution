@@ -30,7 +30,7 @@ struct OverlayService
 
     void Create(RenderSystemD3D11* apRenderSystem) noexcept;
 
-    void Render() const noexcept;
+    void Render() noexcept;
     void Reset() const noexcept;
 
     void Initialize() noexcept;
