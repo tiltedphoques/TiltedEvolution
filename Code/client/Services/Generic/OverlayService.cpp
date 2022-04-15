@@ -24,7 +24,10 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
 
     OverlayRenderHandler* Create() override
     {
-        return new OverlayRenderHandlerD3D11(this);
+        auto* pHandler = new OverlayRenderHandlerD3D11(this);
+        pHandler->SetVisible(true);
+
+        return pHandler;
     }
 
     [[nodiscard]] HWND GetWindow() override
@@ -65,10 +68,74 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 
 void OverlayService::Render() const noexcept
 {
+    static bool s_bi = false;
+    if (!s_bi)
+    {
+        m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
+
+        s_bi = true;
+    }
+
     m_pOverlay->GetClient()->Render();
 }
 
 void OverlayService::Reset() const noexcept
 {
     m_pOverlay->GetClient()->Reset();
+}
+
+void OverlayService::Initialize() noexcept
+{
+    m_pOverlay->ExecuteAsync("init");
+    SetVersion(BUILD_BRANCH "@" BUILD_COMMIT);
+}
+
+void OverlayService::SetActive(bool aActive) noexcept
+{
+    if (!m_inGame)
+        return;
+    if (m_active == aActive)
+        return;
+
+    m_active = aActive;
+
+    m_pOverlay->ExecuteAsync(m_active ? "activate" : "deactivate");
+}
+
+bool OverlayService::GetActive() const noexcept
+{
+    return m_active;
+}
+
+void OverlayService::SetInGame(bool aInGame) noexcept
+{
+    if (m_inGame == aInGame)
+        return;
+    m_inGame = aInGame;
+
+    if (m_inGame)
+    {
+        m_pOverlay->ExecuteAsync("entergame");
+    }
+    else
+    {
+        m_pOverlay->ExecuteAsync("exitgame");
+        SetActive(false);
+    }
+}
+
+bool OverlayService::GetInGame() const noexcept
+{
+    return m_inGame;
+}
+
+void OverlayService::SetVersion(const std::string& acVersion)
+{
+    if (!m_pOverlay)
+        return;
+
+    auto pArguments = CefListValue::Create();
+
+    pArguments->SetString(0, acVersion);
+    m_pOverlay->ExecuteAsync("versionset", pArguments);
 }
