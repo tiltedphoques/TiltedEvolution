@@ -13,7 +13,7 @@ export class WebSocketService implements OnDestroy {
   private ws: WebSocket;
   private _pingObs: Subscription;
 
-  constructor() {
+  /*constructor() {
     this.ws = new WebSocket(`wss://presence.${environment.baseUrl}`);
     this.ws.onopen = () => this.onOpen();
     this.ws.onclose = () => this.onClose();
@@ -21,7 +21,7 @@ export class WebSocketService implements OnDestroy {
       this.message.next(JSON.parse(evt.data));
     };
     this.ws.onerror = (evt) => console.log('ON ERROR', evt);
-  }
+  }*/
 
   ngOnDestroy() {
     this.ws.close();

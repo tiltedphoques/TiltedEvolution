@@ -11,8 +11,8 @@ export class StoreService {
     const value = localStorage.getItem(key);
 
     if (value !== null) {
-      console.log(`Value : ${key} : ${value}`);
-      console.log(value);
+      //console.log(`Value : ${key} : ${value}`);
+      //console.log(value);
       return value;
     }
 

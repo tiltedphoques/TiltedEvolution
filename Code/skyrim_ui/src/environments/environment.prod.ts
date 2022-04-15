@@ -3,7 +3,7 @@ export const environment = {
   nightlyBuild: false,
   game: true,
   urlProtocol: "https",
-  baseUrl: "skyrim-together.com",
+  url: "skyrim-reborn-list.skyrim-together.com",
   intervalPingWebSocket: 5, // seconds
   watermarkText: "Beta",
   chatMessageLengthLimit: 127,

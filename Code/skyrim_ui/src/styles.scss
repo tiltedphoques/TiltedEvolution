@@ -1,14 +1,48 @@
 @import 'functions/mod';
 @import 'functions/rem';
-@import 'mixins/font';
 
 @import 'env';
 
-@include font('assets/fonts', 'Roboto Condensed', (
-  ( light, both ),
-  ( regular, both ),
-  ( bold, both )
-));
+
+//@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-weight: 400;
+  font-style: normal;
+  src: url('assets/fonts/roboto-condensed/regular-normal.ttf');
+}
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-weight: 400;
+  font-style: italic;
+  src: url('assets/fonts/roboto-condensed/regular-italic.ttf');
+}
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-weight: 300;
+  font-style: normal;
+  src: url('assets/fonts/roboto-condensed/light-normal.ttf');
+}
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-weight: 300;
+  font-style: italic;
+  src: url('assets/fonts/roboto-condensed/light-italic.ttf');
+}
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-weight: 700;
+  font-style: normal;
+  src: url('assets/fonts/roboto-condensed/bold-normal.ttf');
+}
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-weight: 700;
+  font-style: italic;
+  src: url('assets/fonts/roboto-condensed/bold-italic.ttf');
+}
+
 
 ::selection {
   color: $-color-background;
@@ -232,7 +266,7 @@ $scrollbar: rem($-size-font, 16px);
 
 html {
   font-family: $-font-default;
-  text-shadow: 0.1rem 0.1rem 0.05rem #000;
+  //text-shadow: 0.1rem 0.1rem 0.05rem #000;
 }
 
 body {
