@@ -164,6 +164,8 @@ void TestService::OnDraw() noexcept
     if (view.empty() || !m_showDebugStuff)
         return;
 
+    DrawEntitiesView();
+
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Server"))
     {
@@ -190,6 +192,11 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("Skills"))
     {
         DrawSkillView();
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Actor values"))
+    {
+        DrawActorValuesView();
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Components"))

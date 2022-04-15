@@ -254,7 +254,7 @@ float Actor::GetActorValue(uint32_t aId) const noexcept
     return actorValueOwner.GetValue(aId);
 }
 
-float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
 {
     return actorValueOwner.GetPermanentValue(aId);
 }

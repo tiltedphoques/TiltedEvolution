@@ -189,7 +189,7 @@ struct Actor : TESObjectREFR
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
-    float GetActorMaxValue(uint32_t aId) const noexcept;
+    float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
 

@@ -53,7 +53,7 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 
         float value = apActor->GetActorValue(i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
-        float maxValue = apActor->GetActorMaxValue(i);
+        float maxValue = apActor->GetActorPermanentValue(i);
         actorValuesComponent.CurrentActorValues.ActorMaxValuesList.insert({i, maxValue});
     }
 }
@@ -146,7 +146,7 @@ void ActorValueService::BroadcastActorValues() noexcept
                 actorValuesComponent.CurrentActorValues.ActorValuesList[i] = newValue;
             }
 
-            float newMaxValue = pActor->GetActorMaxValue(i);
+            float newMaxValue = pActor->GetActorPermanentValue(i);
             float oldMaxValue = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[i];
             if (newMaxValue != oldMaxValue)
             {
