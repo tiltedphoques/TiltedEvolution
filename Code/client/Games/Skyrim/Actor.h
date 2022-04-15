@@ -200,7 +200,7 @@ struct Actor : TESObjectREFR
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
     void SetActorValue(uint32_t aId, float aValue) noexcept;
-    void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
+    void ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;

@@ -290,7 +290,7 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
         return;
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
-    pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
+    pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
 
     const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
     if (health <= 0.f)
@@ -326,7 +326,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
         if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka || key == ActorValueInfo::kHealth)
         {
-            pActor->ForceActorValue(2, key, value);
+            pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, key, value);
             continue;
         }
 #endif
@@ -361,7 +361,7 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 
         spdlog::debug("Actor max value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);
 
-        pActor->ForceActorValue(0, key, value);
+        pActor->ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, key, value);
     }
 }
 
