@@ -91,6 +91,12 @@ uint32_t GetCefModifiers(uint16_t aVirtualKey)
     return modifiers;
 }
 
+// remember to update this when updating toggle keys
+bool IsToggleKey(int aKey) noexcept
+{
+    return aKey == VK_RCONTROL || aKey == VK_F2;
+}
+
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
     if (aType != KEYEVENT_CHAR)
@@ -199,9 +205,10 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     const auto active = overlay.GetActive();
 
-    spdlog::info("{} {} {}", aType, aKey, active);
+    spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
+    // This is really hacky, but if the input hook is enabled, it does not propogate the KEYDOWN event
+    if (IsToggleKey(aKey) && (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active)))
     {
 #if defined(TP_SKYRIM)
         TiltedPhoques::DInputHook::Get().SetEnabled(!active);
@@ -312,8 +319,8 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     auto &discord = World::Get().ctx<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
-    const auto isVisible = pRenderer->IsVisible();
-    if(isVisible)
+    const bool active = s_pOverlay->GetActive();
+    if (active)
     {
         auto& imgui = World::Get().ctx<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
@@ -340,7 +347,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
         GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
 
-        if (isVisible)
+        if (active)
         {
             auto& imgui = World::Get().ctx<ImguiService>();
             imgui.RawInputHandler(input);
