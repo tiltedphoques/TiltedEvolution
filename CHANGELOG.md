@@ -1,3 +1,15 @@
+# [1.25.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.24.1...v1.25.0) (2022-04-16)
+
+
+### Bug Fixes
+
+* add missing return. ([cdbcf6d](https://github.com/tiltedphoques/TiltedEvolution/commit/cdbcf6d87b509303a328507691543f952a7ec14f))
+
+
+### Features
+
+* **SE:** Multi game version support for script extender ([e84ef59](https://github.com/tiltedphoques/TiltedEvolution/commit/e84ef59df6c5ed75ad627b038d5111de000a9639))
+
 ## [1.24.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.24.0...v1.24.1) (2022-04-13)
 
 
