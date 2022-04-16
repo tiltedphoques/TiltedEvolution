@@ -79,7 +79,7 @@ void OverlayService::Render() noexcept
     }
 
     auto pPlayer = PlayerCharacter::Get();
-    bool inGame = pPlayer && pPlayer->parentCell;
+    bool inGame = pPlayer && pPlayer->GetNiNode();
     if (inGame && !m_inGame)
         SetInGame(true);
     else if (!inGame && m_inGame)
