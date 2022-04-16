@@ -1,6 +1,29 @@
-#include <TiltedOnlinePCH.h>
 
 #include <ScriptExtender.h>
+#include <TiltedOnlinePCH.h>
+#include <VersionDb.h>
+
+namespace
+{
+constexpr wchar_t kScriptExtenderName[] =
+#if TP_SKYRIM
+    L"skse64"
+#elif TP_FALLOUT
+    L"f4se"
+#endif
+    ;
+
+constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeof(wchar_t) - 1;
+
+// AE+ only
+// Use this to raise the SKSE baseline
+constexpr int kSKSEMinBuild = 20100;
+
+struct FileVersion
+{
+    static constexpr uint8_t scVersionSize = 4;
+    DWORD versions[scVersionSize];
+};
 
 int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersion)
 {
@@ -31,81 +54,94 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
     return 0;
 }
 
-void InjectScriptExtenderDll()
-{  
-    // WAITING FOR STABLE ANNIVERSARY SKSE RELEASE TO REENABLE
-    return;
+std::string GetSKSEStyleExeVersion()
+{
+    // make sure newer than anniversary!
+    auto exeBuild = VersionDb::Get().GetLoadedVersionString();
+    std::replace(exeBuild.begin(), exeBuild.end(), '.', '_');
+
+    // chop off empty patch numbers for instance "1.6.323.0 becomes "1_6_323"
+    auto patchPos = exeBuild.find_last_of("_0");
+    if (patchPos != std::string::npos)
+    {
+        exeBuild.erase(exeBuild.begin() + (patchPos - 1), exeBuild.end());
+    }
+
+    return exeBuild;
+}
+} // namespace
+
+void LoadScriptExender()
+{
+    const auto exeVerson{GetSKSEStyleExeVersion()};
 
     // Get the path of the game, where the Script Extender dll resides
-    const std::filesystem::path gamePath = std::filesystem::current_path();
+    const auto gameDir = std::filesystem::current_path();
 
-    // Find applicable DLLs
-    std::list<std::filesystem::path> potentialDllFiles;
+    std::list<std::filesystem::path> dllMatches;
+    for (const auto& dirEntry : std::filesystem::directory_iterator(gameDir))
+    {
+        const auto& path = dirEntry.path();
+        if (path.extension() != L".dll")
+            continue;
+
+        auto fileName = path.filename().wstring();
+        if (fileName.length() < kScriptExtenderNameLength)
+            continue;
+
+        if (fileName.substr(0, kScriptExtenderNameLength) == kScriptExtenderName)
+        {
+            dllMatches.push_back(path);
+        }
+    }
+
+    // and before you ask, no, they dont expose it via file version info
+    std::filesystem::path* needle = nullptr;
+    for (auto& match : dllMatches)
+    {
+        auto fname = match.filename().string();
+        auto ptr = &fname[kScriptExtenderNameLength + 1];
+        // make extra sure!
+        if (std::strncmp(ptr, exeVerson.c_str(), exeVerson.length()) == 0)
+        {
+            needle = &match;
+            break;
+        }
+    }
+
+    if (!needle)
+        return;
+
+    FileVersion fileVersion;
+    if (GetFileVersion(*needle, fileVersion) != 0)
+    {
+        spdlog::error("Unable to verify Script Extender version");
+        return;
+    }
+
+    auto skseVersion = fmt::format("v{}.{}.{}.{}", fileVersion.versions[0], fileVersion.versions[1],
+                                   fileVersion.versions[2], fileVersion.versions[3]);
+
 #if TP_SKYRIM
-    const std::string dllPrefix = "skse";
-#elif TP_FALLOUT
-    const std::string dllPrefix = "f4se";
+    // nice try.
+    int SkseVCum = fileVersion.versions[0] * 1000000 + fileVersion.versions[1] * 10000 + fileVersion.versions[2] * 100 +
+                   fileVersion.versions[3];
+    if (SkseVCum < kSKSEMinBuild)
+    {
+        spdlog::error("Pre anniversary Script Extender is unsupported");
+        return;
+    }
 #endif
-    const std::string dllExtension = ".dll";
 
-    // Find matching files prefixes and extension in the game directory
-    for (const auto& entry : std::filesystem::directory_iterator(gamePath))
+    if (LoadLibraryW(needle->c_str()))
     {
-        const auto& fileName = entry.path().filename().string();
-        if (fileName.size() >= (dllPrefix.size() + dllExtension.size()))
-        {
-            if (fileName.substr(0, dllPrefix.size()) == dllPrefix &&
-                fileName.substr(fileName.size() - dllExtension.size(), fileName.size()) == dllExtension)
-            {
-                potentialDllFiles.push_back(entry.path());
-            }
-        }
+        spdlog::info("Successfully loaded {} {}", needle->string(), skseVersion);
+        spdlog::info("Be aware that messages that start without a colored [timestamp] prefix are logs from the "
+                     "Script Extender and its loaded mods.");
     }
-
-    // From all files, use the latest dll version
-    FileVersion latestScriptExtenderDllVersion{};
-    for (auto& version : latestScriptExtenderDllVersion.versions)
+    else
     {
-        version = 0;
-    }
-    std::filesystem::path latestScriptExtenderDllVersionPath;
-    auto hasApplicableScriptExtenderDll = false;
-
-    // Loop over every potential DLL to find the latest one
-    for (const auto& entry : potentialDllFiles)
-    {
-        FileVersion version;
-        if (GetFileVersion(entry, version) == 0)
-        {
-            for (auto i = 0; i < FileVersion::scVersionSize; ++i)
-            {
-                if (version.versions[i] > latestScriptExtenderDllVersion.versions[i])
-                {
-                    latestScriptExtenderDllVersion = version;
-                    latestScriptExtenderDllVersionPath = entry;
-                    hasApplicableScriptExtenderDll = true;
-                    break;
-                }
-                else if (version.versions[i] < latestScriptExtenderDllVersion.versions[i])
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    // Inject the latest ScriptExtender DLL
-    if (hasApplicableScriptExtenderDll)
-    {
-        const auto handle = LoadLibraryW(latestScriptExtenderDllVersionPath.c_str());
-        if (!handle)
-        {
-            spdlog::error("Failed to inject {}! Check your privileges or re-download the Script Extender files.", latestScriptExtenderDllVersionPath.filename().string());
-        }
-        else
-        {
-            spdlog::info("Successfully injected {}!", latestScriptExtenderDllVersionPath.filename().string());
-            spdlog::info("Be aware that messages that start without a colored [timestamp] prefix are logs from the Script Extender and its loaded mods.");
-        }
+        spdlog::error("Failed to load {}! Check your privileges or re-download the Script Extender files.",
+                      needle->string());
     }
 }

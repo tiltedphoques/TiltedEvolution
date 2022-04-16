@@ -53,7 +53,7 @@ bool TiltedOnlineApp::BeginMain()
     World::Get().ctx<DiscordService>().Init();
     World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
 
-    InjectScriptExtenderDll();
+    LoadScriptExender();
     return true;
 }
 
