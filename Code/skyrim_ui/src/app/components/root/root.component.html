@@ -10,11 +10,6 @@
 
   </app-notification-popup>
 
-  <div class="app-root-preview">
-    Skyrim Together
-    <div class="app-root-preview-stage">{{ watermark }}</div>
-    <div class="app-root-preview-build">{{ version }}</div>
-  </div>
   <app-notifications [@notifications]="!active"></app-notifications>
   <div [@controls]="active" class="app-root-controls">
     <app-window *ngIf="isnightly || connected || currentUser" border="strip" class="app-root-menu">

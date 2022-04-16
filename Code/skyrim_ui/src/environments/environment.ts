@@ -10,7 +10,6 @@ export const environment = {
   urlProtocol: "https",
   url: "skyrim-reborn-list.skyrim-together.com",
   intervalPingWebSocket: 5, // seconds
-  watermarkText: "Dev",
   chatMessageLengthLimit: 127,
   nbReconnectionAttempts: 5
 };
