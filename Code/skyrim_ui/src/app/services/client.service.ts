@@ -45,7 +45,7 @@ export class ClientService implements OnDestroy {
   public nameChange = new BehaviorSubject(environment.game ? '' : 'test');
 
   /** Client version setting. */
-  public versionSet = new BehaviorSubject(environment.game ? '' : 'v1.23.0-12-g58e3');
+  public versionSet = new BehaviorSubject(environment.game ? '' : 'browser');
 
   /** Debug state change. */
   public debugStateChange = new Subject<boolean>();

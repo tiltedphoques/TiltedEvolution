@@ -106,7 +106,6 @@ void OverlayService::Reset() const noexcept
 void OverlayService::Initialize() noexcept
 {
     m_pOverlay->ExecuteAsync("init");
-    SetVersion(BUILD_COMMIT);
 }
 
 void OverlayService::SetActive(bool aActive) noexcept
@@ -134,6 +133,7 @@ void OverlayService::SetInGame(bool aInGame) noexcept
 
     if (m_inGame)
     {
+        SetVersion(BUILD_COMMIT);
         m_pOverlay->ExecuteAsync("entergame");
     }
     else

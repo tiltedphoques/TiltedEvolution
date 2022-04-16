@@ -56,6 +56,10 @@ export class ServerListComponent implements OnInit, OnDestroy {
     this.saveFavoriteServerList();
   }
 
+  public cancel(): void {
+    this.done.next();
+  }
+
   public updateServerList() {
 
     if (!this.isLoading) {
@@ -231,12 +235,23 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public getClientVersion() {
-    return this.clientService.versionSet.getValue();
+    return this.getTruncatedClientVersion().split("-")[0];
+  }
+
+  private getTruncatedClientVersion() {
+    return this.clientService.versionSet.getValue().substring(0, 16);
+  }
+
+  public getServerVersion(server: Server) {
+    return server.version.split("-")[0];
+  }
+
+  private getActualServerVersion(server: Server) {
+    return server.version;
   }
 
   public isCompatibleToClient(server: Server) {
-    const clientVersion = this.getClientVersion();
-    return server.version === clientVersion;
+    return this.getActualServerVersion(server) === this.getTruncatedClientVersion();
   }
 
   private close() {
