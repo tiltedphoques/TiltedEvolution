@@ -116,6 +116,7 @@ void LoadScriptExender()
     if (GetFileVersion(*needle, fileVersion) != 0)
     {
         spdlog::error("Unable to verify Script Extender version");
+        return;
     }
 
     auto skseVersion = fmt::format("v{}.{}.{}.{}", fileVersion.versions[0], fileVersion.versions[1],
