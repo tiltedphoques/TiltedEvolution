@@ -2,6 +2,7 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include <algorithm>
+#include <optional>
 #include <console/ConsoleRegistry.h>
 #include <console/ConsoleUtils.h>
 #include <console/StringTokenizer.h>
