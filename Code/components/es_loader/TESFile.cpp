@@ -5,7 +5,7 @@
 
 namespace ESLoader
 {
-TESFile::TESFile(Map<String, uint8_t> aMasterFiles) : m_masterFiles(aMasterFiles)
+TESFile::TESFile(Map<String, uint8_t> &aMasterFiles) : m_masterFiles(aMasterFiles)
 {
 }
 

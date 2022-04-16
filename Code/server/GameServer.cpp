@@ -51,10 +51,8 @@ Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is act
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
-    "DRAGONS AHEAD: ModPolicy is disabled. This can lead to *severe* desync and other oddities. We don't "
-    "encourage this for your player's sake. Make sure you know what you are doing. Support "
-    "requests "
-    "will be *ignored* with this bypass is in place."};
+    "ModPolicy is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. No "
+    "support will be provided while this bypass is in place"};
 
 constexpr char kMopoRecordsMissing[]{
     "Failed to start: ModPolicy is enabled, but no mods are installed. Players wont be able "
@@ -516,8 +514,9 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                 String text = PrettyPrintModList(modsToRemove.ModList);
                 // "ModPolicy: refusing connection {:x} because essential mods are missing: {}"
                 // for future reference ^
-                spdlog::info("ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}",
-                             aConnectionId, text.c_str());
+                spdlog::info(
+                    "ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}",
+                    aConnectionId, text.c_str());
 
                 serverResponse.Type = AuthenticationResponse::ResponseType::kMissingMods;
                 serverResponse.UserMods.ModList = std::move(modsToRemove.ModList);

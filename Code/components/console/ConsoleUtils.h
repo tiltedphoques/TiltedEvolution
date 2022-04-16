@@ -4,6 +4,7 @@
 
 #include <cctype>
 #include <string>
+#include <string.h>
 #include <charconv>
 
 namespace Console

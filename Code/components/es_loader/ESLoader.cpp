@@ -1,7 +1,5 @@
 
-
 #include "ESLoader.h"
-
 #include <filesystem>
 #include <fstream>
 

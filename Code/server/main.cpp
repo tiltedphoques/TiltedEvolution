@@ -133,7 +133,7 @@ class DediRunner
     SettingsInstance m_settings;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
-    UniquePtr<std::jthread> m_pConIOThread{nullptr};
+    UniquePtr<std::jthread> m_pConIOThread;
 };
 
 DediRunner::DediRunner(int argc, char** argv) : m_gameServer(m_console), m_console(kConsoleOutName)
