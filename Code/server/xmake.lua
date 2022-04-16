@@ -1,24 +1,13 @@
 
-local function build_server(name, def)
-target(name)
-    set_kind("binary")
-    set_group("Server")
-    --set_basename(name .. "RebornServer")
-    add_defines(def)
+local function build_server()
     add_includedirs(
         ".",
         "../../Libraries/")
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
-    add_files("**.cpp")
-
-    if name == "SkyrimTogetherServer" then
-        add_deps("SkyrimEncoding")
-    end
-    if name == "FalloutTogetherServer" then
-        add_deps("FalloutEncoding")
-    end
-
+    add_files(
+        "**.cpp",
+        "server.rc")
     add_deps(
         "Common",
         "Console",
@@ -41,5 +30,14 @@ target(name)
         "tiltedcore")
 end
 
-build_server("SkyrimTogetherServer", "TP_SKYRIM=1")
---build_server("FalloutTogetherServer", "TP_FALLOUT=1")
+target("SkyrimTogetherServer")
+    set_kind("binary")
+    set_group("Server")
+    add_defines(
+        "TARGET_ST",
+        "TP_SKYRIM=1",
+        "TARGET_PREFIX=\"st\"")
+    add_deps("SkyrimEncoding")
+    build_server()
+
+-- add_deps("FalloutEncoding")
