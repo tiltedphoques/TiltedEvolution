@@ -279,18 +279,25 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     case AuthenticationResponse::ResponseType::kAccepted: 
     {
         m_connected = true;
-
-        // Dispatch the mods to anyone who needs it
         m_dispatcher.trigger(acMessage.UserMods);
-
-        // Notify we are ready for action
         m_dispatcher.trigger(ConnectedEvent());
         break;
     }
+    // TODO(Anyone): Handle this within the ui
+    case AuthenticationResponse::ResponseType::kWrongVersion:
+        spdlog::error("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
+        break;
+    case AuthenticationResponse::ResponseType::kMissingMods: {
+        spdlog::error("This server has ModPolicy enabled. You were kicked because you have the following mods installed:");
+        for (const auto& m : acMessage.UserMods.ModList)
+        {
+            spdlog::error("{}:{}", m.Filename.c_str(), m.Id);
+        }
+        spdlog::error("Please remove them to join");
+        break;
+    }
     default:
-    case AuthenticationResponse::ResponseType::kMissingMods:
-        // TODO: this message should be handeled elsewhere...
-        // (OR dispatched).
+        spdlog::error("The server refused connection without reason.");
         break;
     }
 }

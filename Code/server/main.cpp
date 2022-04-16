@@ -174,6 +174,8 @@ void DediRunner::StartTerminalIO()
 
         while (m_gameServer.IsRunning())
         {
+            // should have a isDirty flag and flush if, every x seconds.
+
             std::string s;
             std::getline(std::cin, s);
             if (!m_console.TryExecuteCommand(s))

@@ -37,16 +37,17 @@ Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image t
 Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
-
+Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
+                             Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
-
-Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
-                             Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is active", [](Console::ArgStack&) {
+    spdlog::get("ConOut")->info("ModPolicy status: {}", bBypassMoPo ? "not active" : "active");
+});
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
@@ -64,6 +65,11 @@ constexpr char kMopoRecordsMissing[]{
 static uint16_t GetUserTickRate()
 {
     return bPremiumTickrate ? 60 : 30;
+}
+
+static bool IsMoPoActive()
+{
+    return !bBypassMoPo;
 }
 
 GameServer* GameServer::s_pInstance = nullptr;
@@ -469,26 +475,52 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         Mods& responseList = serverResponse.UserMods;
         auto& modsComponent = m_pWorld->ctx<ModsComponent>();
 
-        if (!bBypassMoPo)
+        if (IsMoPoActive())
         {
-            Mods missingMods;
-            for (const Mods::Entry& mod : acRequest->UserMods.ModList)
+            // mods that exist on the client, but not on the server
+            // modscomponent contains a list filled in by the recordcollection
+            Mods modsToRemove;
+
+            const auto& userMods = acRequest->UserMods.ModList;
+            for (const Mods::Entry& mod : userMods)
             {
-                // modscomponent contains a list filled in by the recordcollection
+                // if the client has more mods than the server..
                 if (!modsComponent.IsInstalled(mod.Filename))
                 {
-                    missingMods.ModList.push_back(mod);
+                    modsToRemove.ModList.push_back(mod);
                 }
             }
 
-            if (missingMods.ModList.size() > 0)
+            // TODO(Vince): if you have a better to do this than two for loops
+            // let me know!
+            // Also, for the future, lets think about a mode that allows more than the server installed mods
+            // but requires essential mods?
+
+            // mods that may exist on the server, but not on the client
+            for (const auto& entry : modsComponent.GetServerMods())
             {
-                String text = PrettyPrintModList(missingMods.ModList);
-                spdlog::info("Modpolicy: refusing connection {:x} because essential mods are missing: {}",
+                const auto it = std::find_if(userMods.begin(), userMods.end(),
+                                             [&](const Mods::Entry& it) { return it.Filename == entry.first; });
+
+                if (it == userMods.end())
+                {
+                    Mods::Entry removeEntry;
+                    removeEntry.Filename = entry.first;
+                    removeEntry.Id = 0;
+                    modsToRemove.ModList.push_back(removeEntry);
+                }
+            }
+
+            if (modsToRemove.ModList.size() > 0)
+            {
+                String text = PrettyPrintModList(modsToRemove.ModList);
+                // "ModPolicy: refusing connection {:x} because essential mods are missing: {}"
+                // for future reference ^
+                spdlog::info("ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}",
                              aConnectionId, text.c_str());
 
                 serverResponse.Type = AuthenticationResponse::ResponseType::kMissingMods;
-                serverResponse.UserMods.ModList = std::move(missingMods.ModList);
+                serverResponse.UserMods.ModList = std::move(modsToRemove.ModList);
                 Send(aConnectionId, serverResponse);
                 // This is a lingering kick, so sending the response should still succeed.
                 Kick(aConnectionId);
