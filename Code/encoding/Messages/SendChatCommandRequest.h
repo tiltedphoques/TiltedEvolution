@@ -4,20 +4,20 @@
 
 using TiltedPhoques::String;
 
-struct SendChatMessageRequest final : ClientMessage
+struct SendChatCommandRequest final : ClientMessage
 {
-    static constexpr ClientOpcode Opcode = kSendChatMessageRequest;
+    static constexpr ClientOpcode Opcode = kSendChatCommandRequest;
 
-    SendChatMessageRequest() : ClientMessage(Opcode)
+    SendChatCommandRequest() : ClientMessage(Opcode)
     {
     }
 
-    virtual ~SendChatMessageRequest() = default;
+    virtual ~SendChatCommandRequest() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const SendChatMessageRequest& acRhs) const noexcept
+    bool operator==(const SendChatCommandRequest& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ChatMessage == acRhs.ChatMessage;
@@ -25,3 +25,4 @@ struct SendChatMessageRequest final : ClientMessage
 
     TiltedPhoques::String ChatMessage;
 };
+

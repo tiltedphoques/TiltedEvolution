@@ -5,7 +5,11 @@
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
 
+#include <Events/CommandEvent.h>
+
 #include <Messages/SendChatMessageRequest.h>
+
+#include <World.h>
 
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
     : TiltedPhoques::OverlayClient(apHandler), m_transport(aTransport)
@@ -35,6 +39,9 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         LOG(INFO) << "event=ui_event name=" << eventName;
 #endif
 
+        // TODO: this stuff should really be delegated
+        // at least into different OverlayClient funcs, but maybe even
+        // dispatch events for OverlayService to catch
         if (eventName == "connect")
         {
             std::string baseIp = eventArgs->GetString(0);
@@ -53,10 +60,21 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         }
         else if (eventName == "sendMessage")
         {
-            SendChatMessageRequest messageRequest;
-            messageRequest.ChatMessage = eventArgs->GetString(0).ToString();
-            spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
-            m_transport.Send(messageRequest);
+            std::string contents = eventArgs->GetString(0).ToString();
+            if (!contents.empty())
+            {
+                if (contents[0] == '/')
+                {
+                    World::Get().GetRunner().Trigger(CommandEvent(std::move(String(contents))));
+                }
+                else
+                {
+                    SendChatMessageRequest messageRequest;
+                    messageRequest.ChatMessage = eventArgs->GetString(0).ToString();
+                    spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
+                    m_transport.Send(messageRequest);
+                }
+            }
         }
 
         return true;
