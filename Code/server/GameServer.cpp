@@ -46,17 +46,17 @@ Console::Command<> ShowVersion("version", "Show the version the server was compi
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
 Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
-                             Console::SettingBase::Flags::kHidden};
+                             Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
-    "DRAGONS AHEAD: Mod Policy is disabled. This can lead to *severe* desync and other oddities. We don't "
+    "DRAGONS AHEAD: ModPolicy is disabled. This can lead to *severe* desync and other oddities. We don't "
     "encourage this for your player's sake. Make sure you know what you are doing. Support "
     "requests "
     "will be *ignored* with this bypass is in place."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: Mod policy is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy is enabled, but no mods are installed. Players wont be able "
     "to join! Please install Mods into the /data/ directory."};
 
 } // namespace
@@ -126,6 +126,8 @@ bool GameServer::CheckMoPo()
         Kill();
         return false;
     }
+    else
+        spdlog::info("ModPolicy is active");
     return true;
 }
 
@@ -469,12 +471,10 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         if (!bBypassMoPo)
         {
-            // This doesnt make much sense, as we should have to ask the record collection
             Mods missingMods;
             for (const Mods::Entry& mod : acRequest->UserMods.ModList)
             {
-                //if (!m_pWorld->GetRecordCollection()->GetContainerById)
-
+                // modscomponent contains a list filled in by the recordcollection
                 if (!modsComponent.IsInstalled(mod.Filename))
                 {
                     missingMods.ModList.push_back(mod);

@@ -33,6 +33,7 @@ World::World()
     set<MagicService>(*this, m_dispatcher);
 
     ESLoader::ESLoader loader;
+    // emplace loaded mods into modscomponent.
     m_recordCollection = loader.BuildRecordCollection();
     for (const auto& it : loader.GetLoadOrder())
     {
