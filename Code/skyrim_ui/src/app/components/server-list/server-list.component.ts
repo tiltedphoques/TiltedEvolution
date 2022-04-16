@@ -230,6 +230,15 @@ export class ServerListComponent implements OnInit, OnDestroy {
     return server.isFavorite ? fasStar : farStar;
   }
 
+  public getClientVersion() {
+    return this.clientService.versionSet.getValue();
+  }
+
+  public isCompatibleToClient(server: Server) {
+    const clientVersion = this.getClientVersion();
+    return server.version === clientVersion;
+  }
+
   private close() {
     if (this.errorService.error$.value) {
       this.errorService.removeError();
