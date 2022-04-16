@@ -1,4 +1,5 @@
 
+
 #include "ESLoader.h"
 #include <filesystem>
 #include <fstream>
@@ -9,6 +10,22 @@
 
 namespace ESLoader
 {
+String ReadZString(Buffer::Reader& aReader) noexcept
+{
+    String zstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()));
+    aReader.Advance(zstring.size() + 1);
+    return zstring;
+}
+
+String ReadWString(Buffer::Reader& aReader) noexcept
+{
+    uint16_t stringLength = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
+    String wstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength);
+    aReader.Advance(stringLength);
+    return wstring;
+}
+
 ESLoader::ESLoader()
 {
     m_directory = "data\\";
@@ -123,22 +140,6 @@ fs::path ESLoader::GetPath(String& aFilename)
     }
 
     return fs::path();
-}
-
-String ESLoader::ReadZString(Buffer::Reader& aReader) noexcept
-{
-    String zstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()));
-    aReader.Advance(zstring.size() + 1);
-    return zstring;
-}
-
-String ESLoader::ReadWString(Buffer::Reader& aReader) noexcept
-{
-    uint16_t stringLength = 0;
-    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
-    String wstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength);
-    aReader.Advance(stringLength);
-    return wstring;
 }
 
 } // namespace ESLoader

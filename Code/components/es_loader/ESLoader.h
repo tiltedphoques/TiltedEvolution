@@ -24,12 +24,12 @@ struct PluginData
 };
 using PluginCollection = Vector<PluginData>;
 
+String ReadZString(Buffer::Reader& aReader) noexcept;
+String ReadWString(Buffer::Reader& aReader) noexcept;
+
 class ESLoader
 {
   public:
-    static String ReadZString(Buffer::Reader& aReader) noexcept;
-    static String ReadWString(Buffer::Reader& aReader) noexcept;
-
     ESLoader();
 
     UniquePtr<RecordCollection> BuildRecordCollection() noexcept;

@@ -31,7 +31,7 @@ VMAD::VMAD(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefi
     {
         Script script;
 
-        script.m_name = ESLoader::ESLoader::ReadWString(aReader);
+        script.m_name = ESLoader::ReadWString(aReader);
 
         aReader.ReadBytes(&script.m_status, 1);
         aReader.ReadBytes(reinterpret_cast<uint8_t*>(&script.m_propertyCount), 2);
@@ -40,7 +40,7 @@ VMAD::VMAD(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefi
         {
             ScriptProperty scriptProperty;
 
-            scriptProperty.m_name = ESLoader::ESLoader::ReadWString(aReader);
+            scriptProperty.m_name = ESLoader::ReadWString(aReader);
 
             aReader.ReadBytes(reinterpret_cast<uint8_t*>(&scriptProperty.m_type), 1);
             aReader.ReadBytes(reinterpret_cast<uint8_t*>(&scriptProperty.m_status), 1);
@@ -163,7 +163,7 @@ ACBS::ACBS(Buffer::Reader& aReader)
 
 MAST::MAST(Buffer::Reader& aReader)
 {
-    m_masterName = ESLoader::ESLoader::ReadZString(aReader);
+    m_masterName = ESLoader::ReadZString(aReader);
 }
 
 WCTR::WCTR(Buffer::Reader& aReader)

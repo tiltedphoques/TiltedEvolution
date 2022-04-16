@@ -9,7 +9,7 @@ void WRLD::ParseChunks(WRLD& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFor
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            m_editorId = ESLoader::ESLoader::ReadZString(aReader);
+            m_editorId = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::WCTR_ID:
             m_centerCell = Chunks::WCTR(aReader);

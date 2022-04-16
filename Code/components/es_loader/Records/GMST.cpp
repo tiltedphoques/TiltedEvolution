@@ -8,7 +8,7 @@ void GMST::ParseChunks(GMST& aSourceRecord, Map<uint8_t, uint32_t>& aParentToFor
         switch (aChunkId)
         {
         case ChunkId::EDID_ID:
-            m_editorId = ESLoader::ESLoader::ReadZString(aReader);
+            m_editorId = ESLoader::ReadZString(aReader);
             break;
         case ChunkId::DATA_ID: {
             if (m_editorId == "")
