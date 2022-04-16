@@ -87,11 +87,12 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
+    // TODO: why isn't the event's cell id being used?
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
         return;
 
-    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(cellId.BaseId), TESForm, TESObjectCELL);
+    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(pPlayer->parentCell->formID), TESForm, TESObjectCELL);
     if (!pCell)
         return;
 
@@ -99,11 +100,11 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     // TODO: create entities for container objects?
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
-    AssignObjectsRequest request;
+    AssignObjectsRequest request{};
 
     for (TESObjectREFR* pObject : objects)
     {
-        ObjectData objectData;
+        ObjectData objectData{};
         objectData.CellId = cellId;
 
         if (!m_world.GetModSystem().GetServerModId(pObject->formID, objectData.Id))
@@ -115,7 +116,7 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
             objectData.CurrentLockData.LockLevel = pLock->lockLevel;
         }
 
-        if (pObject->formType == FormType::Container)
+        if (pObject->baseForm->formType == FormType::Container)
             objectData.CurrentInventory = pObject->GetInventory();
 
         request.Objects.push_back(objectData);
@@ -138,6 +139,9 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
 
         CreateObjectEntity(pObject->formID, objectData.ServerId);
 
+        if (objectData.IsSenderFirst)
+            continue;
+
         if (objectData.CurrentLockData != LockData{})
         {
             Lock* pLock = pObject->GetLock();
@@ -153,15 +157,30 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
             pLock->SetLock(objectData.CurrentLockData.IsLocked);
             pObject->LockChange();
         }
+
+        if (pObject->baseForm->formType == FormType::Container)
+            pObject->SetInventory(objectData.CurrentInventory);
     }
 }
 
 entt::entity EnvironmentService::CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept
 {
-    // TODO: check if object already exists?
+    const auto view = m_world.view<FormIdComponent, InteractiveObjectComponent>();
+
+    auto it = std::find_if(view.begin(), view.end(), [acServerId, view](entt::entity entity)
+        { 
+            return view.get<InteractiveObjectComponent>(entity).Id == acServerId;
+        });
+
+    if (it != view.end())
+        return *it;
+
     entt::entity entity = m_world.create();
+    spdlog::info("Created object entity, server id: {:X}, form id {:X}", acServerId, acFormId);
+
     m_world.emplace<FormIdComponent>(entity, acFormId);
     m_world.emplace<InteractiveObjectComponent>(entity, acServerId);
+
     return entity;
 }
 

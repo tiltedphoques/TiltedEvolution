@@ -21,6 +21,7 @@
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
 #include <EquipManager.h>
+#include <DefaultObjectManager.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
@@ -326,6 +327,11 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
 
 Inventory TESObjectREFR::GetInventory() const noexcept
 {
+    return GetInventory([](TESForm& aForm) { return true; });
+}
+
+Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept
+{
     auto& modSystem = World::Get().GetModSystem();
     Inventory inventory{};
 
@@ -339,6 +345,9 @@ Inventory TESObjectREFR::GetInventory() const noexcept
                 spdlog::warn("Entry or form for inventory item is null.");
                 continue;
             }
+
+            if (!aFilter(*pGameEntry->form))
+                continue;
 
             Inventory::Entry entry;
             modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
@@ -354,6 +363,12 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     for (auto pGameEntry : *pExtraContChangesEntries)
     {
         if (!pGameEntry)
+            continue;
+
+        if (!aFilter(*pGameEntry->form))
+            continue;
+
+        if (pGameEntry->IsQuestObject())
             continue;
 
         Inventory::Entry entry;
@@ -424,13 +439,29 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
-    // TODO: filter out quest items
-    inventory.Entries.erase(std::remove_if(inventory.Entries.begin(), inventory.Entries.end(),
-                                           [](const Inventory::Entry& entry) { return entry.Count == 0; }),
-                            inventory.Entries.end());
+    inventory.RemoveByFilter([](const auto& entry) { return entry.Count == 0; });
 
     spdlog::debug("Inventory count after: {}", inventory.Entries.size());
 
+    return inventory;
+}
+
+Inventory TESObjectREFR::GetArmor() const noexcept
+{
+    return GetInventory([](TESForm& aForm) { return aForm.formType == FormType::Armor; });
+}
+
+Inventory TESObjectREFR::GetWornArmor() const noexcept
+{
+    Inventory wornArmor = GetArmor();
+    wornArmor.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    return wornArmor;
+}
+
+Inventory TESObjectREFR::GetEquippedItems() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
     return inventory;
 }
 
@@ -465,9 +496,27 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
 
     if (arEntry.Count > 0)
+    {
+        bool isWorn = false;
+        bool isWornLeft = false;
+        if (pExtraDataList)
+        {
+            isWorn = pExtraDataList->Contains(ExtraData::Worn);
+            isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+        }
+
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
+
+        if (isWorn)
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        else if (isWornLeft)
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+    }
     else if (arEntry.Count < 0)
+    {
+        spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
         RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+    }
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
@@ -482,7 +531,7 @@ void TESObjectREFR::EnableImpl() noexcept
     TP_THIS_FUNCTION(TEnableImpl, void, TESObjectREFR, bool aResetInventory);
 
     POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
-    
+
     ThisCall(s_enable, this, false);
 }
 
@@ -565,6 +614,8 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 
+    spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
+
     ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
@@ -583,6 +634,8 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
+
+    spdlog::debug("Removing inventory item {:X} from {:X}", apItem->formID, apThis->formID);
 
     return ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }

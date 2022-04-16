@@ -48,14 +48,14 @@ struct CharacterService
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
-    void OnAssignCharacter(const AssignCharacterResponse& acMessage) const noexcept;
+    void OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept;
     void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) const noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
     void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
-    void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) const noexcept;
+    void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) noexcept;
     void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
     void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
     void OnMountEvent(const MountEvent& acEvent) const noexcept;
@@ -75,16 +75,19 @@ private:
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 
     void RunLocalUpdates() const noexcept;
-    void RunRemoteUpdates() const noexcept;
+    void RunRemoteUpdates() noexcept;
     void RunFactionsUpdates() const noexcept;
     void RunSpawnUpdates() const noexcept;
     void RunExperienceUpdates() noexcept;
+    void RunWeaponDrawUpdates(const UpdateEvent& acUpdateEvent) noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
     float m_cachedExperience = 0.f;
+
+    Map<uint32_t, std::pair<double, bool>> m_weaponDrawUpdates{};
 
     entt::scoped_connection m_formIdAddedConnection;
     entt::scoped_connection m_formIdRemovedConnection;

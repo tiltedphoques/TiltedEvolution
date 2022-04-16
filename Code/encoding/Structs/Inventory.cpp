@@ -43,8 +43,6 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
 
     Serialization::WriteVarInt(aWriter, ExtraSoulLevel);
 
-    //Serialization::WriteString(aWriter, ExtraTextDisplayName);
-
     Serialization::WriteBool(aWriter, EnchantData.IsWeapon);
     Serialization::WriteBool(aWriter, ExtraEnchantRemoveUnequip);
     Serialization::WriteBool(aWriter, ExtraWorn);
@@ -74,8 +72,6 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     ExtraPoisonCount = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
     ExtraSoulLevel = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-
-    //ExtraTextDisplayName = Serialization::ReadString(aReader);
 
     EnchantData.IsWeapon = Serialization::ReadBool(aReader);
     ExtraEnchantRemoveUnequip = Serialization::ReadBool(aReader);
@@ -113,7 +109,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
         entry.Serialize(aWriter);
     }
 
-    CurrentEquipment.Serialize(aWriter);
+    CurrentMagicEquipment.Serialize(aWriter);
 }
 
 void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -126,25 +122,60 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
         Entries.push_back(entry);
     }
 
-    CurrentEquipment.Deserialize(aReader);
+    CurrentMagicEquipment.Deserialize(aReader);
 }
 
 // TODO: unit testing
-void Inventory::AddOrRemoveEntry(const Entry& acEntry) noexcept
+void Inventory::AddOrRemoveEntry(const Entry& acNewEntry) noexcept
 {
-    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acEntry](Entry& entry)
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acNewEntry](Entry& entry)
     {
-        return entry.CanBeMerged(acEntry);
+        return entry.CanBeMerged(acNewEntry);
     });
 
     if (duplicate != Entries.end())
     {
-        duplicate->Count += acEntry.Count;
+        duplicate->Count += acNewEntry.Count;
         if (duplicate->Count == 0)
             Entries.erase(duplicate);
     }
     else
     {
-        Entries.push_back(acEntry);
+        Entries.push_back(acNewEntry);
     }
+}
+
+void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
+{
+    while (true)
+    {
+        auto wornEntry = std::find_if(Entries.begin(), Entries.end(), [](auto& aEntry) { return aEntry.IsWorn(); });
+        if (wornEntry == Entries.end())
+            break;
+
+        wornEntry->ExtraWorn = wornEntry->ExtraWornLeft = false;
+    }
+
+    for (const auto& newEntry : acNewInventory.Entries)
+    {
+        if (!newEntry.IsWorn())
+            continue;
+
+        auto entry = std::find_if(Entries.begin(), Entries.end(),
+                                  [&newEntry](auto& aEntry) { return aEntry.BaseId == newEntry.BaseId; });
+
+        // This shouldn't happen
+        if (entry == Entries.end())
+            continue;
+
+        entry->ExtraWorn = newEntry.ExtraWorn;
+        entry->ExtraWornLeft = newEntry.ExtraWornLeft;
+    }
+
+    CurrentMagicEquipment = acNewInventory.CurrentMagicEquipment;
+}
+
+void Inventory::RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept
+{
+    Entries.erase(std::remove_if(Entries.begin(), Entries.end(), aFilter), Entries.end());
 }

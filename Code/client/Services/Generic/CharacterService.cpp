@@ -159,6 +159,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunFactionsUpdates();
     RunRemoteUpdates();
     RunExperienceUpdates();
+    RunWeaponDrawUpdates(acUpdateEvent);
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -191,7 +192,7 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
 }
 
-void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) const noexcept
+void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept
 {
     spdlog::info("Received for cookie {:X}", acMessage.Cookie);
 
@@ -227,12 +228,11 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (!pActor)
             return;
 
-        // TODO: verify these code paths (and simplify them maybe)
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-            pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
+            m_weaponDrawUpdates[formIdComponent->Id] = {0, acMessage.IsWeaponDrawn};
 
         return;
     }
@@ -267,13 +267,11 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->SetActorValues(acMessage.AllActorValues);
 
-        //  TODO: verify this code path too while you're at it
-        // in fact, this whole function annoys me
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-            pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
+            m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
         const uint32_t cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
         const TESForm* const pCellForm = TESForm::GetById(cCellId);
@@ -389,7 +387,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 }
 
 // TODO: verify/simplify this spawn data stuff
-void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) const noexcept
+void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
@@ -407,6 +405,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
         remoteComponent.SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
         remoteComponent.SpawnRequest.InventoryContent = acMessage.InitialInventory;
         remoteComponent.SpawnRequest.IsDead = acMessage.IsDead;
+        remoteComponent.SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
@@ -417,6 +416,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
 
         pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
         pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
+        m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -1231,7 +1231,7 @@ void CharacterService::RunLocalUpdates() const noexcept
     m_transport.Send(message);
 }
 
-void CharacterService::RunRemoteUpdates() const noexcept
+void CharacterService::RunRemoteUpdates() noexcept
 {
     // Delay by 120ms to let the interpolation system accumulate interpolation points
     const auto tick = m_transport.GetClock().GetCurrentTick() - 120;
@@ -1304,6 +1304,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
         pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
         pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
         pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
+        m_weaponDrawUpdates[pActor->formID] = {0, remoteComponent.SpawnRequest.IsWeaponDrawn};
 
         if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
             remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -1312,11 +1313,7 @@ void CharacterService::RunRemoteUpdates() const noexcept
     }
 
     for (auto entity : toRemove)
-    {
-        // TODO: this used to be remove(), but this didn't work.
-        // Maybe check if other remove() instances are also compromised?
-        m_world.erase<WaitingFor3D>(entity);
-    }
+        m_world.remove<WaitingFor3D>(entity);
 }
 
 void CharacterService::RunFactionsUpdates() const noexcept
@@ -1420,5 +1417,31 @@ void CharacterService::RunExperienceUpdates() noexcept
     m_cachedExperience = 0.f;
 
     m_transport.Send(message);
-    spdlog::info("Sending over experience {}", message.Experience);
+
+    spdlog::debug("Sending over experience {}", message.Experience);
+}
+
+void CharacterService::RunWeaponDrawUpdates(const UpdateEvent& acUpdateEvent) noexcept
+{
+    std::vector<uint32_t> toRemove{};
+
+    for (auto& [cId, _] : m_weaponDrawUpdates)
+    {
+        auto& data = m_weaponDrawUpdates[cId];
+
+        data.first += acUpdateEvent.Delta;
+        if (data.first <= 0.5)
+            continue;
+
+        Actor* pActor = RTTI_CAST(TESForm::GetById(cId), TESForm, Actor);
+        if (!pActor)
+            continue;
+
+        pActor->SetWeaponDrawnEx(data.second);
+
+        toRemove.push_back(cId);
+    }
+
+    for (uint32_t id : toRemove)
+        m_weaponDrawUpdates.erase(id);
 }

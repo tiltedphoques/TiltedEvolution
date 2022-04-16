@@ -30,17 +30,10 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
-    m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
-    m_drawWeaponConnection = m_dispatcher.sink<NotifyDrawWeapon>().connect<&InventoryService::OnNotifyDrawWeapon>(this);
     m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
-}
-
-void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
-{
-    RunWeaponStateUpdates();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
@@ -111,6 +104,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
+    request.CurrentInventory = pActor->GetEquippedItems();
 
     m_transport.Send(request);
 }
@@ -192,66 +186,30 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
         if (acMessage.Unequip)
             pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
         else
-            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
-    }
-}
-
-void InventoryService::RunWeaponStateUpdates() noexcept
-{
-    if (!m_transport.IsConnected())
-        return;
-
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    // TODO: profile how often this could run
-    constexpr auto cDelayBetweenUpdates = 100ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenUpdates)
-        return;
-
-    lastSendTimePoint = now;
-
-    // TODO: find_if()
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-
-    for (auto entity : view)
-    {
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-        auto& localComponent = view.get<LocalComponent>(entity);
-
-        bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
-        if (isWeaponDrawn != localComponent.IsWeaponDrawn)
         {
-            localComponent.IsWeaponDrawn = isWeaponDrawn;
+            // Unequip all armor first, since the game won't auto unequip armor
+            Inventory wornArmor{};
+            if (pItem->formType == FormType::Armor)
+            {
+                wornArmor = pActor->GetWornArmor();
+                for (const auto& armor : wornArmor.Entries)
+                {
+                    uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+                    TESForm* pArmor = TESForm::GetById(armorId);
+                    if (pArmor)
+                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
+                }
+            }
 
-            DrawWeaponRequest request;
-            request.Id = localComponent.Id;
-            request.IsWeaponDrawn = isWeaponDrawn;
+            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
 
-            m_transport.Send(request);
+            for (const auto& armor : wornArmor.Entries)
+            {
+                uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+                TESForm* pArmor = TESForm::GetById(armorId);
+                if (pArmor)
+                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+            }
         }
     }
 }
-
-void InventoryService::OnNotifyDrawWeapon(const NotifyDrawWeapon& acMessage) noexcept
-{
-    auto view = m_world.view<FormIdComponent, RemoteComponent>();
-
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) {
-        return view.get<RemoteComponent>(entity).Id == id;
-    });
-
-    if (it == std::end(view))
-        return;
-
-    auto& formIdComponent = view.get<FormIdComponent>(*it);
-    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-
-    if (!pActor)
-        return;
-
-    if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-        pActor->SetWeaponDrawnEx(acMessage.IsWeaponDrawn);
-}
-
