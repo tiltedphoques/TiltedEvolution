@@ -46,7 +46,7 @@ World::World()
     set<ActorValueService>(*this, m_dispatcher, m_transport);
     set<InventoryService>(*this, m_dispatcher, m_transport);
     set<MagicService>(*this, m_dispatcher, m_transport);
-    set<CommandService>(*this, m_dispatcher, m_transport);
+    set<CommandService>(*this, m_transport, m_dispatcher);
 }
 
 World::~World() = default;

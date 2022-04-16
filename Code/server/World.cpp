@@ -14,6 +14,7 @@
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/OverlayService.h>
+#include <Services/CommandService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -33,6 +34,7 @@ World::World()
     set<InventoryService>(*this, m_dispatcher);
     set<MagicService>(*this, m_dispatcher);
     set<OverlayService>(*this, m_dispatcher);
+    set<CommandService>(*this, m_dispatcher);
 
     ESLoader loader;
     m_recordCollection = loader.BuildRecordCollection();
