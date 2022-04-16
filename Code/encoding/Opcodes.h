@@ -42,6 +42,7 @@ enum ClientOpcode : unsigned char
     kSyncExperienceRequest,
     kRequestEquipmentChanges,
     kSendChatMessageRequest,
+    kTeleportCommandRequest,
     kClientOpcodeMax
 };
 
@@ -84,5 +85,6 @@ enum ServerOpcode : unsigned char
     kNotifySyncExperience,
     kNotifyEquipmentChanges,
     kNotifyChatMessageBroadcast,
+    kTeleportCommandResponse,
     kServerOpcodeMax
 };

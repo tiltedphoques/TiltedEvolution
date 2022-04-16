@@ -2,7 +2,6 @@
 
 #include "Message.h"
 
-using TiltedPhoques::Map;
 using TiltedPhoques::String;
 
 struct SendChatMessageRequest final : ClientMessage
