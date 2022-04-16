@@ -207,7 +207,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    // This is really hacky, but if the input hook is enabled, it does not propogate the KEYDOWN event
+    // This is really hacky, but when the input hook is enabled initially, it does not propogate the KEYDOWN event
     if (IsToggleKey(aKey) && (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active)))
     {
 #if defined(TP_SKYRIM)
@@ -246,7 +246,7 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
     if (active)
     {
@@ -270,7 +270,7 @@ void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButto
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
     if (active)
     {
@@ -294,7 +294,7 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
     if (active)
     {
