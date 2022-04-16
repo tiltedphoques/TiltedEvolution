@@ -24,30 +24,42 @@
 #include <windows.h>
 #endif
 
-// >> Game server cvars <<
-static Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
-static Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
-static Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
-                                          "Dedicated Together Server"};
-static Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
-                                          "Hello there!"};
-static Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list",
-                                             ""};
-static Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
-static Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-static Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+namespace
+{
+// -- Cvars --
+Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
+                                   "Dedicated Together Server"};
+Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
+                                   "Hello there!"};
+Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
+Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
+Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
-// >> Constants <<
-static constexpr size_t kTagListCap = 512;
+// -- Commands --
+Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
+                                     [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
-static Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
-                                            [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
+                               [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
-static Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                                      [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
+                             Console::SettingBase::Flags::kHidden};
 
-static Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
-                                    Console::SettingBase::Flags::kHidden};
+// -- Constants --
+constexpr char kBypassMoPoWarning[]{
+    "DRAGONS AHEAD: Mod Policy is disabled. This can lead to *severe* desync and other oddities. We don't "
+    "encourage this for your player's sake. Make sure you know what you are doing. Support "
+    "requests "
+    "will be *ignored* with this bypass is in place."};
+
+constexpr char kMopoRecordsMissing[]{
+    "Failed to start: Mod policy is enabled, but no mods are installed. Players wont be able "
+    "to join! Please install Mods into the /data/ directory."};
+
+} // namespace
 
 static uint16_t GetUserTickRate()
 {
@@ -90,33 +102,31 @@ GameServer* GameServer::Get() noexcept
 
 void GameServer::Initialize()
 {
+    if (!CheckMoPo())
+        return;
+
     BindServerCommands();
     m_pWorld->GetScriptService().Initialize();
-
-    if (bBypassMoPo)
-    {
-        spdlog::warn(
-            "DRAGONS AHEAD: Mod Policy is disabled. This can lead to *severe* desync and other oddities. We don't "
-            "encourage this for your player's sake. Make sure you know what you are doing. Support "
-            "requests "
-            "will be *ignored* with this bypass is in place.");
-    }
-    else
-    {
-        if (!m_pWorld->GetRecordCollection())
-        {
-            spdlog::error("Failed to start: Mod policy is enabled, but no mods are installed. Players wont be able "
-                          "to join! Please install Mods into the /data/ directory.");
-
-            Kill();
-        }
-    }
 }
 
 void GameServer::Kill()
 {
     spdlog::info("Server shutdown requested");
     m_requestStop = true;
+}
+
+bool GameServer::CheckMoPo()
+{
+    if (bBypassMoPo)
+        spdlog::warn(kBypassMoPoWarning);
+    // Server is not aware of any installed mods.
+    else if (!m_pWorld->GetRecordCollection())
+    {
+        spdlog::error(kMopoRecordsMissing);
+        Kill();
+        return false;
+    }
+    return true;
 }
 
 void GameServer::BindMessageHandlers()
@@ -373,7 +383,8 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
     }
 }
 
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludedPlayer) const
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
+                                      const Player* apExcludedPlayer) const
 {
     const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
 
@@ -390,7 +401,8 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
-void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
+void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                             const Player* apExcludeSender) const
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
@@ -461,6 +473,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Mods missingMods;
             for (const Mods::Entry& mod : acRequest->UserMods.ModList)
             {
+                //if (!m_pWorld->GetRecordCollection()->GetContainerById)
+
                 if (!modsComponent.IsInstalled(mod.Filename))
                 {
                     missingMods.ModList.push_back(mod);

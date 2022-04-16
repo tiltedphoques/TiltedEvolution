@@ -131,7 +131,6 @@ class DediRunner
     fs::path m_configPath;
     // Order here matters for constructor calling order.
     SettingsInstance m_settings;
-    LogInstance m_logInstance;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
     UniquePtr<std::jthread> m_pConIOThread{nullptr};
@@ -271,15 +270,18 @@ static bool IsEULAAccepted()
 
 int main(int argc, char** argv)
 {
+    LogInstance logInstance;
+    (void)logInstance;
+
     if (!IsEULAAccepted())
     {
-        fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
+        spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
         return 0;
     }
 
     RegisterQuitHandler();
 
-    // Keep stack free.
+    // Keep it off the stack.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
     if (bConsole)
     {

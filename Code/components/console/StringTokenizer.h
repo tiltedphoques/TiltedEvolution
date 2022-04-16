@@ -22,7 +22,7 @@ class StringTokenizer
   private:
     std::string m_delim;
     std::string m_string;
-    size_t m_count;
+    int m_count;
     std::string::size_type m_begin;
     std::string::size_type m_end;
 };

@@ -2,8 +2,8 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <base/Check.h>
 #include <TiltedCore/Stl.hpp>
+#include <base/Check.h>
 
 namespace Console
 {
@@ -93,6 +93,11 @@ struct SettingBase
     inline bool IsLocked() const
     {
         return flags & Flags::kLocked;
+    }
+
+    inline bool IsCheat() const
+    {
+        return flags & Flags::kCheat;
     }
 
     // type info
