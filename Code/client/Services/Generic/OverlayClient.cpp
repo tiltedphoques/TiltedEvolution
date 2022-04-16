@@ -1,9 +1,11 @@
 #include <TiltedOnlinePCH.h>
 
 #include <OverlayRenderHandler.hpp>
-#include <Services/OverlayClient.h>
 
+#include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
+
+#include <Messages/SendChatMessageRequest.h>
 
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
     : TiltedPhoques::OverlayClient(apHandler), m_transport(aTransport)
@@ -36,12 +38,25 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         if (eventName == "connect")
         {
             std::string baseIp = eventArgs->GetString(0);
+            if (baseIp == "localhost")
+            {
+                baseIp = "127.0.0.1";
+            }
+
             uint16_t port = eventArgs->GetInt(1) ? eventArgs->GetInt(1) : 10578;
             m_transport.Connect(baseIp + ":" + std::to_string(port));
+            // iAmAToken = eventArgs->GeString(2);
         }
-        if (eventName == "disconnect")
+        else if (eventName == "disconnect")
         {
             m_transport.Close();
+        }
+        else if (eventName == "sendMessage")
+        {
+            SendChatMessageRequest messageRequest;
+            messageRequest.ChatMessage = eventArgs->GetString(0).ToString();
+            spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
+            m_transport.Send(messageRequest);
         }
 
         return true;
