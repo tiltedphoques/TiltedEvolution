@@ -7,7 +7,7 @@ local function build_server()
     add_headerfiles("**.h")
     add_files(
         "**.cpp")
-    if is_os("windows") then
+    if is_plat("windows") then
         add_files("server.rc")
     end
     add_deps(
