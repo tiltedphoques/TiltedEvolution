@@ -38,8 +38,15 @@ app-server-list {
     }
 
     .offline {
-      // PokPok you need to change that !
       background-color: #FF9494
+    }
+
+    .server-compatible {
+      color: green;
+    }
+
+    .server-incompatible {
+      color: red;
     }
 
     #noserv {

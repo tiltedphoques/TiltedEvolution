@@ -7,6 +7,7 @@ import { Debug } from '../models/debug';
 import { UserService } from './user.service';
 import { Player } from '../models/player';
 import { take } from 'rxjs/operators';
+import { ErrorService } from './error.service';
 
 /** Message. */
 export interface Message {
@@ -44,7 +45,7 @@ export class ClientService implements OnDestroy {
   public nameChange = new BehaviorSubject(environment.game ? '' : 'test');
 
   /** Client version setting. */
-  public versionSet = new BehaviorSubject(environment.game ? '' : 'browser-preview');
+  public versionSet = new BehaviorSubject(environment.game ? '' : 'v1.23.0-12-g58e3');
 
   /** Debug state change. */
   public debugStateChange = new Subject<boolean>();
@@ -72,6 +73,9 @@ export class ClientService implements OnDestroy {
 
   public protocolMismatchChange = new BehaviorSubject(false);
 
+  /** Receive error from core */
+  public triggerError = new BehaviorSubject('');
+
   private _host: string;
 
   private _port: number;
@@ -85,7 +89,7 @@ export class ClientService implements OnDestroy {
    *
    * @param zone Angular Zone.
    */
-  public constructor(private zone: NgZone, private userService: UserService) {
+  public constructor(private zone: NgZone, private userService: UserService, private errorService: ErrorService) {
     if (environment.game) {
       skyrimtogether.on('init', this.onInit.bind(this));
       skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -110,6 +114,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('setplayer3Dloaded', this.onSetPlayer3DLoaded.bind(this));
       skyrimtogether.on('serverid', this.onServerId.bind(this));
       skyrimtogether.on('protocolmismatch', this.onProtocolMismatch.bind(this));
+      skyrimtogether.on('triggererror', this.onTriggerError.bind(this));
     }
   }
 
@@ -141,6 +146,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('setplayer3Dloaded');
       skyrimtogether.off('serverid');
       skyrimtogether.off('protocolmismatch');
+      skyrimtogether.off('triggererror');
     }
   }
 
@@ -431,6 +437,13 @@ export class ClientService implements OnDestroy {
   private onProtocolMismatch() {
     this.zone.run(() => {
       this.protocolMismatchChange.next(true);
+    })
+  }
+
+  private onTriggerError(error: string) {
+    this.zone.run(() => {
+      this.triggerError.next(error);
+      this.errorService.error(error);
     })
   }
 }

@@ -106,7 +106,7 @@ void OverlayService::Reset() const noexcept
 void OverlayService::Initialize() noexcept
 {
     m_pOverlay->ExecuteAsync("init");
-    SetVersion(BUILD_BRANCH "@" BUILD_COMMIT);
+    SetVersion(BUILD_COMMIT);
 }
 
 void OverlayService::SetActive(bool aActive) noexcept

@@ -20,7 +20,7 @@
               <th>Server Name<app-order [isIncreasingOrder]="isIncreasingNameOrder" (sorted)="sortName($event)"></app-order></th>
               <th>Players<app-order [isIncreasingOrder]="isIncreasingPlayerOrder" (sorted)="sortPlayers($event)"></app-order></th>
               <th>Country<app-order [isIncreasingOrder]="isIncreasingCountryOrder" (sorted)="sortCountry($event)"></app-order></th>
-              <th>Version</th>
+              <th>Version ({{ getClientVersion() }})</th>
               <th>Favorite<app-order [isIncreasingOrder]="isIncreasingFavoriteOrder" (sorted)="sortFavorite($event)"></app-order></th> <!-- Pls not automatic fav on top, make it sortable like other titles, thanks! -->
               <th></th>
             </tr>
@@ -30,7 +30,7 @@
               <td>{{ server.name }}</td>
               <td>{{ server.player_count }}</td>
               <td>{{ server.country }}</td>
-              <td>{{ server.version }}</td>
+              <td [ngClass]="isCompatibleToClient(server) ? 'server-compatible' : 'server-incompatible'">{{ server.version }}</td>
               <td (click)="toggleServerFavorite(server)" class="app-server-list-notfavorite"><fa-icon [icon]="getFavoriteIcon(server)"></fa-icon></td>
               <td><button (click)="connect(server)" class="joinbutton">Join</button></td>
             </tr>
