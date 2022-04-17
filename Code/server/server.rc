@@ -19,8 +19,8 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Together Team"
             VALUE "ProductName", "TiltedOnline"
-            VALUE "FileDescription", "Multiplayer mod for Bethesda games"
-            VALUE "OriginalFilename", "launcher.exe"
+            VALUE "FileDescription", "Multiplayer Server for Bethesda games"
+            VALUE "OriginalFilename", "server.exe"
             VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
         END
     END
@@ -30,24 +30,22 @@ BEGIN
     END
 END
 
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "launcher.manifest"
-
 // THERE IS NO NICER WAY
 
 #if defined(TARGET_ST)
 #if (IS_MASTER)
-102 ICON "resources/st.ico"
+102 ICON "resources/st_srv.ico"
 #elif (IS_BRANCH_PREREL)
-102 ICON "resources/st_pre.ico"
+102 ICON "resources/st_srv_pre.ico"
 #else
-102 ICON "resources/st_dev.ico"
+102 ICON "resources/st_srv_dev.ico"
 #endif
 #elif defined(TARGET_FT)
 #if (IS_MASTER)
-102 ICON "resources/ft.ico"
+102 ICON "resources/ft_srv.ico"
 #elif (IS_BRANCH_PREREL)
-102 ICON "resources/ft_pre.ico"
+102 ICON "resources/ft_srv_pre.ico"
 #else
-102 ICON "resources/ft_dev.ico"
+102 ICON "resources/ft_srv_dev.ico"
 #endif
 #endif

@@ -32,7 +32,10 @@ local function build_server()
 end
 
 target("SkyrimTogetherServer")
-    add_defines("TP_SKYRIM=1")
+    add_defines(
+        "TARGET_ST",
+        "TP_SKYRIM=1",
+        "TARGET_PREFIX=\"st\"")
     add_deps("SkyrimEncoding")
     build_server()
 
