@@ -6,10 +6,12 @@ RUN apt update && \
     apt install software-properties-common -y && \
     add-apt-repository 'deb http://mirrors.kernel.org/ubuntu hirsute main universe' -y && \
     apt update && \
-    apt install gcc-11 g++-11 libssl-dev curl p7zip-full p7zip-rar zip unzip zlib1g-dev -y && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
+    apt install libssl-dev curl p7zip-full p7zip-rar zip unzip zlib1g-dev -y
 
-RUN curl -fsSL https://xmake.io/shget.text > getxmake.sh && chmod +x getxmake.sh && ./getxmake.sh
+RUN curl -fsSL https://xmake.io/shget.text > getxmake.sh && chmod +x getxmake.sh && ./getxmake.sh && \
+    apt remove gcc-10 g++-10 -y && \
+    apt install gcc-11 g++-11 -y && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
 
 WORKDIR /home/server
 
@@ -27,12 +29,14 @@ xmake config -y && \
 xmake -j8
 
 FROM ubuntu:20.04 AS skyrim
-COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer /SkyrimTogetherServer
-ENTRYPOINT ["/SkyrimTogetherServer"]
+COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/SkyrimTogetherServer
+WORKDIR /home/server
+ENTRYPOINT ["SkyrimTogetherServer"]
 
 FROM ubuntu:20.04 AS fallout4
-COPY --from=builder /home/server/build/linux/x64/release/FalloutTogetherServer /FalloutTogetherServer
-ENTRYPOINT ["/FalloutTogetherServer"]
+COPY --from=builder /home/server/build/linux/x64/release/FalloutTogetherServer /home/server/FalloutTogetherServer
+WORKDIR /home/server
+ENTRYPOINT ["FalloutTogetherServer"]
 
 FROM ${project} AS final
 
