@@ -30,9 +30,9 @@ void CommandService::OnCommandEvent(const CommandEvent& acEvent) noexcept
         TeleportCommandRequest request{};
         request.TargetPlayer = acEvent.Command.substr(commandWordPos + 1, acEvent.Command.size());
 
-        spdlog::info("Target player: '{}'", request.TargetPlayer);
-
         m_transport.Send(request);
+
+        spdlog::info("Target player: '{}'", request.TargetPlayer);
     }
     else
     {
@@ -42,6 +42,7 @@ void CommandService::OnCommandEvent(const CommandEvent& acEvent) noexcept
 
 void CommandService::OnTeleportCommandResponse(const TeleportCommandResponse& acMessage) noexcept
 {
+    spdlog::info("TeleportCommandResponse: {:X}:{:X} at position {}, {}, {}", acMessage.CellId.ModId, acMessage.CellId.BaseId, acMessage.Position.x, acMessage.Position.y, acMessage.Position.z);
     auto& modSystem = m_world.GetModSystem();
 
     const uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
