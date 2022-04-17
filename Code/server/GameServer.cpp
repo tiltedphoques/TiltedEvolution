@@ -58,6 +58,9 @@ GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
 
+    // register static variables from the dll as native (unowned) items.
+    aConsole.BindStaticItems();
+
     auto port = uServerPort.value_as<uint16_t>();
     while (!Host(port, GetUserTickRate()))
     {

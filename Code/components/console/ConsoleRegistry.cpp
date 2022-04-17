@@ -41,6 +41,20 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
     m_out = spdlog::get(acLoggerName);
     BASE_ASSERT(m_out.get(), "Output logger not found");
 
+    BindStaticItems();
+    RegisterNatives();
+}
+
+ConsoleRegistry::~ConsoleRegistry()
+{
+    for (CommandBase* c : m_dynamicCommands)
+        delete c;
+    for (SettingBase* s : m_dynamicSettings)
+        delete s;
+}
+
+void ConsoleRegistry::BindStaticItems()
+{
     auto* i = CommandBase::ROOT();
     CommandBase::ROOT() = nullptr;
     while (i)
@@ -60,16 +74,6 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
         k->next = nullptr;
         k = j;
     }
-
-    RegisterNatives();
-}
-
-ConsoleRegistry::~ConsoleRegistry()
-{
-    for (CommandBase* c : m_ownedCommands)
-        delete c;
-    for (SettingBase* s : m_ownedSettings)
-        delete s;
 }
 
 void ConsoleRegistry::RegisterNatives()
@@ -123,7 +127,7 @@ void ConsoleRegistry::AddCommand(CommandBase* apCommand)
 
     // Add to global and tracking pool
     m_commands.push_back(apCommand);
-    m_ownedCommands.push_back(apCommand);
+    m_dynamicCommands.push_back(apCommand);
 }
 
 void ConsoleRegistry::AddSetting(SettingBase* apSetting)
@@ -132,7 +136,7 @@ void ConsoleRegistry::AddSetting(SettingBase* apSetting)
     (void)guard;
 
     m_settings.push_back(apSetting);
-    m_ownedSettings.push_back(apSetting);
+    m_dynamicSettings.push_back(apSetting);
 }
 
 CommandBase* ConsoleRegistry::FindCommand(const char* acName)

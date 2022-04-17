@@ -2,10 +2,10 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <spdlog/spdlog-inl.h>
 #include <console/Command.h>
-#include <console/Setting.h>
 #include <console/CommandQueue.h>
+#include <console/Setting.h>
+#include <spdlog/spdlog-inl.h>
 
 namespace Console
 {
@@ -34,10 +34,11 @@ template <typename T> struct ResultAnd
 class ConsoleRegistry
 {
   public:
-    ConsoleRegistry(const char *acLoggerName);
+    ConsoleRegistry(const char* acLoggerName);
     ~ConsoleRegistry();
 
     void RegisterNatives();
+    void BindStaticItems();
 
     template <typename... Ts>
     inline void RegisterCommand(const char* acName, const char* acDesc, std::function<void(ArgStack&)> func)
@@ -70,6 +71,18 @@ class ConsoleRegistry
     // Call this from your main thread, this will drain the work item queue.
     bool Update();
 
+    template <typename T> void ForAllCommands(T functor)
+    {
+        for (auto& c : m_commands)
+            functor(c);
+    }
+
+    template <typename T> void ForAllSettings(T functor)
+    {
+        for (auto& c : m_settings)
+            functor(c);
+    }
+
   private:
     void AddCommand(CommandBase* apCommand);
     void AddSetting(SettingBase* apSetting);
@@ -80,9 +93,9 @@ class ConsoleRegistry
   private:
     std::mutex m_listLock;
     TiltedPhoques::Vector<CommandBase*> m_commands;
-    TiltedPhoques::Vector<CommandBase*> m_ownedCommands;
+    TiltedPhoques::Vector<CommandBase*> m_dynamicCommands;
     TiltedPhoques::Vector<SettingBase*> m_settings;
-    TiltedPhoques::Vector<SettingBase*> m_ownedSettings;
+    TiltedPhoques::Vector<SettingBase*> m_dynamicSettings;
     TiltedPhoques::Vector<std::string> m_commandHistory;
     CommandQueue m_queue;
 

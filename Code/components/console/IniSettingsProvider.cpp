@@ -6,6 +6,7 @@
 
 #include <console/IniSettingsProvider.h>
 #include <console/Setting.h>
+#include <console/ConsoleRegistry.h>
 
 #include <charconv>
 #include <fstream>
@@ -16,7 +17,7 @@ namespace Console
 {
 namespace
 {
-static void ShittyFileWrite(const std::filesystem::path& path, const std::string& data)
+static void ShittyFileWriteThisNeedsToGo(const std::filesystem::path& path, const std::string& data)
 {
     // TODO: Get rid of this, its horrible.
     std::ofstream myfile(path.c_str());
@@ -75,13 +76,13 @@ std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
 }
 } // namespace
 
-void SaveSettingsToIni(const std::filesystem::path& path)
+void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& path)
 {
     CSimpleIni ini;
 
     SI_Error error{SI_Error::SI_OK};
 
-    SettingBase::VisitAll([&](SettingBase* setting) {
+    aReg.ForAllSettings([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
         auto& name = items.second;
@@ -123,10 +124,10 @@ void SaveSettingsToIni(const std::filesystem::path& path)
     std::string buf;
     ini.Save(buf, true);
 
-    ShittyFileWrite(path, buf);
+    ShittyFileWriteThisNeedsToGo(path, buf);
 }
 
-void LoadSettingsFromIni(const std::filesystem::path& path)
+void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& path)
 {
     CSimpleIni ini;
     {
@@ -134,7 +135,7 @@ void LoadSettingsFromIni(const std::filesystem::path& path)
         ini.LoadData(buf.c_str());
     }
 
-    SettingBase::VisitAll([&](SettingBase* setting) {
+    aReg.ForAllSettings([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
         auto& name = items.second;

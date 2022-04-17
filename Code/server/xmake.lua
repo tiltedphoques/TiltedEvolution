@@ -8,7 +8,9 @@ local function build_server()
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
     add_files("**.cpp")
-
+    if is_plat("windows") then
+        add_files("server.rc")
+    end
     add_deps(
         "Common",
         "Console",

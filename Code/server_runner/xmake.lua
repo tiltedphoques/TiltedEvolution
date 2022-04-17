@@ -7,7 +7,11 @@ local function build_runner()
         "../",
         "../../Libraries/")
     add_headerfiles("**.h")
-    add_files("**.cpp")
+    add_files(
+        "**.cpp")
+    if is_plat("windows") then
+        add_files("server_runner.rc")
+    end
     add_deps(
         "Common",
         "Console",
@@ -16,6 +20,7 @@ local function build_runner()
         "tiltedcore",
         "spdlog",
         "hopscotch-map")
+    add_defines("SPDLOG_HEADER_ONLY")
 end
 
 target("SkyrimServerRunner")
@@ -24,3 +29,5 @@ target("SkyrimServerRunner")
         "TARGET_ST",
         "TARGET_PREFIX=\"st\"")
     build_runner()
+    -- core dll
+    add_deps("SkyrimTogetherServer")
