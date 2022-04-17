@@ -16,6 +16,8 @@ void TestService::DrawFormDebugView()
     static TESObjectREFR* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
 
+    ImGui::Begin("Form");
+
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
                        ImGuiInputTextFlags_CharsHexadecimal);
 
@@ -54,4 +56,6 @@ void TestService::DrawFormDebugView()
         }
         */
     }
+
+    ImGui::End();
 }

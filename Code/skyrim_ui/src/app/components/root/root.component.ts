@@ -127,10 +127,6 @@ export class RootComponent implements OnInit, OnDestroy {
     return environment.nightlyBuild;
   }
 
-  public get watermark(): string {
-    return environment.watermarkText;
-  }
-
   public reconnect(): void {
     this.client.reconnect();
   }

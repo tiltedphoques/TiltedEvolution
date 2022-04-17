@@ -1,3 +1,4 @@
 node_modules/*
 out/
-dist/ui
+dist/
+package-lock.json
