@@ -24,12 +24,10 @@ using namespace std::chrono_literals;
 
 class GameServer;
 
-GS_IMPORT GameServer* CreateGameServer(Console::ConsoleRegistry& conReg);
-GS_IMPORT void DestroyGameServer(GameServer* apServer);
+GS_IMPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& conReg);
+GS_IMPORT void DestroyGameServer(IGameServerInstance* apServer);
 
 constexpr char kConsoleOutName[] = "ConOut";
-
-static GameServer* s_whatahack = nullptr;
 
 Console::Setting bConsole{"bConsole", "Enable the console", true};
 
@@ -44,12 +42,12 @@ DediRunner::DediRunner(int argc, char** argv) : m_console(kConsoleOutName)
     LoadSettings();
     s_pRunner = this;
 
-    //s_whatahack = CreateGameServer(m_console);
+    m_pServerInstance = CreateGameServer(m_console);
 }
 
 DediRunner::~DediRunner()
 {
-    //DestroyGameServer(s_whatahack);
+    DestroyGameServer(m_pServerInstance);
     Console::SaveSettingsToIni(m_console, m_SettingsPath);
 }
 
@@ -58,6 +56,8 @@ void DediRunner::LoadSettings()
     m_SettingsPath = fs::current_path() / kConfigPathName / kSettingsFileName;
     if (!fs::exists(m_SettingsPath))
     {
+        // there is a bug in here... waiting to be found
+        // since we dont register our settings till later, so the server settings might be... missing??
         create_directory(fs::current_path() / kConfigPathName);
         Console::SaveSettingsToIni(m_console, m_SettingsPath);
         return;
@@ -76,9 +76,9 @@ void DediRunner::PrintExecutorArrowHack()
 
 void DediRunner::RunGSThread()
 {
-    while (m_pGameServer->IsListening())
+    while (m_pServerInstance->IsListening())
     {
-        m_pGameServer->Update();
+        m_pServerInstance->Update();
         if (bConsole && m_console.Update())
         {
             PrintExecutorArrowHack();
@@ -92,7 +92,7 @@ void DediRunner::StartTerminalIO()
         spdlog::get("ConOut")->info("Server console");
         PrintExecutorArrowHack();
 
-        while (m_pGameServer->IsRunning())
+        while (m_pServerInstance->IsRunning())
         {
             std::string s;
             std::getline(std::cin, s);
@@ -113,7 +113,7 @@ void DediRunner::StartTerminalIO()
 
 void DediRunner::RequestKill()
 {
-    m_pGameServer->Shutdown();
+    m_pServerInstance->Shutdown();
 
     auto wait = std::move(m_pConIOThread);
     (void)(wait);

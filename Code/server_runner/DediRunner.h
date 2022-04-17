@@ -41,7 +41,7 @@ class DediRunner
     fs::path m_SettingsPath;
     Console::ConsoleRegistry m_console;
 
-    TiltedPhoques::UniquePtr<IGameServerInstance> m_pGameServer;
+    IGameServerInstance* m_pServerInstance;
     TiltedPhoques::UniquePtr<std::jthread> m_pConIOThread;
 };
 

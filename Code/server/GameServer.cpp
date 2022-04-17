@@ -498,3 +498,29 @@ void GameServer::UpdateTitle() const
     std::cout << "\033]0;" << title << "\007";
 #endif
 }
+
+bool GameServerInstance::Initialize()
+{
+    m_gameServer.Initialize();
+    return true;
+}
+
+void GameServerInstance::Shutdown()
+{
+    m_gameServer.Kill();
+}
+
+bool GameServerInstance::IsListening()
+{
+    return m_gameServer.IsListening();
+}
+
+bool GameServerInstance::IsRunning()
+{
+    return m_gameServer.IsRunning();
+}
+
+void GameServerInstance::Update()
+{
+    m_gameServer.Update();
+}

@@ -5,7 +5,7 @@ local function build_server()
     add_includedirs(
         ".",
         "../../Libraries/")
-    set_pcxxheader("stdafx.h")
+    set_pcxxheader("Pch.h")
     add_headerfiles("**.h")
     add_files("**.cpp")
     if is_plat("windows") then

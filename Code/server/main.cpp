@@ -22,18 +22,18 @@ GS_EXPORT const char* GetBuildTag()
     return kBuildTag;
 }
 
-GS_EXPORT bool CompareBuildInfo(size_t aGsSize)
+GS_EXPORT bool VerifySizesAndOffsets(size_t aGsSize)
 {
     return aGsSize == sizeof(GameServer);
 }
 
 // memory is owned by the game server, use destroy to ensure destruction
-GS_EXPORT GameServer* CreateGameServer(Console::ConsoleRegistry& conReg)
+GS_EXPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& conReg)
 {
-    return new GameServer(conReg);
+    return new GameServerInstance(conReg);
 }
 
-GS_EXPORT void DestroyGameServer(GameServer* apServer)
+GS_EXPORT void DestroyGameServer(IGameServerInstance* apServer)
 {
     delete apServer;
 }
