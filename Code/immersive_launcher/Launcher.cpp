@@ -18,6 +18,8 @@ extern void InstallStartHook();
 extern void RunTiltedApp();
 extern void RunTiltedInit(const std::filesystem::path& acGamePath, const TiltedPhoques::String& aExeVersion);
 
+HICON g_SharedWindowIcon = nullptr;
+
 namespace launcher
 {
 static LaunchContext* g_context = nullptr;
@@ -50,6 +52,9 @@ int StartUp(int argc, char** argv)
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
+
+    // TODO(Force): Make some InitSharedResources func.
+    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
 
     auto r = GetLastError();
 
