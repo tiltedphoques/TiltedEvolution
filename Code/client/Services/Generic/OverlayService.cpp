@@ -184,14 +184,12 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
 
 void OverlayService::OnConnectedEvent(const ConnectedEvent&) noexcept
 {
-    m_connected = true;
     m_pOverlay->ExecuteAsync("connect");
     SendSystemMessage("Successfully connected to server");
 }
 
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 {
-    m_connected = false;
     m_pOverlay->ExecuteAsync("disconnect");
     SendSystemMessage("Disconnected from server");
 }

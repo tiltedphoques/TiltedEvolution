@@ -17,7 +17,7 @@ using TiltedPhoques::Client;
 
 struct TransportService : Client
 {
-    TransportService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) noexcept;
+    TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
     ~TransportService() noexcept = default;
 
     TP_NOCOPYMOVE(TransportService);
@@ -38,7 +38,6 @@ protected:
     void OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
-    void OnDraw() noexcept;
 
     // Packet handlers
     void HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept;
@@ -52,7 +51,6 @@ private:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
-    entt::scoped_connection m_drawImGuiConnection;
     entt::scoped_connection m_sendServerMessageConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };

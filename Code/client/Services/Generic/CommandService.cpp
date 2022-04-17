@@ -50,6 +50,7 @@ void CommandService::OnTeleportCommandResponse(const TeleportCommandResponse& ac
     if (!pCell)
     {
         spdlog::error("Failed to fetch cell to teleport to.");
+        m_world.GetOverlayService().SendSystemMessage("Teleporting to player failed.");
         return;
     }
 

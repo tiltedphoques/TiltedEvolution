@@ -155,7 +155,13 @@ uint64_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManage
     return hash;
 }
 
-static bool g_EnableAnimWindow{false};
+static bool g_enableAnimWindow{false};
+static bool g_enableInventoryWindow{false};
+static bool g_enableNetworkWindow{false};
+static bool g_enableFormsWindow{false};
+static bool g_enablePlayerWindow{false};
+static bool g_enableSkillsWindow{false};
+static bool g_enablePartyWindow{false};
 
 void TestService::OnDraw() noexcept
 {
@@ -181,30 +187,10 @@ void TestService::OnDraw() noexcept
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Player"))
-    {
-        DrawPlayerDebugView();
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Skills"))
-    {
-        DrawSkillView();
-        ImGui::EndMenu();
-    }
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Animation"))
-    {
-        ImGui::MenuItem("Toggle anim window", nullptr, &g_EnableAnimWindow);
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Form"))
-    {
-        DrawFormDebugView();
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("UI"))
@@ -217,18 +203,38 @@ void TestService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Debuggers"))
+    {
+        ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
+        ImGui::MenuItem("Forms", nullptr, &g_enableFormsWindow);
+        ImGui::MenuItem("Inventory", nullptr, &g_enableInventoryWindow);
+        ImGui::MenuItem("Animations", nullptr, &g_enableAnimWindow);
+        ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
+        ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
+        ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+
+        ImGui::EndMenu();
+    }
     ImGui::EndMainMenuBar();
 
-    if (g_EnableAnimWindow)
+    if (g_enableNetworkWindow)
+        DrawNetworkView();
+    if (g_enableFormsWindow)
+        DrawFormDebugView();
+    if (g_enableInventoryWindow)
+        DrawContainerDebugView();
+    if (g_enableAnimWindow)
         DrawAnimDebugView();
+    if (g_enablePlayerWindow)
+        DrawPlayerDebugView();
+    if (g_enableSkillsWindow)
+        DrawSkillView();
+    if (g_enablePartyWindow)
+        DrawPartyView();
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();
 
     if (m_showBuildTag)
         DrawBuildTag();
-
-    ImGui::Begin("Inventory");
-    DrawContainerDebugView();
-    ImGui::End();
 }
