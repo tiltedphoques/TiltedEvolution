@@ -8,7 +8,7 @@ struct TeleportCommandResponse;
 struct CommandService
 {
 public:
-    CommandService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher);
+    CommandService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher);
     ~CommandService() noexcept = default;
 
     TP_NOCOPYMOVE(CommandService);
