@@ -27,8 +27,16 @@ xmake config -y && \
 xmake -j8
 
 FROM ubuntu:20.04 AS skyrim
+
+RUN apt update && \
+    apt install software-properties-common -y && \
+    add-apt-repository 'deb http://mirrors.kernel.org/ubuntu hirsute main universe' -y && \
+    apt update && apt upgrade -y && \
+    apt remove software-properties-common -y && \
+    apt autoremove -y
+
 COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/SkyrimTogetherServer
 WORKDIR /home/server
-ENTRYPOINT ["SkyrimTogetherServer"]
+ENTRYPOINT ["./SkyrimTogetherServer"]
 
 EXPOSE 10578/udp
