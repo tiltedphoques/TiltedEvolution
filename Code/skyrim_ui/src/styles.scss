@@ -211,44 +211,7 @@ $scrollbar: rem($-size-font, 16px);
 }
 
 ::-webkit-scrollbar-button {
-  width: $scrollbar;
-  height: $scrollbar;
-
-  &:vertical {
-    &:start {
-      background-image: url(assets/images/scrollbar/button-north-inactive.svg);
-
-      &:hover {
-        background-image: url(assets/images/scrollbar/button-north-active.svg);
-      }
-    }
-
-    &:end {
-      background-image: url(assets/images/scrollbar/button-south-inactive.svg);
-
-      &:hover {
-        background-image: url(assets/images/scrollbar/button-south-active.svg);
-      }
-    }
-  }
-
-  &:horizontal {
-    &:start {
-      background-image: url(assets/images/scrollbar/button-west-inactive.svg);
-
-      &:hover {
-        background-image: url(assets/images/scrollbar/button-west-active.svg);
-      }
-    }
-
-    &:end {
-      background-image: url(assets/images/scrollbar/button-east-inactive.svg);
-
-      &:hover {
-        background-image: url(assets/images/scrollbar/button-east-active.svg);
-      }
-    }
-  }
+  display: none;
 }
 
 ::-webkit-scrollbar-track {

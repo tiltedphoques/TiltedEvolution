@@ -237,23 +237,15 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public getClientVersion() {
-    return this.getTruncatedClientVersion().split("-")[0];
-  }
-
-  private getTruncatedClientVersion() {
-    return this.clientService.versionSet.getValue().substring(0, 16);
+    return this.clientService.versionSet.getValue().split("-")[0];
   }
 
   public getServerVersion(server: Server) {
     return server.version.split("-")[0];
   }
 
-  private getActualServerVersion(server: Server) {
-    return server.version;
-  }
-
   public isCompatibleToClient(server: Server) {
-    return this.getActualServerVersion(server) === this.getTruncatedClientVersion();
+    return this.getServerVersion(server) === this.getClientVersion();
   }
 
   private close() {
