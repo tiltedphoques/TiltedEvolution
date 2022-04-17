@@ -21,6 +21,8 @@ export class ServerListComponent implements OnInit, OnDestroy {
 
   @Output()
   public done = new EventEmitter();
+  @Output()
+  public setView = new EventEmitter<string>();
 
   // Server list with search / filter
   public serverList: Server[] = [];
@@ -57,7 +59,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public cancel(): void {
-    this.done.next();
+    this.setView.next("connect");
   }
 
   public updateServerList() {

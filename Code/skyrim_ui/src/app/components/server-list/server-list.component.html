@@ -3,8 +3,8 @@
 <input class="searchListServer" [formControl]="formSearch" type="text" placeholder="Search..."
   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
 
-  <button class="updateServerList" (click)="cancel()">Cancel</button>
   <button class="updateServerList" (click)="updateServerList()">Refresh</button>
+  <button class="updateServerList" (click)="cancel()">Back</button>
 
 <div *ngIf="isLoading; else notLoading">
   Loading...
