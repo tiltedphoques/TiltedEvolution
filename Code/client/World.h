@@ -3,6 +3,7 @@
 #include <Services/RunnerService.h>
 #include <Services/TransportService.h>
 #include <Services/PartyService.h>
+#include <Services/OverlayService.h>
 
 #include <Systems/ModSystem.h>
 
@@ -19,6 +20,8 @@ struct World : entt::registry
     ModSystem& GetModSystem() noexcept;
 
     const PartyService& GetPartyService() const noexcept { return ctx<const PartyService>(); }
+    OverlayService& GetOverlayService() noexcept { return ctx<OverlayService>(); }
+    const OverlayService& GetOverlayService() const noexcept { return ctx<const OverlayService>(); }
 
     auto &GetDispatcher() noexcept
     {
