@@ -153,6 +153,9 @@ void ConsoleRegistry::RegisterNatives()
                 }
                 }
 
+                // signal to the worker thread that we need to flush the settings
+                MarkDirty();
+
                 m_out->info("Set {} to {}", variableName, value);
                 return;
             }
@@ -200,13 +203,12 @@ SettingBase* ConsoleRegistry::FindSetting(const char* acName)
     return *it;
 }
 
-// NOTE(Force): Maybe make this return a status instead?
-bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
+ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
 {
     if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
         m_out->error("Commands must begin with /");
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     size_t tokenCount = 0;
@@ -214,14 +216,14 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (!tokenCount)
     {
         m_out->error("Failed to parse line");
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     auto* pCommand = FindCommand(tokens[0].c_str());
     if (!pCommand)
     {
         m_out->error("Unknown command. Type /help for help.");
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     // Must subtract one, since the first is the literal command.
@@ -230,7 +232,7 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (tokenCount != pCommand->m_argCount)
     {
         m_out->error("Expected {} arguments but got {}", pCommand->m_argCount, tokenCount);
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     ArgStack stack(pCommand->m_argCount);
@@ -238,14 +240,20 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (!result.val)
     {
         m_out->error(result.msg);
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     stack.ResetCounter();
     m_queue.Upload(pCommand, stack);
     StoreCommandInHistory(acLine);
 
-    return true;
+    if (m_requestFlush)
+    {
+        m_requestFlush = false;
+        return ExecutionResult::kDirty;
+    }
+
+    return ExecutionResult::kSuccess;
 }
 
 void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)

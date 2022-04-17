@@ -23,6 +23,7 @@ static void ShittyFileWriteThisNeedsToGo(const std::filesystem::path& path, cons
     // TODO: Get rid of this, its horrible.
     std::ofstream myfile(path.c_str());
     myfile << data.c_str();
+    myfile.flush();
     myfile.close();
 }
 
@@ -71,12 +72,11 @@ std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
 }
 } // namespace
 
-void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& path)
+void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath)
 {
     CSimpleIni ini;
 
     SI_Error error{SI_Error::SI_OK};
-
     aReg.ForAllSettings([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
@@ -117,17 +117,18 @@ void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& path)
     });
 
     std::string buf;
-    ini.Save(buf, true);
+    error = ini.Save(buf, true);
+    BASE_ASSERT(error == SI_Error::SI_OK, "Saving the ini failed");
 
-    ShittyFileWriteThisNeedsToGo(path, buf);
+    ShittyFileWriteThisNeedsToGo(aPath, buf);
 }
 
-void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& path)
+void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath)
 {
     CSimpleIni ini;
     {
         auto buf = TiltedPhoques::LoadFile(aPath);
-        ini.LoadData(buf.c_str());
+        BASE_ASSERT(ini.LoadData(buf.c_str()) == SI_Error::SI_OK, "Failed to load ini data");
     }
 
     aReg.ForAllSettings([&](SettingBase* setting) {

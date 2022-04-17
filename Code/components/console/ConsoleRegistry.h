@@ -56,7 +56,14 @@ class ConsoleRegistry
         AddSetting(new Setting<T>(acName, acDesc, acDefault));
     }
 
-    bool TryExecuteCommand(const std::string& acLine);
+    enum class ExecutionResult
+    {
+        kFailure,
+        kSuccess,
+        kDirty
+    };
+
+    ExecutionResult TryExecuteCommand(const std::string& acLine);
 
     CommandBase* FindCommand(const char* acName);
     SettingBase* FindSetting(const char* acName);
@@ -83,6 +90,11 @@ class ConsoleRegistry
             functor(c);
     }
 
+    void MarkDirty() noexcept
+    {
+        m_requestFlush = true;
+    }
+
   private:
     void AddCommand(CommandBase* apCommand);
     void AddSetting(SettingBase* apSetting);
@@ -98,6 +110,7 @@ class ConsoleRegistry
     TiltedPhoques::Vector<SettingBase*> m_dynamicSettings;
     TiltedPhoques::Vector<std::string> m_commandHistory;
     CommandQueue m_queue;
+    bool m_requestFlush = true;
 
     std::shared_ptr<spdlog::logger> m_out;
 };

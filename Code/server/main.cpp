@@ -90,7 +90,8 @@ GS_EXPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger)
 
 GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    spdlog::register_logger(aLogger);
+    // yes this needs to be here, else the dedirunner dies
+    spdlog::register_logger(std::move(aLogger));
 }
 
 // Before you think about moving logic in here...

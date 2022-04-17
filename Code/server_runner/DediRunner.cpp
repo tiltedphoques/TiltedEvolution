@@ -37,9 +37,8 @@ DediRunner::DediRunner(int argc, char** argv) : m_console(KCompilerStopThisBulls
 {
     s_pRunner = this;
 
-    m_pServerInstance = CreateGameServer(m_console, this, [](void* apUserPointer) { 
-        reinterpret_cast<DediRunner*>(apUserPointer)->LoadSettings();
-    });
+    m_pServerInstance = CreateGameServer(
+        m_console, this, [](void* apUserPointer) { reinterpret_cast<DediRunner*>(apUserPointer)->LoadSettings(); });
 
     // it is here for now..
     m_pServerInstance->Initialize();
@@ -94,15 +93,22 @@ void DediRunner::StartTerminalIO()
 
         while (m_pServerInstance->IsRunning())
         {
+            using exr = Console::ConsoleRegistry::ExecutionResult;
+
             std::string s;
             std::getline(std::cin, s);
-            if (!m_console.TryExecuteCommand(s))
+
+            exr r;
+            if ((r = m_console.TryExecuteCommand(s)) == exr::kSuccess || r == exr::kFailure)
             {
                 // we take the opportunity here and insert it directly
                 // else we will be lacking it, and we want to avoid testing the queue size after
                 // insert due to race condition.
                 PrintExecutorArrowHack();
             }
+
+            if (r == exr::kDirty)
+                Console::SaveSettingsToIni(m_console, m_SettingsPath);
 
             // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
             if (s == "/quit")
