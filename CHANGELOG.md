@@ -1,3 +1,16 @@
+# [1.26.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.25.0...v1.26.0) (2022-04-17)
+
+
+### Bug Fixes
+
+* windoze icons only ([28f66db](https://github.com/tiltedphoques/TiltedEvolution/commit/28f66db84e52f09f2aa94c606cedadb40dda9792))
+
+
+### Features
+
+* BSRandom for funny name. ([d26ac07](https://github.com/tiltedphoques/TiltedEvolution/commit/d26ac07e88ebffb14d073c694552f487b4ec7b3d))
+* New higher res app icons. ([f742413](https://github.com/tiltedphoques/TiltedEvolution/commit/f742413745cd80dfa35947d49d789d57693dd5d7))
+
 # [1.25.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.24.1...v1.25.0) (2022-04-16)
 
 
