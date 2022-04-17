@@ -18,20 +18,6 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
 {
 }
 
-#if 0
-void OverlayService::SendChatMessage(Script::Player aPlayer, const std::string aMessage)
-{
-    spdlog::debug(aMessage);
-    NotifyChatMessageBroadcast notifyMessage;
-    notifyMessage.PlayerName = "";
-    notifyMessage.ChatMessage = aMessage;
-
-    // TODO: ehh?
-    Player* pPlayer = m_world.GetPlayerManager().GetById(aPlayer.GetId());
-    pPlayer->Send(notifyMessage);
-}
-#endif
-
 void OverlayService::BroadcastMessage(const std::string aMessage)
 {
     NotifyChatMessageBroadcast notifyMessage;

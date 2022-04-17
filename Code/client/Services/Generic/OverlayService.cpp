@@ -15,6 +15,7 @@
 #include <Services/TransportService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
+#include <Messages/NotifyPlayerList.h>
 
 #include <Events/CellChangeEvent.h>
 #include <Events/ConnectedEvent.h>
@@ -195,22 +196,24 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
     SendSystemMessage("Disconnected from server");
 }
 
-#if 0
 void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
 {
     for (auto& player : acPlayerList.Players)
     {
         spdlog::info("[CLIENT] ID: {} - Name: {}", player.first, player.second);
 
+        /*
         auto pArguments = CefListValue::Create();
         pArguments->SetInt(0, player.first);
         pArguments->SetString(1, player.second.c_str());
         pArguments->SetInt(2, 7);
         pArguments->SetString(3, "House");
         m_pOverlay->ExecuteAsync("playerconnected", pArguments);
+        */
     }
 }
 
+#if 0
 void OverlayService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 {
     auto pArguments = CefListValue::Create();
