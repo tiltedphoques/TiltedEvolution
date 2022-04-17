@@ -13,7 +13,6 @@ class OverlayService
   public:
     OverlayService(World& aWorld, entt::dispatcher& aDispatcher);
 
-    void SendChatMessage(Script::Player aPlayer, const std::string aMessage);
     void BroadcastMessage(const std::string aMessage);
 
   protected:
