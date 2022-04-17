@@ -67,7 +67,6 @@ struct OverlayService
 
     bool m_active = false;
     bool m_inGame = false;
-    bool m_connected = false;
 
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
