@@ -39,46 +39,52 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         LOG(INFO) << "event=ui_event name=" << eventName;
 #endif
 
-        // TODO: this stuff should really be delegated
-        // at least into different OverlayClient funcs, but maybe even
-        // dispatch events for OverlayService to catch
         if (eventName == "connect")
-        {
-            std::string baseIp = eventArgs->GetString(0);
-            if (baseIp == "localhost")
-            {
-                baseIp = "127.0.0.1";
-            }
-
-            uint16_t port = eventArgs->GetInt(1) ? eventArgs->GetInt(1) : 10578;
-            m_transport.Connect(baseIp + ":" + std::to_string(port));
-            // iAmAToken = eventArgs->GeString(2);
-        }
+            ProcessConnectMessage(eventArgs);
         else if (eventName == "disconnect")
-        {
-            m_transport.Close();
-        }
+            ProcessDisconnectMessage();
         else if (eventName == "sendMessage")
-        {
-            std::string contents = eventArgs->GetString(0).ToString();
-            if (!contents.empty())
-            {
-                if (contents[0] == '/')
-                {
-                    World::Get().GetRunner().Trigger(CommandEvent(std::move(String(contents))));
-                }
-                else
-                {
-                    SendChatMessageRequest messageRequest;
-                    messageRequest.ChatMessage = eventArgs->GetString(0).ToString();
-                    spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
-                    m_transport.Send(messageRequest);
-                }
-            }
-        }
+            ProcessChatMessage(eventArgs);
 
         return true;
     }
 
     return false;
+}
+
+void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
+{
+    std::string baseIp = aEventArgs->GetString(0);
+    if (baseIp == "localhost")
+    {
+        baseIp = "127.0.0.1";
+    }
+
+    uint16_t port = aEventArgs->GetInt(1) ? aEventArgs->GetInt(1) : 10578;
+    m_transport.Connect(baseIp + ":" + std::to_string(port));
+    // iAmAToken = aEventArgs->GeString(2);
+}
+
+void OverlayClient::ProcessDisconnectMessage()
+{
+    m_transport.Close();
+}
+
+void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
+{
+    std::string contents = aEventArgs->GetString(0).ToString();
+    if (!contents.empty())
+    {
+        if (contents[0] == '/')
+        {
+            World::Get().GetRunner().Trigger(CommandEvent(std::move(String(contents))));
+        }
+        else
+        {
+            SendChatMessageRequest messageRequest;
+            messageRequest.ChatMessage = aEventArgs->GetString(0).ToString();
+            spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
+            m_transport.Send(messageRequest);
+        }
+    }
 }
