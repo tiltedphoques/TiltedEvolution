@@ -1,64 +1,31 @@
 #include "CrashHandler.h"
 
-#include <strsafe.h>
-#include <sstream>
-
-#include "client/crashpad_client.h"
-#include "client/settings.h"
-#include "client/crash_report_database.h"
+#include <sentry.h>
 
 #include <BuildInfo.h>
 
 
-using namespace crashpad;
-
-static CrashpadClient client;
-
-LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
-{
-    if (pExceptionInfo->ExceptionRecord->ExceptionCode == 0xC0000005)
-    {
-        client.DumpAndCrash(pExceptionInfo);
-        return EXCEPTION_EXECUTE_HANDLER;
-    }
-
-    return EXCEPTION_CONTINUE_SEARCH;
-}
-
-
 void InstallCrashHandler()
 {
-    base::FilePath database(L"crashpad");
-    std::unique_ptr<CrashReportDatabase> db = CrashReportDatabase::Initialize(database);
+    sentry_options_t* options = sentry_options_new();
 
-#if 1
-    if (db != nullptr && db->GetSettings() != nullptr)
-    {
-        db->GetSettings()->SetUploadsEnabled(true);
-    }
-#endif
+    sentry_options_set_database_path(options, ".sentry-native");
 
-    // Path to the out-of-process handler executable
-    base::FilePath handler(L"crashpad_handler.exe");
-    // URL used to submit minidumps to
 #if defined(TARGET_ST)
-    std::string url("https://o228105.ingest.sentry.io/api/6269770/minidump/?sentry_key=96c601d451c94b32adb826aa62c6d50f");
+    sentry_options_set_dsn(options, "https://96c601d451c94b32adb826aa62c6d50f@o228105.ingest.sentry.io/6269770");
 #else
-    std::string url("https://o228105.ingest.sentry.io/api/6273696/minidump/?sentry_key=63886f8f9ef54328bc3373b07750a028");
+    sentry_options_set_dsn(options, "https://63886f8f9ef54328bc3373b07750a028@o228105.ingest.sentry.io/6273696");
 #endif
-    // Optional annotations passed via --annotations to the handler
-    std::map<std::string, std::string> annotations;
 
-    annotations["commit"] = BUILD_COMMIT;
-    annotations["branch"] = BUILD_BRANCH;
+    sentry_options_set_auto_session_tracking(options, false);
+    sentry_options_set_symbolize_stacktraces(options, true);
 
-    // Optional arguments to pass to the handler
-    std::vector<std::string> arguments;
+    sentry_options_set_release(options, BUILD_COMMIT);
 
-    if (bool success = client.StartHandler(handler, database, database, url, annotations, arguments, true, false))
-    {
-        success = client.WaitForHandlerStart(INFINITE);
-    }
+    sentry_init(options);
+}
 
-    AddVectoredExceptionHandler(1, &VectoredExceptionHandler);
+void UninstallCrashHandler()
+{
+    sentry_shutdown();
 }

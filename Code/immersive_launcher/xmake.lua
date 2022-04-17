@@ -5,8 +5,7 @@ local function build_launcher()
     set_symbols("debug", "hidden")
 
     after_install(function(target)
-        local linkdir = target:pkg("crashpad"):get("linkdirs")
-        print(target:pkg("crashpad"))
+        local linkdir = target:pkg("sentry-native"):get("linkdirs")
         local bindir = path.join(linkdir, "..", "bin")
         os.cp(bindir, target:installdir())
     end)
@@ -61,10 +60,10 @@ local function build_launcher()
         "glm",
         "cef",
         "mem",
-        "crashpad")
+        "sentry-native")
 end
 
-add_requires("crashpad stable")
+add_requires("sentry-native")
 
 target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")

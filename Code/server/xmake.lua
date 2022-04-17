@@ -1,4 +1,3 @@
-
 local function build_server(name, def)
 target(name)
     set_kind("binary")

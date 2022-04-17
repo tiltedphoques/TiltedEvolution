@@ -67,5 +67,9 @@ int main(int argc, char** argv)
 
     InstallCrashHandler();
 
-    return launcher::StartUp(argc, argv);
+    auto ret = launcher::StartUp(argc, argv);
+
+    UninstallCrashHandler();
+
+    return ret;
 }
