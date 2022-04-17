@@ -3,6 +3,8 @@
 class IGameServerInstance
 {
   public:
+    virtual ~IGameServerInstance() = default;
+
     // lifetime control
     virtual bool Initialize() = 0;
     virtual void Shutdown() = 0;

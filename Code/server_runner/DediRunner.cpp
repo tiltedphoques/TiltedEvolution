@@ -21,10 +21,9 @@ DediRunner* s_pRunner{nullptr};
 } // namespace
 
 // imports
-GS_IMPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& conReg, void* apUserPointer,
-                                                void (*apCallback)(void*));
-GS_IMPORT void DestroyGameServer(IGameServerInstance* apServer);
-
+GS_IMPORT TiltedPhoques::UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& conReg,
+                                                                         void* apUserPointer,
+                                                                         void (*apCallback)(void*));
 // needs to be global
 Console::Setting bConsole{"bConsole", "Enable the console", true};
 
@@ -37,8 +36,8 @@ DediRunner::DediRunner(int argc, char** argv) : m_console(KCompilerStopThisBulls
 {
     s_pRunner = this;
 
-    m_pServerInstance = CreateGameServer(
-        m_console, this, [](void* apUserPointer) { reinterpret_cast<DediRunner*>(apUserPointer)->LoadSettings(); });
+    m_pServerInstance = std::move(CreateGameServer(
+        m_console, this, [](void* apUserPointer) { reinterpret_cast<DediRunner*>(apUserPointer)->LoadSettings(); }));
 
     // it is here for now..
     m_pServerInstance->Initialize();
@@ -47,7 +46,6 @@ DediRunner::DediRunner(int argc, char** argv) : m_console(KCompilerStopThisBulls
 DediRunner::~DediRunner()
 {
     Console::SaveSettingsToIni(m_console, m_SettingsPath);
-    DestroyGameServer(m_pServerInstance);
 }
 
 void DediRunner::LoadSettings()

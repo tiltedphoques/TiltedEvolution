@@ -59,13 +59,7 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
     RegisterNatives();
 }
 
-ConsoleRegistry::~ConsoleRegistry()
-{
-    for (CommandBase* c : m_dynamicCommands)
-        delete c;
-    for (SettingBase* s : m_dynamicSettings)
-        delete s;
-}
+ConsoleRegistry::~ConsoleRegistry() = default;
 
 void ConsoleRegistry::BindStaticItems()
 {
@@ -164,23 +158,23 @@ void ConsoleRegistry::RegisterNatives()
         });
 }
 
-void ConsoleRegistry::AddCommand(CommandBase* apCommand)
+void ConsoleRegistry::AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand)
 {
     std::lock_guard<std::mutex> _(m_listLock);
     (void)_;
 
     // Add to global and tracking pool
-    m_commands.push_back(apCommand);
-    m_dynamicCommands.push_back(apCommand);
+    m_commands.push_back(apCommand.get());
+    m_dynamicCommands.push_back(std::move(apCommand));
 }
 
-void ConsoleRegistry::AddSetting(SettingBase* apSetting)
+void ConsoleRegistry::AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting)
 {
     std::lock_guard<std::mutex> guard(m_listLock);
     (void)guard;
 
-    m_settings.push_back(apSetting);
-    m_dynamicSettings.push_back(apSetting);
+    m_settings.push_back(apSetting.get());
+    m_dynamicSettings.push_back(std::move(apSetting));
 }
 
 CommandBase* ConsoleRegistry::FindCommand(const char* acName)

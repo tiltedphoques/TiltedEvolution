@@ -43,17 +43,20 @@ class ConsoleRegistry
     template <typename... Ts>
     inline void RegisterCommand(const char* acName, const char* acDesc, std::function<void(ArgStack&)> func)
     {
-        AddCommand(new Command<Ts...>(acName, acDesc, func));
+        AddCommand(
+            TiltedPhoques::CastUnique<CommandBase>(TiltedPhoques::MakeUnique<Command<Ts...>>(acName, acDesc, func)));
     }
 
     inline void RegisterSetting(const char* acName, const char* acDesc, const char* acString)
     {
-        AddSetting(new StringSetting(acName, acDesc, acString));
+        AddSetting(
+            TiltedPhoques::CastUnique<SettingBase>(TiltedPhoques::MakeUnique<StringSetting>(acName, acDesc, acString)));
     }
 
     template <typename T> inline void RegisterSetting(const char* acName, const char* acDesc, const T acDefault)
     {
-        AddSetting(new Setting<T>(acName, acDesc, acDefault));
+        AddSetting(
+            TiltedPhoques::CastUnique<SettingBase>(TiltedPhoques::MakeUnique<Setting<T>>(acName, acDesc, acDefault)));
     }
 
     enum class ExecutionResult
@@ -96,8 +99,8 @@ class ConsoleRegistry
     }
 
   private:
-    void AddCommand(CommandBase* apCommand);
-    void AddSetting(SettingBase* apSetting);
+    void AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand);
+    void AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting);
     void StoreCommandInHistory(const std::string& acLine);
 
     ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs, ArgStack& aStackOut);
@@ -105,9 +108,9 @@ class ConsoleRegistry
   private:
     std::mutex m_listLock;
     TiltedPhoques::Vector<CommandBase*> m_commands;
-    TiltedPhoques::Vector<CommandBase*> m_dynamicCommands;
     TiltedPhoques::Vector<SettingBase*> m_settings;
-    TiltedPhoques::Vector<SettingBase*> m_dynamicSettings;
+    TiltedPhoques::Vector<UniquePtr<CommandBase>> m_dynamicCommands;
+    TiltedPhoques::Vector<UniquePtr<SettingBase>> m_dynamicSettings;
     TiltedPhoques::Vector<std::string> m_commandHistory;
     CommandQueue m_queue;
     bool m_requestFlush = true;

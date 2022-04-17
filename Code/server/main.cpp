@@ -1,9 +1,14 @@
 
 #include "GameServer.h"
-#include <console/ConsoleRegistry.h>
+#include <TiltedCore/Stl.hpp>
 #include <common/GameServerInstance.h>
+#include <console/ConsoleRegistry.h>
 
+#ifdef _WIN32
 #define GS_EXPORT __declspec(dllexport)
+#else
+#define GS_EXPORT __attribute__((visibility("default")))
+#endif
 
 namespace
 {
@@ -16,6 +21,9 @@ class GameServerInstance final : public IGameServerInstance
     GameServerInstance(Console::ConsoleRegistry& aConsole) : m_gameServer(aConsole)
     {
     }
+
+    // to make sure our dtor is called.
+    ~GameServerInstance() override = default;
 
     // Inherited via IGameServerInstance
     virtual bool Initialize() override;
@@ -66,7 +74,8 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
 }
 
 // memory is owned by the game server, use destroy to ensure destruction
-GS_EXPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& aConReg, void* apUserPointer, void(*apCallback)(void*))
+GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, void* apUserPointer,
+                                                          void (*apCallback)(void*))
 {
     // register static variables before they become available to the server
     aConReg.BindStaticItems();
@@ -74,12 +83,7 @@ GS_EXPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& aConRe
     // this is a special callback to notify the runner once all settings become available
     apCallback(apUserPointer);
 
-    return new GameServerInstance(aConReg);
-}
-
-GS_EXPORT void DestroyGameServer(IGameServerInstance* apServer)
-{
-    delete apServer;
+    return TiltedPhoques::CastUnique<IGameServerInstance>(TiltedPhoques::MakeUnique<GameServerInstance>(aConReg));
 }
 
 // cxx symbol

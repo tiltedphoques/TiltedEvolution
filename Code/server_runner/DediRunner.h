@@ -14,7 +14,11 @@
 #include <console/StringTokenizer.h>
 #include <common/GameServerInstance.h>
 
+#ifdef _WIN32
 #define GS_IMPORT extern __declspec(dllimport)
+#else
+#define GS_IMPORT extern 
+#endif
 
 namespace fs = std::filesystem;
 
@@ -43,9 +47,8 @@ class DediRunner
     // Order here matters for constructor calling order.
     fs::path m_SettingsPath;
     Console::ConsoleRegistry m_console;
-
-    IGameServerInstance* m_pServerInstance;
     TiltedPhoques::UniquePtr<std::jthread> m_pConIOThread;
+    TiltedPhoques::UniquePtr<IGameServerInstance> m_pServerInstance;
 };
 
 DediRunner* GetDediRunner() noexcept;
