@@ -1,5 +1,7 @@
 set_xmakever("2.6.2")
 
+add_repositories("tmprepo tmprepo")
+
 -- c code will use c99,
 set_languages("c99", "cxx20")
 
@@ -8,7 +10,7 @@ set_warnings("all")
 add_vectorexts("sse", "sse2", "sse3", "ssse3")
 
 -- build configurations
-add_rules("mode.debug", "mode.releasedbg", "mode.release")
+add_rules("mode.debug", "mode.releasedbg")
 
 if has_config("unitybuild") then
     add_rules("c.unity_build")

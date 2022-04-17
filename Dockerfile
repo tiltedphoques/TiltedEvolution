@@ -1,9 +1,15 @@
 ARG project
 
-FROM muslcc/x86_64:x86_64-linux-musl AS builder
+FROM ubuntu:20.04 AS builder
 
-RUN apk add --no-cache --update autoconf automake linux-headers p7zip curl tar unzip cmake bash
-RUN curl -fsSL https://xmake.io/shget.text > getxmake.sh && chmod +x getxmake.sh && ./getxmake.sh && apk del g++ gcc libc-dev musl-dev && ln -s /bin/gcc-11.2.1 /usr/bin/gcc
+RUN apt update && \
+    apt install software-properties-common -y && \
+    add-apt-repository 'deb http://mirrors.kernel.org/ubuntu hirsute main universe' -y && \
+    apt update && \
+    apt install gcc-11 g++-11 libssl-dev curl p7zip-full p7zip-rar zip unzip zlib1g-dev -y && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
+
+RUN curl -fsSL https://xmake.io/shget.text > getxmake.sh && chmod +x getxmake.sh && ./getxmake.sh
 
 WORKDIR /home/server
 
@@ -12,18 +18,19 @@ COPY ./Libraries ./Libraries
 COPY xmake.lua xmake.lua
 COPY ./.git ./.git
 COPY ./Code ./Code
+COPY ./tmprepo ./tmprepo
 
 RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
 export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
-xmake config -y --ldflags="-static" && \
-xmake -y -j8
+xmake config -y && \
+xmake -j8
 
-FROM scratch AS skyrim
+FROM ubuntu:20.04 AS skyrim
 COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer /SkyrimTogetherServer
 ENTRYPOINT ["/SkyrimTogetherServer"]
 
-FROM scratch AS fallout4
+FROM ubuntu:20.04 AS fallout4
 COPY --from=builder /home/server/build/linux/x64/release/FalloutTogetherServer /FalloutTogetherServer
 ENTRYPOINT ["/FalloutTogetherServer"]
 

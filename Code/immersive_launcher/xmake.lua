@@ -33,7 +33,8 @@ local function build_launcher()
         "TiltedHooks",
         "TiltedUi",
         "ImGuiImpl",
-        "CommonLib")
+        "CommonLib",
+        "CrashHandler")
     add_links("ntdll_x64")
     add_linkdirs(".")
     add_syslinks(

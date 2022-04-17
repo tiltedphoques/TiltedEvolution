@@ -5,7 +5,7 @@
 #include <combaseapi.h>
 
 #include "script_extender/SEMemoryBlock.h"
-#include "utils/CrashHandler.h"
+#include <CrashHandler.h>
 
 #include <TiltedCore/Platform.hpp>
 
