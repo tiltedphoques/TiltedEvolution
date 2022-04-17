@@ -52,14 +52,11 @@ static uint16_t GetUserTickRate()
 
 GameServer* GameServer::s_pInstance = nullptr;
 
-GameServer::GameServer(Console::ConsoleRegistry &aConsole) noexcept
+GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
-
-    // register static variables from the dll as native (unowned) items.
-    aConsole.BindStaticItems();
 
     auto port = uServerPort.value_as<uint16_t>();
     while (!Host(port, GetUserTickRate()))
@@ -337,7 +334,8 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
     }
 }
 
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludedPlayer) const
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
+                                      const Player* apExcludedPlayer) const
 {
     const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
 
@@ -354,7 +352,8 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
-void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
+void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                             const Player* apExcludeSender) const
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
@@ -497,30 +496,4 @@ void GameServer::UpdateTitle() const
 #else
     std::cout << "\033]0;" << title << "\007";
 #endif
-}
-
-bool GameServerInstance::Initialize()
-{
-    m_gameServer.Initialize();
-    return true;
-}
-
-void GameServerInstance::Shutdown()
-{
-    m_gameServer.Kill();
-}
-
-bool GameServerInstance::IsListening()
-{
-    return m_gameServer.IsListening();
-}
-
-bool GameServerInstance::IsRunning()
-{
-    return m_gameServer.IsRunning();
-}
-
-void GameServerInstance::Update()
-{
-    m_gameServer.Update();
 }

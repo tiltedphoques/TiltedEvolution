@@ -8,6 +8,7 @@
 #include <thread>
 #include <TiltedCore/Filesystem.hpp>
 
+#include <BuildInfo.h>
 #include <console/ConsoleRegistry.h>
 #include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
@@ -18,6 +19,8 @@
 namespace fs = std::filesystem;
 
 static constexpr char kConfigPathName[] = "config";
+static constexpr char KCompilerStopThisBullshit[] = "ConOut";
+static constexpr char kBuildTag[]{BUILD_BRANCH "@" BUILD_COMMIT};
 
 // Frontend class for the dedicated terminal based server
 class DediRunner
@@ -45,4 +48,4 @@ class DediRunner
     TiltedPhoques::UniquePtr<std::jthread> m_pConIOThread;
 };
 
-DediRunner* GetDediRunner();
+DediRunner* GetDediRunner() noexcept;

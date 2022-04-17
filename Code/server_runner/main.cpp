@@ -10,16 +10,7 @@
 #include <Setting.h>
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
-#include <common/GameServerInstance.h>
-
 #include "DediRunner.h"
-
-#include <BuildInfo.h>
-
-constexpr char kBuildTag[]{BUILD_BRANCH "@" BUILD_COMMIT};
-
-GS_IMPORT const char* GetBuildTag();
-GS_IMPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> default_logger);
 
 namespace
 {
@@ -32,7 +23,6 @@ constexpr char kLogFileName[] =
     "TiltedGameServer.log"
 #endif
     ;
-
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
 constexpr char kEULAName[] = "EULA.txt";
@@ -40,8 +30,6 @@ constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted plat
                              ";by setting bConfirmEULA to true\n"
                              "[EULA]\n"
                              "bConfirmEULA=false";
-constexpr char kConsoleOutName[] = "ConOut";
-
 namespace fs = std::filesystem;
 
 Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
@@ -50,7 +38,9 @@ using namespace std::chrono_literals;
 
 extern Console::Setting<bool> bConsole;
 
-// LogInstance must be created for the Console Instance.
+GS_IMPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger);
+GS_IMPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger);
+
 struct LogInstance
 {
     static constexpr size_t kLogFileSizeCap = 1048576 * 5;
@@ -62,8 +52,11 @@ struct LogInstance
         std::error_code ec;
         fs::create_directory("logs", ec);
 
-        auto consoleOut = spdlog::stdout_color_mt(kConsoleOutName);
+        auto consoleOut = spdlog::stdout_color_mt(KCompilerStopThisBullshit);
         consoleOut->set_pattern(">%$ %v");
+
+        // make the client aware of this logger.
+        RegisterLogger(consoleOut);
 
         auto fileOut =
             std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
@@ -72,7 +65,10 @@ struct LogInstance
         auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
         globalOut->set_level(level::from_str(sLogLevel.value()));
 
-        // spdlog is not designed for multi library use, so we need to make it behave.
+        // as the library is compiled into the client + server we have to do this twice
+        spdlog::set_default_logger(globalOut);
+
+        // also make the client aware of the file loggers
         SetDefaultLogger(globalOut);
     }
 
@@ -138,13 +134,13 @@ static bool IsEULAAccepted()
     return si.GetBoolValue("EULA", "bConfirmEULA", false);
 }
 
+GS_IMPORT bool CheckBuildTag(const char* apBuildTag);
+
 int main(int argc, char** argv)
 {
     // the binaries are not from the same commit.
-    if (std::strcmp(GetBuildTag(), kBuildTag) != 0)
-    {
+    if (!CheckBuildTag(kBuildTag))
         return 1;
-    }
 
     LogInstance logger;
     (void)logger;
@@ -152,7 +148,7 @@ int main(int argc, char** argv)
     if (!IsEULAAccepted())
     {
         spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
-        return 0;
+        return 2;
     }
     RegisterQuitHandler();
 

@@ -20,35 +20,35 @@ constexpr char kSettingsFileName[] =
 DediRunner* s_pRunner{nullptr};
 } // namespace
 
-using namespace std::chrono_literals;
-
-class GameServer;
-
-GS_IMPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& conReg);
+// imports
+GS_IMPORT IGameServerInstance* CreateGameServer(Console::ConsoleRegistry& conReg, void* apUserPointer,
+                                                void (*apCallback)(void*));
 GS_IMPORT void DestroyGameServer(IGameServerInstance* apServer);
 
-constexpr char kConsoleOutName[] = "ConOut";
-
+// needs to be global
 Console::Setting bConsole{"bConsole", "Enable the console", true};
 
-
-DediRunner* GetDediRunner()
+DediRunner* GetDediRunner() noexcept
 {
     return s_pRunner;
 }
 
-DediRunner::DediRunner(int argc, char** argv) : m_console(kConsoleOutName)
+DediRunner::DediRunner(int argc, char** argv) : m_console(KCompilerStopThisBullshit)
 {
-    LoadSettings();
     s_pRunner = this;
 
-    m_pServerInstance = CreateGameServer(m_console);
+    m_pServerInstance = CreateGameServer(m_console, this, [](void* apUserPointer) { 
+        reinterpret_cast<DediRunner*>(apUserPointer)->LoadSettings();
+    });
+
+    // it is here for now..
+    m_pServerInstance->Initialize();
 }
 
 DediRunner::~DediRunner()
 {
-    DestroyGameServer(m_pServerInstance);
     Console::SaveSettingsToIni(m_console, m_SettingsPath);
+    DestroyGameServer(m_pServerInstance);
 }
 
 void DediRunner::LoadSettings()
@@ -115,8 +115,8 @@ void DediRunner::RequestKill()
 {
     m_pServerInstance->Shutdown();
 
-    auto wait = std::move(m_pConIOThread);
-    (void)(wait);
+    // NO YAMASHI WE HAVE TO DO IT MANUALLY
+    m_pConIOThread.reset();
 
 #if defined(_WIN32)
     // work around Control Handler exception (Control-C) being set
@@ -124,6 +124,7 @@ void DediRunner::RequestKill()
     // being set.
     if (IsDebuggerPresent())
     {
+        using namespace std::chrono_literals;
         std::this_thread::sleep_for(300ms);
     }
 #endif

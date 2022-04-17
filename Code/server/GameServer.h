@@ -44,12 +44,6 @@ struct GameServer final : Server
 
     void UpdateInfo();
 
-    // Implement TiltedPhoques::Server
-    void OnUpdate() override;
-    void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
-    void OnConnection(ConnectionId_t aHandle) override;
-    void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
-
     // Packet dispatching
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
     void Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const;
@@ -79,6 +73,12 @@ struct GameServer final : Server
   protected:
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
+    // Implement TiltedPhoques::Server
+    void OnUpdate() override;
+    void OnConsume(const void* apData, uint32_t aSize, ConnectionId_t aConnectionId) override;
+    void OnConnection(ConnectionId_t aHandle) override;
+    void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
+
   private:
     void UpdateTitle() const;
 
@@ -97,23 +97,4 @@ struct GameServer final : Server
     bool m_requestStop;
 
     static GameServer* s_pInstance;
-};
-
-#include <common/GameServerInstance.h>
-class GameServerInstance final : public IGameServerInstance
-{
-  public:
-    GameServerInstance(Console::ConsoleRegistry& aConsole) : m_gameServer(aConsole)
-    {
-    }
-
-    // Inherited via IGameServerInstance
-    virtual bool Initialize() override;
-    virtual void Shutdown() override;
-    virtual bool IsListening() override;
-    virtual bool IsRunning() override;
-    virtual void Update() override;
-
-  private:
-    GameServer m_gameServer;
 };
