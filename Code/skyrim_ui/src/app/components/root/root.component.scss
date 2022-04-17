@@ -46,26 +46,6 @@ app-root {
   }
 }
 
-.app-root-preview {
-  position: absolute;
-  right: $-size-gap;
-  top: $-size-gap;
-  opacity: 0.5;
-  font-size: 1.4rem;
-  text-align: right;
-  color: mod($-color-background, 1);
-}
-
-.app-root-preview-stage {
-  font-weight: bold;
-  font-size: 2.25em;
-  text-transform: uppercase
-}
-
-.app-root-preview-build {
-  font-size: 0.6em;
-}
-
 .app-root-controls {
   @include gapped-vertical($-size-gap);
 

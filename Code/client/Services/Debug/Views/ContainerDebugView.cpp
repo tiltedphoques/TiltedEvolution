@@ -12,6 +12,8 @@ void TestService::DrawContainerDebugView()
     static TESForm* pFetchForm = nullptr;
     static Actor* pActor = nullptr;
 
+    ImGui::Begin("Inventory");
+
     ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
                        ImGuiInputTextFlags_CharsHexadecimal);
 
@@ -123,4 +125,6 @@ void TestService::DrawContainerDebugView()
 
         ImGui::EndChild();
     }
+
+    ImGui::End();
 }

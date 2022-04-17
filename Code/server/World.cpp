@@ -13,6 +13,8 @@
 #include <Services/AdminService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
+#include <Services/OverlayService.h>
+#include <Services/CommandService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -31,6 +33,8 @@ World::World()
     set<ActorValueService>(*this, m_dispatcher);
     set<InventoryService>(*this, m_dispatcher);
     set<MagicService>(*this, m_dispatcher);
+    set<OverlayService>(*this, m_dispatcher);
+    set<CommandService>(*this, m_dispatcher);
 
     ESLoader::ESLoader loader;
     // emplace loaded mods into modscomponent.

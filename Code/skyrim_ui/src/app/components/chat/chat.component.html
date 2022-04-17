@@ -2,7 +2,7 @@
   <p *ngFor="let message of messages" #entry [attr.data-system]="!message.name" [attr.data-odd]="message.odd">
     <span class="app-chat-date">[{{message.date | date: 'HH:mm:ss'}}] </span>
     <span class="app-chat-name" *ngIf="message.name">{{message.name}}: </span>
-    <span class="app-chat-message">{{message.content}}</span>
+    <span class="app-chat-message" style="user-select: text;" >{{message.content}}</span>
   </p>
 </div>
 <div class="app-chat-input">

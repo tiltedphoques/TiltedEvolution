@@ -4,17 +4,22 @@
   "newProjectRoot": "projects",
   "projects": {
     "skyrim-together-ui": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
-      "projectType": "application",
+      "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "out",
+            "outputPath": "dist/UI",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "tsConfig": "src/tsconfig.app.json",
             "polyfills": "src/polyfills.ts",
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -22,34 +27,43 @@
                 "src/styles"
               ]
             },
+            "tsConfig": "tsconfig.app.json",
+            "aot": true,
             "assets": [
-              "src/assets/sounds",
-              "src/assets/images/cursor.png",
-              "src/assets/images/cursor.dds",
-              "src/assets/images/cursor.cur",
-              "src/assets/images/logo.svg",
-              "src/assets/images/loading.gif"
+              "src/favicon.ico",
+              "src/assets/sounds/"
             ],
             "styles": [
-              "src/index.scss"
+              "src/styles.scss"
             ],
             "scripts": []
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "fileReplacements": [
+              "budgets": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
                 }
               ]
             },
@@ -74,7 +88,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "skyrim-together-ui:build"
+            "browserTarget": "skyrim-together-ui:build",
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {
@@ -94,48 +109,49 @@
             "browserTarget": "skyrim-together-ui:build"
           }
         },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
+            "scripts": []
+          }
+        },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [],
-            "exclude": []
+            "tsConfig": [
+              "tsconfig.app.json",
+              "tsconfig.spec.json",
+              "e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "e2e/protractor.conf.js",
+            "devServerTarget": "skyrim-together-ui:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "skyrim-together-ui:serve:production"
+            }
           }
         }
       }
-    },
-    "skyrim-together-ui-e2e": {
-      "root": "",
-      "sourceRoot": "e2e",
-      "projectType": "application"
-    }
-  },
-  "defaultProject": "skyrim-together-ui",
-  "cli": {
-    "warnings": {
-      "versionMismatch": false,
-      "typescriptMismatch": false
-    }
-  },
-  "schematics": {
-    "@schematics/angular:component": {
-      "changeDetection": "OnPush",
-      "viewEncapsulation": "None",
-      "spec": false,
-      "prefix": "app",
-      "styleext": "scss"
-    },
-    "@schematics/angular:directive": {
-      "spec": false,
-      "prefix": "app"
-    },
-    "@schematics/angular:guard": {
-      "spec": false
-    },
-    "@schematics/angular:pipe": {
-      "spec": false
-    },
-    "@schematics/angular:service": {
-      "spec": false
-    }
-  }
+    }},
+  "defaultProject": "skyrim-together-ui"
 }
