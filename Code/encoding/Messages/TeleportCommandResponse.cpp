@@ -8,6 +8,8 @@ void TeleportCommandResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
 
 void TeleportCommandResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
+    ServerMessage::DeserializeRaw(aReader);
+
     CellId.Deserialize(aReader);
     Position.Deserialize(aReader);
 }
