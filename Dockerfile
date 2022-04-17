@@ -1,5 +1,3 @@
-ARG project
-
 FROM ubuntu:20.04 AS builder
 
 RUN apt update && \
@@ -32,14 +30,5 @@ FROM ubuntu:20.04 AS skyrim
 COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/SkyrimTogetherServer
 WORKDIR /home/server
 ENTRYPOINT ["SkyrimTogetherServer"]
-
-FROM ubuntu:20.04 AS fallout4
-COPY --from=builder /home/server/build/linux/x64/release/FalloutTogetherServer /home/server/FalloutTogetherServer
-WORKDIR /home/server
-ENTRYPOINT ["FalloutTogetherServer"]
-
-FROM ${project} AS final
-
-FROM final
 
 EXPOSE 10578/udp
