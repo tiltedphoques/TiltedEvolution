@@ -1,3 +1,32 @@
+# [1.27.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.26.0...v1.27.0) (2022-04-17)
+
+
+### Bug Fixes
+
+* i believe in you, linux ([4e1d1e3](https://github.com/tiltedphoques/TiltedEvolution/commit/4e1d1e3a83229cc66495fc11b849bd02a948b7f1))
+* **ModPolicy:** Make sure there are no workarounds possible. ([7272ea4](https://github.com/tiltedphoques/TiltedEvolution/commit/7272ea416498f42fc586ef19dcc6379aa009ddee))
+* respect the cvar flags. ([8cb1131](https://github.com/tiltedphoques/TiltedEvolution/commit/8cb11318a6f7f6c62643108b55b7a070f5d12657))
+
+
+### Features
+
+* :ghost: Message ([0dfd986](https://github.com/tiltedphoques/TiltedEvolution/commit/0dfd9864a8315e8500a8ead4c5a25776e57c7495))
+* ModPolicy V1 draft. ([31f441c](https://github.com/tiltedphoques/TiltedEvolution/commit/31f441cd70718c5cc46c4c23f05aa3204347d12a))
+* Unify allocators. ([a130722](https://github.com/tiltedphoques/TiltedEvolution/commit/a13072230efc96b048c8f5f53dbe78fb9a4a95b1))
+
+# [1.26.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.25.0...v1.26.0) (2022-04-17)
+
+
+### Bug Fixes
+
+* windoze icons only ([28f66db](https://github.com/tiltedphoques/TiltedEvolution/commit/28f66db84e52f09f2aa94c606cedadb40dda9792))
+
+
+### Features
+
+* BSRandom for funny name. ([d26ac07](https://github.com/tiltedphoques/TiltedEvolution/commit/d26ac07e88ebffb14d073c694552f487b4ec7b3d))
+* New higher res app icons. ([f742413](https://github.com/tiltedphoques/TiltedEvolution/commit/f742413745cd80dfa35947d49d789d57693dd5d7))
+
 # [1.25.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.24.1...v1.25.0) (2022-04-16)
 
 

@@ -109,6 +109,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 void TransportService::OnConnected()
 {
     AuthenticationRequest request;
+    request.Version = BUILD_COMMIT;
 
     // null if discord is not active
     // TODO: think about user opt out
@@ -130,9 +131,7 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        auto& entry =
-            pMod->IsLite() ? request.UserMods.LiteMods.emplace_back() : request.UserMods.StandardMods.emplace_back();
-
+        auto& entry = request.UserMods.ModList.emplace_back();
         entry.Id = pMod->GetId();
         entry.Filename = pMod->filename;
     }
@@ -275,17 +274,30 @@ void TransportService::OnDraw() noexcept
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
-    m_connected = true;
-
-    // Dispatch the mods to anyone who needs it
-    m_dispatcher.trigger(acMessage.UserMods);
-
-    // Dispatch the scripts to anyone who needs it
-    m_dispatcher.trigger(acMessage.ServerScripts);
-
-    // Dispatch the replicated objects
-    m_dispatcher.trigger(acMessage.ReplicatedObjects);
-
-    // Notify we are ready for action
-    m_dispatcher.trigger(ConnectedEvent());
+    switch (acMessage.Type)
+    {
+    case AuthenticationResponse::ResponseType::kAccepted: 
+    {
+        m_connected = true;
+        m_dispatcher.trigger(acMessage.UserMods);
+        m_dispatcher.trigger(ConnectedEvent());
+        break;
+    }
+    // TODO(Anyone): Handle this within the ui
+    case AuthenticationResponse::ResponseType::kWrongVersion:
+        spdlog::error("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
+        break;
+    case AuthenticationResponse::ResponseType::kMissingMods: {
+        spdlog::error("This server has ModPolicy enabled. You were kicked because you have the following mods installed:");
+        for (const auto& m : acMessage.UserMods.ModList)
+        {
+            spdlog::error("{}:{}", m.Filename.c_str(), m.Id);
+        }
+        spdlog::error("Please remove them to join");
+        break;
+    }
+    default:
+        spdlog::error("The server refused connection without reason.");
+        break;
+    }
 }

@@ -39,6 +39,7 @@ struct GameServer final : Server
     void Initialize();
     void Kill();
 
+    bool CheckMoPo();
     void BindMessageHandlers();
     void BindServerCommands();
 
