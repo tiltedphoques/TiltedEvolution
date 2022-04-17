@@ -279,9 +279,6 @@ int main(int argc, char** argv)
     LogInstance logInstance;
     (void)logInstance;
 
-    int* i = 0;
-    *i = 42;
-
     if (!IsEULAAccepted())
     {
         spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
