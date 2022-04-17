@@ -5,6 +5,6 @@ export const environment = {
   urlProtocol: "http",
   url: "localhost:4200",
   intervalPingWebSocket: 5, // seconds
-  chatMessageLengthLimit: 256,
+  chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5
 };

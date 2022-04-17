@@ -6,6 +6,7 @@
     "start": "ng serve --host 0.0.0.0 --disable-host-check --configuration=browser",
     "build": "ng build",
     "deploy:nightly": "ng build --prod --output-hashing none --configuration=nightly --base-href ./ --resources-output-path ./assets/",
+    "deploy:production": "ng build --prod --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
