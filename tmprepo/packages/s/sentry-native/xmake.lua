@@ -14,7 +14,7 @@ package("sentry-native")
     add_configs("backend", {description = "Set the backend of sentry to use", default = nil, type = "string"})
 
     if is_plat("windows") then
-        add_syslinks("dbghelp", "winhttp", "shlwapi", "advapi32")
+        add_syslinks("dbghelp", "winhttp", "shlwapi", "advapi32", "version")
     elseif is_plat("linux") then
         add_deps("libcurl")
         add_syslinks("dl", "pthread", "rt")
