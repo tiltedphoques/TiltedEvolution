@@ -1,5 +1,6 @@
 add_requires("magnum", { configs = { sdl2 = true }})
-add_requires("magnum-integration",  { configs = { imgui = true }})
+add_requires("magnum-integration",  { configs = { imgui = true } })
+add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
 
 target("Admin")
     set_kind("binary")
