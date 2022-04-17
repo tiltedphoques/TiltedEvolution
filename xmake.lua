@@ -56,6 +56,7 @@ task("upload-symbols")
         import("core.base.option")
 
         local key = option.get('key')
+        local linux = option.get('linux')
 
         if key ~= nil then
             import("net.http")
@@ -64,13 +65,26 @@ task("upload-symbols")
             config.load()
 
             local sentrybin = path.join(os.projectdir(), "build", "sentry-cli.exe")
-            local path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogether.pdb")
+            local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogether.pdb")
+            if linux then
+                file_path = path.join(os.projectdir(), "build", "linux", "x64", "SkyrimTogetherServer.debug")
+            end
             
             if not os.exists(sentrybin) then 
                 http.download("https://github.com/getsentry/sentry-cli/releases/download/2.0.2/sentry-cli-Windows-x86_64.exe", sentrybin)
             end
             
-            os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-reborn", path})
+            local project = "st-reborn"
+            if linux then
+                project = "st-server"
+            end
+
+            os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", project, file_path})
+
+            if not linux then
+                local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogetherServer.pdb")
+                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
+            end
 
         else
             print("An API key is required to proceed!")
@@ -81,6 +95,7 @@ task("upload-symbols")
         usage = "xmake upload-symbols",
         description = "Upload symbols to sentry",
         options = {
-            {'k', "key", "kv", nil, "The API key to use." }
+            {'k', "key", "kv", nil, "The API key to use." },
+            {'l', "linux", "v", false, "Upload linux symbols that were manually copied." },
         }
     }

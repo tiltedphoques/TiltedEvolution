@@ -1,4 +1,4 @@
 #pragma once
 
-void InstallCrashHandler();
+void InstallCrashHandler(bool aServer = false, bool aSkyrim = true);
 void UninstallCrashHandler();

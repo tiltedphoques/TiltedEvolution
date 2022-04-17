@@ -24,7 +24,12 @@ RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
 export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
 xmake config -y && \
-xmake -j8
+xmake -j8 && \
+objcopy --only-keep-debug /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/build/linux/x64/release/SkyrimTogetherServer.debug
+RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
+export PATH="$XMAKE_ROOTDIR:$PATH" && \
+export XMAKE_ROOT=y && \
+xmake install -o package
 
 FROM ubuntu:20.04 AS skyrim
 
@@ -35,7 +40,9 @@ RUN apt update && \
     apt remove software-properties-common -y && \
     apt autoremove -y
 
-COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/SkyrimTogetherServer
+COPY --from=builder /home/server/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
+COPY --from=builder /home/server/package/bin/crashpad_handler /home/server/crashpad_handler
+COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer.debug /home/server/SkyrimTogetherServer.debug
 WORKDIR /home/server
 ENTRYPOINT ["./SkyrimTogetherServer"]
 
