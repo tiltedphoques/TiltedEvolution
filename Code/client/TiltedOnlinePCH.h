@@ -51,7 +51,6 @@ extern void* RipAllocateN(size_t blockLength);
 #include <JitAssembly.hpp>
 
 #define SPDLOG_WCHAR_FILENAMES
-
 #include <entt/entt.hpp>
 #include <spdlog/spdlog.h>
 #include <glm/glm.hpp>

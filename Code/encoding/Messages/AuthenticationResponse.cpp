@@ -2,16 +2,14 @@
 
 void AuthenticationResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteBool(aWriter, Accepted);
+    Serialization::WriteVarInt(aWriter, static_cast<uint32_t>(Type));
+    Serialization::WriteString(aWriter, Version);
     UserMods.Serialize(aWriter);
-    ServerScripts.Serialize(aWriter);
-    ReplicatedObjects.Serialize(aWriter);
 }
 
 void AuthenticationResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    Accepted = Serialization::ReadBool(aReader);
+    Type = static_cast<ResponseType>(Serialization::ReadVarInt(aReader) & 0xFFFFFFFF);
+    Version = Serialization::ReadString(aReader);
     UserMods.Deserialize(aReader);
-    ServerScripts.Deserialize(aReader);
-    ReplicatedObjects.Deserialize(aReader);
 }
