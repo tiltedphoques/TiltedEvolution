@@ -37,7 +37,7 @@
       <app-friends (done)="view = undefined"></app-friends>
     </app-popup>
     <app-popup *ngIf="view === 'serverList'" data-popup="server">
-      <app-server-list (done)="view = undefined"></app-server-list>
+      <app-server-list (done)="view = undefined" (setView)="view = $event"></app-server-list>
     </app-popup>
 
     <app-error></app-error>
