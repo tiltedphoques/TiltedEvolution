@@ -4,7 +4,7 @@ using TiltedPhoques::String;
 
 struct CommandEvent
 {
-    CommandEvent(String&& aCommand) 
+    CommandEvent(String aCommand) 
         : Command(std::move(aCommand))
     {
     }
