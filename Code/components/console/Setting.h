@@ -2,12 +2,34 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <base/Check.h>
 #include <TiltedCore/Stl.hpp>
+#include <base/Check.h>
 
 namespace Console
 {
 using namespace TiltedPhoques;
+
+enum class SettingsFlags : uint16_t
+{
+    kNone,
+    // Doesn't show up in the help list.
+    kHidden = 1 << 0,
+    // Value is write protected, cannot be altered
+    // at runtime.
+    kLocked = 1 << 1,
+    // Does alter game-play
+    kCheat = 1 << 2,
+};
+
+inline constexpr SettingsFlags operator|(SettingsFlags lhs, SettingsFlags rhs)
+{
+    return static_cast<SettingsFlags>(static_cast<uint16_t>(lhs) | static_cast<uint16_t>(rhs));
+}
+
+inline constexpr bool operator&(SettingsFlags lhs, SettingsFlags rhs)
+{
+    return static_cast<uint16_t>(lhs) & static_cast<uint16_t>(rhs);
+}
 
 struct SettingBase
 {
@@ -23,25 +45,13 @@ struct SettingBase
         kString
     };
 
-    enum Flags : uint16_t
-    {
-        kNone,
-        // Doesn't show up in the help list.
-        kHidden = 1 << 0,
-        // Value is write protected, cannot be altered
-        // at runtime.
-        kLocked = 1 << 1,
-        // Does alter game-play
-        kCheat = 1 << 2,
-    };
-
-    SettingBase(SettingBase*& parent, const char* n, const char* d, Type t, Flags f)
-        : next(parent), name(n), desc(d), type(t)
+    SettingBase(SettingBase*& parent, const char* n, const char* d, Type t, SettingsFlags f)
+        : next(parent), flags(f), type(t), name(n), desc(d)
     {
         parent = this;
     }
 
-    explicit SettingBase(const char* n, const char* d, Type t, Flags f) : SettingBase(ROOT(), n, d, t, f)
+    explicit SettingBase(const char* n, const char* d, Type t, SettingsFlags f) : SettingBase(ROOT(), n, d, t, f)
     {
     }
 
@@ -87,16 +97,21 @@ struct SettingBase
 
     inline bool IsHidden() const
     {
-        return flags & Flags::kHidden;
+        return flags & SettingsFlags::kHidden;
     }
 
     inline bool IsLocked() const
     {
-        return flags & Flags::kLocked;
+        return flags & SettingsFlags::kLocked;
+    }
+
+    inline bool IsCheat() const
+    {
+        return flags & SettingsFlags::kCheat;
     }
 
     // type info
-    Flags flags;
+    SettingsFlags flags;
     Type type;
 
     // descriptor
@@ -162,7 +177,7 @@ template <typename T> struct DynamicStringStorage
 template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : public SettingBase, public TStorage
 {
   public:
-    Setting(const char* acName, const char* acDesc, const T acDefault, const Flags acFlags = Flags::kNone)
+    Setting(const char* acName, const char* acDesc, const T acDefault, const SettingsFlags acFlags = SettingsFlags::kNone)
         : SettingBase(acName, acDesc, ToTypeIndex<T>(), acFlags), TStorage(*this, acDefault)
     {
     }
@@ -192,7 +207,7 @@ template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : 
 
     void operator=(const T value)
     {
-        if (flags & Flags::kLocked)
+        if (flags & SettingsFlags::kLocked)
         {
             BASE_ASSERT(false, "Tried to write to locked variable");
             return;

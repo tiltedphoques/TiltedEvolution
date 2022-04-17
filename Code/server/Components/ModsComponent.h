@@ -4,6 +4,11 @@
 #error Include Components.h instead
 #endif
 
+namespace ESLoader
+{
+struct PluginData;
+}
+
 struct ModsComponent
 {
     struct Entry
@@ -15,13 +20,32 @@ struct ModsComponent
     uint32_t AddStandard(const String& acpFilename) noexcept;
     uint32_t AddLite(const String& acpFilename) noexcept;
 
-    const auto& GetStandardMods() const noexcept { return m_standardMods; }
-    const auto& GetLiteMods() const noexcept { return m_liteMods; }
+    void AddServerMod(const ESLoader::PluginData& acData);
+
+    const auto& GetStandardMods() const noexcept
+    {
+        return m_standardMods;
+    }
+    const auto& GetLiteMods() const noexcept
+    {
+        return m_liteMods;
+    }
+    const auto& GetServerMods() const noexcept
+    {
+        return m_serverMods;
+    }
+
+    bool IsInstalled(const String& acpFileName) const noexcept;
 
     using TModList = TiltedPhoques::Map<String, Entry>; 
 private:
 
+  private:
     uint32_t m_seed = 0;
-    TiltedPhoques::Map<String, Entry> m_standardMods;
-    TiltedPhoques::Map<String, Entry> m_liteMods;
+    // Mappings of ids owned by the server
+    TModList m_standardMods;
+    TModList m_liteMods;
+
+    // List of mods installed on the server.
+    TModList m_serverMods;
 };
