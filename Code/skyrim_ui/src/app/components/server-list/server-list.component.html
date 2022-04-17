@@ -3,8 +3,8 @@
 <input class="searchListServer" [formControl]="formSearch" type="text" placeholder="Search..."
   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
 
-  <button class="updateServerList" (click)="updateServerList()">Refresh</button>
-  <button class="updateServerList" (click)="cancel()">Back</button>
+  <button class="buttonsServerList" (click)="updateServerList()">Refresh</button>
+  <button class="buttonsServerList" (click)="cancel()">Back</button>
 
 <div *ngIf="isLoading; else notLoading">
   Loading...
@@ -15,28 +15,30 @@
   </div>
 
   <ng-template #notEmpty>
+    <div class="containerList">
       <table cellspacing="5" cellpadding="5" class="serverslisttable">
-          <thead>
-            <tr>
-              <th>Server Name<app-order [isIncreasingOrder]="isIncreasingNameOrder" (sorted)="sortName($event)"></app-order></th>
-              <th>Players<app-order [isIncreasingOrder]="isIncreasingPlayerOrder" (sorted)="sortPlayers($event)"></app-order></th>
-              <th>Country<app-order [isIncreasingOrder]="isIncreasingCountryOrder" (sorted)="sortCountry($event)"></app-order></th>
-              <th>{{ getClientVersion() }}</th>
-              <th>Favorite<app-order [isIncreasingOrder]="isIncreasingFavoriteOrder" (sorted)="sortFavorite($event)"></app-order></th> <!-- Pls not automatic fav on top, make it sortable like other titles, thanks! -->
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let server of serverList">
-              <td>{{ server.name }}</td>
-              <td>{{ server.player_count }}</td>
-              <td>{{ server.country }}</td>
-              <td [ngClass]="isCompatibleToClient(server) ? 'server-compatible' : 'server-incompatible'">{{ getServerVersion(server) }}</td>
-              <td (click)="toggleServerFavorite(server)" class="app-server-list-notfavorite"><fa-icon [icon]="getFavoriteIcon(server)"></fa-icon></td>
-              <td><button (click)="connect(server)" class="joinbutton">Join</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <thead class="listHeader">
+          <tr>
+            <th>Server Name<app-order [isIncreasingOrder]="isIncreasingNameOrder" (sorted)="sortName($event)"></app-order></th>
+            <th>Players<app-order [isIncreasingOrder]="isIncreasingPlayerOrder" (sorted)="sortPlayers($event)"></app-order></th>
+            <th>Country<app-order [isIncreasingOrder]="isIncreasingCountryOrder" (sorted)="sortCountry($event)"></app-order></th>
+            <th>{{ getClientVersion() }}</th>
+            <th>Favorite<app-order [isIncreasingOrder]="isIncreasingFavoriteOrder" (sorted)="sortFavorite($event)"></app-order></th> <!-- Pls not automatic fav on top, make it sortable like other titles, thanks! -->
+            <th></th>
+          </tr>
+        </thead>
+        <tbody class="listBody">
+          <tr *ngFor="let server of serverList">
+            <td>{{ server.name }}</td>
+            <td>{{ server.player_count }}</td>
+            <td>{{ server.country }}</td>
+            <td [ngClass]="isCompatibleToClient(server) ? 'server-compatible' : 'server-incompatible'">{{ getServerVersion(server) }}</td>
+            <td (click)="toggleServerFavorite(server)" class="app-server-list-notfavorite"><fa-icon [icon]="getFavoriteIcon(server)"></fa-icon></td>
+            <td><button (click)="connect(server)" class="joinbutton">Join</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </ng-template>
 </ng-template>
 

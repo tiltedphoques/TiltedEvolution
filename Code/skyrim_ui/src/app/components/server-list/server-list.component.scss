@@ -1,8 +1,7 @@
 app-server-list {
-  position:relative;
+  position: relative;
   display: block;
-  overflow: auto;
-  max-height: 60vh;
+
 
   .searchListServer {
     display: inline-block;
@@ -15,7 +14,7 @@ app-server-list {
     margin-bottom: 1%;
   }
 
-  .updateServerList {
+  .buttonsServerList {
     float: right;
     padding: 0.25vw;
     background-color: #292929;
@@ -23,59 +22,80 @@ app-server-list {
     margin-left: 5%;
   }
 
-  .serverslisttable {
-    width: 100%;
-    border-collapse: collapse;
+  .containerList {
+    overflow: auto;
+    max-height: 60vh;
+    margin-top: 1rem;
 
-    th {
-      text-align: left;
-      border-bottom: 1px solid grey;
-      border-collapse: separate;
-    }
-    tr:not(:last-child) {
-      border-bottom: 1px solid grey;
-      padding: 15px;
-    }
 
-    .offline {
-      background-color: #FF9494
-    }
+    .serverslisttable {
+      width: 100%;
+      border-collapse: collapse;
 
-    .server-compatible {
-      color: green;
-    }
-
-    .server-incompatible {
-      color: red;
-    }
-
-    #noserv {
-      margin-top: 3%;
-    }
-
-    .joinbutton {
-    padding: 0.25vw;
-    background-color: #292929;
-    border-radius: 2px;
-    margin-left: 5%;
-    }
-
-    .app-server-list-favorite {
-      text-align: center;
-      color: grey;
-
-      &:hover {
-        color:white;
+      .listHeader {
+        position: sticky;
+        top: 0px;
+        background-color: #151515;
+        z-index: 1;
       }
-    }
 
-    .app-server-list-notfavorite {
-      text-align: center;
-      color: grey;
+      th {
+        text-align: left;
+        border-bottom: 1px solid grey;
+        border-collapse: separate;
 
-      &:hover {
-        color:white;
+        button {
+          padding: 0 0.5rem;
+        }
+      }
+
+      tr:not(:last-child) {
+        border-bottom: 1px solid grey;
+        padding: 15px;
+      }
+
+      .offline {
+        background-color: #FF9494
+      }
+
+      .server-compatible {
+        color: green;
+      }
+
+      .server-incompatible {
+        color: red;
+      }
+
+      #noserv {
+        margin-top: 3%;
+      }
+
+      .joinbutton {
+        padding: 0.25vw;
+        background-color: #292929;
+        border-radius: 2px;
+        margin-left: 5%;
+      }
+
+      .app-server-list-favorite {
+        text-align: center;
+        color: grey;
+
+        &:hover {
+          color: white;
+        }
+      }
+
+      .app-server-list-notfavorite {
+        text-align: center;
+        color: grey;
+
+        &:hover {
+          color: white;
+        }
       }
     }
   }
+
+
 }

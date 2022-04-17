@@ -240,6 +240,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
     return this.getTruncatedClientVersion().split("-")[0];
   }
 
+  //TODO - Remove when Force fixed serverList backend
   private getTruncatedClientVersion() {
     return this.clientService.versionSet.getValue().substring(0, 16);
   }
