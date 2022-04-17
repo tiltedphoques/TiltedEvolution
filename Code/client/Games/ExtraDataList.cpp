@@ -127,3 +127,10 @@ void ExtraDataList::SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge
     POINTER_SKYRIMSE(TSetEnchantmentData, setEnchantmentData, 12060);
     ThisCall(setEnchantmentData, this, apItem, aCharge, aRemoveOnUnequip);
 }
+
+void ExtraDataList::SetMarkerData(MapMarkerData* apMarkerData) noexcept
+{
+    TP_THIS_FUNCTION(TSetMarkerData, void, ExtraDataList, MapMarkerData* apMarkerData);
+    POINTER_SKYRIMSE(TSetMarkerData, setMarkerData, 11607);
+    ThisCall(setMarkerData, this, apMarkerData);
+}
