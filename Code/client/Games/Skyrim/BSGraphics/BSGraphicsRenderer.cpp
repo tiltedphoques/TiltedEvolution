@@ -19,7 +19,6 @@ static RenderSystemD3D11* g_sRs = nullptr;
 static WNDPROC RealWndProc = nullptr;
 static RendererWindow* g_RenderWindow = nullptr;
 
-static constexpr char kTogetherFunnyWindowName[]{"Skyrim Together: Expanded and Enhanced"};
 static constexpr char kTogetherWindowName[]{"Skyrim Together"};
 
 } // namespace
@@ -47,7 +46,7 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     // game.
     aOSData->hIcon = g_SharedWindowIcon;
     // Append our window name.
-    aOSData->pClassName = BSRandom::UnsignedInt(1, 20) == 5 ? kTogetherFunnyWindowName : kTogetherWindowName;
+    aOSData->pClassName = kTogetherWindowName;
 
     RealWndProc = aOSData->pWndProc;
     aOSData->pWndProc = Hook_WndProc;
