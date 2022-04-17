@@ -3,7 +3,7 @@
 // spdlog
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog-inl.h>
+#include <spdlog/spdlog.h>
 
 #include <thread>
 #include <TiltedCore/Filesystem.hpp>
@@ -17,7 +17,7 @@
 #ifdef _WIN32
 #define GS_IMPORT extern __declspec(dllimport)
 #else
-#define GS_IMPORT extern 
+#define GS_IMPORT extern __attribute__((visibility("default")))
 #endif
 
 namespace fs = std::filesystem;

@@ -98,6 +98,7 @@ GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
     spdlog::register_logger(std::move(aLogger));
 }
 
+#ifdef _WIN32
 // Before you think about moving logic in here...
 // There are significant limits on what you can safely do in a DLL entry point. See General Best Practices for specific
 // Windows APIs that are unsafe to call in DllMain. If you need anything but the simplest initialization then do that in
@@ -114,3 +115,4 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     }
     return TRUE;
 }
+#endif
