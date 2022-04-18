@@ -8,6 +8,7 @@
 #include <Records/NPC.h>
 #include <Records/REFR.h>
 #include <Records/TES4.h>
+#include <Records/REGN.h>
 
 namespace ESLoader
 {

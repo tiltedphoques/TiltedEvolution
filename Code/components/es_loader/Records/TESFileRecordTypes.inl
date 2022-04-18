@@ -21,6 +21,7 @@ enum class FormEnum : uint32_t
     DECLARE_FORM_TYPE(PHZD),
     DECLARE_FORM_TYPE(LAND),
     DECLARE_FORM_TYPE(INFO),
+    DECLARE_FORM_TYPE(REGN),
 };
 
 enum class ChunkId : uint32_t

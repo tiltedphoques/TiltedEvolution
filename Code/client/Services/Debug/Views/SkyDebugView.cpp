@@ -35,28 +35,33 @@ struct PlayerRegionState
     }
 };
 
-static void DrawWeatherInfo(const char* aWeatherName, TESWeather* apWeather)
+static void DrawWeatherInfo2(TESWeather* apWeather)
 {
-    if (ImGui::CollapsingHeader(aWeatherName))
-    {
-        ImGui::Text("Name %s\nFormID %x", apWeather->GetFormEditorID(), apWeather->formID);
-        ImGui::Text("Aurora Name: %s", apWeather->aurora.name.AsAscii());
-        const auto flags = apWeather->data.flags;
-        if (flags & TESWeather::WeatherDataFlag::kSnow)
-            ImGui::Text("Is Snowy");
-        if (flags & TESWeather::WeatherDataFlag::kRainy)
-            ImGui::Text("Is Rainy");
-        if (flags & TESWeather::WeatherDataFlag::kPermAurora)
-            ImGui::Text("Is PermAurora");
-        if (flags & TESWeather::WeatherDataFlag::kCloudy)
-            ImGui::Text("Is Cloudy");
-        if (flags & TESWeather::WeatherDataFlag::kAuroraFollowsSun)
-            ImGui::Text("Is AuroraFollowsSun");
-        if (flags & TESWeather::WeatherDataFlag::kPleasant)
-            ImGui::Text("Is Pleasant");
+    ImGui::Text("Name %s\nFormID %x", apWeather->GetFormEditorID(), apWeather->formID);
+    ImGui::Text("Aurora Name: %s", apWeather->aurora.name.AsAscii());
+    const auto flags = apWeather->data.flags;
+    if (flags & TESWeather::WeatherDataFlag::kSnow)
+        ImGui::Text("Is Snowy");
+    if (flags & TESWeather::WeatherDataFlag::kRainy)
+        ImGui::Text("Is Rainy");
+    if (flags & TESWeather::WeatherDataFlag::kPermAurora)
+        ImGui::Text("Is PermAurora");
+    if (flags & TESWeather::WeatherDataFlag::kCloudy)
+        ImGui::Text("Is Cloudy");
+    if (flags & TESWeather::WeatherDataFlag::kAuroraFollowsSun)
+        ImGui::Text("Is AuroraFollowsSun");
+    if (flags & TESWeather::WeatherDataFlag::kPleasant)
+        ImGui::Text("Is Pleasant");
 
-        if (ImGui::Button("Apply"))
-            Sky::GetInstance()->SetWeatherExternal(apWeather, true, true);
+    if (ImGui::Button("Apply"))
+        Sky::GetInstance()->SetWeatherExternal(apWeather, true, true);
+}
+
+static void DrawWeatherHeader(const char *apName, TESWeather* apWeather)
+{
+    if (ImGui::CollapsingHeader(apName))
+    {
+        DrawWeatherInfo2(apWeather);
     }
 }
 
@@ -64,16 +69,18 @@ static void DrawClimateInfo(TESClimate* apClimate)
 {
     if (ImGui::CollapsingHeader("Current Climate"))
     {
+        ImGui::Indent(10.f);
         ImGui::Text("Name %s\nFormID %x", apClimate->GetFormEditorID(), apClimate->formID);
         ImGui::Text("Daylight object %s\nNighttime object %s", apClimate->txSkyObjects[0].name.AsAscii(),
                     apClimate->txSkyObjects[1].name.AsAscii());
 
-        if (ImGui::CollapsingHeader("Timing Data", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::TreeNode("Timing Data"))
         {
             ImGui::Text("Sunrise: %d, %d", apClimate->timing.sunrise.begin, apClimate->timing.sunrise.end);
             ImGui::Text("SunSet: %d, %d", apClimate->timing.sunset.begin, apClimate->timing.sunset.end);
             ImGui::Text("Volatility: %d", apClimate->timing.volatility);
             ImGui::Text("MoonPhaseLength: %d", apClimate->timing.moonPhaseLength);
+            ImGui::TreePop();
         }
 
         ImGui::Text("Used weathers:");
@@ -82,10 +89,15 @@ static void DrawClimateInfo(TESClimate* apClimate)
         {
             char buf[8]{};
             sprintf_s(buf, 8, "%d", i);
-            DrawWeatherInfo(buf, item->pWeather);
+            if (ImGui::TreeNode(buf))
+            {
+                DrawWeatherInfo2(item->pWeather);
+                ImGui::TreePop();
+            }
             ImGui::Text("Chance %d", item->uiChance);
             i++;
         }
+        ImGui::Indent(0.f);
     }
 }
 
@@ -102,7 +114,7 @@ static void DrawRegionInfo(const char* acRegionName, TESRegion* apRegion)
         }
 
         if (pCurrentWeather)
-            DrawWeatherInfo("Current Random Weather", pCurrentWeather);
+            DrawWeatherHeader("Current Random Weather", pCurrentWeather);
     }
 }
 
@@ -120,26 +132,27 @@ void TestService::DrawSkyDebugView()
     if (TESClimate* pClimate = pInstance->GetCurrentClimate())
         DrawClimateInfo(pClimate);
 
-    ImGui::Separator();
+    ImGui::Spacing();
 
     static ImVec4 kRedColor = ImVec4(255.f, 0.f, 0.f, 255.f);
     if (TESWeather* pWeather = pInstance->GetCurrentWeather())
-        DrawWeatherInfo("CurrentWeather", pWeather);
+        DrawWeatherHeader("CurrentWeather", pWeather);
     else
         ImGui::TextColored(kRedColor, "No CurrentWeather");
     if (TESWeather* pWeather = pInstance->GetLastWeather())
-        DrawWeatherInfo("LastWeather", pWeather);
+        DrawWeatherHeader("LastWeather", pWeather);
     else
         ImGui::TextColored(kRedColor, "No LastWeather");
     if (TESWeather* pWeather = pInstance->GetOverrideWeather())
-        DrawWeatherInfo("OverrideWeather", pWeather);
+        DrawWeatherHeader("OverrideWeather", pWeather);
     else
         ImGui::TextColored(kRedColor, "No OverrideWeather");
     if (TESWeather* pWeather = pInstance->GetDefaultWeather())
-        DrawWeatherInfo("DefaultWeather", pWeather);
-
+        DrawWeatherHeader("DefaultWeather", pWeather);
+    ImGui::Separator();
     if (TESRegion* pRegion = pInstance->GetCurrentRegion())
         DrawRegionInfo("Current Sky Region", pRegion);
+    ImGui::Separator();
     // NOTE(Force): By setting pLastKnownWeatherRegion the game seems to update the region
     if (TESRegion* pRegion = PlayerRegionState::Get()->pLastKnownWeatherRegion)
         DrawRegionInfo("LastKnownWeatherRegion", pRegion);

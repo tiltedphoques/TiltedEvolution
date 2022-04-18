@@ -217,7 +217,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
         pRenderer->SetVisible(!active);
 #endif
 
-        pRenderer->SetCursorVisible(!active);
+        //pRenderer->SetCursorVisible(!active);
 
         // This is to disable the Windows cursor
         while (ShowCursor(FALSE) >= 0)

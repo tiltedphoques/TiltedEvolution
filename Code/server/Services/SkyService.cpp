@@ -19,6 +19,18 @@ SkyService::SkyService(World& aWorld, entt::dispatcher& aDispatcher)
 
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&SkyService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&SkyService::OnPlayerJoin>(this);
+
+    for (auto& climate : m_world.GetRecordCollection()->GetClimates())
+    {
+        spdlog::info("[SkyService]: Loading Climate: {}", climate.second.m_editorId.c_str());
+    }
+
+    for (auto& region : m_world.GetRecordCollection()->GetRegions())
+    {
+        spdlog::info("[SkyService]: Loading Region: {}", region.second.m_editorId.c_str());
+    }
+
+    // weatherlist component.
 }
 
 void SkyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -32,6 +44,8 @@ void SkyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 
 void SkyService::OnUpdate(const UpdateEvent&) noexcept
 {
+
+
     if (m_nextUpdate < std::chrono::steady_clock::now())
     {
         // refresh
@@ -43,6 +57,8 @@ void SkyService::OnUpdate(const UpdateEvent&) noexcept
             seedMsg.Seed = m_weatherSeed;
             pPlayer->Send(seedMsg);
         }
+
+        //constexpr float xx = 255u* 2.3283064e-10f;
 
         // todo: calculate the delay based on the server.
         m_nextUpdate = (std::chrono::steady_clock::now() + std::chrono::seconds(20));

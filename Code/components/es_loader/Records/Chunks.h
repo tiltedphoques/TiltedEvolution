@@ -36,12 +36,13 @@ struct ScriptProperty
 
         struct Str
         {
-          const char* data;
-          size_t length;
-        } m_string {nullptr, 0};
+            const char* data;
+            size_t length;
+        } m_string{nullptr, 0};
     };
 
-    void ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
+    void ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat,
+                    TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
     Type GetPropertyType(Type aArrayType) noexcept;
 
     String m_name;
@@ -72,7 +73,9 @@ struct VMAD
 
 struct CNTO
 {
-    CNTO(){}
+    CNTO()
+    {
+    }
     CNTO(Buffer::Reader& aReader);
 
     uint32_t m_formId{};
@@ -81,7 +84,9 @@ struct CNTO
 
 struct WLST
 {
-    WLST(){}
+    WLST()
+    {
+    }
     WLST(Buffer::Reader& aReader, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_weatherId{}; // WTHR
@@ -91,20 +96,24 @@ struct WLST
 
 struct TNAM
 {
-    TNAM(){}
+    TNAM()
+    {
+    }
     TNAM(Buffer::Reader& aReader);
 
     uint8_t m_sunriseBegin{}; // times 10 minutes
-    uint8_t m_sunriseEnd{}; // times 10 minutes
-    uint8_t m_sunsetBegin{}; // times 10 minutes
-    uint8_t m_sunsetEnd{}; // times 10 minutes
-    uint8_t m_volatility{}; // 0-100
+    uint8_t m_sunriseEnd{};   // times 10 minutes
+    uint8_t m_sunsetBegin{};  // times 10 minutes
+    uint8_t m_sunsetEnd{};    // times 10 minutes
+    uint8_t m_volatility{};   // 0-100
     uint8_t m_moons{};
 };
 
 struct NAME
 {
-    NAME(){}
+    NAME()
+    {
+    }
     NAME(Buffer::Reader& aReader, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_baseId = 0;
@@ -112,7 +121,9 @@ struct NAME
 
 struct DOFT
 {
-    DOFT(){}
+    DOFT()
+    {
+    }
     DOFT(Buffer::Reader& aReader, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_formId = 0;
@@ -120,7 +131,9 @@ struct DOFT
 
 struct ACBS
 {
-    ACBS(){}
+    ACBS()
+    {
+    }
     ACBS(Buffer::Reader& aReader);
 
     enum ActorFlags
@@ -141,7 +154,7 @@ struct ACBS
         kOppositeGenderAnims = 1 << 13,
         kSimpleActor = 1 << 14,
         kLoopedScript_m = 1 << 15, // ??
-        kLoopedAudio_m = 1 << 16, // ??
+        kLoopedAudio_m = 1 << 16,  // ??
         kGhostOrNonInteractable = 1 << 17,
         kInvulnerable = 1 << 18,
     };
@@ -163,25 +176,82 @@ struct ACBS
         kKeywords = 1 << 12
     };
 
-    [[nodiscard]] bool IsFemale() const { return m_flags & ActorFlags::kFemale; }
-    [[nodiscard]] bool IsEssential() const { return m_flags & ActorFlags::kEssential; }
-    [[nodiscard]] bool IsChargenFacePreset() const { return m_flags & ActorFlags::kIsChargenFacePreset; }
-    [[nodiscard]] bool IsRespawn() const { return m_flags & ActorFlags::kRespawn; }
-    [[nodiscard]] bool IsAutoCalcStats() const { return m_flags & ActorFlags::kAutoCalcStats; }
-    [[nodiscard]] bool IsUnique() const { return m_flags & ActorFlags::kUnique; }
-    [[nodiscard]] bool DoesAffectStealth() const { return !(m_flags & ActorFlags::kDoesntAffectStealth); }
-    [[nodiscard]] bool IsPCLevelMult() const { return m_flags & ActorFlags::kPCLevelMult; }
-    [[nodiscard]] bool IsAudioTemplate() const { return m_flags & ActorFlags::kAudioTemplate_m; }
-    [[nodiscard]] bool IsProtected() const { return m_flags & ActorFlags::kProtected; }
-    [[nodiscard]] bool IsSummonable() const { return m_flags & ActorFlags::kSummonable; }
-    [[nodiscard]] bool DoesBleed() const { return !(m_flags & ActorFlags::kDoesntBleed); }
-    [[nodiscard]] bool IsOwnerOrFollowed() const { return m_flags & ActorFlags::kOwnedOrFollowed_m; }
-    [[nodiscard]] bool IsOppositeGenderAnims() const { return m_flags & ActorFlags::kOppositeGenderAnims; }
-    [[nodiscard]] bool IsSimpleActor() const { return m_flags & ActorFlags::kSimpleActor; }
-    [[nodiscard]] bool IsLoopedScript() const { return m_flags & ActorFlags::kLoopedScript_m; }
-    [[nodiscard]] bool IsLoopedAudio() const { return m_flags & ActorFlags::kLoopedAudio_m; }
-    [[nodiscard]] bool IsGhostOrNonInteractable() const { return m_flags & ActorFlags::kGhostOrNonInteractable; }
-    [[nodiscard]] bool IsInvulnerable() const { return m_flags & ActorFlags::kInvulnerable; }
+    [[nodiscard]] bool IsFemale() const
+    {
+        return m_flags & ActorFlags::kFemale;
+    }
+    [[nodiscard]] bool IsEssential() const
+    {
+        return m_flags & ActorFlags::kEssential;
+    }
+    [[nodiscard]] bool IsChargenFacePreset() const
+    {
+        return m_flags & ActorFlags::kIsChargenFacePreset;
+    }
+    [[nodiscard]] bool IsRespawn() const
+    {
+        return m_flags & ActorFlags::kRespawn;
+    }
+    [[nodiscard]] bool IsAutoCalcStats() const
+    {
+        return m_flags & ActorFlags::kAutoCalcStats;
+    }
+    [[nodiscard]] bool IsUnique() const
+    {
+        return m_flags & ActorFlags::kUnique;
+    }
+    [[nodiscard]] bool DoesAffectStealth() const
+    {
+        return !(m_flags & ActorFlags::kDoesntAffectStealth);
+    }
+    [[nodiscard]] bool IsPCLevelMult() const
+    {
+        return m_flags & ActorFlags::kPCLevelMult;
+    }
+    [[nodiscard]] bool IsAudioTemplate() const
+    {
+        return m_flags & ActorFlags::kAudioTemplate_m;
+    }
+    [[nodiscard]] bool IsProtected() const
+    {
+        return m_flags & ActorFlags::kProtected;
+    }
+    [[nodiscard]] bool IsSummonable() const
+    {
+        return m_flags & ActorFlags::kSummonable;
+    }
+    [[nodiscard]] bool DoesBleed() const
+    {
+        return !(m_flags & ActorFlags::kDoesntBleed);
+    }
+    [[nodiscard]] bool IsOwnerOrFollowed() const
+    {
+        return m_flags & ActorFlags::kOwnedOrFollowed_m;
+    }
+    [[nodiscard]] bool IsOppositeGenderAnims() const
+    {
+        return m_flags & ActorFlags::kOppositeGenderAnims;
+    }
+    [[nodiscard]] bool IsSimpleActor() const
+    {
+        return m_flags & ActorFlags::kSimpleActor;
+    }
+    [[nodiscard]] bool IsLoopedScript() const
+    {
+        return m_flags & ActorFlags::kLoopedScript_m;
+    }
+    [[nodiscard]] bool IsLoopedAudio() const
+    {
+        return m_flags & ActorFlags::kLoopedAudio_m;
+    }
+    [[nodiscard]] bool IsGhostOrNonInteractable() const
+    {
+        return m_flags & ActorFlags::kGhostOrNonInteractable;
+    }
+    [[nodiscard]] bool IsInvulnerable() const
+    {
+        return m_flags & ActorFlags::kInvulnerable;
+    }
 
     uint32_t m_flags = 0;
     int16_t m_magickaOffset = 0;
@@ -200,7 +270,9 @@ static_assert(sizeof(ACBS) == 0x18);
 
 struct MAST
 {
-    MAST(){}
+    MAST()
+    {
+    }
     MAST(Buffer::Reader& aReader);
 
     String m_masterName = "";
@@ -387,4 +459,37 @@ struct NVNM
 static_assert(sizeof(glm::vec3) == 12);
 static_assert(sizeof(NVNM::Tri) == 16);
 
-} // namespace
+struct RDAT
+{
+    enum class RDAT_TYPE : uint32_t
+    {
+        kObjects = 2,
+        kWeather = 3,
+        kMap = 4,
+        kLandscape = 5,
+        kGrass = 6,
+        kSound = 7
+    };
+
+    RDAT(){};
+    RDAT(Buffer::Reader& aReader);
+
+    RDAT_TYPE m_type;
+    uint8_t m_flags;
+    uint8_t priority;
+    uint16_t pad;
+};
+static_assert(sizeof(RDAT) == 8);
+
+// RegionDataWeather
+struct RDWT
+{
+    RDWT(){};
+    RDWT(Buffer::Reader& aReader);
+
+    uint32_t m_formId;
+    uint32_t m_chance;
+    uint32_t m_globalId; // unused
+};
+static_assert(sizeof(RDWT) == 12);
+} // namespace Chunks

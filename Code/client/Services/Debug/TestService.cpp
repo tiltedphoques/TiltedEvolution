@@ -163,6 +163,7 @@ static bool g_enableFormsWindow{false};
 static bool g_enablePlayerWindow{false};
 static bool g_enableSkillsWindow{false};
 static bool g_enablePartyWindow{false};
+static bool g_enableSkyMenu{true};
 
 void TestService::OnDraw() noexcept
 {
@@ -213,12 +214,8 @@ void TestService::OnDraw() noexcept
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+        ImGui::MenuItem("Sky", nullptr, &g_enableSkyMenu);
 
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Sky"))
-    {
-        DrawSkyDebugView();
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
@@ -237,6 +234,8 @@ void TestService::OnDraw() noexcept
         DrawSkillView();
     if (g_enablePartyWindow)
         DrawPartyView();
+    if (g_enableSkyMenu)
+        DrawSkyDebugView();
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();

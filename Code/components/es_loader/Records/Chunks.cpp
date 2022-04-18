@@ -247,4 +247,18 @@ NVNM::NVNM(Buffer::Reader& aReader)
     // Missing triangle divisor but we don't care about it
 }
 
+RDAT::RDAT(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_type), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_flags), sizeof(m_flags));
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&priority), sizeof(priority));
+}
+
+RDWT::RDWT(Buffer::Reader& aReader)
+{
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_formId), 4);
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_chance), sizeof(m_chance));
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_globalId), sizeof(m_globalId));
+}
+
 } // namespace Chunks

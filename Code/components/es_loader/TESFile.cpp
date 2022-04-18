@@ -132,10 +132,17 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
         case FormEnum::WRLD: {
             WRLD parsedRecord = CopyAndParseRecord<WRLD>(pRecord);
             aRecordCollection.m_worlds[parsedRecord.GetFormId()] = parsedRecord;
+            break;
         }
         case FormEnum::NAVM: {
             NAVM parsedRecord = CopyAndParseRecord<NAVM>(pRecord);
             aRecordCollection.m_navMeshes[parsedRecord.GetFormId()] = parsedRecord;
+            break;
+        }
+        case FormEnum::REGN: {
+            REGN parsedRecord = CopyAndParseRecord<REGN>(pRecord);
+            aRecordCollection.m_regions[parsedRecord.GetFormId()] = parsedRecord;
+            break;
         }
         }
 

@@ -6,6 +6,7 @@
 #include "Records/NAVM.h"
 #include "Records/NPC.h"
 #include "Records/REFR.h"
+#include "Records/REGN.h"
 #include "Records/WRLD.h"
 
 namespace ESLoader
@@ -15,6 +16,8 @@ class RecordCollection
     friend class TESFile;
 
   public:
+    template <typename T> using RecordSet = TiltedPhoques::Map<uint32_t, T>;
+
     FormEnum GetFormType(uint32_t aFormId) const noexcept
     {
         auto record = m_allRecords.find(aFormId);
@@ -61,17 +64,28 @@ class RecordCollection
         return m_navMeshes[aFormId];
     }
 
+    const RecordSet<CLMT>& GetClimates() noexcept
+    {
+        return m_climates;
+    }
+
+    const RecordSet<REGN>& GetRegions() noexcept
+    {
+        return m_regions;
+    }
+
     void BuildReferences();
 
-private:
-    TiltedPhoques::Map<uint32_t, Record> m_allRecords{};
-    TiltedPhoques::Map<uint32_t, REFR> m_objectReferences{};
-    TiltedPhoques::Map<uint32_t, CLMT> m_climates{};
-    TiltedPhoques::Map<uint32_t, NPC> m_npcs{};
-    TiltedPhoques::Map<uint32_t, CONT> m_containers{};
-    TiltedPhoques::Map<uint32_t, GMST> m_gameSettings{};
-    TiltedPhoques::Map<uint32_t, WRLD> m_worlds{};
-    TiltedPhoques::Map<uint32_t, NAVM> m_navMeshes{};
+  private:
+    RecordSet<Record> m_allRecords{};
+    RecordSet<REFR> m_objectReferences{};
+    RecordSet<CLMT> m_climates{};
+    RecordSet<NPC> m_npcs{};
+    RecordSet<CONT> m_containers{};
+    RecordSet<GMST> m_gameSettings{};
+    RecordSet<WRLD> m_worlds{};
+    RecordSet<NAVM> m_navMeshes{};
+    RecordSet<REGN> m_regions{};
 };
 
 } // namespace ESLoader
