@@ -95,7 +95,7 @@ struct SettingsInstance
         if (!fs::exists(m_path))
         {
             create_directory(fs::current_path() / kConfigPathName);
-            Console::SaveSettingsToIni(m_path);
+            Console::SaveSettingsToIni(m_path, true);
             return;
         }
         Console::LoadSettingsFromIni(m_path);
@@ -103,7 +103,7 @@ struct SettingsInstance
 
     ~SettingsInstance()
     {
-        Console::SaveSettingsToIni(m_path);
+        Console::SaveSettingsToIni(m_path, false);
     }
 
   private:
@@ -130,7 +130,6 @@ class DediRunner
     fs::path m_configPath;
     // Order here matters for constructor calling order.
     SettingsInstance m_settings;
-    LogInstance m_logInstance;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
     UniquePtr<std::jthread> m_pConIOThread;
@@ -168,12 +167,14 @@ void DediRunner::RunGSThread()
 
 void DediRunner::StartTerminalIO()
 {
-    m_pConIOThread.reset(new std::jthread([&]() {
+    m_pConIOThread = MakeUnique<std::jthread>(([&]() {
         spdlog::get("ConOut")->info("Server console");
         PrintExecutorArrowHack();
 
         while (m_gameServer.IsRunning())
         {
+            // should have a isDirty flag and flush if, every x seconds.
+
             std::string s;
             std::getline(std::cin, s);
             if (!m_console.TryExecuteCommand(s))
@@ -184,7 +185,7 @@ void DediRunner::StartTerminalIO()
                 PrintExecutorArrowHack();
             }
 
-            // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
+            // best way to ensure this thread exits immediately tbh ï¿½\_("")_/ï¿½.
             if (s == "/quit")
                 return;
         }
@@ -197,8 +198,8 @@ void DediRunner::RequestKill()
 
     auto wait = std::move(m_pConIOThread);
     TP_UNUSED(wait);
-
-    // work around
+    
+    // work around 
     // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
     // being set.
 #if defined(_WIN32)
@@ -268,15 +269,18 @@ static bool IsEULAAccepted()
 
 int main(int argc, char** argv)
 {
+    LogInstance logInstance;
+    (void)logInstance;
+
     if (!IsEULAAccepted())
     {
-        fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
+        spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
         return 0;
     }
 
     RegisterQuitHandler();
 
-    // Keep stack free.
+    // Keep it off the stack.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
     if (bConsole)
     {

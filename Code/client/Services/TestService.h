@@ -33,6 +33,8 @@ private:
     void DrawFormDebugView();
     void DrawSkillView();
     void DrawSkyDebugView();
+    void DrawNetworkView();
+    void DrawPartyView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 

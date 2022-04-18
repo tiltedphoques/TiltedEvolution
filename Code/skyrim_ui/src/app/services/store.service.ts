@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,9 @@ export class StoreService {
     const value = localStorage.getItem(key);
 
     if (value !== null) {
-      console.log(`Value : ${key} : ${value}`);
-      console.log(value);
+      if(!environment.game) {
+        console.log(`Value : ${key} : ${value}`);
+      }
       return value;
     }
 

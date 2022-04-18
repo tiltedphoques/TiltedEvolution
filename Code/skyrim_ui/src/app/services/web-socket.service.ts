@@ -13,15 +13,15 @@ export class WebSocketService implements OnDestroy {
   private ws: WebSocket;
   private _pingObs: Subscription;
 
-  constructor() {
-    this.ws = new WebSocket(`wss://presence.${environment.baseUrl}`);
+  /*constructor() {
+    this.ws = new WebSocket(`wss://presence.test`);
     this.ws.onopen = () => this.onOpen();
     this.ws.onclose = () => this.onClose();
     this.ws.onmessage = (evt) => {
       this.message.next(JSON.parse(evt.data));
     };
     this.ws.onerror = (evt) => console.log('ON ERROR', evt);
-  }
+  }*/
 
   ngOnDestroy() {
     this.ws.close();

@@ -6,7 +6,6 @@
 #include <Services/EntityService.h>
 #include <Services/CharacterService.h>
 #include <Services/InputService.h>
-#include <Services/OverlayService.h>
 #include <Services/TransportService.h>
 #include <Services/TestService.h>
 #include <Services/RunnerService.h>
@@ -21,16 +20,17 @@
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/SkyService.h>
-
+#include <Services/CommandService.h>
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
 
 World::World()
     : m_runner(m_dispatcher)
-    , m_transport(*this, m_dispatcher, set<ImguiService>())
+    , m_transport(*this, m_dispatcher)
     , m_modSystem(m_dispatcher)
     , m_lastFrameTime{ std::chrono::high_resolution_clock::now() }
 {
+    set<ImguiService>();
     set<DiscoveryService>(*this, m_dispatcher);
     set<EntityService>(*this, m_dispatcher);
     set<OverlayService>(*this, m_transport, m_dispatcher);
@@ -42,11 +42,12 @@ World::World()
     set<DiscordService>(m_dispatcher);
     set<EnvironmentService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<QuestService>(*this, m_dispatcher, ctx<ImguiService>());
-    set<PartyService>(m_dispatcher, ctx<ImguiService>(), m_transport);
+    set<PartyService>(m_dispatcher, m_transport);
     set<ActorValueService>(*this, m_dispatcher, m_transport);
     set<InventoryService>(*this, m_dispatcher, m_transport);
     set<MagicService>(*this, m_dispatcher, m_transport);
     set<SkyService>(*this, m_dispatcher);
+    set<CommandService>(*this, m_transport, m_dispatcher);
 }
 
 World::~World() = default;

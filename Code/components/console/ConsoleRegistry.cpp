@@ -2,15 +2,18 @@
 // For licensing information see LICENSE at the root of this distribution.
 
 #include <algorithm>
+#include <optional>
 #include <console/ConsoleRegistry.h>
 #include <console/ConsoleUtils.h>
 #include <console/StringTokenizer.h>
 
 namespace Console
 {
-static constexpr char kCommandPrefix = '/';
+namespace
+{
+constexpr char kCommandPrefix = '/';
 
-static std::unique_ptr<std::string[]> ParseLine(const std::string& arLine, size_t &tokenCount)
+std::unique_ptr<std::string[]> SplitLineTokens(const std::string& arLine, size_t& tokenCount)
 {
     if (!CheckIsValidUTF8(arLine))
         return nullptr;
@@ -35,6 +38,17 @@ static std::unique_ptr<std::string[]> ParseLine(const std::string& arLine, size_
 
     return tokens;
 }
+
+std::optional<bool> BoolifyString(std::string_view view)
+{
+    // let the compiler optimize this.
+    if (view == "true" || view == "TRUE" || view == "1")
+        return true;
+    else if (view == "false" || view == "FALSE" || view == "0")
+        return false;
+    return std::nullopt;
+}
+} // namespace
 
 ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
 {
@@ -88,38 +102,65 @@ void ConsoleRegistry::RegisterNatives()
         }
     });
 
-    RegisterCommand<const char*, const char*>("set", R"(Set a setting e.g "set mysetting true")", [&](ArgStack& aStack) {
-        const std::string variableName{aStack.Pop<std::string>()};
-        if (variableName.empty())
-        {
-            m_out->error("set <varname> <state>");
-            return;
-        }
+    RegisterCommand<const char*, const char*>(
+        "set", R"(Set a setting e.g "set mysetting true")", [&](ArgStack& aStack) {
+            const std::string variableName{aStack.Pop<std::string>()};
+            if (variableName.empty())
+            {
+                m_out->error("set <varname> <state>");
+                return;
+            }
 
-        auto* pSetting = FindSetting(variableName.c_str());
-        if (!pSetting)
-        {
+            if (auto* pSetting = FindSetting(variableName.c_str()))
+            {
+                if (pSetting->IsLocked())
+                {
+                    m_out->error("Failed apply value: setting is locked");
+                    return;
+                }
+
+                const auto value{aStack.Pop<std::string>()};
+                switch (pSetting->type)
+                {
+                case SettingBase::Type::kBoolean: {
+                    auto result = BoolifyString(value);
+                    if (result.has_value())
+                        pSetting->data.as_boolean = *result;
+                    break;
+                }
+                case SettingBase::Type::kInt:
+                    pSetting->data.as_int32 = ConvertStringValue(value.c_str(), pSetting->data.as_int32);
+                    break;
+                case SettingBase::Type::kUInt:
+                    pSetting->data.as_uint32 = ConvertStringValue(value.c_str(), pSetting->data.as_uint32);
+                    break;
+                case SettingBase::Type::kInt64:
+                    pSetting->data.as_int64 = ConvertStringValue(value.c_str(), pSetting->data.as_int64);
+                    break;
+                case SettingBase::Type::kUInt64:
+                    pSetting->data.as_uint64 = ConvertStringValue(value.c_str(), pSetting->data.as_uint64);
+                    break;
+                case SettingBase::Type::kFloat:
+                    pSetting->data.as_float = ConvertStringValue(value.c_str(), pSetting->data.as_float);
+                    break;
+                case SettingBase::Type::kString: {
+                    static_cast<StringSetting*>(pSetting)->StoreValue(*pSetting, value.c_str());
+                    break;
+                }
+                }
+
+                m_out->info("Set {} to {}", variableName, value);
+                return;
+            }
+
             m_out->error("Failed to find setting {}", variableName);
-            return;
-        }
-
-        if (pSetting->IsLocked())
-        {
-            m_out->error("Failed apply value: setting is locked");
-            return;
-        }
-
-        m_out->warn("Failed to set value because force was too lazy to make it work");
-        // aStack.Pop<std::string>()
-        // TODO: parse value function...
-        //pSetting.data = 
-    });
+        });
 }
 
 void ConsoleRegistry::AddCommand(CommandBase* apCommand)
 {
-    std::lock_guard<std::mutex> guard(m_listLock);
-    (void)guard;
+    std::lock_guard<std::mutex> _(m_listLock);
+    (void)_;
 
     // Add to global and tracking pool
     m_commands.push_back(apCommand);
@@ -165,7 +206,7 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     }
 
     size_t tokenCount = 0;
-    auto tokens = ParseLine(acLine, tokenCount);
+    auto tokens = SplitLineTokens(acLine, tokenCount);
     if (!tokenCount)
     {
         m_out->error("Failed to parse line");
@@ -178,7 +219,7 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
         m_out->error("Unknown command. Type /help for help.");
         return false;
     }
-    
+
     // Must subtract one, since the first is the literal command.
     tokenCount -= 1;
 
@@ -214,8 +255,8 @@ void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
     }
 }
 
-ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
-                                                const std::string* acStringArgs, ArgStack& aStackOut)
+ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs,
+                                                ArgStack& aStackOut)
 {
     CommandBase::Type* pType = apCommand->m_pArgIndicesArray;
     for (size_t i = 0; i < apCommand->m_argCount; i++)
@@ -224,17 +265,12 @@ ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
         switch (*pType)
         {
         case CommandBase::Type::kBoolean: {
-            if (stringArg == "true" || stringArg == "TRUE" || stringArg == "1")
+            auto result = BoolifyString(stringArg);
+            if (result.has_value())
             {
-                aStackOut.Push(true);
+                aStackOut.Push(*result /*to boolean conv*/);
                 continue;
             }
-            else if (stringArg == "false" || stringArg == "FALSE" || stringArg == "0")
-            {
-                aStackOut.Push(false);
-                continue;
-            }
-
             return ResultAnd("Expected boolean argument", false);
         }
         case CommandBase::Type::kNumeric: {
@@ -278,4 +314,4 @@ bool ConsoleRegistry::Update()
 
     return false;
 }
-} // namespace base
+} // namespace Console

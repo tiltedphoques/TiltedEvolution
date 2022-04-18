@@ -5,6 +5,7 @@
 #include <base/external/simpleini/SimpleIni.h>
 
 #include <console/IniSettingsProvider.h>
+#include <console/ConsoleUtils.h>
 #include <console/Setting.h>
 
 #include <charconv>
@@ -54,13 +55,7 @@ TVal GetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TV
         return a_nDefault;
     }
 
-    TVal nValue = a_nDefault;
-    auto [ptr, ec] = std::from_chars(szValue, szValue + std::strlen(szValue), nValue);
-    if (ec == std::errc())
-        // TODO; REPORT ERR
-        return nValue;
-
-    return a_nDefault;
+    return ConvertStringValue<TVal>(szValue, a_nDefault);
 }
 
 std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
@@ -75,13 +70,21 @@ std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
 }
 } // namespace
 
-void SaveSettingsToIni(const std::filesystem::path& path)
+void SaveSettingsToIni(const std::filesystem::path& aPath, bool aFirstRun)
 {
     CSimpleIni ini;
 
     SI_Error error{SI_Error::SI_OK};
 
     SettingBase::VisitAll([&](SettingBase* setting) {
+        // In first run mode we dont write hidden settings. so the user will be less
+        // aware of them
+        if (aFirstRun)
+        {
+            if (setting->IsHidden())
+                return;
+        }
+
         auto items = SplitSection(setting);
         auto& section = items.first;
         auto& name = items.second;
@@ -123,14 +126,14 @@ void SaveSettingsToIni(const std::filesystem::path& path)
     std::string buf;
     ini.Save(buf, true);
 
-    ShittyFileWrite(path, buf);
+    ShittyFileWrite(aPath, buf);
 }
 
-void LoadSettingsFromIni(const std::filesystem::path& path)
+void LoadSettingsFromIni(const std::filesystem::path& aPath)
 {
     CSimpleIni ini;
     {
-        auto buf = TiltedPhoques::LoadFile(path);
+        auto buf = TiltedPhoques::LoadFile(aPath);
         ini.LoadData(buf.c_str());
     }
 
@@ -169,7 +172,7 @@ void LoadSettingsFromIni(const std::filesystem::path& path)
             break;
         // Strings however are a special case, as it has its own allocator.
         case SettingBase::Type::kString: {
-            // This is not nearly how i want it to be :/
+            // This is not at all how i want it to be :/
             const char* c = ini.GetValue(section.c_str(), name.c_str(), setting->c_str());
             static_cast<StringSetting*>(setting)->StoreValue(*setting, c);
             break;

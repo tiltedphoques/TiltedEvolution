@@ -14,6 +14,8 @@
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/SkyService.h>
+#include <Services/OverlayService.h>
+#include <Services/CommandService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -32,10 +34,18 @@ World::World()
     set<ActorValueService>(*this, m_dispatcher);
     set<InventoryService>(*this, m_dispatcher);
     set<MagicService>(*this, m_dispatcher);
-    set<SkyService>(*this, m_dispatcher);
+    set<OverlayService>(*this, m_dispatcher);
+    set<CommandService>(*this, m_dispatcher);
 
-    ESLoader loader;
+    ESLoader::ESLoader loader;
+    // emplace loaded mods into modscomponent.
     m_recordCollection = loader.BuildRecordCollection();
+    for (const auto& it : loader.GetLoadOrder())
+    {
+        ctx<ModsComponent>().AddServerMod(it);
+    }
+
+    set<SkyService>(*this, m_dispatcher);
 
     // late initialize the ScriptService to ensure all components are valid
     m_scriptService = std::make_unique<ScriptService>(*this, m_dispatcher);

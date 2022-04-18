@@ -37,7 +37,7 @@ TEST_F(ConsoleRegistryTest, RegisterCommand)
                     }};
 
     // "static" setting
-    static Setting<bool> ss{"test0", "", true, SettingBase::Flags::kLocked};
+    static Setting<bool> ss{"test0", "", true, SettingsFlags::kLocked};
 
     auto r{std::make_unique<ConsoleRegistry>("Test")};
     r->RegisterCommand<bool, bool>("name", "description", [&](ArgStack& stack) {
