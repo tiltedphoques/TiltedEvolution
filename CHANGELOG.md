@@ -1,3 +1,21 @@
+# [1.28.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.27.0...v1.28.0) (2022-04-17)
+
+
+### Bug Fixes
+
+* hide ST cursor on closing menu ([b1b9904](https://github.com/tiltedphoques/TiltedEvolution/commit/b1b9904299594d28a5dd532b0379d438e0c2b34b))
+* remove white windows cursor in game ([c3ba18a](https://github.com/tiltedphoques/TiltedEvolution/commit/c3ba18acfb6ac7e4c1cdc318a3dc1ff2cdfef042))
+* server message crash ([645edf1](https://github.com/tiltedphoques/TiltedEvolution/commit/645edf1f14d145e50eff6272fd4a82e38a4133e4))
+
+
+### Features
+
+* added "back" button to serverlist ([ca86c4b](https://github.com/tiltedphoques/TiltedEvolution/commit/ca86c4bac9fb5fcd63b10267df9a51a61d89471c))
+* chat ([1034eae](https://github.com/tiltedphoques/TiltedEvolution/commit/1034eae3cc41b90ec641ca6f547b845ca10e65f4))
+* mark servers as in/compatible in server-list ([a684e3f](https://github.com/tiltedphoques/TiltedEvolution/commit/a684e3f5a6d1ec55e7abd3298db8358f61bb54b1))
+* teleport command ([c80ec80](https://github.com/tiltedphoques/TiltedEvolution/commit/c80ec80166afc704ea994213f75588b0e332d996))
+* update angular & cleanup ([1644d8e](https://github.com/tiltedphoques/TiltedEvolution/commit/1644d8e1d7e89574a347992e7a41fa2b00ed39b7))
+
 # [1.27.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.26.0...v1.27.0) (2022-04-17)
 
 

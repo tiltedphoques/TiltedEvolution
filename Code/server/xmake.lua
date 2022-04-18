@@ -1,3 +1,4 @@
+local function istable(t) return type(t) == 'table' end
 
 local function build_server()
     set_kind("shared")
@@ -12,10 +13,11 @@ local function build_server()
         add_files("server.rc")
     end
     add_deps(
-        "Common",
+        "CommonLib",
         "Console",
         "ESLoader",
-        "Base",
+        "CrashHandler",
+        "BaseLib",
         "AdminProtocol",
         "TiltedScript",
         "TiltedConnect"
@@ -30,7 +32,8 @@ local function build_server()
         "glm",
         "entt",
         "cpp-httplib",
-        "tiltedcore")
+        "tiltedcore",
+        "sentry-native")
 end
 
 target("SkyrimTogetherServer")
