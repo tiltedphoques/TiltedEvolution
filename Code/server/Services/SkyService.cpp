@@ -11,6 +11,51 @@
 
 #include <base/Random.h>
 
+const Chunks::RDWT* GetRandomWeather(World &aWorld)
+{
+    uint32_t cumulatedChance = 0;
+
+    const auto pRegion = aWorld.GetRecordCollection()->GetRegions().begin().value();
+
+    for (auto& regionNode : pRegion.m_weatherTypes)
+    {
+        float fValue;
+        if (regionNode.m_globalId)
+            assert(true);
+            //cumulatedChance += pChanceVar->fValue;
+        else
+            cumulatedChance += regionNode.m_chance;
+    }
+
+    if (!cumulatedChance)
+        return nullptr;
+
+    uint32_t u8 = -1;
+    uint32_t v1 = 0;
+    auto random = base::RandomIntegral<uint32_t>(0, UINT_MAX) % cumulatedChance;
+    for (auto& regionNode : pRegion.m_weatherTypes)
+    {
+        float fValue;
+        if (regionNode.m_globalId)
+            assert(true);
+        // cumulatedChance += pChanceVar->fValue;
+        else
+            cumulatedChance += regionNode.m_chance;
+
+        uint32_t chance = regionNode.m_globalId ? 1337 : regionNode.m_chance;
+        u8 += chance;
+
+        if (v1 <= random && random <= u8)
+        {
+            return &regionNode;
+        }
+
+        v1 += chance;
+    }
+
+    return nullptr;
+}
+
 SkyService::SkyService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_envService(aWorld.ctx<EnvironmentService>()), m_nextUpdate(std::chrono::seconds(0))
 {
@@ -29,6 +74,21 @@ SkyService::SkyService(World& aWorld, entt::dispatcher& aDispatcher)
     {
         spdlog::info("[SkyService]: Loading Region: {}", region.second.m_editorId.c_str());
     }
+
+    /*
+    struct FORM
+{
+  unsigned int form;
+  unsigned int length;
+  unsigned int flags;
+  unsigned int iFormID;
+  unsigned int iVersionControl;
+  unsigned __int16 sFormVersion;
+  unsigned __int16 sVCVersion;
+};
+*/
+
+   // auto randomWeather = GetRandomWeather(aWorld);
 
     // weatherlist component.
 }

@@ -21,12 +21,12 @@ public:
     static VersionDb& Get();
 
 private:
-    std::map<unsigned long long, unsigned long long> _data;
-    std::map<unsigned long long, unsigned long long> _rdata;
+    TiltedPhoques::Map<uintptr_t, uintptr_t> _data;
+    TiltedPhoques::Map<uintptr_t, uintptr_t> _rdata;
     int _ver[4];
     std::string _verStr;
     std::string _moduleName;
-    unsigned long long _base;
+    uintptr_t _base;
 
     template <typename T> static T read(std::ifstream& file)
     {
@@ -35,14 +35,14 @@ private:
         return v;
     }
 
-    static void* ToPointer(unsigned long long v)
+    static void* ToPointer(uintptr_t v)
     {
         return (void*)v;
     }
 
-    static unsigned long long FromPointer(void* ptr)
+    static uintptr_t FromPointer(void* ptr)
     {
-        return (unsigned long long)ptr;
+        return (uintptr_t)ptr;
     }
 
     static bool ParseVersionFromString(const char* ptr, int& major, int& minor, int& revision, int& build)
@@ -61,25 +61,25 @@ public:
         return _verStr;
     }
 
-    const std::map<unsigned long long, unsigned long long>& GetOffsetMap() const
+    const auto& GetOffsetMap() const
     {
         return _data;
     }
 
-    void* FindAddressById(unsigned long long id) const
+    void* FindAddressById(uintptr_t id) const
     {
-        unsigned long long b = _base;
+        uintptr_t b = _base;
         if (b == 0)
             return NULL;
 
-        unsigned long long offset = 0;
+        uintptr_t offset = 0;
         if (!FindOffsetById(id, offset))
             return NULL;
 
         return ToPointer(b + offset);
     }
 
-    bool FindOffsetById(unsigned long long id, unsigned long long& result) const
+    bool FindOffsetById(uintptr_t id, uintptr_t& result) const
     {
         auto itr = _data.find(id);
         if (itr != _data.end())
@@ -90,17 +90,17 @@ public:
         return false;
     }
 
-    bool FindIdByAddress(void* ptr, unsigned long long& result) const
+    bool FindIdByAddress(void* ptr, uintptr_t& result) const
     {
-        unsigned long long b = _base;
+        uintptr_t b = _base;
         if (b == 0)
             return false;
 
-        unsigned long long addr = FromPointer(ptr);
+        uintptr_t addr = FromPointer(ptr);
         return FindIdByOffset(addr - b, result);
     }
 
-    bool FindIdByOffset(unsigned long long offset, unsigned long long& result) const
+    bool FindIdByOffset(uintptr_t offset, uintptr_t& result) const
     {
         auto itr = _rdata.find(offset);
         if (itr == _rdata.end())
@@ -232,57 +232,57 @@ public:
 
         {
             HMODULE handle = GetModuleHandleA(NULL);
-            _base = (unsigned long long)handle;
+            _base = (uintptr_t)handle;
         }
 
         int ptrSize = read<int>(file);
 
         int addrCount = read<int>(file);
 
-        unsigned char type, low, high;
-        unsigned char b1, b2;
-        unsigned short w1, w2;
-        unsigned int d1, d2;
-        unsigned long long q1, q2;
-        unsigned long long pvid = 0;
-        unsigned long long poffset = 0;
-        unsigned long long tpoffset;
+        uint8_t type, low, high;
+        uint8_t b1, b2;
+        uint16_t w1, w2;
+        uint32_t d1, d2;
+        uintptr_t q1, q2;
+        uintptr_t pvid = 0;
+        uintptr_t poffset = 0;
+        uintptr_t tpoffset;
         for (int i = 0; i < addrCount; i++)
         {
-            type = read<unsigned char>(file);
+            type = read<uint8_t>(file);
             low = type & 0xF;
             high = type >> 4;
 
             switch (low)
             {
             case 0:
-                q1 = read<unsigned long long>(file);
+                q1 = read<uintptr_t>(file);
                 break;
             case 1:
                 q1 = pvid + 1;
                 break;
             case 2:
-                b1 = read<unsigned char>(file);
+                b1 = read<uint8_t>(file);
                 q1 = pvid + b1;
                 break;
             case 3:
-                b1 = read<unsigned char>(file);
+                b1 = read<uint8_t>(file);
                 q1 = pvid - b1;
                 break;
             case 4:
-                w1 = read<unsigned short>(file);
+                w1 = read<uint16_t>(file);
                 q1 = pvid + w1;
                 break;
             case 5:
-                w1 = read<unsigned short>(file);
+                w1 = read<uint16_t>(file);
                 q1 = pvid - w1;
                 break;
             case 6:
-                w1 = read<unsigned short>(file);
+                w1 = read<uint16_t>(file);
                 q1 = w1;
                 break;
             case 7:
-                d1 = read<unsigned int>(file);
+                d1 = read<uint32_t>(file);
                 q1 = d1;
                 break;
             default: {
@@ -291,38 +291,38 @@ public:
             }
             }
 
-            tpoffset = (high & 8) != 0 ? (poffset / (unsigned long long)ptrSize) : poffset;
+            tpoffset = (high & 8) != 0 ? (poffset / (uintptr_t)ptrSize) : poffset;
 
             switch (high & 7)
             {
             case 0:
-                q2 = read<unsigned long long>(file);
+                q2 = read<uintptr_t>(file);
                 break;
             case 1:
                 q2 = tpoffset + 1;
                 break;
             case 2:
-                b2 = read<unsigned char>(file);
+                b2 = read<uint8_t>(file);
                 q2 = tpoffset + b2;
                 break;
             case 3:
-                b2 = read<unsigned char>(file);
+                b2 = read<uint8_t>(file);
                 q2 = tpoffset - b2;
                 break;
             case 4:
-                w2 = read<unsigned short>(file);
+                w2 = read<uint16_t>(file);
                 q2 = tpoffset + w2;
                 break;
             case 5:
-                w2 = read<unsigned short>(file);
+                w2 = read<uint16_t>(file);
                 q2 = tpoffset - w2;
                 break;
             case 6:
-                w2 = read<unsigned short>(file);
+                w2 = read<uint16_t>(file);
                 q2 = w2;
                 break;
             case 7:
-                d2 = read<unsigned int>(file);
+                d2 = read<uint32_t>(file);
                 q2 = d2;
                 break;
             default:
@@ -330,7 +330,7 @@ public:
             }
 
             if ((high & 8) != 0)
-                q2 *= (unsigned long long)ptrSize;
+                q2 *= (uintptr_t)ptrSize;
 
             _data[q1] = q2;
             _rdata[q2] = q1;
