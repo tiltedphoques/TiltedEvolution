@@ -6,7 +6,7 @@ add_requireconfs("cpp-httplib", {configs = {ssl = true}})
 add_requires(
     "tiltedcore",
 	"cryptopp",
-    "spdlog",
+    "spdlog 1.9",
     "cpp-httplib",
     "gtest",
     "mem")
