@@ -13,19 +13,19 @@ class ESLoaderTest : public ::testing::Test
 public:
     static void SetUpTestSuite()
     {
-        ESLoader loader;
+        ESLoader::ESLoader loader;
         s_collection = loader.BuildRecordCollection();
     }
 
-    UniquePtr<RecordCollection>& GetCollection()
+    UniquePtr<ESLoader::RecordCollection>& GetCollection()
     {
         return s_collection;
     }
 
-    static UniquePtr<RecordCollection> s_collection;
+    static UniquePtr<ESLoader::RecordCollection> s_collection;
 };
 
-UniquePtr<RecordCollection> ESLoaderTest::s_collection = nullptr;
+UniquePtr<ESLoader::RecordCollection> ESLoaderTest::s_collection = nullptr;
 
 TEST_F(ESLoaderTest, BuildRecordCollection)
 {

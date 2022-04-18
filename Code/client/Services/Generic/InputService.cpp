@@ -91,6 +91,12 @@ uint32_t GetCefModifiers(uint16_t aVirtualKey)
     return modifiers;
 }
 
+// remember to update this when updating toggle keys
+bool IsToggleKey(int aKey) noexcept
+{
+    return aKey == VK_RCONTROL || aKey == VK_F2;
+}
+
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
     if (aType != KEYEVENT_CHAR)
@@ -197,23 +203,25 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
-    if (aType == KEYEVENT_KEYDOWN && (aKey == VK_F2 || aKey == VK_RCONTROL))
+    spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
+
+    // This is really hacky, but when the input hook is enabled initially, it does not propogate the KEYDOWN event
+    if (IsToggleKey(aKey) && (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active)))
     {
 #if defined(TP_SKYRIM)
-        TiltedPhoques::DInputHook::Get().SetEnabled(!TiltedPhoques::DInputHook::Get().IsEnabled());
+        TiltedPhoques::DInputHook::Get().SetEnabled(!active);
+        overlay.SetActive(!active);
 #else
         pRenderer->SetVisible(!active);
 #endif
-        #if 1
-        if (active)
-            while (ShowCursor(FALSE) >= 0)
-                ;
-        else
-            while (ShowCursor(TRUE) <= 0)
-                ;
-        #endif
+
+        pRenderer->SetCursorVisible(!active);
+
+        // This is to disable the Windows cursor
+        while (ShowCursor(FALSE) >= 0)
+            ;
     }
     else if (active)
     {
@@ -237,7 +245,7 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
     if (active)
     {
@@ -261,7 +269,7 @@ void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButto
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
     if (active)
     {
@@ -285,7 +293,7 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     if (!pRenderer)
         return;
 
-    const auto active = pRenderer->IsVisible();
+    const auto active = overlay.GetActive();
 
     if (active)
     {
@@ -310,15 +318,15 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     auto &discord = World::Get().ctx<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
-    const auto isVisible = pRenderer->IsVisible();
-    if(isVisible)
+    const bool active = s_pOverlay->GetActive();
+    if (active)
     {
         auto& imgui = World::Get().ctx<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
     }
 
 #if defined(TP_SKYRIM)
-    pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
+    //pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
 #else
     POINTER_FALLOUT4(uint8_t, s_viewportLock, 0x3846670);
     *s_viewportLock = isVisible ? 1 : 0;
@@ -338,7 +346,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
         GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &input, &size, sizeof(RAWINPUTHEADER));
 
-        if (isVisible)
+        if (active)
         {
             auto& imgui = World::Get().ctx<ImguiService>();
             imgui.RawInputHandler(input);

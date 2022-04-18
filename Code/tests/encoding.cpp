@@ -193,7 +193,7 @@ TEST_CASE("Static structures", "[encoding.static]")
         // This test is a bit dangerous as floating errors can lead to sendObjects != recvObjects but the difference is minuscule so we don't care abut such cases
         Rotator2_NetQuantize sendObjects, recvObjects;
         sendObjects.x = -1.87f;
-        sendObjects.y = TiltedPhoques::Pi * 18.0f + 3.6f;
+        sendObjects.y = static_cast<float>(TiltedPhoques::Pi) * 18.0f + 3.6f;
 
         {
             Buffer buff(1000);
@@ -260,10 +260,10 @@ TEST_CASE("Differential structures", "[encoding.differential]")
         Buffer buff(1000);
         Buffer::Writer writer(&buff);
 
-        sendMods.StandardMods.push_back({ "Hello", 42 });
-        sendMods.StandardMods.push_back({ "Hi", 14 });
-        sendMods.LiteMods.push_back({ "Test", 8 });
-        sendMods.LiteMods.push_back({ "Toast", 49 });
+        sendMods.ModList.push_back({ "Hello", 42 });
+        sendMods.ModList.push_back({"Hi", 14});
+        sendMods.ModList.push_back({"Test", 8});
+        sendMods.ModList.push_back({"Toast", 49});
 
         sendMods.Serialize(writer);
 
@@ -333,10 +333,10 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         AuthenticationRequest sendMessage, recvMessage;
         sendMessage.Token = "TesSt";
-        sendMessage.UserMods.StandardMods.push_back({ "Hello", 42 });
-        sendMessage.UserMods.StandardMods.push_back({"Hi", 14});
-        sendMessage.UserMods.LiteMods.push_back({"Test", 8});
-        sendMessage.UserMods.LiteMods.push_back({"Toast", 49});
+        sendMessage.UserMods.ModList.push_back({"Hello", 42});
+        sendMessage.UserMods.ModList.push_back({"Hi", 14});
+        sendMessage.UserMods.ModList.push_back({"Test", 8});
+        sendMessage.UserMods.ModList.push_back({"Toast", 49});
 
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);
@@ -356,15 +356,11 @@ TEST_CASE("Packets", "[encoding.packets]")
         Buffer buff(1000);
 
         AuthenticationResponse sendMessage, recvMessage;
-        sendMessage.Accepted = true;
-        sendMessage.UserMods.StandardMods.push_back({"Hello", 42});
-        sendMessage.UserMods.StandardMods.push_back({"Hi", 14});
-        sendMessage.UserMods.LiteMods.push_back({"Test", 8});
-        sendMessage.UserMods.LiteMods.push_back({"Toast", 49});
-        sendMessage.ServerScripts.Data.push_back(1);
-        sendMessage.ServerScripts.Data.push_back(2);
-        sendMessage.ReplicatedObjects.Data.push_back(3);
-        sendMessage.ReplicatedObjects.Data.push_back(4);
+        sendMessage.Type = AuthenticationResponse::ResponseType::kAccepted;
+        sendMessage.UserMods.ModList.push_back({"Hello", 42});
+        sendMessage.UserMods.ModList.push_back({"Hi", 14});
+        sendMessage.UserMods.ModList.push_back({"Test", 8});
+        sendMessage.UserMods.ModList.push_back({"Toast", 49});
 
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);

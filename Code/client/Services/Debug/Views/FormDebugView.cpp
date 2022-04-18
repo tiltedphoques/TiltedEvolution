@@ -17,7 +17,9 @@ void TestService::DrawFormDebugView()
     static TESForm* pFetchForm = nullptr;
     static uint32_t formId = 0;
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &formId, 0, 0, "%" PRIx32,
+    ImGui::Begin("Form");
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
                        ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
@@ -55,4 +57,6 @@ void TestService::DrawFormDebugView()
         }
         */
     }
+
+    ImGui::End();
 }

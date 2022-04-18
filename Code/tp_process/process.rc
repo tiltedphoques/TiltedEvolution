@@ -16,8 +16,8 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Tilted Phoques SRL"
-            VALUE "ProductName", "TPProcess"
+            VALUE "CompanyName", "Together Team"
+            VALUE "ProductName", "UIProcess"
             VALUE "FileDescription", "TiltedUI Worker"
             VALUE "OriginalFilename", "TPProcess.exe"
         END
@@ -29,3 +29,5 @@ BEGIN
 END
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "process.manifest"
+
+102 ICON "resources/team.ico"

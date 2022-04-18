@@ -2,10 +2,9 @@ export const environment = {
   production: false,
   nightlyBuild: true,
   game: false,
-  urlProtocol: "https",
-  baseUrl: "skyrim-together.com",
+  urlProtocol: "http",
+  url: "localhost:4200",
   intervalPingWebSocket: 5, // seconds
-  watermarkText: "Browser",
-  chatMessageLengthLimit: 127,
+  chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5
 };

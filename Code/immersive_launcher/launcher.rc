@@ -17,9 +17,9 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Tilted Phoques SRL"
+            VALUE "CompanyName", "Together Team"
             VALUE "ProductName", "TiltedOnline"
-            VALUE "FileDescription", "Multiplayer mod for Bethesda games."
+            VALUE "FileDescription", "Multiplayer mod for Bethesda games"
             VALUE "OriginalFilename", "launcher.exe"
             VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
         END
@@ -36,22 +36,18 @@ CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "launcher.manifest"
 
 #if defined(TARGET_ST)
 #if (IS_MASTER)
-102 ICON "resources/st_logo.ico"
-#elif (IS_BRANCH_BETA)
-102 ICON "resources/st_logo_beta.ico"
+102 ICON "resources/st.ico"
 #elif (IS_BRANCH_PREREL)
-102 ICON "resources/st_logo_pre.ico"
+102 ICON "resources/st_pre.ico"
 #else
-102 ICON "resources/st_logo_dev.ico"
+102 ICON "resources/st_dev.ico"
 #endif
 #elif defined(TARGET_FT)
 #if (IS_MASTER)
-102 ICON "resources/ft_logo.ico"
-#elif (IS_BRANCH_BETA)
-102 ICON "resources/ft_logo_beta.ico"
+102 ICON "resources/ft.ico"
 #elif (IS_BRANCH_PREREL)
-102 ICON "resources/ft_logo_pre.ico"
+102 ICON "resources/ft_pre.ico"
 #else
-102 ICON "resources/ft_logo_dev.ico"
+102 ICON "resources/ft_dev.ico"
 #endif
 #endif
