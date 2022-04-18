@@ -21,6 +21,10 @@ if is_plat("windows") then
     add_cxflags("/bigobj")
 end
 
+if is_plat("linux") then
+    add_ldflags("-fPIC")
+end
+
 before_build(function (target)
     import("modules.version")
     local branch, commitHash = version()

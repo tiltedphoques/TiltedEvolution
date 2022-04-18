@@ -10,6 +10,7 @@
 #include <Setting.h>
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
+#include <crash_handler/CrashHandler.h>
 #include "DediRunner.h"
 
 namespace
@@ -150,6 +151,9 @@ int main(int argc, char** argv)
         spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
         return 2;
     }
+
+    ScopedCrashHandler _(true, true);
+
     RegisterQuitHandler();
 
     // Keep stack free.
