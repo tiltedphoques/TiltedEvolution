@@ -25,6 +25,7 @@ import { WebSocketService } from './services/web-socket.service';
 import { ErrorService } from './services/error.service';
 import { ErrorComponent } from './components/error/error.component';
 import { GroupService } from './services/group.service';
+import { SettingService } from './services/setting.service';
 import { GroupComponent } from './components/group/group.component';
 import { NotificationPopupComponent } from './components/notification-popup/notification-popup.component';
 import { HealthDirective } from './directives/health.directive';
@@ -47,7 +48,7 @@ import { OrderComponent } from './components/order/order.component';
   ],
   imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule ],
   providers: [ ClientService, UserService, AssetService, SoundService,
-    WebSocketService, ErrorService, GroupService, StoreService ],
+    WebSocketService, ErrorService, GroupService, StoreService, SettingService ],
   bootstrap: [ RootComponent ]
 })
 export class AppModule {}
