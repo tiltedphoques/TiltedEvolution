@@ -3,11 +3,11 @@
 
         <h2>Audio</h2>
         <div class="flex-item">
-            <label for="muted">Mute Audio</label>
+            <label for="muted">Mute UI</label>
             <input id="muted" type="checkbox" [value]="muted" [checked]="muted" (change)="onMutedChange($event)">
         </div>
         <div class="flex-item">
-            <label for="volume">Audio Volume</label>
+            <label for="volume">UI Volume</label>
         <input id="volume" class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [value]="volume"
             (change)="onVolumeChange($event)">
         </div>
