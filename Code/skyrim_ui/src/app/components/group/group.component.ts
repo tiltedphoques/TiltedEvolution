@@ -10,6 +10,7 @@ import { ErrorService } from '../../services/error.service';
 import { SoundService, Sound } from '../../services/sound.service';
 import { LoadingService } from '../../services/loading.service';
 import { StoreService } from '../../services/store.service';
+import { SettingService } from 'src/app/services/setting.service';
 
 
 @Component({
@@ -17,12 +18,12 @@ import { StoreService } from '../../services/store.service';
   templateUrl: './group.component.html',
   styleUrls: ['./group.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  animations: [popupsAnimation ]
+  animations: [popupsAnimation]
 })
 export class GroupComponent implements OnInit, OnDestroy {
 
   public isAutoHide = true;
-  public isShow = true;
+  public isShown = true;
   public waitLaunch = false;
 
   private connectionSubscription: Subscription;
@@ -32,16 +33,19 @@ export class GroupComponent implements OnInit, OnDestroy {
   private playerConnectedSubscription: Subscription;
   private connectionStateSubscription: Subscription;
 
+  private partyShownSubscription: Subscription;
+  private partyAutoHideSubscription: Subscription;
+
   constructor(public groupService: GroupService,
-              private clientService: ClientService,
-              private userService: UserService,
-              private errorService: ErrorService,
-              private soundService: SoundService,
-              private loadingService: LoadingService,
-              private storeService: StoreService)
-  {
-    this.isShow = JSON.parse(this.storeService.get("isShow", "true"));
-    this.isAutoHide = JSON.parse(this.storeService.get("isAutoHide", "true"));
+    private clientService: ClientService,
+    private userService: UserService,
+    private errorService: ErrorService,
+    private soundService: SoundService,
+    private loadingService: LoadingService,
+    private storeService: StoreService,
+    private settings: SettingService) {
+    this.isShown = this.settings.isPartyShown();
+    this.isAutoHide = this.settings.isPartyAutoHidden();
   }
 
 
@@ -54,7 +58,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.connectionSubscription = this.clientService.connectionStateChange.subscribe((state) => {
       if (this.waitLaunch) {
         this.loadingService.setLoading(false);
-        this.clientService.messageReception.next({content:"Connected!"});
+        this.clientService.messageReception.next({ content: "Connected!" });
 
         if (state) {
           this.soundService.play(Sound.Success);
@@ -68,6 +72,9 @@ export class GroupComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    this.onPartyShownState();
+    this.onPartyAutoHideState();
 
     this.subscribeChangeHealth();
     this.onPlayerConnected();
@@ -104,12 +111,33 @@ export class GroupComponent implements OnInit, OnDestroy {
     })
   }
 
+  private onPartyShownState() {
+    this.partyShownSubscription = this.settings.partyShownChange.subscribe((state: boolean) => {
+      console.log("partyshow");
+      this.isShown = state;
+      this.isAutoHide = false;
+    });
+  }
+
+  private onPartyAutoHideState() {
+    this.partyAutoHideSubscription = this.settings.partyAutoHideChange.subscribe((state: boolean) => {
+      console.log("partyAuto");
+      this.isAutoHide = state;
+      if (this.isAutoHide) {
+        this.changeUIGroup();
+      }
+    })
+  }
+
   ngOnDestroy() {
     this.connectionSubscription.unsubscribe();
     this.isLoading.unsubscribe();
     this.userHealthSubscription.unsubscribe();
     this.playerConnectedSubscription.unsubscribe();
     this.connectionStateSubscription.unsubscribe();
+
+    this.partyShownSubscription.unsubscribe();
+    this.partyAutoHideSubscription.unsubscribe();
 
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
@@ -118,8 +146,8 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   private changeUIGroup() {
     if (this.isAutoHide && this.clientService.connectionStateChange.value) {
-      if (!this.isShow) {
-        this.isShow = true;
+      if (!this.isShown) {
+        this.isShown = true;
       }
 
       if (this.timerSubscription) {
@@ -130,7 +158,7 @@ export class GroupComponent implements OnInit, OnDestroy {
 
       this.timerSubscription = source.subscribe(() => {
         console.log("FIN TIMER IS SHOW => FALSE");
-        this.isShow = false;
+        this.isShown = false;
       })
     }
   }
@@ -156,21 +184,11 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   public clickToggle() {
-    this.soundService.play(Sound.Focus);
-    this.isShow = !this.isShow;
-    this.isAutoHide = false;
 
-    this.storeService.set("isShow", this.isShow);
-    this.storeService.set("isAutoHide", this.isAutoHide);
   }
 
   public clickAutoHide() {
-    this.isAutoHide = !this.isAutoHide;
-    if (this.isAutoHide) {
-      this.changeUIGroup();
-    }
 
-    this.storeService.set("isAutoHide", this.isAutoHide);
   }
 
   isLaunchPartyDisable(): boolean {
@@ -180,9 +198,9 @@ export class GroupComponent implements OnInit, OnDestroy {
   public launchParty() {
     this.soundService.play(Sound.Focus);
     this.loadingService.setLoading(true);
-    this.clientService.messageReception.next({content: "Your session is being created..."});
+    this.clientService.messageReception.next({ content: "Your session is being created..." });
     this.groupService.launch().subscribe(
-      () => {},
+      () => { },
       () => {
         this.errorService.error('Failed to create a session. Please try again later.');
         this.loadingService.setLoading(false);

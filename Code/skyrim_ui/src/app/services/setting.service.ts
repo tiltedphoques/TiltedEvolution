@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { StoreService } from './store.service';
 
 @Injectable({
@@ -6,29 +7,44 @@ import { StoreService } from './store.service';
 })
 export class SettingService {
 
-    private muted = false;
-    private volume = 0.5;
+    public partyShownChange = new BehaviorSubject(this.isPartyShown());
+    public partyAutoHideChange = new BehaviorSubject(this.isPartyAutoHidden());
 
-    constructor(private storeService: StoreService) {
-        this.muted = JSON.parse(this.storeService.get('audio_muted', false));
-        this.volume = JSON.parse(this.storeService.get('audio_volume', 0.5));
-    }
+    constructor(private storeService: StoreService) {}
 
     public setVolume(volume: number) {
-        this.volume = volume;
         this.storeService.set('audio_volume', volume);
     }
-
     public getVolume(): number {
-        return this.volume;
+        return JSON.parse(this.storeService.get('audio_volume', 0.5));
     }
 
-    public mute(muted: boolean) {
-        this.muted = muted;
+    public muteAudio(muted: boolean) {
         this.storeService.set('audio_muted', muted);
     }
+    public isAudioMuted(): boolean {
+        return JSON.parse(this.storeService.get('audio_muted', false));
+    }
 
-    public isMuted(): boolean {
-        return this.muted;
+    public setDebugShown(shown: boolean) {
+        this.storeService.set('debug_isShown', shown);
+    }
+    public isDebugShown(): boolean {
+        return JSON.parse(this.storeService.get('debug_isShown', false));
+    }
+
+    public showParty(showParty: boolean) {
+        this.storeService.set('party_isShown', showParty);
+        this.partyShownChange.next(showParty);
+    }
+    public isPartyShown(): boolean {
+        return JSON.parse(this.storeService.get('party_isShown', true));
+    }
+    public autoHideParty(autoHideParty: boolean) {
+        this.storeService.set('party_autoHide', autoHideParty);
+        this.partyAutoHideChange.next(autoHideParty);
+    }
+    public isPartyAutoHidden() : boolean {
+        return JSON.parse(this.storeService.get('party_autoHide', false));
     }
 }

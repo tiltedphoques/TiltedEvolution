@@ -1,0 +1,47 @@
+app-settings {
+    position: relative;
+    display: block;
+
+    .container {
+        overflow: auto;
+        max-height: 60vh;
+        margin-top: 1rem;
+
+        .settings {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+
+            div:not(:last-child) {
+                margin-bottom: 0.5rem;
+            }
+
+            input {
+                float: right;
+            }
+
+            label {
+                float: left;
+            }
+
+            .volumeSlider {
+                padding: 0;
+                border: none;
+            }
+
+            hr {
+                width: 100%;
+            }
+
+            h2:first-child {
+                margin-top: 0;
+            }
+        }
+
+        .buttons {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+        }
+    }
+}

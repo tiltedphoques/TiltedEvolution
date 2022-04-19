@@ -35,6 +35,7 @@ import { LoadingComponent } from './components/loading/loading.component';
 import { StoreService } from './services/store.service';
 import { ServerListComponent } from './components/server-list/server-list.component';
 import { OrderComponent } from './components/order/order.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,7 @@ import { OrderComponent } from './components/order/order.component';
     WindowComponent, DebugComponent, ErrorComponent, GroupComponent, NotificationPopupComponent, HealthDirective, FriendComponent,
     ToggleComponent,
     LoadingComponent,
-    ServerListComponent,
+    ServerListComponent, SettingsComponent,
     OrderComponent
   ],
   imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule ],

@@ -30,6 +30,9 @@ declare namespace SkyrimTogetherTypes {
   /** System message reception callback */
   type SystemMessageCallback = (message: string) => void;
 
+  /** Whisper message reception callback */
+  type WhisperMessageCallback = (name: string, message: string) => void;
+
   /** Connection callback */
   type ConnectCallback = () => void;
 
@@ -104,6 +107,9 @@ interface SkyrimTogether {
   /** Add listener to when a system message is received. */
   on(event: 'systemmessage', callback: SkyrimTogetherTypes.SystemMessageCallback): void;
 
+  /** Add listener to when a whisper message is received. */
+  on(event: 'whispermessage', callback: SkyrimTogetherTypes.WhisperMessageCallback): void;
+
   /** Add listener to when the player connects to a server. */
   on(event: 'connect', callback: SkyrimTogetherTypes.ConnectCallback): void;
 
@@ -170,6 +176,9 @@ interface SkyrimTogether {
 
   /** Remove listener from when a system message is received. */
   off(event: 'systemmessage', callback?: SkyrimTogetherTypes.SystemMessageCallback): void;
+
+  /** Remove listener from when a whisper message is received. */
+  off(event: 'whispermessage', callback?: SkyrimTogetherTypes.WhisperMessageCallback): void;
 
   /** Remove listener from when the player connects to a server. */
   off(event: 'connect', callback?: SkyrimTogetherTypes.ConnectCallback): void;
