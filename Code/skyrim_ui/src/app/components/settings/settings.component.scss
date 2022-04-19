@@ -12,21 +12,28 @@ app-settings {
             justify-content: space-between;
             flex-direction: column;
 
+            .flex-item {
+                position: relative;
+
+                input {
+                    float: right;
+
+                    &.volumeSlider {
+                        padding: 0;
+                        border: none;
+                    }
+
+                }
+
+                label {
+                    float: left;
+                    position: absolute;
+                    bottom: 0;
+                }
+            }
+
             div:not(:last-child) {
                 margin-bottom: 0.5rem;
-            }
-
-            input {
-                float: right;
-            }
-
-            label {
-                float: left;
-            }
-
-            .volumeSlider {
-                padding: 0;
-                border: none;
             }
 
             hr {

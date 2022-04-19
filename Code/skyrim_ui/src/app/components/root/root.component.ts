@@ -166,6 +166,12 @@ export class RootComponent implements OnInit, OnDestroy {
           }
         ));
         this.client.activationStateChange.next(!this.active);
+
+        let name = "Banana";
+        let message = "Hello Guys";
+        let whisper = true;
+
+        this.client.messageReception.next({ name, content: message, whisper})
       }
     }
 

@@ -8,24 +8,27 @@
         </div>
         <div class="flex-item">
             <label for="volume">UI Volume</label>
-        <input id="volume" class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [value]="volume"
-            (change)="onVolumeChange($event)">
-        </div>
-        <hr>
-        <h2>Debug</h2>
-        <div class="flex-item">
-            <label for="showDebug">Show Debug Information</label>
-        <input id="showDebug" type="checkbox" [value]="showDebug" [checked]="showDebug" (change)="onShowDebugChange($event)">
+            <input id="volume" class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [value]="volume"
+                (change)="onVolumeChange($event)">
         </div>
         <hr>
         <h2>Party</h2>
         <div class="flex-item">
             <label for="showParty">Show Party</label>
-        <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty" (change)="onShowPartyChange($event)">
+            <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty"
+                (change)="onShowPartyChange($event)">
         </div>
         <div class="flex-item">
             <label for="autoHideParty">Auto Hide Party</label>
-        <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty" (change)="onAutoHidePartyChange($event)">
+            <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty"
+                (change)="onAutoHidePartyChange($event)">
+        </div>
+        <hr>
+        <h2>Debug</h2>
+        <div class="flex-item">
+            <label for="showDebug">Show Debug Information</label>
+            <input id="showDebug" type="checkbox" [value]="showDebug" [checked]="showDebug"
+                (change)="onShowDebugChange($event)">
         </div>
         <hr>
     </div>
