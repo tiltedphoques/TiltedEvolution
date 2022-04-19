@@ -2,11 +2,13 @@
 
 #include <Components/BaseFormComponent.h>
 
-enum FormType : uint8_t
+enum class FormType : uint8_t
 {
+    Armor = 26,
     Book = 27,
     Container = 28,
     Door = 29,
+    Weapon = 41,
     Ammo = 42,
     Npc = 43,
     LeveledCharacter = 44,
@@ -102,7 +104,9 @@ struct TESForm : BaseFormComponent
         else
             flags &= IGNORE_FRIENDLY_HITS;
     }
+
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
+    bool IsTemporary() const noexcept { return formID >= 0xFF000000; }
 
     uintptr_t unk4;
     uint32_t flags;

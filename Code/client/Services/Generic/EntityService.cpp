@@ -23,7 +23,7 @@ EntityService::EntityService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 
 void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcept
 {
-    if (acEvent.FormType == Character)
+    if (acEvent.FormType == FormType::Character)
     {
         if (acEvent.FormId == 0x14)
         {
@@ -33,7 +33,6 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
 
         entt::entity entity;
 
-        // TODO: why would a reference already have a remote component?
         const auto view = m_world.view<RemoteComponent>();
         const auto it = std::find_if(std::begin(view), std::end(view), [&acEvent, view](entt::entity entity) {
             auto& remoteComponent = view.get<RemoteComponent>(entity);

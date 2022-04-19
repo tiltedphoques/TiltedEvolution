@@ -9,9 +9,23 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/ScriptAnimationEvent.h>
 
+#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraCharge.h>
+#include <ExtraData/ExtraCount.h>
+#include <ExtraData/ExtraEnchantment.h>
+#include <ExtraData/ExtraHealth.h>
+#include <ExtraData/ExtraPoison.h>
+#include <ExtraData/ExtraSoul.h>
+#include <ExtraData/ExtraTextDisplayData.h>
+#include <ExtraData/ExtraWorn.h>
+#include <ExtraData/ExtraWornLeft.h>
+#include <Forms/EnchantmentItem.h>
+#include <EquipManager.h>
+#include <DefaultObjectManager.h>
+
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
-TP_THIS_FUNCTION(TAddInventoryItem, void*, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner);
-TP_THIS_FUNCTION(TRemoveInventoryItem, void*, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3);
+TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
+TP_THIS_FUNCTION(TRemoveInventoryItem, BSPointerHandle<TESObjectREFR>*, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate);
 TP_THIS_FUNCTION(TPlayAnimationAndWait, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName);
 TP_THIS_FUNCTION(TPlayAnimation, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName);
 
@@ -60,8 +74,8 @@ void TESObjectREFR::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& a
 
     if (aChangeFlags & CHANGE_REFR_ANIMATION)
     {
-		// do something with animations
-		// get extradata 0x41
+        // do something with animations
+        // get extradata 0x41
     }
 
 
@@ -73,7 +87,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 0x1401E47F0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 16040);
     
     return ThisCall(s_getContainerChangs, this);
 }
@@ -114,7 +128,7 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainer, TESContainer*, const TESObjectREFR);
 
-    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 0x1402A05C0 - 0x140000000);
+    POINTER_SKYRIMSE(TGetContainer, s_getContainer, 19702);
 
     return ThisCall(s_getContainer, this);
 }
@@ -139,8 +153,377 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
+void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    if (ExtraCount* pExtraCount = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Count), BSExtraData, ExtraCount))
+    {
+        arEntry.Count = pExtraCount->count;
+    }
+
+    if (ExtraCharge* pExtraCharge = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Charge), BSExtraData, ExtraCharge))
+    {
+        arEntry.ExtraCharge = pExtraCharge->fCharge;
+    }
+
+    if (ExtraEnchantment* pExtraEnchantment = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Enchantment), BSExtraData, ExtraEnchantment))
+    {
+        TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
+
+        modSystem.GetServerModId(pExtraEnchantment->pEnchantment->formID, arEntry.ExtraEnchantId);
+
+        if (pExtraEnchantment->pEnchantment->formID & 0xFF000000)
+        {
+            for (EffectItem* pEffectItem : pExtraEnchantment->pEnchantment->listOfEffects)
+            {
+                TP_ASSERT(pEffectItem, "pEffectItem is null.");
+                if (!pEffectItem)
+                    continue;
+
+                Inventory::EffectItem effect;
+                effect.Magnitude = pEffectItem->data.fMagnitude;
+                effect.Area = pEffectItem->data.iArea;
+                effect.Duration = pEffectItem->data.iDuration;
+                effect.RawCost = pEffectItem->fRawCost;
+                modSystem.GetServerModId(pEffectItem->pEffectSetting->formID, effect.EffectId);
+                arEntry.EnchantData.Effects.push_back(effect);
+            }
+
+            uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+            arEntry.EnchantData.IsWeapon = TESForm::GetById(objectId)->formType == FormType::Weapon;
+        }
+
+        arEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
+        arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
+    }
+
+    if (ExtraHealth* pExtraHealth = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Health), BSExtraData, ExtraHealth))
+    {
+        arEntry.ExtraHealth = pExtraHealth->fHealth;
+    }
+
+    if (ExtraPoison* pExtraPoison = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Poison), BSExtraData, ExtraPoison))
+    {
+        TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
+        if (pExtraPoison && pExtraPoison->pPoison)
+        {
+            modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
+            arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+        }
+    }
+
+    if (ExtraSoul* pExtraSoul = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Soul), BSExtraData, ExtraSoul))
+    {
+        arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
+    }
+
+    /*
+    if (ExtraTextDisplayData* pExtraTextDisplayData = RTTI_CAST(apExtraDataList->GetByType(ExtraData::TextDisplayData), BSExtraData, ExtraTextDisplayData))
+    {
+        if (pExtraTextDisplayData->DisplayName)
+            arEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
+        else
+            arEntry.ExtraTextDisplayName = "";
+    }
+    */
+
+    arEntry.ExtraWorn = apExtraDataList->Contains(ExtraData::Worn);
+    arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraData::WornLeft);
+}
+
+ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    ExtraDataList* pExtraDataList = nullptr;
+
+    if (!arEntry.ContainsExtraData())
+        return pExtraDataList;
+
+    pExtraDataList = ExtraDataList::New();
+
+    if (arEntry.ExtraCharge > 0.f)
+    {
+        pExtraDataList->SetChargeData(arEntry.ExtraCharge);
+    }
+
+    if (arEntry.ExtraEnchantId != 0)
+    {
+        EnchantmentItem* pEnchantment = nullptr;
+        if (arEntry.ExtraEnchantId.ModId == 0xFFFFFFFF)
+        {
+            pEnchantment = EnchantmentItem::Create(arEntry.EnchantData);
+        }
+        else
+        {
+            uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
+            pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem);
+        }
+
+        TP_ASSERT(pEnchantment, "No Enchantment created or found.");
+
+        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge,
+                                           arEntry.ExtraEnchantRemoveUnequip);
+    }
+
+    if (arEntry.ExtraPoisonId != 0)
+    {
+        // TODO: does poison have the same temp problem as enchants?
+        // doesn't seem to be the case, there are only like 3 poisons, and no custom ones
+        TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
+
+        uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
+        if (AlchemyItem* pPoison = RTTI_CAST(TESForm::GetById(poisonId), TESForm, AlchemyItem))
+        {
+            pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
+        }
+    }
+
+    if (arEntry.ExtraHealth > 0.f)
+    {
+        pExtraDataList->SetHealth(arEntry.ExtraHealth);
+    }
+
+    if (arEntry.ExtraSoulLevel > 0 && arEntry.ExtraSoulLevel <= 5)
+    {
+        pExtraDataList->SetSoulData(static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel));
+    }
+
+    if (arEntry.ExtraWorn)
+    {
+        pExtraDataList->SetWorn(false);
+    }
+
+    if (arEntry.ExtraWornLeft)
+    {
+        pExtraDataList->SetWorn(true);
+    }
+
+    // TODO: this is causing crashes
+    /*
+    if (!arEntry.ExtraTextDisplayName.empty())
+    {
+        ExtraTextDisplayData* pExtraText = Memory::Allocate<ExtraTextDisplayData>();
+        *((uint64_t*)pExtraText) = 0x1416244D0;
+        pExtraText->next = nullptr;
+        pExtraText->DisplayName = arEntry.ExtraTextDisplayName.c_str();
+        pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
+        pExtraText->iOwnerInstance = -2;
+        pExtraText->fTemperFactor = 1.0F;
+        pExtraDataList->Add(ExtraData::TextDisplayData, pExtraText);
+    }
+    */
+
+    if (pExtraDataList->data == nullptr)
+    {
+        Memory::Delete(pExtraDataList->bitfield);
+        Memory::Delete(pExtraDataList);
+        pExtraDataList = nullptr;
+    }
+
+    return pExtraDataList;
+}
+
+Inventory TESObjectREFR::GetInventory() const noexcept
+{
+    return GetInventory([](TESForm& aForm) { return true; });
+}
+
+Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+    Inventory inventory{};
+
+    if (TESContainer* pBaseContainer = GetContainer())
+    {
+        for (int i = 0; i < pBaseContainer->count; i++)
+        {
+            TESContainer::Entry* pGameEntry = pBaseContainer->entries[i];
+            if (!pGameEntry || !pGameEntry->form)
+            {
+                spdlog::warn("Entry or form for inventory item is null.");
+                continue;
+            }
+
+            if (!aFilter(*pGameEntry->form))
+                continue;
+
+            Inventory::Entry entry;
+            modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+            entry.Count = pGameEntry->count;
+
+            inventory.Entries.push_back(std::move(entry));
+        }
+    }
+
+    Inventory extraInventory{};
+
+    auto pExtraContChangesEntries = GetContainerChanges()->entries;
+    for (auto pGameEntry : *pExtraContChangesEntries)
+    {
+        if (!pGameEntry)
+            continue;
+
+        if (!aFilter(*pGameEntry->form))
+            continue;
+
+        if (pGameEntry->IsQuestObject())
+            continue;
+
+        Inventory::Entry entry;
+        modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+        entry.Count = pGameEntry->count;
+
+        for (ExtraDataList* pExtraDataList : *pGameEntry->dataList)
+        {
+            if (!pExtraDataList)
+                continue;
+
+            Inventory::Entry innerEntry;
+            innerEntry.BaseId = entry.BaseId;
+            innerEntry.Count = 1;
+
+            GetItemFromExtraData(innerEntry, pExtraDataList);
+
+            entry.Count -= innerEntry.Count;
+
+            extraInventory.Entries.push_back(std::move(innerEntry));
+        }
+
+        if (entry.Count != 0)
+            extraInventory.Entries.push_back(std::move(entry));
+    }
+
+    spdlog::debug("ExtraInventory count: {}", extraInventory.Entries.size());
+
+    Inventory minimizedExtraInventory{};
+
+    for (auto& entry : extraInventory.Entries)
+    {
+        auto duplicate = std::find_if(minimizedExtraInventory.Entries.begin(), minimizedExtraInventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { 
+            return newEntry.CanBeMerged(entry);
+        });
+
+        if (duplicate == std::end(minimizedExtraInventory.Entries))
+        {
+            minimizedExtraInventory.Entries.push_back(entry);
+            continue;
+        }
+
+        duplicate->Count += entry.Count;
+    }
+
+    spdlog::debug("MinExtraInventory count: {}", minimizedExtraInventory.Entries.size());
+
+    for (auto& entry : minimizedExtraInventory.Entries)
+    {
+        if (entry.ContainsExtraData())
+            continue;
+
+        auto duplicate = std::find_if(inventory.Entries.begin(), inventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { 
+            return newEntry.CanBeMerged(entry);
+        });
+
+        if (duplicate == std::end(inventory.Entries))
+            continue;
+
+        entry.Count += duplicate->Count;
+        duplicate->Count = 0;
+    }
+
+    spdlog::debug("MinExtraInventory count after: {}", minimizedExtraInventory.Entries.size());
+
+    inventory.Entries.insert(inventory.Entries.end(), minimizedExtraInventory.Entries.begin(),
+                                 minimizedExtraInventory.Entries.end());
+
+    spdlog::debug("Inventory count before: {}", inventory.Entries.size());
+
+    inventory.RemoveByFilter([](const auto& entry) { return entry.Count == 0; });
+
+    spdlog::debug("Inventory count after: {}", inventory.Entries.size());
+
+    return inventory;
+}
+
+Inventory TESObjectREFR::GetArmor() const noexcept
+{
+    return GetInventory([](TESForm& aForm) { return aForm.formType == FormType::Armor; });
+}
+
+Inventory TESObjectREFR::GetWornArmor() const noexcept
+{
+    Inventory wornArmor = GetArmor();
+    wornArmor.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    return wornArmor;
+}
+
+Inventory TESObjectREFR::GetEquippedItems() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    return inventory;
+}
+
+void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
+{
+    spdlog::info("Setting inventory for {:X}", formID);
+
+    ScopedInventoryOverride _;
+
+    RemoveAllItems();
+
+    for (const Inventory::Entry& entry : aInventory.Entries)
+    {
+        if (entry.Count != 0)
+            AddOrRemoveItem(entry);
+    }
+}
+
+void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
+{
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
+    if (!pObject)
+    {
+        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
+        return;
+    }
+
+    ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
+
+    if (arEntry.Count > 0)
+    {
+        bool isWorn = false;
+        bool isWornLeft = false;
+        if (pExtraDataList)
+        {
+            isWorn = pExtraDataList->Contains(ExtraData::Worn);
+            isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+        }
+
+        spdlog::debug("Adding item {:X}, count {}", pObject->formID, arEntry.Count);
+        AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
+
+        if (isWorn)
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+        else if (isWornLeft)
+            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+    }
+    else if (arEntry.Count < 0)
+    {
+        spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
+        RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+    }
+}
+
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
+    ScopedActivateOverride _;
+
     return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
@@ -148,8 +531,8 @@ void TESObjectREFR::EnableImpl() noexcept
 {
     TP_THIS_FUNCTION(TEnableImpl, void, TESObjectREFR, bool aResetInventory);
 
-    POINTER_SKYRIMSE(TEnableImpl, s_enable, 0x1402AA780 - 0x140000000);
-    
+    POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
+
     ThisCall(s_enable, this, false);
 }
 
@@ -167,12 +550,16 @@ bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedStri
     return result;
 }
 
+#define OBJECT_ANIM_SYNC 0
+
 bool TP_MAKE_THISCALL(HookPlayAnimationAndWait, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName)
 {
     spdlog::debug("Animation: {}, EventName: {}", apAnimation->AsAscii(), apEventName->AsAscii());
 
+#if OBJECT_ANIM_SYNC
     if (!s_cancelAnimationWaitEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, apAnimation->AsAscii(), apEventName->AsAscii()));
+#endif
 
     return ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
 }
@@ -195,50 +582,76 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
 {
     spdlog::debug("EventName: {}", apEventName->AsAscii());
 
+#if OBJECT_ANIM_SYNC
     if (!s_cancelAnimationEvent && (apSelf->formID < 0xFF000000))
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, String{}, apEventName->AsAscii()));
+#endif
 
     return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
 {
-    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    Actor* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 
     return ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
 }
 
-void* TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, BSExtraDataList* apExtraData, uint32_t aCount, TESObjectREFR* apOldOwner)
+void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
 {
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
-    return ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
+    if (!ScopedInventoryOverride::IsOverriden())
+    {
+        auto& modSystem = World::Get().GetModSystem();
+
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apItem->formID, item.BaseId);
+        item.Count = aCount;
+
+        if (apExtraData)
+            apThis->GetItemFromExtraData(item, apExtraData);
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
+
+    spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
+
+    ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
-// TODO: here's your deadlock/memory leak, fix that
-void* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, float* apUnk0, TESBoundObject* apItem, uint32_t aCount, uint32_t aUnk1, BSExtraDataList* apExtraData, TESObjectREFR* apNewOwner, NiPoint3* apUnk2, NiPoint3* apUnk3)
+BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
 {
-    thread_local static uint32_t count = 0;
-    count++;
-    if (count > 1)
-        spdlog::error("\tRecursive RemoveInventoryItem!");
+    if (!ScopedInventoryOverride::IsOverriden())
+    {
+        auto& modSystem = World::Get().GetModSystem();
 
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apItem->formID, item.BaseId);
+        item.Count = -aCount;
 
-    auto result = ThisCall(RealRemoveInventoryItem, apThis, apUnk0, apItem, aCount, aUnk1, apExtraData, apNewOwner, apUnk2, apUnk3);
+        if (apExtraList)
+        {
+            ScopedExtraDataOverride _;
+            apThis->GetItemFromExtraData(item, apExtraList);
+        }
 
-    count--;
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+    }
 
-    return result;
+    spdlog::debug("Removing inventory item {:X} from {:X}", apItem->formID, apThis->formID);
+
+    ScopedEquipOverride _;
+
+    return ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
-    POINTER_SKYRIMSE(TActivate, s_activate, 0x1402A90F0 - 0x140000000);
-    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 0x1402A08A0 - 0x140000000);
-    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 0x14029FC20 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 0x1409BD880 - 0x140000000);
-    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 0x1409BD800 - 0x140000000);
+    POINTER_SKYRIMSE(TActivate, s_activate, 19796);
+    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 19708);
+    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 19689);
+    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 56206);
+    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 56205);
 
     RealActivate = s_activate.Get();
     RealAddInventoryItem = s_addInventoryItem.Get();

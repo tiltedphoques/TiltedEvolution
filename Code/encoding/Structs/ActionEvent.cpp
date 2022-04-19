@@ -1,6 +1,7 @@
 #include <Structs/ActionEvent.h>
 #include <TiltedCore/Serialization.hpp>
 #include <sstream>
+#include <TiltedCore/StackAllocator.hpp>
 
 using TiltedPhoques::Serialization;
 
@@ -63,6 +64,10 @@ void ActionEvent::Load(std::istream& aInput)
 
 void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
+    TiltedPhoques::StackAllocator<1 << 16> s_allocator;
+
+    TiltedPhoques::ScopedAllocator _(s_allocator);
+
     uint8_t flags = 0;
 
     if (ActionId != aPrevious.ActionId)

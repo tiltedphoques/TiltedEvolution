@@ -15,7 +15,7 @@ struct BSScript
 
         template<class T> void Set(T aValue) noexcept
         {
-            static_assert(false);
+            //static_assert(false);
         }
 
         enum Type : uint64_t

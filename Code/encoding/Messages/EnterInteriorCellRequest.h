@@ -4,7 +4,6 @@
 #include <Structs/GameId.h>
 
 using TiltedPhoques::String;
-using TiltedPhoques::Map;
 
 struct EnterInteriorCellRequest final : ClientMessage
 {

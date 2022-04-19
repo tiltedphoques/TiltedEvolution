@@ -53,7 +53,7 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 
         float value = apActor->GetActorValue(i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
-        float maxValue = apActor->GetActorMaxValue(i);
+        float maxValue = apActor->GetActorPermanentValue(i);
         actorValuesComponent.CurrentActorValues.ActorMaxValuesList.insert({i, maxValue});
     }
 }
@@ -75,6 +75,7 @@ void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const e
 
 void ActorValueService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
+    // TODO: this crashes sometimes, no clue why
     m_world.clear<ActorValuesComponent>();
 }
 
@@ -84,18 +85,18 @@ void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent)
         return;
 
     auto view = m_world.view<FormIdComponent>();
-    const auto formId = acEvent.FormId;
+    const uint32_t formId = acEvent.FormId;
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
+    const auto it = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
 
         return formIdComponent.Id == formId;
     });
 
-    if (itor != std::end(view))
+    if (it != std::end(view))
     {
-        m_world.remove<ActorValuesComponent>(*itor);
+        m_world.remove<ActorValuesComponent>(*it);
     }
 }
 
@@ -145,7 +146,7 @@ void ActorValueService::BroadcastActorValues() noexcept
                 actorValuesComponent.CurrentActorValues.ActorValuesList[i] = newValue;
             }
 
-            float newMaxValue = pActor->GetActorMaxValue(i);
+            float newMaxValue = pActor->GetActorPermanentValue(i);
             float oldMaxValue = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[i];
             if (newMaxValue != oldMaxValue)
             {
@@ -251,7 +252,7 @@ void ActorValueService::RunDeathStateUpdates() noexcept
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
@@ -284,29 +285,16 @@ void ActorValueService::RunActorValuesUpdates() noexcept
 
 void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept
 {
-    auto view = m_world.view<FormIdComponent>();
+    Actor* pActor = GetByServerId(Actor, acMessage.Id);
+    if (!pActor)
+        return;
 
-    for (auto entity : view)
-    {
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
+    const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
+    pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
 
-        uint32_t serverId = serverIdRes.value();
-
-        if (serverId == acMessage.Id)
-        {
-            const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            const auto* pForm = TESForm::GetById(formIdComponent.Id);
-            auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
-
-            if (pActor != nullptr)
-            {
-                const auto newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
-                pActor->ForceActorValue(2, ActorValueInfo::kHealth, newHealth);
-            }
-        }
-    }
+    const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
+    if (health <= 0.f)
+        pActor->Kill();
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
@@ -322,7 +310,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
         return;
@@ -331,14 +319,14 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
     {
 #if TP_SKYRIM64
         // Syncing dragon souls triggers "Dragon soul collected" event
-        if (key == ActorValueInfo::kDragonSouls)
+        if (key == ActorValueInfo::kDragonSouls || key == ActorValueInfo::kHealth)
             continue;
 
         spdlog::debug("Actor value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);
 
         if (key == ActorValueInfo::kStamina || key == ActorValueInfo::kMagicka || key == ActorValueInfo::kHealth)
         {
-            pActor->ForceActorValue(2, key, value);
+            pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, key, value);
             continue;
         }
 #endif
@@ -350,16 +338,16 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity)
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity)
     {
         return view.get<RemoteComponent>(entity).Id == id;
     });
 
-    if (itor == std::end(view))
+    if (it == std::end(view))
         return;
 
-    auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    auto& formIdComponent = view.get<FormIdComponent>(*it);
+    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
         return;
@@ -373,7 +361,7 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 
         spdlog::debug("Actor max value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);
 
-        pActor->ForceActorValue(0, key, value);
+        pActor->ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, key, value);
     }
 }
 
@@ -389,7 +377,7 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*it);
-    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
 
     if (!pActor)
         return;

@@ -20,6 +20,13 @@ inline TiltedPhoques::String QueryFileVersion(const wchar_t* acpPath)
             {
                 return productVersion;
             }
+
+            if (VerQueryValueA(buffer.get(), "\\StringFileInfo\\040904B0\\FileVersion", (LPVOID*)&productVersion,
+                               (PUINT)&productVersionLen) &&
+                productVersionLen && productVersion && *productVersion)
+            {
+                return productVersion;
+            }
         }
     }
 

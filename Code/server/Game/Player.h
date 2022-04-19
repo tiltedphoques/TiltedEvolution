@@ -15,8 +15,8 @@ struct Player
     Player& operator=(const Player&) = delete;
 
     [[nodiscard]] uint32_t GetId() const noexcept { return m_id; }
-    [[nodiscard]]ConnectionId_t GetConnectionId() const noexcept { return m_connectionId; }
-    [[nodiscard]]std::optional<entt::entity> GetCharacter() const noexcept { return m_character; }
+    [[nodiscard]] ConnectionId_t GetConnectionId() const noexcept { return m_connectionId; }
+    [[nodiscard]] std::optional<entt::entity> GetCharacter() const noexcept { return m_character; }
     [[nodiscard]] PartyComponent& GetParty() noexcept { return m_party; }
     [[nodiscard]] const String& GetUsername() const noexcept { return m_username; }
 

@@ -102,10 +102,42 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_SKYRIMSE(TLaunch, s_launch, 0x1407781F0 - 0x140000000);
+    POINTER_SKYRIMSE(TLaunch, s_launch, 44108);
 
     RealLaunch = s_launch.Get();
 
     TP_HOOK(&RealLaunch, HookLaunch);
+
+    static VersionDbPtr<void*> hookLoc(34452);
+
+    struct C : TiltedPhoques::CodeGenerator
+    {
+        C()
+        {
+            // replicate
+            mov(rbx, ptr[rsp + 0x50]);
+            
+            // nullptr check
+            cmp(rbx, 0);
+            jz("exit");
+            // jump back 
+            jmp_S(uintptr_t(hookLoc.Get()) + 0x379);
+
+            L("exit");
+            // return false; scratch space from the registers
+            mov(al, 0);
+            add(rsp, 0x138);
+            pop(r15);
+            pop(r14);
+            pop(r13);
+            pop(r12);
+            pop(rdi);
+            pop(rsi);
+            pop(rbx);
+            pop(rbp);
+            ret();
+        }
+    } gen;
+    TiltedPhoques::Jump(uintptr_t(hookLoc.Get()) + 0x374, gen.getCode());
 });
 

@@ -1,29 +1,32 @@
+local function istable(t) return type(t) == 'table' end
 
-local function build_server(name, def)
-target(name)
-    set_kind("binary")
-    set_group("Server")
-    --set_basename(name .. "RebornServer")
-    add_defines(def)
+local function build_server()
     add_includedirs(
         ".",
         "../../Libraries/")
+
+    after_install(function(target)
+        local linkdir = target:pkg("sentry-native"):get("linkdirs")
+        if istable(linkdir) then
+            linkdir = linkdir[1] -- Yes lua index starts at 1
+        end
+        local bindir = path.join(linkdir, "..", "bin")
+        os.cp(bindir, target:installdir())
+    end)
+
     set_pcxxheader("stdafx.h")
     add_headerfiles("**.h")
-    add_files("**.cpp")
-
-    if name == "SkyrimTogetherServer" then
-        add_deps("SkyrimEncoding")
+    add_files(
+        "**.cpp")
+    if is_plat("windows") then
+        add_files("server.rc")
     end
-    if name == "FalloutTogetherServer" then
-        add_deps("FalloutEncoding")
-    end
-
     add_deps(
-        "Common",
+        "CommonLib",
         "Console",
         "ESLoader",
-        "Base",
+        "CrashHandler",
+        "BaseLib",
         "AdminProtocol",
         "TiltedScript",
         "TiltedConnect"
@@ -38,8 +41,18 @@ target(name)
         "glm",
         "entt",
         "cpp-httplib",
-        "tiltedcore")
+        "tiltedcore",
+        "sentry-native")
 end
 
-build_server("SkyrimTogetherServer", "TP_SKYRIM=1")
-build_server("FalloutTogetherServer", "TP_FALLOUT=1")
+target("SkyrimTogetherServer")
+    set_kind("binary")
+    set_group("Server")
+    add_defines(
+        "TARGET_ST",
+        "TP_SKYRIM=1",
+        "TARGET_PREFIX=\"st\"")
+    add_deps("SkyrimEncoding")
+    build_server()
+
+-- add_deps("FalloutEncoding")

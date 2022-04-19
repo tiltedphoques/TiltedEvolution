@@ -5,7 +5,7 @@
 #include <Events/InventoryChangeEvent.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping);
-TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apObject, BSExtraDataList* apExtraData, uint32_t aCount,
+TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apObject, ExtraDataList* apExtraData, uint32_t aCount,
                  TESObjectREFR* apOldContainer, void* apUnk1, void* apUnk2);
 TP_THIS_FUNCTION(TRemoveInventoryItem, uint32_t*, TESObjectREFR, uint32_t* apUnk1, void* apUnk2);
 
@@ -79,7 +79,7 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, T
     return ThisCall(RealActivate, apThis, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
 }
 
-void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObject, BSExtraDataList* apExtraData,
+void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObject, ExtraDataList* apExtraData,
                       uint32_t aCount, TESObjectREFR* apOldContainer, void* apUnk1, void* apUnk2)
 {
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));

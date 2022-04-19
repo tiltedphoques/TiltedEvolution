@@ -3,13 +3,20 @@ local function build_launcher()
     set_kind("binary")
     set_group("Client")
     set_symbols("debug", "hidden")
+
+    after_install(function(target)
+        local linkdir = target:pkg("sentry-native"):get("linkdirs")
+        local bindir = path.join(linkdir, "..", "bin")
+        os.cp(bindir, target:installdir())
+    end)
+
     add_ldflags(
-        "/IGNORE:4254",
+        "/FORCE:MULTIPLE",
+        "/IGNORE:4254,4006",
         "/DYNAMICBASE:NO",
         "/SAFESEH:NO",
         "/LARGEADDRESSAWARE",
         "/INCREMENTAL:NO",
-        "/MANIFEST:NO",
         "/LAST:.zdata",
         "/SUBSYSTEM:WINDOWS",
         "/ENTRY:mainCRTStartup", { force = true })
@@ -20,13 +27,14 @@ local function build_launcher()
     add_headerfiles("**.h")
     add_files(
         "**.cpp",
-        "resources/launcher.rc")
+        "launcher.rc")
     add_deps(
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
         "ImGuiImpl",
-        "Common")
+        "CommonLib",
+        "CrashHandler")
     add_links("ntdll_x64")
     add_linkdirs(".")
     add_syslinks(
@@ -37,7 +45,13 @@ local function build_launcher()
         "ole32",
         "dxgi",
         "d3d11",
-        "gdi32")
+        "gdi32",
+        "SetupAPI",
+        "Powrprof",
+        "Cfgmgr32",
+        "Propsys",
+        "delayimp")
+
     add_packages(
         "tiltedcore",
         "spdlog",
@@ -46,10 +60,13 @@ local function build_launcher()
         "cryptopp",
         "glm",
         "cef",
-        "mem")
+        "mem",
+        "sentry-native")
 end
 
---[[target("SkyrimImmersiveLauncher")
+add_requires("sentry-native")
+
+target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")
     add_defines(
         "TARGET_ST",
@@ -58,7 +75,7 @@ end
     add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
     build_launcher()
 
-target("FalloutImmersiveLauncher")
+--[[target("FalloutImmersiveLauncher")
     set_basename("FalloutTogether")
     add_defines(
         "TARGET_FT",
@@ -66,4 +83,5 @@ target("FalloutImmersiveLauncher")
     add_deps("FalloutTogetherClient")
     add_ldflags("/WHOLEARCHIVE:FalloutTogetherClient", { force = true })
     build_launcher()
-]]--
+    ]]--
+

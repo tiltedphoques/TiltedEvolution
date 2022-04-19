@@ -5,7 +5,7 @@
 
 PlayerCamera* PlayerCamera::Get() noexcept
 {
-    POINTER_SKYRIMSE(PlayerCamera*, s_instance, 0x142F60108 - 0x140000000);
+    POINTER_SKYRIMSE(PlayerCamera*, s_instance, 400802);
     return *(s_instance.Get());
 }
 

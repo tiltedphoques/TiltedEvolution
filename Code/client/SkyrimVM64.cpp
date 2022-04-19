@@ -44,11 +44,11 @@ uintptr_t TP_MAKE_THISCALL(HookVMDestructor, void)
     return ThisCall(VMDestructor, apThis);
 }
 
-static TiltedPhoques::Initializer s_vmHooks([]()
+static TiltedPhoques::Initializer s_mainHooks([]()
     {
-        POINTER_SKYRIMSE(TMainLoop, cMainLoop, 0x1405D9CC0 - 0x140000000);
-        POINTER_SKYRIMSE(TVMUpdate, cVMUpdate, 0x14094E610 - 0x140000000);
-        POINTER_SKYRIMSE(TVMDestructor, cVMDestructor, 0x1406C1760 - 0x140000000);
+        POINTER_SKYRIMSE(TMainLoop, cMainLoop, 36564);
+        POINTER_SKYRIMSE(TVMUpdate, cVMUpdate, 53926);
+        POINTER_SKYRIMSE(TVMDestructor, cVMDestructor, 40412);
 
         VMUpdate = cVMUpdate.Get();
         MainLoop = cMainLoop.Get();

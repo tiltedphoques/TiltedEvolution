@@ -30,7 +30,7 @@
 
 using TiltedPhoques::Packet;
 
-TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) noexcept
+TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
 {
@@ -38,7 +38,6 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher,
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
-    m_drawImGuiConnection = aImguiService.OnDraw.connect<&TransportService::OnDraw>(this);
 
     m_connected = false;
 
@@ -109,6 +108,7 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 void TransportService::OnConnected()
 {
     AuthenticationRequest request;
+    request.Version = BUILD_COMMIT;
 
     // null if discord is not active
     // TODO: think about user opt out
@@ -130,9 +130,7 @@ void TransportService::OnConnected()
         if (!pMod->IsLoaded())
             continue;
 
-        auto& entry =
-            pMod->IsLite() ? request.UserMods.LiteMods.emplace_back() : request.UserMods.StandardMods.emplace_back();
-
+        auto& entry = request.UserMods.ModList.emplace_back();
         entry.Id = pMod->GetId();
         entry.Filename = pMod->filename;
     }
@@ -204,51 +202,32 @@ void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const n
     }
 }
 
-void TransportService::OnDraw() noexcept
-{
-    if (m_connected)
-    {
-        ImGui::Begin("Network");
-        auto status = GetConnectionStatus();
-        status.m_flOutBytesPerSec /= 1024.f;
-        status.m_flInBytesPerSec /= 1024.f;
-
-        ImGui::InputFloat("Net Out kBps", (float*)&status.m_flOutBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Net In kBps", (float*)&status.m_flInBytesPerSec, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-
-        auto stats = GetStatistics();
-        float protocolSent = float(stats.SentBytes) / 1024.f;
-        float protocolReceived = float(stats.RecvBytes) / 1024.f;
-        float uncompressedSent = float(stats.UncompressedSentBytes) / 1024.f;
-        float uncompressedReceived = float(stats.UncompressedRecvBytes) / 1024.f;
-
-        ImGui::InputFloat("Protocol Out kBps", (float*)&protocolSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("Protocol In kBps", (float*)&protocolReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-
-        ImGui::InputFloat("User Out kBps", (float*)&uncompressedSent, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::InputFloat("User In kBps", (float*)&uncompressedReceived, 0.f, 0.f, "%.3f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::End();
-    }
-
-    // online indicator
-    ImGui::GetBackgroundDrawList()->AddRectFilled(
-        ImVec2(23.f, 23.f), 
-        ImVec2(50.f, 50.f), m_connected ? ImColor(0, 230, 64) : ImColor(240, 52, 52));
-}
-
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
-    m_connected = true;
-
-    // Dispatch the mods to anyone who needs it
-    m_dispatcher.trigger(acMessage.UserMods);
-
-    // Dispatch the scripts to anyone who needs it
-    m_dispatcher.trigger(acMessage.ServerScripts);
-
-    // Dispatch the replicated objects
-    m_dispatcher.trigger(acMessage.ReplicatedObjects);
-
-    // Notify we are ready for action
-    m_dispatcher.trigger(ConnectedEvent());
+    switch (acMessage.Type)
+    {
+    case AuthenticationResponse::ResponseType::kAccepted: 
+    {
+        m_connected = true;
+        m_dispatcher.trigger(acMessage.UserMods);
+        m_dispatcher.trigger(ConnectedEvent());
+        break;
+    }
+    // TODO(Anyone): Handle this within the ui
+    case AuthenticationResponse::ResponseType::kWrongVersion:
+        spdlog::error("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
+        break;
+    case AuthenticationResponse::ResponseType::kMissingMods: {
+        spdlog::error("This server has ModPolicy enabled. You were kicked because you have the following mods installed:");
+        for (const auto& m : acMessage.UserMods.ModList)
+        {
+            spdlog::error("{}:{}", m.Filename.c_str(), m.Id);
+        }
+        spdlog::error("Please remove them to join");
+        break;
+    }
+    default:
+        spdlog::error("The server refused connection without reason.");
+        break;
+    }
 }

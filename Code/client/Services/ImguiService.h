@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui/ImGuiDriver.h>
+
 struct RenderSystemD3D9;
 struct RenderSystemD3D11;
 
@@ -20,9 +22,10 @@ struct ImguiService
     LRESULT WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void RawInputHandler(RAWINPUT& aRawinput);
 
-    entt::sink<TCallback> OnDraw;
+    entt::sink<entt::sigh<TCallback>> OnDraw;
     
 private:
 
+    ImGuiImpl::ImGuiDriver m_imDriver;
     entt::sigh<TCallback> m_drawSignal;
 };

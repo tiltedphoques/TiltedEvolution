@@ -19,6 +19,8 @@
 
 #include <imgui.h>
 
+#define DEBUG_SCRIPTS 0
+
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService, TransportService& aTransportService) noexcept
     : ScriptStore(false)
     , m_dispatcher(aDispatcher)
@@ -59,6 +61,7 @@ void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void ScriptService::OnDraw() noexcept
 {
+#if DEBUG_SCRIPTS
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
         return;
@@ -73,15 +76,21 @@ void ScriptService::OnDraw() noexcept
             DisplayNetObjects();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("World"))
+        if (ImGui::BeginTabItem("Actors"))
         {
             DisplayEntities();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Objects"))
+        {
+            DisplayObjects();
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
     }
     
     ImGui::End();
+#endif
 }
 
 void ScriptService::OnScripts(const Scripts& acScripts) noexcept
@@ -222,7 +231,7 @@ void ScriptService::DisplayEntities() noexcept
     StackAllocator<1 << 12> allocator;
     ScopedAllocator _{ allocator };
 
-    const auto view = m_world.view<FormIdComponent>();
+    const auto view = m_world.view<FormIdComponent>(entt::exclude<InteractiveObjectComponent>);
 
     Vector<entt::entity> entities(view.begin(), view.end());
 
@@ -257,6 +266,47 @@ void ScriptService::DisplayEntities() noexcept
 
     if (s_selected < entities.size())
         DisplayEntityPanel(entities[s_selected]);
+}
+
+// TODO: this stuff shouldn't really be here
+void ScriptService::DisplayObjects() noexcept
+{
+    static uint32_t s_selectedFormId = 0;
+    static uint32_t s_selected = 0;
+
+    StackAllocator<1 << 12> allocator;
+    ScopedAllocator _{ allocator };
+
+    const auto view = m_world.view<FormIdComponent, InteractiveObjectComponent>();
+
+    Vector<entt::entity> entities(view.begin(), view.end());
+
+    ImGui::Text("Object list (%d)", entities.size());
+
+    ImGui::BeginChild("Entities", ImVec2(0, 200), true);
+
+    int i = 0;
+    for(auto it : entities)
+    {
+        auto& formComponent = view.get<FormIdComponent>(it);
+        const auto pRefr = RTTI_CAST(TESForm::GetById(formComponent.Id), TESForm, TESObjectREFR);
+
+        if (!pRefr || !pRefr->baseForm)
+            continue;
+
+        char name[256];
+        sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), formComponent.Id);
+
+        if (ImGui::Selectable(name, s_selectedFormId == formComponent.Id))
+            s_selectedFormId = formComponent.Id;
+
+        if(s_selectedFormId == formComponent.Id)
+            s_selected = i;
+
+        ++i;
+    }
+
+    ImGui::EndChild();
 }
 
 void ScriptService::DisplayEntityPanel(entt::entity aEntity) noexcept

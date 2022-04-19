@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Actor.h>
+
 struct World;
 struct ImguiService;
 struct UpdateEvent;
@@ -7,11 +9,10 @@ struct UpdateEvent;
 struct TransportService;
 struct BSAnimationGraphManager;
 
-struct Actor;
 struct TestService
 {
     TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
-    ~TestService() noexcept;
+    ~TestService() noexcept = default;
 
     TP_NOCOPYMOVE(TestService);
 
@@ -24,12 +25,23 @@ protected:
 private:
 
     void PlaceActorInWorld() noexcept;
-    void RunDiff();
+    void DisplayEntities() noexcept;
+    void DisplayObjects() noexcept;
+    void DisplayEntityPanel(entt::entity aEntity) noexcept;
+    void DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept;
+    void DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept;
+    void DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept;
 
+    void DrawEntitiesView();
     void DrawComponentDebugView();
     void DrawPlayerDebugView();
     void DrawAnimDebugView();
     void DrawContainerDebugView();
+    void DrawFormDebugView();
+    void DrawSkillView();
+    void DrawNetworkView();
+    void DrawPartyView();
+    void DrawActorValuesView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
@@ -39,9 +51,12 @@ private:
 
     Vector<GamePtr<Actor>> m_actors;
 
+    uint32_t m_formId = 0;
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
     bool m_showDebugStuff = false;
+    bool m_showBuildTag = true;
     bool m_toggleComponentWindow = false;
     bool m_drawComponentsInWorldSpace = true;
 };

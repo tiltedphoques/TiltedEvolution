@@ -1,8 +1,3 @@
-
-#include <BuildInfo.h>
-#include <MinHook.h>
-
-#include <TiltedCore/Initializer.hpp>
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
 
 #include "TargetConfig.h"
@@ -21,7 +16,9 @@
 // These symbols are defined within the client code
 extern void InstallStartHook();
 extern void RunTiltedApp();
-extern void RunTiltedInit();
+extern void RunTiltedInit(const std::filesystem::path& acGamePath, const TiltedPhoques::String& aExeVersion);
+
+HICON g_SharedWindowIcon = nullptr;
 
 namespace launcher
 {
@@ -55,6 +52,9 @@ int StartUp(int argc, char** argv)
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
+
+    // TODO(Force): Make some InitSharedResources func.
+    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
 
     auto r = GetLastError();
 
@@ -91,7 +91,7 @@ int StartUp(int argc, char** argv)
     InstallStartHook();
     // Initialize all hooks before calling game init
     // TiltedPhoques::Initializer::RunAll();
-    RunTiltedInit();
+    RunTiltedInit(LC->gamePath, LC->Version);
 
     // This shouldn't return until the game is killed
     LC->gameMain();
@@ -104,18 +104,9 @@ bool LoadProgram(LaunchContext& LC)
     if (content.empty())
         DIE_NOW("Failed to mount game executable");
 
-    auto versionString = QueryFileVersion(LC.exePath.c_str());
-    if (versionString.empty())
+    LC.Version = QueryFileVersion(LC.exePath.c_str());
+    if (LC.Version.empty())
         DIE_NOW("Failed to query game version");
-
-    if (content.size() != CurrentTarget.exeDiskSz || versionString != CurrentTarget.gameVerson)
-    {
-        auto err =
-            fmt::format("Unsupported game version.\n(Executable doesn't match)\nExpected version {}\nGot version {}",
-                        CurrentTarget.gameVerson, versionString.c_str());
-
-        DIE_NOW(err.c_str());
-    }
 
     ExeLoader loader(CurrentTarget.exeLoadSz);
     if (!loader.Load(reinterpret_cast<uint8_t*>(content.data())))

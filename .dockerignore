@@ -1,7 +1,9 @@
-.git
-bin
-Build/bin
-Build/projects
-Libraries/TiltedHooks
-Libraries/TiltedReverse
-Libraries/TiltedUI
+.githooks/*
+.github/*
+.xmake/*
+Services/*
+build/*
+vsxmake/*
+Tools/*
+vs*/*
+package/*

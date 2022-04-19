@@ -9,7 +9,6 @@ enum ClientOpcode : unsigned char
     kEnterExteriorCellRequest,
     kEnterInteriorCellRequest,
     kClientRpcCalls,
-    kRequestInventoryChanges,
     kRequestFactionsChanges,
     kRequestQuestUpdate,
     kPartyInviteRequest,
@@ -30,7 +29,7 @@ enum ClientOpcode : unsigned char
     kRequestOwnershipTransfer,
     kRequestOwnershipClaim,
     kRequestObjectInventoryChanges,
-    kRequestCharacterInventoryChanges,
+    kRequestInventoryChanges,
     kSpellCastRequest,
     kInterruptCastRequest,
     kAddTargetRequest,
@@ -39,6 +38,11 @@ enum ClientOpcode : unsigned char
     kDrawWeaponRequest,
     kMountRequest,
     kNewPackageRequest,
+    kRequestRespawn,
+    kSyncExperienceRequest,
+    kRequestEquipmentChanges,
+    kSendChatMessageRequest,
+    kTeleportCommandRequest,
     kClientOpcodeMax
 };
 
@@ -50,7 +54,6 @@ enum ServerOpcode : unsigned char
     kServerScriptUpdate,
     kServerTimeSettings,
     kCharacterSpawnRequest,
-    kNotifyInventoryChanges,
     kNotifyFactionsChanges,
     kNotifyRemoveCharacter,
     kNotifyQuestUpdate,
@@ -69,7 +72,7 @@ enum ServerOpcode : unsigned char
     kNotifyDeathStateChange,
     kNotifyOwnershipTransfer,
     kNotifyObjectInventoryChanges,
-    kNotifyCharacterInventoryChanges,
+    kNotifyInventoryChanges,
     kNotifySpellCast,
     kNotifyInterruptCast,
     kNotifyAddTarget,
@@ -78,5 +81,10 @@ enum ServerOpcode : unsigned char
     kNotifyDrawWeapon,
     kNotifyMount,
     kNotifyNewPackage,
+    kNotifyRespawn,
+    kNotifySyncExperience,
+    kNotifyEquipmentChanges,
+    kNotifyChatMessageBroadcast,
+    kTeleportCommandResponse,
     kServerOpcodeMax
 };

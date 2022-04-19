@@ -3,12 +3,9 @@
 #include <NetImmerse/NiNode.h>
 #include <TiltedOnlinePCH.h>
 
-#include <RTTI.h>
-
-POINTER_SKYRIMSE(NiRTTI, NiCameraRTTI, 0x143012598 - 0x140000000);
-
 NiCamera* TESCamera::GetNiCamera()
 {
+    POINTER_SKYRIMSE(NiRTTI, NiCameraRTTI, 410506);
     // usually the first child should be the camera
     for (auto* child : cameraNode->children)
     {

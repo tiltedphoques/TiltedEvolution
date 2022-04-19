@@ -2,17 +2,19 @@
 
 #include "Records/CLMT.h"
 #include "Records/CONT.h"
-#include "Records/NPC.h"
-#include "Records/REFR.h"
 #include "Records/GMST.h"
 #include "Records/NAVM.h"
+#include "Records/NPC.h"
+#include "Records/REFR.h"
 #include "Records/WRLD.h"
 
+namespace ESLoader
+{
 class RecordCollection
 {
     friend class TESFile;
 
-public:
+  public:
     FormEnum GetFormType(uint32_t aFormId) const noexcept
     {
         auto record = m_allRecords.find(aFormId);
@@ -23,6 +25,11 @@ public:
         }
 
         return record->second.GetType();
+    }
+
+    bool HasAnyRecords() const noexcept
+    {
+        return m_allRecords.size();
     }
 
     REFR& GetObjectRefById(uint32_t aFormId) noexcept
@@ -57,12 +64,14 @@ public:
     void BuildReferences();
 
 private:
-    Map<uint32_t, Record> m_allRecords{};
-    Map<uint32_t, REFR> m_objectReferences{};
-    Map<uint32_t, CLMT> m_climates{};
-    Map<uint32_t, NPC> m_npcs{};
-    Map<uint32_t, CONT> m_containers{};
-    Map<uint32_t, GMST> m_gameSettings{};
-    Map<uint32_t, WRLD> m_worlds{};
-    Map<uint32_t, NAVM> m_navMeshes{};
+    TiltedPhoques::Map<uint32_t, Record> m_allRecords{};
+    TiltedPhoques::Map<uint32_t, REFR> m_objectReferences{};
+    TiltedPhoques::Map<uint32_t, CLMT> m_climates{};
+    TiltedPhoques::Map<uint32_t, NPC> m_npcs{};
+    TiltedPhoques::Map<uint32_t, CONT> m_containers{};
+    TiltedPhoques::Map<uint32_t, GMST> m_gameSettings{};
+    TiltedPhoques::Map<uint32_t, WRLD> m_worlds{};
+    TiltedPhoques::Map<uint32_t, NAVM> m_navMeshes{};
 };
+
+} // namespace ESLoader

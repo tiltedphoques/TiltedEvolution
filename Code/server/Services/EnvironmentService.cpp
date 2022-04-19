@@ -41,7 +41,7 @@ void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noex
 
 void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
-    for (auto pPlayer : m_world.GetPlayerManager())
+    for (Player* pPlayer : m_world.GetPlayerManager())
     {
         if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
             return;
@@ -59,23 +59,26 @@ void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEv
     }
 }
 
+// NOTE: this whole system kinda relies on all objects in a cell being static.
+// This is fine for containers and doors, but if this system is expanded, think of temporaries.
 void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
     auto view = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent>();
 
     AssignObjectsResponse response;
 
-    for (const auto& object : acMessage.Packet.Objects)
+    for (const ObjectData& object : acMessage.Packet.Objects)
     {
         const auto iter = std::find_if(std::begin(view), std::end(view), [view, id = object.Id](auto entity)
         {
-            const auto formIdComponent = view.get<FormIdComponent>(entity);
+            const auto& formIdComponent = view.get<FormIdComponent>(entity);
             return formIdComponent.Id == id;
         });
 
         if (iter != std::end(view))
         {
             ObjectData objectData;
+            objectData.ServerId = World::ToInteger(*iter);
 
             auto& formIdComponent = view.get<FormIdComponent>(*iter);
             objectData.Id = formIdComponent.Id;
@@ -84,7 +87,9 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             objectData.CurrentLockData = objectComponent.CurrentLockData;
 
             auto& inventoryComponent = view.get<InventoryComponent>(*iter);
-            objectData.CurrentInventory.Buffer = inventoryComponent.Content.Buffer;
+            objectData.CurrentInventory = inventoryComponent.Content;
+
+            objectData.IsSenderFirst = false;
 
             response.Objects.push_back(objectData);
         }
@@ -98,7 +103,16 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
             objectComponent.CurrentLockData = object.CurrentLockData;
 
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
-            m_world.emplace<InventoryComponent>(cEntity);
+            auto& inventoryComp = m_world.emplace<InventoryComponent>(cEntity);
+            inventoryComp.Content = object.CurrentInventory;
+
+            // TODO: maybe make this its own message instead of using IsSenderFirst
+            ObjectData objectData;
+            objectData.Id = object.Id;
+            objectData.ServerId = World::ToInteger(cEntity);
+            objectData.IsSenderFirst = true;
+
+            response.Objects.push_back(objectData);
         }
     }
 
@@ -132,7 +146,7 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
 
     const auto iter = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id = acMessage.Packet.Id](auto entity)
     {
-        const auto formIdComponent = objectView.get<FormIdComponent>(entity);
+        const auto& formIdComponent = objectView.get<FormIdComponent>(entity);
         return formIdComponent.Id == id;
     });
 
@@ -143,7 +157,7 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
         objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    for(auto pPlayer : m_world.GetPlayerManager())
+    for(Player* pPlayer : m_world.GetPlayerManager())
     {
         if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
         {
@@ -213,14 +227,14 @@ void EnvironmentService::OnUpdate(const UpdateEvent &) noexcept
 
 void EnvironmentService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>& acMessage) noexcept
 {
-    auto packet = acMessage.Packet;
+    auto& packet = acMessage.Packet;
 
     NotifyScriptAnimation message{};
     message.FormID = packet.FormID;
     message.Animation = packet.Animation;
     message.EventName = packet.EventName;
 
-    for(auto pPlayer : m_world.GetPlayerManager())
+    for(Player* pPlayer : m_world.GetPlayerManager())
     {
         pPlayer->Send(message);
     }

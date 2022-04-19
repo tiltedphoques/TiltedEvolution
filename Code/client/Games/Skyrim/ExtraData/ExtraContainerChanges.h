@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include <Games/ExtraDataList.h>
 
 struct BGSLoadFormBuffer;
 struct BGSSaveFormBuffer;
@@ -13,8 +13,10 @@ struct ExtraContainerChanges : BSExtraData
 
     struct Entry
     {
+        bool IsQuestObject() noexcept;
+
         TESForm* form;
-        GameList<BSExtraDataList>* dataList;
+        GameList<ExtraDataList>* dataList;
         int32_t count;
         uint8_t pad[8];
     };

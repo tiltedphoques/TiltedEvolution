@@ -3,19 +3,85 @@
 
 using TiltedPhoques::Serialization;
 
+void Inventory::EffectItem::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+{
+    Serialization::WriteFloat(aWriter, Magnitude);
+    Serialization::WriteVarInt(aWriter, Area);
+    Serialization::WriteVarInt(aWriter, Duration);
+    Serialization::WriteFloat(aWriter, RawCost);
+    EffectId.Serialize(aWriter);
+}
+
+void Inventory::EffectItem::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
+{
+    Magnitude = Serialization::ReadFloat(aReader);
+    Area = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Duration = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    RawCost = Serialization::ReadFloat(aReader);
+    EffectId.Deserialize(aReader);
+}
+
+void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+{
+    BaseId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, Count);
+
+    Serialization::WriteFloat(aWriter, ExtraCharge);
+
+    ExtraEnchantId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, ExtraEnchantCharge);
+    Serialization::WriteVarInt(aWriter, EnchantData.Effects.size());
+    for (const EffectItem& effect : EnchantData.Effects)
+    {
+        effect.Serialize(aWriter);
+    }
+
+    Serialization::WriteFloat(aWriter, ExtraHealth);
+
+    ExtraPoisonId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, ExtraPoisonCount);
+
+    Serialization::WriteVarInt(aWriter, ExtraSoulLevel);
+
+    Serialization::WriteBool(aWriter, EnchantData.IsWeapon);
+    Serialization::WriteBool(aWriter, ExtraEnchantRemoveUnequip);
+    Serialization::WriteBool(aWriter, ExtraWorn);
+    Serialization::WriteBool(aWriter, ExtraWornLeft);
+}
+
+void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
+{
+    BaseId.Deserialize(aReader);
+    Count = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+
+    ExtraCharge = Serialization::ReadFloat(aReader);
+
+    ExtraEnchantId.Deserialize(aReader);
+    ExtraEnchantCharge = Serialization::ReadVarInt(aReader) & 0xFFFF;
+    uint64_t effectCount = Serialization::ReadVarInt(aReader);
+    for (uint64_t i = 0; i < effectCount; i++)
+    {
+        EffectItem effect;
+        effect.Deserialize(aReader);
+        EnchantData.Effects.push_back(effect);
+    }
+
+    ExtraHealth = Serialization::ReadFloat(aReader);
+
+    ExtraPoisonId.Deserialize(aReader);
+    ExtraPoisonCount = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+
+    ExtraSoulLevel = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+
+    EnchantData.IsWeapon = Serialization::ReadBool(aReader);
+    ExtraEnchantRemoveUnequip = Serialization::ReadBool(aReader);
+    ExtraWorn = Serialization::ReadBool(aReader);
+    ExtraWornLeft = Serialization::ReadBool(aReader);
+}
+
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
 {
-    return RightHandWeapon == acRhs.RightHandWeapon
-        && IsWeaponDrawn == acRhs.IsWeaponDrawn
-        && Buffer == acRhs.Buffer
-#if TP_SKYRIM
-        && LeftHandWeapon == acRhs.LeftHandWeapon
-        && RightHandSpell == acRhs.RightHandSpell
-        && LeftHandSpell == acRhs.LeftHandSpell
-        && Shout == acRhs.Shout
-        && Ammo == acRhs.Ammo
-#endif
-        ;
+    return Entries == acRhs.Entries;
 }
 
 bool Inventory::operator!=(const Inventory& acRhs) const noexcept
@@ -23,82 +89,93 @@ bool Inventory::operator!=(const Inventory& acRhs) const noexcept
     return !this->operator==(acRhs);
 }
 
+bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
+{
+    return BaseId == acRhs.BaseId &&
+           Count == acRhs.Count &&
+           IsExtraDataEquals(acRhs);
+}
+
+bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept
+{
+    return !this->operator==(acRhs);
+}
+
 void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    bool isRightWeaponSet = RightHandWeapon != GameId{};
-#if TP_SKYRIM
-    bool isLeftWeaponSet = LeftHandWeapon != GameId{};
-    bool isLeftSpellSet = LeftHandSpell != GameId{};
-    bool isRightSpellSet = RightHandSpell != GameId{};
-    bool isShoutSet = Shout != GameId{};
-    bool isAmmoSet = Ammo != GameId{};
-#endif
+    Serialization::WriteVarInt(aWriter, Entries.size());
+    for (const Entry& entry : Entries)
+    {
+        entry.Serialize(aWriter);
+    }
 
-    Serialization::WriteString(aWriter, Buffer);
-    Serialization::WriteBool(aWriter, IsWeaponDrawn);
-
-    Serialization::WriteBool(aWriter, isRightWeaponSet);
-#if TP_SKYRIM
-    Serialization::WriteBool(aWriter, isLeftWeaponSet);
-    Serialization::WriteBool(aWriter, isLeftSpellSet);
-    Serialization::WriteBool(aWriter, isRightSpellSet);
-    Serialization::WriteBool(aWriter, isShoutSet);
-    Serialization::WriteBool(aWriter, isAmmoSet);
-#endif
-
-    if (isRightWeaponSet)
-        RightHandWeapon.Serialize(aWriter);
-
-#if TP_SKYRIM
-    if (isLeftWeaponSet)
-        LeftHandWeapon.Serialize(aWriter);
-
-    if (isLeftSpellSet)
-        LeftHandSpell.Serialize(aWriter);
-
-    if (isRightSpellSet)
-        RightHandSpell.Serialize(aWriter);
-
-    if (isShoutSet)
-        Shout.Serialize(aWriter);
-
-    if (isAmmoSet)
-        Ammo.Serialize(aWriter);
-#endif
+    CurrentMagicEquipment.Serialize(aWriter);
 }
 
 void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    Buffer = Serialization::ReadString(aReader);
-    IsWeaponDrawn = Serialization::ReadBool(aReader);
+    uint32_t count = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        Entry entry;
+        entry.Deserialize(aReader);
+        Entries.push_back(entry);
+    }
 
-    bool isRightWeaponSet = Serialization::ReadBool(aReader);
-#if TP_SKYRIM
-    bool isLeftWeaponSet = Serialization::ReadBool(aReader);
-    bool isLeftSpellSet = Serialization::ReadBool(aReader);
-    bool isRightSpellSet = Serialization::ReadBool(aReader);
-    bool isShoutSet = Serialization::ReadBool(aReader);
-    bool isAmmoSet = Serialization::ReadBool(aReader);
-#endif
+    CurrentMagicEquipment.Deserialize(aReader);
+}
 
-    if (isRightWeaponSet)
-        RightHandWeapon.Deserialize(aReader);
+// TODO: unit testing
+void Inventory::AddOrRemoveEntry(const Entry& acNewEntry) noexcept
+{
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acNewEntry](Entry& entry)
+    {
+        return entry.CanBeMerged(acNewEntry);
+    });
 
-#if TP_SKYRIM
-    if (isLeftWeaponSet)
-        LeftHandWeapon.Deserialize(aReader);
+    if (duplicate != Entries.end())
+    {
+        duplicate->Count += acNewEntry.Count;
+        if (duplicate->Count == 0)
+            Entries.erase(duplicate);
+    }
+    else
+    {
+        Entries.push_back(acNewEntry);
+    }
+}
 
-    if (isLeftSpellSet)
-        LeftHandSpell.Deserialize(aReader);
+void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
+{
+    while (true)
+    {
+        auto wornEntry = std::find_if(Entries.begin(), Entries.end(), [](auto& aEntry) { return aEntry.IsWorn(); });
+        if (wornEntry == Entries.end())
+            break;
 
-    if (isRightSpellSet)
-        RightHandSpell.Deserialize(aReader);
+        wornEntry->ExtraWorn = wornEntry->ExtraWornLeft = false;
+    }
 
-    if (isShoutSet)
-        Shout.Deserialize(aReader);
+    for (const auto& newEntry : acNewInventory.Entries)
+    {
+        if (!newEntry.IsWorn())
+            continue;
 
-    if (isAmmoSet)
-        Ammo.Deserialize(aReader);
-#endif
+        auto entry = std::find_if(Entries.begin(), Entries.end(),
+                                  [&newEntry](auto& aEntry) { return aEntry.BaseId == newEntry.BaseId; });
 
+        // This shouldn't happen
+        if (entry == Entries.end())
+            continue;
+
+        entry->ExtraWorn = newEntry.ExtraWorn;
+        entry->ExtraWornLeft = newEntry.ExtraWornLeft;
+    }
+
+    CurrentMagicEquipment = acNewInventory.CurrentMagicEquipment;
+}
+
+void Inventory::RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept
+{
+    Entries.erase(std::remove_if(Entries.begin(), Entries.end(), aFilter), Entries.end());
 }

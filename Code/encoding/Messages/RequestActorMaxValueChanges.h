@@ -2,8 +2,6 @@
 
 #include "Message.h"
 
-using TiltedPhoques::Map;
-
 struct RequestActorMaxValueChanges final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kRequestActorMaxValueChanges;
@@ -23,5 +21,5 @@ struct RequestActorMaxValueChanges final : ClientMessage
     }
 
     uint32_t Id;
-    Map<uint32_t, float> Values;
+    TiltedPhoques::Map<uint32_t, float> Values;
 };

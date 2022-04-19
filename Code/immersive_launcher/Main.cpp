@@ -5,6 +5,9 @@
 #include <combaseapi.h>
 
 #include "script_extender/SEMemoryBlock.h"
+#include <CrashHandler.h>
+
+#include <TiltedCore/Platform.hpp>
 
 extern void CoreStubsInit();
 
@@ -62,5 +65,11 @@ int main(int argc, char** argv)
     ComScope cs;
     TP_UNUSED(cs);
 
-    return launcher::StartUp(argc, argv);
+    InstallCrashHandler();
+
+    auto ret = launcher::StartUp(argc, argv);
+
+    UninstallCrashHandler();
+
+    return ret;
 }

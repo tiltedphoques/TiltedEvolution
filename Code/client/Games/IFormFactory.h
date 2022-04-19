@@ -1,6 +1,7 @@
 #pragma once
 
-struct TESForm;
+#include <Forms/TESForm.h>
+
 struct IFormFactory
 {
     virtual ~IFormFactory();
@@ -11,7 +12,7 @@ struct IFormFactory
     virtual void sub_5();
     virtual void sub_6();
 
-    static IFormFactory* GetForType(uint32_t aId) noexcept;
+    static IFormFactory* GetForType(const FormType aId) noexcept;
 
     template<class T>
     static T* Create()

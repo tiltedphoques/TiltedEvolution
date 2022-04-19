@@ -1,15 +1,34 @@
-#include "ESLoader.h"
 
+
+#include "ESLoader.h"
 #include <filesystem>
 #include <fstream>
 
-#include <Records/REFR.h>
 #include <Records/CLMT.h>
 #include <Records/NPC.h>
+#include <Records/REFR.h>
 
-ESLoader::ESLoader() 
+namespace ESLoader
 {
-    m_directory = "Data\\";
+String ReadZString(Buffer::Reader& aReader) noexcept
+{
+    String zstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()));
+    aReader.Advance(zstring.size() + 1);
+    return zstring;
+}
+
+String ReadWString(Buffer::Reader& aReader) noexcept
+{
+    uint16_t stringLength = 0;
+    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
+    String wstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength);
+    aReader.Advance(stringLength);
+    return wstring;
+}
+
+ESLoader::ESLoader()
+{
+    m_directory = "data\\";
 }
 
 UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
@@ -17,22 +36,20 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
     if (!fs::is_directory(m_directory))
     {
         spdlog::error("Data directory not found.");
-        return UniquePtr<RecordCollection>();
+        return nullptr;
     }
 
     if (!LoadLoadOrder())
     {
         spdlog::error("Failed to load load order.");
-        return UniquePtr<RecordCollection>();
+        return nullptr;
     }
 
     auto recordCollection = LoadFiles();
-
     recordCollection->BuildReferences();
 
     return std::move(recordCollection);
 }
-
 
 bool ESLoader::LoadLoadOrder()
 {
@@ -125,19 +142,4 @@ fs::path ESLoader::GetPath(String& aFilename)
     return fs::path();
 }
 
-String ESLoader::ReadZString(Buffer::Reader& aReader) noexcept
-{
-    String zstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()));
-    aReader.Advance(zstring.size() + 1);
-    return zstring;
-}
-
-String ESLoader::ReadWString(Buffer::Reader& aReader) noexcept
-{
-    uint16_t stringLength = 0;
-    aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
-    String wstring = String(reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength);
-    aReader.Advance(stringLength);
-    return wstring;
-}
-
+} // namespace ESLoader

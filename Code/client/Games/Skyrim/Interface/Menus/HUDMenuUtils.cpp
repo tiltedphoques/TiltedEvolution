@@ -18,8 +18,8 @@ static TiltedPhoques::Initializer s_Init([]() {
     POINTER_FALLOUT4(float[4][4], s_matrix, 0x145A66AA0 - 0x140000000);
     POINTER_FALLOUT4(NiRect<float>, s_port, 0x145A66B30 - 0x140000000);
 
-    POINTER_SKYRIMSE(float[4][4], s_matrix, 0x142FE75F0 - 0x140000000);
-    POINTER_SKYRIMSE(NiRect<float>, s_port, 0x142FE8B98 - 0x140000000);
+    POINTER_SKYRIMSE(float[4][4], s_matrix, 406126);
+    POINTER_SKYRIMSE(NiRect<float>, s_port, 406160);
 
     HUDMenuUtils::CameraWorldToCam = s_matrix.Get();
     HUDMenuUtils::CameraPort = s_port.Get();

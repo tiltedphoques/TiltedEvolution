@@ -20,6 +20,8 @@
 #include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
 
+#include <CrashHandler.h>
+
 constexpr char kSettingsFileName[] =
 #if SKYRIM
     "STServer.ini"
@@ -42,6 +44,7 @@ constexpr char kLogFileName[] =
 
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
+constexpr char kConfigPathName[] = "config";
 constexpr char kEULAName[] = "EULA.txt";
 constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted platform service agreement\n"
                              ";by setting bConfirmEULA to true\n"
@@ -52,6 +55,9 @@ constexpr char kConsoleOutName[] = "ConOut";
 namespace fs = std::filesystem;
 
 static Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+static Console::Setting bConsole{"bConsole", "Enable the console", true};
+
+class DediRunner;
 
 // LogInstance must be created for the Console Instance.
 struct LogInstance
@@ -88,23 +94,26 @@ struct SettingsInstance
 {
     SettingsInstance()
     {
-        m_Path = fs::current_path() / kSettingsFileName;
-        if (!fs::exists(m_Path))
+        m_path = fs::current_path() / kConfigPathName / kSettingsFileName;
+        if (!fs::exists(m_path))
         {
-            Console::SaveSettingsToIni(m_Path);
+            create_directory(fs::current_path() / kConfigPathName);
+            Console::SaveSettingsToIni(m_path, true);
             return;
         }
-        Console::LoadSettingsFromIni(m_Path);
+        Console::LoadSettingsFromIni(m_path);
     }
 
     ~SettingsInstance()
     {
-        Console::SaveSettingsToIni(m_Path);
+        Console::SaveSettingsToIni(m_path, false);
     }
 
   private:
-    fs::path m_Path;
+    fs::path m_path;
 };
+
+static DediRunner* s_pRunner{nullptr};
 
 // Frontend class for the dedicated terminal based server
 class DediRunner
@@ -113,54 +122,128 @@ class DediRunner
     DediRunner(int argc, char** argv);
     ~DediRunner() = default;
 
-    void StartGSThread();
-    void RunTerminalIO();
+    void RunGSThread();
+    void StartTerminalIO();
+    void RequestKill();
+
+  private:
+    static void PrintExecutorArrowHack();
 
   private:
     fs::path m_configPath;
     // Order here matters for constructor calling order.
     SettingsInstance m_settings;
-    LogInstance m_logInstance;
     GameServer m_gameServer;
     Console::ConsoleRegistry m_console;
+    UniquePtr<std::jthread> m_pConIOThread;
 };
 
-DediRunner::DediRunner(int argc, char** argv) : m_console(kConsoleOutName)
+DediRunner::DediRunner(int argc, char** argv) : m_gameServer(m_console), m_console(kConsoleOutName)
 {
+    s_pRunner = this;
+
     // Post construction init stuff.
     m_gameServer.Initialize();
 }
 
-void DediRunner::StartGSThread()
+void DediRunner::PrintExecutorArrowHack()
 {
-    std::thread t([&]() {
-        while (m_gameServer.IsListening())
-        {
-            m_gameServer.Update();
-            if (m_console.Update())
-            {
-                // Force:
-                // This is a hack to get the executor arrow.
-                // If you find a way to do this through the ConOut log channel
-                // please let me know (The issue is the forced formatting for that channel)
-                // and the forced null termination.
-                fmt::print(">");
-            }
-        }
-    });
-    t.detach();
+    // Force:
+    // This is a hack to get the executor arrow.
+    // If you find a way to do this through the ConOut log channel
+    // please let me know (The issue is the forced formatting for that channel)
+    // and the forced null termination.
+    fmt::print(">>>");
 }
 
-void DediRunner::RunTerminalIO()
+void DediRunner::RunGSThread()
 {
-    spdlog::get("ConOut")->info("Welcome to the ST Server console");
-    fmt::print(">");
-    while (true)
+    while (m_gameServer.IsListening())
     {
-        std::string s;
-        std::getline(std::cin, s);
-        m_console.TryExecuteCommand(s);
+        m_gameServer.Update();
+        if (bConsole && m_console.Update())
+        {
+            PrintExecutorArrowHack();
+        }
     }
+}
+
+void DediRunner::StartTerminalIO()
+{
+    m_pConIOThread = MakeUnique<std::jthread>(([&]() {
+        spdlog::get("ConOut")->info("Server console");
+        PrintExecutorArrowHack();
+
+        while (m_gameServer.IsRunning())
+        {
+            // should have a isDirty flag and flush if, every x seconds.
+
+            std::string s;
+            std::getline(std::cin, s);
+            if (!m_console.TryExecuteCommand(s))
+            {
+                // we take the opportunity here and insert it directly
+                // else we will be lacking it, and we want to avoid testing the queue size after
+                // insert due to race condition.
+                PrintExecutorArrowHack();
+            }
+
+            // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
+            if (s == "/quit")
+                return;
+        }
+    }));
+}
+
+void DediRunner::RequestKill()
+{
+    m_gameServer.Kill();
+
+    auto wait = std::move(m_pConIOThread);
+    TP_UNUSED(wait);
+    
+    // work around 
+    // https://cdn.discordapp.com/attachments/675107843573022779/941772837339930674/unknown.png
+    // being set.
+#if defined(_WIN32)
+    if (IsDebuggerPresent())
+    {
+        std::this_thread::sleep_for(300ms);
+    }
+#endif
+}
+
+static bool RegisterQuitHandler()
+{
+#if defined(_WIN32)
+    return SetConsoleCtrlHandler(
+        [](DWORD aType) 
+        {
+            switch (aType)
+            {
+            case CTRL_C_EVENT:
+            case CTRL_CLOSE_EVENT:
+            case CTRL_BREAK_EVENT:
+            case CTRL_LOGOFF_EVENT:
+            case CTRL_SHUTDOWN_EVENT: 
+            {
+                if (s_pRunner)
+                {
+                    s_pRunner->RequestKill();
+                    return TRUE;
+                }
+
+                // if the user kills during the ctor we deny the request
+                // to save our dear life.
+                return FALSE;
+            }
+            default:
+                return FALSE;
+            }
+        },
+        TRUE);
+#endif
+    return true;
 }
 
 static void ShittyFileWrite(const std::filesystem::path& aPath, const char* const acData)
@@ -173,14 +256,15 @@ static void ShittyFileWrite(const std::filesystem::path& aPath, const char* cons
 
 static bool IsEULAAccepted()
 {
-    auto path = fs::current_path() / kEULAName;
-    if (!fs::exists(path))
+    const auto path = fs::current_path() / kConfigPathName / kEULAName;
+    if (!exists(path))
     {
+        create_directory(fs::current_path() / kConfigPathName);
         ShittyFileWrite(path, kEULAText);
         return false;
     }
 
-    auto data = TiltedPhoques::LoadFile(path);
+    const auto data = TiltedPhoques::LoadFile(path);
     CSimpleIni si;
     if (si.LoadData(data.c_str()) != SI_OK)
         return false;
@@ -190,15 +274,28 @@ static bool IsEULAAccepted()
 
 int main(int argc, char** argv)
 {
+    InstallCrashHandler(true);
+
+    LogInstance logInstance;
+    (void)logInstance;
+
     if (!IsEULAAccepted())
     {
-        fmt::print("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
+        spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
         return 0;
     }
 
-    // Keep stack free.
-    auto runner{std::make_unique<DediRunner>(argc, argv)};
-    runner->StartGSThread();
-    runner->RunTerminalIO();
+    RegisterQuitHandler();
+
+    // Keep it off the stack.
+    const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
+    if (bConsole)
+    {
+        cpRunner->StartTerminalIO();
+    }
+    cpRunner->RunGSThread();
+
+    UninstallCrashHandler();
+
     return 0;
 }

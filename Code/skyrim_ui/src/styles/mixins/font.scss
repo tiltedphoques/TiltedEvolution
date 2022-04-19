@@ -56,7 +56,7 @@ $font: (
 
       @if not($type-format) {
         @error '`#{dump($type)}` is not a valid type. ' +
-          'Valid types are: #{dump(map-keys($type-list)))}.';
+          'Valid types are: #{dump(map-keys($type-list))}.';
       }
 
       @each $style-value in $style-list {
@@ -70,5 +70,6 @@ $font: (
         }
       }
     }
+
   }
 }

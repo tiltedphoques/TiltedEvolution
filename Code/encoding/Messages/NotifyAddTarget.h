@@ -18,9 +18,13 @@ struct NotifyAddTarget final : ServerMessage
     {
         return TargetId == acRhs.TargetId && 
                SpellId == acRhs.SpellId &&
+               EffectId == acRhs.EffectId &&
+               Magnitude == acRhs.Magnitude &&
                GetOpcode() == acRhs.GetOpcode();
     }
 
-    uint32_t TargetId;
+    uint32_t TargetId{};
     GameId SpellId{};
+    GameId EffectId{};
+    float Magnitude{};
 };

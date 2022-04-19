@@ -24,7 +24,7 @@ export class DebugComponent implements OnInit, OnDestroy {
 
   constructor(private client: ClientService,
               private storeService: StoreService) {
-      this.isShown = JSON.parse(this.storeService.get('debug_isShow', true));
+      this.isShown = JSON.parse(this.storeService.get('debug_isShow', false));
   }
 
   ngOnInit() {

@@ -6,7 +6,7 @@ struct ExtraHealth : BSExtraData
 {
     inline static constexpr auto eExtraData = ExtraData::Health;
 
-    float fHealth;
+    float fHealth{};
 };
 
 static_assert(sizeof(ExtraHealth) == 0x18);

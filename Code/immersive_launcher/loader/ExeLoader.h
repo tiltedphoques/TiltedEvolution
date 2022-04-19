@@ -11,7 +11,7 @@
 // - 2021/2/25: Added CEG decryption method.
 
 #include <Windows.h>
-#include <TiltedCore/Filesystem.hpp>
+#include <cstdint>
 
 class ExeLoader
 {

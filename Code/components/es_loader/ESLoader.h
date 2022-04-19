@@ -4,35 +4,42 @@
 
 namespace fs = std::filesystem;
 
+namespace ESLoader
+{
 class RecordCollection;
+
+struct PluginData
+{
+    [[nodiscard]] bool IsLite() const noexcept
+    {
+        return m_isLite;
+    }
+
+    String m_filename;
+    union {
+        uint8_t m_standardId;
+        uint16_t m_liteId;
+    };
+    bool m_isLite;
+};
+using PluginCollection = Vector<PluginData>;
+
+String ReadZString(Buffer::Reader& aReader) noexcept;
+String ReadWString(Buffer::Reader& aReader) noexcept;
 
 class ESLoader
 {
-public:
-    struct PluginData
-    {
-        [[nodiscard]] bool IsLite() const noexcept
-        {
-            return m_isLite;
-        }
-
-        String m_filename;
-        union
-        {
-            uint8_t m_standardId;
-            uint16_t m_liteId;
-        };
-        bool m_isLite;
-    };
-
-    static String ReadZString(Buffer::Reader& aReader) noexcept;
-    static String ReadWString(Buffer::Reader& aReader) noexcept;
-
+  public:
     ESLoader();
 
     UniquePtr<RecordCollection> BuildRecordCollection() noexcept;
 
-private:
+    PluginCollection& GetLoadOrder() noexcept
+    {
+        return m_loadOrder;
+    }
+
+  private:
     bool LoadLoadOrder();
     UniquePtr<RecordCollection> LoadFiles();
 
@@ -40,5 +47,6 @@ private:
 
     String m_directory = "";
     Vector<PluginData> m_loadOrder{};
-    Map<String, uint8_t> m_masterFiles{};
+    TiltedPhoques::Map<String, uint8_t> m_masterFiles{};
 };
+} // namespace ESLoader

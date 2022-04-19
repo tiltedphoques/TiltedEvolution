@@ -1,8 +1,6 @@
 #include <TiltedOnlinePCH.h>
 
 
-#include <MemoryVP.hpp>
-
 #include <Renderer.h>
 
 #include <Systems/RenderSystemD3D11.h>
@@ -25,7 +23,7 @@ static TRenderPresent* RealRenderPresent = nullptr;
 
 BGSRenderer* BGSRenderer::Get()
 {
-    POINTER_SKYRIMSE(BGSRenderer*, s_instance, 0x1430C0C08 - 0x140000000);
+    POINTER_SKYRIMSE(BGSRenderer*, s_instance, 411347);
     POINTER_FALLOUT4(BGSRenderer*, s_instance, 0x14609BF80 - 0x140000000);
 
     return *(s_instance.Get());
@@ -33,7 +31,7 @@ BGSRenderer* BGSRenderer::Get()
 
 ID3D11Device* BGSRenderer::GetDevice()
 {
-    POINTER_SKYRIMSE(ID3D11Device*, s_device, 0x1430C0C10 - 0x140000000);
+    POINTER_SKYRIMSE(ID3D11Device*, s_device, 411348);
     POINTER_FALLOUT4(ID3D11Device*, s_device, 0x1461E0918 - 0x140000000);
 
     return *(s_device.Get());
@@ -82,13 +80,13 @@ static TiltedPhoques::Initializer s_viewportHooks([]()
 {
 #ifndef TP_SKYRIM64
 
-    POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 0x140DA3770 - 0x140000000);
+    POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 77226);
     POINTER_FALLOUT4(TCreateViewport, s_realCreateViewport, 0x141D09DA0 - 0x140000000);
 
     RealCreateViewport = s_realCreateViewport.Get();
     TP_HOOK(&RealCreateViewport, HookCreateViewport);
 
-    POINTER_SKYRIMSE(TRenderPresent, s_realRenderPresent, 0x140DA5B00 - 0x140000000);
+    POINTER_SKYRIMSE(TRenderPresent, s_realRenderPresent, 77246);
     POINTER_FALLOUT4(TRenderPresent, s_realRenderPresent, 0x141D0B670 - 0x140000000);
 
     RealRenderPresent = s_realRenderPresent.Get();

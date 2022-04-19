@@ -24,9 +24,20 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
     if (pActor->GetExtension()->IsRemote())
         return;
 
-    World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell));
+    uint32_t targetFormId = 0;
 
-    spdlog::debug("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell);
+    if (apThis->hDesiredTarget)
+    {
+        TESObjectREFR* pDesiredTarget = TESObjectREFR::GetByHandle(apThis->hDesiredTarget.handle.iBits);
+        if (pDesiredTarget)
+        {
+            targetFormId = pDesiredTarget->formID;
+        }
+    }
+
+    World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell, targetFormId));
+
+    spdlog::debug("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}, desired target: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell, targetFormId);
 
     ThisCall(RealSpellCast, apThis, abSuccess, auiTargetCount, apSpell);
 }
@@ -44,8 +55,8 @@ void TP_MAKE_THISCALL(HookInterruptCast, ActorMagicCaster, bool abRefund)
 }
 
 static TiltedPhoques::Initializer s_actorMagicCasterHooks([]() {
-    POINTER_SKYRIMSE(TSpellCast, s_spellCast, 0x14055CB90 - 0x140000000);
-    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 0x14055C470 - 0x140000000);
+    POINTER_SKYRIMSE(TSpellCast, s_spellCast, 34144);
+    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34140);
 
     RealSpellCast = s_spellCast.Get();
     RealInterruptCast = s_interruptCast.Get();
