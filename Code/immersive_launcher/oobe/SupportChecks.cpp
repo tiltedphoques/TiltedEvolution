@@ -52,8 +52,10 @@ CompatabilityStatus ReportModCompatabilityStatus()
     if (!IsWindows8Point1OrGreater())
         return CompatabilityStatus::kOldOS;
 
+    /*
     if (!TestD3D11Support())
         return CompatabilityStatus::kDX11Unsupported;
+    */
 
     return CompatabilityStatus::kAllGood;
 }

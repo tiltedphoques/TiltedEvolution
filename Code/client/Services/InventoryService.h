@@ -3,6 +3,7 @@
 struct World;
 struct TransportService;
 
+struct UpdateEvent;
 struct NotifyObjectInventoryChanges;
 struct NotifyInventoryChanges;
 struct InventoryChangeEvent;
@@ -15,7 +16,8 @@ struct InventoryService
     ~InventoryService() noexcept = default;
 
     TP_NOCOPYMOVE(InventoryService);
-
+    
+    void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept;
     void OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept;
 
@@ -23,11 +25,14 @@ struct InventoryService
     void OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept;
 
 private:
+    
+    void RunWeaponStateUpdates() noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
+    entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_inventoryConnection;
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryChangeConnection;

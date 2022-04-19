@@ -15,6 +15,7 @@ void TestService::DrawFormDebugView()
 {
     static TESObjectREFR* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
+    static uint32_t formId = 0;
 
     ImGui::Begin("Form");
 
@@ -23,9 +24,9 @@ void TestService::DrawFormDebugView()
 
     if (ImGui::Button("Look up"))
     {
-        if (m_formId)
+        if (formId)
         {
-            pFetchForm = TESForm::GetById(m_formId);
+            pFetchForm = TESForm::GetById(formId);
             if (pFetchForm)
                 pRefr = RTTI_CAST(pFetchForm, TESForm, TESObjectREFR);
         }

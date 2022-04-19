@@ -25,7 +25,14 @@ protected:
 private:
 
     void PlaceActorInWorld() noexcept;
+    void DisplayEntities() noexcept;
+    void DisplayObjects() noexcept;
+    void DisplayEntityPanel(entt::entity aEntity) noexcept;
+    void DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept;
+    void DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept;
+    void DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept;
 
+    void DrawEntitiesView();
     void DrawComponentDebugView();
     void DrawPlayerDebugView();
     void DrawAnimDebugView();
@@ -34,6 +41,7 @@ private:
     void DrawSkillView();
     void DrawNetworkView();
     void DrawPartyView();
+    void DrawActorValuesView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
