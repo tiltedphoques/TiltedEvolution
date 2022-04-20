@@ -34,10 +34,15 @@ local function build_runner()
 end
 
 target("SkyrimServerRunner")
+    if is_plat("windows") then
+        add_ldflags("/PDB:$(TargetDir)SkyrimServerRunner.pdb")
+    end
     set_basename("SkyrimTogetherServer")
     add_defines(
         "TARGET_ST",
         "TARGET_PREFIX=\"st\"")
+    -- we want uniform names for both runner and dll under windows for
+    -- scripting/ux reasons
     build_runner()
     -- core dll
     add_deps("SkyrimTogetherServer")

@@ -77,6 +77,8 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
 GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, void* apUserPointer,
                                                           void (*apCallback)(void*))
 {
+    BASE_ASSERT(apCallback, "CreateGameServer(): Callback was not provided");
+
     // register static variables before they become available to the server
     aConReg.BindStaticItems();
 
@@ -87,15 +89,24 @@ GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegist
 }
 
 // cxx symbol
+
+// These two are windows specific implementation details, since all symbols & insances are private there, so we must hand over
+// the control.
+// if not compiling with -fvisibility=hidden, hide these
+
 GS_EXPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
+    //#ifdef _WIN32
     spdlog::set_default_logger(std::move(aLogger));
+    //#endif
 }
 
 GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
+    //#ifdef _WIN32
     // yes this needs to be here, else the dedirunner dies
     spdlog::register_logger(std::move(aLogger));
+    //#endif
 }
 
 #ifdef _WIN32

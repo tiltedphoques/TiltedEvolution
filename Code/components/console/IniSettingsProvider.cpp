@@ -18,15 +18,6 @@ namespace Console
 {
 namespace
 {
-static void ShittyFileWriteThisNeedsToGo(const std::filesystem::path& path, const std::string& data)
-{
-    // TODO: Get rid of this, its horrible.
-    std::ofstream myfile(path.c_str());
-    myfile << data.c_str();
-    myfile.flush();
-    myfile.close();
-}
-
 template <typename T, typename TVal>
 static SI_Error SetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TVal a_nValue,
                             const T* a_pComment = nullptr)
@@ -120,7 +111,8 @@ void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath
     error = ini.Save(buf, true);
     BASE_ASSERT(error == SI_Error::SI_OK, "Saving the ini failed");
 
-    ShittyFileWriteThisNeedsToGo(aPath, buf);
+    // TODO(Vince): eventually we shall burn the ini library
+    TiltedPhoques::SaveFile(aPath, TiltedPhoques::String(buf));
 }
 
 void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath)

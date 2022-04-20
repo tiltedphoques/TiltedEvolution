@@ -97,7 +97,7 @@ void DediRunner::StartTerminalIO()
             std::getline(std::cin, s);
 
             exr r{exr::kFailure};
-            if ((r = m_console.TryExecuteCommand(s)) != exr::kFailure)
+            if (r = m_console.TryExecuteCommand(s); r != exr::kFailure)
             {
                 // we take the opportunity here and insert it directly
                 // else we will be lacking it, and we want to avoid testing the queue size after

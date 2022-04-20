@@ -12,6 +12,9 @@ local function build_server()
     if is_plat("windows") then
         add_files("server.rc")
     end
+    if is_plat("linux") then
+        add_cxxflags("-fvisibility=hidden")
+    end
     add_deps(
         "CommonLib",
         "Console",

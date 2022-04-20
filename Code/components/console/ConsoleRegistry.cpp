@@ -63,6 +63,8 @@ ConsoleRegistry::~ConsoleRegistry() = default;
 
 void ConsoleRegistry::BindStaticItems()
 {
+    spdlog::info("ConsoleRegistry::BindStaticItems()");
+
     auto* i = CommandBase::ROOT();
     CommandBase::ROOT() = nullptr;
     while (i)
@@ -86,6 +88,8 @@ void ConsoleRegistry::BindStaticItems()
 
 void ConsoleRegistry::RegisterNatives()
 {
+    spdlog::info("ConsoleRegistry::RegisterNatives()");
+
     RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
         m_out->info("<------Commands-({})--->", m_commands.size());
         for (CommandBase* c : m_commands)

@@ -109,21 +109,13 @@ static bool RegisterQuitHandler()
     return true;
 }
 
-static void ShittyFileWrite(const std::filesystem::path& aPath, const char* const acData)
-{
-    // TODO: Get rid of this, its horrible.
-    std::ofstream myfile(aPath.c_str());
-    myfile << acData;
-    myfile.close();
-}
-
 static bool IsEULAAccepted()
 {
     const auto path = fs::current_path() / kConfigPathName / kEULAName;
     if (!exists(path))
     {
         fs::create_directory(fs::current_path() / kConfigPathName);
-        ShittyFileWrite(path, kEULAText);
+        TiltedPhoques::SaveFile(path, kEULAText);
         return false;
     }
 

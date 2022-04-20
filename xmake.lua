@@ -3,6 +3,14 @@ set_xmakever("2.6.2")
 -- c code will use c99,
 set_languages("c99", "cxx20")
 
+if is_plat("windows") then
+    add_cxflags("/bigobj")
+end
+
+if is_plat("linux") then
+    add_cxflags("-fPIC")
+end
+
 set_arch("x64")
 set_warnings("all")
 add_vectorexts("sse", "sse2", "sse3", "ssse3")
@@ -16,14 +24,6 @@ if has_config("unitybuild") then
 end
 
 add_requires("entt", "recastnavigation")
-
-if is_plat("windows") then
-    add_cxflags("/bigobj")
-end
-
-if is_plat("linux") then
-    add_ldflags("-fPIC")
-end
 
 before_build(function (target)
     import("modules.version")
@@ -86,6 +86,8 @@ task("upload-symbols")
             if not linux then
                 local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogetherServer.pdb")
                 os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
+
+                ile_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogetherServer.pdb")
             end
 
         else
