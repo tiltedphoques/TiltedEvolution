@@ -19,6 +19,8 @@
 
 #include <imgui.h>
 
+#define DEBUG_SCRIPTS 0
+
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService, TransportService& aTransportService) noexcept
     : ScriptStore(false)
     , m_dispatcher(aDispatcher)
@@ -59,6 +61,7 @@ void ScriptService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
 void ScriptService::OnDraw() noexcept
 {
+#if DEBUG_SCRIPTS
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
         return;
@@ -87,6 +90,7 @@ void ScriptService::OnDraw() noexcept
     }
     
     ImGui::End();
+#endif
 }
 
 void ScriptService::OnScripts(const Scripts& acScripts) noexcept

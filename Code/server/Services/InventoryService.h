@@ -7,6 +7,7 @@ struct UpdateEvent;
 struct RequestObjectInventoryChanges;
 struct RequestInventoryChanges;
 struct RequestEquipmentChanges;
+struct DrawWeaponRequest;
 struct PlayerLeaveCellEvent;
 
 class InventoryService
@@ -16,6 +17,7 @@ public:
 
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept;
     void OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept;
+    void OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept;
 
 private:
 
@@ -23,4 +25,5 @@ private:
 
     entt::scoped_connection m_inventoryChangeConnection;
     entt::scoped_connection m_equipmentChangeConnection;
+    entt::scoped_connection m_drawWeaponConnection;
 };

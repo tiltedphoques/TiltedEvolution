@@ -2,14 +2,22 @@
 
 struct ActorValueOwner
 {
+    enum class ForceMode : uint32_t
+    {
+        PERMANENT = 0,
+        TEMPORARY = 1,
+        DAMAGE = 2,
+        COUNT = 3,
+    };
+
     virtual ~ActorValueOwner();
 
     virtual float GetValue(uint32_t aId) const noexcept;
-    virtual float GetMaxValue(uint32_t aId) const noexcept;
-    virtual float GetBaseValue(uint32_t aId);
-    virtual void sub_4();
-    virtual void sub_5();
-    virtual void ForceCurrent(uint32_t aMode, uint32_t aId, float aValue); // Pass 0 for aUnk1 in force, 2 in restore
+    virtual float GetPermanentValue(uint32_t aId) const noexcept;
+    virtual float GetBaseValue(uint32_t aId) const noexcept;
+    virtual void SetBaseValue(uint32_t aId);
+    virtual void ModValue(uint32_t aId, float aValue);
+    virtual void ForceCurrent(ForceMode aMode, uint32_t aId, float aValue);
     virtual void SetValue(uint32_t aId, float aValue) noexcept;
-    virtual void sub_8();
+    virtual bool IsPlayerOwner();
 };

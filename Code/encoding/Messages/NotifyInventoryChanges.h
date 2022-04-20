@@ -20,10 +20,10 @@ struct NotifyInventoryChanges final : ServerMessage
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
                Item == acRhs.Item &&
-               DropOrPickUp == acRhs.DropOrPickUp;
+               Drop == acRhs.Drop;
     }
     
     uint32_t ServerId{};
     Inventory::Entry Item{};
-    bool DropOrPickUp = false;
+    bool Drop = false;
 };

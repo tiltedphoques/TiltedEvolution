@@ -20,6 +20,8 @@
 #include <console/IniSettingsProvider.h>
 #include <console/StringTokenizer.h>
 
+#include <CrashHandler.h>
+
 constexpr char kSettingsFileName[] =
 #if SKYRIM
     "STServer.ini"
@@ -272,6 +274,8 @@ static bool IsEULAAccepted()
 
 int main(int argc, char** argv)
 {
+    InstallCrashHandler(true);
+
     LogInstance logInstance;
     (void)logInstance;
 
@@ -290,6 +294,8 @@ int main(int argc, char** argv)
         cpRunner->StartTerminalIO();
     }
     cpRunner->RunGSThread();
+
+    UninstallCrashHandler();
 
     return 0;
 }

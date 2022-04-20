@@ -102,7 +102,7 @@ struct Actor : TESObjectREFR
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
     float GetActorValue(uint32_t aId) const noexcept;
-    float GetActorMaxValue(uint32_t aId) const noexcept;
+    float GetActorPermanentValue(uint32_t aId) const noexcept;
     void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
 
     // Setters
