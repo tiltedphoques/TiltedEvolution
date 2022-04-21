@@ -46,7 +46,7 @@ struct Actor : TESObjectREFR
     virtual void sub_A8();
     virtual void SetPosition(const NiPoint3& acPoint, bool aSyncHavok = true);
     virtual void sub_AA();
-    virtual void Resurrect(bool aResetInventory);
+    virtual void Resurrect(bool aResetInventory, bool aAttach3D);
     virtual void sub_AC();
     virtual void sub_AD();
     virtual void sub_AE();

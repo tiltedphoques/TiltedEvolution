@@ -28,6 +28,8 @@
 #include <Magic/ActorMagicCaster.h>
 #include <Misc/BSFixedString.h>
 #include <Structs/ActionEvent.h>
+#include <Components/BGSEncounterZone.h>
+#include <ExtraData/ExtraEncounterZone.h>
 
 #include <Components.h>
 #include <World.h>
@@ -138,7 +140,37 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(0x9716), TESForm, TESObjectCELL);
+            /*
+            auto* pEncounterZone = RTTI_CAST(PlayerCharacter::Get()->parentCell->extraDataList.GetByType(ExtraData::EncounterZone),
+                                             BSExtraData, ExtraEncounterZone);
+            auto* pActor = RTTI_CAST(TESForm::GetById(0x1ebf0), TESForm, TESObjectREFR);
+            auto* pEncounterZone = pActor->GetEncounterZone();
+
+            if (pEncounterZone)
+                spdlog::warn("Encounter zone: {:X}", pEncounterZone->formID);
+            else
+                spdlog::error("No encounter zone");
+            */
+
+            TP_THIS_FUNCTION(TRecalcLeveledActor, void, Actor, uint32_t);
+            POINTER_SKYRIMSE(TRecalcLeveledActor, s_recalcLeveledActor, 37323);
+            auto* pActor = RTTI_CAST(TESForm::GetById(0x1ebf0), TESForm, Actor);
+            ThisCall(s_recalcLeveledActor, pActor, 0xFFFFFFFF);
+
+            pActor->Resurrect(false, false);
+
+            TP_THIS_FUNCTION(TQueueRef, void, void, TESObjectREFR*, uint64_t, bool);
+            POINTER_SKYRIMSE(TQueueRef, s_queueRef, 13057);
+
+            POINTER_SKYRIMSE(void*, s_modelLoader, 400332);
+
+            ThisCall(s_queueRef, *s_modelLoader.Get(), pActor, 1, false);
+
+            /*
+            TP_THIS_FUNCTION(TSet3D, void, Actor, uint64_t, uint64_t);
+            POINTER_SKYRIMSE(TSet3D, s_set3D, 12358);
+            ThisCall(s_set3D, pActor, 0, 1);
+            */
         }
     }
     else

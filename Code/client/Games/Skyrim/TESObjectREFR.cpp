@@ -465,6 +465,13 @@ Inventory TESObjectREFR::GetEquippedItems() const noexcept
     return inventory;
 }
 
+BGSEncounterZone* TESObjectREFR::GetEncounterZone() noexcept
+{
+    TP_THIS_FUNCTION(TGetEncounterZone, BGSEncounterZone*, TESObjectREFR);
+    POINTER_SKYRIMSE(TGetEncounterZone, s_getEncounterZone, 20202);
+    return ThisCall(s_getEncounterZone, this);
+}
+
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for {:X}", formID);

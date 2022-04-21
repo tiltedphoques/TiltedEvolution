@@ -1,9 +1,11 @@
 #pragma once
 
 #include <Forms/TESForm.h>
+#include <Games/ExtraDataList.h>
 
 struct TESObjectREFR;
 struct TESWorldSpace;
+struct BGSEncounterZone;
 
 struct TESObjectCELL : TESForm
 {
@@ -11,7 +13,9 @@ struct TESObjectCELL : TESForm
 
     uint8_t pad20[0x40 - 0x20];
     uint8_t cellFlags[5];
-    uint8_t pad45[0x88 - 0x45];
+    uint8_t pad45[0x48 - 0x45];
+    ExtraDataList extraDataList;
+    uint8_t pad60[0x88 - 0x60];
 
     struct ReferenceData
     {
@@ -40,11 +44,17 @@ struct TESObjectCELL : TESForm
         }
     };
 
+    struct LOADED_CELL_DATA
+    {
+        uint8_t pad0[0x160];
+        BGSEncounterZone* pEncounterZone;
+    };
+
     ReferenceData refData;
     uint8_t unkB0[0x118 - 0xB0];
     BSRecursiveLock lock;
     TESWorldSpace* worldspace;
-
+    LOADED_CELL_DATA* pCellData;
 
     bool IsValid() const
     {

@@ -25,6 +25,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
+#include <Components/BGSEncounterZone.h>
 #include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
@@ -666,6 +667,20 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
     return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
+TP_THIS_FUNCTION(TGetCalcedZonelevel, uint16_t, BGSEncounterZone);
+static TGetCalcedZonelevel* RealGetCalcedZoneLevel = nullptr;
+
+uint16_t TP_MAKE_THISCALL(HookGetCalcedZoneLevel, BGSEncounterZone)
+{
+    if (apThis->Data.cMaxLevel != 0)
+    {
+        spdlog::error("Zone: {:X}, Max level: {}", apThis->formID, apThis->Data.cMaxLevel);
+        return apThis->Data.cMaxLevel;
+    }
+
+    return ThisCall(RealGetCalcedZoneLevel, apThis);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -692,6 +707,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
         POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
 
+        POINTER_SKYRIMSE(TGetCalcedZonelevel, s_getCalcedZoneLevel, 18198);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -700,6 +717,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
+        RealGetCalcedZoneLevel = s_getCalcedZoneLevel.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -709,5 +727,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealLockChange, HookLockChange);
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
+        TP_HOOK(&RealGetCalcedZoneLevel, HookGetCalcedZoneLevel);
     });
 

@@ -16,6 +16,7 @@ struct AnimationVariables;
 struct TESWorldSpace;
 struct TESBoundObject;
 struct TESContainer;
+struct BGSEncounterZone;
 
 enum class ITEM_REMOVE_REASON
 {
@@ -134,7 +135,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_87();
     virtual void sub_88();
     virtual void DisableImpl();
-    virtual void sub_8A();
+    virtual void ResetInventory(bool aLeveledOnly);
     virtual void sub_8B();
     virtual void sub_8C();
     virtual void sub_8D();
@@ -162,6 +163,7 @@ struct TESObjectREFR : TESForm
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
+    BGSEncounterZone* GetEncounterZone() noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
