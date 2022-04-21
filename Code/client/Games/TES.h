@@ -155,7 +155,9 @@ struct ModManager
 #if TP_FALLOUT4
     uint8_t pad0[0xFB0];
 #elif TP_SKYRIM
-    uint8_t pad0[0xD60];
+    uint8_t pad0[0x10];
+    GameArray<TESForm*> forms[0x8A];
+    uint8_t padD00[0xD60 - 0xD00];
 #endif
 
     GameList<Mod> mods;

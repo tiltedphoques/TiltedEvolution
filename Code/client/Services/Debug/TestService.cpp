@@ -137,6 +137,8 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+
+            TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(0x9716), TESForm, TESObjectCELL);
         }
     }
     else
