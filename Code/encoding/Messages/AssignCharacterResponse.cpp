@@ -8,8 +8,12 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Position.Serialize(aWriter);
     CellId.Serialize(aWriter);
     AllActorValues.Serialize(aWriter);
+    aWriter.WriteBits(ChangeFlags, 32);
+    Serialization::WriteString(aWriter, AppearanceBuffer);
+    FaceTints.Serialize(aWriter);
     Serialization::WriteBool(aWriter, IsDead);
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
+    Serialization::WriteBool(aWriter, IsLeveledActor);
 }
 
 void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -20,6 +24,15 @@ void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     Position.Deserialize(aReader);
     CellId.Deserialize(aReader);
     AllActorValues.Deserialize(aReader);
+
+    uint64_t dest = 0;
+    aReader.ReadBits(dest, 32);
+    ChangeFlags = dest & 0xFFFFFFFF;
+
+    AppearanceBuffer = Serialization::ReadString(aReader);
+    FaceTints.Deserialize(aReader);
+
     IsDead = Serialization::ReadBool(aReader);
     IsWeaponDrawn = Serialization::ReadBool(aReader);
+    IsLeveledActor = Serialization::ReadBool(aReader);
 }

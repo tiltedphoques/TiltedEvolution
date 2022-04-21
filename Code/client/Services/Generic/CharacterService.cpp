@@ -262,6 +262,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->GetExtension()->SetRemote(true);
 
+        if (acMessage.IsLeveledActor)
+        {
+            TESNPC* pLeveledNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+            FaceGenSystem::Setup(m_world, cEntity, acMessage.FaceTints);
+            pActor->SetLeveledActor(pLeveledNpc);
+        }
+
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
 
@@ -1003,17 +1010,20 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.Rotation.y = pActor->rotation.z;
 
     // Serialize the base form
-    const auto isPlayer = (formIdComponent.Id == 0x14);
-    const auto isTemporary = pActor->formID >= 0xFF000000;
+    const bool isPlayer = (formIdComponent.Id == 0x14);
+    const bool isTemporary = pActor->formID >= 0xFF000000;
+    const bool isLeveled = pActor->extraData.Contains(ExtraData::LeveledCreature);
 
-    if(isPlayer)
+    message.IsLeveledActor = isLeveled;
+
+    if (isPlayer)
     {
         pNpc->MarkChanged(0x2000800);
     }
 
     const auto changeFlags = pNpc->GetChangeFlags();
 
-    if(isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
+    if (isPlayer || isLeveled || pNpc->formID >= 0xFF000000 || changeFlags != 0)
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
@@ -1075,7 +1085,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.IsDead = pActor->IsDead();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if(isTemporary)
+    if (isTemporary)
     {
         if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, message.FormId))
             return;

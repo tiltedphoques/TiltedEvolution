@@ -18,4 +18,5 @@ struct CharacterComponent
     bool IsDead{};
     bool IsPlayer{};
     bool IsWeaponDrawn{};
+    bool IsLeveledActor{};
 };

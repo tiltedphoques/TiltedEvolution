@@ -140,6 +140,9 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            auto* pActor = RTTI_CAST(TESForm::GetById(0x1ebf0), TESForm, Actor);
+            spdlog::error("BaseId: {:X}", pActor->baseForm->formID);
+
             /*
             auto* pEncounterZone = RTTI_CAST(PlayerCharacter::Get()->parentCell->extraDataList.GetByType(ExtraData::EncounterZone),
                                              BSExtraData, ExtraEncounterZone);
@@ -154,7 +157,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             TP_THIS_FUNCTION(TRecalcLeveledActor, void, Actor, uint32_t);
             POINTER_SKYRIMSE(TRecalcLeveledActor, s_recalcLeveledActor, 37323);
-            auto* pActor = RTTI_CAST(TESForm::GetById(0x1ebf0), TESForm, Actor);
             ThisCall(s_recalcLeveledActor, pActor, 0xFFFFFFFF);
 
             pActor->Resurrect(false, false);
@@ -166,11 +168,11 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             ThisCall(s_queueRef, *s_modelLoader.Get(), pActor, 1, false);
 
-            /*
+            #if 0
             TP_THIS_FUNCTION(TSet3D, void, Actor, uint64_t, uint64_t);
             POINTER_SKYRIMSE(TSet3D, s_set3D, 12358);
             ThisCall(s_set3D, pActor, 0, 1);
-            */
+            #endif
         }
     }
     else

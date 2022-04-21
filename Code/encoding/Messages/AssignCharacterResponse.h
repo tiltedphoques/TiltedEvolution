@@ -19,15 +19,19 @@ struct AssignCharacterResponse final : ServerMessage
 
     bool operator==(const AssignCharacterResponse& achRhs) const noexcept
     {
-        return Owner == achRhs.Owner &&
+        return GetOpcode() == achRhs.GetOpcode() &&
+               Owner == achRhs.Owner &&
                Cookie == achRhs.Cookie &&
                ServerId == achRhs.ServerId &&
                Position == achRhs.Position &&
                CellId == achRhs.CellId &&
                AllActorValues == achRhs.AllActorValues &&
+               ChangeFlags == achRhs.ChangeFlags &&
+               AppearanceBuffer == achRhs.AppearanceBuffer &&
+               FaceTints == achRhs.FaceTints &&
                IsDead == achRhs.IsDead &&
                IsWeaponDrawn == achRhs.IsWeaponDrawn &&
-               GetOpcode() == achRhs.GetOpcode();
+               IsLeveledActor == achRhs.IsLeveledActor;
     }
 
     bool Owner{ false };
@@ -36,6 +40,10 @@ struct AssignCharacterResponse final : ServerMessage
     Vector3_NetQuantize Position{};
     GameId CellId{};
     ActorValues AllActorValues{};
+    uint32_t ChangeFlags{};
+    String AppearanceBuffer{};
+    Tints FaceTints{};
     bool IsDead{};
     bool IsWeaponDrawn{};
+    bool IsLeveledActor{};
 };

@@ -382,6 +382,45 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
 
+void Actor::SetLeveledActor(TESNPC* apBaseForm) noexcept
+{
+    /*
+    TP_THIS_FUNCTION(TRecalcLeveledActor, void, Actor, uint32_t);
+    POINTER_SKYRIMSE(TRecalcLeveledActor, s_recalcLeveledActor, 37323);
+    ThisCall(s_recalcLeveledActor, pActor, 0xFFFFFFFF);
+    */
+
+    Set3D(nullptr, true);
+
+    TESForm* pOldBaseForm = baseForm;
+
+    SetBaseForm(apBaseForm);
+
+    TP_THIS_FUNCTION(TGCDelete, void, void, TESForm*);
+    POINTER_SKYRIMSE(TGCDelete, s_GCDelete, 36460);
+    POINTER_SKYRIMSE(void*, s_garbageCollector, 400329);
+    ThisCall(s_GCDelete, *s_garbageCollector.Get(), pOldBaseForm);
+
+    // TODO: TESObjectREFR::SetLeveledCreature(0, 0)?
+
+    Resurrect(false, false);
+
+    // TODO: TESObjectREFR::ResetInventory()?
+
+    TP_THIS_FUNCTION(TQueueRef, void, void, TESObjectREFR*, uint64_t, bool);
+    POINTER_SKYRIMSE(TQueueRef, s_queueRef, 13057);
+    POINTER_SKYRIMSE(void*, s_modelLoader, 400332);
+    // TODO: instead of '1', get actual cell priority stuff
+    ThisCall(s_queueRef, *s_modelLoader.Get(), this, 1, false);
+}
+
+void Actor::Set3D(NiAVObject* apObject, bool aQueue3DTasks) noexcept
+{
+    TP_THIS_FUNCTION(TSet3D, void, Actor, NiAVObject*, bool);
+    POINTER_SKYRIMSE(TSet3D, s_set3D, 12358);
+    ThisCall(s_set3D, this, apObject, aQueue3DTasks);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 

@@ -26,7 +26,7 @@ struct CharacterSpawnRequest final : ServerMessage
 
     bool operator==(const CharacterSpawnRequest& acRhs) const noexcept
     {
-        return
+        return GetOpcode() == acRhs.GetOpcode() &&
             ServerId == acRhs.ServerId &&
             FormId == acRhs.FormId &&
             BaseId == acRhs.BaseId &&
@@ -40,7 +40,7 @@ struct CharacterSpawnRequest final : ServerMessage
             FaceTints == acRhs.FaceTints &&
             IsDead == acRhs.IsDead &&
             IsWeaponDrawn == acRhs.IsWeaponDrawn &&
-            GetOpcode() == acRhs.GetOpcode();
+            IsLeveledActor == acRhs.IsLeveledActor;
     }
 
     uint32_t ServerId{};
@@ -59,4 +59,5 @@ struct CharacterSpawnRequest final : ServerMessage
     bool IsDead{};
     bool IsPlayer{};
     bool IsWeaponDrawn{};
+    bool IsLeveledActor{};
 };

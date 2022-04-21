@@ -74,6 +74,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->IsDead = characterComponent.IsDead;
     apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+    apSpawnRequest->IsLeveledActor = characterComponent.IsLeveledActor;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -209,8 +210,12 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
             response.IsDead = characterComponent.IsDead;
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+            response.IsLeveledActor = characterComponent.IsLeveledActor;
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
+            response.AppearanceBuffer = message.AppearanceBuffer;
+            response.ChangeFlags = message.ChangeFlags;
+            response.FaceTints = message.FaceTints;
 
             acMessage.pPlayer->Send(response);
             return;
@@ -557,7 +562,8 @@ void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceR
     if (!partyComponent.JoinedPartyId.has_value())
         return;
 
-    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+    spdlog::debug("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
 
@@ -606,6 +612,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.IsDead = message.IsDead;
     characterComponent.IsPlayer = isPlayer;
     characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
+    characterComponent.IsLeveledActor = message.IsLeveledActor;
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -640,6 +647,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
+    // TODO: should this be here?
     response.AllActorValues = message.AllActorValues;
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);

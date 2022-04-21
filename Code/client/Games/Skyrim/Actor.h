@@ -209,6 +209,8 @@ struct Actor : TESObjectREFR
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetActorInventory(Inventory& aInventory) noexcept;
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
+    void SetLeveledActor(TESNPC* apBaseForm) noexcept;
+    void Set3D(NiAVObject* apObject, bool aQueue3DTasks) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
