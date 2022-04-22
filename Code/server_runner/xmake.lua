@@ -29,7 +29,8 @@ local function build_runner()
     add_packages(
         "tiltedcore",
         "spdlog",
-        "hopscotch-map")
+        "hopscotch-map",
+        "sentry-native")
     add_defines("SPDLOG_HEADER_ONLY")
 end
 
