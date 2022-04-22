@@ -34,9 +34,6 @@ local function build_runner()
 end
 
 target("SkyrimServerRunner")
-    if is_plat("windows") then
-        add_ldflags("/PDB:$(TargetDir)SkyrimServerRunner.pdb")
-    end
     set_basename("SkyrimTogetherServer")
     add_defines(
         "TARGET_ST",

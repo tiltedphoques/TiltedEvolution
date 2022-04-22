@@ -40,6 +40,7 @@ local function build_server()
 end
 
 target("SkyrimTogetherServer")
+    set_basename("STServer")
     add_defines(
         "TARGET_ST",
         "TP_SKYRIM=1",

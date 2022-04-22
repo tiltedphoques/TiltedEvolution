@@ -73,7 +73,6 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
     return std::strcmp(apBuildTag, kBuildTag) == 0;
 }
 
-// memory is owned by the game server, use destroy to ensure destruction
 GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, void* apUserPointer,
                                                           void (*apCallback)(void*))
 {
