@@ -67,24 +67,25 @@ task("upload-symbols")
             config.load()
 
             local sentrybin = path.join(os.projectdir(), "build", "sentry-cli.exe")
-            local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogether.pdb")
-            if linux then
-                file_path = path.join(os.projectdir(), "build", "linux", "x64", "SkyrimTogetherServer.debug")
-            end
-            
             if not os.exists(sentrybin) then 
                 http.download("https://github.com/getsentry/sentry-cli/releases/download/2.0.2/sentry-cli-Windows-x86_64.exe", sentrybin)
             end
-            
-            local project = "st-reborn"
+
             if linux then
-                project = "st-server"
+                -- linux server bins
+                local file_path = path.join(os.projectdir(), "build", "linux", "x64", "SkyrimTogetherServer.debug")
+                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
+
+                file_path = path.join(os.projectdir(), "build", "linux", "x64", "libSTServer.debug")
+                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
             end
 
-            os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", project, file_path})
-
+            -- windows bins
             if not linux then
-                local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogetherServer.pdb")
+                local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogether.pdb")
+                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-reborn", file_path})
+
+                file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogetherServer.pdb")
                 os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
 
                 file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "STServer.pdb")
