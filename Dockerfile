@@ -24,8 +24,9 @@ export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
 xmake config -y && \
 xmake -j8 && \
-objcopy --only-keep-debug /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/build/linux/x64/release/SkyrimTogetherServer.debug
+objcopy --only-keep-debug /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/build/linux/x64/release/SkyrimTogetherServer.debug && \
 objcopy --only-keep-debug /home/server/build/linux/x64/release/libSTServer.so /home/server/build/linux/x64/release/libSTServer.debug
+
 RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
 export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
