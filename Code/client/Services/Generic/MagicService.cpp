@@ -106,7 +106,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
     }
 
     // only sync concentration spells through spell cast sync, the rest through projectile sync for accuracy
-    if (SpellItem* pSpell = RTTI_CAST(acSpellCastEvent.pSpell, MagicItem, SpellItem))
+    if (SpellItem* pSpell = Cast<SpellItem>(acSpellCastEvent.pSpell))
     {
         if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
         {
@@ -176,7 +176,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
     TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    Actor* pActor = Cast<Actor>(pForm);
 
     pActor->GenerateMagicCasters();
 
@@ -202,7 +202,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
             return;
         }
         else
-            pSpell = RTTI_CAST(pSpellForm, TESForm, MagicItem);
+            pSpell = Cast<MagicItem>(pSpellForm);
     }
     else
     {
@@ -237,7 +237,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     }
 
-    TESObjectREFR* pDesiredTarget = RTTI_CAST(pDesiredTargetForm, TESForm, TESObjectREFR);
+    TESObjectREFR* pDesiredTarget = Cast<TESObjectREFR>(pDesiredTargetForm);
 
     switch (acMessage.CastingSource)
     {
@@ -300,7 +300,7 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
     const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    Actor* pActor = Cast<Actor>(pForm);
 
     pActor->InterruptCast(false);
 
@@ -356,7 +356,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
 #if TP_SKYRIM64
-    Actor* pActor = GetByServerId(Actor, acMessage.TargetId);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
         return;
 
@@ -368,7 +368,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
         return;
     }
 
-    MagicItem* pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+    MagicItem* pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
     if (!pSpell)
     {
         spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cSpellId);

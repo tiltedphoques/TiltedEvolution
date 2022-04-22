@@ -243,7 +243,7 @@ void ScriptService::DisplayEntities() noexcept
     for(auto it : entities)
     {
         auto& formComponent = view.get<FormIdComponent>(it);
-        const auto pActor = RTTI_CAST(TESForm::GetById(formComponent.Id), TESForm, Actor);
+        const auto pActor = Cast<Actor>(TESForm::GetById(formComponent.Id));
 
         if (!pActor || !pActor->baseForm)
             continue;
@@ -289,7 +289,7 @@ void ScriptService::DisplayObjects() noexcept
     for(auto it : entities)
     {
         auto& formComponent = view.get<FormIdComponent>(it);
-        const auto pRefr = RTTI_CAST(TESForm::GetById(formComponent.Id), TESForm, TESObjectREFR);
+        const auto pRefr = Cast<TESObjectREFR>(TESForm::GetById(formComponent.Id));
 
         if (!pRefr || !pRefr->baseForm)
             continue;
@@ -348,7 +348,7 @@ void ScriptService::DisplayFormComponent(FormIdComponent& aFormComponent) const 
     if (!ImGui::CollapsingHeader("Form Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
 
-    const auto pActor = RTTI_CAST(TESForm::GetById(aFormComponent.Id), TESForm, Actor);
+    const auto pActor = Cast<Actor>(TESForm::GetById(aFormComponent.Id));
 
     if (!pActor)
         return;

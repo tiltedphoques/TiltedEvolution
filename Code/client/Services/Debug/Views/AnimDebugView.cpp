@@ -49,7 +49,7 @@ void TestService::DrawAnimDebugView()
         {
             auto* pFetchForm = TESForm::GetById(fetchFormId);
             if (pFetchForm)
-                pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+                pActor = Cast<Actor>(pFetchForm);
         }
 
         s_values.clear();

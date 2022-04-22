@@ -19,7 +19,7 @@ BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apR
     TP_ASSERT(result, "No projectile handle returned.");
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
-    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    Projectile* pProjectile = Cast<Projectile>(pObject);
     
     TP_ASSERT(pProjectile, "No projectile found.");
 
@@ -33,7 +33,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
     // sync concentration spells through spell cast sync, the rest through projectile sync
     if (arData.pSpell)
     {
-        if (auto* pSpell = RTTI_CAST(arData.pSpell, MagicItem, SpellItem))
+        if (auto* pSpell = Cast<SpellItem>(arData.pSpell))
         {
             if (pSpell->eCastingType == MagicSystem::CastingType::CONCENTRATION)
             {
@@ -44,7 +44,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 
     if (arData.pShooter)
     {
-        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(arData.pShooter);
         if (pActor)
         {
             ActorExtension* pExtendedActor = pActor->GetExtension();
@@ -90,7 +90,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
     TP_ASSERT(result, "No projectile handle returned.");
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
-    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    Projectile* pProjectile = Cast<Projectile>(pObject);
     
     TP_ASSERT(pProjectile, "No projectile found.");
 

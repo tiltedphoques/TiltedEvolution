@@ -46,7 +46,7 @@ void CommandService::OnTeleportCommandResponse(const TeleportCommandResponse& ac
     auto& modSystem = m_world.GetModSystem();
 
     const uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
-    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(cellId), TESForm, TESObjectCELL);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
     if (!pCell)
     {
         spdlog::error("Failed to fetch cell to teleport to.");

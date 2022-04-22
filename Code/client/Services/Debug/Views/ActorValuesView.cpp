@@ -6,7 +6,7 @@
 
 void TestService::DrawActorValuesView()
 {
-    Actor* pActor = RTTI_CAST(TESForm::GetById(m_formId), TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(m_formId));
     if (!pActor)
         return;
 
