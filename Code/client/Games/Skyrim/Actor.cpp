@@ -200,7 +200,7 @@ Factions Actor::GetFactions() const noexcept
 
     auto& modSystem = World::Get().GetModSystem();
 
-    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    auto* pNpc = Cast<TESNPC>(baseForm);
     if (pNpc)
     {
         auto& factions = pNpc->actorData.factions;
@@ -216,7 +216,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pChanges = RTTI_CAST(extraData.GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraData::Faction));
     if (pChanges)
     {
         for (auto i = 0u; i < pChanges->entries.length; ++i)
@@ -354,8 +354,8 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.NpcFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -364,8 +364,8 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.ExtraFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -442,22 +442,22 @@ void Actor::GenerateMagicCasters() noexcept
     if (!leftHandCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-        leftHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        leftHandCaster = Cast<ActorMagicCaster>(pCaster);
     }
     if (!rightHandCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-        rightHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        rightHandCaster = Cast<ActorMagicCaster>(pCaster);
     }
     if (!shoutCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
-        shoutCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        shoutCaster = Cast<ActorMagicCaster>(pCaster);
     }
     if (!instantCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
-        instantCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        instantCaster = Cast<ActorMagicCaster>(pCaster);
     }
 }
 
@@ -496,7 +496,7 @@ static TForceState* RealForceState = nullptr;
 void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float aX, float aZ,
                       TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
 {
-    /*const auto pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    /*const auto pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
     {
         spdlog::info("For TESNPC: {}, spawn at {} {} {}", pNpc->fullName.value, apPosition->m_x, apPosition->m_y,
@@ -515,7 +515,7 @@ static TSpawnActorInWorld* RealSpawnActorInWorld = nullptr;
 // TODO: this isn't SpawnActorInWorld, this is TESObjectREFR::UpdateReference3D()
 bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 {
-    const auto* pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    const auto* pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
     {
         spdlog::info("Spawn Actor: {:X}, and NPC {}", apThis->formID, pNpc->fullName.value);
@@ -570,7 +570,7 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1)
 {
-    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+    const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
     if (pValueModEffect)
     {
@@ -695,8 +695,8 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
 
     if (pOwner && pTarget)
     {
-        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
-        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+        auto pTargetActor = Cast<Actor>(pTarget);
         if (pOwnerActor && pTargetActor)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())

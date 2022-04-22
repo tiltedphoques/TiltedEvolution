@@ -33,7 +33,7 @@ void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>
     notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
 
     // TODO: std regex is slow
-    std::regex escapeHtml{"<[^>]+>\s+(?=<)|<[^>]+>"};
+    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
     GameServer::Get()->SendToPlayers(notifyMessage);

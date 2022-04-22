@@ -137,7 +137,7 @@ void TestService::DrawComponentDebugView()
 
     if (m_drawComponentsInWorldSpace && g_SelectedForm)
     {
-        if (auto* pObject = RTTI_CAST(g_SelectedForm, TESForm, TESObjectREFR))
+        if (auto* pObject = Cast<TESObjectREFR>(g_SelectedForm))
         {
             ImVec2 screenPos{};
             if (DrawInWorldSpace(pObject, screenPos))

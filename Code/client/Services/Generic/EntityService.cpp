@@ -27,7 +27,7 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
     {
         if (acEvent.FormId == 0x14)
         {
-            Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
+            Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
             pActor->GetExtension()->SetPlayer(true);
         }
 
@@ -41,7 +41,7 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
 
         if (it != std::end(view))
         {
-            Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.FormId), TESForm, Actor);
+            Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
             pActor->GetExtension()->SetRemote(true);
 
             entity = *it;

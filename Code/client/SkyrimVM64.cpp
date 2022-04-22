@@ -7,7 +7,7 @@ extern std::unique_ptr<TiltedOnlineApp> g_appInstance;
 
 #include <GameVM.h>
 
-class Main;
+struct Main;
 struct VMContext
 {
     char pad[0x680];

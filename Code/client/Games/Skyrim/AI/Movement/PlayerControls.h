@@ -25,9 +25,8 @@ struct PlayerControlsData
     std::uint16_t unk2E;   // 2E
 };
 
-class PlayerControls
+struct PlayerControls
 {
-  public:
     PlayerControls* GetInstance();
 
     void SetBlockPlayerInput(bool abFlag)
@@ -35,7 +34,7 @@ class PlayerControls
         bBlockPlayerInput = abFlag;
     }
 
-  public:
+public:
     char pad0[0x20];
     PlayerControlsData Data;
     std::uint32_t pad054;                   // 054

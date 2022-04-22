@@ -63,7 +63,6 @@ extern void* RipAllocateN(size_t blockLength);
 #include <filesystem>
 #include <fstream>
 
-#include <Utils.h>
 #include <BuildInfo.h>
 #include <Games/Primitives.h>
 
@@ -98,5 +97,6 @@ using namespace std::chrono_literals;
 
 #include "Components.h"
 
+#include <Utils.h>
 #include <RTTI.h>
 

@@ -94,7 +94,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
             // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
-            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
 
@@ -182,7 +182,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 return;
 
             // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
-            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
 

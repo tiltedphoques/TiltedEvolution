@@ -113,7 +113,7 @@ void TransportService::OnConnected()
     // null if discord is not active
     // TODO: think about user opt out
     request.DiscordId = m_world.ctx<DiscordService>().GetUser().id;
-    auto* pNpc = RTTI_CAST(PlayerCharacter::Get()->baseForm, TESForm, TESNPC);
+    auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm);
     if (pNpc)
     {
         request.Username = pNpc->fullName.value.AsAscii();

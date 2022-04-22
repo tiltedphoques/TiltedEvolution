@@ -28,7 +28,7 @@ void TestService::DrawFormDebugView()
         {
             pFetchForm = TESForm::GetById(formId);
             if (pFetchForm)
-                pRefr = RTTI_CAST(pFetchForm, TESForm, TESObjectREFR);
+                pRefr = Cast<TESObjectREFR>(pFetchForm);
         }
     }
 

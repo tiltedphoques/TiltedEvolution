@@ -92,7 +92,7 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
         return;
 
-    TESObjectCELL* pCell = RTTI_CAST(TESForm::GetById(pPlayer->parentCell->formID), TESForm, TESObjectCELL);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(pPlayer->parentCell->formID));
     if (!pCell)
         return;
 
@@ -133,7 +133,7 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
         if (cObjectId == 0)
             continue;
 
-        TESObjectREFR* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+        TESObjectREFR* pObject = Cast<TESObjectREFR>(TESForm::GetById(cObjectId));
         if (!pObject)
             continue;
 
@@ -232,7 +232,7 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
 
 void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
-    Actor* pActor = GetByServerId(Actor, acMessage.ActivatorId);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActivatorId);
     if (!pActor)
         return;
 
@@ -243,7 +243,7 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
         return;
     }
 
-    TESObjectREFR* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+    TESObjectREFR* pObject = Cast<TESObjectREFR>(TESForm::GetById(cObjectId));
     if (!pObject)
     {
         spdlog::error("Failed to retrieve object to activate.");
@@ -287,7 +287,7 @@ void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) n
         return;
     }
 
-    auto* pObject = RTTI_CAST(TESForm::GetById(cObjectId), TESForm, TESObjectREFR);
+    auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(cObjectId));
     if (!pObject)
     {
         spdlog::error("Failed to retrieve object to (un)lock.");
@@ -325,7 +325,7 @@ void EnvironmentService::OnNotifyScriptAnimation(const NotifyScriptAnimation& ac
         return;
 
     auto* pForm = TESForm::GetById(acMessage.FormID);
-    auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+    auto* pObject = Cast<TESObjectREFR>(pForm);
 
     if (!pObject)
     {
@@ -478,7 +478,7 @@ void EnvironmentService::OnDraw() noexcept
     {
         auto& objectComponent = view.get<InteractiveObjectComponent>(entity);
         auto* pForm = TESForm::GetById(objectComponent.Id);
-        auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+        auto* pObject = Cast<TESObjectREFR>(pForm);
 
         if (!pObject)
             continue;
@@ -500,7 +500,7 @@ void EnvironmentService::OnDraw() noexcept
     {
         auto& objectComponent = view.get<InteractiveObjectComponent>(entities[s_selected]);
         auto* pForm = TESForm::GetById(objectComponent.Id);
-        auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+        auto* pObject = Cast<TESObjectREFR>(pForm);
 
         if (pObject)
         {
@@ -524,7 +524,7 @@ void EnvironmentService::OnDraw() noexcept
         if (formId)
         {
             auto* pForm = TESForm::GetById(formId);
-            auto* pObject = RTTI_CAST(pForm, TESForm, TESObjectREFR);
+            auto* pObject = Cast<TESObjectREFR>(pForm);
             if (pObject)
             {
                 auto view = m_world.view<InteractiveObjectComponent>();

@@ -157,17 +157,17 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
 {
     auto& modSystem = World::Get().GetModSystem();
 
-    if (ExtraCount* pExtraCount = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Count), BSExtraData, ExtraCount))
+    if (ExtraCount* pExtraCount = Cast<ExtraCount>(apExtraDataList->GetByType(ExtraData::Count)))
     {
         arEntry.Count = pExtraCount->count;
     }
 
-    if (ExtraCharge* pExtraCharge = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Charge), BSExtraData, ExtraCharge))
+    if (ExtraCharge* pExtraCharge = Cast<ExtraCharge>(apExtraDataList->GetByType(ExtraData::Charge)))
     {
         arEntry.ExtraCharge = pExtraCharge->fCharge;
     }
 
-    if (ExtraEnchantment* pExtraEnchantment = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Enchantment), BSExtraData, ExtraEnchantment))
+    if (ExtraEnchantment* pExtraEnchantment = Cast<ExtraEnchantment>(apExtraDataList->GetByType(ExtraData::Enchantment)))
     {
         TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
 
@@ -198,12 +198,12 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
     }
 
-    if (ExtraHealth* pExtraHealth = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Health), BSExtraData, ExtraHealth))
+    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraData::Health)))
     {
         arEntry.ExtraHealth = pExtraHealth->fHealth;
     }
 
-    if (ExtraPoison* pExtraPoison = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Poison), BSExtraData, ExtraPoison))
+    if (ExtraPoison* pExtraPoison = Cast<ExtraPoison>(apExtraDataList->GetByType(ExtraData::Poison)))
     {
         TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
         if (pExtraPoison && pExtraPoison->pPoison)
@@ -213,13 +213,13 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         }
     }
 
-    if (ExtraSoul* pExtraSoul = RTTI_CAST(apExtraDataList->GetByType(ExtraData::Soul), BSExtraData, ExtraSoul))
+    if (ExtraSoul* pExtraSoul = Cast<ExtraSoul>(apExtraDataList->GetByType(ExtraData::Soul)))
     {
         arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
     }
 
     /*
-    if (ExtraTextDisplayData* pExtraTextDisplayData = RTTI_CAST(apExtraDataList->GetByType(ExtraData::TextDisplayData), BSExtraData, ExtraTextDisplayData))
+    if (ExtraTextDisplayData* pExtraTextDisplayData = Cast<ExtraTextDisplayData>(apExtraDataList->GetByType(ExtraData::TextDisplayData)))
     {
         if (pExtraTextDisplayData->DisplayName)
             arEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
@@ -258,7 +258,7 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         else
         {
             uint32_t enchantId = modSystem.GetGameId(arEntry.ExtraEnchantId);
-            pEnchantment = RTTI_CAST(TESForm::GetById(enchantId), TESForm, EnchantmentItem);
+            pEnchantment = Cast<EnchantmentItem>(TESForm::GetById(enchantId));
         }
 
         TP_ASSERT(pEnchantment, "No Enchantment created or found.");
@@ -274,7 +274,7 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
 
         uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
-        if (AlchemyItem* pPoison = RTTI_CAST(TESForm::GetById(poisonId), TESForm, AlchemyItem))
+        if (AlchemyItem* pPoison = Cast<AlchemyItem>(TESForm::GetById(poisonId)))
         {
             pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
         }
@@ -485,7 +485,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     ModSystem& modSystem = World::Get().GetModSystem();
 
     uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
-    TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
     if (!pObject)
     {
         spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId,
@@ -509,9 +509,9 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
 
         if (isWorn)
-            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+            EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
         else if (isWornLeft)
-            EquipManager::Get()->Equip(RTTI_CAST(this, TESObjectREFR, Actor), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+            EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
     }
     else if (arEntry.Count < 0)
     {
@@ -592,7 +592,7 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
 {
-    Actor* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    Actor* pActivator = Cast<Actor>(apActivator);
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 
