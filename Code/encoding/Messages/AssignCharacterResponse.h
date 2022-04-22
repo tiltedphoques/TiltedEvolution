@@ -28,7 +28,6 @@ struct AssignCharacterResponse final : ServerMessage
                AllActorValues == achRhs.AllActorValues &&
                ChangeFlags == achRhs.ChangeFlags &&
                AppearanceBuffer == achRhs.AppearanceBuffer &&
-               FaceTints == achRhs.FaceTints &&
                IsDead == achRhs.IsDead &&
                IsWeaponDrawn == achRhs.IsWeaponDrawn &&
                IsLeveledActor == achRhs.IsLeveledActor;
@@ -42,7 +41,6 @@ struct AssignCharacterResponse final : ServerMessage
     ActorValues AllActorValues{};
     uint32_t ChangeFlags{};
     String AppearanceBuffer{};
-    Tints FaceTints{};
     bool IsDead{};
     bool IsWeaponDrawn{};
     bool IsLeveledActor{};

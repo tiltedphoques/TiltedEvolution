@@ -265,7 +265,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (acMessage.IsLeveledActor)
         {
             TESNPC* pLeveledNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
-            FaceGenSystem::Setup(m_world, cEntity, acMessage.FaceTints);
             pActor->SetLeveledActor(pLeveledNpc);
         }
 
@@ -356,6 +355,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             entity = *itor;
         else
             entity = m_world.create();
+
+        if (acMessage.IsLeveledActor)
+        {
+            TESNPC* pLeveledNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+            // TODO: also send facetints for leveled actors?
+            pActor->SetLeveledActor(pLeveledNpc);
+        }
     }
 
     if (!pActor)

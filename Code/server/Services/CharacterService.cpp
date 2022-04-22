@@ -215,7 +215,6 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.CellId = cellIdComponent.Cell;
             response.AppearanceBuffer = message.AppearanceBuffer;
             response.ChangeFlags = message.ChangeFlags;
-            response.FaceTints = message.FaceTints;
 
             acMessage.pPlayer->Send(response);
             return;
