@@ -318,13 +318,13 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
     {
-        spdlog::error("{s}: Could not find spell with form {:X}", __FUNCTION__, acEvent.SpellID);
+        spdlog::error("{}: Could not find spell with form {:X}", __FUNCTION__, acEvent.SpellID);
         return;
     }
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.EffectID, request.EffectId.ModId, request.EffectId.BaseId))
     {
-        spdlog::error("{s}: Could not find effect with form {:X}", __FUNCTION__, acEvent.EffectID);
+        spdlog::error("{}: Could not find effect with form {:X}", __FUNCTION__, acEvent.EffectID);
         return;
     }
 

@@ -1087,7 +1087,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.LatestAction = pExtension->LatestAnimation;
     pActor->SaveAnimationVariables(message.LatestAction.Variables);
 
-    spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, aEntity);
+    spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, to_integral(aEntity));
 
     if (m_transport.Send(message))
     {
