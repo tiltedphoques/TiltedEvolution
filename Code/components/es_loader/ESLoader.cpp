@@ -28,7 +28,7 @@ String ReadWString(Buffer::Reader& aReader) noexcept
 
 ESLoader::ESLoader()
 {
-    m_directory = "data\\";
+    m_directory = fs::current_path() / "data";
 }
 
 UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
@@ -54,7 +54,7 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
 bool ESLoader::LoadLoadOrder()
 {
     std::ifstream loadOrderFile;
-    String loadOrderPath = m_directory + "loadorder.txt";
+    auto loadOrderPath = m_directory / "loadorder.txt";
     loadOrderFile.open(loadOrderPath.c_str());
     if (loadOrderFile.fail())
     {
@@ -76,6 +76,9 @@ bool ESLoader::LoadLoadOrder()
         plugin.m_filename = line;
 
         char extensionType = line.back();
+
+        // TODO(Vince): This code should account for different line endings in the future...
+        //spdlog::info("Extension type: {} of line {}", extensionType, line.c_str());
         switch (extensionType)
         {
         case 'm':

@@ -55,6 +55,16 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
     m_out = spdlog::get(acLoggerName);
     BASE_ASSERT(m_out.get(), "Output logger not found");
 
+    BindStaticItems();
+    RegisterNatives();
+}
+
+ConsoleRegistry::~ConsoleRegistry() = default;
+
+void ConsoleRegistry::BindStaticItems()
+{
+    spdlog::info("ConsoleRegistry::BindStaticItems()");
+
     auto* i = CommandBase::ROOT();
     CommandBase::ROOT() = nullptr;
     while (i)
@@ -74,20 +84,12 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
         k->next = nullptr;
         k = j;
     }
-
-    RegisterNatives();
-}
-
-ConsoleRegistry::~ConsoleRegistry()
-{
-    for (CommandBase* c : m_ownedCommands)
-        delete c;
-    for (SettingBase* s : m_ownedSettings)
-        delete s;
 }
 
 void ConsoleRegistry::RegisterNatives()
 {
+    spdlog::info("ConsoleRegistry::RegisterNatives()");
+
     RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
         m_out->info("<------Commands-({})--->", m_commands.size());
         for (CommandBase* c : m_commands)
@@ -149,6 +151,9 @@ void ConsoleRegistry::RegisterNatives()
                 }
                 }
 
+                // signal to the worker thread that we need to flush the settings
+                MarkDirty();
+
                 m_out->info("Set {} to {}", variableName, value);
                 return;
             }
@@ -157,23 +162,23 @@ void ConsoleRegistry::RegisterNatives()
         });
 }
 
-void ConsoleRegistry::AddCommand(CommandBase* apCommand)
+void ConsoleRegistry::AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand)
 {
     std::lock_guard<std::mutex> _(m_listLock);
     (void)_;
 
     // Add to global and tracking pool
-    m_commands.push_back(apCommand);
-    m_ownedCommands.push_back(apCommand);
+    m_commands.push_back(apCommand.get());
+    m_dynamicCommands.push_back(std::move(apCommand));
 }
 
-void ConsoleRegistry::AddSetting(SettingBase* apSetting)
+void ConsoleRegistry::AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting)
 {
     std::lock_guard<std::mutex> guard(m_listLock);
     (void)guard;
 
-    m_settings.push_back(apSetting);
-    m_ownedSettings.push_back(apSetting);
+    m_settings.push_back(apSetting.get());
+    m_dynamicSettings.push_back(std::move(apSetting));
 }
 
 CommandBase* ConsoleRegistry::FindCommand(const char* acName)
@@ -196,13 +201,12 @@ SettingBase* ConsoleRegistry::FindSetting(const char* acName)
     return *it;
 }
 
-// NOTE(Force): Maybe make this return a status instead?
-bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
+ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
 {
     if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
         m_out->error("Commands must begin with /");
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     size_t tokenCount = 0;
@@ -210,14 +214,14 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (!tokenCount)
     {
         m_out->error("Failed to parse line");
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     auto* pCommand = FindCommand(tokens[0].c_str());
     if (!pCommand)
     {
         m_out->error("Unknown command. Type /help for help.");
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     // Must subtract one, since the first is the literal command.
@@ -226,7 +230,7 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (tokenCount != pCommand->m_argCount)
     {
         m_out->error("Expected {} arguments but got {}", pCommand->m_argCount, tokenCount);
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     ArgStack stack(pCommand->m_argCount);
@@ -234,14 +238,20 @@ bool ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
     if (!result.val)
     {
         m_out->error(result.msg);
-        return false;
+        return ExecutionResult::kFailure;
     }
 
     stack.ResetCounter();
     m_queue.Upload(pCommand, stack);
     StoreCommandInHistory(acLine);
 
-    return true;
+    if (m_requestFlush)
+    {
+        m_requestFlush = false;
+        return ExecutionResult::kDirty;
+    }
+
+    return ExecutionResult::kSuccess;
 }
 
 void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
