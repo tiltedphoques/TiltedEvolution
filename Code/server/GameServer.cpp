@@ -45,6 +45,7 @@ Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) { int* i = 0; *i = 42; });
 Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is active", [](Console::ArgStack&) {
     spdlog::get("ConOut")->info("ModPolicy status: {}", bBypassMoPo ? "not active" : "active");
 });
