@@ -21,7 +21,7 @@ struct Actor;
 
 struct ActorValueService
 {
-  public:
+public:
     ActorValueService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~ActorValueService() noexcept = default;
 
@@ -34,13 +34,6 @@ private:
         kMaxValue
     };
 
-    World& m_world;
-    entt::dispatcher& m_dispatcher;
-    TransportService& m_transport;
-
-    Map<uint32_t, float> m_smallHealthChanges;
-    double m_timeSinceDiff = 1;
-    
     void OnLocalComponentAdded(entt::registry& aRegistry, entt::entity aEntity) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
@@ -56,4 +49,11 @@ private:
     void RunDeathStateUpdates() noexcept;
     void CreateActorValuesComponent(entt::entity aEntity, Actor* apActor) noexcept;
     void BroadcastActorValues() noexcept;
+
+    World& m_world;
+    entt::dispatcher& m_dispatcher;
+    TransportService& m_transport;
+
+    Map<uint32_t, float> m_smallHealthChanges;
+    double m_timeSinceDiff = 1;
 };

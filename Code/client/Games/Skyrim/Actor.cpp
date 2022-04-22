@@ -242,7 +242,7 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
     {
         float value = actorValueOwner.GetValue(i);
         actorValues.ActorValuesList.insert({i, value});
-        float maxValue = actorValueOwner.GetMaxValue(i);
+        float maxValue = actorValueOwner.GetPermanentValue(i);
         actorValues.ActorMaxValuesList.insert({i, maxValue});
     }
 
@@ -254,9 +254,9 @@ float Actor::GetActorValue(uint32_t aId) const noexcept
     return actorValueOwner.GetValue(aId);
 }
 
-float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
 {
-    return actorValueOwner.GetMaxValue(aId);
+    return actorValueOwner.GetPermanentValue(aId);
 }
 
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
@@ -264,7 +264,7 @@ void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
     actorValueOwner.SetValue(aId, aValue);
 }
 
-void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
     const float current = GetActorValue(aId);
     actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
@@ -336,13 +336,13 @@ void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
     for (auto& value : acActorValues.ActorMaxValuesList)
     {
         float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(0, value.first, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::PERMANENT, value.first, value.second - current);
     }
 
     for (auto& value : acActorValues.ActorValuesList)
     {
         float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(2, value.first, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, value.first, value.second - current);
     }
 }
 

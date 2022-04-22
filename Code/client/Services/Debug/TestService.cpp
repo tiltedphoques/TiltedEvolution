@@ -40,6 +40,9 @@
 
 #include <Messages/RequestRespawn.h>
 
+#include <Interface/UI.h>
+#include <Interface/IMenu.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
@@ -134,8 +137,6 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-
-            PlaceActorInWorld();
         }
     }
     else
@@ -162,12 +163,15 @@ static bool g_enableFormsWindow{false};
 static bool g_enablePlayerWindow{false};
 static bool g_enableSkillsWindow{false};
 static bool g_enablePartyWindow{false};
+static bool g_enableActorValuesWindow{false};
 
 void TestService::OnDraw() noexcept
 {
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty() || !m_showDebugStuff)
         return;
+
+    DrawEntitiesView();
 
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Server"))
@@ -196,6 +200,16 @@ void TestService::OnDraw() noexcept
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
+        if (ImGui::Button("Log all open windows"))
+        {
+            UI* pUI = UI::Get();
+            for (const auto& it : pUI->menuMap)
+            {
+                if (pUI->GetMenuOpen(it.key))
+                    spdlog::info("{}", it.key.AsAscii());
+            }
+        }
+
         if (ImGui::Button("Close all menus"))
         {
             UI::Get()->CloseAllMenus();
@@ -231,6 +245,8 @@ void TestService::OnDraw() noexcept
         DrawSkillView();
     if (g_enablePartyWindow)
         DrawPartyView();
+    if (g_enableActorValuesWindow)
+        DrawActorValuesView();
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();

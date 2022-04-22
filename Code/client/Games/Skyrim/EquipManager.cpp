@@ -74,6 +74,8 @@ void* EquipManager::Equip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtr
 
     ScopedEquipOverride equipOverride;
 
+    spdlog::debug("Call Actor[{:X}]::Equip(), item id: {:X}, extra data? {}, count: {}", apActor->formID, apItem->formID, (bool)apExtraDataList, aCount);
+
     return ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, apSlot, abQueueEquip, abForceEquip, abPlaySound, abApplyNow);
 }
 
@@ -83,6 +85,8 @@ void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, ExtraDataList* apEx
     POINTER_SKYRIMSE(TUnEquipInternal, s_unequipFunc, 38901);
 
     ScopedEquipOverride equipOverride;
+
+    spdlog::debug("Call Actor[{:X}]::UnEquip(), item id: {:X}, extra data? {}, count: {}", apActor->formID, apItem->formID, (bool)apExtraDataList, aCount);
 
     return ThisCall(s_unequipFunc, this, apActor, apItem, apExtraDataList, aCount, apSlot, abQueueEquip, abForceEquip, abPlaySound, abApplyNow, apSlotToReplace);
 }
@@ -165,7 +169,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote())
     {
-        spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}, IsOverridden: {}", apActor->formID, apItem->formID, ScopedEquipOverride::IsOverriden());
+        spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}, IsOverridden, equip: {}, inventory: {}", apActor->formID, apItem->formID, ScopedEquipOverride::IsOverriden(), ScopedInventoryOverride::IsOverriden());
         // The ScopedInventoryOverride check is here to allow the item to be unequipped if it is removed
         // Without this check, the game will not accept null as a return, and it'll keep trying to unequip infinitely
         if (!ScopedEquipOverride::IsOverriden() && !ScopedInventoryOverride::IsOverriden())
