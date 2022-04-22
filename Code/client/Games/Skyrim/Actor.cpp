@@ -387,7 +387,7 @@ void Actor::SetLeveledActor(TESNPC* apBaseForm) noexcept
     /*
     TP_THIS_FUNCTION(TRecalcLeveledActor, void, Actor, uint32_t);
     POINTER_SKYRIMSE(TRecalcLeveledActor, s_recalcLeveledActor, 37323);
-    ThisCall(s_recalcLeveledActor, pActor, 0xFFFFFFFF);
+    ThisCall(s_recalcLeveledActor, this, 0xFFFFFFFF);
     */
 
     Set3D(nullptr, false);
@@ -398,14 +398,12 @@ void Actor::SetLeveledActor(TESNPC* apBaseForm) noexcept
 
     TP_THIS_FUNCTION(TSetLeveledCreature, void, Actor, void*, void*);
     POINTER_SKYRIMSE(TSetLeveledCreature, s_setLeveledCreature, 20231);
-    ThisCall(s_setLeveledCreature, this, nullptr, nullptr);
+    ThisCall(s_setLeveledCreature, this, apBaseForm, nullptr);
 
     TP_THIS_FUNCTION(TGCDelete, void, void, TESForm*);
     POINTER_SKYRIMSE(TGCDelete, s_GCDelete, 36460);
     POINTER_SKYRIMSE(void*, s_garbageCollector, 400329);
     //ThisCall(s_GCDelete, *s_garbageCollector.Get(), pOldBaseForm);
-
-    // TODO: TESObjectREFR::SetLeveledCreature(0, 0)?
 
     Resurrect(false, false);
 

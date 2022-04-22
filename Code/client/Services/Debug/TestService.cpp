@@ -143,7 +143,14 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             auto* pActor1 = RTTI_CAST(TESForm::GetById(0x1ebf0), TESForm, Actor);
             auto* pActor2 = RTTI_CAST(TESForm::GetById(0x1ebf6), TESForm, Actor);
 
-            pActor2->SetLeveledActor(RTTI_CAST(pActor1->baseForm, TESForm, TESNPC));
+            auto* const pNpc1 = RTTI_CAST(pActor1->baseForm, TESForm, TESNPC);
+            const auto changeFlags = pNpc1->GetChangeFlags();
+            String AppearanceBuffer{};
+            pNpc1->Serialize(&AppearanceBuffer);
+
+            auto* const pNpc2 = RTTI_CAST(pActor2->baseForm, TESForm, TESNPC);
+            pNpc2->Deserialize(AppearanceBuffer, changeFlags);
+            pActor2->SetLeveledActor(pNpc2);
         }
     }
     else

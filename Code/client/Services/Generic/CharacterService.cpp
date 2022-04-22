@@ -312,6 +312,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         entity = m_world.create();
 
+        // if spawning actor is temporary
         if (acMessage.BaseId != GameId{})
         {
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
@@ -324,6 +325,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
+        // if spawning actor is player
         else
         {
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
