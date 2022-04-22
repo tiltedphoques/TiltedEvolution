@@ -41,7 +41,7 @@ RUN apt update && \
     apt remove software-properties-common -y && \
     apt autoremove -y
 
-COPY --from=builder /home/server/package/bin/libSTServer.so /home/server/libSTServer.so
+COPY --from=builder /home/server/package/lib/libSTServer.so /home/server/libSTServer.so
 COPY --from=builder /home/server/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
 COPY --from=builder /home/server/package/bin/crashpad_handler /home/server/crashpad_handler
 COPY --from=builder /home/server/build/linux/x64/release/libSTServer.debug /home/server/libSTServer.debug
