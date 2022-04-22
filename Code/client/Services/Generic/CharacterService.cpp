@@ -369,7 +369,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
     }
-    
+
     if (pActor->IsDisabled())
         pActor->Enable();
 
