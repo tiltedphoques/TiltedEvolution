@@ -29,7 +29,7 @@ class EnvironmentService final
     : public BSTEventSink<TESActivateEvent>
 {
 public:
-    EnvironmentService(World&, entt::dispatcher&, ImguiService&, TransportService&);
+    EnvironmentService(World&, entt::dispatcher&, TransportService&);
 
     static bool AllowGameTick() noexcept;
 

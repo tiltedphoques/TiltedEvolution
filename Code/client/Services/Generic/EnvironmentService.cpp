@@ -36,7 +36,7 @@ bool EnvironmentService::AllowGameTick() noexcept
     return !s_gameClockLocked;
 }
 
-EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService, TransportService& aTransport) 
+EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) 
     : m_world(aWorld)
     , m_transport(aTransport)
 {
