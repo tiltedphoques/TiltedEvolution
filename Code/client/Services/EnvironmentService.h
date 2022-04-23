@@ -19,6 +19,12 @@ struct ScriptAnimationEvent;
 struct AssignObjectsResponse;
 struct NotifyScriptAnimation;
 
+/**
+* @brief Handles time and objects in the environment.
+* 
+* TODO(cosideci): this service has too many responsibilities,
+* should really be ObjectService and TimeService
+*/
 class EnvironmentService final 
     : public BSTEventSink<TESActivateEvent>
 {
@@ -26,7 +32,8 @@ public:
     EnvironmentService(World&, entt::dispatcher&, ImguiService&, TransportService&);
 
     static bool AllowGameTick() noexcept;
-  private:
+
+private:
     void OnTimeUpdate(const ServerTimeSettings &) noexcept;
     void HandleUpdate(const UpdateEvent &) noexcept;
     void OnDisconnected(const DisconnectedEvent &) noexcept;
@@ -38,7 +45,6 @@ public:
     void OnLockChangeNotify(const NotifyLockChange &) noexcept;
     void OnScriptAnimationEvent(const ScriptAnimationEvent &) noexcept;
     void OnNotifyScriptAnimation(const NotifyScriptAnimation &) noexcept;
-    void OnDraw() noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 

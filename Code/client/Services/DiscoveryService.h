@@ -14,9 +14,9 @@ struct ReferenceSpawnedEvent;
 struct TESObjectREFR;
 struct TESWorldSpace;
 
-/*!
-    Responsible for discovering loaded actors, dispatching cell changes,
-    and notifying the rest of the client about newly discovered actors.
+/**
+* Responsible for discovering loaded actors, dispatching cell changes,
+* and notifying the rest of the client about newly discovered actors.
 */
 struct DiscoveryService final
     : BSTEventSink<TESLoadGameEvent>
@@ -28,20 +28,20 @@ struct DiscoveryService final
 
 protected:
     /**
-    * Check whether the cell has changed, and if so,
+    * Checks whether the cell has changed, and if so,
     * notify the client about the new location.
     * @param aForceTrigger Forcefully notify the client about the current location
     */
     void VisitCell(bool aForceTrigger = false) noexcept;
     /**
-    * Check whether the grid cell has shifted, and if so,
+    * Checks whether the grid cell has shifted, and if so,
     * notify the client about the newly loaded cells.
     * @param aWorldSpace The world space that the grid cell is in.
     * @param aNewGridCell True if the player just walked into the new world space.
     */
     void DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewGridCell) noexcept;
     /**
-    * Dispatch (un)loaded actors.
+    * Dispatches (un)loaded actors.
     */
     void VisitForms() noexcept;
 
@@ -66,18 +66,18 @@ protected:
 private:
 
     /**
-    * Reset cached exterior cell data.
+    * Resets cached exterior cell data.
     * TODO(cosideci): confirm the usage of this function
     */
     void ResetCachedCellData() noexcept;
     /**
-    * Check whether the exterior cell grid has changed, and if so,
+    * Checks whether the exterior cell grid has changed, and if so,
     * notify the client about the new location.
     * @param aForceTrigger Forcefully notify the client about the current location
     */
     void VisitExteriorCell(bool aForceTrigger) noexcept;
     /**
-    * Check whether the interior cell has changed, and if so,
+    * Checks whether the interior cell has changed, and if so,
     * notify the client about the new location.
     * @param aForceTrigger Forcefully notify the client about the current location
     */

@@ -51,7 +51,7 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
 
         m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
 
-        m_refIdToEntity[acEvent.FormId] = entity;
+        m_formIdToEntity[acEvent.FormId] = entity;
 
         m_dispatcher.trigger(ReferenceSpawnedEvent(acEvent.FormId, acEvent.FormType, entity));
     }
@@ -59,9 +59,9 @@ void EntityService::OnReferenceAdded(const ReferenceAddedEvent& acEvent) noexcep
 
 void EntityService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noexcept
 {
-    const auto cIterator = m_refIdToEntity.find(acEvent.FormId);
+    const auto cIterator = m_formIdToEntity.find(acEvent.FormId);
 
-    if (cIterator != std::end(m_refIdToEntity))
+    if (cIterator != std::end(m_formIdToEntity))
     {
         const auto entity = cIterator->second;
 
@@ -71,14 +71,14 @@ void EntityService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noe
         if (m_world.orphan(entity))
             m_world.destroy(entity);
 
-        m_refIdToEntity.erase(cIterator);
+        m_formIdToEntity.erase(cIterator);
     }
 }
 
 Outcome<entt::entity, bool> EntityService::GetCharacter(const uint32_t acFormId) const noexcept
 {
-    const auto cPair = m_refIdToEntity.find(acFormId);
-    if (cPair != std::end(m_refIdToEntity))
+    const auto cPair = m_formIdToEntity.find(acFormId);
+    if (cPair != std::end(m_formIdToEntity))
     {
         const auto entity = cPair->second;
 

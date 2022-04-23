@@ -6,6 +6,9 @@ struct ReferenceRemovedEvent;
 struct Actor;
 struct World;
 
+/**
+* @brief Responsible for managing (actor) entities.
+*/
 struct EntityService
 {
     EntityService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -13,9 +16,18 @@ struct EntityService
 
     TP_NOCOPYMOVE(EntityService);
 
+    /**
+    * @brief Creates an entity for newly spawned actors.
+    */
     void OnReferenceAdded(const ReferenceAddedEvent&) noexcept;
+    /**
+    * @brief Removes entities attached to removed actors.
+    */
     void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
 
+    /**
+    * @brief Gets the entity attached to a form id.
+    */
     [[nodiscard]] Outcome<entt::entity, bool> GetCharacter(uint32_t acFormId) const noexcept;
 
 private:
@@ -23,7 +35,8 @@ private:
     World& m_world;
     entt::dispatcher& m_dispatcher;
 
-    Map<uint32_t, entt::entity> m_refIdToEntity;
+    //! @brief Maps form ids to entities.
+    Map<uint32_t, entt::entity> m_formIdToEntity;
 
     entt::scoped_connection m_referenceAddedConnection;
     entt::scoped_connection m_referenceRemovedConnection;

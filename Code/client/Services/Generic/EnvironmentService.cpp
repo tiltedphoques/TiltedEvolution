@@ -27,8 +27,6 @@
 #include <imgui.h>
 #include <inttypes.h>
 
-#define ENVIRONMENT_DEBUG 0
-
 constexpr float kTransitionSpeed = 5.f;
 
 bool EnvironmentService::s_gameClockLocked = false;
@@ -53,10 +51,6 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
     m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&EnvironmentService::OnAssignObjectsResponse>(this);
     m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&EnvironmentService::OnScriptAnimationEvent>(this);
     m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&EnvironmentService::OnNotifyScriptAnimation>(this);
-
-#if ENVIRONMENT_DEBUG
-    m_drawConnection = aImguiService.OnDraw.connect<&EnvironmentService::OnDraw>(this);
-#endif
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
@@ -87,7 +81,7 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
-    // TODO: why isn't the event's cell id being used?
+    // TODO(cosideci): why isn't the event's cell id being used?
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
         return;
@@ -97,7 +91,7 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         return;
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    // TODO: create entities for container objects?
+    // TODO(cosideci): create entities for container objects?
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};
@@ -457,91 +451,4 @@ BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, cons
 #endif
 
     return BSTEventResult::kOk;
-}
-
-void EnvironmentService::OnDraw() noexcept
-{
-#if ENVIRONMENT_DEBUG
-    static uint32_t s_selectedFormId = 0;
-    static uint32_t s_selected = 0;
-    static uint32_t formId;
-
-    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Interactive object list");
-    ImGui::BeginChild("Objects", ImVec2(0, 200), true);
-
-    const auto view = m_world.view<InteractiveObjectComponent>();
-    Vector<entt::entity> entities(view.begin(), view.end());
-
-    int i = 0;
-    for (auto entity : entities)
-    {
-        auto& objectComponent = view.get<InteractiveObjectComponent>(entity);
-        auto* pForm = TESForm::GetById(objectComponent.Id);
-        auto* pObject = Cast<TESObjectREFR>(pForm);
-
-        if (!pObject)
-            continue;
-
-        char name[256];
-        sprintf_s(name, std::size(name), "%s (%x)", pObject->baseForm->GetName(), objectComponent.Id);
-        if (ImGui::Selectable(name, s_selectedFormId == objectComponent.Id))
-            s_selectedFormId = objectComponent.Id;
-
-        if (s_selectedFormId == objectComponent.Id)
-            s_selected = i;
-
-        ++i;
-    }
-
-    ImGui::EndChild();
-
-    if (s_selected < entities.size())
-    {
-        auto& objectComponent = view.get<InteractiveObjectComponent>(entities[s_selected]);
-        auto* pForm = TESForm::GetById(objectComponent.Id);
-        auto* pObject = Cast<TESObjectREFR>(pForm);
-
-        if (pObject)
-        {
-            uint64_t address = reinterpret_cast<uint64_t>(pObject);
-            ImGui::InputScalar("Memory address", ImGuiDataType_U64, &address, 0, 0, "%" PRIx64, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-            if (ImGui::Button("Activate"))
-            {
-                auto* pActor = PlayerCharacter::Get();
-                World::Get().GetRunner().Trigger(ActivateEvent(pObject, pActor, 0, 0, 1, 0, true));
-            }
-            int formType = pObject->GetFormType();
-            ImGui::InputInt("Form type", &formType, 0, 0, ImGuiInputTextFlags_ReadOnly);
-            int formTypeBase = pObject->baseForm->GetFormType();
-            ImGui::InputInt("Form type base", &formTypeBase, 0, 0, ImGuiInputTextFlags_ReadOnly);
-        }
-    }
-
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &formId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
-    if (ImGui::Button("Get address from form ID"))
-    {
-        if (formId)
-        {
-            auto* pForm = TESForm::GetById(formId);
-            auto* pObject = Cast<TESObjectREFR>(pForm);
-            if (pObject)
-            {
-                auto view = m_world.view<InteractiveObjectComponent>();
-
-                const auto itor =
-                    std::find_if(std::begin(view), std::end(view), [id = pObject->formID, view](entt::entity entity) {
-                        return view.get<InteractiveObjectComponent>(entity).Id == id;
-                    });
-
-                if (itor == std::end(view))
-                {
-                    AddObjectComponent(pObject);
-                }
-            }
-        }
-    }
-
-    ImGui::End();
-#endif
 }
