@@ -40,13 +40,9 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
         return;
 
     if (pPlayer->GetWorldSpace())
-    {
         VisitExteriorCell(aForceTrigger);
-    }
     else if (pPlayer->GetParentCell())
-    {
         VisitInteriorCell(aForceTrigger);
-    }
 
     // exactly how the game does it too
     if (m_pLocation != pPlayer->locationForm)
@@ -76,16 +72,20 @@ void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
     if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY || aForceTrigger)
     {
         CellChangeEvent cellChangeEvent;
-        uint32_t baseId = 0;
-        uint32_t modId = 0;
 
-        if (m_world.GetModSystem().GetServerModId(pWorldSpace->formID, modId, baseId))
-            cellChangeEvent.WorldSpaceId = GameId(modId, baseId);
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, cellChangeEvent.WorldSpaceId))
+        {
+            spdlog::error("Failed to find world space id for form id {:X}", pWorldSpace->formID);
+            return;
+        }
 
         const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, pWorldSpace, 0);
 
-        if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
-            cellChangeEvent.CellId = GameId(modId, baseId);
+        if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellChangeEvent.CellId))
+        {
+            spdlog::error("Failed to find cell id for form id {:X}", pCell->formID);
+            return;
+        }
 
         cellChangeEvent.CurrentCoords = GridCellCoords(pTES->currentGridX, pTES->currentGridY);
 
@@ -102,12 +102,10 @@ void DiscoveryService::VisitInteriorCell(bool aForceTrigger) noexcept
     const uint32_t cellId = PlayerCharacter::Get()->GetParentCell()->formID;
     if (m_interiorCellId != cellId || aForceTrigger)
     {
-        CellChangeEvent cellChangeEvent;
-        uint32_t baseId = 0;
-        uint32_t modId = 0;
+        CellChangeEvent cellChangeEvent{};
 
-        if (m_world.GetModSystem().GetServerModId(cellId, modId, baseId))
-            cellChangeEvent.CellId = GameId(modId, baseId);
+        if (!m_world.GetModSystem().GetServerModId(cellId, cellChangeEvent.CellId))
+            return;
 
         m_dispatcher.trigger(cellChangeEvent);
         m_interiorCellId = cellId;
@@ -146,19 +144,24 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
                 continue;
             }
 
-            uint32_t baseId = 0;
-            uint32_t modId = 0;
-            if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
-                changeEvent.Cells.push_back(GameId(modId, baseId));
+            GameId cellId{};
+            if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
+            {
+                spdlog::error("Failed to find cell id for form id {:X}", pCell->formID);
+                continue;
+            }
+
+            changeEvent.Cells.push_back(cellId);
         }
     }
 
     const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->centerGridX, pTES->centerGridY, aWorldSpace, 0);
 
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (m_world.GetModSystem().GetServerModId(pCell->formID, modId, baseId))
-        changeEvent.PlayerCell = GameId(modId, baseId);
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, changeEvent.PlayerCell))
+    {
+        spdlog::error("Failed to find cell id for form id {:X}", pCell->formID);
+        return;
+    }
 
     m_centerGridX = pTES->centerGridX;
     m_centerGridY = pTES->centerGridY;
