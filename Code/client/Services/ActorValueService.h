@@ -7,7 +7,7 @@ struct World;
 
 struct ConnectedEvent;
 struct DisconnectedEvent;
-struct ReferenceRemovedEvent;
+struct ActorRemovedEvent;
 struct UpdateEvent;
 struct HealthChangeEvent;
 
@@ -57,7 +57,7 @@ private:
     /**
     * @brief Removes actor values component on reference removed.
     */
-    void OnReferenceRemoved(const ReferenceRemovedEvent&) noexcept;
+    void OnActorRemoved(const ActorRemovedEvent&) noexcept;
     /**
     * @brief Checks whether health, death state and actor values should be broadcasted.
     */

@@ -7,7 +7,7 @@
 #include <Components.h>
 
 #include <Events/UpdateEvent.h>
-#include <Events/ReferenceRemovedEvent.h>
+#include <Events/ActorRemovedEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/HealthChangeEvent.h>
@@ -30,7 +30,7 @@ ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatche
 {
     m_world.on_construct<LocalComponent>().connect<&ActorValueService::OnLocalComponentAdded>(this);
     m_dispatcher.sink<DisconnectedEvent>().connect<&ActorValueService::OnDisconnected>(this);
-    m_dispatcher.sink<ReferenceRemovedEvent>().connect<&ActorValueService::OnReferenceRemoved>(this);
+    m_dispatcher.sink<ActorRemovedEvent>().connect<&ActorValueService::OnActorRemoved>(this);
     m_dispatcher.sink<UpdateEvent>().connect<&ActorValueService::OnUpdate>(this);
     m_dispatcher.sink<NotifyActorValueChanges>().connect<&ActorValueService::OnActorValueChanges>(this);
     m_dispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorValueService::OnActorMaxValueChanges>(this);
@@ -79,7 +79,7 @@ void ActorValueService::OnDisconnected(const DisconnectedEvent& acEvent) noexcep
     m_world.clear<ActorValuesComponent>();
 }
 
-void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noexcept
+void ActorValueService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -95,9 +95,7 @@ void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent)
     });
 
     if (it != std::end(view))
-    {
         m_world.remove<ActorValuesComponent>(*it);
-    }
 }
 
 void ActorValueService::OnUpdate(const UpdateEvent& acEvent) noexcept

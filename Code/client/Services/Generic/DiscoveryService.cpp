@@ -8,8 +8,8 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 
-#include <Events/ReferenceAddedEvent.h>
-#include <Events/ReferenceRemovedEvent.h>
+#include <Events/ActorAddedEvent.h>
+#include <Events/ActorRemovedEvent.h>
 #include <Events/PreUpdateEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
@@ -186,7 +186,7 @@ void DiscoveryService::VisitForms() noexcept
         {
             m_forms.insert(formId);
 
-            m_dispatcher.enqueue(ReferenceAddedEvent(formId, apReference->formType));
+            m_dispatcher.enqueue(ActorAddedEvent(formId));
         }
         else
             s_previousForms.erase(formId);
@@ -215,12 +215,12 @@ void DiscoveryService::VisitForms() noexcept
     // We dispatch removal events first to prevent needless reallocations
     for (uint32_t formId : s_previousForms)
     {
-        m_dispatcher.trigger(ReferenceRemovedEvent(formId));
+        m_dispatcher.trigger(ActorRemovedEvent(formId));
         m_forms.erase(formId);
     }
 
     // Dispatch all adds
-    m_dispatcher.update<ReferenceAddedEvent>();
+    m_dispatcher.update<ActorAddedEvent>();
 }
 
 void DiscoveryService::OnUpdate(const PreUpdateEvent& acUpdateEvent) noexcept

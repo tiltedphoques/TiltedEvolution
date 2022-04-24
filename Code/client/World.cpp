@@ -3,7 +3,6 @@
 #include "World.h"
 
 #include <Services/DiscoveryService.h>
-#include <Services/EntityService.h>
 #include <Services/CharacterService.h>
 #include <Services/InputService.h>
 #include <Services/TransportService.h>
@@ -33,7 +32,6 @@ World::World()
 {
     set<ImguiService>();
     set<DiscoveryService>(*this, m_dispatcher);
-    set<EntityService>(*this, m_dispatcher);
     set<OverlayService>(*this, m_transport, m_dispatcher);
     set<InputService>(ctx<OverlayService>());
     set<CharacterService>(*this, m_dispatcher, m_transport);

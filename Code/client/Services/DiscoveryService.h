@@ -9,7 +9,7 @@ struct ConnectedEvent;
 struct GameService;
 
 struct PreUpdateEvent;
-struct ReferenceSpawnedEvent;
+struct ActorSpawnedEvent;
 
 struct TESObjectREFR;
 struct TESWorldSpace;

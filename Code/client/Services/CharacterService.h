@@ -1,6 +1,8 @@
 #pragma once
 #include "Structs/Inventory.h"
 
+struct ActorAddedEvent;
+struct ActorRemovedEvent;
 struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
@@ -43,8 +45,8 @@ struct CharacterService
 
     TP_NOCOPYMOVE(CharacterService);
 
-    void OnFormIdComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void OnFormIdComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
+    void OnActorAdded(const ActorAddedEvent& acEvent) const noexcept;
+    void OnActorRemoved(const ActorRemovedEvent& acEvent) const noexcept;
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
@@ -69,8 +71,9 @@ struct CharacterService
 
 private:
 
-    void RequestServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity, uint32_t aFormId) const noexcept;
+    void ProcessNewEntity(entt::entity aEntity) const noexcept;
+    void RequestServerAssignment(entt::entity aEntity) const noexcept;
+    void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 
@@ -89,8 +92,8 @@ private:
 
     Map<uint32_t, std::pair<double, bool>> m_weaponDrawUpdates{};
 
-    entt::scoped_connection m_formIdAddedConnection;
-    entt::scoped_connection m_formIdRemovedConnection;
+    entt::scoped_connection m_referenceAddedConnection;
+    entt::scoped_connection m_referenceRemovedConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_actionConnection;
     entt::scoped_connection m_factionsConnection;

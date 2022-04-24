@@ -25,6 +25,8 @@
 #include <Systems/FaceGenSystem.h>
 #include <Systems/CacheSystem.h>
 
+#include <Events/ActorAddedEvent.h>
+#include <Events/ActorRemovedEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -74,8 +76,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
-    m_formIdAddedConnection = m_world.on_construct<FormIdComponent>().connect<&CharacterService::OnFormIdComponentAdded>(this);
-    m_formIdRemovedConnection = m_world.on_destroy<FormIdComponent>().connect<&CharacterService::OnFormIdComponentRemoved>(this);
+    m_referenceAddedConnection = m_dispatcher.sink<ActorAddedEvent>().connect<&CharacterService::OnActorAdded>(this);
+    m_referenceRemovedConnection = m_dispatcher.sink<ActorRemovedEvent>().connect<&CharacterService::OnActorRemoved>(this);
 
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this);
     m_actionConnection = m_dispatcher.sink<ActionEvent>().connect<&CharacterService::OnActionEvent>(this);
@@ -107,49 +109,59 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
 }
 
-void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) const noexcept
 {
-    if (!m_transport.IsOnline())
-        return;
+    // TODO(cosideci): add entities to member form id map?
 
-    auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-
-    // Security check
-    auto* const pForm = TESForm::GetById(formIdComponent.Id);
-    auto* const pActor = Cast<Actor>(pForm);
-    if (!pActor)
-        return;
-
-    if (pActor->GetExtension()->IsRemote())
+    if (acEvent.FormId == 0x14)
     {
-        spdlog::info("New entity remotely managed? {:X}", pActor->formID);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+        pActor->GetExtension()->SetPlayer(true);
     }
 
-    if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
+    entt::entity entity;
+
+    const auto view = m_world.view<RemoteComponent>();
+    const auto it = std::find_if(std::begin(view), std::end(view), [&acEvent, view](entt::entity entity) {
+        auto& remoteComponent = view.get<RemoteComponent>(entity);
+        return remoteComponent.CachedRefId == acEvent.FormId;
+    });
+
+    if (it != std::end(view))
     {
-        RequestSpawnData requestSpawnData;
-        requestSpawnData.Id = pRemoteComponent->Id;
-        m_transport.Send(requestSpawnData);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+        pActor->GetExtension()->SetRemote(true);
+
+        entity = *it;
     }
+    else
+        entity = m_world.create();
 
-    if (aRegistry.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))
-        return;
+    m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
 
-    CacheSystem::Setup(World::Get(), aEntity, pActor);
-
-    // TODO: why check for npc?
-    auto* const pNpc = Cast<TESNPC>(pActor->baseForm);
-    if(pNpc)
-    {
-        RequestServerAssignment(aRegistry, aEntity);
-    }
+    ProcessNewEntity(entity);
 }
 
-void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) const noexcept
 {
-    auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+    auto view = m_world.view<FormIdComponent>(entt::exclude<InteractiveObjectComponent>);
+    const auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.FormId](auto aEntity) 
+    {
+        return view.get<FormIdComponent>(aEntity).Id == formId;
+    });
 
-    CancelServerAssignment(aRegistry, aEntity, formIdComponent.Id);
+    if (entityIt == view.end())
+        return;
+
+    if (m_world.all_of<FormIdComponent>(*entityIt))
+        m_world.remove<FormIdComponent>(*entityIt);
+
+    if (m_world.orphan(*entityIt))
+        m_world.destroy(*entityIt);
+
+    auto& formIdComponent = m_world.get<FormIdComponent>(*entityIt);
+
+    CancelServerAssignment(*entityIt, formIdComponent.Id);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -167,9 +179,7 @@ void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const
     // Go through all the forms that were previously detected
     auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
-    {
-        OnFormIdComponentAdded(m_world, entity);
-    }
+        ProcessNewEntity(entity);
 }
 
 void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept
@@ -952,14 +962,49 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
 }
 
-void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
+{
+    if (!m_transport.IsOnline())
+        return;
+
+    auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
+
+    auto* const pForm = TESForm::GetById(formIdComponent.Id);
+    auto* const pActor = Cast<Actor>(pForm);
+    if (!pActor)
+        return;
+
+    if (pActor->GetExtension()->IsRemote())
+    {
+        spdlog::info("New entity remotely managed? {:X}", pActor->formID);
+    }
+
+    if (auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity); pRemoteComponent)
+    {
+        RequestSpawnData requestSpawnData;
+        requestSpawnData.Id = pRemoteComponent->Id;
+        m_transport.Send(requestSpawnData);
+    }
+
+    if (m_world.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))
+        return;
+
+    CacheSystem::Setup(World::Get(), aEntity, pActor);
+
+    // TODO(cosideci): why check for npc?
+    auto* const pNpc = Cast<TESNPC>(pActor->baseForm);
+    if(pNpc)
+        RequestServerAssignment(aEntity);
+}
+
+void CharacterService::RequestServerAssignment(const entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
         return;
 
     static uint32_t sCookieSeed = 0;
 
-    const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+    const auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
 
     auto* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
     if (!pActor)
@@ -1091,15 +1136,15 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     if (m_transport.Send(message))
     {
-        aRegistry.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
+        m_world.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
 
         sCookieSeed++;
     }
 }
 
-void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
+void CharacterService::CancelServerAssignment(const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
-    if (aRegistry.all_of<RemoteComponent>(aEntity))
+    if (m_world.all_of<RemoteComponent>(aEntity))
     {
         TESForm* const pForm = TESForm::GetById(aFormId);
         Actor* const pActor = Cast<Actor>(pForm);
@@ -1111,35 +1156,35 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             pActor->Delete();
         }
 
-        aRegistry.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
+        m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
                                    RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
 
         return;
     }
 
     // In the event we were waiting for assignment, drop it
-    if (aRegistry.all_of<WaitingForAssignmentComponent>(aEntity))
+    if (m_world.all_of<WaitingForAssignmentComponent>(aEntity))
     {
-        auto& waitingComponent = aRegistry.get<WaitingForAssignmentComponent>(aEntity);
+        auto& waitingComponent = m_world.get<WaitingForAssignmentComponent>(aEntity);
 
         CancelAssignmentRequest message;
         message.Cookie = waitingComponent.Cookie;
 
         m_transport.Send(message);
 
-        aRegistry.remove<WaitingForAssignmentComponent>(aEntity);
+        m_world.remove<WaitingForAssignmentComponent>(aEntity);
     }
 
-    if (aRegistry.all_of<LocalComponent>(aEntity))
+    if (m_world.all_of<LocalComponent>(aEntity))
     {
-        auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+        auto& localComponent = m_world.get<LocalComponent>(aEntity);
 
         RequestOwnershipTransfer request;
         request.ServerId = localComponent.Id;
 
         m_transport.Send(request);
 
-        aRegistry.remove<LocalAnimationComponent, LocalComponent>(aEntity);
+        m_world.remove<LocalAnimationComponent, LocalComponent>(aEntity);
     }
 }
 
