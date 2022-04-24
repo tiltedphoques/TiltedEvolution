@@ -109,10 +109,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
 }
 
-void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) const noexcept
+void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
-    // TODO(cosideci): add entities to member form id map?
-
     if (acEvent.FormId == 0x14)
     {
         Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
@@ -142,16 +140,19 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) const noexce
     ProcessNewEntity(entity);
 }
 
-void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) const noexcept
+void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 {
-    auto view = m_world.view<FormIdComponent>(entt::exclude<InteractiveObjectComponent>);
+    auto view = m_world.view<FormIdComponent>();
     const auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.FormId](auto aEntity) 
     {
         return view.get<FormIdComponent>(aEntity).Id == formId;
     });
 
     if (entityIt == view.end())
+    {
+        spdlog::error("Actor to remove not found in form ids map {:X}", acEvent.FormId);
         return;
+    }
 
     if (m_world.all_of<FormIdComponent>(*entityIt))
         m_world.remove<FormIdComponent>(*entityIt);
@@ -160,7 +161,6 @@ void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) const no
         m_world.destroy(*entityIt);
 
     auto& formIdComponent = m_world.get<FormIdComponent>(*entityIt);
-
     CancelServerAssignment(*entityIt, formIdComponent.Id);
 }
 
@@ -991,10 +991,7 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
 
     CacheSystem::Setup(World::Get(), aEntity, pActor);
 
-    // TODO(cosideci): why check for npc?
-    auto* const pNpc = Cast<TESNPC>(pActor->baseForm);
-    if(pNpc)
-        RequestServerAssignment(aEntity);
+    RequestServerAssignment(aEntity);
 }
 
 void CharacterService::RequestServerAssignment(const entt::entity aEntity) const noexcept
@@ -1014,23 +1011,21 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     if (!pNpc)
         return;
 
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (!m_world.GetModSystem().GetServerModId(formIdComponent.Id, modId, baseId))
-        return;
-
-    uint32_t cellBaseId = 0;
-    uint32_t cellModId = 0;
-    if (!m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, cellModId, cellBaseId))
-        return;
-
     AssignCharacterRequest message;
 
     message.Cookie = sCookieSeed;
-    message.ReferenceId.BaseId = baseId;
-    message.ReferenceId.ModId = modId;
-    message.CellId.BaseId = cellBaseId;
-    message.CellId.ModId = cellModId;
+
+    if (!m_world.GetModSystem().GetServerModId(formIdComponent.Id, message.ReferenceId))
+    {
+        spdlog::error("Server reference id not found for form id {:X}", formIdComponent.Id);
+        return;
+    }
+
+    if (!m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId))
+    {
+        spdlog::error("Server cell id not found for cell id {:X}", pActor->parentCell->formID);
+        return;
+    }
 
     if (const auto pWorldSpace = pActor->GetWorldSpace())
     {
@@ -1058,7 +1053,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     const auto changeFlags = pNpc->GetChangeFlags();
 
-    if(isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
+    if (isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
@@ -1120,10 +1115,13 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsDead = pActor->IsDead();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if(isTemporary)
+    if (isTemporary)
     {
-        if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        {
+            spdlog::error("Server NPC form id not found for form id {:X}", pNpc->formID);
             return;
+        }
     }
 
     // Serialize actions

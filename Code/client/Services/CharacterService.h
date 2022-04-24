@@ -48,8 +48,8 @@ struct CharacterService
 
     TP_NOCOPYMOVE(CharacterService);
 
-    void OnActorAdded(const ActorAddedEvent& acEvent) const noexcept;
-    void OnActorRemoved(const ActorRemovedEvent& acEvent) const noexcept;
+    void OnActorAdded(const ActorAddedEvent& acEvent) noexcept;
+    void OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept;
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;

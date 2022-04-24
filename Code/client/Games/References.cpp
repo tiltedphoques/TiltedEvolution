@@ -625,7 +625,7 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     const auto* pLock = apThis->GetLock();
     uint8_t lockLevel = pLock->lockLevel;
 
-    World::Get().GetRunner().Trigger(LockChangeEvent(apThis, pLock->flags, lockLevel));
+    World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->flags, lockLevel));
 
     ThisCall(RealLockChange, apThis);
 }

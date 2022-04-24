@@ -177,6 +177,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
     if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, request.Id))
         return;
 
+    // TODO(cosideci): confirm usage of GetCellId()
     if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
         return;
 
@@ -234,11 +235,20 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     LockChangeRequest request;
 
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, request.Id))
+    if (!m_world.GetModSystem().GetServerModId(acEvent.FormId, request.Id))
+    {
+        spdlog::error("Server form id for lock object not found, form id: {:X}", acEvent.FormId);
         return;
+    }
 
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
+    const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
+
+    // TODO(cosideci): confirm usage of GetCellId()
+    if (!m_world.GetModSystem().GetServerModId(pObject->GetCellId(), request.CellId))
+    {
+        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->GetCellId());
         return;
+    }
 
     request.IsLocked = acEvent.IsLocked;
     request.LockLevel = acEvent.LockLevel;

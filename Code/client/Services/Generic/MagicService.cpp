@@ -54,22 +54,20 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
     ApplyQueuedEffects();
 }
 
-void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
+void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
-    TP_ASSERT(acSpellCastEvent.pSpell, "SpellCastEvent has no spell");
-
-    if (!acSpellCastEvent.pCaster->pCasterActor || !acSpellCastEvent.pCaster->pCasterActor->GetNiNode())
+    if (!acEvent.pCaster->pCasterActor || !acEvent.pCaster->pCasterActor->GetNiNode())
     {
         spdlog::warn("Spell cast event has no actor or actor is not loaded");
         return;
     }
 
     // only sync concentration spells through spell cast sync, the rest through projectile sync for accuracy
-    if (SpellItem* pSpell = Cast<SpellItem>(acSpellCastEvent.pSpell))
+    if (SpellItem* pSpell = Cast<SpellItem>(TESForm::GetById(acEvent.SpellId)))
     {
         if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
         {
@@ -78,7 +76,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
         }
     }
 
-    uint32_t formId = acSpellCastEvent.pCaster->pCasterActor->formID;
+    uint32_t formId = acEvent.pCaster->pCasterActor->formID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
     const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
@@ -92,15 +90,21 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) cons
     auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
 
     SpellCastRequest request{};
+
     request.CasterId = localComponent.Id;
-    request.CastingSource = acSpellCastEvent.pCaster->GetCastingSource();
-    request.IsDualCasting = acSpellCastEvent.pCaster->GetIsDualCasting();
-    m_world.GetModSystem().GetServerModId(acSpellCastEvent.pSpell->formID, request.SpellFormId.ModId,
-                                          request.SpellFormId.BaseId);
-    if (acSpellCastEvent.DesiredTargetID != 0)
+    request.CastingSource = acEvent.pCaster->GetCastingSource();
+    request.IsDualCasting = acEvent.pCaster->GetIsDualCasting();
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.SpellId, request.SpellFormId))
+    {
+        spdlog::error("Server spell id not found for spell form id {:X}", acEvent.SpellId);
+        return;
+    }
+
+    if (acEvent.DesiredTargetID != 0)
     {
         auto targetView = m_world.view<FormIdComponent>();
-        const auto targetEntityIt = std::find_if(std::begin(targetView), std::end(targetView), [id = acSpellCastEvent.DesiredTargetID, targetView](entt::entity entity)
+        const auto targetEntityIt = std::find_if(std::begin(targetView), std::end(targetView), [id = acEvent.DesiredTargetID, targetView](entt::entity entity)
         {
             return targetView.get<FormIdComponent>(entity).Id == id;
         });
