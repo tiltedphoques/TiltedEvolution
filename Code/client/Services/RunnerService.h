@@ -4,6 +4,9 @@
 
 struct UpdateEvent;
 
+/**
+* @brief Dispatches events.
+*/
 struct RunnerService
 {
     RunnerService(entt::dispatcher& aDispatcher) noexcept;
@@ -11,8 +14,14 @@ struct RunnerService
 
     TP_NOCOPYMOVE(RunnerService);
 
+    /**
+    * @brief Executes all queued events every frame.
+    */
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
 
+    /**
+    * @brief Queues an event for OnUpdate() to execute.
+    */
     template<class T>
     void Trigger(T acEvent)
     {
@@ -22,6 +31,9 @@ struct RunnerService
         });
     }
 
+    /**
+    * @brief Queues a lambda for OnUpdate() to execute.
+    */
     void Queue(std::function<void()> aFunctor) noexcept;
 
 private:

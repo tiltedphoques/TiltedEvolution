@@ -41,7 +41,7 @@ protected:
     */
     void DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewGridCell) noexcept;
     /**
-    * Dispatches (un)loaded actors.
+    * @brief Dispatches (un)loaded actors.
     */
     void VisitForms() noexcept;
 

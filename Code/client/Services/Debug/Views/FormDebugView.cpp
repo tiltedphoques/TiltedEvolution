@@ -6,12 +6,12 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <AI/AIProcess.h>
 #include <Misc/MiddleProcess.h>
 #include <Effects/ActiveEffect.h>
 
-void TestService::DrawFormDebugView()
+void DebugService::DrawFormDebugView()
 {
     static TESObjectREFR* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;

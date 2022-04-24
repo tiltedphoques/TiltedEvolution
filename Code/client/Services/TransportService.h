@@ -15,6 +15,9 @@ struct World;
 
 using TiltedPhoques::Client;
 
+/**
+* @brief Handles communication with the server.
+*/
 struct TransportService : Client
 {
     TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

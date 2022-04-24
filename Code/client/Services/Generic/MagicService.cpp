@@ -48,47 +48,10 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenUpdates = 100ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenUpdates)
-        return;
-
-    lastSendTimePoint = now;
-
-    Vector<uint32_t> markedForRemoval;
-
-    for (auto [formId, request] : m_queuedEffects)
-    {
-        auto view = m_world.view<FormIdComponent>();
-        const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) {
-            return view.get<FormIdComponent>(entity).Id == id;
-        });
-
-        if (it == std::end(view))
-            continue;
-
-        entt::entity entity = *it;
-
-        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
-        if (!serverIdRes.has_value())
-            continue;
-
-        request.TargetId = serverIdRes.value();
-
-        m_transport.Send(request);
-
-        markedForRemoval.push_back(formId);
-    }
-
-    for (uint32_t formId : markedForRemoval)
-        m_queuedEffects.erase(formId);
-#endif
+    ApplyQueuedEffects();
 }
 
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acSpellCastEvent) const noexcept
@@ -419,6 +382,46 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     pActor->magicTarget.AddTarget(data);
 #endif
+}
+
+void MagicService::ApplyQueuedEffects() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 100ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    Vector<uint32_t> markedForRemoval;
+
+    for (auto [formId, request] : m_queuedEffects)
+    {
+        auto view = m_world.view<FormIdComponent>();
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) {
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
+
+        if (it == std::end(view))
+            continue;
+
+        entt::entity entity = *it;
+
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
+            continue;
+
+        request.TargetId = serverIdRes.value();
+
+        m_transport.Send(request);
+
+        markedForRemoval.push_back(formId);
+    }
+
+    for (uint32_t formId : markedForRemoval)
+        m_queuedEffects.erase(formId);
 }
 
 BSTEventResult MagicService::OnEvent(const TESMagicEffectApplyEvent* apEvent, const EventDispatcher<TESMagicEffectApplyEvent>*)

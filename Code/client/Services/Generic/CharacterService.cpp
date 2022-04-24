@@ -171,7 +171,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunFactionsUpdates();
     RunRemoteUpdates();
     RunExperienceUpdates();
-    RunWeaponDrawUpdates(acUpdateEvent);
+    ApplyCachedWeaponDraws(acUpdateEvent);
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -1466,7 +1466,7 @@ void CharacterService::RunExperienceUpdates() noexcept
     spdlog::debug("Sending over experience {}", message.Experience);
 }
 
-void CharacterService::RunWeaponDrawUpdates(const UpdateEvent& acUpdateEvent) noexcept
+void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) noexcept
 {
     std::vector<uint32_t> toRemove{};
 

@@ -6,7 +6,7 @@
 #include <Services/CharacterService.h>
 #include <Services/InputService.h>
 #include <Services/TransportService.h>
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <Services/RunnerService.h>
 #include <Services/ImguiService.h>
 #include <Services/ScriptService.h>
@@ -35,7 +35,7 @@ World::World()
     set<OverlayService>(*this, m_transport, m_dispatcher);
     set<InputService>(ctx<OverlayService>());
     set<CharacterService>(*this, m_dispatcher, m_transport);
-    set<TestService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
+    set<DebugService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<PapyrusService>(m_dispatcher);
     set<DiscordService>(m_dispatcher);

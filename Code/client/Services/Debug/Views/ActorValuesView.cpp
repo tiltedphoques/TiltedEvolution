@@ -1,10 +1,10 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <Forms/ActorValueInfo.h>
 
 #include <imgui.h>
 
-void TestService::DrawActorValuesView()
+void DebugService::DrawActorValuesView()
 {
     Actor* pActor = Cast<Actor>(TESForm::GetById(m_formId));
     if (!pActor)
