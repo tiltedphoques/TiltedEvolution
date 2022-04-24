@@ -63,15 +63,17 @@ void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
     if (m_worldSpaceId != worldSpaceId || aForceTrigger)
     {
         DetectGridCellChange(pWorldSpace, true);
+        // If the world space changes, then we want to send out a CellChangeEvent out too.
         aForceTrigger = true;
     }
 
+    // TODO(cosideci): else if
     if (m_centerGridX != pTES->centerGridX || m_centerGridY != pTES->centerGridY)
         DetectGridCellChange(pWorldSpace, false);
 
     if (m_currentGridX != pTES->currentGridX || m_currentGridY != pTES->currentGridY || aForceTrigger)
     {
-        CellChangeEvent cellChangeEvent;
+        CellChangeEvent cellChangeEvent{};
 
         if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, cellChangeEvent.WorldSpaceId))
         {
@@ -116,7 +118,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
 {
     const TES* pTES = TES::Get();
 
-    GridCellChangeEvent changeEvent;
+    GridCellChangeEvent changeEvent{};
     const uint32_t worldSpaceId = aWorldSpace->formID;
     changeEvent.WorldSpaceId = worldSpaceId;
 

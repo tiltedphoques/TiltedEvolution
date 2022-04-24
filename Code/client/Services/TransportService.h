@@ -9,7 +9,6 @@ struct CellChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
-struct SendServerMessageEvent;
 
 struct World;
 
@@ -38,7 +37,6 @@ protected:
 
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
 

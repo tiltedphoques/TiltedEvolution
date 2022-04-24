@@ -1,5 +1,8 @@
 #pragma once
 
+/**
+* @brief Magic effect added to a target (i.e. an actor or object).
+*/
 struct AddTargetEvent
 {
     AddTargetEvent() = default;

@@ -9,7 +9,6 @@
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
 
-#include <Events/MagicSyncEvent.h>
 #include <Events/UpdateEvent.h>
 
 #include <Games/References.h>

@@ -88,6 +88,7 @@ private:
 
     //! @brief Cached actor forms detected in the previous frame.
     Set<uint32_t> m_forms;
+    // TODO(cosideci): coordinate struct
     int32_t m_centerGridX = 0x7FFFFFFF;
     int32_t m_centerGridY = 0x7FFFFFFF;
     int32_t m_currentGridX = 0x7FFFFFFF;

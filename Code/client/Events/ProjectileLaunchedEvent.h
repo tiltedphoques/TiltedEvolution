@@ -1,8 +1,8 @@
 #pragma once
 
-struct TESForm;
-struct TESObjectREFR;
-
+/**
+* @brief Dispatched when a local projectile has been launched.
+*/
 struct ProjectileLaunchedEvent
 {
     NiPoint3 Origin;
