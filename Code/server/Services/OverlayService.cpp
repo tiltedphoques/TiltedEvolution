@@ -18,15 +18,6 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
 {
 }
 
-void OverlayService::BroadcastMessage(const std::string aMessage)
-{
-    NotifyChatMessageBroadcast notifyMessage;
-    notifyMessage.PlayerName = "";
-    notifyMessage.ChatMessage = aMessage;
-
-    GameServer::Get()->SendToPlayers(notifyMessage);
-}
-
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
     NotifyChatMessageBroadcast notifyMessage;

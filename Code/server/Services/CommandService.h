@@ -17,6 +17,9 @@ struct CommandService
 
 protected:
 
+    /**
+    * @brief Returns the location of the target player of the teleport command.
+    */
     void OnTeleportCommandRequest(const PacketEvent<TeleportCommandRequest>& acMessage) const noexcept;
 
 private:
