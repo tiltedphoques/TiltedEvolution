@@ -7,16 +7,11 @@
 struct World;
 struct UpdateEvent;
 struct PlayerJoinEvent;
-struct PlayerLeaveCellEvent;
-struct ActivateRequest;
-struct LockChangeRequest;
-struct AssignObjectsRequest;
-struct ScriptAnimationRequest;
 
-class EnvironmentService
+class CalendarService
 {
 public:
-    EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher);
+    CalendarService(World &aWorld, entt::dispatcher &aDispatcher);
 
     // we use these types for SOL
     // this is done this way because SOL
@@ -38,21 +33,12 @@ public:
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 
     void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
-    void OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept;
-    void OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>&) noexcept;
-    void OnActivate(const PacketEvent<ActivateRequest>&) const noexcept;
-    void OnLockChange(const PacketEvent<LockChangeRequest>&) const noexcept;
-    void OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>&) noexcept;
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
 
+    World &m_world;
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
-    entt::scoped_connection m_leaveCellConnection;
-    entt::scoped_connection m_assignObjectConnection;
-    entt::scoped_connection m_activateConnection;
-    entt::scoped_connection m_lockChangeConnection;
-    entt::scoped_connection m_scriptAnimationConnection;
-    World &m_world;
 };

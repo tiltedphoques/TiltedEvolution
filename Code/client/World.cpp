@@ -13,13 +13,14 @@
 #include <Services/ScriptService.h>
 #include <Services/PapyrusService.h>
 #include <Services/DiscordService.h>
-#include <Services/EnvironmentService.h>
+#include <Services/ObjectService.h>
 #include <Services/QuestService.h>
 #include <Services/PartyService.h>
 #include <Services/ActorValueService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/CommandService.h>
+#include <Services/CalendarService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -40,7 +41,8 @@ World::World()
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<PapyrusService>(m_dispatcher);
     set<DiscordService>(m_dispatcher);
-    set<EnvironmentService>(*this, m_dispatcher, m_transport);
+    set<ObjectService>(*this, m_dispatcher, m_transport);
+    set<CalendarService>(*this, m_dispatcher, m_transport);
     set<QuestService>(*this, m_dispatcher, ctx<ImguiService>());
     set<PartyService>(m_dispatcher, m_transport);
     set<ActorValueService>(*this, m_dispatcher, m_transport);

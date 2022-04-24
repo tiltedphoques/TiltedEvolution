@@ -1,15 +1,12 @@
-#include <TiltedOnlinePCH.h>
-
+#include <Services/ObjectService.h>
 
 #include <World.h>
-#include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/UpdateEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/ActivateEvent.h>
 #include <Events/LockChangeEvent.h>
 #include <Events/ScriptAnimationEvent.h>
-#include <Services/EnvironmentService.h>
-#include <Services/ImguiService.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/AssignObjectsRequest.h>
 #include <Messages/AssignObjectsResponse.h>
@@ -20,37 +17,24 @@
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
 
-#include <TimeManager.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 
-#include <imgui.h>
 #include <inttypes.h>
 
-constexpr float kTransitionSpeed = 5.f;
-
-bool EnvironmentService::s_gameClockLocked = false;
-
-bool EnvironmentService::AllowGameTick() noexcept
-{
-    return !s_gameClockLocked;
-}
-
-EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) 
+ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) 
     : m_world(aWorld)
     , m_transport(aTransport)
 {
-    m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&EnvironmentService::OnTimeUpdate>(this);
-    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::HandleUpdate>(this);
-    m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&EnvironmentService::OnDisconnected>(this);
-    m_cellChangeConnection = aDispatcher.sink<CellChangeEvent>().connect<&EnvironmentService::OnCellChange>(this);
-    m_onActivateConnection = aDispatcher.sink<ActivateEvent>().connect<&EnvironmentService::OnActivate>(this);
-    m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&EnvironmentService::OnActivateNotify>(this);
-    m_lockChangeConnection = aDispatcher.sink<LockChangeEvent>().connect<&EnvironmentService::OnLockChange>(this);
-    m_lockChangeNotifyConnection = aDispatcher.sink<NotifyLockChange>().connect<&EnvironmentService::OnLockChangeNotify>(this);
-    m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&EnvironmentService::OnAssignObjectsResponse>(this);
-    m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&EnvironmentService::OnScriptAnimationEvent>(this);
-    m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&EnvironmentService::OnNotifyScriptAnimation>(this);
+    m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&ObjectService::OnDisconnected>(this);
+    m_cellChangeConnection = aDispatcher.sink<CellChangeEvent>().connect<&ObjectService::OnCellChange>(this);
+    m_onActivateConnection = aDispatcher.sink<ActivateEvent>().connect<&ObjectService::OnActivate>(this);
+    m_activateConnection = aDispatcher.sink<NotifyActivate>().connect<&ObjectService::OnActivateNotify>(this);
+    m_lockChangeConnection = aDispatcher.sink<LockChangeEvent>().connect<&ObjectService::OnLockChange>(this);
+    m_lockChangeNotifyConnection = aDispatcher.sink<NotifyLockChange>().connect<&ObjectService::OnLockChangeNotify>(this);
+    m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&ObjectService::OnAssignObjectsResponse>(this);
+    m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&ObjectService::OnScriptAnimationEvent>(this);
+    m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&ObjectService::OnNotifyScriptAnimation>(this);
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
@@ -59,22 +43,12 @@ EnvironmentService::EnvironmentService(World& aWorld, entt::dispatcher& aDispatc
 #endif
 }
 
-void EnvironmentService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
+void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
-    // disable the game clock
-    m_onlineTime.TimeScale = acMessage.TimeScale;
-    m_onlineTime.Time = acMessage.Time;
-    ToggleGameClock(false);
+    // TODO(cosideci): clear object components
 }
 
-void EnvironmentService::OnDisconnected(const DisconnectedEvent&) noexcept
-{
-    // signal a time transition
-    m_fadeTimer = 0.f;
-    m_switchToOffline = true;
-}
-
-void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
+void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -119,7 +93,7 @@ void EnvironmentService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
-void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessage) noexcept
+void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessage) noexcept
 {
     for (const ObjectData& objectData : acMessage.Objects)
     {
@@ -157,7 +131,7 @@ void EnvironmentService::OnAssignObjectsResponse(const AssignObjectsResponse& ac
     }
 }
 
-entt::entity EnvironmentService::CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept
+entt::entity ObjectService::CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept
 {
     const auto view = m_world.view<FormIdComponent, InteractiveObjectComponent>();
 
@@ -178,7 +152,7 @@ entt::entity EnvironmentService::CreateObjectEntity(const uint32_t acFormId, con
     return entity;
 }
 
-void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
+void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
 {
     if (acEvent.ActivateFlag)
     {
@@ -224,7 +198,7 @@ void EnvironmentService::OnActivate(const ActivateEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
-void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
+void ObjectService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActivatorId);
     if (!pActor)
@@ -253,7 +227,7 @@ void EnvironmentService::OnActivateNotify(const NotifyActivate& acMessage) noexc
 #endif
 }
 
-void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept
+void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -272,7 +246,7 @@ void EnvironmentService::OnLockChange(const LockChangeEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
-void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexcept
+void ObjectService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexcept
 {
     const auto cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
     if (cObjectId == 0)
@@ -302,7 +276,7 @@ void EnvironmentService::OnLockChangeNotify(const NotifyLockChange& acMessage) n
     pObject->LockChange();
 }
 
-void EnvironmentService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEvent) noexcept
+void ObjectService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEvent) noexcept
 {
     ScriptAnimationRequest request{};
     request.FormID = acEvent.FormID;
@@ -312,7 +286,7 @@ void EnvironmentService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEv
     m_transport.Send(request);
 }
 
-void EnvironmentService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessage) noexcept
+void ObjectService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessage) noexcept
 {
 #if TP_SKYRIM64
     if (acMessage.FormID == 0)
@@ -340,101 +314,7 @@ void EnvironmentService::OnNotifyScriptAnimation(const NotifyScriptAnimation& ac
 #endif
 }
 
-float EnvironmentService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
-{
-    const auto t = aTo.Time - aFrom.Time;
-    if (t < 0.f)
-    {
-        const auto v = t + 24.f;
-        // interpolate on the time difference, not the time
-        const auto x = TiltedPhoques::Lerp(0.f, v, m_fadeTimer / kTransitionSpeed) + aFrom.Time;
-
-        return TiltedPhoques::Mod(x, 24.f);
-    }
-    
-    return TiltedPhoques::Lerp(aFrom.Time, aTo.Time, m_fadeTimer / kTransitionSpeed);
-}
-
-void EnvironmentService::ToggleGameClock(bool aEnable)
-{
-    auto* pGameTime = TimeData::Get();
-    if (aEnable)
-    {
-        pGameTime->GameDay->i = m_offlineTime.Day;
-        pGameTime->GameMonth->i = m_offlineTime.Month;
-        pGameTime->GameYear->i = m_offlineTime.Year;
-        pGameTime->TimeScale->f = m_offlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
-        pGameTime->GameHour->f = m_offlineTime.Time;
-        m_switchToOffline = false;
-    }
-    else
-    {
-        m_offlineTime.Day = pGameTime->GameDay->i;
-        m_offlineTime.Month = pGameTime->GameMonth->i;
-        m_offlineTime.Year = pGameTime->GameYear->i;
-        m_offlineTime.Time = pGameTime->GameHour->f;
-        m_offlineTime.TimeScale = pGameTime->TimeScale->f;
-    }
-
-    s_gameClockLocked = !aEnable;
-}
-
-void EnvironmentService::HandleUpdate(const UpdateEvent& aEvent) noexcept
-{
-    if (s_gameClockLocked)
-    {
-        const auto updateDelta = static_cast<float>(aEvent.Delta);
-        auto* pGameTime = TimeData::Get();
-
-        if (!m_lastTick)
-            m_lastTick = m_world.GetTick();
-
-        const auto now = m_world.GetTick();
-
-        if (m_switchToOffline)
-        {
-            // time transition out
-            if (m_fadeTimer < kTransitionSpeed)
-            {
-                pGameTime->GameHour->f = TimeInterpolate(m_onlineTime, m_offlineTime);
-                // before we quit here we fire this event
-                if ((m_fadeTimer + updateDelta) > kTransitionSpeed)
-                {
-                    m_fadeTimer += updateDelta;
-                    ToggleGameClock(true);
-                }
-                else
-                    m_fadeTimer += updateDelta;
-            }
-        }
-
-        // we got disconnected or the client got ahead of us
-        if (now < m_lastTick)
-            return;
-
-        const auto delta = now - m_lastTick;
-        m_lastTick = now;
-
-        m_onlineTime.Update(delta);
-        pGameTime->GameDay->i = m_onlineTime.Day;
-        pGameTime->GameMonth->i = m_onlineTime.Month;
-        pGameTime->GameYear->i = m_onlineTime.Year;
-        pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
-
-        // time transition in
-        if (m_fadeTimer < kTransitionSpeed)
-        {
-            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime, m_onlineTime);
-            m_fadeTimer += updateDelta;
-        }
-        else
-            pGameTime->GameHour->f = m_onlineTime.Time;
-    }
-}
-
-BSTEventResult EnvironmentService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
+BSTEventResult ObjectService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
 {
 #if ENVIRONMENT_DEBUG
     auto view = m_world.view<InteractiveObjectComponent>();
