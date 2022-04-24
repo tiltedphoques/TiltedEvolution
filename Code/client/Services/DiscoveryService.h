@@ -3,6 +3,8 @@
 #include <Events/EventDispatcher.h>
 #include <Games/Events.h>
 
+#include <Structs/GridCellCoords.h>
+
 struct World;
 
 struct ConnectedEvent;
@@ -37,9 +39,9 @@ protected:
     * Checks whether the grid cell has shifted, and if so,
     * notify the client about the newly loaded cells.
     * @param aWorldSpace The world space that the grid cell is in.
-    * @param aNewGridCell True if the player just walked into the new world space.
+    * @param aNewCellGrid True if the player just walked into the new world space.
     */
-    void DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewGridCell) noexcept;
+    void DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNewCellGrid) noexcept;
     /**
     * @brief Dispatches (un)loaded actors.
     */
@@ -88,11 +90,16 @@ private:
 
     //! @brief Cached actor forms detected in the previous frame.
     Set<uint32_t> m_forms;
-    // TODO(cosideci): coordinate struct
-    int32_t m_centerGridX = 0x7FFFFFFF;
-    int32_t m_centerGridY = 0x7FFFFFFF;
-    int32_t m_currentGridX = 0x7FFFFFFF;
-    int32_t m_currentGridY = 0x7FFFFFFF;
+    /**
+    * The center grid coordinates are the coordinates of the cell in the cell grid
+    * where the cells around it in a 5 by 5 grid (by default) are loaded.
+    */
+    GridCellCoords m_centerGrid{};
+    /**
+    * The current grid coordinates are the coordinates of the cell that is currently
+    * actually occupied by the player.
+    */
+    GridCellCoords m_currentGrid{};
     uint32_t m_worldSpaceId = 0;
     uint32_t m_interiorCellId = 0;
     struct TESForm *m_pLocation = nullptr;

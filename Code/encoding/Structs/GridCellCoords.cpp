@@ -3,6 +3,11 @@
 
 using TiltedPhoques::Serialization;
 
+GridCellCoords::GridCellCoords()
+{
+    Reset();
+}
+
 GridCellCoords::GridCellCoords(int32_t aX, int32_t aY) noexcept
     : X(aX)
     , Y(aY)
