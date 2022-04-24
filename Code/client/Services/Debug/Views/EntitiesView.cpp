@@ -37,7 +37,7 @@ void DebugService::DisplayEntities() noexcept
     StackAllocator<1 << 12> allocator;
     ScopedAllocator _{ allocator };
 
-    const auto view = m_world.view<FormIdComponent>(entt::exclude<InteractiveObjectComponent>);
+    const auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
 
     Vector<entt::entity> entities(view.begin(), view.end());
 
@@ -81,7 +81,7 @@ void DebugService::DisplayObjects() noexcept
     StackAllocator<1 << 12> allocator;
     ScopedAllocator _{ allocator };
 
-    const auto view = m_world.view<FormIdComponent, InteractiveObjectComponent>();
+    const auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
     Vector<entt::entity> entities(view.begin(), view.end());
 

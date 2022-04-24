@@ -58,11 +58,17 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     // TODO(cosideci): why isn't the event's cell id being used?
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
+    {
+        spdlog::error("Server cell id not found for cell form id {:X}", pPlayer->parentCell->formID);
         return;
+    }
 
     TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(pPlayer->parentCell->formID));
     if (!pCell)
+    {
+        spdlog::error("Cell not found for cell form id {:X}", pPlayer->parentCell->formID);
         return;
+    }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
     // TODO(cosideci): create entities for container objects?
@@ -76,7 +82,10 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         objectData.CellId = cellId;
 
         if (!m_world.GetModSystem().GetServerModId(pObject->formID, objectData.Id))
+        {
+            spdlog::error("Server form id not found for object with form id {:X}", pObject->formID);
             continue;
+        }
 
         if (Lock* pLock = pObject->GetLock())
         {
@@ -98,12 +107,12 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
     for (const ObjectData& objectData : acMessage.Objects)
     {
         const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(objectData.Id);
-        if (cObjectId == 0)
-            continue;
-
         TESObjectREFR* pObject = Cast<TESObjectREFR>(TESForm::GetById(cObjectId));
         if (!pObject)
+        {
+            spdlog::error("Object not found for form id {:X}", objectData.Id);
             continue;
+        }
 
         CreateObjectEntity(pObject->formID, objectData.ServerId);
 
@@ -133,11 +142,11 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
 
 entt::entity ObjectService::CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept
 {
-    const auto view = m_world.view<FormIdComponent, InteractiveObjectComponent>();
+    const auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
     auto it = std::find_if(view.begin(), view.end(), [acServerId, view](entt::entity entity)
         { 
-            return view.get<InteractiveObjectComponent>(entity).Id == acServerId;
+            return view.get<ObjectComponent>(entity).Id == acServerId;
         });
 
     if (it != view.end())
@@ -147,7 +156,7 @@ entt::entity ObjectService::CreateObjectEntity(const uint32_t acFormId, const ui
     spdlog::info("Created object entity, server id: {:X}, form id {:X}", acServerId, acFormId);
 
     m_world.emplace<FormIdComponent>(entity, acFormId);
-    m_world.emplace<InteractiveObjectComponent>(entity, acServerId);
+    m_world.emplace<ObjectComponent>(entity, acServerId);
 
     return entity;
 }
@@ -175,11 +184,17 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
     ActivateRequest request;
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->formID, request.Id))
+    {
+        spdlog::error("Server form id not found for object form id {:X}", acEvent.pObject->formID);
         return;
+    }
 
     // TODO(cosideci): confirm usage of GetCellId()
     if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
+    {
+        spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->GetCellId());
         return;
+    }
 
     auto view = m_world.view<FormIdComponent>();
     const auto pEntity =
@@ -188,11 +203,17 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         });
 
     if (pEntity == std::end(view))
+    {
+        spdlog::error("Activator entity not found for form id {:X}", acEvent.pActivator->formID);
         return;
+    }
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*pEntity);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("Server id not found for form id {:X}", acEvent.pActivator->formID);
         return;
+    }
 
     request.ActivatorId = serverIdRes.value();
 
@@ -203,15 +224,12 @@ void ObjectService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActivatorId);
     if (!pActor)
-        return;
-
-    const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
-    if (cObjectId == 0)
     {
-        spdlog::error("Failed to retrieve object to activate.");
+        spdlog::error("Activator not found for server id {:X}", acMessage.ActivatorId);
         return;
     }
 
+    const uint32_t cObjectId = World::Get().GetModSystem().GetGameId(acMessage.Id);
     TESObjectREFR* pObject = Cast<TESObjectREFR>(TESForm::GetById(cObjectId));
     if (!pObject)
     {
@@ -278,7 +296,10 @@ void ObjectService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexce
     {
         pLock = pObject->CreateLock();
         if (!pLock)
+        {
+            spdlog::error("Failed to create lock for object form id {:X}", pObject->formID);
             return;
+        }
     }
 
     pLock->lockLevel = acMessage.LockLevel;
@@ -327,11 +348,11 @@ void ObjectService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessa
 BSTEventResult ObjectService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)
 {
 #if ENVIRONMENT_DEBUG
-    auto view = m_world.view<InteractiveObjectComponent>();
+    auto view = m_world.view<ObjectComponent>();
 
     const auto itor =
         std::find_if(std::begin(view), std::end(view), [id = acEvent->object->formID, view](entt::entity entity) {
-            return view.get<InteractiveObjectComponent>(entity).Id == id;
+            return view.get<ObjectComponent>(entity).Id == id;
         });
 
     if (itor == std::end(view))
