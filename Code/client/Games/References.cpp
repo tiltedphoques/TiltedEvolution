@@ -93,7 +93,6 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
-            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
             auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
@@ -181,7 +180,6 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
             auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
