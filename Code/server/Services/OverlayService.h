@@ -8,6 +8,9 @@
 
 struct World;
 
+/**
+* @brief Dispatches UI events that modify the UI view of other cients.
+*/
 class OverlayService
 {
   public:

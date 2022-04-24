@@ -7,6 +7,11 @@ struct World;
 struct UpdateEvent;
 struct RequestQuestUpdate;
 
+/**
+* @brief Dispatch quest sync messages.
+* 
+* This service is currently not in use.
+*/
 class QuestService
 {
 public:

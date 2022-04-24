@@ -10,6 +10,9 @@ struct RequestEquipmentChanges;
 struct DrawWeaponRequest;
 struct PlayerLeaveCellEvent;
 
+/**
+* @brief Relays inventory/equipment changes and updates the server side state.
+*/
 class InventoryService
 {
 public:

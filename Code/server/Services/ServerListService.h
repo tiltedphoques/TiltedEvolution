@@ -5,6 +5,9 @@ struct UpdateEvent;
 struct PlayerJoinEvent;
 struct PlayerLeaveEvent;
 
+/**
+* @brief Dispatches the current player list to the clients.
+*/
 struct ServerListService
 {
     ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

@@ -5,6 +5,9 @@
 struct World;
 struct TeleportCommandRequest;
 
+/**
+* @brief Processes incoming commands.
+*/
 struct CommandService
 {
     CommandService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

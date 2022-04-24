@@ -23,6 +23,9 @@ struct NewPackageRequest;
 struct RequestRespawn;
 struct SyncExperienceRequest;
 
+/**
+* @brief Manages player and actor state.
+*/
 struct CharacterService
 {
     CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

@@ -38,6 +38,9 @@ struct Actor;
 struct World;
 struct TransportService;
 
+/**
+* @brief Handles actors and players.
+*/
 struct CharacterService
 {
     CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;

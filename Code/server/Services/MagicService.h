@@ -7,6 +7,9 @@ struct SpellCastRequest;
 struct InterruptCastRequest;
 struct AddTargetRequest;
 
+/**
+* @brief Relays spell casting and magic effects.
+*/
 struct MagicService
 {
     MagicService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

@@ -19,6 +19,9 @@ namespace Script
     struct Quest;
 }
 
+/**
+* @brief Manages the server side scripts.
+*/
 struct ScriptService : ScriptStore
 {
     ScriptService(World& aWorld, entt::dispatcher& aDispatcher);

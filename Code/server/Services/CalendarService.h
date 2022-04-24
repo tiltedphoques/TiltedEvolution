@@ -8,6 +8,9 @@ struct World;
 struct UpdateEvent;
 struct PlayerJoinEvent;
 
+/**
+* @brief Manages time and date of the world.
+*/
 class CalendarService
 {
 public:

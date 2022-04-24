@@ -9,6 +9,9 @@ struct LockChangeRequest;
 struct AssignObjectsRequest;
 struct ScriptAnimationRequest;
 
+/**
+* @brief Manages (interactive) objects and relays interactions with said objects.
+*/
 class ObjectService
 {
 public:
