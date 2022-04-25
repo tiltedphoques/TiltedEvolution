@@ -23,7 +23,7 @@ struct GridCellCoords
 
     void Reset() noexcept
     {
-        X = Y = 0x7FFFFFFF;
+        X = Y = std::numeric_limits<int32_t>::max();
     }
 
     int32_t X{};
