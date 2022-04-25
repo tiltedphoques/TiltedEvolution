@@ -1,10 +1,12 @@
 #pragma once
 
-
 using TiltedPhoques::ConnectionId_t;
 
 struct Player;
 
+/**
+* @brief Wrapper for client-to-server messages.
+*/
 template<class T>
 struct PacketEvent
 {

@@ -1,7 +1,8 @@
 #pragma once
 
-struct ActorMagicCaster;
-
+/**
+* @brief Dispatched when a spell casting is interrupted locally.
+*/
 struct InterruptCastEvent
 {
     InterruptCastEvent(uint32_t aCasterFormID) : CasterFormID(aCasterFormID)

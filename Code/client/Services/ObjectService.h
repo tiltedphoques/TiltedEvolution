@@ -1,14 +1,11 @@
 #pragma once
 
-#include <Structs/TimeModel.h>
 #include <Events/EventDispatcher.h>
 #include <Games/Events.h>
 
-struct ImguiService;
 struct ServerTimeSettings;
 struct DisconnectedEvent;
 struct World;
-struct UpdateEvent;
 struct ActivateEvent;
 struct TransportService;
 struct NotifyActivate;
@@ -19,16 +16,16 @@ struct ScriptAnimationEvent;
 struct AssignObjectsResponse;
 struct NotifyScriptAnimation;
 
-class EnvironmentService final 
+/**
+* @brief Handles objects in the environment.
+*/
+class ObjectService final 
     : public BSTEventSink<TESActivateEvent>
 {
 public:
-    EnvironmentService(World&, entt::dispatcher&, ImguiService&, TransportService&);
+    ObjectService(World&, entt::dispatcher&, TransportService&);
 
-    static bool AllowGameTick() noexcept;
-  private:
-    void OnTimeUpdate(const ServerTimeSettings &) noexcept;
-    void HandleUpdate(const UpdateEvent &) noexcept;
+private:
     void OnDisconnected(const DisconnectedEvent &) noexcept;
     void OnCellChange(const CellChangeEvent &) noexcept;
     void OnAssignObjectsResponse(const AssignObjectsResponse &) noexcept;
@@ -38,21 +35,16 @@ public:
     void OnLockChangeNotify(const NotifyLockChange &) noexcept;
     void OnScriptAnimationEvent(const ScriptAnimationEvent &) noexcept;
     void OnNotifyScriptAnimation(const NotifyScriptAnimation &) noexcept;
-    void OnDraw() noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
 
-    void ToggleGameClock(bool aEnable);
-    float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
-
     entt::entity CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept;
 
-    entt::scoped_connection m_timeUpdateConnection;
-    entt::scoped_connection m_weatherUpdateConnection;
-    entt::scoped_connection m_updateConnection;
+    World& m_world;
+    TransportService& m_transport;
+
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_cellChangeConnection;
-    entt::scoped_connection m_drawConnection;
     entt::scoped_connection m_onActivateConnection;
     entt::scoped_connection m_activateConnection;
     entt::scoped_connection m_lockChangeConnection;
@@ -60,14 +52,4 @@ public:
     entt::scoped_connection m_assignObjectConnection;
     entt::scoped_connection m_scriptAnimationConnection;
     entt::scoped_connection m_scriptAnimationNotifyConnection;
-
-    TimeModel m_onlineTime;
-    TimeModel m_offlineTime;
-    float m_fadeTimer = 0.f;
-    bool m_switchToOffline = false;
-    static bool s_gameClockLocked;
-
-    uint64_t m_lastTick = 0;
-    World& m_world;
-    TransportService& m_transport;
 };

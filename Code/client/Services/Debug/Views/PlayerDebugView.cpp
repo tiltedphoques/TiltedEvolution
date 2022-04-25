@@ -13,9 +13,9 @@
 #include <Games/Fallout4/Forms/TESWorldSpace.h>
 #endif
 
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
-void TestService::DrawPlayerDebugView()
+void DebugService::DrawPlayerDebugView()
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer)

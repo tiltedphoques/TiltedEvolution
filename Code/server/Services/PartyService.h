@@ -14,6 +14,9 @@ struct PartyCreateRequest;
 struct PartyChangeLeaderRequest;
 struct PartyKickRequest;
 
+/**
+* @brief Manages every party in the server.
+*/
 struct PartyService
 {
     struct Party

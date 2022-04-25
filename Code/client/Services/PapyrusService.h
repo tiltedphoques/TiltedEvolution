@@ -6,6 +6,9 @@ struct TESForm;
 struct TESObjectREFR;
 struct PapyrusFunctionRegisterEvent;
 
+/**
+* @brief Handles registering and executing Papyrus functions.
+*/
 struct PapyrusService
 {
     PapyrusService(entt::dispatcher& aDispatcher) noexcept;

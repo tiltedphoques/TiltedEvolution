@@ -1,6 +1,10 @@
 #pragma once
 
-// All entities are safe to access during this event
+/**
+* @brief Dispatched on every frame.
+* 
+* All entities are safe to access during this event.
+*/
 struct UpdateEvent
 {
     explicit UpdateEvent(const double aDelta)

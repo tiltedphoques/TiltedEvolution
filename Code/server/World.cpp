@@ -5,7 +5,7 @@
 
 #include <Services/CharacterService.h>
 #include <Services/PlayerService.h>
-#include <Services/EnvironmentService.h>
+#include <Services/ObjectService.h>
 #include <Services/QuestService.h>
 #include <Services/ServerListService.h>
 #include <Services/PartyService.h>
@@ -25,7 +25,8 @@ World::World()
 
     set<CharacterService>(*this, m_dispatcher);
     set<PlayerService>(*this, m_dispatcher);
-    set<EnvironmentService>(*this, m_dispatcher);
+    set<CalendarService>(*this, m_dispatcher);
+    set<ObjectService>(*this, m_dispatcher);
     set<ModsComponent>();
     set<ServerListService>(*this, m_dispatcher);
     set<QuestService>(*this, m_dispatcher);

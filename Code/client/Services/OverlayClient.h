@@ -9,6 +9,9 @@ namespace TiltedPhoques
 struct OverlayRenderHandler;
 }
 
+/**
+* @brief Renders the UI overlay.
+*/
 struct OverlayClient : TiltedPhoques::OverlayClient
 {
     OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler);

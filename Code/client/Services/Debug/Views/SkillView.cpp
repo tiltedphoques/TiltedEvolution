@@ -1,10 +1,10 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <imgui.h>
 
 #include <PlayerCharacter.h>
 
-void TestService::DrawSkillView()
+void DebugService::DrawSkillView()
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     Skills* pSkills = *pPlayer->pSkills;

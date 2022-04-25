@@ -9,7 +9,7 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
 {
     const auto* pLocalComponent = World::Get().try_get<LocalComponent>(aEntity);
     const auto* pRemoteComponent = World::Get().try_get<RemoteComponent>(aEntity);
-    const auto* pObjectComponent = World::Get().try_get<InteractiveObjectComponent>(aEntity);
+    const auto* pObjectComponent = World::Get().try_get<ObjectComponent>(aEntity);
 
     uint32_t serverId = -1;
     if (pLocalComponent)

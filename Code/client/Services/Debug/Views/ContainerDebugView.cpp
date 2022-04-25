@@ -1,13 +1,13 @@
 #include <imgui.h>
 #include <inttypes.h>
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <PlayerCharacter.h>
 #include <EquipManager.h>
 #include <World.h>
 #include <DefaultObjectManager.h>
 
-void TestService::DrawContainerDebugView()
+void DebugService::DrawContainerDebugView()
 {
     static TESForm* pFetchForm = nullptr;
     static Actor* pActor = nullptr;

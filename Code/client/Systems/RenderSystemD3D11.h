@@ -4,6 +4,9 @@ struct ImguiService;
 struct IDXGISwapChain;
 struct OverlayService;
 
+/**
+* @brief Runs the renderer for D3D11.
+*/
 struct RenderSystemD3D11
 {
     RenderSystemD3D11(OverlayService& aOverlay, ImguiService& aImguiService);

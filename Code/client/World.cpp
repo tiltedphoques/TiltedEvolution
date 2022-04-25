@@ -3,23 +3,23 @@
 #include "World.h"
 
 #include <Services/DiscoveryService.h>
-#include <Services/EntityService.h>
 #include <Services/CharacterService.h>
 #include <Services/InputService.h>
 #include <Services/TransportService.h>
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <Services/RunnerService.h>
 #include <Services/ImguiService.h>
 #include <Services/ScriptService.h>
 #include <Services/PapyrusService.h>
 #include <Services/DiscordService.h>
-#include <Services/EnvironmentService.h>
+#include <Services/ObjectService.h>
 #include <Services/QuestService.h>
 #include <Services/PartyService.h>
 #include <Services/ActorValueService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/CommandService.h>
+#include <Services/CalendarService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -32,15 +32,15 @@ World::World()
 {
     set<ImguiService>();
     set<DiscoveryService>(*this, m_dispatcher);
-    set<EntityService>(*this, m_dispatcher);
     set<OverlayService>(*this, m_transport, m_dispatcher);
     set<InputService>(ctx<OverlayService>());
     set<CharacterService>(*this, m_dispatcher, m_transport);
-    set<TestService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
+    set<DebugService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
     set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
     set<PapyrusService>(m_dispatcher);
     set<DiscordService>(m_dispatcher);
-    set<EnvironmentService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
+    set<ObjectService>(*this, m_dispatcher, m_transport);
+    set<CalendarService>(*this, m_dispatcher, m_transport);
     set<QuestService>(*this, m_dispatcher, ctx<ImguiService>());
     set<PartyService>(m_dispatcher, m_transport);
     set<ActorValueService>(*this, m_dispatcher, m_transport);
