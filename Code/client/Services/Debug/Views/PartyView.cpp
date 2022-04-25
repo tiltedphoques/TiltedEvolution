@@ -1,4 +1,4 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <Messages/PartyKickRequest.h>
 #include <Messages/PartyChangeLeaderRequest.h>
@@ -11,7 +11,7 @@
 
 #include <imgui.h>
 
-void TestService::DrawPartyView()
+void DebugService::DrawPartyView()
 {
     if (!m_transport.IsConnected())
         return;

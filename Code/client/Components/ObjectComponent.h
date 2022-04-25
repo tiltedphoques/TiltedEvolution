@@ -4,9 +4,9 @@
 #error Include Components.h instead
 #endif
 
-struct InteractiveObjectComponent
+struct ObjectComponent
 {
-    InteractiveObjectComponent(const uint32_t acId)
+    ObjectComponent(const uint32_t acId)
         : Id(acId)
     {
     }

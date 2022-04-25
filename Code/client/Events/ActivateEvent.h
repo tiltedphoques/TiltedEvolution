@@ -4,6 +4,9 @@ struct TESObjectREFR;
 struct Actor;
 struct TESBoundObject;
 
+/**
+* @brief In-game activation (i.e. interacting with an object).
+*/
 struct ActivateEvent
 {
 #if TP_FALLOUT4

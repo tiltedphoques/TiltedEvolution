@@ -5,9 +5,14 @@ namespace TiltedMessages
     class StringCacheContent;
 }
 
-
 struct ConnectedEvent;
 struct DisconnectedEvent;
+
+/**
+* @brief Caches strings to reduce data usage when sending string data between clients.
+* 
+* This service is currently not in use.
+*/
 struct StringCacheService
 {
     StringCacheService(entt::dispatcher& aDispatcher) noexcept;

@@ -6,7 +6,6 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
-#include <Events/SendServerMessageEvent.h>
 
 #include <Games/TES.h>
 #include <Games/References.h>
@@ -34,7 +33,6 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
 {
-    m_sendServerMessageConnection = m_dispatcher.sink<SendServerMessageEvent>().connect<&TransportService::OnSendServerMessage>(this);
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
@@ -136,14 +134,6 @@ void TransportService::OnConnected()
     }
 
     Send(request);
-}
-
-void TransportService::OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept
-{
-    if (IsConnected())
-    {
-        Send(acEvent.Message);
-    }
 }
 
 void TransportService::OnDisconnected(EDisconnectReason aReason)

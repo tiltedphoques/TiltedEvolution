@@ -5,6 +5,9 @@
 struct World;
 struct TeleportCommandRequest;
 
+/**
+* @brief Processes incoming commands.
+*/
 struct CommandService
 {
     CommandService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -14,6 +17,9 @@ struct CommandService
 
 protected:
 
+    /**
+    * @brief Returns the location of the target player of the teleport command.
+    */
     void OnTeleportCommandRequest(const PacketEvent<TeleportCommandRequest>& acMessage) const noexcept;
 
 private:

@@ -8,14 +8,18 @@
 
 struct World;
 
+/**
+* @brief Dispatches UI events that modify the UI view of other cients.
+*/
 class OverlayService
 {
   public:
     OverlayService(World& aWorld, entt::dispatcher& aDispatcher);
 
-    void BroadcastMessage(const std::string aMessage);
-
   protected:
+    /**
+    * @brief Applies regex on chat message and relays it to other clients.
+    */
     void HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept;
     void HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept;
 

@@ -28,15 +28,12 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
 
     auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
+    if (it != actorValuesView.end())
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
         for (auto& [id, value] : message.Values)
         {
             actorValuesComponent.CurrentActorValues.ActorValuesList[id] = value;
-            float val = actorValuesComponent.CurrentActorValues.ActorValuesList[id];
-            spdlog::debug("Updating value {:x}:{:f} of {:x}", id, val, message.Id);
         }
     }
 
@@ -55,15 +52,12 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
 
     auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != std::end(actorValuesView) &&
-        actorValuesView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
+    if (it != actorValuesView.end())
     {
         auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
         for (auto& [id, value] : message.Values)
         {
             actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id] = value;
-            float val = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id];
-            spdlog::debug("Updating max value {:x}:{:f} of {:x}", id, val, message.Id);
         }
     }
 
@@ -77,6 +71,8 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
 void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
+
+    // TODO(cosideci): should server side health not be updated?
 
     NotifyHealthChangeBroadcast notify;
     notify.Id = message.Id;
@@ -93,8 +89,7 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
 
     const auto it = characterView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != std::end(characterView) && 
-        characterView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
+    if (it != characterView.end())
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*it);
         characterComponent.IsDead = message.IsDead;

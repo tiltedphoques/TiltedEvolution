@@ -1,11 +1,11 @@
+#include <Services/ObjectService.h>
+
 #include <GameServer.h>
 #include <World.h>
+#include <Components.h>
 
-#include <Services/EnvironmentService.h>
-#include <Events/UpdateEvent.h>
-#include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveCellEvent.h>
-#include <Messages/ServerTimeSettings.h>
+
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
 #include <Messages/LockChangeRequest.h>
@@ -14,29 +14,17 @@
 #include <Messages/AssignObjectsResponse.h>
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
-#include <Components.h>
 
-EnvironmentService::EnvironmentService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
+ObjectService::ObjectService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
 {
-    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&EnvironmentService::OnUpdate>(this);
-    m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&EnvironmentService::OnPlayerJoin>(this);
-    m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&EnvironmentService::OnPlayerLeaveCellEvent>(this);
-    m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&EnvironmentService::OnAssignObjectsRequest>(this);
-    m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&EnvironmentService::OnActivate>(this);
-    m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&EnvironmentService::OnLockChange>(this);
-    m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&EnvironmentService::OnScriptAnimationRequest>(this);
+    m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&ObjectService::OnPlayerLeaveCellEvent>(this);
+    m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&ObjectService::OnAssignObjectsRequest>(this);
+    m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&ObjectService::OnActivate>(this);
+    m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&ObjectService::OnLockChange>(this);
+    m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&ObjectService::OnScriptAnimationRequest>(this);
 }
 
-void EnvironmentService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
-{
-    ServerTimeSettings timeMsg;
-    timeMsg.TimeScale = m_timeModel.TimeScale;
-    timeMsg.Time = m_timeModel.Time;
-
-    acEvent.pPlayer->Send(timeMsg);
-}
-
-void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
+void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
     for (Player* pPlayer : m_world.GetPlayerManager())
     {
@@ -58,7 +46,7 @@ void EnvironmentService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEv
 
 // NOTE: this whole system kinda relies on all objects in a cell being static.
 // This is fine for containers and doors, but if this system is expanded, think of temporaries.
-void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
+void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
     auto view = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent>();
 
@@ -117,7 +105,7 @@ void EnvironmentService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsR
         acMessage.pPlayer->Send(response);
 }
 
-void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
+void ObjectService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) const noexcept
 {
     NotifyActivate notifyActivate;
     notifyActivate.Id = acMessage.Packet.Id;
@@ -132,7 +120,7 @@ void EnvironmentService::OnActivate(const PacketEvent<ActivateRequest>& acMessag
     }
 }
 
-void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
+void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
 {
     NotifyLockChange notifyLockChange;
     notifyLockChange.Id = acMessage.Packet.Id;
@@ -163,66 +151,7 @@ void EnvironmentService::OnLockChange(const PacketEvent<LockChangeRequest>& acMe
     }
 }
 
-bool EnvironmentService::SetTime(int aHours, int aMinutes, float aScale) noexcept
-{
-    m_timeModel.TimeScale = aScale;
-
-    if (aHours >= 0 && aHours <= 24 && aMinutes >= 0 && aMinutes <= 60)
-    {
-        // encode time as skyrim time
-        auto minutes = static_cast<float>(aMinutes) * 0.17f;
-        minutes = floor(minutes * 100) / 1000;
-        m_timeModel.Time = static_cast<float>(aHours) + minutes;
-
-        ServerTimeSettings timeMsg;
-        timeMsg.TimeScale = m_timeModel.TimeScale;
-        timeMsg.Time = m_timeModel.Time;
-        GameServer::Get()->SendToLoaded(timeMsg);
-        return true;
-    }
-
-    return false;
-}
-
-EnvironmentService::TTime EnvironmentService::GetTime() const noexcept
-{
-    const auto hour = floor(m_timeModel.Time);
-    const auto minutes = (m_timeModel.Time - hour) / 17.f;
-
-    const auto flatMinutes = static_cast<int>(ceil((minutes * 100.f) * 10.f));
-    return {static_cast<int>(hour), flatMinutes};
-}
-
-EnvironmentService::TTime EnvironmentService::GetRealTime() noexcept
-{
-    const auto t = std::time(nullptr);
-    int h = (t / 3600) % 24;
-    int m = (t / 60) % 60;
-    return {h, m};
-}
-
-EnvironmentService::TDate EnvironmentService::GetDate() const noexcept
-{
-    return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
-}
-
-void EnvironmentService::OnUpdate(const UpdateEvent &) noexcept
-{
-    if (!m_lastTick)
-        m_lastTick = GameServer::Get()->GetTick();
-
-    auto now = GameServer::Get()->GetTick();
-
-    // client got ahead, we wait
-    if (now < m_lastTick)
-        return;
-
-    auto delta = now - m_lastTick;
-    m_lastTick = now;
-    m_timeModel.Update(delta);
-}
-
-void EnvironmentService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>& acMessage) noexcept
+void ObjectService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>& acMessage) noexcept
 {
     auto& packet = acMessage.Packet;
 

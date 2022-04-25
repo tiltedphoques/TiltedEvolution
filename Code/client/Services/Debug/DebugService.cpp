@@ -1,5 +1,3 @@
-#include <TiltedOnlinePCH.h>
-
 #include <Havok/hkbStateMachine.h>
 #include <Structs/AnimationGraphDescriptorManager.h>
 
@@ -8,10 +6,9 @@
 #include <Havok/hkbBehaviorGraph.h>
 
 #include <Services/ImguiService.h>
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <Services/TransportService.h>
 
-#include <Events/MagicSyncEvent.h>
 #include <Events/UpdateEvent.h>
 
 #include <Games/References.h>
@@ -69,7 +66,7 @@ static void DrawBuildTag()
 #endif
 }
 
-void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
+void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 {
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
@@ -81,15 +78,15 @@ void __declspec(noinline) TestService::PlaceActorInWorld() noexcept
     m_actors.emplace_back(pActor);
 }
 
-TestService::TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport,
+DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport,
                          ImguiService& aImguiService)
     : m_dispatcher(aDispatcher), m_transport(aTransport), m_world(aWorld)
 {
-    m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TestService::OnUpdate>(this);
-    m_drawImGuiConnection = aImguiService.OnDraw.connect<&TestService::OnDraw>(this);
+    m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
+    m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
 }
 
-void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
+void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
@@ -143,7 +140,7 @@ void TestService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
-uint64_t TestService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
+uint64_t DebugService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
     auto hash = pManager->GetDescriptorKey();
     auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
@@ -165,7 +162,7 @@ static bool g_enableSkillsWindow{false};
 static bool g_enablePartyWindow{false};
 static bool g_enableActorValuesWindow{false};
 
-void TestService::OnDraw() noexcept
+void DebugService::OnDraw() noexcept
 {
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty() || !m_showDebugStuff)
