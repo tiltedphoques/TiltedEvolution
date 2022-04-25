@@ -115,9 +115,7 @@ static bool IsEULAAccepted()
 {
     const auto path = fs::current_path() / kConfigPathName / kEULAName;
 
-    char* pValue;
-    size_t len;
-    auto err = _dupenv_s(&pValue, &len, "TILTED_ACCEPT_EULA");
+    auto pValue = std::getenv("TILTED_ACCEPT_EULA");
     TiltedPhoques::String env = err == 0 ? pValue : "0";
     free(pValue);
 
