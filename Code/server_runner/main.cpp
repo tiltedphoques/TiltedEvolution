@@ -29,8 +29,10 @@ constexpr char kLogFileName[] =
 constexpr char kEULAName[] = "EULA.txt";
 constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted platform service agreement\n"
                              ";by setting bConfirmEULA to true\n"
-                             "[EULA]\n"
-                             "bConfirmEULA=false";
+                             "[EULA]\n";
+constexpr char kEULATextFalse[] = "bConfirmEULA=false";
+constexpr char kEULATextTrue[] = "bConfirmEULA=true";
+
 namespace fs = std::filesystem;
 
 Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
@@ -112,17 +114,26 @@ static bool RegisterQuitHandler()
 static bool IsEULAAccepted()
 {
     const auto path = fs::current_path() / kConfigPathName / kEULAName;
+    TiltedPhoques::String env = std::getenv("TILTED_ACCEPT_EULA");
+    std::ranges::transform(env, env.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    const bool envAccept = env == "true" || env == "1";
+
     if (!exists(path))
     {
         fs::create_directory(fs::current_path() / kConfigPathName);
-        TiltedPhoques::SaveFile(path, kEULAText);
-        return false;
+
+        TiltedPhoques::String eulaText = kEULAText;
+        eulaText += envAccept ? kEULATextTrue : kEULATextFalse;
+
+        TiltedPhoques::SaveFile(path, eulaText);
+        return envAccept;
     }
 
     const auto data = TiltedPhoques::LoadFile(path);
     CSimpleIni si;
     if (si.LoadData(data.c_str()) != SI_OK)
-        return false;
+        return envAccept;
 
     return si.GetBoolValue("EULA", "bConfirmEULA", false);
 }
