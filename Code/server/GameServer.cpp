@@ -52,7 +52,7 @@ Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is act
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
     "ModPolicy is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
-    "may not be able to assist you if ModPolity is disabled."};
+    "may not be able to assist you if ModPolicy is disabled."};
 
 constexpr char kMopoRecordsMissing[]{
     "Failed to start: ModPolicy is enabled, but no mods are installed. Players wont be able "
