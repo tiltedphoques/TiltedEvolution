@@ -1,6 +1,5 @@
 #include "winres.h"
 #include "BuildInfo.h"
-#include "BranchInfo.h"
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L

@@ -117,7 +117,7 @@ static bool IsEULAAccepted()
 
     char* pValue;
     size_t len;
-    errno_t err = _dupenv_s(&pValue, &len, "TILTED_ACCEPT_EULA");
+    auto err = _dupenv_s(&pValue, &len, "TILTED_ACCEPT_EULA");
     TiltedPhoques::String env = err == 0 ? pValue : "0";
     free(pValue);
 

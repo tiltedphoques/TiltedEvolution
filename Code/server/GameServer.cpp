@@ -203,7 +203,7 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("mods", "List all installed mods on this server", [&](Console::ArgStack&) {
         auto out = spdlog::get("ConOut");
-        auto& mods = m_pWorld->ctx<ModsComponent>().GetServerMods();
+        auto& mods = m_pWorld->ctx().at<ModsComponent>().GetServerMods();
         if (mods.size() == 0)
         {
             out->warn("No mods installed");
@@ -472,7 +472,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     if (acRequest->Token == sToken.value())
     {
         Mods& responseList = serverResponse.UserMods;
-        auto& modsComponent = m_pWorld->ctx<ModsComponent>();
+        auto& modsComponent = m_pWorld->ctx().at<ModsComponent>();
 
         if (IsMoPoActive())
         {

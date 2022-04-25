@@ -53,7 +53,7 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
 
     Renderer_Init(self, aOSData, aFBData, aOut);
 
-    g_sRs = &World::Get().ctx<RenderSystemD3D11>();
+    g_sRs = &World::Get().ctx().at<RenderSystemD3D11>();
     // This how the game does it too
     g_RenderWindow = &self->Data.RenderWindowA[0];
 

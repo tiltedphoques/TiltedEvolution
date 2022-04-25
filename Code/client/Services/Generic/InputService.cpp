@@ -315,13 +315,13 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     if (!pRenderer)
         return 0;
 
-    auto &discord = World::Get().ctx<DiscordService>();
+    auto &discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
     const bool active = s_pOverlay->GetActive();
     if (active)
     {
-        auto& imgui = World::Get().ctx<ImguiService>();
+        auto& imgui = World::Get().ctx().at<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
     }
 
@@ -348,7 +348,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
         if (active)
         {
-            auto& imgui = World::Get().ctx<ImguiService>();
+            auto& imgui = World::Get().ctx().at<ImguiService>();
             imgui.RawInputHandler(input);
         }
 
