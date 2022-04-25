@@ -2,6 +2,21 @@
 
 const VersionDbPtr<internal::TDynamicCast> internal::DynamicCast(109689);
 
+namespace internal
+{
+template <class T>
+RttiLocator<T>::RttiLocator(uint32_t aId)
+{
+    m_pRtti = TiltedPhoques::MakeUnique<VersionDbPtr<void*>>(aId);
+}
+
+template <class T>
+const void* RttiLocator<T>::Get()
+{
+    return *m_pRtti;
+}
+} // namespace internal
+
 template struct internal::RttiLocator<IFormFactory>;
 internal::RttiLocator<IFormFactory> registerRtti_IFormFactory(392214);
 template struct internal::RttiLocator<BaseFormComponent>;
