@@ -114,7 +114,13 @@ static bool RegisterQuitHandler()
 static bool IsEULAAccepted()
 {
     const auto path = fs::current_path() / kConfigPathName / kEULAName;
-    TiltedPhoques::String env = std::getenv("TILTED_ACCEPT_EULA");
+
+    char* pValue;
+    size_t len;
+    errno_t err = _dupenv_s(&pValue, &len, "TILTED_ACCEPT_EULA");
+    TiltedPhoques::String env = err == 0 ? pValue : "0";
+    free(pValue);
+
     std::ranges::transform(env, env.begin(), [](unsigned char c) { return std::tolower(c); });
 
     const bool envAccept = env == "true" || env == "1";
