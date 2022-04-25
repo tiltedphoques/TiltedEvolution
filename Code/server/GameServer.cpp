@@ -1,8 +1,7 @@
-
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
-#include <stdafx.h>
+
 
 #include <Events/AdminPacketEvent.h>
 #include <Events/CharacterRemoveEvent.h>
@@ -70,8 +69,6 @@ static bool IsMoPoActive()
 {
     return bEnableMoPo;
 }
-
-GameServer* GameServer::s_pInstance = nullptr;
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)

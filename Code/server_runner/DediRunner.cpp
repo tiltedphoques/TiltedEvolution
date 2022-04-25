@@ -3,7 +3,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <spdlog/spdlog.h>
 
 namespace
 {
@@ -32,7 +31,8 @@ DediRunner* GetDediRunner() noexcept
     return s_pRunner;
 }
 
-DediRunner::DediRunner(int argc, char** argv) : m_console(KCompilerStopThisBullshit)
+DediRunner::DediRunner(int argc, char** argv)
+: m_console(KCompilerStopThisBullshit)
 {
     s_pRunner = this;
 
@@ -45,21 +45,21 @@ DediRunner::DediRunner(int argc, char** argv) : m_console(KCompilerStopThisBulls
 
 DediRunner::~DediRunner()
 {
-    Console::SaveSettingsToIni(m_console, m_SettingsPath);
+    SaveSettingsToIni(m_console, m_SettingsPath);
 }
 
 void DediRunner::LoadSettings()
 {
     m_SettingsPath = fs::current_path() / kConfigPathName / kSettingsFileName;
-    if (!fs::exists(m_SettingsPath))
+    if (!exists(m_SettingsPath))
     {
         // there is a bug in here... waiting to be found
         // since we dont register our settings till later, so the server settings might be... missing??
         create_directory(fs::current_path() / kConfigPathName);
-        Console::SaveSettingsToIni(m_console, m_SettingsPath);
+        SaveSettingsToIni(m_console, m_SettingsPath);
         return;
     }
-    Console::LoadSettingsFromIni(m_console, m_SettingsPath);
+    LoadSettingsFromIni(m_console, m_SettingsPath);
 }
 
 void DediRunner::PrintExecutorArrowHack()
@@ -106,7 +106,7 @@ void DediRunner::StartTerminalIO()
             }
 
             if (r == exr::kDirty)
-                Console::SaveSettingsToIni(m_console, m_SettingsPath);
+                SaveSettingsToIni(m_console, m_SettingsPath);
 
             // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
             if (s == "/quit")

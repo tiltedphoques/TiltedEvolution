@@ -1,6 +1,4 @@
-#include <stdafx.h>
 #include <Components.h>
-#include <Events/UpdateEvent.h>
 #include <Messages/RequestActorValueChanges.h>
 #include <Messages/RequestActorMaxValueChanges.h>
 #include <Messages/RequestHealthChangeBroadcast.h>

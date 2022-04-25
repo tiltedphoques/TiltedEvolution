@@ -3,12 +3,13 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <thread>
 
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 #include <Setting.h>
-#include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
 #include <crash_handler/CrashHandler.h>
 #include "DediRunner.h"

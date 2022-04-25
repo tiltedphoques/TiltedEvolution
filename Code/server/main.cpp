@@ -1,6 +1,6 @@
 
 #include "GameServer.h"
-#include <TiltedCore/Stl.hpp>
+
 #include <common/GameServerInstance.h>
 #include <console/ConsoleRegistry.h>
 

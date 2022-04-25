@@ -1,5 +1,3 @@
-#include <stdafx.h>
-
 #include <World.h>
 #include <Components.h>
 

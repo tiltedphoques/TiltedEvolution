@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 #include <Services/ScriptService.h>
 #include <Services/EnvironmentService.h>
