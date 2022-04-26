@@ -13,6 +13,8 @@
 #include <Messages/TeleportCommandRequest.h>
 #include <Messages/TeleportCommandResponse.h>
 
+#include <Structs/GridCellCoords.h>
+
 CommandService::CommandService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher) 
     : m_world(aWorld), 
       m_transport(aTransport)

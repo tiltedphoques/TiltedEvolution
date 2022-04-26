@@ -89,7 +89,7 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
     {
         if (Mod* pMod = pModManager->GetByName(mod.Filename.c_str()))
         {
-            if (mod.IsLite())
+            if (mod.IsLite)
             {
                 m_serverToGame.emplace(mod.Id, GameMod{pMod->GetId() & 0xFFFu, true});
                 m_liteToServer.emplace(pMod->GetId(), mod.Id);

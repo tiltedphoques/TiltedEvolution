@@ -130,8 +130,7 @@ void TransportService::OnConnected()
 
         auto& entry = request.UserMods.ModList.emplace_back();
         entry.Id = pMod->GetId();
-        if (pMod->IsLite())
-            entry.Id |= 0xE000;
+        entry.IsLite = pMod->IsLite();
         entry.Filename = pMod->filename;
     }
 

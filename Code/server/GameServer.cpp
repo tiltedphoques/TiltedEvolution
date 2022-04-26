@@ -534,13 +534,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         for (auto& mod : acRequest->UserMods.ModList)
         {
             const uint32_t id =
-                mod.IsLite() ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
+                mod.IsLite ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
 
             Mods::Entry entry;
             entry.Filename = mod.Filename;
             entry.Id = static_cast<uint16_t>(id);
-            if (mod.IsLite())
-                entry.Id |= 0xE000;
+            entry.IsLite = mod.IsLite;
 
             playerMods.push_back(mod.Filename);
             playerModsIds.push_back(entry.Id);
