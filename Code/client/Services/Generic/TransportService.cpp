@@ -110,7 +110,7 @@ void TransportService::OnConnected()
 
     // null if discord is not active
     // TODO: think about user opt out
-    request.DiscordId = m_world.ctx<DiscordService>().GetUser().id;
+    request.DiscordId = m_world.ctx().at<DiscordService>().GetUser().id;
     auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm);
     if (pNpc)
     {

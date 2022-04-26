@@ -1,5 +1,3 @@
-#include <stdafx.h>
-
 #include <Services/ObjectService.h>
 
 #include <GameServer.h>

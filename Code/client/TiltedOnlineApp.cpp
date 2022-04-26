@@ -51,8 +51,8 @@ void* TiltedOnlineApp::GetMainAddress() const
 bool TiltedOnlineApp::BeginMain()
 {
     World::Create();
-    World::Get().ctx<DiscordService>().Init();
-    World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
+    World::Get().ctx().at<DiscordService>().Init();
+    World::Get().ctx().emplace<RenderSystemD3D11>(World::Get().ctx().at<OverlayService>(), World::Get().ctx().at<ImguiService>());
 
     LoadScriptExender();
     return true;

@@ -4,7 +4,7 @@
 
 #include <cstdint>
 #include <limits>
-#include <BranchInfo.h>
+#include <BuildInfo.h>
 
 #define CLIENT_DLL 0
 

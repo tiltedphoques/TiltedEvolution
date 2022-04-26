@@ -5,15 +5,8 @@ namespace internal
 template <class T>
 struct RttiLocator
 {
-    RttiLocator(uint32_t aId)
-    {
-        m_pRtti = TiltedPhoques::MakeUnique<VersionDbPtr<void*>>(aId);
-    }
-
-    static const void* Get()
-    {
-        return *m_pRtti;
-    }
+    RttiLocator(uint32_t aId);
+    static const void* Get();
 
     static inline UniquePtr<VersionDbPtr<void*>> m_pRtti;
 };

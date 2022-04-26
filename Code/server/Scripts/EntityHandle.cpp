@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 #include <Scripts/EntityHandle.h>
 #include <World.h>

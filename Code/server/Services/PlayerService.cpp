@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"

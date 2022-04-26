@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 #include <Scripts/Npc.h>
 #include <Scripts/Party.h>
