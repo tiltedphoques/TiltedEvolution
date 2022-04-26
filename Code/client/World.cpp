@@ -88,7 +88,7 @@ uint64_t World::GetTick() const noexcept
 
 void World::Create() noexcept
 {
-    if(entt::locator<World>::has_value())
+    if (!entt::locator<World>::has_value())
     {
         entt::locator<World>::emplace();
     }

@@ -21,7 +21,7 @@ void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
     for (auto& entry : ModList)
     {
-        aWriter.WriteBits(entry.Id, 12);
+        aWriter.WriteBits(entry.Id, 16);
         Serialization::WriteString(aWriter, entry.Filename);
     }
 }
@@ -35,8 +35,8 @@ void Mods::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     ModList.resize(modCount);
     for (size_t i = 0; i < modCount; ++i)
     {
-        aReader.ReadBits(data, 12);
-        ModList[i].Id = data & 0xFFF;
+        aReader.ReadBits(data, 16);
+        ModList[i].Id = data;
         ModList[i].Filename = Serialization::ReadString(aReader);
     }
 }

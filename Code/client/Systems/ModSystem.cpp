@@ -100,7 +100,5 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
                 m_standardToServer[pMod->GetId() & 0xFF] = mod.Id;
             }
         }
-
-        // this should never get hit.
     }
 }
