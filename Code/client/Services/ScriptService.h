@@ -16,6 +16,9 @@ struct UpdateEvent;
 struct ImguiService;
 struct GameEventHandler;
 
+/**
+* @brief Handles server side scripts.
+*/
 struct ScriptService : ScriptStore
 {
     ScriptService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService, TransportService& aTransportService) noexcept;

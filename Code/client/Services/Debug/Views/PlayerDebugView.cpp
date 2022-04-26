@@ -13,9 +13,9 @@
 #include <Games/Fallout4/Forms/TESWorldSpace.h>
 #endif
 
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
-void TestService::DrawPlayerDebugView()
+void DebugService::DrawPlayerDebugView()
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer)
@@ -23,6 +23,8 @@ void TestService::DrawPlayerDebugView()
         // TODO: maybe draw somethin?
         return;
     }
+
+    ImGui::Begin("Player");
 
     auto pLeftWeapon = pPlayer->GetEquippedWeapon(0);
     auto pRightWeapon = pPlayer->GetEquippedWeapon(1);
@@ -100,4 +102,6 @@ void TestService::DrawPlayerDebugView()
         ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);
         ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
     }
+
+    ImGui::End();
 }

@@ -12,6 +12,11 @@ struct NotifyQuestUpdate;
 
 struct TESQuest;
 
+/**
+* @brief Handles quest sync
+* 
+* This service is currently not in use.
+*/
 class QuestService final : public 
     BSTEventSink<TESQuestStartStopEvent>, 
     BSTEventSink<TESQuestStageEvent>

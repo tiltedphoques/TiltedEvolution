@@ -1,14 +1,15 @@
 #pragma once
 
-struct TESObjectREFR;
-
+/**
+* @brief Dispatched whenever the lock status on an object changes.
+*/
 struct LockChangeEvent
 {
-    LockChangeEvent(TESObjectREFR* apObject, bool aIsLocked, uint8_t aLockLevel) 
-        : pObject(apObject), IsLocked(aIsLocked), LockLevel(aLockLevel)
+    LockChangeEvent(uint32_t aFormId, bool aIsLocked, uint8_t aLockLevel) 
+        : FormId(aFormId), IsLocked(aIsLocked), LockLevel(aLockLevel)
     {}
 
-    TESObjectREFR* pObject;
+    uint32_t FormId;
     bool IsLocked;
     uint8_t LockLevel;
 };

@@ -6,6 +6,8 @@
 
 namespace Console
 {
-void SaveSettingsToIni(const std::filesystem::path& aPath, bool aFirstRun = false);
-void LoadSettingsFromIni(const std::filesystem::path& aPath);
+class ConsoleRegistry;
+
+void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& path);
+void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& path);
 } // namespace base

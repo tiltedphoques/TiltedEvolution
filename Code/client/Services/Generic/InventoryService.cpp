@@ -91,7 +91,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     if (!serverIdRes.has_value())
         return;
 
-    Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.ActorId), TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.ActorId));
     if (!pActor)
         return;
 
@@ -119,7 +119,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 {
     if (acMessage.Drop)
     {
-        Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+        Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
         if (!pActor)
             return;
 
@@ -129,7 +129,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
         ModSystem& modSystem = World::Get().GetModSystem();
 
         uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
-        TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
+        TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
         if (!pObject)
         {
             spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
@@ -142,7 +142,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
     }
     else
     {
-        TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
+        TESObjectREFR* pObject = Utils::GetByServerId<TESObjectREFR>(acMessage.ServerId);
         if (!pObject)
             return;
 
@@ -154,7 +154,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
         return;
 
@@ -239,7 +239,7 @@ void InventoryService::RunWeaponStateUpdates() noexcept
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();

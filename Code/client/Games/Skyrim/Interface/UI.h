@@ -3,7 +3,7 @@
 #include <Games/Skyrim/BSCore/BSTHashMap.h>
 #include <Misc/BSFixedString.h>
 
-class IMenu;
+struct IMenu;
 
 struct UIMessage
 {

@@ -27,7 +27,7 @@ __declspec(noinline) NiTriBasedGeom* GetHeadTriBasedGeom(Actor* apActor, uint32_
     POINTER_SKYRIMSE(TGetObjectByName, GetObjectByName, 76207);
 
     BSFaceGenNiNode* pFaceNode = apActor->GetFaceGenNiNode();
-    TESNPC* pActorBase = RTTI_CAST(apActor->baseForm, TESForm, TESNPC);
+    TESNPC* pActorBase = Cast<TESNPC>(apActor->baseForm);
 
     if (pFaceNode && pActorBase)
     {

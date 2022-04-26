@@ -93,4 +93,4 @@ while True:
     rtd = f - addr_size * 2
     name = get_class_name(f)
     if name.isalnum():
-        print "extern AutoPtr<const void> RTTI_" + name + ";"
+        print "extern template internal::RttiLocator<" + name +"> RTTI_" + name + ";"

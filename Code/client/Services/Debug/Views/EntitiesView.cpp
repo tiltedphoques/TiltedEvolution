@@ -1,9 +1,9 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <World.h>
 #include <imgui.h>
 
-void TestService::DrawEntitiesView()
+void DebugService::DrawEntitiesView()
 {
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty())
@@ -30,14 +30,14 @@ void TestService::DrawEntitiesView()
     ImGui::End();
 }
 
-void TestService::DisplayEntities() noexcept
+void DebugService::DisplayEntities() noexcept
 {
     static uint32_t s_selected = 0;
 
     StackAllocator<1 << 12> allocator;
     ScopedAllocator _{ allocator };
 
-    const auto view = m_world.view<FormIdComponent>(entt::exclude<InteractiveObjectComponent>);
+    const auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
 
     Vector<entt::entity> entities(view.begin(), view.end());
 
@@ -49,7 +49,7 @@ void TestService::DisplayEntities() noexcept
     for(auto it : entities)
     {
         auto& formComponent = view.get<FormIdComponent>(it);
-        const auto pActor = RTTI_CAST(TESForm::GetById(formComponent.Id), TESForm, Actor);
+        const auto pActor = Cast<Actor>(TESForm::GetById(formComponent.Id));
 
         if (!pActor || !pActor->baseForm)
             continue;
@@ -74,14 +74,14 @@ void TestService::DisplayEntities() noexcept
         DisplayEntityPanel(entities[s_selected]);
 }
 
-void TestService::DisplayObjects() noexcept
+void DebugService::DisplayObjects() noexcept
 {
     static uint32_t s_selected = 0;
 
     StackAllocator<1 << 12> allocator;
     ScopedAllocator _{ allocator };
 
-    const auto view = m_world.view<FormIdComponent, InteractiveObjectComponent>();
+    const auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
     Vector<entt::entity> entities(view.begin(), view.end());
 
@@ -93,7 +93,7 @@ void TestService::DisplayObjects() noexcept
     for(auto it : entities)
     {
         auto& formComponent = view.get<FormIdComponent>(it);
-        const auto pRefr = RTTI_CAST(TESForm::GetById(formComponent.Id), TESForm, TESObjectREFR);
+        const auto pRefr = Cast<TESObjectREFR>(TESForm::GetById(formComponent.Id));
 
         if (!pRefr || !pRefr->baseForm)
             continue;
@@ -113,7 +113,7 @@ void TestService::DisplayObjects() noexcept
     ImGui::EndChild();
 }
 
-void TestService::DisplayEntityPanel(entt::entity aEntity) noexcept
+void DebugService::DisplayEntityPanel(entt::entity aEntity) noexcept
 {
     const auto pFormIdComponent = m_world.try_get<FormIdComponent>(aEntity);
     const auto pLocalComponent = m_world.try_get<LocalComponent>(aEntity);
@@ -124,12 +124,12 @@ void TestService::DisplayEntityPanel(entt::entity aEntity) noexcept
     if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent);
 }
 
-void TestService::DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept
+void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept
 {
     if (!ImGui::CollapsingHeader("Form Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
 
-    const auto pActor = RTTI_CAST(TESForm::GetById(aFormComponent.Id), TESForm, Actor);
+    const auto pActor = Cast<Actor>(TESForm::GetById(aFormComponent.Id));
 
     if (!pActor)
         return;
@@ -147,7 +147,7 @@ void TestService::DisplayFormComponent(FormIdComponent& aFormComponent) const no
 #endif
 }
 
-void TestService::DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept
+void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept
 {
     if (!ImGui::CollapsingHeader("Local Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
@@ -159,7 +159,7 @@ void TestService::DisplayLocalComponent(LocalComponent& aLocalComponent) const n
     ImGui::InputScalarN("State", ImGuiDataType_U32, &action.State1, 2, nullptr, nullptr, "%x", ImGuiInputTextFlags_ReadOnly);
 }
 
-void TestService::DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept
+void DebugService::DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept
 {
     if (!ImGui::CollapsingHeader("Remote Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;

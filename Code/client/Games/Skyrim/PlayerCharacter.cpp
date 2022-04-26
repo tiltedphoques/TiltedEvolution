@@ -50,7 +50,6 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
         modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
         item.Count = aCount;
 
-        // TODO: not sure about this
         if (apObject->GetExtraDataList())
             apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 

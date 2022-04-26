@@ -98,7 +98,7 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
 
 TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
 {
-    auto* pQuest = RTTI_CAST(TESForm::GetById(aFormId), TESForm, TESQuest);
+    auto* pQuest = Cast<TESQuest>(TESForm::GetById(aFormId));
     if (pQuest)
     {
         // force quest update
@@ -125,7 +125,7 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
 
 bool QuestService::StopQuest(uint32_t aformId)
 {
-    auto* pQuest = RTTI_CAST(TESForm::GetById(aformId), TESForm, TESQuest);
+    auto* pQuest = Cast<TESQuest>(TESForm::GetById(aformId));
     if (pQuest)
     {
         pQuest->SetActive(false);
@@ -160,7 +160,7 @@ bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
     // there is no reason to even fetch the quest object, since the event provides everything already....
-    if (auto* pQuest = RTTI_CAST(TESForm::GetById(apEvent->formId), TESForm, TESQuest))
+    if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
     {
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
@@ -188,7 +188,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
-    if (auto* pQuest = RTTI_CAST(TESForm::GetById(apEvent->formId), TESForm, TESQuest))
+    if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
     {
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;

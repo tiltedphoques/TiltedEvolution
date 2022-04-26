@@ -3,7 +3,7 @@
 #include <World.h>
 #include <imgui.h>
 #include <inttypes.h>
-#include <services/TestService.h>
+#include <services/DebugService.h>
 
 #if (TP_SKYRIM64)
 #include <BSGraphics/BSGraphicsRenderer.h>
@@ -97,7 +97,7 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 
 static TESForm* g_SelectedForm{nullptr};
 
-void TestService::DrawComponentDebugView()
+void DebugService::DrawComponentDebugView()
 {
     ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
     ImGui::Begin("Component view", &m_toggleComponentWindow);
@@ -137,7 +137,7 @@ void TestService::DrawComponentDebugView()
 
     if (m_drawComponentsInWorldSpace && g_SelectedForm)
     {
-        if (auto* pObject = RTTI_CAST(g_SelectedForm, TESForm, TESObjectREFR))
+        if (auto* pObject = Cast<TESObjectREFR>(g_SelectedForm))
         {
             ImVec2 screenPos{};
             if (DrawInWorldSpace(pObject, screenPos))
@@ -192,7 +192,7 @@ void TestService::DrawComponentDebugView()
 }
 
 #else
-void TestService::DrawComponentDebugView()
+void DebugService::DrawComponentDebugView()
 {
 }
 #endif

@@ -20,6 +20,9 @@ struct NotifyPlayerList;
 
 using TiltedPhoques::OverlayApp;
 
+/**
+* @brief Controls the UI from the client.
+*/
 struct OverlayService
 {
   public:

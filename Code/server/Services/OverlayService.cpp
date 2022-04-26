@@ -18,22 +18,13 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
 {
 }
 
-void OverlayService::BroadcastMessage(const std::string aMessage)
-{
-    NotifyChatMessageBroadcast notifyMessage;
-    notifyMessage.PlayerName = "";
-    notifyMessage.ChatMessage = aMessage;
-
-    GameServer::Get()->SendToPlayers(notifyMessage);
-}
-
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
     NotifyChatMessageBroadcast notifyMessage;
     notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
 
     // TODO: std regex is slow
-    std::regex escapeHtml{"<[^>]+>\s+(?=<)|<[^>]+>"};
+    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
     GameServer::Get()->SendToPlayers(notifyMessage);

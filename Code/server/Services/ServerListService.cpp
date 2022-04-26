@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>

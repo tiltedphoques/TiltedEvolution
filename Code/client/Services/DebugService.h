@@ -9,12 +9,15 @@ struct UpdateEvent;
 struct TransportService;
 struct BSAnimationGraphManager;
 
-struct TestService
+/**
+* @brief Manages the debuggers.
+*/
+struct DebugService
 {
-    TestService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
-    ~TestService() noexcept = default;
+    DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
+    ~DebugService() noexcept = default;
 
-    TP_NOCOPYMOVE(TestService);
+    TP_NOCOPYMOVE(DebugService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
 

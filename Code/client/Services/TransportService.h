@@ -9,12 +9,14 @@ struct CellChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
-struct SendServerMessageEvent;
 
 struct World;
 
 using TiltedPhoques::Client;
 
+/**
+* @brief Handles communication with the server.
+*/
 struct TransportService : Client
 {
     TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -35,7 +37,6 @@ protected:
 
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
 

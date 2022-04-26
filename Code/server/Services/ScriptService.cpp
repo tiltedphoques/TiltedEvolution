@@ -1,7 +1,7 @@
-#include <stdafx.h>
+
 
 #include <Services/ScriptService.h>
-#include <Services/EnvironmentService.h>
+#include <Services/CalendarService.h>
 #include <World.h>
 
 #include <Scripts/Npc.h>
@@ -236,13 +236,13 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
     worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
 
-    auto clockType = aContext.new_usertype<EnvironmentService>("Clock", sol::no_constructor);
-    clockType["get"] = [this]() { return &m_world.GetEnvironmentService(); };
-    clockType["SetTime"] = &EnvironmentService::SetTime;
-    clockType["GetTime"] = &EnvironmentService::GetTime;
-    clockType["GetDate"] = &EnvironmentService::GetDate;
-    clockType["GetTimeScale"] = &EnvironmentService::GetTimeScale;
-    clockType["GetRealTime"] = &EnvironmentService::GetRealTime;
+    auto clockType = aContext.new_usertype<CalendarService>("Clock", sol::no_constructor);
+    clockType["get"] = [this]() { return &m_world.GetCalendarService(); };
+    clockType["SetTime"] = &CalendarService::SetTime;
+    clockType["GetTime"] = &CalendarService::GetTime;
+    clockType["GetDate"] = &CalendarService::GetDate;
+    clockType["GetTimeScale"] = &CalendarService::GetTimeScale;
+    clockType["GetRealTime"] = &CalendarService::GetRealTime;
 }
 
 void ScriptService::BindStaticFunctions(ScriptContext& aContext) noexcept

@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
@@ -77,7 +77,7 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
         {
             m_world.GetDispatcher().trigger(CharacterExteriorCellChangeEvent{pPlayer, entity, message.WorldSpaceId, message.CurrentCoords});
         }
-       
+
         pPlayer->SetCellComponent(cell);
     }
 }

@@ -1,7 +1,4 @@
-#include <TiltedOnlinePCH.h>
-
-
-#include <Services/EnvironmentService.h>
+#include <Services/CalendarService.h>
 #include <TimeManager.h>
 
 TimeData* TimeData::Get() noexcept
@@ -17,7 +14,7 @@ static TSimulateTime *RealSimulateTime;
 // in SP mode we let the client handle its own time simulation
 void HookSimulateTime(TimeData *apData, float aMultiplier)
 {
-    if (EnvironmentService::AllowGameTick())
+    if (CalendarService::AllowGameTick())
     {
         RealSimulateTime(apData, aMultiplier);
     }

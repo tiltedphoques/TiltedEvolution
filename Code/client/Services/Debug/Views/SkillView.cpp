@@ -1,11 +1,13 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <imgui.h>
 
 #include <PlayerCharacter.h>
 
-void TestService::DrawSkillView()
+void DebugService::DrawSkillView()
 {
+    ImGui::Begin("Skills");
+
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     Skills* pSkills = *pPlayer->pSkills;
 
@@ -27,4 +29,6 @@ void TestService::DrawSkillView()
         ImGui::InputScalar("Legendary level", ImGuiDataType_U32, (void*)&legendaryLevel, nullptr, nullptr, nullptr,
                            ImGuiInputTextFlags_ReadOnly);
     }
+
+    ImGui::End();
 }

@@ -7,6 +7,9 @@ struct ShiftGridCellRequest;
 struct EnterInteriorCellRequest;
 struct EnterExteriorCellRequest;
 
+/**
+* @brief Handles player specific actions that might change the information needed by other clients about that player.
+*/
 struct PlayerService
 {
     PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

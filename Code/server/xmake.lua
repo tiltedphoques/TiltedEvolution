@@ -1,25 +1,19 @@
 local function istable(t) return type(t) == 'table' end
 
 local function build_server()
+    set_kind("shared")
+    set_group("Server")
     add_includedirs(
         ".",
         "../../Libraries/")
-
-    after_install(function(target)
-        local linkdir = target:pkg("sentry-native"):get("linkdirs")
-        if istable(linkdir) then
-            linkdir = linkdir[1] -- Yes lua index starts at 1
-        end
-        local bindir = path.join(linkdir, "..", "bin")
-        os.cp(bindir, target:installdir())
-    end)
-
-    set_pcxxheader("stdafx.h")
+    set_pcxxheader("Pch.h")
     add_headerfiles("**.h")
-    add_files(
-        "**.cpp")
+    add_files("**.cpp")
     if is_plat("windows") then
         add_files("server.rc")
+    end
+    if is_plat("linux") then
+        add_cxxflags("-fvisibility=hidden")
     end
     add_deps(
         "CommonLib",
@@ -46,8 +40,7 @@ local function build_server()
 end
 
 target("SkyrimTogetherServer")
-    set_kind("binary")
-    set_group("Server")
+    set_basename("STServer")
     add_defines(
         "TARGET_ST",
         "TP_SKYRIM=1",
@@ -55,4 +48,7 @@ target("SkyrimTogetherServer")
     add_deps("SkyrimEncoding")
     build_server()
 
--- add_deps("FalloutEncoding")
+--target("FalloutTogetherServer")
+--    add_defines("TP_FALLOUT=1")
+--    add_deps("FalloutEncoding")
+--    build_server()

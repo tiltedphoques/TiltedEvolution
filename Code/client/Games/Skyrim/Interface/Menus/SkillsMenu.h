@@ -3,16 +3,14 @@
 #include <Games/Events.h>
 #include <Interface/IMenu.h>
 
-class MenuOpenCloseEvent;
+struct MenuOpenCloseEvent;
 
-class MenuEventHandler
+struct MenuEventHandler
 {
-  public:
     char pad0[0x10];
 };
 
-class StatsMenu final : public IMenu, public MenuEventHandler
+struct StatsMenu final : IMenu, MenuEventHandler
 {
-  public:
     // TBD
 };

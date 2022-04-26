@@ -93,8 +93,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
-            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
-            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
 
@@ -181,8 +180,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
-            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
 
@@ -381,6 +379,13 @@ void Actor::QueueUpdate() noexcept
 #endif
 
     pSetting->data = originalValue;
+}
+
+TESObjectCELL* TESWorldSpace::LoadCell(int32_t aX, int32_t aY) noexcept
+{
+    TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aX, int32_t aY);
+    POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
+    return ThisCall(s_loadCell, this, aX, aY);
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
@@ -625,7 +630,7 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     const auto* pLock = apThis->GetLock();
     uint8_t lockLevel = pLock->lockLevel;
 
-    World::Get().GetRunner().Trigger(LockChangeEvent(apThis, pLock->flags, lockLevel));
+    World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->flags, lockLevel));
 
     ThisCall(RealLockChange, apThis);
 }

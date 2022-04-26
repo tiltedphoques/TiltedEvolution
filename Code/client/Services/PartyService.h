@@ -9,6 +9,9 @@ struct UpdateEvent;
 struct NotifyPartyJoined;
 struct NotifyPartyLeft;
 
+/**
+* @brief Manages the party of the local player.
+*/
 struct PartyService
 {
     PartyService(entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept;

@@ -10,6 +10,9 @@ struct RequestActorMaxValueChanges;
 struct RequestHealthChangeBroadcast;
 struct RequestDeathStateChange;
 
+/**
+* @brief Broadcasts changes in (max) actor values and updates them server side.
+*/
 struct ActorValueService
 {
     ActorValueService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

@@ -207,21 +207,28 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    // This is really hacky, but when the input hook is enabled initially, it does not propogate the KEYDOWN event
-    if (IsToggleKey(aKey) && (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active)))
+    if (IsToggleKey(aKey))
     {
+        if (!overlay.GetInGame())
+        {
+            TiltedPhoques::DInputHook::Get().SetEnabled(false);
+        }
+        // This is really hacky, but when the input hook is enabled initially, it does not propogate the KEYDOWN event
+        else if (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active))
+        {
 #if defined(TP_SKYRIM)
-        TiltedPhoques::DInputHook::Get().SetEnabled(!active);
-        overlay.SetActive(!active);
+            TiltedPhoques::DInputHook::Get().SetEnabled(!active);
+            overlay.SetActive(!active);
 #else
-        pRenderer->SetVisible(!active);
+            pRenderer->SetVisible(!active);
 #endif
 
-        pRenderer->SetCursorVisible(!active);
+            pRenderer->SetCursorVisible(!active);
 
-        // This is to disable the Windows cursor
-        while (ShowCursor(FALSE) >= 0)
-            ;
+            // This is to disable the Windows cursor
+            while (ShowCursor(FALSE) >= 0)
+                ;
+        }
     }
     else if (active)
     {
@@ -315,19 +322,17 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     if (!pRenderer)
         return 0;
 
-    auto &discord = World::Get().ctx<DiscordService>();
+    auto &discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
     const bool active = s_pOverlay->GetActive();
     if (active)
     {
-        auto& imgui = World::Get().ctx<ImguiService>();
+        auto& imgui = World::Get().ctx().at<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
     }
 
-#if defined(TP_SKYRIM)
-    //pRenderer->SetVisible(TiltedPhoques::DInputHook::Get().IsEnabled());
-#else
+#if TP_FALLOUT4
     POINTER_FALLOUT4(uint8_t, s_viewportLock, 0x3846670);
     *s_viewportLock = isVisible ? 1 : 0;
 #endif
@@ -348,7 +353,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
         if (active)
         {
-            auto& imgui = World::Get().ctx<ImguiService>();
+            auto& imgui = World::Get().ctx().at<ImguiService>();
             imgui.RawInputHandler(input);
         }
 

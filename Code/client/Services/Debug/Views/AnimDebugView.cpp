@@ -1,7 +1,7 @@
 
 #include <imgui.h>
 #include <EquipManager.h>
-#include <services/TestService.h>
+#include <services/DebugService.h>
 
 #if (TP_SKYRIM64)
 #include <Games/Skyrim/Forms/TESForm.h>
@@ -27,7 +27,7 @@
 #include <structs/AnimationGraphDescriptorManager.h>
 #include <inttypes.h>
 
-void TestService::DrawAnimDebugView()
+void DebugService::DrawAnimDebugView()
 {
     static uint32_t fetchFormId = 0;
     static Actor* pActor = nullptr;
@@ -49,7 +49,7 @@ void TestService::DrawAnimDebugView()
         {
             auto* pFetchForm = TESForm::GetById(fetchFormId);
             if (pFetchForm)
-                pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+                pActor = Cast<Actor>(pFetchForm);
         }
 
         s_values.clear();

@@ -5,7 +5,7 @@
 #include <combaseapi.h>
 
 #include "script_extender/SEMemoryBlock.h"
-#include <CrashHandler.h>
+#include <crash_handler/CrashHandler.h>
 
 #include <TiltedCore/Platform.hpp>
 
@@ -60,16 +60,15 @@ int main(int argc, char** argv)
         Die("Failed to pre-reserve script extender zone.\nAsk Force!");
         return -1;
     }
+
     PreloadSystemDlls();
     CoreStubsInit();
+
     ComScope cs;
     TP_UNUSED(cs);
 
-    InstallCrashHandler();
-
+    ScopedCrashHandler _(false);
     auto ret = launcher::StartUp(argc, argv);
-
-    UninstallCrashHandler();
 
     return ret;
 }

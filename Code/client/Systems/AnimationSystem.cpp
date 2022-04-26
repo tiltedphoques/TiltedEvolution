@@ -33,8 +33,8 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
         const auto actionId = first.ActionId;
         const auto targetId = first.TargetId;
 
-        const auto pAction = RTTI_CAST(TESForm::GetById(actionId), TESForm, BGSAction);
-        const auto pTarget = RTTI_CAST(TESForm::GetById(targetId), TESForm, TESObjectREFR);
+        const auto pAction = Cast<BGSAction>(TESForm::GetById(actionId));
+        const auto pTarget = Cast<TESObjectREFR>(TESForm::GetById(targetId));
 
         apActor->actorState.flags1 = first.State1;
         apActor->actorState.flags2 = first.State2;
@@ -46,7 +46,7 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
         // Play the animation
         TESActionData actionData(first.Type & 0x3, apActor, pAction, pTarget);
         actionData.eventName = BSFixedString(first.EventName.c_str());
-        actionData.idleForm = RTTI_CAST(TESForm::GetById(first.IdleId), TESForm, TESIdleForm);
+        actionData.idleForm = Cast<TESIdleForm>(TESForm::GetById(first.IdleId));
         actionData.someFlag = ((first.Type & 0x4) != 0) ? 1 : 0;
 
         const auto result = ActorMediator::Get()->ForceAction(&actionData);
@@ -84,7 +84,7 @@ void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, c
 void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMovementSnapshot, LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent)
 {
     const auto pForm = TESForm::GetById(formIdComponent.Id);
-    const auto pActor = RTTI_CAST(pForm, TESForm, Actor);
+    const auto pActor = Cast<Actor>(pForm);
     if (!pActor)
         return;
 

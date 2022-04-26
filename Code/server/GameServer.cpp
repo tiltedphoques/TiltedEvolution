@@ -1,8 +1,7 @@
-
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
-#include <stdafx.h>
+
 
 #include <Events/AdminPacketEvent.h>
 #include <Events/CharacterRemoveEvent.h>
@@ -37,7 +36,7 @@ Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image t
 Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
-Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
+Console::Setting bEnableMoPo{"ModPolicy:bEnabled", "Bypass the mod policy restrictions.", true,
                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
@@ -45,14 +44,15 @@ Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) { int* i = 0; *i = 42; });
 Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is active", [](Console::ArgStack&) {
-    spdlog::get("ConOut")->info("ModPolicy status: {}", bBypassMoPo ? "not active" : "active");
+    spdlog::get("ConOut")->info("ModPolicy status: {}", bEnableMoPo ? "active" : "not active");
 });
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
-    "ModPolicy is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. No "
-    "support will be provided while this bypass is in place"};
+    "ModPolicy is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
+    "may not be able to assist you if ModPolicy is disabled."};
 
 constexpr char kMopoRecordsMissing[]{
     "Failed to start: ModPolicy is enabled, but no mods are installed. Players wont be able "
@@ -67,10 +67,8 @@ static uint16_t GetUserTickRate()
 
 static bool IsMoPoActive()
 {
-    return !bBypassMoPo;
+    return bEnableMoPo;
 }
-
-GameServer* GameServer::s_pInstance = nullptr;
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
@@ -121,7 +119,7 @@ void GameServer::Kill()
 
 bool GameServer::CheckMoPo()
 {
-    if (bBypassMoPo)
+    if (!bEnableMoPo)
         spdlog::warn(kBypassMoPoWarning);
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
@@ -202,7 +200,7 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("mods", "List all installed mods on this server", [&](Console::ArgStack&) {
         auto out = spdlog::get("ConOut");
-        auto& mods = m_pWorld->ctx<ModsComponent>().GetServerMods();
+        auto& mods = m_pWorld->ctx().at<ModsComponent>().GetServerMods();
         if (mods.size() == 0)
         {
             out->warn("No mods installed");
@@ -471,7 +469,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     if (acRequest->Token == sToken.value())
     {
         Mods& responseList = serverResponse.UserMods;
-        auto& modsComponent = m_pWorld->ctx<ModsComponent>();
+        auto& modsComponent = m_pWorld->ctx().at<ModsComponent>();
 
         if (IsMoPoActive())
         {
@@ -536,11 +534,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         for (auto& mod : acRequest->UserMods.ModList)
         {
             const uint32_t id =
-                mod.IsLite() ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
+                mod.IsLite ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
 
             Mods::Entry entry;
             entry.Filename = mod.Filename;
             entry.Id = static_cast<uint16_t>(id);
+            entry.IsLite = mod.IsLite;
 
             playerMods.push_back(mod.Filename);
             playerModsIds.push_back(entry.Id);

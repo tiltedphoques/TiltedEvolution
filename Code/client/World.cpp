@@ -3,23 +3,23 @@
 #include "World.h"
 
 #include <Services/DiscoveryService.h>
-#include <Services/EntityService.h>
 #include <Services/CharacterService.h>
 #include <Services/InputService.h>
 #include <Services/TransportService.h>
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <Services/RunnerService.h>
 #include <Services/ImguiService.h>
 #include <Services/ScriptService.h>
 #include <Services/PapyrusService.h>
 #include <Services/DiscordService.h>
-#include <Services/EnvironmentService.h>
+#include <Services/ObjectService.h>
 #include <Services/QuestService.h>
 #include <Services/PartyService.h>
 #include <Services/ActorValueService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/CommandService.h>
+#include <Services/CalendarService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -30,23 +30,23 @@ World::World()
     , m_modSystem(m_dispatcher)
     , m_lastFrameTime{ std::chrono::high_resolution_clock::now() }
 {
-    set<ImguiService>();
-    set<DiscoveryService>(*this, m_dispatcher);
-    set<EntityService>(*this, m_dispatcher);
-    set<OverlayService>(*this, m_transport, m_dispatcher);
-    set<InputService>(ctx<OverlayService>());
-    set<CharacterService>(*this, m_dispatcher, m_transport);
-    set<TestService>(m_dispatcher, *this, m_transport, ctx<ImguiService>());
-    set<ScriptService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
-    set<PapyrusService>(m_dispatcher);
-    set<DiscordService>(m_dispatcher);
-    set<EnvironmentService>(*this, m_dispatcher, ctx<ImguiService>(), m_transport);
-    set<QuestService>(*this, m_dispatcher, ctx<ImguiService>());
-    set<PartyService>(m_dispatcher, m_transport);
-    set<ActorValueService>(*this, m_dispatcher, m_transport);
-    set<InventoryService>(*this, m_dispatcher, m_transport);
-    set<MagicService>(*this, m_dispatcher, m_transport);
-    set<CommandService>(*this, m_transport, m_dispatcher);
+     ctx().emplace<ImguiService>();
+     ctx().emplace<DiscoveryService>(*this, m_dispatcher);
+     ctx().emplace<OverlayService>(*this, m_transport, m_dispatcher);
+     ctx().emplace<InputService>(ctx().at<OverlayService>());
+     ctx().emplace<CharacterService>(*this, m_dispatcher, m_transport);
+     ctx().emplace<DebugService>(m_dispatcher, *this, m_transport, ctx().at<ImguiService>());
+     ctx().emplace<ScriptService>(*this, m_dispatcher, ctx().at<ImguiService>(), m_transport);
+     ctx().emplace<PapyrusService>(m_dispatcher);
+     ctx().emplace<DiscordService>(m_dispatcher);
+     ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
+     ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
+     ctx().emplace<QuestService>(*this, m_dispatcher, ctx().at<ImguiService>());
+     ctx().emplace<PartyService>(m_dispatcher, m_transport);
+     ctx().emplace<ActorValueService>(*this, m_dispatcher, m_transport);
+     ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
+     ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
+     ctx().emplace<CommandService>(*this, m_transport, m_dispatcher);
 }
 
 World::~World() = default;
@@ -88,13 +88,13 @@ uint64_t World::GetTick() const noexcept
 
 void World::Create() noexcept
 {
-    if(entt::service_locator<World>::empty())
+    if (!entt::locator<World>::has_value())
     {
-        entt::service_locator<World>::set(std::make_shared<World>());
+        entt::locator<World>::emplace();
     }
 }
 
 World& World::Get() noexcept
 {
-    return entt::service_locator<World>::ref();
+    return entt::locator<World>::value();
 }
