@@ -10,6 +10,8 @@ void DebugService::DrawActorValuesView()
     if (!pActor)
         return;
 
+    ImGui::Begin("Actor values");
+
     //for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
         ActorValueOwner& actorValueOwner = pActor->actorValueOwner;
@@ -17,4 +19,6 @@ void DebugService::DrawActorValuesView()
                         actorValueOwner.GetPermanentValue(24)};
         ImGui::InputFloat3("Health (val/base/perm)", health, "%.3f", ImGuiInputTextFlags_ReadOnly);
     }
+
+    ImGui::End();
 }

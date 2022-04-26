@@ -539,6 +539,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Mods::Entry entry;
             entry.Filename = mod.Filename;
             entry.Id = static_cast<uint16_t>(id);
+            if (mod.IsLite())
+                entry.Id |= 0xE000;
 
             playerMods.push_back(mod.Filename);
             playerModsIds.push_back(entry.Id);

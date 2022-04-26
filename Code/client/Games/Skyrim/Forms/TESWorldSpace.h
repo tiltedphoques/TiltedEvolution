@@ -6,5 +6,7 @@
 
 struct TESWorldSpace : TESForm
 {
+    TESObjectCELL* LoadCell(int32_t aX, int32_t aY) noexcept;
+
     TESFullName fullName;
 };

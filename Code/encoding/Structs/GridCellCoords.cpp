@@ -37,6 +37,11 @@ void GridCellCoords::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     Y = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
 
+GridCellCoords GridCellCoords::CalculateGridCellCoords(const Vector3_NetQuantize& aCoords) noexcept
+{
+    return CalculateGridCellCoords(aCoords.x, aCoords.y);
+}
+
 GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const float aY) noexcept
 {
     auto x = static_cast<int32_t>(floor(aX / 4096.f));

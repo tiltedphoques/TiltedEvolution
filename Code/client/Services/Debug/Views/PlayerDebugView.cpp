@@ -24,6 +24,8 @@ void DebugService::DrawPlayerDebugView()
         return;
     }
 
+    ImGui::Begin("Player");
+
     auto pLeftWeapon = pPlayer->GetEquippedWeapon(0);
     auto pRightWeapon = pPlayer->GetEquippedWeapon(1);
 
@@ -100,4 +102,6 @@ void DebugService::DrawPlayerDebugView()
         ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);
         ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
     }
+
+    ImGui::End();
 }

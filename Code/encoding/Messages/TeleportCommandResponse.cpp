@@ -4,6 +4,7 @@ void TeleportCommandResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
 {
     CellId.Serialize(aWriter);
     Position.Serialize(aWriter);
+    WorldSpaceId.Serialize(aWriter);
 }
 
 void TeleportCommandResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,4 +13,5 @@ void TeleportCommandResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
 
     CellId.Deserialize(aReader);
     Position.Deserialize(aReader);
+    WorldSpaceId.Deserialize(aReader);
 }
