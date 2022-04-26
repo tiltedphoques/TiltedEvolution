@@ -15,7 +15,6 @@ void DebugService::DrawFormDebugView()
 {
     static TESObjectREFR* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
-    static uint32_t formId = 0;
 
     ImGui::Begin("Form");
 
@@ -24,19 +23,22 @@ void DebugService::DrawFormDebugView()
 
     if (ImGui::Button("Look up"))
     {
-        if (formId)
+        if (m_formId)
         {
-            pFetchForm = TESForm::GetById(formId);
+            pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
                 pRefr = Cast<TESObjectREFR>(pFetchForm);
         }
     }
 
-    if (pRefr)
+    if (pFetchForm)
     {
         ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
                            ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+    }
 
+    if (pRefr)
+    {
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), pRefr->formID);
         ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);

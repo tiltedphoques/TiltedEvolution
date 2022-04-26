@@ -204,7 +204,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
 
     if (pEntity == std::end(view))
     {
-        spdlog::error("Activator entity not found for form id {:X}", acEvent.pActivator->formID);
+        //spdlog::error("Activator entity not found for form id {:X}", acEvent.pActivator->formID);
         return;
     }
 

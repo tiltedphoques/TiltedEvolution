@@ -154,14 +154,14 @@ void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
         return;
     }
 
+    auto& formIdComponent = m_world.get<FormIdComponent>(*entityIt);
+    CancelServerAssignment(*entityIt, formIdComponent.Id);
+
     if (m_world.all_of<FormIdComponent>(*entityIt))
         m_world.remove<FormIdComponent>(*entityIt);
 
     if (m_world.orphan(*entityIt))
         m_world.destroy(*entityIt);
-
-    auto& formIdComponent = m_world.get<FormIdComponent>(*entityIt);
-    CancelServerAssignment(*entityIt, formIdComponent.Id);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept

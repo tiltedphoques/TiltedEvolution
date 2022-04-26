@@ -6,6 +6,8 @@
 
 void DebugService::DrawSkillView()
 {
+    ImGui::Begin("Skills");
+
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     Skills* pSkills = *pPlayer->pSkills;
 
@@ -27,4 +29,6 @@ void DebugService::DrawSkillView()
         ImGui::InputScalar("Legendary level", ImGuiDataType_U32, (void*)&legendaryLevel, nullptr, nullptr, nullptr,
                            ImGuiInputTextFlags_ReadOnly);
     }
+
+    ImGui::End();
 }

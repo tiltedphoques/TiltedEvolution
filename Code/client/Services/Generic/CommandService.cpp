@@ -5,12 +5,15 @@
 #include <World.h>
 
 #include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
 #include <PlayerCharacter.h>
 
 #include <Events/CommandEvent.h>
 
 #include <Messages/TeleportCommandRequest.h>
 #include <Messages/TeleportCommandResponse.h>
+
+#include <Structs/GridCellCoords.h>
 
 CommandService::CommandService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher) 
     : m_world(aWorld), 
@@ -49,9 +52,20 @@ void CommandService::OnTeleportCommandResponse(const TeleportCommandResponse& ac
     TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
     if (!pCell)
     {
-        spdlog::error("Failed to fetch cell to teleport to.");
-        m_world.GetOverlayService().SendSystemMessage("Teleporting to player failed.");
-        return;
+        const uint32_t worldSpaceId = modSystem.GetGameId(acMessage.WorldSpaceId);
+        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
+        if (pWorldSpace)
+        {
+            GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
+            pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+        }
+
+        if (!pCell)
+        {
+            spdlog::error("Failed to fetch cell to teleport to.");
+            m_world.GetOverlayService().SendSystemMessage("Teleporting to player failed.");
+            return;
+        }
     }
 
     PlayerCharacter::Get()->MoveTo(pCell, acMessage.Position);
