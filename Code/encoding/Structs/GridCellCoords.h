@@ -1,6 +1,7 @@
 #pragma once
 
 #include <TiltedCore/Buffer.hpp>
+#include <limits>
 
 using TiltedPhoques::Buffer;
 

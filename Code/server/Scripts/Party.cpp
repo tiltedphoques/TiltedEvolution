@@ -1,4 +1,4 @@
-#include <stdafx.h>
+
 
 
 #include <World.h>
@@ -19,7 +19,7 @@ namespace Script
     {
         Vector<Player> players;
 
-        auto& partyService = m_pWorld->ctx<PartyService>();
+        auto& partyService = m_pWorld->ctx().at<PartyService>();
 
         auto* pParty = partyService.GetById(m_partyId);
         if (pParty)

@@ -18,7 +18,6 @@ class ConsoleRegistry;
 
 struct GameServer final : Server
 {
-  public:
     // TODO: eventually refactor this.
     struct Info
     {
@@ -71,7 +70,7 @@ struct GameServer final : Server
             aFunctor(id);
     }
 
-  protected:
+protected:
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
     // Implement TiltedPhoques::Server
@@ -80,10 +79,10 @@ struct GameServer final : Server
     void OnConnection(ConnectionId_t aHandle) override;
     void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
 
-  private:
+private:
     void UpdateTitle() const;
 
-  private:
+private:
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
@@ -97,5 +96,5 @@ struct GameServer final : Server
 
     bool m_requestStop;
 
-    static GameServer* s_pInstance;
+    static inline GameServer* s_pInstance = nullptr;
 };

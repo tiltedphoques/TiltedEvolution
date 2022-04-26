@@ -1,6 +1,6 @@
 
 #include "GameServer.h"
-#include <TiltedCore/Stl.hpp>
+
 #include <common/GameServerInstance.h>
 #include <console/ConsoleRegistry.h>
 
@@ -15,9 +15,8 @@ namespace
 constexpr char kBuildTag[]{BUILD_BRANCH "@" BUILD_COMMIT};
 } // namespace
 
-class GameServerInstance final : public IGameServerInstance
+struct GameServerInstance final : IGameServerInstance
 {
-  public:
     GameServerInstance(Console::ConsoleRegistry& aConsole) : m_gameServer(aConsole)
     {
     }
@@ -26,13 +25,13 @@ class GameServerInstance final : public IGameServerInstance
     ~GameServerInstance() override = default;
 
     // Inherited via IGameServerInstance
-    virtual bool Initialize() override;
-    virtual void Shutdown() override;
-    virtual bool IsListening() override;
-    virtual bool IsRunning() override;
-    virtual void Update() override;
+    bool Initialize() override;
+    void Shutdown() override;
+    bool IsListening() override;
+    bool IsRunning() override;
+    void Update() override;
 
-  private:
+private:
     GameServer m_gameServer;
 };
 

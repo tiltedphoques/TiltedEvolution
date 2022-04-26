@@ -3,12 +3,13 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <thread>
 
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 #include <Setting.h>
-#include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
 #include <crash_handler/CrashHandler.h>
 #include "DediRunner.h"
@@ -29,8 +30,10 @@ constexpr char kLogFileName[] =
 constexpr char kEULAName[] = "EULA.txt";
 constexpr char kEULAText[] = ";Please indicate your agreement to the Tilted platform service agreement\n"
                              ";by setting bConfirmEULA to true\n"
-                             "[EULA]\n"
-                             "bConfirmEULA=false";
+                             "[EULA]\n";
+constexpr char kEULATextFalse[] = "bConfirmEULA=false";
+constexpr char kEULATextTrue[] = "bConfirmEULA=true";
+
 namespace fs = std::filesystem;
 
 Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
@@ -112,17 +115,29 @@ static bool RegisterQuitHandler()
 static bool IsEULAAccepted()
 {
     const auto path = fs::current_path() / kConfigPathName / kEULAName;
+
+    auto pValue = std::getenv("TILTED_ACCEPT_EULA");
+    TiltedPhoques::String env = pValue ? pValue : "0";
+
+    std::ranges::transform(env, env.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    const bool envAccept = env == "true" || env == "1";
+
     if (!exists(path))
     {
         fs::create_directory(fs::current_path() / kConfigPathName);
-        TiltedPhoques::SaveFile(path, kEULAText);
-        return false;
+
+        TiltedPhoques::String eulaText = kEULAText;
+        eulaText += envAccept ? kEULATextTrue : kEULATextFalse;
+
+        TiltedPhoques::SaveFile(path, eulaText);
+        return envAccept;
     }
 
     const auto data = TiltedPhoques::LoadFile(path);
     CSimpleIni si;
     if (si.LoadData(data.c_str()) != SI_OK)
-        return false;
+        return envAccept;
 
     return si.GetBoolValue("EULA", "bConfirmEULA", false);
 }
