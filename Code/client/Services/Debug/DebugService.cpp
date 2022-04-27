@@ -146,11 +146,23 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             pPlayer->actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
 
-            TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(0x165aa));
+            TESObjectCELL* pCell = nullptr;
             NiPoint3 pos{};
-            pos.x = 379.915f;
-            pos.y = -381.969f;
-            pos.z = -223.650f;
+
+            if (pPlayer->GetWorldSpace())
+            {
+                pCell = Cast<TESObjectCELL>(TESForm::GetById(0x165aa));
+                pos.x = 379.915f;
+                pos.y = -381.969f;
+                pos.z = -223.650f;
+            }
+            else
+            {
+                pCell = pPlayer->GetParentCell();
+                NiPoint3 rot{};
+                pCell->GetCOCPlacementInfo(&pos, &rot, true);
+            }
+
             pPlayer->MoveTo(pCell, pos);
 
             pPlayer->SetNoBleedoutRecovery(true);
