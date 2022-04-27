@@ -134,6 +134,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+            PlayerCharacter::Get()->actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
         }
     }
     else

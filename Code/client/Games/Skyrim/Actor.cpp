@@ -331,6 +331,14 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
     }
 }
 
+void Actor::SetEssentialEx(bool aSet) noexcept
+{
+    SetEssential(true);
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (pBase)
+        pBase->actorData.SetEssential(true);
+}
+
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
     for (auto& value : acActorValues.ActorMaxValuesList)

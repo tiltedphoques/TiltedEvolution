@@ -254,12 +254,10 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     VisitCell(true);
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    // TODO(cosideci): set only one of these two? Both?
-    pPlayer->SetEssential(true);
-    TESNPC* pBase = Cast<TESNPC>(pPlayer->baseForm);
-    pBase->actorData.SetEssential(true);
+    pPlayer->SetEssentialEx(true);
 
     // Makes the player go in an unrecoverable death state
+    // TODO(cosideci): should this go in SetEssentialEx()?
     pPlayer->SetNoBleedoutRecovery(true);
 
     return BSTEventResult::kOk;
