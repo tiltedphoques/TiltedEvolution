@@ -89,7 +89,7 @@ void DediRunner::StartTerminalIO()
         spdlog::get("ConOut")->info("Server console");
         PrintExecutorArrowHack();
 
-        while (m_pServerInstance->IsRunning())
+        while (m_pServerInstance->IsRunning() && !std::cin.eof())
         {
             using exr = Console::ConsoleRegistry::ExecutionResult;
 
