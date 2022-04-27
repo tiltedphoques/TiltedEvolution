@@ -8,8 +8,6 @@ bool StringCache::Contains(const TiltedPhoques::String& acValue) const noexcept
 
 std::optional<uint32_t> StringCache::operator[](const TiltedPhoques::String& acValue) const noexcept
 {
-    std::scoped_lock _{m_lock};
-
     if (const auto itor = m_stringToId.find(acValue); itor != std::end(m_stringToId))
         return itor->second;
 
@@ -18,8 +16,6 @@ std::optional<uint32_t> StringCache::operator[](const TiltedPhoques::String& acV
 
 std::optional<const TiltedPhoques::String> StringCache::operator[](uint32_t aValue) const noexcept
 {
-    std::scoped_lock _{m_lock};
-
     if (aValue < m_idToString.size())
         return m_idToString[aValue];
 
@@ -28,8 +24,6 @@ std::optional<const TiltedPhoques::String> StringCache::operator[](uint32_t aVal
 
 uint32_t StringCache::Add(const TiltedPhoques::String& acValue) noexcept
 {
-    std::scoped_lock _{m_lock};
-
     if (auto id = this->operator[](acValue))
         return *id;
 
@@ -47,15 +41,11 @@ void StringCache::AddWanted(const TiltedPhoques::String& acValue) noexcept
 
 size_t StringCache::Size() const noexcept
 {
-    std::scoped_lock _{m_lock};
-
     return m_idToString.size();
 }
 
 StringCacheUpdate StringCache::Serialize(uint32_t& aStartId) const noexcept
 {
-    std::scoped_lock _{m_lock};
-
     StringCacheUpdate update;
     update.StartId = aStartId;
 
@@ -74,7 +64,6 @@ StringCacheUpdate StringCache::Serialize(uint32_t& aStartId) const noexcept
 
 void StringCache::Deserialize(const StringCacheUpdate& aMessage) noexcept
 {
-    std::scoped_lock _{m_lock};
     // We should only receive contiguous updates
     assert(aMessage.StartId == m_idToString.size());
 
@@ -89,8 +78,6 @@ void StringCache::Deserialize(const StringCacheUpdate& aMessage) noexcept
 
 void StringCache::Clear() noexcept
 {
-    std::scoped_lock _{m_lock};
-
     m_idToString.clear();
     m_wantedStrings.clear();
     m_stringToId.clear();
@@ -98,8 +85,6 @@ void StringCache::Clear() noexcept
 
 bool StringCache::ProcessDirty() noexcept
 {
-    std::scoped_lock _{m_lock};
-
     if (m_wantedStrings.empty())
         return false;
 
@@ -113,8 +98,6 @@ bool StringCache::ProcessDirty() noexcept
 
 void StringCache::ClearDirty() noexcept
 {
-    std::scoped_lock _{m_lock};
-
     m_wantedStrings.clear();
 }
 

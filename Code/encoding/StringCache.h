@@ -26,8 +26,6 @@ struct StringCache
 
 private:
 
-    mutable std::recursive_mutex m_lock;
-
     TiltedPhoques::Vector<TiltedPhoques::String> m_idToString;
     mutable TiltedPhoques::Set<TiltedPhoques::String> m_wantedStrings;
     TiltedPhoques::Map<TiltedPhoques::String, uint32_t> m_stringToId;
