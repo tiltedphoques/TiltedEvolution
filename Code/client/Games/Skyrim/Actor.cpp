@@ -382,6 +382,13 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
 
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 

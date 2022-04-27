@@ -38,7 +38,7 @@ struct TESActorBaseData : BaseFormComponent
     {
         return flags & BaseFlags::IS_ESSENTIAL;
     }
-    bool SetEssential(bool aSet) noexcept
+    void SetEssential(bool aSet) noexcept
     {
         if (aSet)
             flags |= BaseFlags::IS_ESSENTIAL;

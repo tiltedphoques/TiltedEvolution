@@ -7,6 +7,7 @@
 
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#include <Forms/TESNPC.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -251,6 +252,16 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
 {
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
+
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    // TODO(cosideci): set only one of these two? Both?
+    pPlayer->SetEssential(true);
+    TESNPC* pBase = Cast<TESNPC>(pPlayer->baseForm);
+    pBase->actorData.SetEssential(true);
+
+    // Makes the player go in an unrecoverable death state
+    pPlayer->SetNoBleedoutRecovery(true);
+
     return BSTEventResult::kOk;
 }
 
