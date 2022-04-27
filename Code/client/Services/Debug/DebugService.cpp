@@ -8,6 +8,7 @@
 #include <Services/ImguiService.h>
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
+#include <Services/PapyrusService.h>
 
 #include <Events/UpdateEvent.h>
 
@@ -134,7 +135,18 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-            PlayerCharacter::Get()->actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
+
+            auto pPlayer = PlayerCharacter::Get();
+
+            pPlayer->SetNoBleedoutRecovery(false);
+
+            using TDispellAllSpells = void(void*, uint32_t, Actor*);
+            POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
+            s_dispell(nullptr, 0, pPlayer);
+
+            pPlayer->actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
+
+            pPlayer->SetNoBleedoutRecovery(true);
         }
     }
     else
