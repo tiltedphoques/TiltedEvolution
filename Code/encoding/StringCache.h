@@ -13,7 +13,7 @@ struct StringCache
 
     [[nodiscard]] std::optional<uint32_t> operator[](const TiltedPhoques::String&) const noexcept;
     [[nodiscard]] std::optional<const TiltedPhoques::String> operator[](uint32_t) const noexcept;
-    [[nodiscard]] uint32_t Add(const TiltedPhoques::String&) noexcept;
+    uint32_t Add(const TiltedPhoques::String&) noexcept;
     [[nodiscard]] void AddWanted(const TiltedPhoques::String&) noexcept;
     [[nodiscard]] size_t Size() const noexcept;
     [[nodiscard]] StringCacheUpdate Serialize(uint32_t& aStartId) const noexcept;
