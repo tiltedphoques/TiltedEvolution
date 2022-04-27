@@ -18,11 +18,11 @@ void NotifyActorValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
 
     Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
-    auto count = Serialization::ReadVarInt(aReader);
+    const auto count = Serialization::ReadVarInt(aReader);
     for (int i = 0; i < count; i++)
     {
         auto key = Serialization::ReadVarInt(aReader);
         auto value = Serialization::ReadFloat(aReader);
-        Values.insert({key, value});
+        Values.insert({key & 0xFFFFFFFF, value});
     }
 }
