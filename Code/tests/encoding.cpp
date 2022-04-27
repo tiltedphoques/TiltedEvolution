@@ -54,63 +54,6 @@ TEST_CASE("Encoding factory", "[encoding.factory]")
 
 TEST_CASE("Static structures", "[encoding.static]")
 {
-    GIVEN("FullObjects")
-    {
-        FullObjects sendObjects, recvObjects;
-        sendObjects.Data.push_back(42);
-        sendObjects.Data.push_back(13);
-
-        {
-            Buffer buff(1000);
-            Buffer::Writer writer(&buff);
-
-            sendObjects.Serialize(writer);
-
-            Buffer::Reader reader(&buff);
-            recvObjects.Deserialize(reader);
-
-            REQUIRE(sendObjects == recvObjects);
-        }
-    }
-
-    GIVEN("Objects")
-    {
-        Objects sendObjects, recvObjects;
-        sendObjects.Data.push_back(42);
-        sendObjects.Data.push_back(13);
-
-        {
-            Buffer buff(1000);
-            Buffer::Writer writer(&buff);
-
-            sendObjects.Serialize(writer);
-
-            Buffer::Reader reader(&buff);
-            recvObjects.Deserialize(reader);
-
-            REQUIRE(sendObjects == recvObjects);
-        }
-    }
-
-    GIVEN("Scripts")
-    {
-        Scripts sendObjects, recvObjects;
-        sendObjects.Data.push_back(42);
-        sendObjects.Data.push_back(13);
-
-        {
-            Buffer buff(1000);
-            Buffer::Writer writer(&buff);
-
-            sendObjects.Serialize(writer);
-
-            Buffer::Reader reader(&buff);
-            recvObjects.Deserialize(reader);
-
-            REQUIRE(sendObjects == recvObjects);
-        }
-    }
-
     GIVEN("GameId")
     {
         GameId sendObjects, recvObjects;

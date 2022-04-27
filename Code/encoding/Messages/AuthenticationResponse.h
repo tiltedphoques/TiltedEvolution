@@ -2,8 +2,6 @@
 
 #include "Message.h"
 #include <Structs/Mods.h>
-#include <Structs/Scripts.h>
-#include <Structs/FullObjects.h>
 
 struct AuthenticationResponse final : ServerMessage
 {

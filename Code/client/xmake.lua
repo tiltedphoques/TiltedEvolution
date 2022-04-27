@@ -43,7 +43,6 @@ target(name)
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
-        "TiltedScript",
         "TiltedUi",
         {inherit = true}
     )
@@ -57,8 +56,6 @@ target(name)
         "discord",
         "imgui",
         "cef",
-        "lua",
-        "sol2",
         "minhook",
         "entt",
         "glm",

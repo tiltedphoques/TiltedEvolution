@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/Objects.h>
 
 struct ServerTimeSettings final : ServerMessage
 {

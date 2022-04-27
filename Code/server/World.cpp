@@ -42,7 +42,4 @@ World::World()
     {
         ctx().emplace<ModsComponent>().AddServerMod(it);
     }
-
-    // late initialize the ScriptService to ensure all components are valid
-    m_scriptService = std::make_unique<ScriptService>(*this, m_dispatcher);
 }
