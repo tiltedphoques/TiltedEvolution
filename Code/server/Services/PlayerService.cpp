@@ -1,5 +1,3 @@
-
-
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
 #include "Events/PlayerLeaveCellEvent.h"

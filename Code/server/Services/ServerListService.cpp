@@ -1,5 +1,3 @@
-
-
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
 #include <Events/UpdateEvent.h>
@@ -8,8 +6,6 @@
 
 #include <console/Setting.h>
 #include <future>
-
-#include <Components.h>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>

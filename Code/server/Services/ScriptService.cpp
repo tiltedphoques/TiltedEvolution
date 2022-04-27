@@ -1,5 +1,3 @@
-
-
 #include <Services/ScriptService.h>
 #include <Services/CalendarService.h>
 #include <World.h>

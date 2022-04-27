@@ -1,10 +1,7 @@
-#include <stdafx.h>
-
 #include <Services/CalendarService.h>
 
 #include <GameServer.h>
 #include <World.h>
-#include <Components.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
