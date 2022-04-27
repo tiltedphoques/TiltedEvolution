@@ -1326,9 +1326,6 @@ void CharacterService::RunRemoteUpdates() noexcept
 
     auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
 
-    StackAllocator<1 << 13> allocator;
-    ScopedAllocator _{allocator};
-
     Vector<entt::entity> toRemove;
     for (auto entity : waitingView)
     {
