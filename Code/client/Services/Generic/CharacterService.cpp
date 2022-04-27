@@ -154,14 +154,16 @@ void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
         return;
     }
 
-    auto& formIdComponent = m_world.get<FormIdComponent>(*entityIt);
+    const auto cId = *entityIt;
+
+    auto& formIdComponent = view.get<FormIdComponent>(cId);
     CancelServerAssignment(*entityIt, formIdComponent.Id);
 
-    if (m_world.all_of<FormIdComponent>(*entityIt))
-        m_world.remove<FormIdComponent>(*entityIt);
+    if (m_world.all_of<FormIdComponent>(cId))
+        m_world.remove<FormIdComponent>(cId);
 
-    if (m_world.orphan(*entityIt))
-        m_world.destroy(*entityIt);
+    if (m_world.orphan(cId))
+        m_world.destroy(cId);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
