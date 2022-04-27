@@ -90,7 +90,9 @@ struct TESContainerChangedEvent
 
 struct TESDeathEvent
 {
-
+    TESObjectREFR* pActorDying;
+    TESObjectREFR* pActorKiller;
+    bool isDead;
 };
 
 struct TESDestructionStageChangedEvent
