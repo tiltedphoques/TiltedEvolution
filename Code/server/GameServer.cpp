@@ -108,7 +108,6 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
-    m_pWorld->GetScriptService().Initialize();
 }
 
 void GameServer::Kill()
@@ -295,8 +294,6 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
-    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
-
     if (pPlayer)
     {
         if (const auto& cell = pPlayer->GetCellComponent())
@@ -315,7 +312,6 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         {
             if (entity == playerCharacter)
             {
-                auto& characterComponent = m_pWorld->get<CharacterComponent>(entity);
                 m_pWorld->GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(entity)));
                 continue;
             }

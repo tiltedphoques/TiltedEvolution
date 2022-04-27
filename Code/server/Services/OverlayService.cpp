@@ -1,13 +1,8 @@
-#include <Components.h>
 #include <GameServer.h>
-
-#include <Scripts/Player.h>
 #include <Services/OverlayService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/SendChatMessageRequest.h>
-
-#include <Events/PlayerEnterWorldEvent.h>
 
 #include <regex>
 
@@ -31,6 +26,9 @@ void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>
 }
 
 #if 0
+#include <Components.h>
+#include <Events/PlayerEnterWorldEvent.h>
+
 void OverlayService::HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept
 {
     const Script::Player cPlayer(acEvent.Entity, m_world);
