@@ -8,14 +8,11 @@
 #include <Services/CharacterService.h>
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
-#include <Services/QuestService.h>
 
 #include <Games/References.h>
 
-#include <ExtraData/ExtraLeveledCreature.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
-#include <ExtraData/ExtraLeveledCreature.h>
 
 #include <Components.h>
 
@@ -23,15 +20,12 @@
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
-#include <Systems/CacheSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/EquipmentChangeEvent.h>
-#include <Events/UpdateEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
