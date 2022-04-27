@@ -89,7 +89,7 @@ bool StringCache::ProcessDirty() noexcept
         return false;
 
     for (auto& s : m_wantedStrings)
-        (void)Add(s);
+        Add(s);
 
     ClearDirty();
 
