@@ -224,6 +224,23 @@ struct Actor : TESObjectREFR
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
 
+    enum ActorFlags
+    {
+        IS_ESSENTIAL = 1 << 18,
+    };
+
+    bool IsEssential() const noexcept
+    {
+        return flags2 & ActorFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSetEssential) noexcept
+    {
+        if (aSetEssential)
+            flags2 |= ActorFlags::IS_ESSENTIAL;
+        else
+            flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
+
 public:
 
     enum ChangeFlags : uint32_t
