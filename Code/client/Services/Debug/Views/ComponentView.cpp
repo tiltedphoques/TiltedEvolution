@@ -177,7 +177,8 @@ void DebugService::DrawComponentDebugView()
                     {
                         ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
                                     pComponent->LastRanAction.EventName.c_str(),
-                                    pComponent->LastRanAction.TargetEventName.c_str(), pComponent->LastRanAction.State1,
+                                    pComponent->LastRanAction.TargetEventName.c_str(),
+                                    pComponent->LastRanAction.State1,
                                     pComponent->LastRanAction.State2);
                     }
                     // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,

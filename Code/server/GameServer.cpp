@@ -1,3 +1,5 @@
+#include "Messages/StringCacheUpdate.h"
+
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
@@ -242,6 +244,7 @@ void GameServer::OnUpdate()
     const auto cDeltaSeconds = std::chrono::duration_cast<std::chrono::duration<float>>(cDelta).count();
 
     auto& dispatcher = m_pWorld->GetDispatcher();
+
 
     dispatcher.trigger(UpdateEvent{cDeltaSeconds});
 
@@ -555,6 +558,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
+
+        uint32_t startId = 0;
+        auto initStringCache = StringCache::Get().Serialize(startId);
+
+        pPlayer->SetStringCacheId(startId);
+
+        Send(aConnectionId, initStringCache);
+
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())

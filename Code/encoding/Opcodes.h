@@ -84,5 +84,6 @@ enum ServerOpcode : unsigned char
     kNotifyEquipmentChanges,
     kNotifyChatMessageBroadcast,
     kTeleportCommandResponse,
+    kStringCacheUpdate,
     kServerOpcodeMax
 };

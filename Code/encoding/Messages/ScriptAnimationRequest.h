@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Message.h"
+#include "Structs/CachedString.h"
 
 struct ScriptAnimationRequest final : ClientMessage
 {
@@ -22,6 +23,6 @@ struct ScriptAnimationRequest final : ClientMessage
     }
 
     uint32_t FormID;
-    String Animation;
-    String EventName;
+    CachedString Animation;
+    CachedString EventName;
 };

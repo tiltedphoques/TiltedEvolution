@@ -21,10 +21,8 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 
-#include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 
-#include <imgui.h>
 //#include <imgui_internal.h>
 
 using TiltedPhoques::Packet;
