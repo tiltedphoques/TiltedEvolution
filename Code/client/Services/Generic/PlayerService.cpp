@@ -44,39 +44,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
     if (m_respawnTimer <= 0.0)
     {
-        // Make bleedout state recoverable
-        pPlayer->SetNoBleedoutRecovery(false);
-
-        pPlayer->DispellAllSpells();
-
-        // Reset health to max
-        // TODO(cosideci): there's a cleaner way to do this
-        pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
-
-        TESObjectCELL* pCell = nullptr;
-        NiPoint3 pos{};
-
-        if (pPlayer->GetWorldSpace())
-        {
-            // TP to Whiterun temple when killed in world space
-            pCell = Cast<TESObjectCELL>(TESForm::GetById(0x165aa));
-            pos.x = 379.915f;
-            pos.y = -381.969f;
-            pos.z = -223.650f;
-        }
-        else
-        {
-            // TP to start of cell when killed in an interior
-            pCell = pPlayer->GetParentCell();
-            NiPoint3 rot{};
-            pCell->GetCOCPlacementInfo(&pos, &rot, true);
-        }
-
-        pPlayer->MoveTo(pCell, pos);
-
-        // Make bleedout state unrecoverable again for when the player goes down the next time
-        pPlayer->SetNoBleedoutRecovery(true);
-
+        pPlayer->RespawnPlayer();
         s_startTimer = false;
     }
 }

@@ -115,15 +115,11 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            auto pPlayer = PlayerCharacter::Get();
-            pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 0);
-            /*
             static char s_address[256] = "de.playtogether.gg:10100";
             if (!m_transport.IsOnline())
                 m_transport.Connect(s_address);
             else
                 m_transport.Close();
-            */
         }
     }
     else
@@ -139,37 +135,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-
-            auto pPlayer = PlayerCharacter::Get();
-
-            pPlayer->SetNoBleedoutRecovery(false);
-
-            using TDispellAllSpells = void(void*, uint32_t, Actor*);
-            POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
-            s_dispell(nullptr, 0, pPlayer);
-
-            pPlayer->actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
-
-            TESObjectCELL* pCell = nullptr;
-            NiPoint3 pos{};
-
-            if (pPlayer->GetWorldSpace())
-            {
-                pCell = Cast<TESObjectCELL>(TESForm::GetById(0x165aa));
-                pos.x = 379.915f;
-                pos.y = -381.969f;
-                pos.z = -223.650f;
-            }
-            else
-            {
-                pCell = pPlayer->GetParentCell();
-                NiPoint3 rot{};
-                pCell->GetCOCPlacementInfo(&pos, &rot, true);
-            }
-
-            pPlayer->MoveTo(pCell, pos);
-
-            pPlayer->SetNoBleedoutRecovery(true);
         }
     }
     else

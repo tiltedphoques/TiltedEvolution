@@ -14,6 +14,8 @@
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
 
+#include <Forms/TESObjectCELL.h>
+
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
 TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
 TP_THIS_FUNCTION(TAddSkillExperience, void, PlayerCharacter, int32_t aSkill, float aExperience);
@@ -37,6 +39,42 @@ void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noex
     float deltaExperience = newExperience - oldExperience;
 
     spdlog::debug("Added {} experience to skill {}", deltaExperience, aSkill);
+}
+
+void PlayerCharacter::RespawnPlayer() noexcept
+{
+    // Make bleedout state recoverable
+    SetNoBleedoutRecovery(false);
+
+    DispellAllSpells();
+
+    // Reset health to max
+    // TODO(cosideci): there's a cleaner way to do this
+    ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
+
+    TESObjectCELL* pCell = nullptr;
+    NiPoint3 pos{};
+
+    if (GetWorldSpace())
+    {
+        // TP to Whiterun temple when killed in world space
+        pCell = Cast<TESObjectCELL>(TESForm::GetById(0x165aa));
+        pos.x = 379.915f;
+        pos.y = -381.969f;
+        pos.z = -223.650f;
+    }
+    else
+    {
+        // TP to start of cell when killed in an interior
+        pCell = GetParentCell();
+        NiPoint3 rot{};
+        pCell->GetCOCPlacementInfo(&pos, &rot, true);
+    }
+
+    MoveTo(pCell, pos);
+
+    // Make bleedout state unrecoverable again for when the player goes down the next time
+    SetNoBleedoutRecovery(true);
 }
 
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
