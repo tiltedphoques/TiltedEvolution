@@ -21,7 +21,7 @@ struct ActorState : IMovementState
 
     bool IsBleedingOut() const noexcept
     {
-        return (flags1 & 0x1E00000) == 0x1000000 || (flags1 & 0x1E00000) == 14680064;
+        return (flags1 & 0x1E00000) == 0x1000000 || (flags1 & 0x1E00000) == 0xE00000;
     }
 
     bool SetWeaponDrawn(bool aDraw) noexcept;
