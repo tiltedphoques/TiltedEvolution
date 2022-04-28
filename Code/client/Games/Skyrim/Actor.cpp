@@ -42,6 +42,7 @@
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
+#include "Actor.h"
 
 void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 {
@@ -474,6 +475,13 @@ void Actor::GenerateMagicCasters() noexcept
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
         instantCaster = Cast<ActorMagicCaster>(pCaster);
     }
+}
+
+void Actor::DispellAllSpells() noexcept
+{
+    using TDispellAllSpells = void(void*, uint32_t, Actor*);
+    POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
+    s_dispell(nullptr, 0, this);
 }
 
 bool Actor::IsDead() noexcept

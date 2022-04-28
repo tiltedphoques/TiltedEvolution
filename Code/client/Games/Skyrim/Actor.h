@@ -218,6 +218,7 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
+    void DispellAllSpells() noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
