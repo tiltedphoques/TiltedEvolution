@@ -398,6 +398,13 @@ void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
     ThisCall(s_setNoBleedoutRecovery, this, aSet);
 }
 
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 
@@ -493,6 +500,11 @@ bool Actor::IsDead() noexcept
 
 void Actor::Kill() noexcept
 {
+    // Never kill players
+    ActorExtension* pExtension = GetExtension();
+    if (pExtension->IsPlayer())
+        return;
+
     PAPYRUS_FUNCTION(void, Actor, Kill, void*);
 
     s_pKill(this, NULL);

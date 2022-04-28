@@ -376,7 +376,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
-        pActor->SetEssentialEx(true);
+        pActor->SetPlayerRespawnMode();
     }
 
     if (pActor->IsDead() != acMessage.IsDead)
@@ -1237,7 +1237,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
-        pActor->SetEssentialEx(true);
+        pActor->SetPlayerRespawnMode();
     }
 
     if (pActor->IsDead() != acMessage.IsDead)

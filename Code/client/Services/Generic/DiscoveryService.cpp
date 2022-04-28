@@ -253,19 +253,14 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
 
-    PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    pPlayer->SetEssentialEx(true);
-
-    // Makes the player go in an unrecoverable death state
-    // TODO(cosideci): should this go in SetEssentialEx()?
-    pPlayer->SetNoBleedoutRecovery(true);
+    PlayerCharacter::Get()->SetPlayerRespawnMode();
 
     return BSTEventResult::kOk;
 }
 
 BSTEventResult DiscoveryService::OnEvent(const TESDeathEvent* acEvent, const EventDispatcher<TESDeathEvent>*)
 {
-    spdlog::info("Actor died, actor: {:X}, killer: {:X}, is dead? {}",
+    spdlog::debug("Actor died, actor: {:X}, killer: {:X}, is dead? {}",
                  acEvent->pActorDying ? acEvent->pActorDying->formID : 0,
                  acEvent->pActorKiller ? acEvent->pActorKiller->formID : 0, acEvent->isDead);
 
