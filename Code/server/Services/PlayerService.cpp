@@ -130,7 +130,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
 {
-    float goldLossFactor = fGoldLossFactor.value();
+    float goldLossFactor = fGoldLossFactor.as_float();
 
     if (goldLossFactor == 0.0)
         return;
