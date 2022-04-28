@@ -335,6 +335,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
 
 void TESObjectREFR::PayGold(int32_t aAmount) noexcept
 {
+    ScopedInventoryOverride _;
     PayGoldToContainer(nullptr, aAmount);
 }
 

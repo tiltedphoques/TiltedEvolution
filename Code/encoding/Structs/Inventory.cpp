@@ -125,23 +125,41 @@ void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     CurrentMagicEquipment.Deserialize(aReader);
 }
 
-// TODO: unit testing
-void Inventory::AddOrRemoveEntry(const Entry& acNewEntry) noexcept
+std::optional<Inventory::Entry> Inventory::GetEntryById(GameId& aItemId) const noexcept
 {
-    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acNewEntry](Entry& entry)
+    auto entry = std::find_if(Entries.begin(), Entries.end(), [aItemId](auto entry) { return entry.BaseId == aItemId; });
+    if (entry == Entries.end())
+        return std::nullopt;
+
+    return {*entry};
+}
+
+int32_t Inventory::GetEntryCountById(GameId& aItemId) const noexcept
+{
+    auto entry = GetEntryById(aItemId);
+    if (!entry)
+        return 0;
+
+    return entry->Count;
+}
+
+// TODO: unit testing
+void Inventory::AddOrRemoveEntry(const Entry& acEntry) noexcept
+{
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acEntry](Entry& entry)
     {
-        return entry.CanBeMerged(acNewEntry);
+        return entry.CanBeMerged(acEntry);
     });
 
     if (duplicate != Entries.end())
     {
-        duplicate->Count += acNewEntry.Count;
-        if (duplicate->Count == 0)
+        duplicate->Count += acEntry.Count;
+        if (duplicate->Count <= 0)
             Entries.erase(duplicate);
     }
     else
     {
-        Entries.push_back(acNewEntry);
+        Entries.push_back(acEntry);
     }
 }
 

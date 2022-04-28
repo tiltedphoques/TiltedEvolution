@@ -42,6 +42,7 @@ enum ClientOpcode : unsigned char
     kRequestEquipmentChanges,
     kSendChatMessageRequest,
     kTeleportCommandRequest,
+    kPlayerRespawnRequest,
     kClientOpcodeMax
 };
 
@@ -85,5 +86,6 @@ enum ServerOpcode : unsigned char
     kNotifyChatMessageBroadcast,
     kTeleportCommandResponse,
     kStringCacheUpdate,
+    kNotifyPlayerRespawn,
     kServerOpcodeMax
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <TiltedCore/Stl.hpp>
 #include "MagicEquipment.h"
 
@@ -94,8 +96,11 @@ struct Inventory
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
+    std::optional<Entry> GetEntryById(GameId& aItemId) const noexcept;
+    int32_t GetEntryCountById(GameId& aItemId) const noexcept;
+
     void RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept;
-    void AddOrRemoveEntry(const Entry& acNewEntry) noexcept;
+    void AddOrRemoveEntry(const Entry& acEntry) noexcept;
     void UpdateEquipment(const Inventory& acNewInventory) noexcept;
 
     Vector<Entry> Entries{};

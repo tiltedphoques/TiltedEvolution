@@ -11,12 +11,16 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
+#include <Messages/PlayerRespawnRequest.h>
+#include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifyPlayerRespawn.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_interiorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterInteriorCellRequest>>().connect<&PlayerService::HandleInteriorCellEnter>(this))
     , m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
     , m_exteriorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterExteriorCellRequest>>().connect<&PlayerService::HandleExteriorCellEnter>(this))
+    , m_playerRespawnConnection(aDispatcher.sink<PacketEvent<PlayerRespawnRequest>>().connect<&PlayerService::OnPlayerRespawnRequest>(this))
 {
 }
 
@@ -118,5 +122,51 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
         CharacterService::Serialize(m_world, character, &spawnMessage);
 
         pPlayer->Send(spawnMessage);
+    }
+}
+
+void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
+{
+    // TODO: server side setting for this factor
+    double goldLossFactor = 0.05;
+
+    if (goldLossFactor == 0.0)
+        return;
+
+    auto character = acMessage.pPlayer->GetCharacter();
+    if (!character)
+        return;
+
+    auto view = m_world.view<InventoryComponent>();
+
+    const auto it = view.find(static_cast<entt::entity>(*character));
+
+    if (it != view.end())
+    {
+        auto& inventoryComponent = view.get<InventoryComponent>(*it);
+
+        GameId goldId(0, 0xF);
+        int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
+        int32_t goldToRemove = goldCount * goldLossFactor;
+
+        Inventory::Entry entry{};
+        entry.BaseId = goldId;
+        entry.Count = -goldToRemove;
+
+        inventoryComponent.Content.AddOrRemoveEntry(entry);
+
+        NotifyInventoryChanges notify{};
+        notify.ServerId = World::ToInteger(*character);
+        notify.Item = entry;
+        notify.Drop = false;
+
+        // Exclude respawned player from inventory changes notification...
+        GameServer::Get()->SendToPlayersInRange(notify, *character, acMessage.GetSender());
+
+        // ...and instead, send NotifyPlayerRespawn so that the client can print a message.
+        NotifyPlayerRespawn notifyRespawn{};
+        notifyRespawn.GoldLost = goldToRemove;
+
+        acMessage.pPlayer->Send(notifyRespawn);
     }
 }

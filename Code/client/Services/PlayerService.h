@@ -5,6 +5,8 @@ struct TransportService;
 
 struct UpdateEvent;
 
+struct NotifyPlayerRespawn;
+
 /**
 * @brief Handles logic related to the local player.
 */
@@ -18,6 +20,7 @@ struct PlayerService
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
 
 private:
 
@@ -33,5 +36,5 @@ private:
     double m_respawnTimer = 0.0;
 
     entt::scoped_connection m_updateConnection;
-    entt::scoped_connection m_deathConnection;
+    entt::scoped_connection m_notifyRespawnConnection;
 };

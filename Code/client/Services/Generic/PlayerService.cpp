@@ -4,18 +4,31 @@
 
 #include <Events/UpdateEvent.h>
 
+#include <Messages/PlayerRespawnRequest.h>
+#include <Messages/NotifyPlayerRespawn.h>
+
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
+#include <Games/Overrides.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
+    m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunRespawnUpdates(acEvent.Delta);
+}
+
+void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
+{
+    PlayerCharacter::Get()->PayGold(acMessage.GoldLost);
+
+    std::string message = fmt::format("You died and lost {} gold.", acMessage.GoldLost);
+    Utils::ShowHudMessage(String(message));
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
@@ -45,6 +58,9 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     if (m_respawnTimer <= 0.0)
     {
         pPlayer->RespawnPlayer();
+
+        m_transport.Send(PlayerRespawnRequest());
+
         s_startTimer = false;
     }
 }

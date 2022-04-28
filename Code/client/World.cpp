@@ -20,6 +20,7 @@
 #include <Services/CommandService.h>
 #include <Services/CalendarService.h>
 #include <Services/StringCacheService.h>
+#include <Services/PlayerService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -46,6 +47,7 @@ World::World()
      ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
      ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
      ctx().emplace<CommandService>(*this, m_transport, m_dispatcher);
+     ctx().emplace<PlayerService>(*this, m_dispatcher, m_transport);
      ctx().emplace<StringCacheService>(m_dispatcher);
 }
 
