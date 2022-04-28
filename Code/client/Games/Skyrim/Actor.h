@@ -192,6 +192,7 @@ struct Actor : TESObjectREFR
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
+    int32_t GetGoldAmount() noexcept;
 
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;

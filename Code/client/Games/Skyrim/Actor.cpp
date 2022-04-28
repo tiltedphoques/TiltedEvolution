@@ -298,6 +298,13 @@ MagicEquipment Actor::GetMagicEquipment() const noexcept
     return equipment;
 }
 
+int32_t Actor::GetGoldAmount() noexcept
+{
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
+    return ThisCall(s_getGoldAmount, this);
+}
+
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);

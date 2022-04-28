@@ -13,6 +13,7 @@
 
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
+#include <Games/TES.h>
 
 #include <Forms/TESObjectCELL.h>
 
@@ -53,23 +54,22 @@ void PlayerCharacter::RespawnPlayer() noexcept
     ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
 
     TESObjectCELL* pCell = nullptr;
-    NiPoint3 pos{};
 
     if (GetWorldSpace())
     {
         // TP to Whiterun temple when killed in world space
-        pCell = Cast<TESObjectCELL>(TESForm::GetById(0x165aa));
-        pos.x = 379.915f;
-        pos.y = -381.969f;
-        pos.z = -223.650f;
+        TES* pTes = TES::Get();
+        pCell = ModManager::Get()->GetCellFromCoordinates(pTes->centerGridX, pTes->centerGridY, GetWorldSpace(), false);
     }
     else
     {
         // TP to start of cell when killed in an interior
         pCell = GetParentCell();
-        NiPoint3 rot{};
-        pCell->GetCOCPlacementInfo(&pos, &rot, true);
     }
+
+    NiPoint3 pos{};
+    NiPoint3 rot{};
+    pCell->GetCOCPlacementInfo(&pos, &rot, true);
 
     MoveTo(pCell, pos);
 
