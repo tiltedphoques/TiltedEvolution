@@ -79,6 +79,11 @@ void Player::SetCharacter(entt::entity aCharacter) noexcept
     m_character = aCharacter;
 }
 
+void Player::SetStringCacheId(uint32_t aStringCacheId) noexcept
+{
+    m_stringCacheId = aStringCacheId;
+}
+
 void Player::SetCellComponent(const CellIdComponent& aCellComponent) noexcept
 {
     m_cell = aCellComponent;

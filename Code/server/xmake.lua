@@ -22,7 +22,6 @@ local function build_server()
         "CrashHandler",
         "BaseLib",
         "AdminProtocol",
-        "TiltedScript",
         "TiltedConnect"
     )
     add_packages(

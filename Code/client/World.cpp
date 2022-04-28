@@ -9,7 +9,6 @@
 #include <Services/DebugService.h>
 #include <Services/RunnerService.h>
 #include <Services/ImguiService.h>
-#include <Services/ScriptService.h>
 #include <Services/PapyrusService.h>
 #include <Services/DiscordService.h>
 #include <Services/ObjectService.h>
@@ -20,6 +19,7 @@
 #include <Services/MagicService.h>
 #include <Services/CommandService.h>
 #include <Services/CalendarService.h>
+#include <Services/StringCacheService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -36,7 +36,6 @@ World::World()
      ctx().emplace<InputService>(ctx().at<OverlayService>());
      ctx().emplace<CharacterService>(*this, m_dispatcher, m_transport);
      ctx().emplace<DebugService>(m_dispatcher, *this, m_transport, ctx().at<ImguiService>());
-     ctx().emplace<ScriptService>(*this, m_dispatcher, ctx().at<ImguiService>(), m_transport);
      ctx().emplace<PapyrusService>(m_dispatcher);
      ctx().emplace<DiscordService>(m_dispatcher);
      ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
@@ -47,6 +46,7 @@ World::World()
      ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
      ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
      ctx().emplace<CommandService>(*this, m_transport, m_dispatcher);
+     ctx().emplace<StringCacheService>(m_dispatcher);
 }
 
 World::~World() = default;

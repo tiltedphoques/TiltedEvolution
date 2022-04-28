@@ -1,12 +1,8 @@
 #pragma once
 
-namespace TiltedMessages
-{
-    class StringCacheContent;
-}
-
 struct ConnectedEvent;
 struct DisconnectedEvent;
+struct StringCacheUpdate;
 
 /**
 * @brief Caches strings to reduce data usage when sending string data between clients.
@@ -20,19 +16,15 @@ struct StringCacheService
 
     TP_NOCOPYMOVE(StringCacheService);
 
-    const String& Get(uint32_t aIndex) const noexcept;
-
     void HandleConnected(const ConnectedEvent&) noexcept;
     void HandleDisconnected(const DisconnectedEvent&) noexcept;
 
-    //void HandleStringCacheContent(const TiltedMessages::StringCacheContent&) noexcept;
+    void HandleStringCacheUpdate(const StringCacheUpdate&) noexcept;
 
 private:
 
-    Map<uint32_t, String> m_cache;
-
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
-    entt::scoped_connection m_stringCacheContentConnection;
+    entt::scoped_connection m_stringCacheUpdateConnection;
     
 };

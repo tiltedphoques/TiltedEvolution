@@ -1,3 +1,5 @@
+#include "Messages/StringCacheUpdate.h"
+
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
@@ -108,7 +110,6 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
-    m_pWorld->GetScriptService().Initialize();
 }
 
 void GameServer::Kill()
@@ -244,6 +245,7 @@ void GameServer::OnUpdate()
 
     auto& dispatcher = m_pWorld->GetDispatcher();
 
+
     dispatcher.trigger(UpdateEvent{cDeltaSeconds});
 
     if (m_requestStop)
@@ -295,8 +297,6 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
-    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
-
     if (pPlayer)
     {
         if (const auto& cell = pPlayer->GetCellComponent())
@@ -315,7 +315,6 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         {
             if (entity == playerCharacter)
             {
-                auto& characterComponent = m_pWorld->get<CharacterComponent>(entity);
                 m_pWorld->GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(entity)));
                 continue;
             }
@@ -559,6 +558,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
+
+        uint32_t startId = 0;
+        auto initStringCache = StringCache::Get().Serialize(startId);
+
+        pPlayer->SetStringCacheId(startId);
+
+        Send(aConnectionId, initStringCache);
+
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())

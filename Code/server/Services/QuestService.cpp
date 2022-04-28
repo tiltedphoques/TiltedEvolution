@@ -7,9 +7,6 @@
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
 
-#include <Scripts/Player.h>
-#include <Scripts/Quest.h>
-
 QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
 {
     m_questUpdateConnection =

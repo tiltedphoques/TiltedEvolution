@@ -8,7 +8,6 @@ enum ClientOpcode : unsigned char
     kClientReferencesMoveRequest,
     kEnterExteriorCellRequest,
     kEnterInteriorCellRequest,
-    kClientRpcCalls,
     kRequestFactionsChanges,
     kRequestQuestUpdate,
     kPartyInviteRequest,
@@ -51,7 +50,6 @@ enum ServerOpcode : unsigned char
     kAuthenticationResponse = 0,
     kAssignCharacterResponse,
     kServerReferencesMoveRequest,
-    kServerScriptUpdate,
     kServerTimeSettings,
     kCharacterSpawnRequest,
     kNotifyFactionsChanges,
@@ -86,5 +84,6 @@ enum ServerOpcode : unsigned char
     kNotifyEquipmentChanges,
     kNotifyChatMessageBroadcast,
     kTeleportCommandResponse,
+    kStringCacheUpdate,
     kServerOpcodeMax
 };

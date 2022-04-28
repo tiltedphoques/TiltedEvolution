@@ -27,6 +27,9 @@ void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>
 }
 
 #if 0
+#include <Components.h>
+#include <Events/PlayerEnterWorldEvent.h>
+
 void OverlayService::HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept
 {
     const Script::Player cPlayer(acEvent.Entity, m_world);

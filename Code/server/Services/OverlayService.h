@@ -1,5 +1,4 @@
 #pragma once
-#include <Scripts/Player.h>
 
 #include <Messages/SendChatMessageRequest.h>
 

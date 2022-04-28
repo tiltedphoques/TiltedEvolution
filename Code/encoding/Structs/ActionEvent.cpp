@@ -37,31 +37,6 @@ bool ActionEvent::operator!=(const ActionEvent& acRhs) const noexcept
     return !operator==(acRhs);
 }
 
-void ActionEvent::Load(std::istream& aInput)
-{
-    aInput.read(reinterpret_cast<char*>(&State1), 4);
-    aInput.read(reinterpret_cast<char*>(&State2), 4);
-    aInput.read(reinterpret_cast<char*>(&Type), 4);
-    aInput.read(reinterpret_cast<char*>(&Tick), 8);
-    aInput.read(reinterpret_cast<char*>(&ActorId), 4);
-    aInput.read(reinterpret_cast<char*>(&ActionId), 4);
-    aInput.read(reinterpret_cast<char*>(&TargetId), 4);
-    aInput.read(reinterpret_cast<char*>(&IdleId), 4);
-
-    uint16_t eventNameSize = 0;
-    uint16_t targetEventNameSize = 0;
-
-    aInput.read(reinterpret_cast<char*>(&eventNameSize), sizeof(eventNameSize));
-    EventName.resize(eventNameSize);
-    aInput.read(EventName.data(), eventNameSize);
-
-    aInput.read(reinterpret_cast<char*>(&targetEventNameSize), sizeof(targetEventNameSize));
-    TargetEventName.resize(targetEventNameSize);
-    aInput.read(TargetEventName.data(), targetEventNameSize);
-
-    Variables.Load(aInput);
-}
-
 void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     uint8_t flags = 0;
@@ -126,14 +101,12 @@ void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoqu
 
     if (flags & kEventName)
     {
-        aWriter.WriteBits(EventName.size() & 0xFF, 8);
-        aWriter.WriteBytes(reinterpret_cast<const uint8_t*>(EventName.c_str()), EventName.size() & 0xFF);
+        EventName.Serialize(aWriter);
     }
 
     if (flags & kTargetEventName)
     {
-        aWriter.WriteBits(TargetEventName.size() & 0xFF, 8);
-        aWriter.WriteBytes(reinterpret_cast<const uint8_t*>(TargetEventName.c_str()), TargetEventName.size() & 0xFF);
+        TargetEventName.Serialize(aWriter);
     }
 
     if (flags & kVariables)
@@ -184,45 +157,16 @@ void ActionEvent::ApplyDifferential(TiltedPhoques::Buffer::Reader& aReader) noex
 
     if (flags & kEventName)
     {
-        uint64_t len = 0;
-        aReader.ReadBits(len, 8);
-        EventName.resize(len);
-        aReader.ReadBytes(reinterpret_cast<uint8_t*>(EventName.data()), len);
+        EventName.Deserialize(aReader);
     }
 
     if (flags & kTargetEventName)
     {
-        uint64_t len = 0;
-        aReader.ReadBits(len, 8);
-        TargetEventName.resize(len);
-        aReader.ReadBytes(reinterpret_cast<uint8_t*>(TargetEventName.data()), len);
+        TargetEventName.Deserialize(aReader);
     }
 
     if (flags & kVariables)
     {
         Variables.ApplyDiff(aReader);
     }
-}
-
-void ActionEvent::Save(std::ostream& aOutput) const
-{
-    aOutput.write(reinterpret_cast<const char*>(&State1), 4);
-    aOutput.write(reinterpret_cast<const char*>(&State2), 4);
-    aOutput.write(reinterpret_cast<const char*>(&Type), 4);
-    aOutput.write(reinterpret_cast<const char*>(&Tick), 8);
-    aOutput.write(reinterpret_cast<const char*>(&ActorId), 4);
-    aOutput.write(reinterpret_cast<const char*>(&ActionId), 4);
-    aOutput.write(reinterpret_cast<const char*>(&TargetId), 4);
-    aOutput.write(reinterpret_cast<const char*>(&IdleId), 4);
-
-    uint16_t eventNameSize = EventName.size() & 0xFFFF;
-    uint16_t targetEventNameSize = TargetEventName.size() & 0xFFFF;
-
-    aOutput.write(reinterpret_cast<const char*>(&eventNameSize), sizeof(eventNameSize));
-    aOutput.write(EventName.c_str(), eventNameSize);
-
-    aOutput.write(reinterpret_cast<const char*>(&targetEventNameSize), sizeof(targetEventNameSize));
-    aOutput.write(TargetEventName.c_str(), targetEventNameSize);
-
-    Variables.Save(aOutput);
 }

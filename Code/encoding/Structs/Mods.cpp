@@ -37,7 +37,7 @@ void Mods::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     for (size_t i = 0; i < modCount; ++i)
     {
         aReader.ReadBits(data, 16);
-        ModList[i].Id = data;
+        ModList[i].Id = data & 0xFFFF;
         ModList[i].IsLite = Serialization::ReadBool(aReader);
         ModList[i].Filename = Serialization::ReadString(aReader);
     }
