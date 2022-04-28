@@ -115,11 +115,15 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
+            auto pPlayer = PlayerCharacter::Get();
+            pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 0);
+            /*
             static char s_address[256] = "de.playtogether.gg:10100";
             if (!m_transport.IsOnline())
                 m_transport.Connect(s_address);
             else
                 m_transport.Close();
+            */
         }
     }
     else
