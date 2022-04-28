@@ -4,7 +4,6 @@
 #include <World.h>
 #include <GameServer.h>
 
-#include <Messages/RequestObjectInventoryChanges.h>
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/NotifyInventoryChanges.h>

@@ -141,6 +141,8 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     int isWeaponDrawn = int(pActor->actorState.IsWeaponDrawn());
     ImGui::InputInt("Is weapon drawn?", &isWeaponDrawn, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    int isBleedingOut = int(pActor->actorState.IsBleedingOut());
+    ImGui::InputInt("Is bleeding out?", &isBleedingOut, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);

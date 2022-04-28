@@ -8,6 +8,7 @@ struct TESWorldSpace;
 struct TESObjectCELL : TESForm
 {
     Vector<TESObjectREFR*> GetRefsByFormTypes(const Vector<FormType>& aFormTypes) noexcept;
+    void GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bool aAllowCellLoad) noexcept;
 
     uint8_t pad20[0x40 - 0x20];
     uint8_t cellFlags[5];
@@ -44,7 +45,6 @@ struct TESObjectCELL : TESForm
     uint8_t unkB0[0x118 - 0xB0];
     BSRecursiveLock lock;
     TESWorldSpace* worldspace;
-
 
     bool IsValid() const
     {

@@ -39,10 +39,6 @@ bool ActionEvent::operator!=(const ActionEvent& acRhs) const noexcept
 
 void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    TiltedPhoques::StackAllocator<1 << 16> s_allocator;
-
-    TiltedPhoques::ScopedAllocator _(s_allocator);
-
     uint8_t flags = 0;
 
     if (ActionId != aPrevious.ActionId)

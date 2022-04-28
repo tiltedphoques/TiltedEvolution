@@ -1,9 +1,7 @@
 #include <Services/MagicService.h>
 
-#include <Components.h>
 #include <GameServer.h>
 #include <World.h>
-#include <Game/OwnerView.h>
 
 #include <Messages/SpellCastRequest.h>
 #include <Messages/InterruptCastRequest.h>

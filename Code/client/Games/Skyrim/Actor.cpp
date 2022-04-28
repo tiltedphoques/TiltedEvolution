@@ -42,6 +42,7 @@
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
+#include "Actor.h"
 
 void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 {
@@ -297,6 +298,13 @@ MagicEquipment Actor::GetMagicEquipment() const noexcept
     return equipment;
 }
 
+int32_t Actor::GetGoldAmount() noexcept
+{
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
+    return ThisCall(s_getGoldAmount, this);
+}
+
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
@@ -329,6 +337,14 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
         uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
     }
+}
+
+void Actor::SetEssentialEx(bool aSet) noexcept
+{
+    SetEssential(true);
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (pBase)
+        pBase->actorData.SetEssential(true);
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -380,6 +396,20 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 37677);
 
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
+}
+
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
 }
 
 void Actor::UnEquipAll() noexcept
@@ -461,6 +491,13 @@ void Actor::GenerateMagicCasters() noexcept
     }
 }
 
+void Actor::DispellAllSpells() noexcept
+{
+    using TDispellAllSpells = void(void*, uint32_t, Actor*);
+    POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
+    s_dispell(nullptr, 0, this);
+}
+
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
@@ -470,6 +507,11 @@ bool Actor::IsDead() noexcept
 
 void Actor::Kill() noexcept
 {
+    // Never kill players
+    ActorExtension* pExtension = GetExtension();
+    if (pExtension->IsPlayer())
+        return;
+
     PAPYRUS_FUNCTION(void, Actor, Kill, void*);
 
     s_pKill(this, NULL);

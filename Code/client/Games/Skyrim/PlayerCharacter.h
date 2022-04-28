@@ -149,6 +149,8 @@ struct PlayerCharacter : Actor
         return (*pSkills)->skills[aSkill].xp;
     }
 
+    void RespawnPlayer() noexcept;
+
     struct Objective
     {
         BSFixedString name;

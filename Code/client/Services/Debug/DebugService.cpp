@@ -8,6 +8,7 @@
 #include <Services/ImguiService.h>
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
+#include <Services/PapyrusService.h>
 
 #include <Events/UpdateEvent.h>
 
