@@ -6,6 +6,7 @@
 #include <Services/CharacterService.h>
 #include <Components.h>
 #include <GameServer.h>
+#include <console/ConsoleRegistry.h>
 
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
@@ -14,6 +15,8 @@
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyPlayerRespawn.h>
+
+Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.05f};
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -127,8 +130,7 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
 {
-    // TODO: server side setting for this factor
-    double goldLossFactor = 0.05;
+    float goldLossFactor = fGoldLossFactor.value();
 
     if (goldLossFactor == 0.0)
         return;
