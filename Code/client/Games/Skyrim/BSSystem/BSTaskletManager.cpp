@@ -21,7 +21,7 @@ static void Hook_Construct_TaskletManager(BSTaskletManager* apSelf)
             continue;
 
         auto name = fmt::format("TaskletThread{}", i);
-        base::SetThreadName(apSelf->threadHandles[i], name.c_str());
+        Base::SetThreadName(apSelf->threadHandles[i], name.c_str());
     }
 }
 } // namespace

@@ -1,6 +1,6 @@
 #pragma once
 
-class BSThread
+struct BSThread
 {
   public:
     virtual ~BSThread() = 0;

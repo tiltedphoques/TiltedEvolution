@@ -16,7 +16,7 @@ void Hook_BSThread_Initialize(BSThread* apThis, int aStackSize, const char* apNa
     // this means the thread was successfully created
     if (apThis->m_ThreadHandle)
     {
-        bool result = base::SetThreadName(apThis->m_ThreadHandle, apName);
+        bool result = Base::SetThreadName(apThis->m_ThreadHandle, apName);
         if (!result)
         {
             spdlog::warn("Failed to set thread name for tid {} to {}", apThis->m_ThreadID, apName);
@@ -31,7 +31,7 @@ void Hook_SetThreadName(uint32_t aThreadId, const char* apThreadName)
     // query thread handle
     if (auto hThread = ::OpenThread(THREAD_QUERY_INFORMATION, FALSE, aThreadId))
     {
-        base::SetThreadName(hThread, apThreadName);
+        Base::SetThreadName(hThread, apThreadName);
 
         ::CloseHandle(hThread);
     }

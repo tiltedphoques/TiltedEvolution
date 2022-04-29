@@ -87,7 +87,7 @@ void DediRunner::RunGSThread()
 void DediRunner::StartTerminalIO()
 {
     m_pConIOThread.reset(new std::jthread([&]() {
-        base::SetCurrentThreadName("ConsoleIO");
+        Base::SetCurrentThreadName("ConsoleIO");
 
         spdlog::get("ConOut")->info("Server console");
         PrintExecutorArrowHack();

@@ -54,7 +54,7 @@ struct ComScope
 
 int main(int argc, char** argv)
 {
-    base::SetCurrentThreadName("MainLauncherThread");
+    Base::SetCurrentThreadName("MainLauncherThread");
 
     // memory block for Script Extender reserved as early as we can
     script_extender::SEMemoryBlock b;

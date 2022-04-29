@@ -207,7 +207,7 @@ bool DiscordService::Init()
     //TODO (Force): i want to move this away from its own thread
     //this is done because discord needs to be ticked before world
     static std::thread updateThread([&]() { 
-        base::SetCurrentThreadName("DiscordCallbacks");
+        Base::SetCurrentThreadName("DiscordCallbacks");
 
         while (!m_bRequestThreadKillHack)
         {

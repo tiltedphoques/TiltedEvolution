@@ -152,7 +152,7 @@ int main(int argc, char** argv)
     if (!CheckBuildTag(kBuildTag))
         return 1;
 
-    base::SetCurrentThreadName("ServerRunnerMain");
+    Base::SetCurrentThreadName("ServerRunnerMain");
 
     LogInstance logger;
     (void)logger;

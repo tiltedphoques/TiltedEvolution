@@ -31,7 +31,7 @@ extern "C"
     int sentry__thread_setname(sentry_threadid_t aThreadHandle, const char* apThreadName);
 }
 
-namespace base
+namespace Base
 {
 bool SetThreadName(void* apThreadHandle, const char* apThreadName)
 {
@@ -43,4 +43,4 @@ bool SetCurrentThreadName(const char* apThreadName)
     return sentry__thread_setname(GetCurrentThreadHandle(), apThreadName) == 0;
 }
 
-} // namespace base
+} // namespace Base
