@@ -15,8 +15,9 @@
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyPlayerRespawn.h>
+#include <Messages/NotifyRespawn.h>
 
-Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.05f};
+Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.0f};
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -157,18 +158,24 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
         inventoryComponent.Content.AddOrRemoveEntry(entry);
 
-        NotifyInventoryChanges notify{};
-        notify.ServerId = World::ToInteger(*character);
-        notify.Item = entry;
-        notify.Drop = false;
+        NotifyInventoryChanges notifyInventoryChanges{};
+        notifyInventoryChanges.ServerId = World::ToInteger(*character);
+        notifyInventoryChanges.Item = entry;
+        notifyInventoryChanges.Drop = false;
 
         // Exclude respawned player from inventory changes notification...
-        GameServer::Get()->SendToPlayersInRange(notify, *character, acMessage.GetSender());
+        GameServer::Get()->SendToPlayersInRange(notifyInventoryChanges, *character, acMessage.GetSender());
 
         // ...and instead, send NotifyPlayerRespawn so that the client can print a message.
-        NotifyPlayerRespawn notifyRespawn{};
-        notifyRespawn.GoldLost = goldToRemove;
+        NotifyPlayerRespawn notifyPlayerRespawn{};
+        notifyPlayerRespawn.GoldLost = goldToRemove;
 
-        acMessage.pPlayer->Send(notifyRespawn);
+        acMessage.pPlayer->Send(notifyPlayerRespawn);
+
+        // Let all other players in cell respawn this player, since the body state seems to be bugged otherwise
+        NotifyRespawn notifyRespawn{};
+        notifyRespawn.ActorId = World::ToInteger(*character);
+
+        GameServer::Get()->SendToPlayersInRange(notifyRespawn, *character, acMessage.GetSender());
     }
 }
