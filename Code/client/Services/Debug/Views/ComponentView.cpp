@@ -121,7 +121,10 @@ void DebugService::DrawComponentDebugView()
         auto& formComponent = remoteView.get<FormIdComponent>(entity);
 
         char buffer[32];
-        if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedRemoteId == remoteComponent.Id))
+        const auto err = _itoa_s(remoteComponent.Id, buffer, std::size(buffer), 16);
+        assert(err == 0);
+
+        if (ImGui::Selectable(buffer, s_selectedRemoteId == remoteComponent.Id))
         {
             s_selectedRemoteId = remoteComponent.Id;
             g_SelectedForm = TESForm::GetById(formComponent.Id);

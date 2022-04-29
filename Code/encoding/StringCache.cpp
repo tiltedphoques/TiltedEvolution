@@ -27,7 +27,7 @@ uint32_t StringCache::Add(const TiltedPhoques::String& acValue) noexcept
     if (auto id = this->operator[](acValue))
         return *id;
 
-    const auto allocatedId = m_idToString.size();
+    const uint32_t allocatedId = m_idToString.size() & 0xFFFFFFFF;
     m_stringToId[acValue] = allocatedId & 0xFFFFFFFF;
     m_idToString.push_back(acValue);
 
@@ -56,7 +56,7 @@ StringCacheUpdate StringCache::Serialize(uint32_t& aStartId) const noexcept
 
         update.Values.insert(std::begin(update.Values), itor, std::end(m_idToString));
 
-        aStartId = m_idToString.size();
+        aStartId = m_idToString.size() & 0xFFFFFFFF;
     }
 
     return update;

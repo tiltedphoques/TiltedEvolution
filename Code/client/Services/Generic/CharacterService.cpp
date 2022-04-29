@@ -1278,8 +1278,10 @@ void CharacterService::RunLocalUpdates() const noexcept
 
 void CharacterService::RunRemoteUpdates() noexcept
 {
+    const auto clampedTickDelay = std::clamp(m_transport.GetConnectionStatus().m_nPing, 50, 200) * 3;
+
     // Delay by 300ms to let the interpolation system accumulate interpolation points
-    const auto tick = m_transport.GetClock().GetCurrentTick() - 300;
+    const auto tick = m_transport.GetClock().GetCurrentTick() - clampedTickDelay;
 
     // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to spawn it
     auto interpolatedEntities =
@@ -1354,7 +1356,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         toRemove.push_back(entity);  
     }
 
-    for (auto entity : toRemove)
+    for (const auto entity : toRemove)
         m_world.remove<WaitingFor3D>(entity);
 }
 

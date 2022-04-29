@@ -24,7 +24,7 @@ size_t StringTokenizer::CountTokens() noexcept
     if (m_count >= 0) // return if we've already counted
         return (m_count);
 
-    std::string::size_type n = 0;
+    int n = 0;
     std::string::size_type i = 0;
 
     for (;;)

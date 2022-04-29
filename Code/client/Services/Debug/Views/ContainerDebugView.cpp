@@ -34,7 +34,7 @@ void DebugService::DrawContainerDebugView()
         if (ImGui::Button("Fetch inventory"))
             inventory = pActor->GetInventory();
 
-        int inventoryCount = inventory.Entries.size();
+        int inventoryCount = inventory.Entries.size() & 0x7FFFFFFF;
 
         ImGui::InputInt("Inventory count", &inventoryCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
 

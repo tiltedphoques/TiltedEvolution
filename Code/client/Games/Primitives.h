@@ -15,7 +15,7 @@ struct GameArray
     T& operator[] (uint32_t aIndex) { return data[aIndex]; }
     const T& operator[] (uint32_t aIndex) const { return data[aIndex]; }
 
-    void Resize(size_t aLength) noexcept;
+    void Resize(uint32_t aLength) noexcept;
 
     // Range for loop compatibility
     struct Iterator
@@ -45,11 +45,11 @@ struct GameArray
 };
 
 template <class T>
-void GameArray<T>::Resize(size_t aLength) noexcept
+void GameArray<T>::Resize(uint32_t aLength) noexcept
 {
     if (capacity >= aLength)
     {
-        length = aLength & 0xFFFFFFFF;
+        length = aLength;
     }
     else
     {

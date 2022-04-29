@@ -15,7 +15,7 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
     ModSystem& modSystem = World::Get().GetModSystem();
 
     GameArray<EffectItem> effects{};
-    effects.Resize(aData.Effects.size());
+    effects.Resize(aData.Effects.size() & 0xFFFFFFFF);
     for (int i = 0; i < aData.Effects.size(); i++)
     {
         Inventory::EffectItem effect = aData.Effects[i];

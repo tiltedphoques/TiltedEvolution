@@ -75,7 +75,7 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
         writer.WriteBits(0, 8); // Write first byte as packet needs it
 
         acMessage.Serialize(writer);
-        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size() & 0xFFFFFFFF);
 
         Client::Send(&packet);
 

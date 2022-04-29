@@ -19,9 +19,9 @@ void RequestActorValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRe
     Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
     auto count = Serialization::ReadVarInt(aReader);
-    for (int i = 0; i < count; i++)
+    for (uint64_t i = 0ull; i < count; i++)
     {
-        auto key = Serialization::ReadVarInt(aReader);
+        uint32_t key = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
         auto value = Serialization::ReadFloat(aReader);
         Values.insert({key, value});
     }

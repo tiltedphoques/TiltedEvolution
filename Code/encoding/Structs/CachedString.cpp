@@ -32,7 +32,7 @@ void CachedString::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     const auto cHasId = Serialization::ReadBool(aReader);
     if (cHasId)
     {
-        const auto cId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+        const uint32_t cId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
         const auto cValue = StringCache::Get()[cId];
         if (cValue)
         {

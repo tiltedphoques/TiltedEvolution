@@ -337,7 +337,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
     if (TESContainer* pBaseContainer = GetContainer())
     {
-        for (int i = 0; i < pBaseContainer->count; i++)
+        for (uint32_t i = 0; i < pBaseContainer->count; i++)
         {
             TESContainer::Entry* pGameEntry = pBaseContainer->entries[i];
             if (!pGameEntry || !pGameEntry->form)

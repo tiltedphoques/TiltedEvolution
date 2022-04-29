@@ -148,8 +148,8 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
         auto& inventoryComponent = view.get<InventoryComponent>(*it);
 
         GameId goldId(0, 0xF);
-        int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
-        int32_t goldToRemove = goldCount * goldLossFactor;
+        const int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
+        const int32_t goldToRemove = std::ceil(goldCount * goldLossFactor);
 
         Inventory::Entry entry{};
         entry.BaseId = goldId;
