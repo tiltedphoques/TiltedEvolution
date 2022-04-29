@@ -133,11 +133,21 @@ void LoadScriptExender()
     }
 #endif
 
-    if (LoadLibraryW(needle->c_str()))
+    if (auto* pSKSELibraryHandle = LoadLibraryW(needle->c_str()))
     {
-        spdlog::info("Successfully loaded {} {}", needle->string(), skseVersion);
-        spdlog::info("Be aware that messages that start without a colored [timestamp] prefix are logs from the "
-                     "Script Extender and its loaded mods.");
+        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(pSKSELibraryHandle, "StartSKSE")))
+        {
+            spdlog::info(
+                "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "
+                "logs from the "
+                "Script Extender and its loaded mods.",
+                skseVersion);
+
+            pStartSKSE();
+            spdlog::info("SKSE is active");
+        }
+        else
+            spdlog::warn("SKSE dll doesn't expose StartSKSE(), it may be outdated.");
     }
     else
     {
