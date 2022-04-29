@@ -11,8 +11,10 @@
 
 #include <Setting.h>
 #include <base/simpleini/SimpleIni.h>
-#include <crash_handler/CrashHandler.h>
+#include <base/threading/ThreadUtils.h>
+
 #include "DediRunner.h"
+#include <crash_handler/CrashHandler.h>
 
 namespace
 {
@@ -149,6 +151,8 @@ int main(int argc, char** argv)
     // the binaries are not from the same commit.
     if (!CheckBuildTag(kBuildTag))
         return 1;
+
+    base::SetCurrentThreadName("ServerRunnerMain");
 
     LogInstance logger;
     (void)logger;

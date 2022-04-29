@@ -3,6 +3,7 @@
 #include "launcher.h"
 #include <Windows.h>
 #include <combaseapi.h>
+#include <base/threading/ThreadUtils.h>
 
 #include "script_extender/SEMemoryBlock.h"
 #include <crash_handler/CrashHandler.h>
@@ -53,6 +54,8 @@ struct ComScope
 
 int main(int argc, char** argv)
 {
+    base::SetCurrentThreadName("MainLauncherThread");
+
     // memory block for Script Extender reserved as early as we can
     script_extender::SEMemoryBlock b;
     if (!b.Good())

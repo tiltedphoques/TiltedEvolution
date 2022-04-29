@@ -39,6 +39,7 @@ target(name)
     add_deps(
         "UiProcess",
         "CommonLib",
+        "BaseLib",
         "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",

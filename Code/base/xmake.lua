@@ -7,7 +7,8 @@ target("BaseLib")
     add_headerfiles("**.h")
     add_files("**.cpp")
     add_packages(
-        "tiltedcore", 
+        "tiltedcore",
+        "sentry-native", 
         "hopscotch-map", 
         "gtest",
         "spdlog")

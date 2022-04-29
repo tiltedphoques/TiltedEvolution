@@ -8,6 +8,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
 
+#include <base/threading/ThreadUtils.h>
 #include <Events/LocationChangeEvent.h>
 
 #define DISCORD_OVERLAY_ENABLE 0
@@ -206,6 +207,8 @@ bool DiscordService::Init()
     //TODO (Force): i want to move this away from its own thread
     //this is done because discord needs to be ticked before world
     static std::thread updateThread([&]() { 
+        base::SetCurrentThreadName("DiscordCallbacks");
+
         while (!m_bRequestThreadKillHack)
         {
             const auto runResult = m_pCore->run_callbacks(m_pCore);
