@@ -135,7 +135,7 @@ bool AnimationSystem::Serialize(World& aWorld, const ActionEvent& aActionEvent, 
     if (!aWorld.GetModSystem().GetServerModId(aActionEvent.TargetId, targetModId, targetBaseId))
         return false;
 
-    uint8_t scratch[1 << 12];
+    uint8_t scratch[1 << 14];
     TiltedPhoques::ViewBuffer buffer(scratch, std::size(scratch));
     Buffer::Writer writer(&buffer);
     aActionEvent.GenerateDifferential(aLastProcessedAction, writer);

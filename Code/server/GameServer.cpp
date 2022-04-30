@@ -338,9 +338,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
-    ScopedAllocator _(s_allocator);
-
-    Buffer buffer(1 << 16);
+    Buffer buffer(1 << 20);
     Buffer::Writer writer(&buffer);
     writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
 
@@ -356,9 +354,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
-    ScopedAllocator _(s_allocator);
-
-    Buffer buffer(1 << 16);
+    Buffer buffer(1 << 20);
     Buffer::Writer writer(&buffer);
     writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
 
