@@ -1405,7 +1405,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
-    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent, WaitingFor3D>);
     Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
     for (const auto entity : entities)
