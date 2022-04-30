@@ -41,8 +41,7 @@ LaunchContext* GetLaunchContext()
 
 int StartUp(int argc, char** argv)
 {
-    // VK_E
-    bool askSelect = (GetAsyncKeyState(0x45) & 0x8000);
+    bool askSelect = (GetAsyncKeyState(VK_SPACE) & 0x8000);
     for (int i = 1; i < argc; i++)
     {
         if (std::strcmp(argv[i], "-r") == 0)
