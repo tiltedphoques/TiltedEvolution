@@ -133,9 +133,6 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 {
     float goldLossFactor = fGoldLossFactor.as_float();
 
-    if (goldLossFactor == 0.0)
-        return;
-
     auto character = acMessage.pPlayer->GetCharacter();
     if (!character)
         return;
@@ -146,31 +143,34 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
     if (it != view.end())
     {
-        auto& inventoryComponent = view.get<InventoryComponent>(*it);
+        if (goldLossFactor != 0.0)
+        {
+            auto& inventoryComponent = view.get<InventoryComponent>(*it);
 
-        GameId goldId(0, 0xF);
-        int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
-        int32_t goldToRemove = goldCount * goldLossFactor;
+            GameId goldId(0, 0xF);
+            int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
+            int32_t goldToRemove = goldCount * goldLossFactor;
 
-        Inventory::Entry entry{};
-        entry.BaseId = goldId;
-        entry.Count = -goldToRemove;
+            Inventory::Entry entry{};
+            entry.BaseId = goldId;
+            entry.Count = -goldToRemove;
 
-        inventoryComponent.Content.AddOrRemoveEntry(entry);
+            inventoryComponent.Content.AddOrRemoveEntry(entry);
 
-        NotifyInventoryChanges notifyInventoryChanges{};
-        notifyInventoryChanges.ServerId = World::ToInteger(*character);
-        notifyInventoryChanges.Item = entry;
-        notifyInventoryChanges.Drop = false;
+            NotifyInventoryChanges notifyInventoryChanges{};
+            notifyInventoryChanges.ServerId = World::ToInteger(*character);
+            notifyInventoryChanges.Item = entry;
+            notifyInventoryChanges.Drop = false;
 
-        // Exclude respawned player from inventory changes notification...
-        GameServer::Get()->SendToPlayersInRange(notifyInventoryChanges, *character, acMessage.GetSender());
+            // Exclude respawned player from inventory changes notification...
+            GameServer::Get()->SendToPlayersInRange(notifyInventoryChanges, *character, acMessage.GetSender());
 
-        // ...and instead, send NotifyPlayerRespawn so that the client can print a message.
-        NotifyPlayerRespawn notifyPlayerRespawn{};
-        notifyPlayerRespawn.GoldLost = goldToRemove;
+            // ...and instead, send NotifyPlayerRespawn so that the client can print a message.
+            NotifyPlayerRespawn notifyPlayerRespawn{};
+            notifyPlayerRespawn.GoldLost = goldToRemove;
 
-        acMessage.pPlayer->Send(notifyPlayerRespawn);
+            acMessage.pPlayer->Send(notifyPlayerRespawn);
+        }
 
         // Let all other players in cell respawn this player, since the body state seems to be bugged otherwise
         NotifyRespawn notifyRespawn{};

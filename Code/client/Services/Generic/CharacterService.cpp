@@ -581,7 +581,10 @@ void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noe
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActorId);
     if (!pActor)
+    {
+        spdlog::error("Failed to fetch actor to respawn, server id {:X}", acMessage.ActorId);
         return;
+    }
 
     pActor->Delete();
 
