@@ -315,16 +315,18 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         {
             if (entity == playerCharacter)
             {
-                m_pWorld->GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(entity)));
+                m_pWorld->GetDispatcher().enqueue(CharacterRemoveEvent(World::ToInteger(entity)));
                 continue;
             }
 
             const auto& [ownerComponent] = ownerView.get(entity);
             if (ownerComponent.GetOwner() == pPlayer)
             {
-                m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
+                m_pWorld->GetDispatcher().enqueue(OwnershipTransferEvent(entity));
             }
         }
+
+        m_pWorld->GetDispatcher().update();
 
         m_pWorld->GetPlayerManager().Remove(pPlayer);
     }
