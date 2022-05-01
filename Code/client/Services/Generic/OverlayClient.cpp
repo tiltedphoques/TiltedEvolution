@@ -67,7 +67,7 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
 
 void OverlayClient::ProcessDisconnectMessage()
 {
-    m_transport.Close();
+    World::Get().GetRunner().Queue([]() { World::Get().GetTransport().Close(); });
 }
 
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
