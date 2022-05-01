@@ -27,6 +27,15 @@ static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
 
+void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
+{
+    auto* pSettings = INISettingCollection::Get();
+    Setting* pSetting = pSettings->GetSetting("iDifficulty:GamePlay");
+    pSetting->data = aDifficulty;
+
+    difficulty = aDifficulty;
+}
+
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
 {
     Skills::Skill skill = Skills::GetSkillFromActorValue(aSkill);
