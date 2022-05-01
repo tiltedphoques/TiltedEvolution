@@ -85,6 +85,8 @@ void TiltedOnlineApp::Update()
 bool TiltedOnlineApp::Attach()
 {
     TiltedPhoques::Debug::OnAttach();
+
+    //TiltedPhoques::Nop(0x1405D3FA1, 6);
     return true;
 }
 

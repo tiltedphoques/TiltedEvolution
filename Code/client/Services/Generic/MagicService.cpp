@@ -325,7 +325,10 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 #if TP_SKYRIM64
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.TargetId);
         return;
+    }
 
     const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
     if (cSpellId == 0)

@@ -5,6 +5,7 @@
 #include <combaseapi.h>
 #include <base/threading/ThreadUtils.h>
 
+#include "utils/ComUtils.h"
 #include "script_extender/SEMemoryBlock.h"
 #include <crash_handler/CrashHandler.h>
 
@@ -39,19 +40,6 @@ static void PreloadSystemDlls()
         loadSystemDll(dll);
 }
 
-struct ComScope
-{
-    ComScope()
-    {
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        TP_UNUSED(hr);
-    }
-    ~ComScope()
-    {
-        CoUninitialize();
-    }
-};
-
 int main(int argc, char** argv)
 {
     Base::SetCurrentThreadName("MainLauncherThread");
@@ -60,7 +48,7 @@ int main(int argc, char** argv)
     script_extender::SEMemoryBlock b;
     if (!b.Good())
     {
-        Die("Failed to pre-reserve script extender zone.\nAsk Force!");
+        Die(L"Failed to pre-reserve script extender zone.\nAsk Force!");
         return -1;
     }
 
@@ -70,7 +58,7 @@ int main(int argc, char** argv)
     ComScope cs;
     TP_UNUSED(cs);
 
-    ScopedCrashHandler _(false);
+    ScopedCrashHandler _;
     auto ret = launcher::StartUp(argc, argv);
 
     return ret;

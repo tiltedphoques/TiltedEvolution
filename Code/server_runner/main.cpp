@@ -16,6 +16,11 @@
 #include "DediRunner.h"
 #include <crash_handler/CrashHandler.h>
 
+#ifdef _WIN32
+#include <base/dialogues/win/TaskDialog.h>
+#pragma comment(lib, "Comctl32.lib")
+#endif
+
 namespace
 {
 constexpr char kLogFileName[] =
@@ -114,34 +119,72 @@ static bool RegisterQuitHandler()
     return true;
 }
 
+#ifdef _WIN32
+static bool ShowEULADialog()
+{
+    Base::TaskDialog dia(GetModuleHandleW(nullptr), L"Tilted Platform Agreement", L"Confirm the Tilted Platform EULA",
+                         L"TODO: Link to EULA", nullptr);
+    dia.AppendButton(100, L"Accept EULA");
+    dia.AppendButton(101, L"Deny EULA");
+    dia.SetDefaultButton(101 /*So they have to think about it*/);
+
+    return dia.Show() == 100;
+}
+#endif
+
+// The eula can be accepted in 3 ways:
+// - Either confirm the dialog on startup(windows only)
+// - Or signal agreement using an environment variable
+// - Or Simply set bConfirmEULA in EULA.txt to true
 static bool IsEULAAccepted()
 {
     const auto path = fs::current_path() / kConfigPathName / kEULAName;
 
-    auto pValue = std::getenv("TILTED_ACCEPT_EULA");
-    TiltedPhoques::String env = pValue ? pValue : "0";
-
-    std::ranges::transform(env, env.begin(), [](unsigned char c) { return std::tolower(c); });
-
-    const bool envAccept = env == "true" || env == "1";
-
-    if (!exists(path))
+    bool preAccept = false;
+    if (char* pValue = std::getenv("TILTED_ACCEPT_EULA"))
     {
+        std::string_view env(pValue);
+        preAccept = env == "true" || env == "1" || env == "TRUE";
+    }
+
+    auto saveFile = [&]() {
+#ifdef _WIN32
+        // try using the dialog
+        if (!preAccept)
+            preAccept = ShowEULADialog();
+#endif
         fs::create_directory(fs::current_path() / kConfigPathName);
 
         TiltedPhoques::String eulaText = kEULAText;
-        eulaText += envAccept ? kEULATextTrue : kEULATextFalse;
+        eulaText += preAccept ? kEULATextTrue : kEULATextFalse;
 
         TiltedPhoques::SaveFile(path, eulaText);
-        return envAccept;
+        return preAccept;
+    };
+
+    if (!exists(path))
+    {
+        return saveFile();
     }
 
     const auto data = TiltedPhoques::LoadFile(path);
-    CSimpleIni si;
-    if (si.LoadData(data.c_str()) != SI_OK)
-        return envAccept;
 
-    return si.GetBoolValue("EULA", "bConfirmEULA", false);
+    CSimpleIni si;
+
+    if (si.LoadData(data.c_str()) != SI_OK)
+        return preAccept;
+
+    if (!si.GetBoolValue("EULA", "bConfirmEULA", false))
+    {
+#ifdef _WIN32
+        preAccept = false;
+        return saveFile();
+#else
+        return false;
+#endif
+    }
+
+    return true;
 }
 
 GS_IMPORT bool CheckBuildTag(const char* apBuildTag);
