@@ -121,7 +121,10 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
     {
         Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
         if (!pActor)
+        {
+            spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ServerId);
             return;
+        }
 
         ScopedInventoryOverride _;
 
@@ -156,7 +159,10 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ServerId);
         return;
+    }
 
     auto& modSystem = World::Get().GetModSystem();
 

@@ -225,7 +225,7 @@ void ObjectService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActivatorId);
     if (!pActor)
     {
-        spdlog::error("Activator not found for server id {:X}", acMessage.ActivatorId);
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ActivatorId);
         return;
     }
 
