@@ -152,9 +152,11 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     MagicItem* pSpell = nullptr;
 
-    if (acMessage.CastingSource >= 4)
+    if (acMessage.CastingSource < 4)
+        pSpell = pActor->magicItems[acMessage.CastingSource];
+
+    if (!pSpell)
     {
-        spdlog::warn("Casting source out of bounds, trying form id");
         const uint32_t cSpellFormId = World::Get().GetModSystem().GetGameId(acMessage.SpellFormId);
         if (cSpellFormId == 0)
         {
@@ -162,18 +164,15 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
                           acMessage.SpellFormId.ModId);
             return;
         }
+
         TESForm* pSpellForm = TESForm::GetById(cSpellFormId);
         if (!pSpellForm)
         {
             spdlog::error("Cannot find spell form, id: {:X}.", cSpellFormId);
             return;
         }
-        else
-            pSpell = Cast<MagicItem>(pSpellForm);
-    }
-    else
-    {
-        pSpell = pActor->magicItems[acMessage.CastingSource];
+
+        pSpell = Cast<MagicItem>(pSpellForm);
     }
 
     if (!pSpell)
