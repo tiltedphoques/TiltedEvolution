@@ -1,18 +1,36 @@
 
-#include <TiltedOnlinePCH.h>
 #include <TiltedOnlineApp.h>
+#include <TiltedOnlinePCH.h>
+
+#include <Commctrl.h>
+#include <Windows.h>
+
+#include <base/dialogues/win/TaskDialog.h>
 
 std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 
+static void ShowAddressLibraryError(const wchar_t* apGamePath)
+{
+    auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\SKSE\\Plugins", apGamePath);
+
+    Base::TaskDialog dia(GetModuleHandleW(nullptr), L"Error", L"Failed to load Skyrim Address Library",
+                         L"Make sure to use the All in one Anniversary Edition", errorDetail.c_str());
+    dia.AppendButton(0xBEEF, L"Visit Address Library modpage on nexusmods.com");
+    const int result = dia.Show();
+    if (result == 0xBEEF)
+    {
+        ShellExecuteW(nullptr, L"open", LR"(https://www.nexusmods.com/skyrimspecialedition/mods/32444?tab=files)",
+                      nullptr, nullptr, SW_SHOWNORMAL);
+    }
+
+    exit(4);
+}
+
 void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion)
 {
-    if(!VersionDb::Get().Load(acGamePath, aExeVersion))
+    if (!VersionDb::Get().Load(acGamePath, aExeVersion))
     {
-        MessageBoxA(
-            NULL,
-            "Could not load address library, install it: \"https://www.nexusmods.com/skyrimspecialedition/mods/32444\"",
-            "Fatal error", 0);
-        exit(-1);
+        ShowAddressLibraryError(acGamePath.c_str());
     }
 
     g_appInstance = std::make_unique<TiltedOnlineApp>();

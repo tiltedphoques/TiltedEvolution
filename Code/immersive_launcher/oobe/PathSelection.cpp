@@ -5,11 +5,11 @@
 
 #include <optional>
 #include <shobjidl.h>
-#include <wrl.h>
 
 #include "TargetConfig.h"
-
 #include "launcher.h"
+
+#include "utils/ComUtils.h"
 #include "utils/Registry.h"
 
 namespace oobe
@@ -18,8 +18,6 @@ using namespace TiltedPhoques;
 
 namespace
 {
-template <typename T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-
 constexpr wchar_t kBethesdaRegistryPath[] = LR"(Software\Wow6432Node\Bethesda Softworks\)" SHORT_NAME;
 constexpr wchar_t kTiltedRegistryPath[] = LR"(Software\TiltedPhoques\TiltedEvolution\)" SHORT_NAME;
 
@@ -27,19 +25,6 @@ std::wstring SuggestTitlePath()
 {
     return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, kBethesdaRegistryPath, L"installed path");
 }
-
-struct ComScope
-{
-    ComScope()
-    {
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        (void)hr;
-    }
-    ~ComScope()
-    {
-        CoUninitialize();
-    }
-};
 
 std::optional<std::wstring> OpenPathSelectionDialog2(const std::wstring& aPathSuggestion)
 {

@@ -26,6 +26,7 @@ static constexpr TargetConfig CurrentTarget{
     L"Skyrim Special Edition", 
     489830, 0x40000000, 35410264};
 #define TARGET_NAME L"SkyrimSE"
+#define PRODUCT_NAME L"Skyrim Together"
 #define SHORT_NAME L"Skyrim Special Edition"
 #elif defined(TARGET_FT)
 static constexpr TargetConfig CurrentTarget{
@@ -33,6 +34,7 @@ static constexpr TargetConfig CurrentTarget{
     L"Fallout4", 
     377160, 0x70000000, std::numeric_limits<std::uint32_t>::max()};
 #define TARGET_NAME L"Fallout4"
+#define PRODUCT_NAME L"Fallout Together"
 #define SHORT_NAME L"Fallout4"
 #endif
 

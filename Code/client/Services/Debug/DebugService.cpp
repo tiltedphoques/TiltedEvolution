@@ -227,6 +227,15 @@ void DebugService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
+    if (ImGui::BeginMenu("Misc"))
+    {
+        if (ImGui::Button("Crash Client"))
+        {
+            int* m = 0;
+            *m = 1338;
+        }
+        ImGui::EndMenu();
+    }
     ImGui::EndMainMenuBar();
 
     if (g_enableNetworkWindow)
