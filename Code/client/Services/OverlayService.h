@@ -25,7 +25,6 @@ using TiltedPhoques::OverlayApp;
 */
 struct OverlayService
 {
-  public:
     OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher);
     ~OverlayService() noexcept;
 

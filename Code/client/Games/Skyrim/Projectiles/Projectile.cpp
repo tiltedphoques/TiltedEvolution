@@ -17,11 +17,21 @@ BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apR
     BSPointerHandle<Projectile>* result = ThisCall(RealLaunch, apResult, apLaunchData);
 
     TP_ASSERT(result, "No projectile handle returned.");
+    if (!result)
+    {
+        spdlog::error("No projectile handle returned.");
+        return nullptr;
+    }
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
     Projectile* pProjectile = Cast<Projectile>(pObject);
     
     TP_ASSERT(pProjectile, "No projectile found.");
+    if (!pProjectile)
+    {
+        spdlog::error("No projectile found.");
+        return nullptr;
+    }
 
     pProjectile->fPower = apLaunchData.fPower;
 

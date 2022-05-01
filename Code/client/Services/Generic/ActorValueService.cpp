@@ -285,7 +285,10 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.Id);
         return;
+    }
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
     pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
