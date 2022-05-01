@@ -280,17 +280,20 @@ struct TESTrapHitEvent
 
 struct TESTriggerEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESTriggerEnterEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESTriggerLeaveEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESUniqueIDChangeEvent

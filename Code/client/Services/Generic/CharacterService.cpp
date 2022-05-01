@@ -174,7 +174,9 @@ void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const
 {
     // Go through all the forms that were previously detected
     auto view = m_world.view<FormIdComponent>();
-    for (auto entity : view)
+    Vector<entt::entity> entities(view.begin(), view.end());
+
+    for (auto entity : entities)
         ProcessNewEntity(entity);
 }
 
@@ -579,7 +581,10 @@ void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noe
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActorId);
     if (!pActor)
+    {
+        spdlog::error("Failed to fetch actor to respawn, server id {:X}", acMessage.ActorId);
         return;
+    }
 
     pActor->Delete();
 
@@ -852,7 +857,9 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     Actor* pMount = nullptr;
 
     auto formView = m_world.view<FormIdComponent>();
-    for (auto entity : formView)
+    Vector<entt::entity> entities(formView.begin(), formView.end());
+
+    for (auto entity : entities)
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
@@ -862,7 +869,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
 
         if (serverId == acMessage.MountId)
         {
-            auto& mountFormIdComponent = formView.get<FormIdComponent>(entity);
+            auto& mountFormIdComponent = m_world.get<FormIdComponent>(entity);
 
             if (m_world.all_of<LocalComponent>(entity))
             {
@@ -1401,12 +1408,13 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
-    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent, WaitingFor3D>);
+    Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
-    for (auto entity : invisibleView)
+    for (const auto entity : entities)
     {
-        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
-        auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+        auto& remoteComponent = m_world.get<RemoteComponent>(entity);
+        auto& interpolationComponent = m_world.get<InterpolationComponent>(entity);
 
         if (const auto pWorldSpace = PlayerCharacter::Get()->GetWorldSpace())
         {
@@ -1414,7 +1422,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
             float characterY = interpolationComponent.Position.y;
             const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
             const TES* pTES = TES::Get();
-            const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
+            const auto playerCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
             if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
             {
