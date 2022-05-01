@@ -24,7 +24,7 @@ class TaskDialog final
         m_defaultButton = aDefaultButton;
     }
 
-    void AppendButton(int button_id, const wchar_t* button_text);
+    void AppendButton(int aButtonId, const wchar_t* apButtonText);
 
     int Show(int aIconID = 102);
 
@@ -38,8 +38,8 @@ class TaskDialog final
     const wchar_t* m_pDetails;
     const wchar_t* m_pContext;
     int m_defaultButton = -1;
-    std::vector<std::pair<int, std::wstring>> dialog_buttons_;
     bool m_inFocus = true;
+    std::vector<std::pair<int, std::wstring>> m_buttonList;
 };
 } // namespace Base
 

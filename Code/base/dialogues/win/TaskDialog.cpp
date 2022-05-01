@@ -25,9 +25,10 @@ TaskDialog::TaskDialog(HMODULE aResourceModule, const wchar_t* apTitle, const wc
 
 TaskDialog::~TaskDialog() = default;
 
-void TaskDialog::AppendButton(int button_id, const wchar_t* button_text)
+void TaskDialog::AppendButton(int aButtonId, const wchar_t* apButtonText)
 {
-    dialog_buttons_.emplace_back(button_id, button_text);
+    // play buttone
+    m_buttonList.emplace_back(aButtonId, apButtonText);
 }
 
 HRESULT CALLBACK TaskDialog::TaskDialogCallbackProc(HWND aHwnd, UINT notificationCode, WPARAM w_param, LPARAM lParam,
@@ -83,7 +84,7 @@ HRESULT CALLBACK TaskDialog::TaskDialogCallbackProc(HWND aHwnd, UINT notificatio
 int TaskDialog::Show(int aIconId)
 {
     std::vector<TASKDIALOG_BUTTON> buttons;
-    std::transform(dialog_buttons_.begin(), dialog_buttons_.end(), std::back_inserter(buttons),
+    std::transform(m_buttonList.begin(), m_buttonList.end(), std::back_inserter(buttons),
                    [](const std::pair<int, std::wstring>& button) -> TASKDIALOG_BUTTON {
                        return {button.first, button.second.c_str()};
                    });
