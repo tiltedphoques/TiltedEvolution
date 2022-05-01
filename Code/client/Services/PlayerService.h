@@ -4,6 +4,8 @@ struct World;
 struct TransportService;
 
 struct UpdateEvent;
+struct GridCellChangeEvent;
+struct CellChangeEvent;
 
 struct NotifyPlayerRespawn;
 
@@ -21,6 +23,8 @@ protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
+    void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
+    void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
 
 private:
 
@@ -37,4 +41,6 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_notifyRespawnConnection;
+    entt::scoped_connection m_gridCellChangeConnection;
+    entt::scoped_connection m_cellChangeConnection;
 };
