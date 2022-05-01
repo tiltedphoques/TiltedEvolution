@@ -173,11 +173,24 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
 {
     // Go through all the forms that were previously detected
-    auto view = m_world.view<FormIdComponent>();
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
     Vector<entt::entity> entities(view.begin(), view.end());
 
     for (auto entity : entities)
+    {
+        auto& formIdComponent = m_world.get<FormIdComponent>(entity);
+        // Delete all temporary actors on connect
+        if (formIdComponent.Id > 0xFF000000)
+        {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+            if (pActor)
+                pActor->Delete();
+
+            continue;
+        }
+
         ProcessNewEntity(entity);
+    }
 }
 
 void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept

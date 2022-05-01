@@ -97,7 +97,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_62();
     virtual void sub_63();
     virtual void sub_64();
-    virtual void sub_65();
+    virtual void DetachHavok();
     virtual void sub_66();
     virtual void sub_67();
     virtual void sub_68();

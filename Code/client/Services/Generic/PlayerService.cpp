@@ -3,9 +3,14 @@
 #include <World.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/GridCellChangeEvent.h>
+#include <Events/CellChangeEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
+#include <Messages/ShiftGridCellRequest.h>
+#include <Messages/EnterExteriorCellRequest.h>
+#include <Messages/EnterInteriorCellRequest.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
@@ -16,6 +21,8 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
+    m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
+    m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -29,6 +36,44 @@ void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) 
 
     std::string message = fmt::format("You died and lost {} gold.", acMessage.GoldLost);
     Utils::ShowHudMessage(String(message));
+}
+
+void PlayerService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept
+{
+    uint32_t baseId = 0;
+    uint32_t modId = 0;
+
+    if (m_world.GetModSystem().GetServerModId(acEvent.WorldSpaceId, modId, baseId))
+    {
+        ShiftGridCellRequest request;
+        request.WorldSpaceId = GameId(modId, baseId);
+        request.PlayerCell = acEvent.PlayerCell;
+        request.CenterCoords = acEvent.CenterCoords;
+        request.PlayerCoords = acEvent.PlayerCoords;
+        request.Cells = acEvent.Cells;
+
+        m_transport.Send(request);
+    }
+}
+
+void PlayerService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
+{
+    if (acEvent.WorldSpaceId != GameId{})
+    {
+        EnterExteriorCellRequest message;
+        message.CellId = acEvent.CellId;
+        message.WorldSpaceId = acEvent.WorldSpaceId;
+        message.CurrentCoords = acEvent.CurrentCoords;
+
+        m_transport.Send(message);
+    }
+    else
+    {
+        EnterInteriorCellRequest message;
+        message.CellId = acEvent.CellId;
+
+        m_transport.Send(message);
+    }
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
