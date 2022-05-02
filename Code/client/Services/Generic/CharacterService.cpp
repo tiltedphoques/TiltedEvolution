@@ -330,7 +330,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         if (acMessage.BaseId != GameId{})
         {
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
-            if(cNpcId == 0)
+            if (cNpcId == 0)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
                 return;
@@ -341,7 +341,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         }
         else
         {
+            // Players and npcs with temporary ref ids and base ids (usually random events)
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+            // TODO(cosideci): facegen for fully temporary NPCs
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
@@ -1049,13 +1051,8 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     if (const auto pWorldSpace = pActor->GetWorldSpace())
     {
-        uint32_t worldSpaceBaseId = 0;
-        uint32_t worldSpaceModId = 0;
-        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, worldSpaceModId, worldSpaceBaseId))
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, message.WorldSpaceId))
             return;
-
-        message.WorldSpaceId.BaseId = worldSpaceBaseId;
-        message.WorldSpaceId.ModId = worldSpaceModId;
     }
 
     message.Position = pActor->position;
@@ -1065,6 +1062,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
+    const auto isNpcTemporary = pNpc->formID >= 0xFF000000;
 
     if(isPlayer)
     {
@@ -1135,7 +1133,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsDead = pActor->IsDead();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if (isTemporary)
+    if (isTemporary && !isNpcTemporary)
     {
         if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
