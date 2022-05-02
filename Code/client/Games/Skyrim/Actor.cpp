@@ -571,11 +571,16 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
+    float oldHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+
     const auto pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+        float damage = oldHealth - newHealth;
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
+        return result;
     }
     else if (pExHittee->IsRemotePlayer())
     {
@@ -587,8 +592,11 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         const auto pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+            bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+            float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+            float damage = oldHealth - newHealth;
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
+            return result;
         }
         if (pExHitter->IsRemotePlayer())
         {
@@ -598,8 +606,11 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 
     if (pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+        float damage = oldHealth - newHealth;
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
+        return result;
     }
     else
     {
