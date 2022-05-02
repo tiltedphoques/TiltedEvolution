@@ -183,14 +183,6 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.groupService.leave();
   }
 
-  public clickToggle() {
-
-  }
-
-  public clickAutoHide() {
-
-  }
-
   isLaunchPartyDisable(): boolean {
     return (this.waitLaunch || (this.groupService.getSizeMembers() < 1));
   }
