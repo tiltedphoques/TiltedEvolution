@@ -15,12 +15,12 @@
         <h2>Party</h2>
         <div class="flex-item">
             <label for="showParty">Show Party</label>
-            <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty"
+            <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty" [disabled]="isPartyDisabled"
                 (change)="onShowPartyChange($event)">
         </div>
         <div class="flex-item">
             <label for="autoHideParty">Auto Hide Party</label>
-            <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty"
+            <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty" [disabled]="isPartyDisabled"
                 (change)="onAutoHidePartyChange($event)">
         </div>
         <hr>

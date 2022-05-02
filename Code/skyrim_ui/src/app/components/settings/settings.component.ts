@@ -20,6 +20,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     public showDebug: boolean;
     public autoHideParty: boolean;
     public showParty: boolean;
+    public isPartyDisabled: boolean = true;
 
     constructor(private settings: SettingService, private client: ClientService) {
 
