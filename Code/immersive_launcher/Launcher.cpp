@@ -29,9 +29,10 @@ static LaunchContext* g_context = nullptr;
 
 LaunchContext* GetLaunchContext()
 {
+    #if 0
     if (!g_context)
         __debugbreak();
-
+    #endif
     return g_context;
 }
 
@@ -50,6 +51,8 @@ int StartUp(int argc, char** argv)
         if (std::strcmp(argv[i], "-r") == 0)
             askSelect = true;
     }
+
+    MessageBoxA(0, "Waiting for Debugger", 0, 0);
 
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
@@ -124,3 +127,12 @@ void InitClient()
     RunTiltedApp();
 }
 } // namespace launcher
+
+// CreateProcess in suspended mode.
+// Inject usvfs_64.dll -> invoke InitHooks
+// (https://github.com/ModOrganizer2/usvfs/blob/f8051c179dee114b7e06c5dab2482977c285d611/src/usvfs_dll/usvfs.cpp#L352)
+// Resume proc
+
+
+// InjectDLLRemoteThread ->SkipInit
+
