@@ -40,7 +40,6 @@ Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authen
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 Console::Setting bEnableMoPo{"ModPolicy:bEnabled", "Bypass the mod policy restrictions.", true,
                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
-// TODO: if difficulty is higher than 5, close server with error
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
@@ -85,6 +84,12 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     {
         spdlog::warn("Port {} is already in use, trying {}", port, port + 1);
         port++;
+    }
+
+    if (uDifficulty.value_as<uint8_t>() > 5)
+    {
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {})",
+                     uDifficulty.value_as<uint8_t>());
     }
 
     UpdateInfo();
