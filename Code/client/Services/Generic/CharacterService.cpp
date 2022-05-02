@@ -8,14 +8,11 @@
 #include <Services/CharacterService.h>
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
-#include <Services/QuestService.h>
 
 #include <Games/References.h>
 
-#include <ExtraData/ExtraLeveledCreature.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
-#include <ExtraData/ExtraLeveledCreature.h>
 
 #include <Components.h>
 
@@ -23,15 +20,12 @@
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
-#include <Systems/CacheSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/EquipmentChangeEvent.h>
-#include <Events/UpdateEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -154,14 +148,16 @@ void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
         return;
     }
 
-    auto& formIdComponent = m_world.get<FormIdComponent>(*entityIt);
+    const auto cId = *entityIt;
+
+    auto& formIdComponent = view.get<FormIdComponent>(cId);
     CancelServerAssignment(*entityIt, formIdComponent.Id);
 
-    if (m_world.all_of<FormIdComponent>(*entityIt))
-        m_world.remove<FormIdComponent>(*entityIt);
+    if (m_world.all_of<FormIdComponent>(cId))
+        m_world.remove<FormIdComponent>(cId);
 
-    if (m_world.orphan(*entityIt))
-        m_world.destroy(*entityIt);
+    if (m_world.orphan(cId))
+        m_world.destroy(cId);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -177,9 +173,24 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
 {
     // Go through all the forms that were previously detected
-    auto view = m_world.view<FormIdComponent>();
-    for (auto entity : view)
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    Vector<entt::entity> entities(view.begin(), view.end());
+
+    for (auto entity : entities)
+    {
+        auto& formIdComponent = m_world.get<FormIdComponent>(entity);
+        // Delete all temporary actors on connect
+        if (formIdComponent.Id > 0xFF000000)
+        {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+            if (pActor)
+                pActor->Delete();
+
+            continue;
+        }
+
         ProcessNewEntity(entity);
+    }
 }
 
 void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept
@@ -319,7 +330,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         if (acMessage.BaseId != GameId{})
         {
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
-            if(cNpcId == 0)
+            if (cNpcId == 0)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
                 return;
@@ -330,7 +341,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         }
         else
         {
+            // Players and npcs with temporary ref ids and base ids (usually random events)
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+            // TODO(cosideci): facegen for fully temporary NPCs
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
@@ -375,9 +388,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+
     pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
     if (acMessage.IsPlayer)
+    {
         pActor->SetIgnoreFriendlyHit(true);
+        pActor->SetPlayerRespawnMode();
+    }
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -579,7 +596,10 @@ void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noe
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActorId);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ActorId);
         return;
+    }
 
     pActor->Delete();
 
@@ -852,7 +872,9 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     Actor* pMount = nullptr;
 
     auto formView = m_world.view<FormIdComponent>();
-    for (auto entity : formView)
+    Vector<entt::entity> entities(formView.begin(), formView.end());
+
+    for (auto entity : entities)
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
@@ -862,7 +884,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
 
         if (serverId == acMessage.MountId)
         {
-            auto& mountFormIdComponent = formView.get<FormIdComponent>(entity);
+            auto& mountFormIdComponent = m_world.get<FormIdComponent>(entity);
 
             if (m_world.all_of<LocalComponent>(entity))
             {
@@ -1029,13 +1051,8 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     if (const auto pWorldSpace = pActor->GetWorldSpace())
     {
-        uint32_t worldSpaceBaseId = 0;
-        uint32_t worldSpaceModId = 0;
-        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, worldSpaceModId, worldSpaceBaseId))
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, message.WorldSpaceId))
             return;
-
-        message.WorldSpaceId.BaseId = worldSpaceBaseId;
-        message.WorldSpaceId.ModId = worldSpaceModId;
     }
 
     message.Position = pActor->position;
@@ -1045,6 +1062,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
+    const auto isNpcTemporary = pNpc->formID >= 0xFF000000;
 
     if(isPlayer)
     {
@@ -1115,7 +1133,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsDead = pActor->IsDead();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if (isTemporary)
+    if (isTemporary && !isNpcTemporary)
     {
         if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
@@ -1232,16 +1250,18 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+
     pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
+        pActor->SetPlayerRespawnMode();
     }
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    m_world.emplace<WaitingFor3D>(aEntity);
+    m_world.emplace_or_replace<WaitingFor3D>(aEntity);
 
     return pActor;
 }
@@ -1276,8 +1296,8 @@ void CharacterService::RunLocalUpdates() const noexcept
 
 void CharacterService::RunRemoteUpdates() noexcept
 {
-    // Delay by 120ms to let the interpolation system accumulate interpolation points
-    const auto tick = m_transport.GetClock().GetCurrentTick() - 120;
+    // Delay by 300ms to let the interpolation system accumulate interpolation points
+    const auto tick = m_transport.GetClock().GetCurrentTick() - 300;
 
     // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to spawn it
     auto interpolatedEntities =
@@ -1329,9 +1349,6 @@ void CharacterService::RunRemoteUpdates() noexcept
     }
 
     auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
-
-    StackAllocator<1 << 13> allocator;
-    ScopedAllocator _{allocator};
 
     Vector<entt::entity> toRemove;
     for (auto entity : waitingView)
@@ -1403,11 +1420,12 @@ void CharacterService::RunFactionsUpdates() const noexcept
 void CharacterService::RunSpawnUpdates() const noexcept
 {
     auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
-    for (auto entity : invisibleView)
+    for (const auto entity : entities)
     {
-        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
-        auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+        auto& remoteComponent = m_world.get<RemoteComponent>(entity);
+        auto& interpolationComponent = m_world.get<InterpolationComponent>(entity);
 
         if (const auto pWorldSpace = PlayerCharacter::Get()->GetWorldSpace())
         {
@@ -1415,7 +1433,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
             float characterY = interpolationComponent.Position.y;
             const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
             const TES* pTES = TES::Get();
-            const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
+            const auto playerCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
             if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
             {

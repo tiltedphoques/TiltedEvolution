@@ -13,6 +13,7 @@
 #include <Services/MagicService.h>
 #include <Services/OverlayService.h>
 #include <Services/CommandService.h>
+#include <Services/StringCacheService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -34,6 +35,7 @@ World::World()
     ctx().emplace<MagicService>(*this, m_dispatcher);
     ctx().emplace<OverlayService>(*this, m_dispatcher);
     ctx().emplace<CommandService>(*this, m_dispatcher);
+    ctx().emplace<StringCacheService>(*this, m_dispatcher);
 
     ESLoader::ESLoader loader;
     // emplace loaded mods into modscomponent.
@@ -42,7 +44,4 @@ World::World()
     {
         ctx().emplace<ModsComponent>().AddServerMod(it);
     }
-
-    // late initialize the ScriptService to ensure all components are valid
-    m_scriptService = std::make_unique<ScriptService>(*this, m_dispatcher);
 }

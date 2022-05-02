@@ -63,7 +63,7 @@ T* GetByServerId(const uint32_t acServerId) noexcept
 
             if (pForm != nullptr)
             {
-                return (T*)pForm;
+                return Cast<T>(pForm);
             }
         }
     }
@@ -71,6 +71,8 @@ T* GetByServerId(const uint32_t acServerId) noexcept
     spdlog::warn("Form not found for server id {:X}", acServerId);
     return nullptr;
 }
+
+void ShowHudMessage(const TiltedPhoques::String& acMessage);
 } // namespace Utils
 
 namespace TiltedPhoques

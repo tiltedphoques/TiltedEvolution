@@ -8,7 +8,6 @@
 #include <Messages/CancelAssignmentRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
-#include <Messages/ClientRpcCalls.h>
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
@@ -45,6 +44,7 @@
 #include <Messages/RequestEquipmentChanges.h>
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportCommandRequest.h>
+#include <Messages/PlayerRespawnRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -56,7 +56,7 @@ struct ClientMessageFactory
     static auto Visit(T&& func)
     {
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
-                                 ClientReferencesMoveRequest, EnterInteriorCellRequest, ClientRpcCalls,
+                                 ClientReferencesMoveRequest, EnterInteriorCellRequest,
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest,
                                  RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
@@ -65,7 +65,7 @@ struct ClientMessageFactory
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,
                                  RequestRespawn, SyncExperienceRequest, RequestEquipmentChanges, SendChatMessageRequest,
-                                 TeleportCommandRequest>;
+                                 TeleportCommandRequest, PlayerRespawnRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

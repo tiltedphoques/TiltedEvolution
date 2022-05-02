@@ -66,16 +66,6 @@ extern void* RipAllocateN(size_t blockLength);
 #include <BuildInfo.h>
 #include <Games/Primitives.h>
 
-
-extern "C"
-{
-#include <lua.h>
-#include <lsqlite3.h>
-}
-
-#define SOL_ALL_SAFETIES_ON 1
-#include <sol/sol.hpp>
-
 using TiltedPhoques::AutoPtr;
 using TiltedPhoques::Set;
 using TiltedPhoques::List;

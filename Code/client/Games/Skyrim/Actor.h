@@ -192,6 +192,7 @@ struct Actor : TESObjectREFR
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
+    int32_t GetGoldAmount() noexcept;
 
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
@@ -209,6 +210,9 @@ struct Actor : TESObjectREFR
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetActorInventory(Inventory& aInventory) noexcept;
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
+    void SetEssentialEx(bool aSet) noexcept;
+    void SetNoBleedoutRecovery(bool aSet) noexcept;
+    void SetPlayerRespawnMode() noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
@@ -216,6 +220,7 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
+    void DispellAllSpells() noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
@@ -223,6 +228,23 @@ struct Actor : TESObjectREFR
     void Respawn() noexcept;
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
+
+    enum ActorFlags
+    {
+        IS_ESSENTIAL = 1 << 18,
+    };
+
+    bool IsEssential() const noexcept
+    {
+        return flags2 & ActorFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSetEssential) noexcept
+    {
+        if (aSetEssential)
+            flags2 |= ActorFlags::IS_ESSENTIAL;
+        else
+            flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
 
 public:
 

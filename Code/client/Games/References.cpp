@@ -333,6 +333,19 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
+void TESObjectREFR::PayGold(int32_t aAmount) noexcept
+{
+    ScopedInventoryOverride _;
+    PayGoldToContainer(nullptr, aAmount);
+}
+
+void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept
+{
+    TP_THIS_FUNCTION(TPayGoldToContainer, void, TESObjectREFR, TESObjectREFR*, int32_t);
+    POINTER_SKYRIMSE(TPayGoldToContainer, s_payGoldToContainer, 37511);
+    ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
+}
+
 float Actor::GetSpeed() noexcept
 {
     static BSFixedString speedSampledStr("SpeedSampled");

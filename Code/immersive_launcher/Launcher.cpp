@@ -1,3 +1,4 @@
+
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
 
 #include "TargetConfig.h"
@@ -12,6 +13,8 @@
 #include "oobe/PathSelection.h"
 #include "oobe/SupportChecks.h"
 #include "steam/SteamLoader.h"
+
+#include "base/dialogues/win/TaskDialog.h"
 
 // These symbols are defined within the client code
 extern void InstallStartHook();
@@ -41,8 +44,7 @@ LaunchContext* GetLaunchContext()
 
 int StartUp(int argc, char** argv)
 {
-    // VK_E
-    bool askSelect = (GetAsyncKeyState(0x45) & 0x8000);
+    bool askSelect = (GetAsyncKeyState(VK_SPACE) & 0x8000);
     for (int i = 1; i < argc; i++)
     {
         if (std::strcmp(argv[i], "-r") == 0)
@@ -62,15 +64,15 @@ int StartUp(int argc, char** argv)
     g_context = LC.get();
 
     {
-        const char* ec = nullptr;
+        const wchar_t* ec = nullptr;
         const auto status = oobe::ReportModCompatabilityStatus();
         switch (status)
         {
         case oobe::CompatabilityStatus::kDX11Unsupported:
-            ec = "Device does not support DirectX 11";
+            ec = L"Device does not support DirectX 11";
             break;
         case oobe::CompatabilityStatus::kOldOS:
-            ec = "Operating system unsupported. Please upgrade to Windows 8.1 or greater";
+            ec = L"Operating system unsupported. Please upgrade to Windows 8.1 or greater";
             break;
         }
 
@@ -79,7 +81,7 @@ int StartUp(int argc, char** argv)
     }
 
     if (!oobe::SelectInstall(askSelect))
-        DIE_NOW("Failed to select game install.");
+        DIE_NOW(L"Failed to select game install.");
 
     // Bind path environment.
     loader::InstallPathRouting(LC->gamePath);
@@ -102,15 +104,15 @@ bool LoadProgram(LaunchContext& LC)
 {
     auto content = TiltedPhoques::LoadFile(LC.exePath);
     if (content.empty())
-        DIE_NOW("Failed to mount game executable");
+        DIE_NOW(L"Failed to mount game executable");
 
     LC.Version = QueryFileVersion(LC.exePath.c_str());
     if (LC.Version.empty())
-        DIE_NOW("Failed to query game version");
+        DIE_NOW(L"Failed to query game version");
 
     ExeLoader loader(CurrentTarget.exeLoadSz);
     if (!loader.Load(reinterpret_cast<uint8_t*>(content.data())))
-        DIE_NOW("Fatal error while mapping executable");
+        DIE_NOW(L"Fatal error while mapping executable");
 
     LC.gameMain = loader.GetEntryPoint();
     return true;

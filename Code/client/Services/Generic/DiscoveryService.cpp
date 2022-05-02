@@ -7,6 +7,7 @@
 
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#include <Forms/TESNPC.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -28,6 +29,7 @@ DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher)
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->loadGameEvent.RegisterSink(this);
+    EventDispatcherManager::Get()->deathEvent.RegisterSink(this);
 #else
     GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
 #endif
@@ -250,6 +252,18 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
 {
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
+
+    PlayerCharacter::Get()->SetPlayerRespawnMode();
+
+    return BSTEventResult::kOk;
+}
+
+BSTEventResult DiscoveryService::OnEvent(const TESDeathEvent* acEvent, const EventDispatcher<TESDeathEvent>*)
+{
+    spdlog::debug("Actor died, actor: {:X}, killer: {:X}, is dead? {}",
+                 acEvent->pActorDying ? acEvent->pActorDying->formID : 0,
+                 acEvent->pActorKiller ? acEvent->pActorKiller->formID : 0, acEvent->isDead);
+
     return BSTEventResult::kOk;
 }
 

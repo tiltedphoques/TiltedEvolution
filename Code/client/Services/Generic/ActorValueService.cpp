@@ -285,14 +285,22 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.Id);
         return;
+    }
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
     pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
 
     const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
     if (health <= 0.f)
-        pActor->Kill();
+    {
+        ActorExtension* pExtension = pActor->GetExtension();
+        // Players should never be killed
+        if (!pExtension->IsPlayer())
+            pActor->Kill();
+    }
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
@@ -378,6 +386,11 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
     Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (!pActor)
+        return;
+
+    ActorExtension* pExtension = pActor->GetExtension();
+    // Players should never be killed
+    if (pExtension->IsPlayer())
         return;
 
     if (pActor->IsDead() != acMessage.IsDead)

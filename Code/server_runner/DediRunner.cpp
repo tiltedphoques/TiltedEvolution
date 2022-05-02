@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <base/threading/ThreadUtils.h>
 
 namespace
 {
@@ -86,10 +87,12 @@ void DediRunner::RunGSThread()
 void DediRunner::StartTerminalIO()
 {
     m_pConIOThread.reset(new std::jthread([&]() {
+        Base::SetCurrentThreadName("ConsoleIO");
+
         spdlog::get("ConOut")->info("Server console");
         PrintExecutorArrowHack();
 
-        while (m_pServerInstance->IsRunning())
+        while (m_pServerInstance->IsRunning() && !std::cin.eof())
         {
             using exr = Console::ConsoleRegistry::ExecutionResult;
 

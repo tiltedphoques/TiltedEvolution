@@ -38,15 +38,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-extern "C"
-{
-#include <lua.h>
-#include <lsqlite3.h>
-}
-
-#define SOL_ALL_SAFETIES_ON 1
-//#define SOL_USE_CXX_LUA_I_
-#include <sol/sol.hpp>
 
 using namespace std::chrono_literals;
 

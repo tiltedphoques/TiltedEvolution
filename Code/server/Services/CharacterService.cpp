@@ -1,5 +1,3 @@
-
-
 #include <Services/CharacterService.h>
 #include <Components.h>
 #include <GameServer.h>
@@ -12,7 +10,6 @@
 #include <Events/UpdateEvent.h>
 #include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
-#include <Scripts/Npc.h>
 
 #include <Game/OwnerView.h>
 
@@ -385,8 +382,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
             continue;
         }
 
-        Script::Npc npc(*itor, m_world);
-
         auto& movementComponent = view.get<MovementComponent>(*itor);
         auto& cellIdComponent = view.get<CellIdComponent>(*itor);
         auto& animationComponent = view.get<AnimationComponent>(*itor);
@@ -406,13 +401,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         cellIdComponent.Cell = movement.CellId;
         cellIdComponent.WorldSpaceId = movement.WorldSpaceId;
         cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
-
-        auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
-
-        if (canceled)
-        {
-            movementComponent = movementCopy;
-        }
 
         for (auto& action : update.ActionEvents)
         {

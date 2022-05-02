@@ -8,6 +8,7 @@
 #include <Services/ImguiService.h>
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
+#include <Services/PapyrusService.h>
 
 #include <Events/UpdateEvent.h>
 
@@ -224,6 +225,15 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
 
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Misc"))
+    {
+        if (ImGui::Button("Crash Client"))
+        {
+            int* m = 0;
+            *m = 1338;
+        }
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();

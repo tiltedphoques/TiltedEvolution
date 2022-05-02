@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CrashHandler.h"
+#include <crash_handler/CrashHandler.h>
 
 struct TiltedOnlineApp final : App
 {
@@ -24,12 +24,10 @@ struct TiltedOnlineApp final : App
 
     static void InstallHooks2();
 
-protected:
-
+  protected:
     void InstallHooks();
     void UninstallHooks();
 
-private:
-
-    CrashHandler m_crashHandler;
+  private:
+    //ScopedCrashHandler m_crashHandler;
 };

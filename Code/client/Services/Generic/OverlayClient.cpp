@@ -61,13 +61,18 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
     }
 
     uint16_t port = aEventArgs->GetInt(1) ? aEventArgs->GetInt(1) : 10578;
-    m_transport.Connect(baseIp + ":" + std::to_string(port));
     // iAmAToken = aEventArgs->GeString(2);
+
+    std::string endpoint = baseIp + ":" + std::to_string(port);
+
+    World::Get().GetRunner().Queue([endpoint] { 
+        World::Get().GetTransport().Connect(endpoint);
+    });
 }
 
 void OverlayClient::ProcessDisconnectMessage()
 {
-    m_transport.Close();
+    World::Get().GetRunner().Queue([]() { World::Get().GetTransport().Close(); });
 }
 
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)

@@ -90,7 +90,9 @@ struct TESContainerChangedEvent
 
 struct TESDeathEvent
 {
-
+    TESObjectREFR* pActorDying;
+    TESObjectREFR* pActorKiller;
+    bool isDead;
 };
 
 struct TESDestructionStageChangedEvent
@@ -278,17 +280,20 @@ struct TESTrapHitEvent
 
 struct TESTriggerEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESTriggerEnterEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESTriggerLeaveEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESUniqueIDChangeEvent

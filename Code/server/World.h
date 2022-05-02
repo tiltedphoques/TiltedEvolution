@@ -2,7 +2,6 @@
 
 #include "Services/AdminService.h"
 
-#include <Services/ScriptService.h>
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
 #include <Services/CalendarService.h>
@@ -25,8 +24,6 @@ struct World : entt::registry
     const CharacterService& GetCharacterService() const noexcept { return ctx().at<const CharacterService>(); }
     PlayerService& GetPlayerService() noexcept { return ctx().at<PlayerService>(); }
     const PlayerService& GetPlayerService() const noexcept { return ctx().at<const PlayerService>(); }
-    ScriptService& GetScriptService() noexcept { return *m_scriptService; }
-    const ScriptService& GetScriptService() const noexcept { return *m_scriptService; }
     CalendarService& GetCalendarService() noexcept { return ctx().at<CalendarService>(); }
     const CalendarService& GetCalendarService() const noexcept { return ctx().at<const CalendarService>(); }
     QuestService& GetQuestService() noexcept { return ctx().at<QuestService>(); }
@@ -50,8 +47,7 @@ struct World : entt::registry
 private:
     entt::dispatcher m_dispatcher;
 
-    std::shared_ptr<AdminService> m_spAdminService;
-    std::unique_ptr<ScriptService> m_scriptService;
+    TiltedPhoques::SharedPtr<AdminService> m_spAdminService;
     PlayerManager m_playerManager;
     UniquePtr<ESLoader::RecordCollection> m_recordCollection;
 };

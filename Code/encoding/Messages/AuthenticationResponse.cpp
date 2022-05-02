@@ -5,6 +5,7 @@ void AuthenticationResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     Serialization::WriteVarInt(aWriter, static_cast<uint32_t>(Type));
     Serialization::WriteString(aWriter, Version);
     UserMods.Serialize(aWriter);
+    Settings.Serialize(aWriter);
 }
 
 void AuthenticationResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,4 +13,5 @@ void AuthenticationResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     Type = static_cast<ResponseType>(Serialization::ReadVarInt(aReader) & 0xFFFFFFFF);
     Version = Serialization::ReadString(aReader);
     UserMods.Deserialize(aReader);
+    Settings.Deserialize(aReader);
 }

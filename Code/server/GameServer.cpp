@@ -1,3 +1,5 @@
+#include "Messages/StringCacheUpdate.h"
+
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
@@ -38,6 +40,7 @@ Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authen
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 Console::Setting bEnableMoPo{"ModPolicy:bEnabled", "Bypass the mod policy restrictions.", true,
                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
@@ -83,6 +86,12 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
         port++;
     }
 
+    if (uDifficulty.value_as<uint8_t>() > 5)
+    {
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {})",
+                     uDifficulty.value_as<uint8_t>());
+    }
+
     UpdateInfo();
     spdlog::info("Server started on port {}", GetPort());
     UpdateTitle();
@@ -108,7 +117,6 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
-    m_pWorld->GetScriptService().Initialize();
 }
 
 void GameServer::Kill()
@@ -244,6 +252,7 @@ void GameServer::OnUpdate()
 
     auto& dispatcher = m_pWorld->GetDispatcher();
 
+
     dispatcher.trigger(UpdateEvent{cDeltaSeconds});
 
     if (m_requestStop)
@@ -295,8 +304,6 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
-    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
-
     if (pPlayer)
     {
         if (const auto& cell = pPlayer->GetCellComponent())
@@ -315,17 +322,18 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         {
             if (entity == playerCharacter)
             {
-                auto& characterComponent = m_pWorld->get<CharacterComponent>(entity);
-                m_pWorld->GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(entity)));
+                m_pWorld->GetDispatcher().enqueue(CharacterRemoveEvent(World::ToInteger(entity)));
                 continue;
             }
 
             const auto& [ownerComponent] = ownerView.get(entity);
             if (ownerComponent.GetOwner() == pPlayer)
             {
-                m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
+                m_pWorld->GetDispatcher().enqueue(OwnershipTransferEvent(entity));
             }
         }
+
+        m_pWorld->GetDispatcher().update();
 
         m_pWorld->GetPlayerManager().Remove(pPlayer);
     }
@@ -337,9 +345,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
-    ScopedAllocator _(s_allocator);
-
-    Buffer buffer(1 << 16);
+    Buffer buffer(1 << 20);
     Buffer::Writer writer(&buffer);
     writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
 
@@ -355,9 +361,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
-    ScopedAllocator _(s_allocator);
-
-    Buffer buffer(1 << 16);
+    Buffer buffer(1 << 20);
     Buffer::Writer writer(&buffer);
     writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
 
@@ -557,8 +561,18 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
+        serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
+
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
+
+        uint32_t startId = 0;
+        auto initStringCache = StringCache::Get().Serialize(startId);
+
+        pPlayer->SetStringCacheId(startId);
+
+        Send(aConnectionId, initStringCache);
+
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
