@@ -213,12 +213,10 @@ export class ClientService implements OnDestroy {
    * Reconnect
    */
   public reconnect(): void {
-    this.connectionStateChange.pipe(take(2)).subscribe((isState: boolean) => {
-      if (!isState) {
-        this.connect(this._host, this._port, this._token);
-      }
-    })
-    this.disconnect();
+    if (environment.game) {
+      skyrimtogether.reconnect();
+      this._remainingReconnectionAttempt = 0;
+    }
   }
 
   /**
@@ -321,7 +319,7 @@ export class ClientService implements OnDestroy {
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        this.messageReception.next({content: `Connection lost, trying to reconnect. ${this._remainingReconnectionAttempt} attempts left.`})
+        this.messageReception.next({ content: `Connection lost, trying to reconnect. ${this._remainingReconnectionAttempt} attempts left.` })
         this.connect(this._host, this._port, this._token);
       }
     });
@@ -406,25 +404,25 @@ export class ClientService implements OnDestroy {
 
   private onHealthSet(serverId: number, health: number) {
     this.zone.run(() => {
-      this.healthChange.next(new Player({serverId: serverId, health: health}));
+      this.healthChange.next(new Player({ serverId: serverId, health: health }));
     });
   }
 
   private onSetLevel(serverId: number, level: number) {
     this.zone.run(() => {
-      this.levelChange.next(new Player({serverId: serverId, level: level}));
+      this.levelChange.next(new Player({ serverId: serverId, level: level }));
     })
   }
 
   private onSetCell(serverId: number, cellName: string) {
     this.zone.run(() => {
-      this.cellChange.next(new Player({serverId: serverId, cellName: cellName}));
+      this.cellChange.next(new Player({ serverId: serverId, cellName: cellName }));
     })
   }
 
   private onSetPlayer3DLoaded(serverId: number, isLoaded: boolean) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: isLoaded}));
+      this.isLoadedChange.next(new Player({ serverId: serverId, isLoaded: isLoaded }));
     })
   }
 

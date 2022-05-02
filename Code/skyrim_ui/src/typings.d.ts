@@ -235,4 +235,9 @@ interface SkyrimTogether {
    * Deactivate UI and release control.
    */
   deactivate(): void;
+
+  /**
+   * Reconnect the client.
+   */
+  reconnect(): void;
 }
