@@ -3,6 +3,7 @@
 #include <World.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/DisconnectedEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 
@@ -22,6 +23,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
+    m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&PlayerService::OnDisconnected>(this);
     m_settingsConnection = m_dispatcher.sink<ServerSettings>().connect<&PlayerService::OnServerSettingsReceived>(this);
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
@@ -31,12 +33,23 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunRespawnUpdates(acEvent.Delta);
+    RunDifficultyUpdates();
 }
 
-void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) const noexcept
+void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
-    if (acSettings.Difficulty <= 5)
-        PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
+    PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
+
+    m_serverDifficulty = m_previousDifficulty = 6;
+}
+
+void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
+{
+    m_previousDifficulty = PlayerCharacter::Get()->difficulty;
+
+    PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
+
+    m_serverDifficulty = acSettings.Difficulty;
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
@@ -117,4 +130,12 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
         s_startTimer = false;
     }
+}
+
+void PlayerService::RunDifficultyUpdates() const noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    PlayerCharacter::Get()->SetDifficulty(m_serverDifficulty);
 }
