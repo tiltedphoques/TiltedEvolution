@@ -40,6 +40,8 @@ Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authen
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 Console::Setting bEnableMoPo{"ModPolicy:bEnabled", "Bypass the mod policy restrictions.", true,
                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+// TODO: if difficulty is higher than 5, close server with error
+Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
@@ -553,6 +555,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
         spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
+
+        serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);

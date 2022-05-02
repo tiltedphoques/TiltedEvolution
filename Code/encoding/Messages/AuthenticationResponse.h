@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Structs/Mods.h>
+#include <Structs/ServerSettings.h>
 
 struct AuthenticationResponse final : ServerMessage
 {
@@ -23,10 +24,14 @@ struct AuthenticationResponse final : ServerMessage
 
     bool operator==(const AuthenticationResponse& achRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods;
+        return GetOpcode() == achRhs.GetOpcode() && 
+               Type == achRhs.Type && 
+               UserMods == achRhs.UserMods &&
+               Settings == achRhs.Settings;
     }
 
     ResponseType Type;
     String Version;
     Mods UserMods{};
+    ServerSettings Settings{};
 };

@@ -154,6 +154,7 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     {
         m_connected = true;
         m_dispatcher.trigger(acMessage.UserMods);
+        m_dispatcher.trigger(acMessage.Settings);
         m_dispatcher.trigger(ConnectedEvent());
         break;
     }

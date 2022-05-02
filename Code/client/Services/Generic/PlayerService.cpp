@@ -12,6 +12,8 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 
+#include <Structs/ServerSettings.h>
+
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Games/Overrides.h>
@@ -20,6 +22,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
+    m_settingsConnection = m_dispatcher.sink<ServerSettings>().connect<&PlayerService::OnServerSettingsReceived>(this);
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
@@ -28,6 +31,12 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunRespawnUpdates(acEvent.Delta);
+}
+
+void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) const noexcept
+{
+    if (acSettings.Difficulty <= 5)
+        PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
