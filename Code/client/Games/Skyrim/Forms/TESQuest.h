@@ -25,6 +25,22 @@ struct TESQuest : BGSStoryManagerTreeForm
         Unk2 = 8 << 10,
     };
 
+    enum Type : uint8_t
+    {
+        None = 0,
+        MainQuest = 1,
+        MagesGuild = 2,
+        ThievesGuild = 3,
+        DarkBrotherhood = 4,
+        CompanionsQuest = 5,
+        Miscellaneous = 6,
+        Daedric = 7,
+        SideQuest = 8,
+        CivilWar = 9,
+        DLC01_Vampire = 10,
+        DLC02_Dragonborn = 11
+    };
+
     struct Objective
     {
         BSFixedString nameRef; // 0x0000
@@ -50,23 +66,30 @@ struct TESQuest : BGSStoryManagerTreeForm
     };
 
     TESFullName fullName;
-    char pad30[0x20];              // 0x0030
-    GameArray<void*> aliases;      // 0x0058
-    char pad70[0x6C];              // 0x0070
-    uint16_t flags;                // 0x00DC default init: 256
-    uint8_t priority;              // 0x00DE
-    uint8_t type;                  // 0x00DF
-    int32_t scopedStatus;          // 0x00E0 default init: -1, if not -1 outside of story manager scope
+    GameArray<void*> instanceData;
+    uint32_t currentInstanceID;
+    GameArray<void*> aliases;          // 0x0058
+    char pad70[0xD8 - 0x70];
+    float questDelay;                  // 0x00D8
+    uint16_t flags;                    // 0x00DC default init: 256
+    uint8_t priority;                  // 0x00DE
+    uint8_t type;                      // 0x00DF
+    int32_t scopedStatus;              // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
-    GameList<Stage> stages;            // 0x00E8
+    GameList<Stage> stages;
+    /*
+    GameList<Stage>* pExecutedStages;  // 0x00E8
+    GameList<Stage>* pWaitingStages;   // 0x00F0
+    */
     GameList<Objective> objectives;    // 0x00F8
     char pad108[0x100];                // 0x0108
-    GameArray<uint64_t> N000008BE;     // 0x0208
+    GameArray<void*> scenes;           // 0x0208
     char pad210[8];                    // 0x0210
     uint16_t currentStage;             // 0x0228 
-    char pad228[2];
+    bool alreadyRun;                   // 0x022A
+    char pad22B[2];
     BSString idName; // < this is the proper quest ID
-    uint64_t pad;
+    void* pStartEventData;
     uint64_t unkFlags;
     char pad250[24];
 
@@ -91,9 +114,10 @@ struct TESQuest : BGSStoryManagerTreeForm
     void SetStopped();
 };
 
-static_assert(sizeof(TESQuest) == 616);
+static_assert(sizeof(TESQuest) == 0x268);
 static_assert(offsetof(TESQuest, fullName) == 0x28);
+static_assert(offsetof(TESQuest, flags) == 0xDC);
+static_assert(offsetof(TESQuest, stages) == 0xE8);
 static_assert(offsetof(TESQuest, objectives) == 0xF8);
 static_assert(offsetof(TESQuest, currentStage) == 0x228);
 static_assert(offsetof(TESQuest, unkFlags) == 0x248);
-static_assert(offsetof(TESQuest, flags) == 0xDC);

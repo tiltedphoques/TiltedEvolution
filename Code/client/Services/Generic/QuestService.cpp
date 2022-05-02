@@ -18,7 +18,7 @@
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
 
-#define QUEST_DEBUG 0
+#define QUEST_DEBUG 1
 
 static TESQuest* FindQuestByNameId(const String &name)
 {
