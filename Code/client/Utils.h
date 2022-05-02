@@ -63,7 +63,7 @@ T* GetByServerId(const uint32_t acServerId) noexcept
 
             if (pForm != nullptr)
             {
-                return (T*)pForm;
+                return Cast<T>(pForm);
             }
         }
     }
