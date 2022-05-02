@@ -32,15 +32,6 @@ void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
     if (aDifficulty > 5)
         return;
 
-    // TODO(cosideci): cache pre-connect difficulty
-
-    // Can't find "iDifficulty:GamePlay"
-    /*
-    auto* pSettings = INISettingCollection::Get();
-    Setting* pSetting = pSettings->GetSetting("iDifficulty:GamePlay");
-    pSetting->data = aDifficulty;
-    */
-
     POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
     *s_difficulty = aDifficulty;
 
