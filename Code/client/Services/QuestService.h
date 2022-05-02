@@ -22,31 +22,29 @@ class QuestService final : public
     BSTEventSink<TESQuestStageEvent>
 {
 public:
-    QuestService(World&, entt::dispatcher&, ImguiService&);
+    QuestService(World&, entt::dispatcher&);
     ~QuestService() = default;
 
     static bool IsNonSyncableQuest(TESQuest* apQuest);
+    static void DebugDumpQuests();
 
 private:
     friend struct QuestEventHandler;
 
-    void DebugDumpQuests();
+    void OnConnected(const ConnectedEvent&) noexcept;
+    void OnDisconnected(const DisconnectedEvent&) noexcept;
 
     BSTEventResult OnEvent(const TESQuestStartStopEvent*, const EventDispatcher<TESQuestStartStopEvent>*) override;
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;
 
-    void OnConnected(const ConnectedEvent&) noexcept;
-    void OnDisconnected(const DisconnectedEvent&) noexcept;
-    void OnDraw() noexcept;
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
 
     TESQuest* SetQuestStage(uint32_t aformId, uint16_t aStage);
     bool StopQuest(uint32_t aformId);
 
+    World& m_world;
+
     entt::scoped_connection m_joinedConnection;
     entt::scoped_connection m_leftConnection;
-    entt::scoped_connection m_drawConnection;
     entt::scoped_connection m_questUpdateConnection;
-
-    World& m_world;
 };

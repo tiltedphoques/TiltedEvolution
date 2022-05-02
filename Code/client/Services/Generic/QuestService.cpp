@@ -9,20 +9,16 @@
 #include <Games/Misc/QuestCallbackManager.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESQuest.h>
-#include <FormManager.h>
+#include <Games/TES.h>
 
 #include <Events/EventDispatcher.h>
-
-#include <imgui.h>
 
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
 
-#define QUEST_DEBUG 1
-
 static TESQuest* FindQuestByNameId(const String &name)
 {
-    auto& questRegistry = FormManager::Get()->quests;
+    auto& questRegistry = ModManager::Get()->quests;
     auto it = std::find_if(questRegistry.begin(), questRegistry.end(), [name](auto* it) 
     { 
          return std::strcmp(it->idName.AsAscii(), name.c_str()); 
@@ -31,15 +27,12 @@ static TESQuest* FindQuestByNameId(const String &name)
     return it != questRegistry.end() ? *it : nullptr;
 }
 
-QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher, ImguiService& aImguiService) : m_world(aWorld)
+QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher) 
+    : m_world(aWorld)
 {
     m_joinedConnection = aDispatcher.sink<ConnectedEvent>().connect<&QuestService::OnConnected>(this);
     m_leftConnection = aDispatcher.sink<DisconnectedEvent>().connect<&QuestService::OnDisconnected>(this);
     m_questUpdateConnection = aDispatcher.sink<NotifyQuestUpdate>().connect<&QuestService::OnQuestUpdate>(this);
-
-#if QUEST_DEBUG
-    m_drawConnection = aImguiService.OnDraw.connect<&QuestService::OnDraw>(this);
-#endif
 }
 
 //Idea: ToggleQuestActiveStatus(__int64 a1)
@@ -66,6 +59,77 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
         if (auto* pQuest = objective.instance->quest)
             pQuest->SetActive(false);
     }
+}
+
+void QuestService::OnDisconnected(const DisconnectedEvent&) noexcept
+{
+    // remove quest listener
+#if TP_FALLOUT
+    GetEventDispatcher_TESQuestStartStopEvent()->UnRegisterSink(this);
+    GetEventDispatcher_TESQuestStageEvent()->UnRegisterSink(this);
+#else
+    auto* pEventList = EventDispatcherManager::Get();
+    pEventList->questStageEvent.UnRegisterSink(this);
+    pEventList->questStartStopEvent.UnRegisterSink(this);
+#endif
+}
+
+BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
+{
+    if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
+    {
+        if (IsNonSyncableQuest(pQuest))
+            return BSTEventResult::kOk;
+
+        m_world.GetRunner().Queue([&, 
+            formId = pQuest->formID, 
+            stageId = pQuest->currentStage, 
+            stopped = pQuest->IsStopped()]() 
+        {
+            GameId Id;
+            auto& modSys = m_world.GetModSystem();
+            if (modSys.GetServerModId(formId, Id))
+            {
+                RequestQuestUpdate update;
+                update.Id = Id;
+                update.Stage = stageId;
+                update.Status = stopped ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started;
+
+                m_world.GetTransport().Send(update);
+            }
+        });
+    }
+
+    return BSTEventResult::kOk;
+}
+
+BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
+{
+    // there is no reason to even fetch the quest object, since the event provides everything already....
+    if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
+    {
+        if (IsNonSyncableQuest(pQuest))
+            return BSTEventResult::kOk;
+
+        m_world.GetRunner().Queue([&, 
+            formId = apEvent->formId, 
+            stageId = apEvent->stageId]() 
+        {
+            GameId Id;
+            auto& modSys = m_world.GetModSystem();
+            if (modSys.GetServerModId(formId, Id))
+            {
+                RequestQuestUpdate update;
+                update.Id = Id;
+                update.Stage = stageId;
+                update.Status = RequestQuestUpdate::StageUpdate;
+
+                m_world.GetTransport().Send(update);
+            }
+        });
+    }
+
+    return BSTEventResult::kOk;
 }
 
 void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
@@ -136,125 +200,18 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
-void QuestService::OnDisconnected(const DisconnectedEvent&) noexcept
-{
-    // remove quest listener
-#if TP_FALLOUT
-    GetEventDispatcher_TESQuestStartStopEvent()->UnRegisterSink(this);
-    GetEventDispatcher_TESQuestStageEvent()->UnRegisterSink(this);
-#else
-    auto* pEventList = EventDispatcherManager::Get();
-    pEventList->questStageEvent.UnRegisterSink(this);
-    pEventList->questStartStopEvent.UnRegisterSink(this);
-#endif
-}
-
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
     // non story quests are "blocked" and not synced
     auto& stages = apQuest->stages;
-    return apQuest->type == 0 // internal event
-        || apQuest->type == 6 || stages.Empty();
-}
-
-BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
-{
-    // there is no reason to even fetch the quest object, since the event provides everything already....
-    if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
-    {
-        if (IsNonSyncableQuest(pQuest))
-            return BSTEventResult::kOk;
-
-        m_world.GetRunner().Queue([&, 
-            formId = apEvent->formId, 
-            stageId = apEvent->stageId]() 
-        {
-            GameId Id;
-            auto& modSys = m_world.GetModSystem();
-            if (modSys.GetServerModId(formId, Id))
-            {
-                RequestQuestUpdate update;
-                update.Id = Id;
-                update.Stage = stageId;
-                update.Status = RequestQuestUpdate::StageUpdate;
-
-                m_world.GetTransport().Send(update);
-            }
-        });
-    }
-
-    return BSTEventResult::kOk;
-}
-
-BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
-{
-    if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
-    {
-        if (IsNonSyncableQuest(pQuest))
-            return BSTEventResult::kOk;
-
-        m_world.GetRunner().Queue([&, 
-            formId = pQuest->formID, 
-            stageId = pQuest->currentStage, 
-            stopped = pQuest->IsStopped()]() 
-        {
-            GameId Id;
-            auto& modSys = m_world.GetModSystem();
-            if (modSys.GetServerModId(formId, Id))
-            {
-                RequestQuestUpdate update;
-                update.Id = Id;
-                update.Stage = stageId;
-                update.Status = stopped ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started;
-
-                m_world.GetTransport().Send(update);
-            }
-        });
-    }
-
-    return BSTEventResult::kOk;
+    return apQuest->type == TESQuest::None // internal event
+           || apQuest->type == TESQuest::Miscellaneous 
+           || stages.Empty();
 }
 
 void QuestService::DebugDumpQuests()
 {
-    auto& quests = FormManager::Get()->quests;
+    auto& quests = ModManager::Get()->quests;
     for (auto* it : quests)
-    {
-        std::printf("%x|%d|%d|%s\n", it->formID, it->type, it->priority, it->idName.AsAscii());
-    }
-}
-
-void QuestService::OnDraw() noexcept
-{
-#if QUEST_DEBUG
-    auto* pPlayer = PlayerCharacter::Get();
-    if (!pPlayer) return;
-
-    ImGui::Begin("QuestLog");
-    for (auto &objective : pPlayer->objectives)
-    {
-        auto* pQuest = objective.instance->quest;
-        if (!pQuest)
-            continue;
-
-        if (IsNonSyncableQuest(pQuest))
-            continue;
-
-        if (pQuest->IsActive())
-        {
-            ImGui::TextColored({255.f, 0.f, 255.f, 255.f}, "%s|%x|%s", pQuest->idName.AsAscii(),
-                               pQuest->flags, pQuest->fullName.value.AsAscii());
-
-            for (auto* stage : pQuest->stages)
-            {
-                ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d|%x", stage->stageIndex, stage->flags);
-            }
-        }
-        else
-        {
-            ImGui::Text("%s|%x|%s", pQuest->idName.AsAscii(), pQuest->flags, pQuest->fullName.value.AsAscii());
-        }
-    }
-    ImGui::End();
-#endif
+        spdlog::info("{:X}|{}|{}|{}", it->formID, it->type, it->priority, it->idName.AsAscii());
 }

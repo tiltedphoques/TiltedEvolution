@@ -45,6 +45,7 @@ private:
     void DrawNetworkView();
     void DrawPartyView();
     void DrawActorValuesView();
+    void DrawQuestDebugView();
 
     uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
 
