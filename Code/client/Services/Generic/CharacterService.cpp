@@ -1261,7 +1261,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    m_world.emplace<WaitingFor3D>(aEntity);
+    m_world.emplace_or_replace<WaitingFor3D>(aEntity);
 
     return pActor;
 }
@@ -1419,7 +1419,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
-    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent, WaitingFor3D>);
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
     Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
     for (const auto entity : entities)
