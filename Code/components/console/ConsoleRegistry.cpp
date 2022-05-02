@@ -44,8 +44,10 @@ std::optional<bool> BoolifyString(std::string_view view)
     // let the compiler optimize this.
     if (view == "true" || view == "TRUE" || view == "1")
         return true;
-    else if (view == "false" || view == "FALSE" || view == "0")
+
+    if (view == "false" || view == "FALSE" || view == "0")
         return false;
+
     return std::nullopt;
 }
 } // namespace
@@ -63,7 +65,7 @@ ConsoleRegistry::~ConsoleRegistry() = default;
 
 void ConsoleRegistry::BindStaticItems()
 {
-    spdlog::info("ConsoleRegistry::BindStaticItems()");
+    spdlog::trace("ConsoleRegistry::BindStaticItems()");
 
     auto* i = CommandBase::ROOT();
     CommandBase::ROOT() = nullptr;
@@ -88,7 +90,7 @@ void ConsoleRegistry::BindStaticItems()
 
 void ConsoleRegistry::RegisterNatives()
 {
-    spdlog::info("ConsoleRegistry::RegisterNatives()");
+    spdlog::trace("ConsoleRegistry::RegisterNatives()");
 
     RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
         m_out->info("<------Commands-({})--->", m_commands.size());
@@ -164,7 +166,7 @@ void ConsoleRegistry::RegisterNatives()
 
 void ConsoleRegistry::AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand)
 {
-    std::lock_guard<std::mutex> _(m_listLock);
+    std::lock_guard _(m_listLock);
     (void)_;
 
     // Add to global and tracking pool
@@ -174,7 +176,7 @@ void ConsoleRegistry::AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand
 
 void ConsoleRegistry::AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting)
 {
-    std::lock_guard<std::mutex> guard(m_listLock);
+    std::lock_guard guard(m_listLock);
     (void)guard;
 
     m_settings.push_back(apSetting.get());
