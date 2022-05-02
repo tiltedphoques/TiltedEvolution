@@ -30,7 +30,8 @@ local function build_runner()
         "tiltedcore",
         "spdlog",
         "hopscotch-map",
-        "sentry-native")
+        "sentry-native",
+        "libuv")
     add_defines("SPDLOG_HEADER_ONLY")
 end
 

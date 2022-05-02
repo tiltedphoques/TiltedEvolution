@@ -13,7 +13,7 @@ namespace
 {
 constexpr char kCommandPrefix = '/';
 
-std::unique_ptr<std::string[]> SplitLineTokens(const std::string& arLine, size_t& tokenCount)
+std::unique_ptr<TiltedPhoques::String[]> SplitLineTokens(const TiltedPhoques::String& arLine, size_t& tokenCount)
 {
     if (!CheckIsValidUTF8(arLine))
         return nullptr;
@@ -21,7 +21,7 @@ std::unique_ptr<std::string[]> SplitLineTokens(const std::string& arLine, size_t
     StringTokenizer tokenizer(&arLine[1]);
     tokenCount = tokenizer.CountTokens();
 
-    auto tokens = std::make_unique<std::string[]>(tokenCount);
+    auto tokens = std::make_unique<TiltedPhoques::String[]>(tokenCount);
 
     size_t i = 0;
     while (tokenizer.HasMore())
@@ -201,7 +201,7 @@ SettingBase* ConsoleRegistry::FindSetting(const char* acName)
     return *it;
 }
 
-ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
+ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const TiltedPhoques::String& acLine)
 {
     if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
@@ -254,7 +254,7 @@ ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const std::s
     return ExecutionResult::kSuccess;
 }
 
-void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
+void ConsoleRegistry::StoreCommandInHistory(const TiltedPhoques::String& acLine)
 {
     m_commandHistory.push_back(acLine);
 
@@ -265,7 +265,8 @@ void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
     }
 }
 
-ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs,
+ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
+                                                const TiltedPhoques::String* acStringArgs,
                                                 ArgStack& aStackOut)
 {
     CommandBase::Type* pType = apCommand->m_pArgIndicesArray;
