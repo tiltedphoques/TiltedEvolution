@@ -27,6 +27,17 @@ static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
 
+void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
+{
+    if (aDifficulty > 5)
+        return;
+
+    POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
+    *s_difficulty = aDifficulty;
+
+    difficulty = aDifficulty;
+}
+
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
 {
     Skills::Skill skill = Skills::GetSkillFromActorValue(aSkill);

@@ -143,6 +143,8 @@ struct PlayerCharacter : Actor
 
     const GameArray<TintMask*>& GetTints() const noexcept;
 
+    void SetDifficulty(const int32_t aDifficulty) noexcept;
+
     void AddSkillExperience(int32_t aSkill, float aExperience) noexcept;
     float GetSkillExperience(Skills::Skill aSkill) const noexcept
     {
@@ -169,7 +171,9 @@ struct PlayerCharacter : Actor
     Skills** pSkills;
     uint8_t pad9B8[0xAC8 - 0x9B8];
     TESForm* locationForm;
-    uint8_t padAC8[0x40];
+    uint8_t padAC8[0x28];
+    int32_t difficulty;
+    uint8_t padAFC[0xB10 - 0xAFC];
     GameArray<TintMask*> baseTints;
     GameArray<TintMask*>* overlayTints;
 
