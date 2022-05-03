@@ -5,6 +5,7 @@ import { animation as popupsAnimation } from '../root/popups.animation';
 import { Debug } from '../../models/debug';
 import { StoreService } from '../../services/store.service';
 import { faWifi, faArrowDown, faArrowUp, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { SettingService } from 'src/app/services/setting.service';
 
 @Component({
   selector: 'app-debug',
@@ -23,13 +24,12 @@ export class DebugComponent implements OnInit, OnDestroy {
   faArrowUp: IconDefinition = faArrowUp;
 
   constructor(private client: ClientService,
-              private storeService: StoreService) {
-      this.isShown = JSON.parse(this.storeService.get('debug_isShow', false));
+              private settings: SettingService) {
+      this.isShown = this.settings.isDebugShown();
   }
 
   ngOnInit() {
     this.debugState$ = this.client.debugStateChange.subscribe((state: boolean) => {
-      this.storeService.set('debug_isShown', state);
       this.isShown = state;
     });
 
@@ -41,11 +41,6 @@ export class DebugComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.debugState$.unsubscribe();
     this.debugData$.unsubscribe();
-  }
-
-  public toggle() {
-    this.isShown = !this.isShown;
-    this.storeService.set('debug_isShow', this.isShown);
   }
 
   public get active(): boolean {
