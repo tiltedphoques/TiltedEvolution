@@ -79,7 +79,7 @@ void DediRunner::ReadStdin(uv_stream_t* apStream, ssize_t aRead, const uv_buf_t*
     if (aRead < 0)
     {
         if (aRead == UV_EOF)
-            uv_close((uv_handle_t*)&apStream, nullptr);
+            uv_close(reinterpret_cast<uv_handle_t*>(&apStream), nullptr);
     }
     else if (aRead > 0)
     {
@@ -142,7 +142,7 @@ void DediRunner::StartTerminalIO()
 
     m_tty.data = &ctx;
 
-    uv_read_start((uv_stream_t*)&m_tty, AllocateBuffer, ReadStdin);
+    uv_read_start(reinterpret_cast<uv_stream_t*>(&m_tty), AllocateBuffer, ReadStdin);
 }
 
 void DediRunner::RequestKill()
