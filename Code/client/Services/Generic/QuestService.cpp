@@ -136,9 +136,8 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     {
     case NotifyQuestUpdate::Started: 
     {
-        if (TESQuest* pQuest = SetQuestStage(formId, 0))
+        if (TESQuest* pQuest = SetQuestStage(formId, aUpdate.Stage))
         {
-            pQuest->ScriptSetStage(aUpdate.Stage);
             pQuest->SetActive(true);
             bResult = true;
             spdlog::info("Remote quest started: {:X}, stage: {}", formId, aUpdate.Stage);
@@ -171,7 +170,7 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
         pQuest->scopedStatus = -1;
 
         bool bNeedsRegistration = false;
-        if (pQuest->UnkSetRunning(bNeedsRegistration, false))
+        if (pQuest->EnsureQuestStarted(bNeedsRegistration, false))
         {
             auto* pCallbackMgr = QuestCallbackManager::Get();
 
@@ -179,7 +178,7 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
                 pCallbackMgr->RegisterQuest(aFormId);
             else
             {
-                pQuest->SetStage(aStage);
+                pQuest->ScriptSetStage(aStage);
                 return pQuest;
             }
         }

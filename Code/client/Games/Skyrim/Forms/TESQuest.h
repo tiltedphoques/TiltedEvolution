@@ -120,7 +120,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool Kill();
     State getState();
 
-    bool UnkSetRunning(bool &succeded, bool force);
+    bool EnsureQuestStarted(bool &succeded, bool force);
 
     bool SetStage(uint16_t stage);
     void ScriptSetStage(uint16_t stage);

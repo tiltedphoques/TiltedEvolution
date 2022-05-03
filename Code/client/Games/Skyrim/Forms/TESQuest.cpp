@@ -21,17 +21,15 @@ TESQuest::State TESQuest::getState()
 
 void TESQuest::SetCompleted(bool force)
 {
-    using TSetCompleted = void(TESQuest*, bool);
+    TP_THIS_FUNCTION(TSetCompleted, void, TESQuest, bool);
     POINTER_SKYRIMSE(TSetCompleted, SetCompleted, 24991);
-
     SetCompleted(this, force);
 }
 
 void TESQuest::CompleteAllObjectives()
 {
-    using TCompleteAllObjectives = void(TESQuest*);
+    TP_THIS_FUNCTION(TCompleteAllObjectives, void, TESQuest);
     POINTER_SKYRIMSE(TCompleteAllObjectives, CompleteAll, 23231);
-
     CompleteAll(this);
 }
 
@@ -45,7 +43,7 @@ void TESQuest::SetActive(bool toggle)
 
 bool TESQuest::IsStageDone(uint16_t stageIndex)
 {
-    for (auto* it : stages)
+    for (Stage* it : stages)
     {
         if (it->stageIndex == stageIndex)
             return it->IsDone();
@@ -72,11 +70,10 @@ bool TESQuest::Kill()
     return false;
 }
 
-bool TESQuest::UnkSetRunning(bool &success, bool force)
+bool TESQuest::EnsureQuestStarted(bool &success, bool force)
 {
-    using TSetRunning = bool(TESQuest*, bool*, bool);
+    TP_THIS_FUNCTION(TSetRunning, bool, TESQuest, bool*, bool);
     POINTER_SKYRIMSE(TSetRunning, SetRunning, 25003);
-
     return SetRunning(this, &success, force);
 }
 
