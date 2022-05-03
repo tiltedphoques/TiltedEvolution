@@ -62,7 +62,7 @@ bool TESQuest::Kill()
     if (flags & Flags::Enabled)
     {
         unkFlags = 0;
-        flags = Flags::Disabled;
+        flags = Flags::Completed;
         MarkChanged(2);
 
         //SetStopped(this, false);

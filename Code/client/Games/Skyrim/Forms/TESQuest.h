@@ -15,15 +15,27 @@ struct TESQuest : BGSStoryManagerTreeForm
         WaitingForStage
     };
 
-    enum Flags : uint16_t
-    {
-        Disabled,
-        Enabled = 1 << 0,
-        Completed = 1 << 1,
-        Started = 1 << 7,
-        Unk = 2 << 10, // this is very likely a combination
-        Unk2 = 8 << 10,
-    };
+    enum Flags : int16_t
+	{
+		StopStart = -1,
+		None = 0,
+		Enabled = 1 << 0,
+		Completed = 1 << 1,
+		AddIdleToHello = 1 << 2,
+		AllowRepeatStages = 1 << 3,
+		StartsEnabled = 1 << 4,
+		DisplayedInHUD = 1 << 5,
+		Failed = 1 << 6,
+		StageWait = 1 << 7,
+		RunOnce = 1 << 8,
+		ExcludeFromExport = 1 << 9,
+		WarnOnAliasFillFailure = 1 << 10,
+		Active = 1 << 11,
+		RepeatsConditions = 1 << 12,
+		KeepInstance = 1 << 13,
+		WantDormant = 1 << 14,
+		HasDialogueData = 1 << 15
+	};
 
     enum Type : uint8_t
     {
@@ -103,7 +115,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     inline void Disable() { flags &= ~Flags::Enabled; };
 
     inline bool IsActive() const { return flags & 0x800; }
-    inline bool IsStopped() const { return (flags & (Flags::Enabled | Flags::Started)) == 0; } // & 0x81
+    inline bool IsStopped() const { return (flags & (Flags::Enabled | Flags::StageWait)) == 0; } // & 0x81
 
     bool Kill();
     State getState();

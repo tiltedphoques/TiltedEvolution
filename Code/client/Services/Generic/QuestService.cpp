@@ -48,6 +48,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
     // A note about the Gameevents:
     // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds immediately.
     // TESQuestInitEvent can be instead managed by start stop quest management.
+    /*
 #if TP_FALLOUT
     GetEventDispatcher_TESQuestStartStopEvent()->RegisterSink(this);
     GetEventDispatcher_TESQuestStageEvent()->RegisterSink(this);
@@ -57,6 +58,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
     pEventList->questStartStopEvent.RegisterSink(this);
     pEventList->questStageEvent.RegisterSink(this);
 #endif
+    */
 
     // deselect any active quests
     auto* pPlayer = PlayerCharacter::Get();
@@ -70,6 +72,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 void QuestService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // remove quest listener
+    /*
 #if TP_FALLOUT
     GetEventDispatcher_TESQuestStartStopEvent()->UnRegisterSink(this);
     GetEventDispatcher_TESQuestStageEvent()->UnRegisterSink(this);
@@ -78,6 +81,7 @@ void QuestService::OnDisconnected(const DisconnectedEvent&) noexcept
     pEventList->questStageEvent.UnRegisterSink(this);
     pEventList->questStartStopEvent.UnRegisterSink(this);
 #endif
+    */
 }
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
@@ -180,7 +184,7 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
     if (pQuest)
     {
         // force quest update
-        pQuest->flags |= TESQuest::Enabled | TESQuest::Started;
+        pQuest->flags |= TESQuest::Enabled | TESQuest::StageWait;
         pQuest->scopedStatus = -1;
 
         auto bNeedsRegistration = false;
