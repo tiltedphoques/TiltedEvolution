@@ -2,6 +2,8 @@
 
 #include <Services/PapyrusService.h>
 
+#include <Games/Overrides.h>
+
 TESQuest::State TESQuest::getState()
 {
     if (flags >= 0)
@@ -80,14 +82,17 @@ bool TESQuest::UnkSetRunning(bool &success, bool force)
 
 bool TESQuest::SetStage(uint16_t newStage)
 {
-    using TSetStage = bool(TESQuest*, uint16_t);
-    POINTER_SKYRIMSE(TSetStage, SetStage, 25004);
+    ScopedQuestOverride _;
 
+    TP_THIS_FUNCTION(TSetStage, bool, TESQuest, uint16_t);
+    POINTER_SKYRIMSE(TSetStage, SetStage, 25004);
     return SetStage(this, newStage);
 }
 
 void TESQuest::ScriptSetStage(uint16_t stage)
 {
+    ScopedQuestOverride _;
+
     using Quest = TESQuest;
     PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
     s_pSetCurrentStageID(this, stage);

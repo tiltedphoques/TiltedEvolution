@@ -10,6 +10,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESQuest.h>
 #include <Games/TES.h>
+#include <Games/Overrides.h>
 
 #include <Events/EventDispatcher.h>
 
@@ -81,6 +82,9 @@ void QuestService::OnDisconnected(const DisconnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
+    if (ScopedQuestOverride::IsOverriden())
+        return BSTEventResult::kOk;
+
     if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
     {
         if (IsNonSyncableQuest(pQuest))
@@ -110,7 +114,11 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
+    if (ScopedQuestOverride::IsOverriden())
+        return BSTEventResult::kOk;
+
     spdlog::info("Quest: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
+
     // there is no reason to even fetch the quest object, since the event provides everything already....
     if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
     {
