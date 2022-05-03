@@ -1,5 +1,6 @@
 #include <Services/DebugService.h>
 #include <Services/QuestService.h>
+#include <Services/PapyrusService.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESQuest.h>
@@ -30,6 +31,9 @@ void DebugService::DrawQuestDebugView()
             for (auto* stage : pQuest->stages)
             {
                 ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d|%x", stage->stageIndex, stage->flags);
+
+                if (ImGui::Button("Set stage"))
+                    pQuest->ScriptSetStage(stage->stageIndex);
             }
         }
         else

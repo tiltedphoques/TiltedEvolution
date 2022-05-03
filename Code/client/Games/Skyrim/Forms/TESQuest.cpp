@@ -1,6 +1,6 @@
-#include <TiltedOnlinePCH.h>
-
 #include <Forms/TESQuest.h>
+
+#include <Services/PapyrusService.h>
 
 TESQuest::State TESQuest::getState()
 {
@@ -84,6 +84,13 @@ bool TESQuest::SetStage(uint16_t newStage)
     POINTER_SKYRIMSE(TSetStage, SetStage, 25004);
 
     return SetStage(this, newStage);
+}
+
+void TESQuest::ScriptSetStage(uint16_t stage)
+{
+    using Quest = TESQuest;
+    PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
+    s_pSetCurrentStageID(this, stage);
 }
 
 void TESQuest::SetStopped()

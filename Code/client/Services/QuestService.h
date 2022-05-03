@@ -27,6 +27,8 @@ public:
 
     static bool IsNonSyncableQuest(TESQuest* apQuest);
     static void DebugDumpQuests();
+    static TESQuest* SetQuestStage(uint32_t aformId, uint16_t aStage);
+    static bool StopQuest(uint32_t aformId);
 
 private:
     friend struct QuestEventHandler;
@@ -38,9 +40,6 @@ private:
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;
 
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
-
-    TESQuest* SetQuestStage(uint32_t aformId, uint16_t aStage);
-    bool StopQuest(uint32_t aformId);
 
     World& m_world;
 

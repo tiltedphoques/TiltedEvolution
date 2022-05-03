@@ -33,6 +33,11 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     m_joinedConnection = aDispatcher.sink<ConnectedEvent>().connect<&QuestService::OnConnected>(this);
     m_leftConnection = aDispatcher.sink<DisconnectedEvent>().connect<&QuestService::OnDisconnected>(this);
     m_questUpdateConnection = aDispatcher.sink<NotifyQuestUpdate>().connect<&QuestService::OnQuestUpdate>(this);
+
+    // bind game event listeners
+    auto* pEventList = EventDispatcherManager::Get();
+    pEventList->questStartStopEvent.RegisterSink(this);
+    pEventList->questStageEvent.RegisterSink(this);
 }
 
 //Idea: ToggleQuestActiveStatus(__int64 a1)
@@ -105,6 +110,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
+    spdlog::info("Quest: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
     // there is no reason to even fetch the quest object, since the event provides everything already....
     if (auto* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
     {
