@@ -5,6 +5,11 @@
 
 struct BSScript
 {
+    struct Object
+    {
+        uint64_t GetHandle();
+    };
+
     struct Variable
     {
         Variable();
@@ -12,6 +17,7 @@ struct BSScript
 
         void Reset() noexcept;
         void Clear() noexcept;
+        Object* GetObject() const noexcept;
 
         template<class T> void Set(T aValue) noexcept
         {
@@ -21,11 +27,13 @@ struct BSScript
         enum Type : uint64_t
         {
             kEmpty,
-            kHandle,
+            kObject,
             kString,
             kInteger,
             kFloat,
-            kBoolean
+            kBoolean,
+
+            kMax = 16
         };
 
         union Data 
@@ -34,6 +42,7 @@ struct BSScript
             const char* s;
             float f;
             bool b;
+            Object* pObj;
         };
 
         Type type;
@@ -55,6 +64,27 @@ struct BSScript
         }
 
         virtual void Prepare(Statement* apUnk) noexcept = 0;
+    };
+
+    struct IObjectHandlePolicy
+    {
+        static IObjectHandlePolicy* Get() noexcept;
+
+        virtual ~IObjectHandlePolicy();
+        virtual bool HandleIsType(uint32_t aType, uint64_t aHandle);
+        virtual bool IsHandleObjectAvailable(uint64_t aHandle);
+        virtual void sub_03();
+        virtual void sub_04();
+        virtual void sub_05();
+        virtual void sub_06();
+        virtual void sub_07();
+        virtual void* GetObjectForHandle(uint32_t aType, uint64_t aHandle);
+
+        template <class T>
+        T* GetObjectForHandle(uint64_t aHandle)
+        {
+            return (T*)(BSScript::IObjectHandlePolicy::Get()->GetObjectForHandle((uint32_t)T::Type, aHandle));
+        }
     };
 
     struct IVirtualMachine
@@ -97,6 +127,15 @@ struct BSScript
         virtual void sub_22();
         virtual void sub_23();
         virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName, IFunctionArguments* apArgs) const noexcept;
+        virtual void sub_25();
+        virtual void sub_26();
+        virtual void sub_27();
+        virtual void sub_28();
+        virtual void sub_29();
+        virtual void sub_2A();
+        virtual void sub_2B();
+        virtual void sub_2C();
+        virtual IObjectHandlePolicy* GetObjectHandlePolicy();
     };
 
     template <class... T> struct EventArguments : IFunctionArguments
