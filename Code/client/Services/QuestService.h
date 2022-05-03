@@ -4,10 +4,6 @@
 #include <Events/EventDispatcher.h>
 #include <Games/Events.h>
 
-struct ImguiService;
-struct QuestInitHandler;
-struct QuestStageHandler;
-struct QuestStartStopHandler;
 struct NotifyQuestUpdate;
 
 struct TESQuest;
@@ -34,7 +30,6 @@ private:
     friend struct QuestEventHandler;
 
     void OnConnected(const ConnectedEvent&) noexcept;
-    void OnDisconnected(const DisconnectedEvent&) noexcept;
 
     BSTEventResult OnEvent(const TESQuestStartStopEvent*, const EventDispatcher<TESQuestStartStopEvent>*) override;
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;

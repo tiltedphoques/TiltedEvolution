@@ -37,7 +37,7 @@ struct TESQuest : BGSStoryManagerTreeForm
 		HasDialogueData = 1 << 15
 	};
 
-    enum Type : uint8_t
+    enum class Type : uint8_t
     {
         None = 0,
         MainQuest = 1,
@@ -85,7 +85,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     float questDelay;                  // 0x00D8
     uint16_t flags;                    // 0x00DC default init: 256
     uint8_t priority;                  // 0x00DE
-    uint8_t type;                      // 0x00DF
+    Type type;                         // 0x00DF
     int32_t scopedStatus;              // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
     GameList<Stage> stages;
