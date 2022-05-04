@@ -1,10 +1,11 @@
 
 
 #include <console/ConsoleUtils.h>
+#include <TiltedCore/Stl.hpp>
 
 namespace Console
 {
-bool CheckIsValidUTF8(const std::string& string)
+bool CheckIsValidUTF8(const TiltedPhoques::String& string)
 {
     size_t c, i, ix, n, j;
     for (i = 0, ix = string.length(); i < ix; i++)
