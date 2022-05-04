@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 #include <charconv>
+#include <TiltedCore/Stl.hpp>
 
 namespace Console
 {
@@ -26,5 +27,5 @@ T ConvertStringValue(const char* szValue, T acDefault)
     return nValue;
 }
 
-bool CheckIsValidUTF8(const std::string& string);
+bool CheckIsValidUTF8(const TiltedPhoques::String& string);
 } // namespace Console

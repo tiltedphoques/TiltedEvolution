@@ -33,7 +33,8 @@ private:
         uint16_t aTick, 
         uint16_t aPlayerCount, 
         uint16_t aPlayerMaxCount, 
-        String acTagList) noexcept;
+        String acTagList,
+        bool aPublic) noexcept;
 
     World& m_world;
 
