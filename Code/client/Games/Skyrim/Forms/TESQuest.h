@@ -15,9 +15,9 @@ struct TESQuest : BGSStoryManagerTreeForm
         WaitingForStage
     };
 
-    enum Flags : int16_t
+    enum Flags : uint16_t
 	{
-		StopStart = -1,
+		StopStart = USHRT_MAX,
 		None = 0,
 		Enabled = 1 << 0,
 		Completed = 1 << 1,
