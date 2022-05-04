@@ -9,6 +9,7 @@
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
 #include <Services/PapyrusService.h>
+#include <Services/QuestService.h>
 
 #include <Events/UpdateEvent.h>
 
@@ -162,6 +163,7 @@ static bool g_enablePlayerWindow{false};
 static bool g_enableSkillsWindow{false};
 static bool g_enablePartyWindow{false};
 static bool g_enableActorValuesWindow{false};
+static bool g_enableQuestWindow{false};
 
 void DebugService::OnDraw() noexcept
 {
@@ -224,6 +226,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+        ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
 
         ImGui::EndMenu();
     }
@@ -254,6 +257,8 @@ void DebugService::OnDraw() noexcept
         DrawPartyView();
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
+    if (g_enableQuestWindow)
+        DrawQuestDebugView();
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();

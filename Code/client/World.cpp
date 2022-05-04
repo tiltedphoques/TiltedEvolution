@@ -41,7 +41,7 @@ World::World()
      ctx().emplace<DiscordService>(m_dispatcher);
      ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
      ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<QuestService>(*this, m_dispatcher, ctx().at<ImguiService>());
+     ctx().emplace<QuestService>(*this, m_dispatcher);
      ctx().emplace<PartyService>(m_dispatcher, m_transport);
      ctx().emplace<ActorValueService>(*this, m_dispatcher, m_transport);
      ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
