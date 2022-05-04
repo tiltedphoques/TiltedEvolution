@@ -30,9 +30,12 @@ void DebugService::DrawQuestDebugView()
 
             for (auto* stage : pQuest->stages)
             {
-                ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d|%x", stage->stageIndex, stage->flags);
+                ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d, is done? %s", stage->stageIndex, stage->IsDone() ? "true" : "false");
 
-                if (ImGui::Button("Set stage"))
+                char setStage[64];
+                sprintf_s(setStage, std::size(setStage), "Set stage (%d)", stage->stageIndex);
+
+                if (ImGui::Button(setStage))
                     pQuest->ScriptSetStage(stage->stageIndex);
             }
         }

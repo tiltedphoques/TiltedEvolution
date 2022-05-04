@@ -68,11 +68,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     struct Stage
     {
         uint16_t stageIndex;
-        uint16_t flags;
-
-        // Below looks very wrong. Likely a list
-        char pad4[16];
-        uint16_t flags2;
+        uint8_t flags;
 
         inline bool IsDone() { return flags & 1; }
     };
