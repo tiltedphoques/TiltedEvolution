@@ -571,50 +571,44 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
-    float oldHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage);
 
-    const auto pExHittee = apThis->GetExtension();
+    float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    bool wouldKill = (currentHealth - realDamage) <= 0.f;
+
+    const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
-        float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
-        float damage = oldHealth - newHealth;
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
-        return result;
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
     {
-        return false;
+        return wouldKill;
     }
 
     if (apHitter)
     {
-        const auto pExHitter = apHitter->GetExtension();
+        const auto* pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
-            float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
-            float damage = oldHealth - newHealth;
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
-            return result;
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
         {
-            return false;
+            return wouldKill;
         }
     }
 
     if (pExHittee->IsLocal())
     {
-        bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
-        float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
-        float damage = oldHealth - newHealth;
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
-        return result;
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
     {
-        return false;
+        return wouldKill;
     }
 }
 

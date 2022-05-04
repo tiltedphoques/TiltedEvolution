@@ -50,6 +50,27 @@ static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
 static TLockChange* RealLockChange = nullptr;
 
+namespace GameplayFormulas
+{
+
+float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
+{
+    using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
+    POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
+
+    bool isPlayer = apHittee == PlayerCharacter::Get();
+    float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->difficulty, ActorValueInfo::kHealth, isPlayer);
+
+    float realDamage = aDamage;
+
+    if (fabs(aDamage) <= 0.000099999997 || DifficultyMultiplier < 1.0)
+        realDamage = aDamage * multiplier;
+
+    return realDamage;
+}
+
+}
+
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
     TESObjectREFR* pResult = nullptr;
