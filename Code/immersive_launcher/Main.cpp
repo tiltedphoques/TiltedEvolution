@@ -52,6 +52,10 @@ int main(int argc, char** argv)
         return -1;
     }
 
+        MessageBoxA(0, "Waiting for Debugger", 0, 0);
+
+    auto h = GetModuleHandleW(nullptr);
+
     PreloadSystemDlls();
     CoreStubsInit();
 

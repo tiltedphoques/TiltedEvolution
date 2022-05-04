@@ -52,8 +52,6 @@ int StartUp(int argc, char** argv)
             askSelect = true;
     }
 
-    MessageBoxA(0, "Waiting for Debugger", 0, 0);
-
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
