@@ -37,6 +37,8 @@ DediRunner::DediRunner(int argc, char** argv)
 {
     s_pRunner = this;
 
+    uv_loop_init(&m_loop);
+
     m_pServerInstance = std::move(CreateGameServer(
         m_console, this, [](void* apUserPointer) { reinterpret_cast<DediRunner*>(apUserPointer)->LoadSettings(); }));
 
@@ -47,6 +49,7 @@ DediRunner::DediRunner(int argc, char** argv)
 DediRunner::~DediRunner()
 {
     SaveSettingsToIni(m_console, m_SettingsPath);
+    uv_loop_close(&m_loop);
 }
 
 void DediRunner::LoadSettings()
@@ -63,6 +66,45 @@ void DediRunner::LoadSettings()
     LoadSettingsFromIni(m_console, m_SettingsPath);
 }
 
+struct Context
+{
+    TiltedPhoques::String data;
+    DediRunner* instance;
+};
+
+void DediRunner::ReadStdin(uv_stream_t* apStream, ssize_t aRead, const uv_buf_t* acpBuffer)
+{
+    auto* ctx = static_cast<Context*>(apStream->data);
+
+    if (aRead < 0)
+    {
+        if (aRead == UV_EOF)
+            uv_close(reinterpret_cast<uv_handle_t*>(&apStream), nullptr);
+    }
+    else if (aRead > 0)
+    {
+        for (auto i = 0; i < aRead; ++i)
+        {
+            if (acpBuffer->base[i] == '\n')
+            {
+                ctx->instance->HandleConsole(ctx->data);
+                ctx->data = "";
+            }
+            else
+                ctx->data += acpBuffer->base[i];
+        }
+    }
+
+    // OK to free buffer as write_data copies it.
+    if (acpBuffer->base)
+        TiltedPhoques::Allocator::GetDefault()->Free(acpBuffer->base);
+}
+
+void DediRunner::AllocateBuffer(uv_handle_t* apHandle, size_t aSuggestedSize, uv_buf_t* apBuffer)
+{
+    *apBuffer = uv_buf_init(static_cast<char*>(TiltedPhoques::Allocator::GetDefault()->Allocate(aSuggestedSize)), aSuggestedSize);
+}
+
 void DediRunner::PrintExecutorArrowHack()
 {
     // Force:
@@ -77,53 +119,35 @@ void DediRunner::RunGSThread()
     while (m_pServerInstance->IsListening())
     {
         m_pServerInstance->Update();
-        if (bConsole && m_console.Update())
+        if (bConsole)
         {
-            PrintExecutorArrowHack();
+            uv_run(&m_loop, UV_RUN_NOWAIT);
+            if (m_console.Update())
+                PrintExecutorArrowHack();
         }
     }
 }
 
+
 void DediRunner::StartTerminalIO()
 {
-    m_pConIOThread.reset(new std::jthread([&]() {
-        Base::SetCurrentThreadName("ConsoleIO");
+    spdlog::get("ConOut")->info("Server console");
+    PrintExecutorArrowHack();
 
-        spdlog::get("ConOut")->info("Server console");
-        PrintExecutorArrowHack();
+    uv_tty_init(&m_loop, &m_tty, 0, 1);
+    uv_tty_set_mode(&m_tty, UV_TTY_MODE_NORMAL);
 
-        while (m_pServerInstance->IsRunning() && !std::cin.eof())
-        {
-            using exr = Console::ConsoleRegistry::ExecutionResult;
+    static Context ctx;
+    ctx.instance = this;
 
-            std::string s;
-            std::getline(std::cin, s);
+    m_tty.data = &ctx;
 
-            exr r{exr::kFailure};
-            if (r = m_console.TryExecuteCommand(s); r != exr::kFailure)
-            {
-                // we take the opportunity here and insert it directly
-                // else we will be lacking it, and we want to avoid testing the queue size after
-                // insert due to race condition.
-                PrintExecutorArrowHack();
-            }
-
-            if (r == exr::kDirty)
-                SaveSettingsToIni(m_console, m_SettingsPath);
-
-            // best way to ensure this thread exits immediately tbh ¯\_("")_/¯.
-            if (s == "/quit")
-                return;
-        }
-    }));
+    uv_read_start(reinterpret_cast<uv_stream_t*>(&m_tty), AllocateBuffer, ReadStdin);
 }
 
 void DediRunner::RequestKill()
 {
     m_pServerInstance->Shutdown();
-
-    // NO YAMASHI WE HAVE TO DO IT MANUALLY
-    m_pConIOThread.reset();
 
 #if defined(_WIN32)
     // work around Control Handler exception (Control-C) being set
@@ -135,4 +159,16 @@ void DediRunner::RequestKill()
         std::this_thread::sleep_for(300ms);
     }
 #endif
+}
+
+void DediRunner::HandleConsole(const TiltedPhoques::String& acCommand)
+{
+    using exr = Console::ConsoleRegistry::ExecutionResult;
+
+    exr r = m_console.TryExecuteCommand(acCommand);
+
+    PrintExecutorArrowHack();
+
+    if (r == exr::kDirty)
+        SaveSettingsToIni(m_console, m_SettingsPath);
 }
