@@ -3,9 +3,9 @@
 /**
 * @brief Dispatched whenever an actor talks
 */
-struct ActorSpokeEvent
+struct DialogueEvent
 {
-    ActorSpokeEvent(uint32_t aActorID, String aVoiceFile)
+    DialogueEvent(uint32_t aActorID, String aVoiceFile)
         : ActorID(aActorID), VoiceFile(aVoiceFile)
     {}
 

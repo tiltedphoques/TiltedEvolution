@@ -31,6 +31,7 @@
 #include <Events/InitPackageEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
 #include <Events/AddExperienceEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -57,6 +58,8 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -101,6 +104,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
     m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
+
+    m_dialogueEventConnection = m_dispatcher.sink<DialogueEvent>().connect<&CharacterService::OnDialogueEvent>(this);
+    m_dialogueSyncConnection = m_dispatcher.sink<NotifyDialogue>().connect<&CharacterService::OnNotifyDialogue>(this);
 }
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
@@ -982,6 +988,58 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
         return;
 
     pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
+}
+
+void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto serverIdRes = Utils::GetServerId(*entityIt);
+    if (!serverIdRes)
+    {
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.ActorID);
+        return;
+    }
+
+    DialogueRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.SoundFilename = acEvent.VoiceFile;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    // TODO(cosideci): pActor->StopCurrentDialogue() or something
+    pActor->SpeakSound(acMessage.SoundFilename.c_str());
 }
 
 void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept

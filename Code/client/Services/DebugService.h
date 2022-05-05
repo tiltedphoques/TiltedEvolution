@@ -6,7 +6,7 @@ struct World;
 struct ImguiService;
 
 struct UpdateEvent;
-struct ActorSpokeEvent;
+struct DialogueEvent;
 
 struct TransportService;
 struct BSAnimationGraphManager;
@@ -22,7 +22,7 @@ struct DebugService
     TP_NOCOPYMOVE(DebugService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
-    void OnActorSpokeEvent(const ActorSpokeEvent&) noexcept;
+    void OnActorSpokeEvent(const DialogueEvent&) noexcept;
 
 protected:
 
