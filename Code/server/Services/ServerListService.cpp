@@ -81,6 +81,7 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
     };
 
     httplib::Client client(kMasterServerEndpoint);
+    client.enable_server_certificate_verification(false);
     const auto response = client.Post("/announce", params);
 
     // If we send a 203 it means we banned this server
@@ -89,7 +90,11 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         if (response->status == 403)
             GameServer::Get()->Kill();
         else if (response->status != 200)
-            spdlog::error("Server list error!");
+            spdlog::error("Server list error! {}", response->body);
 
+    }
+    else
+    {
+        spdlog::error("Server could not reach the server list! {}", to_string(response.error()));
     }
 }
