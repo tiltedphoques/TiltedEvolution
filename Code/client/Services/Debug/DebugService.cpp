@@ -12,6 +12,7 @@
 #include <Services/QuestService.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/ActorSpokeEvent.h>
 
 #include <Games/References.h>
 
@@ -86,6 +87,7 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
+    m_actorSpokeConnection = m_dispatcher.sink<ActorSpokeEvent>().connect<&DebugService::OnActorSpokeEvent>(this);
 }
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -136,10 +138,21 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+
+            Actor* pActor = Cast<Actor>(TESForm::GetById(m_spokenActorId));
+            pActor->SpeakSound(m_voiceFileName.data());
         }
     }
     else
         s_f8Pressed = false;
+}
+
+void DebugService::OnActorSpokeEvent(const ActorSpokeEvent& acEvent) noexcept
+{
+    m_spokenActorId = acEvent.ActorID;
+    m_voiceFileName = acEvent.VoiceFile;
+
+    spdlog::warn("Actor spoke, id: {:X}, file: {}", acEvent.ActorID, acEvent.VoiceFile.c_str());
 }
 
 uint64_t DebugService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept

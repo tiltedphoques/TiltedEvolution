@@ -4,7 +4,9 @@
 
 struct World;
 struct ImguiService;
+
 struct UpdateEvent;
+struct ActorSpokeEvent;
 
 struct TransportService;
 struct BSAnimationGraphManager;
@@ -20,6 +22,7 @@ struct DebugService
     TP_NOCOPYMOVE(DebugService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
+    void OnActorSpokeEvent(const ActorSpokeEvent&) noexcept;
 
 protected:
 
@@ -57,8 +60,13 @@ private:
 
     uint32_t m_formId = 0;
 
+    uint32_t m_spokenActorId = 0;
+    String m_voiceFileName = "";
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
+    entt::scoped_connection m_actorSpokeConnection;
+
     bool m_showDebugStuff = false;
     bool m_showBuildTag = true;
     bool m_toggleComponentWindow = false;
