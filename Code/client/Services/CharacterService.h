@@ -33,6 +33,8 @@ struct NotifyRespawn;
 struct LeaveBeastFormEvent;
 struct AddExperienceEvent;
 struct NotifySyncExperience;
+struct DialogueEvent;
+struct NotifyDialogue;
 
 struct Actor;
 struct World;
@@ -71,6 +73,8 @@ struct CharacterService
     void OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept;
     void OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept;
     void OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept;
+    void OnDialogueEvent(const DialogueEvent& acEvent) noexcept;
+    void OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept;
 
 private:
 
@@ -118,4 +122,6 @@ private:
     entt::scoped_connection m_leaveBeastFormConnection;
     entt::scoped_connection m_addExperienceEventConnection;
     entt::scoped_connection m_syncExperienceConnection;
+    entt::scoped_connection m_dialogueEventConnection;
+    entt::scoped_connection m_dialogueSyncConnection;
 };

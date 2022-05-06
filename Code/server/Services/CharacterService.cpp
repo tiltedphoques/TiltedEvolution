@@ -36,6 +36,8 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -56,6 +58,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
     , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
+    , m_dialogueConnection(aDispatcher.sink<PacketEvent<DialogueRequest>>().connect<&CharacterService::OnDialogueRequest>(this))
 {
 }
 
@@ -545,8 +548,20 @@ void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceR
     if (!partyComponent.JoinedPartyId.has_value())
         return;
 
-    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+    spdlog::debug("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
+}
+
+void CharacterService::OnDialogueRequest(const PacketEvent<DialogueRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyDialogue notify{};
+    notify.ServerId = message.ServerId;
+    notify.SoundFilename = message.SoundFilename;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept

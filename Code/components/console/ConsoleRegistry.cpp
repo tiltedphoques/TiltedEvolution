@@ -13,7 +13,7 @@ namespace
 {
 constexpr char kCommandPrefix = '/';
 
-std::unique_ptr<std::string[]> SplitLineTokens(const std::string& arLine, size_t& tokenCount)
+std::unique_ptr<TiltedPhoques::String[]> SplitLineTokens(const TiltedPhoques::String& arLine, size_t& tokenCount)
 {
     if (!CheckIsValidUTF8(arLine))
         return nullptr;
@@ -21,7 +21,7 @@ std::unique_ptr<std::string[]> SplitLineTokens(const std::string& arLine, size_t
     StringTokenizer tokenizer(&arLine[1]);
     tokenCount = tokenizer.CountTokens();
 
-    auto tokens = std::make_unique<std::string[]>(tokenCount);
+    auto tokens = std::make_unique<TiltedPhoques::String[]>(tokenCount);
 
     size_t i = 0;
     while (tokenizer.HasMore())
@@ -44,8 +44,10 @@ std::optional<bool> BoolifyString(std::string_view view)
     // let the compiler optimize this.
     if (view == "true" || view == "TRUE" || view == "1")
         return true;
-    else if (view == "false" || view == "FALSE" || view == "0")
+
+    if (view == "false" || view == "FALSE" || view == "0")
         return false;
+
     return std::nullopt;
 }
 } // namespace
@@ -63,7 +65,7 @@ ConsoleRegistry::~ConsoleRegistry() = default;
 
 void ConsoleRegistry::BindStaticItems()
 {
-    spdlog::info("ConsoleRegistry::BindStaticItems()");
+    spdlog::trace("ConsoleRegistry::BindStaticItems()");
 
     auto* i = CommandBase::ROOT();
     CommandBase::ROOT() = nullptr;
@@ -88,7 +90,7 @@ void ConsoleRegistry::BindStaticItems()
 
 void ConsoleRegistry::RegisterNatives()
 {
-    spdlog::info("ConsoleRegistry::RegisterNatives()");
+    spdlog::trace("ConsoleRegistry::RegisterNatives()");
 
     RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
         m_out->info("<------Commands-({})--->", m_commands.size());
@@ -164,7 +166,7 @@ void ConsoleRegistry::RegisterNatives()
 
 void ConsoleRegistry::AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand)
 {
-    std::lock_guard<std::mutex> _(m_listLock);
+    std::lock_guard _(m_listLock);
     (void)_;
 
     // Add to global and tracking pool
@@ -174,7 +176,7 @@ void ConsoleRegistry::AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand
 
 void ConsoleRegistry::AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting)
 {
-    std::lock_guard<std::mutex> guard(m_listLock);
+    std::lock_guard guard(m_listLock);
     (void)guard;
 
     m_settings.push_back(apSetting.get());
@@ -201,7 +203,7 @@ SettingBase* ConsoleRegistry::FindSetting(const char* acName)
     return *it;
 }
 
-ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const std::string& acLine)
+ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const TiltedPhoques::String& acLine)
 {
     if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
@@ -254,7 +256,7 @@ ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const std::s
     return ExecutionResult::kSuccess;
 }
 
-void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
+void ConsoleRegistry::StoreCommandInHistory(const TiltedPhoques::String& acLine)
 {
     m_commandHistory.push_back(acLine);
 
@@ -265,7 +267,8 @@ void ConsoleRegistry::StoreCommandInHistory(const std::string& acLine)
     }
 }
 
-ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs,
+ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
+                                                const TiltedPhoques::String* acStringArgs,
                                                 ArgStack& aStackOut)
 {
     CommandBase::Type* pType = apCommand->m_pArgIndicesArray;

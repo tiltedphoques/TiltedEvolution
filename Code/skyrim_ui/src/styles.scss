@@ -12,30 +12,35 @@
   font-style: normal;
   src: url('assets/fonts/roboto-condensed/regular-normal.ttf');
 }
+
 @font-face {
   font-family: 'Roboto Condensed';
   font-weight: 400;
   font-style: italic;
   src: url('assets/fonts/roboto-condensed/regular-italic.ttf');
 }
+
 @font-face {
   font-family: 'Roboto Condensed';
   font-weight: 300;
   font-style: normal;
   src: url('assets/fonts/roboto-condensed/light-normal.ttf');
 }
+
 @font-face {
   font-family: 'Roboto Condensed';
   font-weight: 300;
   font-style: italic;
   src: url('assets/fonts/roboto-condensed/light-italic.ttf');
 }
+
 @font-face {
   font-family: 'Roboto Condensed';
   font-weight: 700;
   font-style: normal;
   src: url('assets/fonts/roboto-condensed/bold-normal.ttf');
 }
+
 @font-face {
   font-family: 'Roboto Condensed';
   font-weight: 700;
@@ -113,6 +118,7 @@ button {
   }
 
   &[data-style-active=true][data-style-ornament=inverted] {
+
     &::before,
     &::after {
       opacity: 1;
@@ -121,6 +127,7 @@ button {
   }
 
   &:hover:not([disabled])[data-style-ornament=simple] {
+
     &::before,
     &::after {
       opacity: 1 !important;
@@ -181,6 +188,7 @@ button {
   }
 
   &[data-style-ornament=inverted] {
+
     &::before,
     &::after {
       opacity: 0;
@@ -205,6 +213,8 @@ button {
 
 $scrollbar: rem($-size-font, 16px);
 
+
+
 ::-webkit-scrollbar {
   width: $scrollbar;
   height: $scrollbar;
@@ -220,6 +230,31 @@ $scrollbar: rem($-size-font, 16px);
 }
 
 ::-webkit-scrollbar-thumb {
+  background-image: url(assets/images/scrollbar/thumb-inactive.svg);
+
+  &:hover {
+    background-image: url(assets/images/scrollbar/thumb-active.svg);
+  }
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+}
+
+input[type=checkbox] {
+  width: $scrollbar;
+  height: $scrollbar;
+}
+
+::-webkit-slider-runnable-track {
+  border-image: url('assets/images/scrollbar/track.svg') 4 fill;
+}
+
+::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: $scrollbar;
+  height: $scrollbar;
+
   background-image: url(assets/images/scrollbar/thumb-inactive.svg);
 
   &:hover {

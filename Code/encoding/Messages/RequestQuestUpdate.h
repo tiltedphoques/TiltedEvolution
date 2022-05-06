@@ -11,28 +11,25 @@ struct RequestQuestUpdate final : ClientMessage
     {
     }
 
-    virtual ~RequestQuestUpdate() = default;
-
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
     bool operator==(const RequestQuestUpdate& acRhs) const noexcept
     {
-        return Id == acRhs.Id && 
-            Stage == acRhs.Stage && 
-            Status == acRhs.Stage &&
-            GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+               Id == acRhs.Id && 
+               Stage == acRhs.Stage && 
+               Status == acRhs.Stage;
     }
 
     enum StatusCode : uint8_t
     {
         StageUpdate,
-        Stopped,
-        Started
+        Started,
+        Stopped
     };
 
     GameId Id;
     uint16_t Stage;
     uint8_t Status;
-    //bool Active;
 };

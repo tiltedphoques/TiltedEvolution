@@ -571,39 +571,44 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
-    const auto pExHittee = apThis->GetExtension();
+    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage);
+
+    float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    bool wouldKill = (currentHealth - realDamage) <= 0.f;
+
+    const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
     {
-        return false;
+        return wouldKill;
     }
 
     if (apHitter)
     {
-        const auto pExHitter = apHitter->GetExtension();
+        const auto* pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
         {
-            return false;
+            return wouldKill;
         }
     }
 
     if (pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
     {
-        return false;
+        return wouldKill;
     }
 }
 

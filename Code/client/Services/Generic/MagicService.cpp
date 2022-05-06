@@ -200,7 +200,6 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
                 pDesiredTargetForm = TESForm::GetById(formIdComponent.Id);
             }
         }
-
     }
 
     TESObjectREFR* pDesiredTarget = Cast<TESObjectREFR>(pDesiredTargetForm);
@@ -244,6 +243,9 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
 
     InterruptCastRequest request;
     request.CasterId = localComponent.Id;
+
+    spdlog::debug("Sending out interrupt cast");
+
     m_transport.Send(request);
 #endif
 }

@@ -9,8 +9,10 @@
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
 #include <Services/PapyrusService.h>
+#include <Services/QuestService.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <Games/References.h>
 
@@ -85,6 +87,7 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
+    m_actorSpokeConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnActorSpokeEvent>(this);
 }
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -135,10 +138,21 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+
+            Actor* pActor = Cast<Actor>(TESForm::GetById(m_spokenActorId));
+            pActor->SpeakSound(m_voiceFileName.data());
         }
     }
     else
         s_f8Pressed = false;
+}
+
+void DebugService::OnActorSpokeEvent(const DialogueEvent& acEvent) noexcept
+{
+    m_spokenActorId = acEvent.ActorID;
+    m_voiceFileName = acEvent.VoiceFile;
+
+    spdlog::debug("Actor spoke, id: {:X}, file: {}", acEvent.ActorID, acEvent.VoiceFile.c_str());
 }
 
 uint64_t DebugService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
@@ -162,6 +176,7 @@ static bool g_enablePlayerWindow{false};
 static bool g_enableSkillsWindow{false};
 static bool g_enablePartyWindow{false};
 static bool g_enableActorValuesWindow{false};
+static bool g_enableQuestWindow{false};
 
 void DebugService::OnDraw() noexcept
 {
@@ -224,6 +239,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+        ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
 
         ImGui::EndMenu();
     }
@@ -254,6 +270,8 @@ void DebugService::OnDraw() noexcept
         DrawPartyView();
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
+    if (g_enableQuestWindow)
+        DrawQuestDebugView();
 
     if (m_toggleComponentWindow)
         DrawComponentDebugView();
