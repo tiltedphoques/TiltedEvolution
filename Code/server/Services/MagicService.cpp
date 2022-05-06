@@ -30,14 +30,9 @@ void MagicService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMes
     notify.IsDualCasting = message.IsDualCasting;
     notify.DesiredTarget = message.DesiredTarget;
 
-    const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
-    if (!m_world.valid(cCasterEntity))
-    {
-        spdlog::warn("OnSpellCastRequest received invalid caster id!");
-        return;
-    }
+    const auto entity = static_cast<entt::entity>(message.CasterId);
         
-    GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity, acMessage.GetSender());
+    GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
 }
 
 void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept
@@ -47,14 +42,9 @@ void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest
     NotifyInterruptCast notify;
     notify.CasterId = message.CasterId;
 
-    const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
-    if (!m_world.valid(cCasterEntity))
-    {
-        spdlog::warn("OnInterruptCastRequest received invalid caster id!");
-        return;
-    }
+    const auto entity = static_cast<entt::entity>(message.CasterId);
 
-    GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity, acMessage.GetSender());
+    GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
 }
 
 void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept
@@ -67,13 +57,8 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.EffectId = message.EffectId;
     notify.Magnitude = message.Magnitude;
 
-    const entt::entity cTargetEntity = static_cast<entt::entity>(message.TargetId);
-    if (!m_world.valid(cTargetEntity))
-    {
-        spdlog::warn("OnAddTargetRequest received invalid caster id!");
-        return;
-    }
+    const auto entity = static_cast<entt::entity>(message.TargetId);
 
-    GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity, acMessage.GetSender());
+    GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
 }
 
