@@ -429,7 +429,6 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
         const auto& partyComponent = pPlayer->GetParty();
         if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
         {
-            spdlog::info("Sent to party member");
             pPlayer->Send(acServerMessage);
         }
     }
