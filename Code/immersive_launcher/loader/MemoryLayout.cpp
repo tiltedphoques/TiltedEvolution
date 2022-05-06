@@ -28,24 +28,29 @@ uint8_t highrip[0x100000];
 #pragma data_seg(".xcode")
 uint8_t zdata[200] = {1};
 
-extern "C" const IMAGE_DOS_HEADER __ImageBase;
-
 namespace
 {
-uint8_t* pBasePtr = (uint8_t*)&__ImageBase;
-uint8_t* kpImageEnd{pBasePtr + ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
+extern "C" const IMAGE_DOS_HEADER __ImageBase;
 
-// abs?
-auto cmp = [](uint8_t* obj, uint8_t* lower, uint8_t* upper) { return obj >= lower && obj <= upper; };
+constinit const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
+const uint8_t* kpImageEnd{pBasePtr +
+                          ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
+
+bool InRange(const uint8_t* apObj, const uint8_t* apLo, const uint8_t* apHi)
+{
+    return apObj >= apLo && apObj <= apHi;
+};
 } // namespace
 
-bool IsThisExeAddress(uint8_t* apAddress)
+#define EXP __declspec(dllexport)
+bool EXP IsThisExeAddress(const uint8_t* apAddress)
 {
-    return cmp(apAddress, pBasePtr, kpImageEnd);
+    return InRange(apAddress, pBasePtr, kpImageEnd);
 }
 
-bool IsGameMemoryAddress(uint8_t* apAddress)
+bool EXP IsGameMemoryAddress(const uint8_t* apAddress)
 {
-    return cmp(apAddress, &highrip[0], &highrip[sizeof(highrip)]) ||
-           cmp(apAddress, &game_seg[0], &game_seg[sizeof(game_seg)]);
+    return InRange(apAddress, &highrip[0], &highrip[sizeof(highrip)]) ||
+           InRange(apAddress, &game_seg[0], &game_seg[sizeof(game_seg)]);
 }
+#undef EXP

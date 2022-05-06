@@ -16,10 +16,13 @@
 
 #include "base/dialogues/win/TaskDialog.h"
 
-// These symbols are defined within the client code
+// These symbols are defined within the client code skyrimtogetherclient
 extern void InstallStartHook();
 extern void RunTiltedApp();
 extern void RunTiltedInit(const std::filesystem::path& acGamePath, const TiltedPhoques::String& aExeVersion);
+
+// Defined in EarlyLoad.dll
+bool __declspec(dllimport) EarlyInstallSucceeded();
 
 HICON g_SharedWindowIcon = nullptr;
 
@@ -55,6 +58,9 @@ int StartUp(int argc, char** argv)
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
+
+    if (!EarlyInstallSucceeded())
+        DIE_NOW(L"Early load install failed. Tell Force about this.");
 
     // TODO(Force): Make some InitSharedResources func.
     g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));

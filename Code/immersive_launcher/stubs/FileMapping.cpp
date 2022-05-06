@@ -12,34 +12,15 @@
 #include "Utils/NtInternal.h"
 #include "launcher.h"
 
-// owned means its code executing within ST exe, that needs to behave like
-extern bool IsThisExeAddress(uint8_t* apAddress);
-extern bool IsGameMemoryAddress(uint8_t* apAddress);
+// defined in MemoryLayout.cpp
+extern bool IsThisExeAddress(const uint8_t* apAddress);
+extern bool IsGameMemoryAddress(const uint8_t* apAddress);
+
+extern "C" __declspec(dllimport) NTSTATUS WINAPI LdrGetDllFullName(HMODULE, PUNICODE_STRING);
 
 namespace
 {
 std::wstring s_OverridePath;
-
-struct TlsState
-{
-    bool inLoadDll;
-};
-static DWORD g_tlsHandle;
-
-static TlsState* GetTls()
-{
-    auto data = TlsGetValue(g_tlsHandle);
-
-    if (!data)
-    {
-        data = HeapAlloc(GetProcessHeap(), 0, sizeof(TlsState));
-        memset(data, 0, sizeof(TlsState));
-
-        TlsSetValue(g_tlsHandle, data);
-    }
-
-    return reinterpret_cast<TlsState*>(data);
-}
 
 DWORD(WINAPI* RealGetModuleFileNameW)(HMODULE, LPWSTR, DWORD) = nullptr;
 DWORD(WINAPI* RealGetModuleFileNameA)(HMODULE, LPSTR, DWORD) = nullptr;
@@ -67,72 +48,48 @@ HMODULE HModFromAddress(void* apAddress)
     return pModule;
 }
 
-extern "C" __declspec(dllimport) NTSTATUS WINAPI LdrGetDllFullName(HMODULE, PUNICODE_STRING);
-
 DWORD MYGetModuleFileNameW(HMODULE hModule, LPWSTR lpFilename, DWORD nSize)
 {
-    DWORD v3;             // edi
-    NTSTATUS DllFullName; // eax
-    NTSTATUS v5;          // esi
-    __int64 v6;           // rbx
-    NTSTATUS v8;          // ecx
-    UNICODE_STRING v9{};  // [rsp+20h] [rbp-18h] BYREF
-
-    v3 = nSize;
-    if (((unsigned __int8)hModule & 3) != 0)
-    {
-        v8 = 0xC0000135;
-    LABEL_8:
-        SetLastError(v8);
-        return 0;
-    }
-    if (nSize > 0x7FFF)
-    {
-        v3 = 0x7FFF;
-        goto LABEL_4;
-    }
     if (!nSize)
-    {
-        v8 = -1073741789;
-        goto LABEL_8;
-    }
-LABEL_4:
-    v9.Buffer = lpFilename;
-    v9.MaximumLength = 2 * v3 - 2;
-    DllFullName = LdrGetDllFullName(hModule, &v9);
-    v5 = DllFullName;
-    v6 = v9.Length >> 1;
-    v9.Buffer[v6] = 0;
-    return v6;
+        return 0;
+
+    if (nSize > 0x7FFF)
+        nSize = 0x7FFF;
+
+    UNICODE_STRING str{};
+    str.Buffer = lpFilename;
+    str.MaximumLength = static_cast<USHORT>(sizeof(wchar_t) * nSize - sizeof(wchar_t));
+
+    LdrGetDllFullName(hModule, &str);
+
+    DWORD nChars = str.Length / sizeof(wchar_t);
+    str.Buffer[nChars] = 0;
+    return nChars;
 }
 
-bool IsLocalModulePath(HMODULE hMod)
+bool IsLocalModulePath(HMODULE aHmod)
 {
     std::wstring buf;
 
-#if 1
-    // safe way of getting module file name
     size_t i = 1;
     DWORD res = 0;
     do
     {
         buf.resize(i * MAX_PATH);
-        res = MYGetModuleFileNameW(hMod, buf.data(), static_cast<DWORD>(buf.length()));
+        res = MYGetModuleFileNameW(aHmod, buf.data(), static_cast<DWORD>(buf.length()));
         i++;
     } while (res == ERROR_INSUFFICIENT_BUFFER);
-#endif
 
-    // game?
+    // does the file exist in the ST dir?
     return buf.find(s_OverridePath) != std::wstring::npos;
 }
 
+// some mods do GetModuleHandle("SkyrimSE.exe") for some reason instead of GetModuleHandle(nullptr)
 NTSTATUS WINAPI TP_LdrGetDllHandle(PWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID* DllHandle)
 {
     // no need to check for nullptr here, this is handeled by the higher level GetModuleHandle function.
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    // mods that are based do GetModuleHandle("SkyrimSE.exe") for some reason instead of the much more sensible
-    // nullptr
     if (std::wcsncmp(TARGET_NAME L".exe", DllName->Buffer, DllName->Length) == 0)
     {
         *DllHandle = NtInternal::ThePeb()->pImageBase;
@@ -142,28 +99,13 @@ NTSTATUS WINAPI TP_LdrGetDllHandle(PWSTR DllPath, PULONG DllCharacteristics, PUN
     return RealLdrGetDllHandle(DllPath, DllCharacteristics, DllName, DllHandle);
 }
 
-void PrintOwnerName(void* rbp)
-{
-    auto hMod = HModFromAddress(rbp);
-
-    wchar_t buf[1024]{};
-    MYGetModuleFileNameW(hMod, buf, 1024);
-    OutputDebugStringW(buf);
-}
-
 NTSTATUS WINAPI TP_LdrGetDllFullName(HMODULE Module, PUNICODE_STRING DllName)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
     void* rsp = _ReturnAddress();
 
-    // if (!Module)
-    //     Module = NtInternal::ThePeb()->pImageBase;
-
-    // need to detect if called from skyrimtogether.exe (e.g our own code), or game code.
-
     // we need to detect if GetModuleFileName(null) was called from our own code or the game code/other modules
-
     // if (!GetTls()->inLoadDll)
     if (launcher::GetLaunchContext())
     {
@@ -177,10 +119,6 @@ NTSTATUS WINAPI TP_LdrGetDllFullName(HMODULE Module, PUNICODE_STRING DllName)
 
     return RealLdrGetDllFullName(Module, DllName);
 }
-
-// TODO(Vince): this should be policy based, so we can whitelist other modules to "see" us
-// e.g
-// HModFromAddress == GetWhiteListedModuleHandle...
 
 bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
 {
@@ -198,19 +136,11 @@ bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
     {
         if (wantsTruth)
             *wantsTruth = true;
-
         return false;
     }
 
-    if (hMod == NtInternal::ThePeb()->pImageBase)
-        __debugbreak();
-
     return IsLocalModulePath(hMod);
 }
-
-// org
-// return IsGameMomoryAddress ||
-//       HModFromAddress(pRbp) != NtInternal::ThePeb()->pImageBase
 
 static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, DWORD aSize)
 {
@@ -294,8 +224,6 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    GetTls()->inLoadDll = true;
-
     std::wstring_view fileName(apFileName->Buffer, apFileName->Length / sizeof(wchar_t));
     size_t pos = fileName.find_last_of(L'\\');
     if (pos != std::wstring_view::npos && (pos + 1) != fileName.length())
@@ -308,10 +236,7 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
         }
     }
 
-    auto result = RealLdrLoadDll(apPath, apFlags, apFileName, apHandle);
-
-    GetTls()->inLoadDll = false;
-    return result;
+    return RealLdrLoadDll(apPath, apFlags, apFileName, apHandle);
 }
 } // namespace
 
@@ -326,7 +251,7 @@ void CoreStubsInit()
     s_OverridePath = TiltedPhoques::GetPath().wstring();
     std::replace(s_OverridePath.begin(), s_OverridePath.end(), L'/', L'\\');
 
-    MH_Initialize();
+    VALIDATE(MH_Initialize());
 
     if (!IsUsingMO2())
     {
@@ -349,14 +274,12 @@ void CoreStubsInit()
     // SKSE calls
     // https://github.com/ianpatt/skse64/blob/d79e8f081194f538c24d493e1b57331d837a25c0/skse64_common/Utilities.cpp#L11
 
-    MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandle", &TP_LdrGetDllHandle, (void**)&RealLdrGetDllHandle);
+    VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandle", &TP_LdrGetDllHandle, (void**)&RealLdrGetDllHandle));
 
     // TODO(Vince): we need some check if usvfs already fucked with this?
     // MH_CreateHookApi(L"ntdll.dll", "LdrGetDllFullName", &TP_LdrGetDllFullName, (void**)&RealLdrGetDllFullName);
-
-    // TODO(Vince): same...
-    MH_CreateHookApi(L"ntdll.dll", "LdrLoadDll", &TP_LdrLoadDll, (void**)&RealLdrLoadDll);
-    MH_EnableHook(nullptr);
-
-    // bool b = IsThisExeAddress((uint8_t*)0x000000018104fdf1);
+    VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrLoadDll", &TP_LdrLoadDll, (void**)&RealLdrLoadDll));
+    VALIDATE(MH_EnableHook(nullptr));
 }
+
+#undef VALIDATE
