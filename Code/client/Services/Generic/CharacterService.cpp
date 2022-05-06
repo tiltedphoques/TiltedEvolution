@@ -1191,7 +1191,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsDead = pActor->IsDead();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if (isTemporary && !isNpcTemporary)
+    if (isTemporary /* && !isNpcTemporary */)
     {
         if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
