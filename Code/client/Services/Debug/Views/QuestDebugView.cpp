@@ -14,14 +14,21 @@ void DebugService::DrawQuestDebugView()
 
     ImGui::Begin("Quest log");
 
+    Set<uint32_t> foundQuests{};
+
     for (auto &objective : pPlayer->objectives)
     {
-        auto* pQuest = objective.instance->quest;
+        TESQuest* pQuest = objective.instance->quest;
         if (!pQuest)
             continue;
 
         if (QuestService::IsNonSyncableQuest(pQuest))
             continue;
+
+        if (foundQuests.contains(pQuest->formID))
+            continue;
+
+        foundQuests.insert(pQuest->formID);
 
         if (pQuest->IsActive())
         {

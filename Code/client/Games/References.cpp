@@ -29,6 +29,7 @@
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <TiltedCore/Serialization.hpp>
 
@@ -63,7 +64,7 @@ float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
 
     float realDamage = aDamage;
 
-    if (fabs(aDamage) <= 0.000099999997 || DifficultyMultiplier < 1.0)
+    if (fabs(aDamage) <= 0.000099999997 || multiplier < 1.0)
         realDamage = aDamage * multiplier;
 
     return realDamage;
@@ -705,6 +706,29 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
     return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
+TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
+static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
+{
+    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
+                  (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+
+    /*
+    if (apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+    */
+
+    return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+}
+
+void Actor::SpeakSound(const char* pFile)
+{
+    uint32_t handle[3]{};
+    handle[0] = -1;
+    ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -731,6 +755,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
         POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
 
+        POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -739,6 +765,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
+        RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -748,5 +775,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealLockChange, HookLockChange);
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
+        TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
     });
 
