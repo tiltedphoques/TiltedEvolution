@@ -31,6 +31,12 @@ void MagicService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMes
     notify.DesiredTarget = message.DesiredTarget;
 
     const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
+    if (!m_world.valid(cCasterEntity))
+    {
+        spdlog::warn("OnSpellCastRequest received invalid caster id!");
+        return;
+    }
+        
     GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity, acMessage.GetSender());
 }
 
@@ -42,6 +48,12 @@ void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest
     notify.CasterId = message.CasterId;
 
     const entt::entity cCasterEntity = static_cast<entt::entity>(message.CasterId);
+    if (!m_world.valid(cCasterEntity))
+    {
+        spdlog::warn("OnInterruptCastRequest received invalid caster id!");
+        return;
+    }
+
     GameServer::Get()->SendToPlayersInRange(notify, cCasterEntity, acMessage.GetSender());
 }
 
@@ -56,6 +68,12 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.Magnitude = message.Magnitude;
 
     const entt::entity cTargetEntity = static_cast<entt::entity>(message.TargetId);
+    if (!m_world.valid(cTargetEntity))
+    {
+        spdlog::warn("OnAddTargetRequest received invalid caster id!");
+        return;
+    }
+
     GameServer::Get()->SendToPlayersInRange(notify, cTargetEntity, acMessage.GetSender());
 }
 
