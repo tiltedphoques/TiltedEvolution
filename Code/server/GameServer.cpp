@@ -40,12 +40,12 @@ Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 
 // ModPolicy Stuff
-Console::Setting bEnableMoPo{"ModPolicy:bDisableModCheck", "Bypass the checking of mods on the server", true,
+Console::Setting bDisableModCheck{"ModPolicy:bDisableModCheck", "Bypass the checking of mods on the server", false,
                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
-Console::Setting bDisallowSKSE{"ModPolicy:bDisallowSKSE", "Forbids joining of clients that have SKSE running", false,
-                               Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
-Console::Setting bDisallowMO2{"ModPolicy:bDisallowMO2", "Forbids joining of client that use Mod Organizer 2", false,
-                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true,
+                            Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
+                           Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
@@ -59,17 +59,18 @@ Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Con
 Console::Command<> ShowMoPoStatus("showMoPOStatus", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
-    spdlog::get("ConOut")->info("Modcheck: {}\nSKSE forbidden: {}\nMO2 forbidden: {}", formatStatus(bEnableMoPo),
-                                formatStatus(bDisallowSKSE), formatStatus(bDisallowMO2));
+    spdlog::get("ConOut")->info("Modcheck disabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
+                                formatStatus(bDisableModCheck),
+                                formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
 });
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
     "ModCheck is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
-    "may not be able to assist you if ModPolicy is disabled."};
+    "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy mod check is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
     "to join! Please install Mods into the /data/ directory."};
 
 } // namespace
@@ -81,7 +82,7 @@ static uint16_t GetUserTickRate()
 
 static bool IsMoPoActive()
 {
-    return bEnableMoPo;
+    return !bDisableModCheck;
 }
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
@@ -138,7 +139,7 @@ void GameServer::Kill()
 
 bool GameServer::CheckMoPo()
 {
-    if (!bEnableMoPo)
+    if (bDisableModCheck)
         spdlog::warn(kBypassMoPoWarning);
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
@@ -489,8 +490,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 #endif
 
-    bool skseProblem = bDisallowSKSE && acRequest->SKSEActive;
-    bool mo2Problem = bDisallowMO2 && acRequest->MO2Active;
+    bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
+    bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;
 
     if (skseProblem || mo2Problem)
     {
@@ -500,20 +501,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         if (mo2Problem)
             response += "MO2 ";
 
-        spdlog::info("New player {:x} '{}' tried to connect, but {}disallowed - Kicked.", aConnectionId, remoteAddress,
-                     response.c_str());
+        spdlog::info("New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId,
+                     remoteAddress, response.c_str(), skseProblem && mo2Problem ? "are" : "is");
 
         serverResponse.SKSEActive = acRequest->SKSEActive;
         serverResponse.MO2Active = acRequest->MO2Active;
-        sendKick(RT::kClientModsDisallowed);
-        return;
-    }
-
-    if (bDisallowMO2 && acRequest->MO2Active)
-    {
-        spdlog::info("New player {:x} '{}' tried to connect with ModOrganizer2 - MO2 is disallowed - Kicked.",
-                     aConnectionId, remoteAddress);
-        serverResponse.MO2Active = true;
         sendKick(RT::kClientModsDisallowed);
         return;
     }

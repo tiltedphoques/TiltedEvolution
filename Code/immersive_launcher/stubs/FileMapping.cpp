@@ -131,6 +131,7 @@ bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
     // this heuristic indicates hooked game code... that is still owned by us...
     // not recognized immedeatly, but still looks like game code...
     HMODULE hMod = HModFromAddress(pRbp);
+
     if (hMod == NtInternal::ThePeb()->pImageBase || 
         hMod == nullptr /*This is a hook, virtual allocd, not owned by anybody, so we assign ownership to the ST directory*/)
     {
@@ -139,7 +140,7 @@ bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
         return false;
     }
 
-    return IsLocalModulePath(hMod);
+    return !IsLocalModulePath(hMod);
 }
 
 static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, DWORD aSize)

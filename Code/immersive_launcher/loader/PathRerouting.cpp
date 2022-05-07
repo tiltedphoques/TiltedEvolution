@@ -9,10 +9,9 @@ namespace loader
 {
 void InstallPathRouting(const std::filesystem::path& gamePath)
 {
-    __debugbreak();
     // will install improper path routing here...
     auto appPath = TiltedPhoques::GetPath();
-    __debugbreak();
+
     SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_USER_DIRS);
     AddDllDirectory(appPath.c_str());
     AddDllDirectory(gamePath.c_str());
