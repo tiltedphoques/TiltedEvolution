@@ -10,6 +10,7 @@
 #include "DllBlocklist.h"
 #include "TargetConfig.h"
 #include "Utils/NtInternal.h"
+#include "utils/Error.h"
 #include "launcher.h"
 
 // defined in MemoryLayout.cpp
@@ -203,7 +204,6 @@ static DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DW
     DWORD result = RealGetModuleFileNameW(aModule, pBuffer, aBufferSize * sizeof(wchar_t));
     if (result == 0)
     {
-        __debugbreak();
         return result;
     }
 
@@ -243,7 +243,7 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
 
 #define VALIDATE(x)                                                                                                    \
     if (x != MH_OK)                                                                                                    \
-        __debugbreak();
+        Die(L"CoreStubsInit(): Fatal Minhook error.");
 
 // pre eat hook?? loadmodule hook??
 // the idea would be to link against an external dll, which in its init routine then hooks, so we execute before mo2?
