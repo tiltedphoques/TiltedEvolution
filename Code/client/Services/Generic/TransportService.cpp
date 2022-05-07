@@ -16,9 +16,12 @@
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
 
+#include <ScriptExtender.h>
 #include <Services/DiscordService.h>
 
 //#include <imgui_internal.h>
+
+static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
 
 using TiltedPhoques::Packet;
 
@@ -98,12 +101,14 @@ void TransportService::OnConnected()
 {
     AuthenticationRequest request;
     request.Version = BUILD_COMMIT;
+    request.SKSEActive = IsScriptExtenderLoaded();
+    request.MO2Active = GetModuleHandleW(kMO2DllName);
 
     // null if discord is not active
     // TODO: think about user opt out
     request.DiscordId = m_world.ctx().at<DiscordService>().GetUser().id;
-    auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm);
-    if (pNpc)
+
+    if (auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm))
     {
         request.Username = pNpc->fullName.value.AsAscii();
     }
@@ -148,9 +153,10 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
+    using AR = AuthenticationResponse::ResponseType;
     switch (acMessage.Type)
     {
-    case AuthenticationResponse::ResponseType::kAccepted: 
+    case AR::kAccepted: 
     {
         m_connected = true;
         m_dispatcher.trigger(acMessage.UserMods);
@@ -159,16 +165,27 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
         break;
     }
     // TODO(Anyone): Handle this within the ui
-    case AuthenticationResponse::ResponseType::kWrongVersion:
+    case AR::kWrongVersion:
         spdlog::error("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
         break;
-    case AuthenticationResponse::ResponseType::kMissingMods: {
+    case AR::kModsMismatch: {
         spdlog::error("This server has ModPolicy enabled. You were kicked because you have the following mods installed:");
         for (const auto& m : acMessage.UserMods.ModList)
         {
             spdlog::error("{}:{}", m.Filename.c_str(), m.Id);
         }
         spdlog::error("Please remove them to join");
+        break;
+    }
+    case AR::kClientModsDisallowed: {
+        TiltedPhoques::String reason = "This server disallows";
+
+        if (acMessage.SKSEActive)
+            reason += " SKSE";
+
+        if (acMessage.MO2Active)
+            reason += " MO2";
+        spdlog::error(reason.c_str());
         break;
     }
     default:
