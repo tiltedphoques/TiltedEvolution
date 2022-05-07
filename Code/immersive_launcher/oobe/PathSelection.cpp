@@ -82,7 +82,7 @@ bool SelectInstall(bool aForceSelect)
     auto titlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath");
     auto exePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe");
 
-    bool result = false;
+    bool result = true;
     if (!std::filesystem::exists(titlePath) || !std::filesystem::exists(exePath) || aForceSelect)
     {
         constexpr int kSelectionAttempts = 3;
