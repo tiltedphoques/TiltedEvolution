@@ -40,12 +40,12 @@ Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 
 // ModPolicy Stuff
-Console::Setting bDisableModCheck{"ModPolicy:bDisableModCheck", "Bypass the checking of mods on the server", false,
-                             Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
+                                 Console::SettingsFlags::kLocked};
 Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true,
-                            Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+                            Console::SettingsFlags::kLocked};
 Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
-                           Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+                           Console::SettingsFlags::kLocked};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
@@ -56,12 +56,11 @@ Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Con
     int* i = 0;
     *i = 42;
 });
-Console::Command<> ShowMoPoStatus("showMoPOStatus", "Shows the status of ModPolicy", [](Console::ArgStack&) {
+Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
-    spdlog::get("ConOut")->info("Modcheck disabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
-                                formatStatus(bDisableModCheck),
-                                formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
+    spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
+                                formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
 });
 
 // -- Constants --
@@ -82,7 +81,7 @@ static uint16_t GetUserTickRate()
 
 static bool IsMoPoActive()
 {
-    return !bDisableModCheck;
+    return bEnableModCheck;
 }
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
@@ -139,7 +138,7 @@ void GameServer::Kill()
 
 bool GameServer::CheckMoPo()
 {
-    if (bDisableModCheck)
+    if (!bEnableModCheck)
         spdlog::warn(kBypassMoPoWarning);
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
