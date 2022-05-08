@@ -4,7 +4,6 @@
 #include <GameServer.h>
 #include <Packet.hpp>
 
-
 #include <Events/AdminPacketEvent.h>
 #include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
@@ -38,27 +37,39 @@ Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image t
 Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
-Console::Setting bEnableMoPo{"ModPolicy:bEnabled", "Bypass the mod policy restrictions.", true,
-                             Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
+
+// ModPolicy Stuff
+Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
+                                 Console::SettingsFlags::kLocked};
+Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true,
+                            Console::SettingsFlags::kLocked};
+Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
+                           Console::SettingsFlags::kLocked};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
-Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) { int* i = 0; *i = 42; });
-Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is active", [](Console::ArgStack&) {
-    spdlog::get("ConOut")->info("ModPolicy status: {}", bEnableMoPo ? "active" : "not active");
+Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
+    int* i = 0;
+    *i = 42;
+});
+Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
+    auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
+
+    spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
+                                formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
 });
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
-    "ModPolicy is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
-    "may not be able to assist you if ModPolicy is disabled."};
+    "ModCheck is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
+    "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
     "to join! Please install Mods into the /data/ directory."};
 
 } // namespace
@@ -70,7 +81,7 @@ static uint16_t GetUserTickRate()
 
 static bool IsMoPoActive()
 {
-    return bEnableMoPo;
+    return bEnableModCheck;
 }
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
@@ -127,7 +138,7 @@ void GameServer::Kill()
 
 bool GameServer::CheckMoPo()
 {
-    if (!bEnableMoPo)
+    if (!bEnableModCheck)
         spdlog::warn(kBypassMoPoWarning);
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
@@ -251,7 +262,6 @@ void GameServer::OnUpdate()
     const auto cDeltaSeconds = std::chrono::duration_cast<std::chrono::duration<float>>(cDelta).count();
 
     auto& dispatcher = m_pWorld->GetDispatcher();
-
 
     dispatcher.trigger(UpdateEvent{cDeltaSeconds});
 
@@ -445,6 +455,11 @@ static String PrettyPrintModList(const Vector<Mods::Entry>& acMods)
     return text;
 }
 
+bool GameServer::ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest)
+{
+    return false;
+}
+
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                                              const UniquePtr<AuthenticationRequest>& acRequest)
 {
@@ -455,19 +470,44 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
     AuthenticationResponse serverResponse;
     serverResponse.Version = BUILD_COMMIT;
+
+    using RT = AuthenticationResponse::ResponseType;
+    auto sendKick = [&](const RT type) {
+        serverResponse.Type = type;
+        Send(aConnectionId, serverResponse);
+        // the previous message is a lingering kick, it still gets delivered.
+        Kick(aConnectionId);
+    };
 #if 1
     // to make our testing life a bit easier.
     if (acRequest->Version != BUILD_COMMIT)
     {
         spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
                      remoteAddress, acRequest->Version.c_str());
-
-        serverResponse.Type = AuthenticationResponse::ResponseType::kWrongVersion;
-        Send(aConnectionId, serverResponse);
-        Kick(aConnectionId);
+        sendKick(RT::kWrongVersion);
         return;
     }
 #endif
+
+    bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
+    bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;
+
+    if (skseProblem || mo2Problem)
+    {
+        TiltedPhoques::String response;
+        if (skseProblem)
+            response += "SKSE ";
+        if (mo2Problem)
+            response += "MO2 ";
+
+        spdlog::info("New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId,
+                     remoteAddress, response.c_str(), skseProblem && mo2Problem ? "are" : "is");
+
+        serverResponse.SKSEActive = acRequest->SKSEActive;
+        serverResponse.MO2Active = acRequest->MO2Active;
+        sendKick(RT::kClientModsDisallowed);
+        return;
+    }
 
     // check if the proper server password was supplied.
     if (acRequest->Token == sToken.value())
@@ -520,11 +560,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                     "ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}",
                     aConnectionId, text.c_str());
 
-                serverResponse.Type = AuthenticationResponse::ResponseType::kMissingMods;
                 serverResponse.UserMods.ModList = std::move(modsToRemove.ModList);
-                Send(aConnectionId, serverResponse);
-                // This is a lingering kick, so sending the response should still succeed.
-                Kick(aConnectionId);
+                sendKick(RT::kModsMismatch);
                 return;
             }
         }

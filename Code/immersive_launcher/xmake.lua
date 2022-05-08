@@ -29,6 +29,7 @@ local function build_launcher()
         "**.cpp",
         "launcher.rc")
     add_deps(
+        "ImmersiveElf",
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
