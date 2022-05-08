@@ -9,11 +9,32 @@
 // - 2021/2/24: Moved TLS routine.
 // - 2021/2/25: Implemented CEG decryption method.
 
-#include "ExeLoader.h"
-#include "steam/SteamCeg.h"
+#define SPDLOG_WCHAR_FILENAMES
+#include <winternl.h>
+#include <spdlog/formatter.h>
 #include <TiltedCore/Filesystem.hpp>
 
+#include "ExeLoader.h"
 #include "steam/SteamCeg.h"
+#include "utils/Error.h"
+#include "utils/NtInternal.h"
+
+// TODO: move me to wstring util..
+std::wstring ConvertStringToWstring(const std::string_view str)
+{
+    int nChars = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), str.length(), NULL, 0);
+
+    std::wstring wstrTo;
+    if (nChars)
+    {
+        wstrTo.resize(nChars);
+        if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), str.length(), &wstrTo[0], nChars))
+        {
+            return wstrTo;
+        }
+    }
+    return {};
+}
 
 ExeLoader::ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncHandler)
     : 
@@ -27,17 +48,18 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
 
     while (descriptor->Name)
     {
-        const char* name = GetTargetRVA<char>(descriptor->Name);
+        auto name = ConvertStringToWstring(GetTargetRVA<char>(descriptor->Name));
 
-        HMODULE module = LoadLibraryA(name);
-        if (!module)
+        HMODULE hMod = LoadLibraryW(name.c_str());
+        if (!hMod)
         {
-            __debugbreak();
+            auto msg = fmt::format(L"Failed to find dll: {}", name);
+            Die(msg.c_str(), true);
             continue;
         }
 
         // "don't load"
-        if (*reinterpret_cast<uint32_t*>(module) == 0xFFFFFFFF)
+        if (*reinterpret_cast<uint32_t*>(hMod) == 0xFFFFFFFF)
         {
             descriptor++;
             continue;
@@ -59,20 +81,20 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
             // is this an ordinal-only import?
             if (IMAGE_SNAP_BY_ORDINAL(*nameTableEntry))
             {
-                function = GetProcAddress(module, MAKEINTRESOURCEA(IMAGE_ORDINAL(*nameTableEntry)));
+                function = GetProcAddress(hMod, MAKEINTRESOURCEA(IMAGE_ORDINAL(*nameTableEntry)));
             }
             else
             {
                 auto import = GetTargetRVA<IMAGE_IMPORT_BY_NAME>(static_cast<uint32_t>(*nameTableEntry));
 
-                function = m_pFuncHandler(module, import->Name);
+                function = m_pFuncHandler(hMod, import->Name);
                 functionName = import->Name;
             }
 
             if (!function)
             {
                 char pathName[MAX_PATH];
-                GetModuleFileNameA(module, pathName, sizeof(pathName));
+                GetModuleFileNameA(hMod, pathName, sizeof(pathName));
             }
 
             *addressTableEntry = (uintptr_t)function;

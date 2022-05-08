@@ -16,9 +16,9 @@ namespace
 constexpr HRESULT kTimeoutErrorCode = E_ABORT;
 } // namespace
 
-TaskDialog::TaskDialog(HMODULE aResourceModule, const wchar_t* apTitle, const wchar_t* apMessage,
+TaskDialog::TaskDialog(HICON aIcon, const wchar_t* apTitle, const wchar_t* apMessage,
                        const wchar_t* apMoreContext, const wchar_t* apOptionalDetails)
-    : m_targetModule(aResourceModule), m_pWindowTitle(apTitle), m_pMessage(apMessage), m_pDetails(apOptionalDetails),
+    : m_iconHandle(aIcon), m_pWindowTitle(apTitle), m_pMessage(apMessage), m_pDetails(apOptionalDetails),
       m_pContext(apMoreContext)
 {
 }
@@ -91,12 +91,11 @@ int TaskDialog::Show(int aIconId)
 
     TASKDIALOGCONFIG dialogConfig{};
     dialogConfig.cbSize = sizeof(dialogConfig);
-    dialogConfig.hInstance = m_targetModule;
     dialogConfig.pszWindowTitle = m_pWindowTitle;
     dialogConfig.pszMainInstruction = m_pMessage;
     dialogConfig.pszExpandedInformation = m_pDetails;
     dialogConfig.pszContent = m_pContext;
-    dialogConfig.pszMainIcon = MAKEINTRESOURCEW(aIconId);
+    //dialogConfig.hMainIcon = m_iconHandle;
     dialogConfig.dwFlags =
         TDF_ENABLE_HYPERLINKS | TDF_EXPAND_FOOTER_AREA | TDF_USE_COMMAND_LINKS | TDF_EXPANDED_BY_DEFAULT;
     dialogConfig.dwCommonButtons = TDCBF_CLOSE_BUTTON;

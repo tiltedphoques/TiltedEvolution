@@ -243,7 +243,7 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
 
 #define VALIDATE(x)                                                                                                    \
     if (x != MH_OK)                                                                                                    \
-        Die(L"CoreStubsInit(): Fatal Minhook error.");
+        Die(L"CoreStubsInit(): Fatal Minhook error.", true);
 
 // pre eat hook?? loadmodule hook??
 // the idea would be to link against an external dll, which in its init routine then hooks, so we execute before mo2?

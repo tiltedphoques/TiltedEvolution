@@ -12,7 +12,7 @@ namespace Base
 class TaskDialog final
 {
   public:
-    explicit TaskDialog(HMODULE aResourceModule, const wchar_t* apTitle, const wchar_t* apMessage,
+    explicit TaskDialog(HICON aIcon, const wchar_t* apTitle, const wchar_t* apMessage,
                         const wchar_t* apMoreContext, const wchar_t* apOptionalDetails);
     ~TaskDialog();
 
@@ -32,7 +32,7 @@ class TaskDialog final
     static HRESULT CALLBACK TaskDialogCallbackProc(HWND hwnd, UINT notification, WPARAM w_param, LPARAM l_param,
                                                    LONG_PTR ref_data);
 
-    HMODULE m_targetModule;
+    HICON m_iconHandle;
     const wchar_t* m_pWindowTitle;
     const wchar_t* m_pMessage;
     const wchar_t* m_pDetails;
