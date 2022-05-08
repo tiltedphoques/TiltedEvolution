@@ -18,6 +18,7 @@ namespace stubs
         L"fraps64.dll",              // Breaks tilted ui
         L"SpecialK64.dll",           // breaks rendering
         L"ReShade64_SpecialK64.dll", // same reason
+        L"NvCamera64.dll",           // broken af nvidia stuff
        // L"atiuxp64.dll",
        // L"aticfx64.dll"
     };
