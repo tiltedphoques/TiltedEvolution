@@ -10,25 +10,52 @@
 // - 2021/2/25: Implemented CEG decryption method.
 
 #define SPDLOG_WCHAR_FILENAMES
-#include <winternl.h>
-#include <spdlog/formatter.h>
 #include <TiltedCore/Filesystem.hpp>
+#include <spdlog/formatter.h>
+#include <winternl.h>
 
 #include "ExeLoader.h"
 #include "steam/SteamCeg.h"
 #include "utils/Error.h"
 #include "utils/NtInternal.h"
 
+#if defined(_M_AMD64)
+typedef enum _FUNCTION_TABLE_TYPE
+{
+    RF_SORTED,
+    RF_UNSORTED,
+    RF_CALLBACK
+} FUNCTION_TABLE_TYPE;
+
+typedef struct _DYNAMIC_FUNCTION_TABLE
+{
+    LIST_ENTRY Links;
+    PRUNTIME_FUNCTION FunctionTable;
+    LARGE_INTEGER TimeStamp;
+
+    ULONG_PTR MinimumAddress;
+    ULONG_PTR MaximumAddress;
+    ULONG_PTR BaseAddress;
+
+    PGET_RUNTIME_FUNCTION_CALLBACK Callback;
+    PVOID Context;
+    PWSTR OutOfProcessCallbackDll;
+    FUNCTION_TABLE_TYPE Type;
+    ULONG EntryCount;
+} DYNAMIC_FUNCTION_TABLE, *PDYNAMIC_FUNCTION_TABLE;
+#endif
+
 // TODO: move me to wstring util..
 std::wstring ConvertStringToWstring(const std::string_view str)
 {
-    int nChars = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), str.length(), NULL, 0);
+    int nChars = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), static_cast<int>(str.length()), NULL, 0);
 
     std::wstring wstrTo;
     if (nChars)
     {
         wstrTo.resize(nChars);
-        if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), str.length(), &wstrTo[0], nChars))
+        if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), static_cast<int>(str.length()), &wstrTo[0],
+                                nChars))
         {
             return wstrTo;
         }
@@ -37,9 +64,9 @@ std::wstring ConvertStringToWstring(const std::string_view str)
 }
 
 ExeLoader::ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncHandler)
-    : 
-    m_loadLimit(aLoadLimit), m_pFuncHandler(aFuncHandler)
-{}
+    : m_loadLimit(aLoadLimit), m_pFuncHandler(aFuncHandler)
+{
+}
 
 void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
 {
@@ -48,12 +75,12 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
 
     while (descriptor->Name)
     {
-        auto name = ConvertStringToWstring(GetTargetRVA<char>(descriptor->Name));
+        auto dllName = ConvertStringToWstring(GetTargetRVA<char>(descriptor->Name));
 
-        HMODULE hMod = LoadLibraryW(name.c_str());
+        HMODULE hMod = LoadLibraryW(dllName.c_str());
         if (!hMod)
         {
-            auto msg = fmt::format(L"Failed to find dll: {}", name);
+            auto msg = fmt::format(L"Failed to find dll: {}", dllName);
             Die(msg.c_str(), true);
             continue;
         }
@@ -76,7 +103,7 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
         while (*nameTableEntry)
         {
             FARPROC function;
-            const char* functionName;
+            const char* functionName{nullptr};
 
             // is this an ordinal-only import?
             if (IMAGE_SNAP_BY_ORDINAL(*nameTableEntry))
@@ -93,8 +120,12 @@ void ExeLoader::LoadImports(const IMAGE_NT_HEADERS* apNtHeader)
 
             if (!function)
             {
-                char pathName[MAX_PATH];
-                GetModuleFileNameA(hMod, pathName, sizeof(pathName));
+                wchar_t pathName[1024]{};
+                GetModuleFileNameW(hMod, pathName, sizeof(pathName) - 1);
+
+                auto thunkName = ConvertStringToWstring(functionName ? functionName : "<unknown>");
+                auto msg = fmt::format(L"Failed to find thunk {} in dll {}", thunkName, pathName);
+                Die(msg.c_str(), true);
             }
 
             *addressTableEntry = (uintptr_t)function;
@@ -152,9 +183,58 @@ void ExeLoader::LoadTLS(const IMAGE_NT_HEADERS* apNtHeader, const IMAGE_NT_HEADE
                        sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData, PAGE_READWRITE, &oldProtect);
 
         std::memcpy(tlsBase, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
-               sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
+                    sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
         std::memcpy((void*)targetTls->StartAddressOfRawData, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
-               sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
+                    sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
+    }
+}
+
+void ExeLoader::LoadExceptionTable(IMAGE_NT_HEADERS* apNtHeader)
+{
+    IMAGE_DATA_DIRECTORY* exceptionDirectory =
+        &apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
+
+    RUNTIME_FUNCTION* functionList = GetTargetRVA<RUNTIME_FUNCTION>(exceptionDirectory->VirtualAddress);
+    DWORD entryCount = exceptionDirectory->Size / sizeof(RUNTIME_FUNCTION);
+
+    // has no use - inverted function tables get used instead from Ldr; we have no influence on those
+    if (!RtlAddFunctionTable(functionList, entryCount, (DWORD64)GetModuleHandle(nullptr)))
+    {
+        Die(L"Setting exception handlers failed.", false);
+    }
+
+    // replace the function table stored for debugger purposes (though we just added it above)
+    {
+        PLIST_ENTRY(NTAPI * rtlGetFunctionTableListHead)(VOID);
+        rtlGetFunctionTableListHead = (decltype(rtlGetFunctionTableListHead))GetProcAddress(
+            GetModuleHandleW(L"ntdll.dll"), "RtlGetFunctionTableListHead");
+
+        if (rtlGetFunctionTableListHead)
+        {
+            auto tableListHead = rtlGetFunctionTableListHead();
+            auto tableListEntry = tableListHead->Flink;
+
+            while (tableListEntry != tableListHead)
+            {
+                auto functionTable = CONTAINING_RECORD(tableListEntry, DYNAMIC_FUNCTION_TABLE, Links);
+
+                if (functionTable->BaseAddress == reinterpret_cast<ULONG_PTR>(m_moduleHandle))
+                {
+                    if (functionTable->FunctionTable != functionList)
+                    {
+                        DWORD oldProtect;
+                        VirtualProtect(functionTable, sizeof(DYNAMIC_FUNCTION_TABLE), PAGE_READWRITE, &oldProtect);
+
+                        functionTable->EntryCount = entryCount;
+                        functionTable->FunctionTable = functionList;
+
+                        VirtualProtect(functionTable, sizeof(DYNAMIC_FUNCTION_TABLE), oldProtect, &oldProtect);
+                    }
+                }
+
+                tableListEntry = functionTable->Links.Flink;
+            }
+        }
     }
 }
 
@@ -225,13 +305,16 @@ bool ExeLoader::Load(const uint8_t* apProgramBuffer)
 
     // store these as they will get overridden by the target's header
     // but we really need them in order to not break debugging for cosi.
-    auto sourceChecksum= sourceNtHeader->OptionalHeader.CheckSum;
+    auto sourceChecksum = sourceNtHeader->OptionalHeader.CheckSum;
     auto sourceTimestamp = sourceNtHeader->FileHeader.TimeDateStamp;
     auto sourceDebugDir = sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG];
 
     LoadSections(ntHeader);
     LoadImports(ntHeader);
+#if defined(_M_AMD64)
+    LoadExceptionTable(ntHeader);
     LoadTLS(ntHeader, sourceNtHeader);
+#endif
 
     // copy over the offset to the new imports directory
     DWORD oldProtect;

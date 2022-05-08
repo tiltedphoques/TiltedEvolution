@@ -32,6 +32,7 @@ class ExeLoader
     void LoadSections(const IMAGE_NT_HEADERS* apNtHeader);
     void LoadImports(const IMAGE_NT_HEADERS* apNtHeader);
     void LoadTLS(const IMAGE_NT_HEADERS* apNtHeader, const IMAGE_NT_HEADERS* apSourceNt);
+    void LoadExceptionTable(IMAGE_NT_HEADERS* apNtHeader);
     void DecryptCeg(IMAGE_NT_HEADERS* apSourceNt);
 
     template <typename T> inline T* GetRVA(uint32_t aRva)
