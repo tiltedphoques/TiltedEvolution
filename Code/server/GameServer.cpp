@@ -394,17 +394,20 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
 void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
-    const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
+    const auto view = m_pWorld->view<CellIdComponent>();
+    const auto it = view.find(acOrigin);
 
-    if (!pCellComp)
+    if (it == view.end())
     {
         spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
         return;
     }
 
+    const auto& cellComponent = view.get<CellIdComponent>(*it);
+
     for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (pCellComp->IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
+        if (cellComponent.IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
 }
@@ -426,7 +429,6 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
         const auto& partyComponent = pPlayer->GetParty();
         if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
         {
-            spdlog::info("Sent to party member");
             pPlayer->Send(acServerMessage);
         }
     }
