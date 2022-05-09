@@ -138,9 +138,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-
-            Actor* pActor = Cast<Actor>(TESForm::GetById(m_spokenActorId));
-            pActor->SpeakSound(m_voiceFileName.data());
         }
     }
     else

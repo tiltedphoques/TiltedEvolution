@@ -416,11 +416,11 @@ void Actor::QueueUpdate() noexcept
     pSetting->data = originalValue;
 }
 
-TESObjectCELL* TESWorldSpace::LoadCell(int32_t aX, int32_t aY) noexcept
+TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept
 {
-    TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aX, int32_t aY);
+    TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
     POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
-    return ThisCall(s_loadCell, this, aX, aY);
+    return ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept

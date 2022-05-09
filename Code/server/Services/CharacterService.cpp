@@ -211,6 +211,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
+            response.WorldSpaceId = cellIdComponent.WorldSpaceId;
 
             acMessage.pPlayer->Send(response);
             return;

@@ -134,6 +134,19 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     if (!pActor)
         return;
 
+    if (ImGui::Button("Teleport away"))
+    {
+        m_world.GetRunner().Queue([id = aFormComponent.Id]() {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(id));
+            TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(0x133C6));
+            NiPoint3 pos{};
+            pos.x = -313.f;
+            pos.y = 4.f;
+            pos.z = 13.f;
+            pActor->MoveTo(pCell, pos);
+        });
+    }
+
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);

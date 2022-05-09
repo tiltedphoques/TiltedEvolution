@@ -301,8 +301,20 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
         const uint32_t cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
-        const TESForm* const pCellForm = TESForm::GetById(cCellId);
-        TESObjectCELL* const pCell = Cast<TESObjectCELL>(pCellForm);
+        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
+
+        // In case of lazy-loading of exterior cells
+        if (!pCell)
+        {
+            const uint32_t cWorldSpaceId = World::Get().GetModSystem().GetGameId(acMessage.WorldSpaceId);
+            TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+            if (pWorldSpace)
+            {
+                GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
+                pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+            }
+        }
+
         if (pCell)
             pActor->MoveTo(pCell, acMessage.Position);
     }
