@@ -158,10 +158,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-            auto* pActor = Cast<Actor>(TESForm::GetById(ActorID));
-            pActor->StopCurrentDialogue(true);
-            pActor->SpeakSound(VoiceFile.c_str());
-            SubtitleManager::Get()->ShowSubtitle(pActor, SubtitleText.c_str());
         }
     }
     else

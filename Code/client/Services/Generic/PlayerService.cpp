@@ -18,6 +18,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Games/Overrides.h>
+#include <Games/References.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -39,17 +40,23 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
-
     m_serverDifficulty = m_previousDifficulty = 6;
+
+    float* greetDistance = Settings::GetGreetDistance();
+    *greetDistance = 150.f;
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
 {
     m_previousDifficulty = PlayerCharacter::Get()->difficulty;
-
     PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
-
     m_serverDifficulty = acSettings.Difficulty;
+
+    if (!acSettings.EnableGreetings)
+    {
+        float* greetDistance = Settings::GetGreetDistance();
+        *greetDistance = 0.f;
+    }
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept

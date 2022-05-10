@@ -41,6 +41,7 @@ Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 Console::Setting bEnableMoPo{"ModPolicy:bEnabled", "Bypass the mod policy restrictions.", true,
                              Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
+Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
@@ -564,6 +565,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
+        serverResponse.Settings.EnableGreetings = bEnableGreetings;
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
