@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Structs/GameId.h>
+
 struct Player;
 
 /**

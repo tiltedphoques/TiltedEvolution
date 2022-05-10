@@ -63,7 +63,7 @@ float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
 
     float realDamage = aDamage;
 
-    if (fabs(aDamage) <= 0.000099999997 || DifficultyMultiplier < 1.0)
+    if (fabs(aDamage) <= 0.000099999997 || multiplier < 1.0)
         realDamage = aDamage * multiplier;
 
     return realDamage;
