@@ -305,6 +305,13 @@ int32_t Actor::GetGoldAmount() noexcept
     return ThisCall(s_getGoldAmount, this);
 }
 
+uint16_t Actor::GetLevel() noexcept
+{
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
+    POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
+    return ThisCall(s_getLevel, this);
+}
+
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);

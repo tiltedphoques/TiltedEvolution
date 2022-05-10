@@ -88,5 +88,6 @@ enum ServerOpcode : unsigned char
     kStringCacheUpdate,
     kNotifyPlayerRespawn,
     kNotifyPlayerLeft,
+    kNotifyPlayerJoined,
     kServerOpcodeMax
 };

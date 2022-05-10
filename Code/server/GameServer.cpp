@@ -563,6 +563,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetUsername(std::move(acRequest->Username));
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
+        pPlayer->SetLevel(acRequest->Level);
 
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
         spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
@@ -580,7 +581,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         Send(aConnectionId, initStringCache);
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {

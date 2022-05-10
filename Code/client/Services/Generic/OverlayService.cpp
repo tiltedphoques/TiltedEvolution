@@ -17,11 +17,14 @@
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 
 #include <PlayerCharacter.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
 
 using TiltedPhoques::OverlayRenderHandlerD3D11;
 using TiltedPhoques::OverlayRenderHandler;
@@ -214,7 +217,32 @@ void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
 
 void OverlayService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.ServerId);
+    pArguments->SetString(1, acMessage.Username.c_str());
+    pArguments->SetInt(2, acMessage.Level);
 
+    auto& modSystem = m_world.GetModSystem();
+
+    String cellName = "";
+    if (acMessage.WorldSpaceId)
+    {
+        const uint32_t worldSpaceId = modSystem.GetGameId(acMessage.WorldSpaceId);
+        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
+        if (pWorldSpace)
+            cellName = pWorldSpace->GetName();
+    }
+    else
+    {
+        const uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
+        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+        if (pCell)
+            cellName = pCell->GetName();
+    }
+
+    pArguments->SetString(3, cellName.c_str());
+
+    m_pOverlay->ExecuteAsync("playerconnected", pArguments);
 }
 
 void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept

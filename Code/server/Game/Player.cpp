@@ -84,6 +84,11 @@ void Player::SetStringCacheId(uint32_t aStringCacheId) noexcept
     m_stringCacheId = aStringCacheId;
 }
 
+void Player::SetLevel(uint16_t aLevel) noexcept
+{
+    m_level = aLevel;
+}
+
 void Player::SetCellComponent(const CellIdComponent& aCellComponent) noexcept
 {
     m_cell = aCellComponent;

@@ -7,6 +7,8 @@
 
 #include <Games/TES.h>
 #include <Games/References.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <Forms/TESNPC.h>
 #include <TiltedOnlinePCH.h>
@@ -99,10 +101,12 @@ void TransportService::OnConnected()
     AuthenticationRequest request;
     request.Version = BUILD_COMMIT;
 
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
+
     // null if discord is not active
     // TODO: think about user opt out
     request.DiscordId = m_world.ctx().at<DiscordService>().GetUser().id;
-    auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm);
+    auto* pNpc = Cast<TESNPC>(pPlayer->baseForm);
     if (pNpc)
     {
         request.Username = pNpc->fullName.value.AsAscii();
@@ -124,6 +128,12 @@ void TransportService::OnConnected()
         entry.IsLite = pMod->IsLite();
         entry.Filename = pMod->filename;
     }
+
+    auto& modSystem = m_world.GetModSystem();
+    modSystem.GetServerModId(pPlayer->GetWorldSpace()->formID, request.WorldSpaceId);
+    modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
+
+    request.Level = pPlayer->GetLevel();
 
     Send(request);
 }
