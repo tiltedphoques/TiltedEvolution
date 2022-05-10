@@ -153,6 +153,9 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     case AuthenticationResponse::ResponseType::kAccepted: 
     {
         m_connected = true;
+
+        m_world.SetServerSettings(acMessage.Settings);
+
         m_dispatcher.trigger(acMessage.UserMods);
         m_dispatcher.trigger(acMessage.Settings);
         m_dispatcher.trigger(ConnectedEvent());

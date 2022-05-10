@@ -60,7 +60,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (!pCasterExtension->IsLocalPlayer())
             return false;
 
-        if (!arData.pEffectItem->IsHealingEffect())
+        if (!arData.pEffectItem->IsHealingEffect() && !World::Get().GetServerSettings().PvpEnabled)
             return false;
 
         bool result = ThisCall(RealAddTarget, apThis, arData);

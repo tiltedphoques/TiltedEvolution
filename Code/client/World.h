@@ -8,6 +8,7 @@
 
 #include <Systems/ModSystem.h>
 
+#include <Structs/ServerSettings.h>
 
 struct World : entt::registry
 {
@@ -32,6 +33,9 @@ struct World : entt::registry
         return m_dispatcher;
     }
 
+    const ServerSettings& GetServerSettings() const noexcept { return m_serverSettings; }
+    void SetServerSettings(ServerSettings aServerSettings) noexcept { m_serverSettings = aServerSettings; }
+
     [[nodiscard]] uint64_t GetTick() const noexcept;    
 
     static void Create() noexcept;
@@ -43,6 +47,7 @@ private:
     RunnerService m_runner;
     TransportService m_transport;
     ModSystem m_modSystem;
+    ServerSettings m_serverSettings{};
 
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
 };

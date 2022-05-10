@@ -16,12 +16,14 @@ bool ServerSettings::operator!=(const ServerSettings& acRhs) const noexcept
 void ServerSettings::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, Difficulty);
-    Serialization::WriteBool(aWriter, EnableGreetings);
+    Serialization::WriteBool(aWriter, GreetingsEnabled);
+    Serialization::WriteBool(aWriter, PvpEnabled);
 }
 
 void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     Difficulty = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    EnableGreetings = Serialization::ReadBool(aReader);
+    GreetingsEnabled = Serialization::ReadBool(aReader);
+    PvpEnabled = Serialization::ReadBool(aReader);
 }
 

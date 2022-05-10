@@ -579,6 +579,12 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
+        if (!World::Get().GetServerSettings().PvpEnabled)
+        {
+            if (apHitter && apHitter->GetExtension()->IsRemotePlayer())
+                return false;
+        }
+
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }

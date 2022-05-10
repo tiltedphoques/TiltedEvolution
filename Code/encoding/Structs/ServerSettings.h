@@ -13,5 +13,6 @@ struct ServerSettings
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
     uint32_t Difficulty{};
-    bool EnableGreetings{};
+    bool GreetingsEnabled{};
+    bool PvpEnabled{};
 };

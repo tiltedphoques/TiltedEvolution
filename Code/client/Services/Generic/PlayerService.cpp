@@ -42,6 +42,7 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
+    // Restore to the default value (150)
     float* greetDistance = Settings::GetGreetDistance();
     *greetDistance = 150.f;
 }
@@ -52,7 +53,7 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
     PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
     m_serverDifficulty = acSettings.Difficulty;
 
-    if (!acSettings.EnableGreetings)
+    if (!acSettings.GreetingsEnabled)
     {
         float* greetDistance = Settings::GetGreetDistance();
         *greetDistance = 0.f;
