@@ -19,6 +19,7 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
+#include <Messages/NotifyPlayerLeft.h>
 #include <console/ConsoleRegistry.h>
 
 #if TP_PLATFORM_WINDOWS
@@ -312,7 +313,13 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
             pPlayer->SetCellComponent(CellIdComponent{{}, {}, {}});
             m_pWorld->GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
         }
+
         m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
+
+        NotifyPlayerLeft notify{};
+        notify.ServerId = pPlayer->GetId();
+        notify.Username = pPlayer->GetUsername();
+        SendToPlayers(notify);
 
         entt::entity playerCharacter = pPlayer->GetCharacter().value_or(static_cast<entt::entity>(0));
 

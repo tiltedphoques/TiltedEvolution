@@ -16,6 +16,7 @@
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/NotifyPlayerList.h>
+#include <Messages/NotifyPlayerLeft.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -60,6 +61,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     //m_playerListConnection = aDispatcher.sink<NotifyPlayerList>().connect<&OverlayService::OnPlayerList>(this);
     //m_cellChangeEventConnection = aDispatcher.sink<CellChangeEvent>().connect<&OverlayService::OnCellChangeEvent>(this);
     m_chatMessageConnection = aDispatcher.sink<NotifyChatMessageBroadcast>().connect<&OverlayService::OnChatMessageReceived>(this);
+    m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -195,30 +197,35 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 
 void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
 {
+    /*
     for (auto& player : acPlayerList.Players)
     {
         spdlog::info("[CLIENT] ID: {} - Name: {}", player.first, player.second);
 
-        /*
         auto pArguments = CefListValue::Create();
         pArguments->SetInt(0, player.first);
         pArguments->SetString(1, player.second.c_str());
         pArguments->SetInt(2, 7);
         pArguments->SetString(3, "House");
         m_pOverlay->ExecuteAsync("playerconnected", pArguments);
-        */
     }
+    */
+}
+
+void OverlayService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
+{
+
+}
+
+void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.ServerId);
+    pArguments->SetString(1, acMessage.Username.c_str());
+    m_pOverlay->ExecuteAsync("playerdisconnected", pArguments);
 }
 
 #if 0
-void OverlayService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
-{
-    auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, SERVERID);
-    pArguments->SetString(1, USERNAME);
-    m_pOverlay->ExecuteAsync("playerdisconnected");
-}
-
 void OverlayService::OnCellChangeEvent(const CellChangeEvent& aCellChangeEvent) noexcept
 {
     spdlog::warn("OnCellChangeEvent ! %s", aCellChangeEvent.Name);

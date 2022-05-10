@@ -87,5 +87,6 @@ enum ServerOpcode : unsigned char
     kTeleportCommandResponse,
     kStringCacheUpdate,
     kNotifyPlayerRespawn,
+    kNotifyPlayerLeft,
     kServerOpcodeMax
 };
