@@ -95,49 +95,84 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 // Engine stuff.
 // Fix cursor.
 
-static TESForm* g_SelectedForm{nullptr};
+static bool g_switchToUISelection = false;
+
+void DebugService::QueueComponentDebugId(const uint32_t aFormId) noexcept
+{
+    m_consoleComponentDebugId = aFormId;
+    g_switchToUISelection = true;
+}
 
 void DebugService::DrawComponentDebugView()
 {
-    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Component view", &m_toggleComponentWindow);
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
 
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    Vector<entt::entity> entities(remoteView.begin(), remoteView.end());
-
-    static uint32_t s_selectedRemoteId = 0;
-    static uint32_t s_selectedRemote = 0;
     static entt::entity s_selectedEnt{};
+    static uint32_t formId = 0;
 
-    if (ImGui::Button("Reset Selection"))
+    if (m_consoleComponentDebugId)
     {
-        g_SelectedForm = nullptr;
-    }
+        auto entityIt = std::find_if(view.begin(), view.end(), [id = m_consoleComponentDebugId, view](auto entity) {
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
 
-    int i = 0;
-    for (auto entity : entities)
-    {
-        auto& remoteComponent = remoteView.get<RemoteComponent>(entity);
-        auto& formComponent = remoteView.get<FormIdComponent>(entity);
-
-        char buffer[32];
-        if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedRemoteId == remoteComponent.Id))
+        if (entityIt != view.end())
         {
-            s_selectedRemoteId = remoteComponent.Id;
-            g_SelectedForm = TESForm::GetById(formComponent.Id);
-            s_selectedEnt = entities[s_selectedRemote];
+            s_selectedEnt = *entityIt;
+            formId = m_consoleComponentDebugId;
+        }
+    }
+    else
+    {
+        ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Component view", &m_toggleComponentWindow);
+
+        static uint32_t s_selectedServerId = 0;
+        static uint32_t s_selectedEntIndex = 0;
+
+        if (ImGui::Button("Reset Selection") || g_switchToUISelection)
+        {
+            formId = 0;
+            s_selectedServerId = 0;
+            s_selectedEntIndex = 0;
+
+            g_switchToUISelection = false;
         }
 
-        if (s_selectedRemoteId == remoteComponent.Id)
-            s_selectedRemote = i;
+        Vector<entt::entity> entities(view.begin(), view.end());
 
-        ++i;
+        int i = 0;
+        for (auto entity : entities)
+        {
+            auto& formComponent = view.get<FormIdComponent>(entity);
+            auto serverIdRes = Utils::GetServerId(entity);
+
+            if (serverIdRes)
+            {
+                uint32_t serverId = *serverIdRes;
+
+                char buffer[32];
+                if (ImGui::Selectable(itoa(serverId, buffer, 16), s_selectedServerId == serverId))
+                {
+                    s_selectedServerId = serverId;
+                    formId = formComponent.Id;
+                }
+
+                if (s_selectedServerId == serverId)
+                    s_selectedEntIndex = i;
+            }
+
+            ++i;
+        }
+
+        s_selectedEnt = entities[s_selectedEntIndex];
+
+        ImGui::End();
     }
-    ImGui::End();
 
-    if (m_drawComponentsInWorldSpace && g_SelectedForm)
+    if (m_drawComponentsInWorldSpace && formId)
     {
-        if (auto* pObject = Cast<TESObjectREFR>(g_SelectedForm))
+        if (auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(formId)))
         {
             ImVec2 screenPos{};
             if (DrawInWorldSpace(pObject, screenPos))
@@ -145,11 +180,23 @@ void DebugService::DrawComponentDebugView()
                 ImGui::SetNextWindowPos(screenPos);
                 ImGui::Begin("Component debug");
 
-                auto& remote = remoteView.get<RemoteComponent>(s_selectedEnt);
-                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &remote.Id, 0, 0, "%" PRIx32,
-                                   ImGuiInputTextFlags_CharsHexadecimal);
-                ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &remote.CachedRefId, 0, 0, "%" PRIx32,
-                                   ImGuiInputTextFlags_CharsHexadecimal);
+                if (auto serverIdRes = Utils::GetServerId(s_selectedEnt))
+                {
+                    ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32,
+                                       ImGuiInputTextFlags_CharsHexadecimal);
+                }
+
+                if (auto* pComponent = m_world.try_get<LocalComponent>(s_selectedEnt))
+                {
+                    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
+                                       ImGuiInputTextFlags_CharsHexadecimal);
+                }
+
+                if (auto* pComponent = m_world.try_get<RemoteComponent>(s_selectedEnt))
+                {
+                    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0, "%" PRIx32,
+                                       ImGuiInputTextFlags_CharsHexadecimal);
+                }
 
                 if (ImGui::CollapsingHeader("InterpolationComponent"))
                 {

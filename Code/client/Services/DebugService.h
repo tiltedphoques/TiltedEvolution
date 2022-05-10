@@ -24,6 +24,8 @@ struct DebugService
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorSpokeEvent(const DialogueEvent&) noexcept;
 
+    void QueueComponentDebugId(const uint32_t aFormId) noexcept;
+
 protected:
 
     void OnDraw() noexcept;
@@ -62,6 +64,8 @@ private:
 
     uint32_t m_spokenActorId = 0;
     String m_voiceFileName = "";
+
+    uint32_t m_consoleComponentDebugId = 0;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;

@@ -34,6 +34,7 @@
 #include <TiltedCore/Serialization.hpp>
 
 #include <Services/PapyrusService.h>
+#include <Services/DebugService.h>
 #include <World.h>
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
@@ -729,6 +730,22 @@ void Actor::SpeakSound(const char* pFile)
     ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
 }
 
+TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* ahREFR);
+static TSetCurrentPickREFR* RealSetCurrentPickREFR = nullptr;
+
+void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObjectREFR>* ahREFR)
+{
+    uint32_t formId = 0;
+
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(ahREFR->handle.iBits);
+    if (pObject)
+        formId = pObject->formID;
+
+    World::Get().GetDebugService().QueueComponentDebugId(formId);
+
+    return ThisCall(RealSetCurrentPickREFR, apThis, ahREFR);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -757,6 +774,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
 
         POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
 
+        POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -766,6 +785,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
         RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -776,5 +796,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
         TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+        TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
     });
 

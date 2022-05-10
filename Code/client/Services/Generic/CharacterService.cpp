@@ -1,9 +1,7 @@
-#include <TiltedOnlinePCH.h>
-
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Services/PapyrusService.h"
-
+#include <Services/PartyService.h>
 
 #include <Services/CharacterService.h>
 #include <Services/QuestService.h>
@@ -300,13 +298,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
-        const uint32_t cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
+        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acMessage.CellId);
         TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
 
         // In case of lazy-loading of exterior cells
         if (!pCell)
         {
-            const uint32_t cWorldSpaceId = World::Get().GetModSystem().GetGameId(acMessage.WorldSpaceId);
+            const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
             TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
             if (pWorldSpace)
             {
@@ -548,6 +546,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
 
 void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept
 {
+    // TODO(cosideci): handle case if no one has it, therefore no RemoteComponent
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [&acMessage, &view](auto entity) {
@@ -563,6 +562,9 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
         {
             pActor->GetExtension()->SetRemote(false);
 
+            // TODO(cosideci): this should be done differently.
+            // Send an ownership claim request, and have the server broadcast the result.
+            // Only then should components be added or removed.
             m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
             m_world.emplace<LocalAnimationComponent>(*itor);
             m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
