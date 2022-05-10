@@ -3,6 +3,7 @@
 #include <Events/SubtitleEvent.h>
 
 #include <TESObjectREFR.h>
+#include <Games/ActorExtension.h>
 
 SubtitleManager* SubtitleManager::Get() noexcept
 {
@@ -32,7 +33,8 @@ void TP_MAKE_THISCALL(HookSubtitleManager, SubtitleManager, TESObjectREFR* apSpe
 {
     spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
 
-    if (apSpeaker)
+    Actor* pActor = Cast<Actor>(apSpeaker);
+    if (pActor && pActor->GetExtension()->IsLocal())
         World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
 
     ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);

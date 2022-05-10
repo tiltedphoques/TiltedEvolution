@@ -6,6 +6,7 @@
 #include <Messages/PartyAcceptInviteRequest.h>
 #include <Messages/PartyLeaveRequest.h>
 #include <Messages/PartyCreateRequest.h>
+#include <Messages/TeleportCommandRequest.h>
 
 #include <World.h>
 
@@ -35,6 +36,8 @@ void DebugService::DrawPartyView()
 
         for (auto& playerId : members)
         {
+            ImGui::PushID(playerId);
+
             auto playerEntry = players.find(playerId);
             if (playerEntry != players.end())
             {
@@ -62,8 +65,18 @@ void DebugService::DrawPartyView()
                         m_transport.Send(changeMessage);
                     }
                 }
+
+                ImGui::SameLine(200);
+                if (ImGui::Button("Teleport"))
+                {
+                    TeleportCommandRequest request{};
+                    request.TargetPlayer = playerEntry.value();
+
+                    m_transport.Send(request);
+                }
             }
             
+            ImGui::PopID();
         }
 
         if (partyService.IsLeader())
