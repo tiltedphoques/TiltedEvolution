@@ -35,6 +35,8 @@ struct AddExperienceEvent;
 struct NotifySyncExperience;
 struct DialogueEvent;
 struct NotifyDialogue;
+struct SubtitleEvent;
+struct NotifySubtitle;
 
 struct Actor;
 struct World;
@@ -75,6 +77,8 @@ struct CharacterService
     void OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept;
     void OnDialogueEvent(const DialogueEvent& acEvent) noexcept;
     void OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept;
+    void OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept;
+    void OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept;
 
 private:
 
@@ -124,4 +128,6 @@ private:
     entt::scoped_connection m_syncExperienceConnection;
     entt::scoped_connection m_dialogueEventConnection;
     entt::scoped_connection m_dialogueSyncConnection;
+    entt::scoped_connection m_subtitleEventConnection;
+    entt::scoped_connection m_subtitleSyncConnection;
 };

@@ -7,6 +7,7 @@ struct ImguiService;
 
 struct UpdateEvent;
 struct DialogueEvent;
+struct SubtitleEvent;
 
 struct TransportService;
 struct BSAnimationGraphManager;
@@ -23,6 +24,7 @@ struct DebugService
 
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnDialogue(const DialogueEvent&) noexcept;
+    void OnSubtitle(const SubtitleEvent&) noexcept;
 
     void SetDebugId(const uint32_t aFormId) noexcept;
 
@@ -63,6 +65,9 @@ private:
 
     uint32_t ActorID = 0;
     String VoiceFile = "";
+
+    uint32_t SubActorID = 0;
+    String SubtitleText = "";
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;

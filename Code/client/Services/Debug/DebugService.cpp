@@ -13,6 +13,7 @@
 
 #include <Events/UpdateEvent.h>
 #include <Events/DialogueEvent.h>
+#include <Events/SubtitleEvent.h>
 
 #include <Games/References.h>
 
@@ -42,6 +43,8 @@
 
 #include <Interface/UI.h>
 #include <Interface/IMenu.h>
+
+#include <Games/Misc/SubtitleManager.h>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
@@ -88,12 +91,23 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
     m_dialogueConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnDialogue>(this);
+    m_dispatcher.sink<SubtitleEvent>().connect<&DebugService::OnSubtitle>(this);
 }
 
 void DebugService::OnDialogue(const DialogueEvent& acEvent) noexcept
 {
+    if (ActorID)
+        return;
     ActorID = acEvent.ActorID;
     VoiceFile = acEvent.VoiceFile;
+}
+
+void DebugService::OnSubtitle(const SubtitleEvent& acEvent) noexcept
+{
+    if (SubActorID)
+        return;
+    SubActorID = acEvent.SpeakerID;
+    SubtitleText = acEvent.Text;
 }
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -147,6 +161,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             auto* pActor = Cast<Actor>(TESForm::GetById(ActorID));
             pActor->StopCurrentDialogue(true);
             pActor->SpeakSound(VoiceFile.c_str());
+            SubtitleManager::Get()->ShowSubtitle(pActor, SubtitleText.c_str());
         }
     }
     else
