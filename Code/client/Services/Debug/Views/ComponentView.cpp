@@ -95,109 +95,104 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 // Engine stuff.
 // Fix cursor.
 
-static bool g_switchToUISelection = false;
-
-void DebugService::QueueComponentDebugId(const uint32_t aFormId) noexcept
+void DebugService::SetDebugId(const uint32_t aFormId) noexcept
 {
     m_formId = aFormId;
-    g_switchToUISelection = true;
 }
 
 void DebugService::DrawComponentDebugView()
 {
-    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto view = m_world.view<FormIdComponent>();
 
-    static entt::entity s_selectedEnt{};
+    if (!m_formId)
+        return;
 
-    if (m_formId)
+    auto entityIt = std::find_if(view.begin(), view.end(), [id = m_formId, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto entity = *entityIt;
+
+    if (auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(m_formId)))
     {
-        auto entityIt = std::find_if(view.begin(), view.end(), [id = m_formId, view](auto entity) {
-            return view.get<FormIdComponent>(entity).Id == id;
-        });
-
-        if (entityIt == view.end())
-            return;
-
-        s_selectedEnt = *entityIt;
-
-        if (auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(m_formId)))
+        ImVec2 screenPos{};
+        if (DrawInWorldSpace(pObject, screenPos))
         {
-            ImVec2 screenPos{};
-            if (DrawInWorldSpace(pObject, screenPos))
-            {
-                ImGui::SetNextWindowPos(screenPos);
-                ImGui::Begin("Component debug");
+            ImGui::SetNextWindowPos(screenPos);
+            ImGui::Begin("Component debug");
 
-                if (auto serverIdRes = Utils::GetServerId(s_selectedEnt))
+            if (auto serverIdRes = Utils::GetServerId(entity))
+            {
+                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32,
+                                   ImGuiInputTextFlags_CharsHexadecimal);
+            }
+
+            if (auto* pComponent = m_world.try_get<LocalComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("LocalComponent"))
                 {
-                    ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32,
+                    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
                                        ImGuiInputTextFlags_CharsHexadecimal);
                 }
-
-                if (auto* pComponent = m_world.try_get<LocalComponent>(s_selectedEnt))
-                {
-                    if (ImGui::CollapsingHeader("LocalComponent"))
-                    {
-                        ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
-                                           ImGuiInputTextFlags_CharsHexadecimal);
-                    }
-                }
-
-                if (auto* pComponent = m_world.try_get<LocalAnimationComponent>(s_selectedEnt))
-                {
-                    if (ImGui::CollapsingHeader("LocalAnimationComponent"))
-                    {
-                        int actions = int(pComponent->Actions.size());
-                        ImGui::InputInt("Number of actions", &actions, 0, 0, ImGuiInputTextFlags_ReadOnly);
-                    }
-                }
-
-                if (auto* pComponent = m_world.try_get<RemoteComponent>(s_selectedEnt))
-                {
-                    if (ImGui::CollapsingHeader("RemoteComponent"))
-                    {
-                        ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0,
-                                           "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
-                    }
-                }
-
-                if (auto* pComponent = m_world.try_get<InterpolationComponent>(s_selectedEnt))
-                {
-                    if (ImGui::CollapsingHeader("InterpolationComponent"))
-                    {
-                        ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y,
-                                    pComponent->Position.z);
-                    }
-                }
-
-                if (auto* pComponent = m_world.try_get<FaceGenComponent>(s_selectedEnt))
-                {
-                    if (ImGui::CollapsingHeader("FaceGenComponent"))
-                    {
-                        for (auto x : pComponent->FaceTints.Entries)
-                        {
-                            ImGui::Text("Alpha %f, Color %u, Type %u\n", x.Alpha, x.Color, x.Type);
-                        }
-                    }
-                }
-
-                if (auto* pComponent = m_world.try_get<RemoteAnimationComponent>(s_selectedEnt))
-                {
-                    if (ImGui::CollapsingHeader("RemoteAnimationComponent"))
-                    {
-                        ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
-                                    pComponent->LastRanAction.EventName.c_str(),
-                                    pComponent->LastRanAction.TargetEventName.c_str(),
-                                    pComponent->LastRanAction.State1,
-                                    pComponent->LastRanAction.State2);
-                    }
-                    // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
-                    //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
-                }
-
-                ImGui::End();
-
             }
+
+            if (auto* pComponent = m_world.try_get<LocalAnimationComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("LocalAnimationComponent"))
+                {
+                    int actions = int(pComponent->Actions.size());
+                    ImGui::InputInt("Number of actions", &actions, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<RemoteComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("RemoteComponent"))
+                {
+                    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0,
+                                       "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<InterpolationComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("InterpolationComponent"))
+                {
+                    ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y,
+                                pComponent->Position.z);
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<FaceGenComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("FaceGenComponent"))
+                {
+                    for (auto x : pComponent->FaceTints.Entries)
+                    {
+                        ImGui::Text("Alpha %f, Color %u, Type %u\n", x.Alpha, x.Color, x.Type);
+                    }
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<RemoteAnimationComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("RemoteAnimationComponent"))
+                {
+                    ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
+                                pComponent->LastRanAction.EventName.c_str(),
+                                pComponent->LastRanAction.TargetEventName.c_str(),
+                                pComponent->LastRanAction.State1,
+                                pComponent->LastRanAction.State2);
+                }
+                // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
+                //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
+            }
+
+            ImGui::End();
+
         }
     }
 }

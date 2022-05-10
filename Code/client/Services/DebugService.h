@@ -24,7 +24,7 @@ struct DebugService
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnActorSpokeEvent(const DialogueEvent&) noexcept;
 
-    void QueueComponentDebugId(const uint32_t aFormId) noexcept;
+    void SetDebugId(const uint32_t aFormId) noexcept;
 
 protected:
 

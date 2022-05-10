@@ -741,7 +741,7 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     if (pObject)
         formId = pObject->formID;
 
-    World::Get().GetDebugService().QueueComponentDebugId(formId);
+    World::Get().GetDebugService().SetDebugId(formId);
 
     return ThisCall(RealSetCurrentPickREFR, apThis, ahREFR);
 }
