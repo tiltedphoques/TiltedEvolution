@@ -49,6 +49,7 @@ private:
     void DrawPartyView();
     void DrawActorValuesView();
     void DrawQuestDebugView();
+    void DrawCellView();
 
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
