@@ -12,7 +12,6 @@
 #include <Services/QuestService.h>
 
 #include <Events/UpdateEvent.h>
-#include <Events/DialogueEvent.h>
 
 #include <Games/References.h>
 
@@ -87,7 +86,6 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
-    m_actorSpokeConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnActorSpokeEvent>(this);
 }
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -142,27 +140,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     }
     else
         s_f8Pressed = false;
-}
-
-void DebugService::OnActorSpokeEvent(const DialogueEvent& acEvent) noexcept
-{
-    m_spokenActorId = acEvent.ActorID;
-    m_voiceFileName = acEvent.VoiceFile;
-
-    spdlog::debug("Actor spoke, id: {:X}, file: {}", acEvent.ActorID, acEvent.VoiceFile.c_str());
-}
-
-uint64_t DebugService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
-{
-    auto hash = pManager->GetDescriptorKey();
-    auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
-
-    spdlog::info("Key: {}", hash);
-    std::cout << "uint64_t key = " << hash << ";" << std::endl;
-    if (!pDescriptor)
-        spdlog::error("Descriptor key not found");
-
-    return hash;
 }
 
 static bool g_enableAnimWindow{false};
