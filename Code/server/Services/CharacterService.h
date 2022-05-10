@@ -23,6 +23,7 @@ struct NewPackageRequest;
 struct RequestRespawn;
 struct SyncExperienceRequest;
 struct DialogueRequest;
+struct SubtitleRequest;
 
 /**
 * @brief Manages player and actor state.
@@ -56,6 +57,7 @@ protected:
     void OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept;
     void OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept;
     void OnDialogueRequest(const PacketEvent<DialogueRequest>& acMessage) const noexcept;
+    void OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
 
@@ -84,4 +86,5 @@ private:
     entt::scoped_connection m_requestRespawnConnection;
     entt::scoped_connection m_syncExperienceConnection;
     entt::scoped_connection m_dialogueConnection;
+    entt::scoped_connection m_subtitleConnection;
 };
