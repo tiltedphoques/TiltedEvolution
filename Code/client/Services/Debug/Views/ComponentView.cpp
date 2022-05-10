@@ -99,7 +99,7 @@ static bool g_switchToUISelection = false;
 
 void DebugService::QueueComponentDebugId(const uint32_t aFormId) noexcept
 {
-    m_consoleComponentDebugId = aFormId;
+    m_formId = aFormId;
     g_switchToUISelection = true;
 }
 
@@ -108,71 +108,19 @@ void DebugService::DrawComponentDebugView()
     auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
 
     static entt::entity s_selectedEnt{};
-    static uint32_t formId = 0;
 
-    if (m_consoleComponentDebugId)
+    if (m_formId)
     {
-        auto entityIt = std::find_if(view.begin(), view.end(), [id = m_consoleComponentDebugId, view](auto entity) {
+        auto entityIt = std::find_if(view.begin(), view.end(), [id = m_formId, view](auto entity) {
             return view.get<FormIdComponent>(entity).Id == id;
         });
 
-        if (entityIt != view.end())
-        {
-            s_selectedEnt = *entityIt;
-            formId = m_consoleComponentDebugId;
-        }
-    }
-    else
-    {
-        ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Component view", &m_toggleComponentWindow);
+        if (entityIt == view.end())
+            return;
 
-        static uint32_t s_selectedServerId = 0;
-        static uint32_t s_selectedEntIndex = 0;
+        s_selectedEnt = *entityIt;
 
-        if (ImGui::Button("Reset Selection") || g_switchToUISelection)
-        {
-            formId = 0;
-            s_selectedServerId = 0;
-            s_selectedEntIndex = 0;
-
-            g_switchToUISelection = false;
-        }
-
-        Vector<entt::entity> entities(view.begin(), view.end());
-
-        int i = 0;
-        for (auto entity : entities)
-        {
-            auto& formComponent = view.get<FormIdComponent>(entity);
-            auto serverIdRes = Utils::GetServerId(entity);
-
-            if (serverIdRes)
-            {
-                uint32_t serverId = *serverIdRes;
-
-                char buffer[32];
-                if (ImGui::Selectable(itoa(serverId, buffer, 16), s_selectedServerId == serverId))
-                {
-                    s_selectedServerId = serverId;
-                    formId = formComponent.Id;
-                }
-
-                if (s_selectedServerId == serverId)
-                    s_selectedEntIndex = i;
-            }
-
-            ++i;
-        }
-
-        s_selectedEnt = entities[s_selectedEntIndex];
-
-        ImGui::End();
-    }
-
-    if (m_drawComponentsInWorldSpace && formId)
-    {
-        if (auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(formId)))
+        if (auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(m_formId)))
         {
             ImVec2 screenPos{};
             if (DrawInWorldSpace(pObject, screenPos))
@@ -188,28 +136,43 @@ void DebugService::DrawComponentDebugView()
 
                 if (auto* pComponent = m_world.try_get<LocalComponent>(s_selectedEnt))
                 {
-                    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
-                                       ImGuiInputTextFlags_CharsHexadecimal);
+                    if (ImGui::CollapsingHeader("LocalComponent"))
+                    {
+                        ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
+                                           ImGuiInputTextFlags_CharsHexadecimal);
+                    }
+                }
+
+                if (auto* pComponent = m_world.try_get<LocalAnimationComponent>(s_selectedEnt))
+                {
+                    if (ImGui::CollapsingHeader("LocalAnimationComponent"))
+                    {
+                        int actions = int(pComponent->Actions.size());
+                        ImGui::InputInt("Number of actions", &actions, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                    }
                 }
 
                 if (auto* pComponent = m_world.try_get<RemoteComponent>(s_selectedEnt))
                 {
-                    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0, "%" PRIx32,
-                                       ImGuiInputTextFlags_CharsHexadecimal);
+                    if (ImGui::CollapsingHeader("RemoteComponent"))
+                    {
+                        ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0,
+                                           "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+                    }
                 }
 
-                if (ImGui::CollapsingHeader("InterpolationComponent"))
+                if (auto* pComponent = m_world.try_get<InterpolationComponent>(s_selectedEnt))
                 {
-                    if (auto* pComponent = m_world.try_get<InterpolationComponent>(s_selectedEnt))
+                    if (ImGui::CollapsingHeader("InterpolationComponent"))
                     {
                         ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y,
                                     pComponent->Position.z);
                     }
                 }
 
-                if (ImGui::CollapsingHeader("FaceGenComponent"))
+                if (auto* pComponent = m_world.try_get<FaceGenComponent>(s_selectedEnt))
                 {
-                    if (auto* pComponent = m_world.try_get<FaceGenComponent>(s_selectedEnt))
+                    if (ImGui::CollapsingHeader("FaceGenComponent"))
                     {
                         for (auto x : pComponent->FaceTints.Entries)
                         {
@@ -218,9 +181,9 @@ void DebugService::DrawComponentDebugView()
                     }
                 }
 
-                if (ImGui::CollapsingHeader("RemoteAnimationComponent"))
+                if (auto* pComponent = m_world.try_get<RemoteAnimationComponent>(s_selectedEnt))
                 {
-                    if (auto* pComponent = m_world.try_get<RemoteAnimationComponent>(s_selectedEnt))
+                    if (ImGui::CollapsingHeader("RemoteAnimationComponent"))
                     {
                         ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
                                     pComponent->LastRanAction.EventName.c_str(),

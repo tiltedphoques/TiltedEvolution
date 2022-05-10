@@ -73,6 +73,5 @@ private:
 
     bool m_showDebugStuff = false;
     bool m_showBuildTag = true;
-    bool m_toggleComponentWindow = false;
     bool m_drawComponentsInWorldSpace = true;
 };

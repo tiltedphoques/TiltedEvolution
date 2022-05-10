@@ -203,7 +203,6 @@ void DebugService::OnDraw() noexcept
     }
     if (ImGui::BeginMenu("Components"))
     {
-        ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
@@ -270,7 +269,7 @@ void DebugService::OnDraw() noexcept
     if (g_enableQuestWindow)
         DrawQuestDebugView();
 
-    if (m_toggleComponentWindow)
+    if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();
 
     if (m_showBuildTag)
