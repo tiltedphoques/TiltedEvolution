@@ -25,6 +25,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
+#include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
@@ -715,10 +716,8 @@ bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_
     spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
                   (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 
-    /*
     if (apThis->GetExtension()->IsLocal())
         World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
-    */
 
     return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }

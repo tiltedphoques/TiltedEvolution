@@ -12,6 +12,7 @@
 #include <Services/QuestService.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <Games/References.h>
 
@@ -86,6 +87,13 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
+    m_dialogueConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnDialogue>(this);
+}
+
+void DebugService::OnDialogue(const DialogueEvent& acEvent) noexcept
+{
+    ActorID = acEvent.ActorID;
+    VoiceFile = acEvent.VoiceFile;
 }
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -136,6 +144,9 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+            auto* pActor = Cast<Actor>(TESForm::GetById(ActorID));
+            pActor->StopCurrentDialogue(true);
+            pActor->SpeakSound(VoiceFile.c_str());
         }
     }
     else

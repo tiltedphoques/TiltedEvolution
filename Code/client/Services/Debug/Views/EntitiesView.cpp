@@ -1,5 +1,7 @@
 #include <Services/DebugService.h>
 
+#include <AI/AIProcess.h>
+
 #include <World.h>
 #include <imgui.h>
 
@@ -144,6 +146,14 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
             pos.y = 4.f;
             pos.z = 13.f;
             pActor->MoveTo(pCell, pos);
+        });
+    }
+
+    if (ImGui::Button("Stop dialogue"))
+    {
+        m_world.GetRunner().Queue([id = aFormComponent.Id]() {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(id));
+            pActor->StopCurrentDialogue(true);
         });
     }
 
