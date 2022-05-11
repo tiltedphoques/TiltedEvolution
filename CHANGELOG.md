@@ -1,3 +1,13 @@
+## [1.29.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.0...v1.29.1) (2022-05-11)
+
+
+### Bug Fixes
+
+* entt corruption bug ([e977810](https://github.com/tiltedphoques/TiltedEvolution/commit/e9778106098bf3114c1c223a9752a6eceb7b4883))
+* nvcamera crash ([5b12535](https://github.com/tiltedphoques/TiltedEvolution/commit/5b1253520d364cbcbab592f0950791c19b887c52))
+* style and bugs ([4c4ceab](https://github.com/tiltedphoques/TiltedEvolution/commit/4c4ceab31f7763af886031dad84e2bc4cabfe635))
+* update health server side ([f49753e](https://github.com/tiltedphoques/TiltedEvolution/commit/f49753ecde2db8e267cae362ee8d534e742bcd48))
+
 # [1.29.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.28.0...v1.29.0) (2022-05-11)
 
 
