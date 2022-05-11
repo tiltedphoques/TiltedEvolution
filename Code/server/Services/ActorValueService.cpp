@@ -75,6 +75,16 @@ void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthC
     auto& message = acMessage.Packet;
 
     // TODO(cosideci): should server side health not be updated?
+    auto actorValuesView = m_world.view<ActorValuesComponent, OwnerComponent>();
+
+    auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
+
+    if (it != actorValuesView.end())
+    {
+        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
+        auto currentHealth = actorValuesComponent.CurrentActorValues.ActorValuesList[24];
+        actorValuesComponent.CurrentActorValues.ActorValuesList[24] = currentHealth - message.DeltaHealth;
+    }
 
     NotifyHealthChangeBroadcast notify;
     notify.Id = message.Id;

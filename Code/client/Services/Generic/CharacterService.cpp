@@ -284,12 +284,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             return;
         }
 
-        const auto* pNpc = Cast<TESNPC>(pActor->baseForm);
-        if (pNpc)
-        {
-            spdlog::warn("Spawn Actor: {:X}, and NPC {}", pActor->formID, pNpc->fullName.value);
-        }
-
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);
