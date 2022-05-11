@@ -210,10 +210,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*pEntity);
     if (!serverIdRes.has_value())
-    {
-        spdlog::error("Server id not found for form id {:X}", acEvent.pActivator->formID);
         return;
-    }
 
     request.ActivatorId = serverIdRes.value();
 

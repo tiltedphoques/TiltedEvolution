@@ -648,7 +648,10 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     uint32_t serverId = serverIdRes.value();
 
@@ -833,7 +836,10 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
     if (!riderServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     const auto mountIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.MountID, view](auto entity) {
         return view.get<FormIdComponent>(entity).Id == id;
@@ -849,7 +855,10 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     std::optional<uint32_t> mountServerIdRes = Utils::GetServerId(cMountEntity);
     if (!mountServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     if (m_world.try_get<RemoteComponent>(cMountEntity))
     {
@@ -905,7 +914,10 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
+        {
+            spdlog::error("{}: failed to find server id", __FUNCTION__);
             continue;
+        }
 
         uint32_t serverId = serverIdRes.value();
 
@@ -952,7 +964,10 @@ void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const
 
     std::optional<uint32_t> actorServerIdRes = Utils::GetServerId(cActorEntity);
     if (!actorServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     NewPackageRequest request;
     request.ActorId = actorServerIdRes.value();
