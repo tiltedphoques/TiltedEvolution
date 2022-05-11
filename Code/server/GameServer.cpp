@@ -37,7 +37,11 @@ Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image t
 Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+
+// Gameplay
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
+Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
+Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", true};
 
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -46,6 +50,7 @@ Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE act
                             Console::SettingsFlags::kLocked};
 Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
                            Console::SettingsFlags::kLocked};
+
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
@@ -404,17 +409,20 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
 void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
-    const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
+    const auto view = m_pWorld->view<CellIdComponent>();
+    const auto it = view.find(acOrigin);
 
-    if (!pCellComp)
+    if (it == view.end())
     {
         spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
         return;
     }
 
+    const auto& cellComponent = view.get<CellIdComponent>(*it);
+
     for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (pCellComp->IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
+        if (cellComponent.IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
 }
@@ -436,7 +444,6 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
         const auto& partyComponent = pPlayer->GetParty();
         if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
         {
-            spdlog::info("Sent to party member");
             pPlayer->Send(acServerMessage);
         }
     }
@@ -599,6 +606,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
+        serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
+        serverResponse.Settings.PvpEnabled = bEnablePvp;
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);

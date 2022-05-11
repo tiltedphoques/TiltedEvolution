@@ -307,7 +307,7 @@ int32_t Actor::GetGoldAmount() noexcept
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
-    spdlog::info("Setting inventory for actor {:X}", formID);
+    spdlog::debug("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 
@@ -579,6 +579,12 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
+        if (!World::Get().GetServerSettings().PvpEnabled)
+        {
+            if (apHitter && apHitter->GetExtension()->IsRemotePlayer())
+                return false;
+        }
+
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
@@ -668,7 +674,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
         item.Count = aCount;
-        
+
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 

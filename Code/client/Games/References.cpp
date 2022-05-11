@@ -25,6 +25,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
+#include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
@@ -34,6 +35,7 @@
 #include <TiltedCore/Serialization.hpp>
 
 #include <Services/PapyrusService.h>
+#include <Services/DebugService.h>
 #include <World.h>
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
@@ -416,11 +418,11 @@ void Actor::QueueUpdate() noexcept
     pSetting->data = originalValue;
 }
 
-TESObjectCELL* TESWorldSpace::LoadCell(int32_t aX, int32_t aY) noexcept
+TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept
 {
-    TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aX, int32_t aY);
+    TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
     POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
-    return ThisCall(s_loadCell, this, aX, aY);
+    return ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
@@ -714,10 +716,8 @@ bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_
     spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
                   (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 
-    /*
     if (apThis->GetExtension()->IsLocal())
         World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
-    */
 
     return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
@@ -727,6 +727,22 @@ void Actor::SpeakSound(const char* pFile)
     uint32_t handle[3]{};
     handle[0] = -1;
     ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
+}
+
+TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* ahREFR);
+static TSetCurrentPickREFR* RealSetCurrentPickREFR = nullptr;
+
+void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObjectREFR>* ahREFR)
+{
+    uint32_t formId = 0;
+
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(ahREFR->handle.iBits);
+    if (pObject)
+        formId = pObject->formID;
+
+    World::Get().GetDebugService().SetDebugId(formId);
+
+    return ThisCall(RealSetCurrentPickREFR, apThis, ahREFR);
 }
 
 TiltedPhoques::Initializer s_referencesHooks([]()
@@ -757,6 +773,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
 
         POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
 
+        POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -766,6 +784,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
         RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -776,5 +795,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
         TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+        TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
     });
 

@@ -27,6 +27,19 @@
 #include <structs/AnimationGraphDescriptorManager.h>
 #include <inttypes.h>
 
+uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
+{
+    auto hash = pManager->GetDescriptorKey();
+    auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+
+    spdlog::info("Key: {}", hash);
+    std::cout << "uint64_t key = " << hash << ";" << std::endl;
+    if (!pDescriptor)
+        spdlog::error("Descriptor key not found");
+
+    return hash;
+}
+
 void DebugService::DrawAnimDebugView()
 {
     static uint32_t fetchFormId = 0;

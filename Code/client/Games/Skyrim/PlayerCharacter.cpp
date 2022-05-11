@@ -14,6 +14,7 @@
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
 #include <Games/TES.h>
+#include <Games/References.h>
 
 #include <Forms/TESObjectCELL.h>
 
@@ -32,10 +33,8 @@ void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
     if (aDifficulty > 5)
         return;
 
-    POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
-    *s_difficulty = aDifficulty;
-
-    difficulty = aDifficulty;
+    int32_t* difficultySetting = Settings::GetDifficulty();
+    *difficultySetting = difficulty = aDifficulty;
 }
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
