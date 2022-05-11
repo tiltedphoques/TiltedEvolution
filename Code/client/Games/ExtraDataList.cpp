@@ -137,3 +137,10 @@ void ExtraDataList::SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge
     POINTER_SKYRIMSE(TSetEnchantmentData, setEnchantmentData, 12060);
     ThisCall(setEnchantmentData, this, apItem, aCharge, aRemoveOnUnequip);
 }
+
+bool ExtraDataList::HasQuestObjectAlias() noexcept
+{
+    TP_THIS_FUNCTION(THasQuestObjectAlias, bool, ExtraDataList);
+    POINTER_SKYRIMSE(THasQuestObjectAlias, s_hasQuestObjectAlias, 12052);
+    return ThisCall(s_hasQuestObjectAlias, this);
+}

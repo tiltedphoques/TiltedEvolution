@@ -230,6 +230,8 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
 
     arEntry.ExtraWorn = apExtraDataList->Contains(ExtraData::Worn);
     arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraData::WornLeft);
+
+    arEntry.IsQuestItem = apExtraDataList->HasQuestObjectAlias();
 }
 
 ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept
@@ -366,9 +368,6 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
             continue;
 
         if (!aFilter(*pGameEntry->form))
-            continue;
-
-        if (pGameEntry->IsQuestObject())
             continue;
 
         Inventory::Entry entry;
@@ -517,6 +516,15 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     {
         spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
         RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+    }
+
+    // TODO(cosideci): this needs to be tested. This just creates a copy of the "quest object".
+    // Might cause issues when delivering quests.
+    if (arEntry.IsQuestItem)
+    {
+        Actor* pActor = Cast<Actor>(this);
+        if (pActor && pActor->GetExtension()->IsRemotePlayer())
+            PlayerCharacter::Get()->AddOrRemoveItem(arEntry);
     }
 }
 
