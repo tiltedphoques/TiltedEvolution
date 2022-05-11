@@ -1,30 +1,33 @@
 
 #include <Services/TransportService.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
+#include <Events/ConnectionErrorEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/UpdateEvent.h>
 
-#include <Games/TES.h>
 #include <Games/References.h>
+#include <Games/TES.h>
 
 #include <Forms/TESNPC.h>
 #include <TiltedOnlinePCH.h>
 #include <World.h>
 
-#include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
+#include <Packet.hpp>
 
+#include <ScriptExtender.h>
 #include <Services/DiscordService.h>
 
 //#include <imgui_internal.h>
 
+static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
+
 using TiltedPhoques::Packet;
 
 TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
-    : m_world(aWorld)
-    , m_dispatcher(aDispatcher)
+    : m_world(aWorld), m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
 
@@ -56,12 +59,15 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 
     struct ScopedReset
     {
-        ~ScopedReset() { s_allocator.Reset(); }
+        ~ScopedReset()
+        {
+            s_allocator.Reset();
+        }
     } allocatorGuard;
 
     if (IsConnected())
     {
-        ScopedAllocator _{ s_allocator };
+        ScopedAllocator _{s_allocator};
 
         Buffer buffer(1 << 16);
         Buffer::Writer writer(&buffer);
@@ -98,12 +104,14 @@ void TransportService::OnConnected()
 {
     AuthenticationRequest request;
     request.Version = BUILD_COMMIT;
+    request.SKSEActive = IsScriptExtenderLoaded();
+    request.MO2Active = GetModuleHandleW(kMO2DllName);
 
     // null if discord is not active
     // TODO: think about user opt out
     request.DiscordId = m_world.ctx().at<DiscordService>().GetUser().id;
-    auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm);
-    if (pNpc)
+
+    if (auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm))
     {
         request.Username = pNpc->fullName.value.AsAscii();
     }
@@ -148,9 +156,8 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
-    switch (acMessage.Type)
-    {
-    case AuthenticationResponse::ResponseType::kAccepted: 
+    using AR = AuthenticationResponse::ResponseType;
+    if (acMessage.Type == AR::kAccepted)
     {
         m_connected = true;
 
@@ -159,23 +166,46 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
         m_dispatcher.trigger(acMessage.UserMods);
         m_dispatcher.trigger(acMessage.Settings);
         m_dispatcher.trigger(ConnectedEvent());
+        return; // quit the function here.
+    }
+
+    // error finding
+
+    // TODO(vince): these should be more bare bones, but for now this suffices, maybe we should just make a tiny json
+    // here in the future and give it to the frontend
+    TiltedPhoques::String ErrorInfo;
+    switch (acMessage.Type)
+    {
+    case AR::kWrongVersion:
+        ErrorInfo =
+            fmt::format("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
+        break;
+    case AR::kModsMismatch: {
+        ErrorInfo = "This server has ModPolicy enabled. You were kicked because you have the following mods installed:";
+        for (const auto& m : acMessage.UserMods.ModList)
+            ErrorInfo += fmt::format("{}:{}", m.Filename.c_str(), m.Id);
+        ErrorInfo += "Please remove them to join";
         break;
     }
-    // TODO(Anyone): Handle this within the ui
-    case AuthenticationResponse::ResponseType::kWrongVersion:
-        spdlog::error("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
-        break;
-    case AuthenticationResponse::ResponseType::kMissingMods: {
-        spdlog::error("This server has ModPolicy enabled. You were kicked because you have the following mods installed:");
-        for (const auto& m : acMessage.UserMods.ModList)
-        {
-            spdlog::error("{}:{}", m.Filename.c_str(), m.Id);
-        }
-        spdlog::error("Please remove them to join");
+    case AR::kClientModsDisallowed: {
+        ErrorInfo = "This server disallows";
+        if (acMessage.SKSEActive)
+            ErrorInfo += " SKSE";
+        if (acMessage.MO2Active)
+            ErrorInfo += " MO2";
         break;
     }
     default:
-        spdlog::error("The server refused connection without reason.");
+        ErrorInfo = "The server refused connection without reason.";
         break;
     }
+
+    ConnectionErrorEvent errorEvent;
+    if (!ErrorInfo.empty())
+    {
+        spdlog::error(ErrorInfo.c_str());
+        errorEvent.ErrorDetail = std::move(ErrorInfo);
+    }
+
+    m_dispatcher.trigger(errorEvent);
 }

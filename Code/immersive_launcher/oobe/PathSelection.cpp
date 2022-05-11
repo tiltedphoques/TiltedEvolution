@@ -85,20 +85,35 @@ bool SelectInstall(bool aForceSelect)
     bool result = true;
     if (!std::filesystem::exists(titlePath) || !std::filesystem::exists(exePath) || aForceSelect)
     {
-        if (auto path = OpenPathSelectionDialog2(SuggestTitlePath()))
+        constexpr int kSelectionAttempts = 3;
+
+        for (int i = 0; i < kSelectionAttempts; i++)
         {
-            size_t pos = path->find_last_of(L'\\');
-            if (pos == std::string::npos)
-                return false;
+            if (auto path = OpenPathSelectionDialog2(SuggestTitlePath()))
+            {
+                size_t pos = path->find_last_of(L'\\');
+                if (pos == std::string::npos)
+                    return false;
 
-            titlePath = path->substr(0, pos);
-            exePath = (*path);
+                titlePath = path->substr(0, pos);
+                exePath = (*path);
 
-            result = Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) &&
-                     Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
+                // game is installed into our directory, or otherwise.
+                if (titlePath == TiltedPhoques::GetPath())
+                {
+                    continue;
+                }
+
+                // if this fails, we try again
+                result = Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) &&
+                         Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
+
+                if (result)
+                    break;
+            }
+            else
+                break;
         }
-        else
-            result = false;
     }
 
     if (result)

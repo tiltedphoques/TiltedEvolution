@@ -20,6 +20,7 @@
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/ConnectionErrorEvent.h>
 
 #include <PlayerCharacter.h>
 
@@ -58,6 +59,8 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
 {
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&OverlayService::OnConnectedEvent>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&OverlayService::OnDisconnectedEvent>(this);
+    m_connectionErrorConnection =
+        aDispatcher.sink<ConnectionErrorEvent>().connect<&OverlayService::OnConnectionError>(this);
     //m_playerListConnection = aDispatcher.sink<NotifyPlayerList>().connect<&OverlayService::OnPlayerList>(this);
     //m_cellChangeEventConnection = aDispatcher.sink<CellChangeEvent>().connect<&OverlayService::OnCellChangeEvent>(this);
     m_chatMessageConnection = aDispatcher.sink<NotifyChatMessageBroadcast>().connect<&OverlayService::OnChatMessageReceived>(this);
@@ -198,6 +201,13 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
 {
     SendSystemMessage(acMessage.Text.c_str());
+}
+
+void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept
+{
+    auto pArgs = CefListValue::Create();
+    pArgs->SetString(0, acConnectedEvent.ErrorDetail.c_str());
+    m_pOverlay->ExecuteAsync("triggererror", pArgs);
 }
 
 void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept

@@ -18,6 +18,8 @@ struct TransportService;
 struct NotifyChatMessageBroadcast;
 struct NotifyPlayerList;
 struct NotifyPlayerDialogue;
+struct ConnectionErrorEvent;
+
 
 using TiltedPhoques::OverlayApp;
 
@@ -56,6 +58,7 @@ struct OverlayService
   protected:
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
+    void OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept;
     // void OnPlayerLeave(const PlayerLeaveEvent&) noexcept;
     void OnCellChangeEvent(const CellChangeEvent&) noexcept;
     void OnChatMessageReceived(const NotifyChatMessageBroadcast&) noexcept;
@@ -74,6 +77,7 @@ struct OverlayService
 
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
+    entt::scoped_connection m_connectionErrorConnection;
     entt::scoped_connection m_cellChangeEventConnection;
     entt::scoped_connection m_chatMessageConnection;
     entt::scoped_connection m_playerListConnection;

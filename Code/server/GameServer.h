@@ -72,6 +72,7 @@ struct GameServer final : Server
     }
 
 protected:
+    bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
     // Implement TiltedPhoques::Server
