@@ -180,6 +180,8 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
                 pCallbackMgr->RegisterQuest(aFormId);
             else
             {
+                ScopedQuestOverride _;
+
                 pQuest->ScriptSetStage(aStage);
                 return pQuest;
             }
