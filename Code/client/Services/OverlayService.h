@@ -79,5 +79,6 @@ struct OverlayService
     entt::scoped_connection m_cellChangeEventConnection;
     entt::scoped_connection m_chatMessageConnection;
     entt::scoped_connection m_playerListConnection;
+    entt::scoped_connection m_playerJoinedConnection;
     entt::scoped_connection m_playerLeftConnection;
 };
