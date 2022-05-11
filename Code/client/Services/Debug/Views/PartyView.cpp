@@ -47,24 +47,6 @@ void DebugService::DrawPartyView()
                     playerName += " (Leader)";
                 }
                 ImGui::BulletText(playerName.c_str());
-                if (partyService.IsLeader())
-                {
-                    ImGui::SameLine(100);
-                    if (ImGui::Button("Kick"))
-                    {
-                        PartyKickRequest kickMessage;
-                        kickMessage.PartyMemberPlayerId = playerEntry.key();
-                        m_transport.Send(kickMessage);
-                    }
-
-                    ImGui::SameLine(150);
-                    if (ImGui::Button("Make Leader"))
-                    {
-                        PartyChangeLeaderRequest changeMessage;
-                        changeMessage.PartyMemberPlayerId = playerEntry.key();
-                        m_transport.Send(changeMessage);
-                    }
-                }
 
                 ImGui::SameLine(200);
                 if (ImGui::Button("Teleport"))
@@ -73,6 +55,25 @@ void DebugService::DrawPartyView()
                     request.TargetPlayer = playerEntry.value();
 
                     m_transport.Send(request);
+                }
+
+                if (partyService.IsLeader())
+                {
+                    ImGui::SameLine();
+                    if (ImGui::Button("Kick"))
+                    {
+                        PartyKickRequest kickMessage;
+                        kickMessage.PartyMemberPlayerId = playerEntry.key();
+                        m_transport.Send(kickMessage);
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Make Leader"))
+                    {
+                        PartyChangeLeaderRequest changeMessage;
+                        changeMessage.PartyMemberPlayerId = playerEntry.key();
+                        m_transport.Send(changeMessage);
+                    }
                 }
             }
             
