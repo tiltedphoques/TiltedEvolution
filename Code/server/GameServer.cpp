@@ -20,6 +20,7 @@
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
 
 #if TP_PLATFORM_WINDOWS
@@ -580,6 +581,24 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetStringCacheId(startId);
 
         Send(aConnectionId, initStringCache);
+
+        for (auto* pOtherPlayer : m_pWorld->GetPlayerManager())
+        {
+            if (pOtherPlayer == pPlayer)
+                continue;
+
+            NotifyPlayerJoined notify{};
+            notify.ServerId = pOtherPlayer->GetId();
+            notify.Username = pOtherPlayer->GetUsername();
+
+            auto& cellComponent = pOtherPlayer->GetCellComponent();
+            notify.WorldSpaceId = cellComponent.WorldSpaceId;
+            notify.CellId = cellComponent.Cell;
+
+            notify.Level = pOtherPlayer->GetLevel();
+
+            Send(pPlayer->GetConnectionId(), notify);
+        }
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
