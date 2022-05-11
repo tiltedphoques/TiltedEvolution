@@ -111,6 +111,9 @@ void PlayerService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noex
 
 void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept
 {
+    if (!m_transport.IsConnected())
+        return;
+
     const auto& partyService = m_world.GetPartyService();
     if (!partyService.IsInParty() || !partyService.IsLeader())
         return;

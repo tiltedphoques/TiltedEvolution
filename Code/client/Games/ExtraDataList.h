@@ -29,7 +29,7 @@ struct ExtraDataList
     void SetHealth(float aHealth) noexcept;
     void SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip) noexcept;
     
-    bool HasQuestObjectAlias() noexcept;
+    [[nodiscard]] bool HasQuestObjectAlias() noexcept;
 
 #if TP_FALLOUT4
     void* unk0;

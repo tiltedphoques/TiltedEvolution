@@ -729,20 +729,20 @@ void Actor::SpeakSound(const char* pFile)
     ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
 }
 
-TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* ahREFR);
+TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* apRefr);
 static TSetCurrentPickREFR* RealSetCurrentPickREFR = nullptr;
 
-void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObjectREFR>* ahREFR)
+void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObjectREFR>* apRefr)
 {
     uint32_t formId = 0;
 
-    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(ahREFR->handle.iBits);
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(apRefr->handle.iBits);
     if (pObject)
         formId = pObject->formID;
 
     World::Get().GetDebugService().SetDebugId(formId);
 
-    return ThisCall(RealSetCurrentPickREFR, apThis, ahREFR);
+    return ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
 
 TiltedPhoques::Initializer s_referencesHooks([]()

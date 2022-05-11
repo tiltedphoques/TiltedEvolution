@@ -55,6 +55,9 @@ Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Org
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
+Console::Command<bool> TogglePvp("TogglePvp", "Toggle pvp",
+                                     [](Console::ArgStack& aStack) { bEnablePvp = aStack.Pop<bool>(); });
+
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
