@@ -466,7 +466,7 @@ Inventory TESObjectREFR::GetEquippedItems() const noexcept
 
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
-    spdlog::info("Setting inventory for {:X}", formID);
+    spdlog::debug("Setting inventory for {:X}", formID);
 
     ScopedInventoryOverride _;
 
@@ -520,6 +520,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
 
     // TODO(cosideci): this needs to be tested. This just creates a copy of the "quest object".
     // Might cause issues when delivering quests.
+    // Maybe make it so that the quest leader gets the ref, and the other party members get the copy?
     if (arEntry.IsQuestItem)
     {
         Actor* pActor = Cast<Actor>(this);

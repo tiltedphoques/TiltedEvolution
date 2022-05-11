@@ -307,7 +307,7 @@ int32_t Actor::GetGoldAmount() noexcept
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
-    spdlog::info("Setting inventory for actor {:X}", formID);
+    spdlog::debug("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 

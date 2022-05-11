@@ -17,6 +17,7 @@ struct CellChangeEvent;
 struct TransportService;
 struct NotifyChatMessageBroadcast;
 struct NotifyPlayerList;
+struct NotifyPlayerDialogue;
 
 using TiltedPhoques::OverlayApp;
 
@@ -58,6 +59,7 @@ struct OverlayService
     // void OnPlayerLeave(const PlayerLeaveEvent&) noexcept;
     void OnCellChangeEvent(const CellChangeEvent&) noexcept;
     void OnChatMessageReceived(const NotifyChatMessageBroadcast&) noexcept;
+    void OnPlayerDialogue(const NotifyPlayerDialogue&) noexcept;
     void OnPlayerList(const NotifyPlayerList&) noexcept;
 
   private:
@@ -75,4 +77,5 @@ struct OverlayService
     entt::scoped_connection m_cellChangeEventConnection;
     entt::scoped_connection m_chatMessageConnection;
     entt::scoped_connection m_playerListConnection;
+    entt::scoped_connection m_playerDialogueConnection;
 };

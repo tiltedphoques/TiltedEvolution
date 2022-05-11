@@ -6,12 +6,14 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
+#include <Events/PlayerDialogueEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
+#include <Messages/PlayerDialogueRequest.h>
 
 #include <Structs/ServerSettings.h>
 
@@ -29,6 +31,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
+    m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -104,6 +107,18 @@ void PlayerService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noex
 
         m_transport.Send(message);
     }
+}
+
+void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept
+{
+    const auto& partyService = m_world.GetPartyService();
+    if (!partyService.IsInParty() || !partyService.IsLeader())
+        return;
+
+    PlayerDialogueRequest request{};
+    request.Text = acEvent.Text;
+
+    m_transport.Send(request);
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept

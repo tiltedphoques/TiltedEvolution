@@ -7,6 +7,8 @@
 
 struct World;
 
+struct PlayerDialogueRequest;
+
 /**
 * @brief Dispatches UI events that modify the UI view of other cients.
 */
@@ -21,10 +23,12 @@ class OverlayService
     */
     void HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept;
     void HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept;
+    void OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept;
 
   private:
     World& m_world;
 
     entt::scoped_connection m_chatMessageConnection;
     entt::scoped_connection m_playerEnterWorldConnection;
+    entt::scoped_connection m_playerDialogueConnection;
 };

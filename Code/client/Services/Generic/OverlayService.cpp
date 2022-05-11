@@ -16,6 +16,7 @@
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/NotifyPlayerList.h>
+#include <Messages/NotifyPlayerDialogue.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -60,6 +61,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     //m_playerListConnection = aDispatcher.sink<NotifyPlayerList>().connect<&OverlayService::OnPlayerList>(this);
     //m_cellChangeEventConnection = aDispatcher.sink<CellChangeEvent>().connect<&OverlayService::OnCellChangeEvent>(this);
     m_chatMessageConnection = aDispatcher.sink<NotifyChatMessageBroadcast>().connect<&OverlayService::OnChatMessageReceived>(this);
+    m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -191,6 +193,11 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 {
     m_pOverlay->ExecuteAsync("disconnect");
     SendSystemMessage("Disconnected from server");
+}
+
+void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
+{
+    SendSystemMessage(acMessage.Text.c_str());
 }
 
 void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept

@@ -45,6 +45,7 @@ enum ClientOpcode : unsigned char
     kPlayerRespawnRequest,
     kDialogueRequest,
     kSubtitleRequest,
+    kPlayerDialogueRequest,
     kClientOpcodeMax
 };
 
@@ -91,5 +92,6 @@ enum ServerOpcode : unsigned char
     kNotifyPlayerRespawn,
     kNotifyDialogue,
     kNotifySubtitle,
+    kNotifyPlayerDialogue,
     kServerOpcodeMax
 };
