@@ -412,6 +412,12 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
 void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
+    if (!m_pWorld->valid(acOrigin))
+    {
+        spdlog::error("Entity is invalid: {:X}", World::ToInteger(acOrigin));
+        return;
+    }
+
     const auto view = m_pWorld->view<CellIdComponent>();
     const auto it = view.find(acOrigin);
 
