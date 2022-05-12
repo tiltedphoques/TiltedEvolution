@@ -18,5 +18,5 @@ void NotifyPlayerJoined::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) 
     Username = Serialization::ReadString(aReader);
     WorldSpaceId.Deserialize(aReader);
     CellId.Deserialize(aReader);
-    ServerId = Serialization::ReadVarInt(aReader) & 0xFFFF;
+    Level = Serialization::ReadVarInt(aReader) & 0xFFFF;
 }
