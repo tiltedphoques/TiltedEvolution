@@ -24,6 +24,7 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
 #include <Events/RemotePlayerSpawnedEvent.h>
+#include <Events/UpdateEvent.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
@@ -62,6 +63,7 @@ private:
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_transport(transport)
 {
+    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&OverlayService::OnUpdate>(this);
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&OverlayService::OnConnectedEvent>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&OverlayService::OnDisconnectedEvent>(this);
     m_connectionErrorConnection =
@@ -180,6 +182,29 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
     auto pArguments = CefListValue::Create();
     pArguments->SetString(0, acMessage);
     m_pOverlay->ExecuteAsync("systemmessage", pArguments);
+}
+
+void OverlayService::OnUpdate(const UpdateEvent&) noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto internalStats = m_transport.GetStatistics();
+    auto steamStats = m_transport.GetConnectionStatus();
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, steamStats.m_flOutPacketsPerSec);
+    pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
+    pArguments->SetInt(2, steamStats.m_nPing);
+    pArguments->SetInt(3, 0);
+    pArguments->SetInt(4, internalStats.UncompressedSentBytes);
+    pArguments->SetInt(5, internalStats.UncompressedRecvBytes);
 }
 
 void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acMessage) noexcept

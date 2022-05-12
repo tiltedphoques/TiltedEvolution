@@ -11,6 +11,7 @@ struct RenderSystemD3D11;
 struct D3D11RenderProvider;
 struct FormIdComponent;
 struct World;
+struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
 struct CellChangeEvent;
@@ -59,6 +60,7 @@ struct OverlayService
     void SendSystemMessage(const std::string& acMessage);
 
   protected:
+    void OnUpdate(const UpdateEvent&) noexcept;
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
     void OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept;
@@ -81,6 +83,7 @@ struct OverlayService
     bool m_active = false;
     bool m_inGame = false;
 
+    entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_connectionErrorConnection;
