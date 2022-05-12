@@ -12,7 +12,7 @@
       <b class="app-group-member-level">{{ player.value.level }} </b>
       <div *ngIf="player.value.health === 0" class="app-group-member-dead">
       </div>
-      {{ player.value.name }}
+      {{ player.value.name }} Id:{{ player.value.serverId }}
       <div class="app-group-member-health" *ngIf="isConnected && (player.value.health || player.value.health === 0)">
         <div class="app-group-member-health-value" [app-health]="player.value.health">
         </div>
