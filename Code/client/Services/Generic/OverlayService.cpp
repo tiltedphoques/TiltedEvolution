@@ -203,8 +203,8 @@ void OverlayService::OnUpdate(const UpdateEvent&) noexcept
     pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
     pArguments->SetInt(2, steamStats.m_nPing);
     pArguments->SetInt(3, 0);
-    pArguments->SetInt(4, internalStats.UncompressedSentBytes);
-    pArguments->SetInt(5, internalStats.UncompressedRecvBytes);
+    pArguments->SetInt(4, internalStats.SentBytes);
+    pArguments->SetInt(5, internalStats.RecvBytes);
     m_pOverlay->ExecuteAsync("debugdata", pArguments);
 }
 
