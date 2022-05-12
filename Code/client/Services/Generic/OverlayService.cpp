@@ -19,6 +19,7 @@
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifyPlayerDialogue.h>
+#include <Messages/NotifyPlayerLevel.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -75,6 +76,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
     m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
+    m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -216,7 +218,6 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
     auto pArguments = CefListValue::Create();
     pArguments->SetString(0, acMessage.PlayerName.c_str());
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
-    spdlog::debug("Received Message from Server and gonna send it to UI: " + acMessage.ChatMessage);
     m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
@@ -309,6 +310,14 @@ void OverlayService::OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent& acEve
     pArguments->SetInt(0, acEvent.PlayerId);
     pArguments->SetBool(1, acEvent.Spawned);
     m_pOverlay->ExecuteAsync("setplayer3Dloaded", pArguments);
+}
+
+void OverlayService::OnPlayerLevel(const NotifyPlayerLevel& acMessage) noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.PlayerId);
+    pArguments->SetInt(1, acMessage.NewLevel);
+    m_pOverlay->ExecuteAsync("setlevel", pArguments);
 }
 
 #if 0

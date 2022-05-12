@@ -9,6 +9,7 @@ struct ServerSettings;
 struct GridCellChangeEvent;
 struct CellChangeEvent;
 struct PlayerDialogueEvent;
+struct PlayerLevelEvent;
 
 struct NotifyPlayerRespawn;
 
@@ -31,6 +32,7 @@ protected:
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept;
+    void OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept;
 
 private:
 
@@ -42,6 +44,7 @@ private:
     * @brief Make sure difficulty doesn't get changed while connected
     */
     void RunDifficultyUpdates() const noexcept;
+    void RunLevelUpdates() const noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -58,4 +61,5 @@ private:
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_playerDialogueConnection;
+    entt::scoped_connection m_playerLevelConnection;
 };

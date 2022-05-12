@@ -16,6 +16,8 @@
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/NotifyRespawn.h>
+#include <Messages/PlayerLevelRequest.h>
+#include <Messages/NotifyPlayerLevel.h>
 
 Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.0f};
 
@@ -25,6 +27,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
     , m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
     , m_exteriorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterExteriorCellRequest>>().connect<&PlayerService::HandleExteriorCellEnter>(this))
     , m_playerRespawnConnection(aDispatcher.sink<PacketEvent<PlayerRespawnRequest>>().connect<&PlayerService::OnPlayerRespawnRequest>(this))
+    , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this))
 {
 }
 
@@ -178,4 +181,15 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
         GameServer::Get()->SendToPlayersInRange(notifyRespawn, *character, acMessage.GetSender());
     }
+}
+
+void PlayerService::OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& acMessage) const noexcept
+{
+    acMessage.pPlayer->SetLevel(acMessage.Packet.NewLevel);
+
+    NotifyPlayerLevel notify{};
+    notify.PlayerId = acMessage.pPlayer->GetId();
+    notify.NewLevel = acMessage.Packet.NewLevel;
+
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }

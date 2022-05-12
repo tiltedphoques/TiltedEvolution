@@ -23,6 +23,7 @@ struct NotifyPlayerLeft;
 struct NotifyPlayerDialogue;
 struct ConnectionErrorEvent;
 struct RemotePlayerSpawnedEvent;
+struct NotifyPlayerLevel;
 
 
 using TiltedPhoques::OverlayApp;
@@ -72,6 +73,7 @@ struct OverlayService
     void OnPlayerJoined(const NotifyPlayerJoined&) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft&) noexcept;
     void OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent&) noexcept;
+    void OnPlayerLevel(const NotifyPlayerLevel&) noexcept;
 
   private:
     CefRefPtr<OverlayApp> m_pOverlay{nullptr};
@@ -94,4 +96,5 @@ struct OverlayService
     entt::scoped_connection m_playerJoinedConnection;
     entt::scoped_connection m_playerLeftConnection;
     entt::scoped_connection m_remotePlayerSpawnedConnection;
+    entt::scoped_connection m_playerLevelConnection;
 };

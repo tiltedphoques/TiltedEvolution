@@ -48,6 +48,7 @@
 #include <Messages/NotifyPlayerDialogue.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifyPlayerLevel.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -68,7 +69,7 @@ struct ServerMessageFactory
                                  NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage,
                                  NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast,
                                  TeleportCommandResponse, NotifyPlayerRespawn, NotifyPlayerLeft, NotifyPlayerJoined, 
-                                 NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue>;
+                                 NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyPlayerLevel>;
 
         return s_visitor(std::forward<T>(func));
     }
