@@ -18,6 +18,7 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/NotifyPlayerLevel.h>
+#include <Messages/NotifyPlayerCellChanged.h>
 
 Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.0f};
 
@@ -29,6 +30,18 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
     , m_playerRespawnConnection(aDispatcher.sink<PacketEvent<PlayerRespawnRequest>>().connect<&PlayerService::OnPlayerRespawnRequest>(this))
     , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this))
 {
+}
+
+void SendPlayerCellChanged(const Player* apPlayer) noexcept
+{
+    auto& cellComponent = apPlayer->GetCellComponent();
+
+    NotifyPlayerCellChanged notify{};
+    notify.PlayerId = apPlayer->GetId();
+    notify.WorldSpaceId = cellComponent.WorldSpaceId;
+    notify.CellId = cellComponent.Cell;
+
+    GameServer::Get()->SendToPlayers(notify, apPlayer);
 }
 
 void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept
@@ -88,6 +101,8 @@ void PlayerService::HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellR
         }
 
         pPlayer->SetCellComponent(cell);
+
+        SendPlayerCellChanged(pPlayer);
     }
 }
 
@@ -130,6 +145,8 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 
         pPlayer->Send(spawnMessage);
     }
+
+    SendPlayerCellChanged(pPlayer);
 }
 
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept

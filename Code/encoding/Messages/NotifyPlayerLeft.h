@@ -19,10 +19,10 @@ struct NotifyPlayerLeft final : ServerMessage
     bool operator==(const NotifyPlayerLeft& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
-               ServerId == acRhs.ServerId &&
+               PlayerId == acRhs.PlayerId &&
                Username == acRhs.Username;
     }
 
-    uint64_t ServerId;
+    uint32_t PlayerId;
     String Username;
 };

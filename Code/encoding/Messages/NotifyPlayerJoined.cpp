@@ -3,7 +3,7 @@
 
 void NotifyPlayerJoined::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, ServerId);
+    Serialization::WriteVarInt(aWriter, PlayerId);
     Serialization::WriteString(aWriter, Username);
     WorldSpaceId.Serialize(aWriter);
     CellId.Serialize(aWriter);
@@ -14,7 +14,7 @@ void NotifyPlayerJoined::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) 
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    ServerId = Serialization::ReadVarInt(aReader);
+    PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Username = Serialization::ReadString(aReader);
     WorldSpaceId.Deserialize(aReader);
     CellId.Deserialize(aReader);

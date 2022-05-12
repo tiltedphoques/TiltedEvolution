@@ -4,33 +4,29 @@
 
 #include <Structs/GameId.h>
 
-struct NotifyPlayerJoined final : ServerMessage
+struct NotifyPlayerCellChanged final : ServerMessage
 {
-    static constexpr ServerOpcode Opcode = kNotifyPlayerJoined;
+    static constexpr ServerOpcode Opcode = kNotifyPlayerCellChanged;
 
-    NotifyPlayerJoined() : 
+    NotifyPlayerCellChanged() : 
         ServerMessage(Opcode)
     {
     }
 
-    virtual ~NotifyPlayerJoined() = default;
+    virtual ~NotifyPlayerCellChanged() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyPlayerJoined& acRhs) const noexcept
+    bool operator==(const NotifyPlayerCellChanged& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                PlayerId == acRhs.PlayerId &&
-               Username == acRhs.Username &&
                WorldSpaceId == acRhs.WorldSpaceId &&
-               CellId == acRhs.CellId &&
-               Level == acRhs.Level;
+               CellId == acRhs.CellId;
     }
 
     uint32_t PlayerId;
-    String Username;
     GameId WorldSpaceId;
     GameId CellId;
-    uint16_t Level;
 };

@@ -3,7 +3,7 @@
 
 void NotifyPlayerLeft::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, ServerId);
+    Serialization::WriteVarInt(aWriter, PlayerId);
     Serialization::WriteString(aWriter, Username);
 }
 
@@ -11,6 +11,6 @@ void NotifyPlayerLeft::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    ServerId = Serialization::ReadVarInt(aReader);
+    PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Username = Serialization::ReadString(aReader);
 }

@@ -336,7 +336,7 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
 
         NotifyPlayerLeft notify{};
-        notify.ServerId = pPlayer->GetId();
+        notify.PlayerId = pPlayer->GetId();
         notify.Username = pPlayer->GetUsername();
         SendToPlayers(notify);
 
@@ -645,7 +645,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                 continue;
 
             NotifyPlayerJoined notify{};
-            notify.ServerId = pOtherPlayer->GetId();
+            notify.PlayerId = pOtherPlayer->GetId();
             notify.Username = pOtherPlayer->GetUsername();
 
             auto& cellComponent = pOtherPlayer->GetCellComponent();
@@ -654,7 +654,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             notify.Level = pOtherPlayer->GetLevel();
 
-            spdlog::info("[GameServer] New notify player {:x} {}", notify.ServerId, notify.Username.c_str());
+            spdlog::info("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
             Send(pPlayer->GetConnectionId(), notify);
         }

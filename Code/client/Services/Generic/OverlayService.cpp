@@ -21,6 +21,7 @@
 #include <Messages/NotifyPlayerDialogue.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
+#include <Messages/NotifyPlayerCellChanged.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -63,6 +64,30 @@ private:
     RenderSystemD3D11* m_pRenderSystem;
 };
 
+String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    String cellName = "UNKNOWN";
+
+    if (aWorldSpaceId)
+    {
+        const uint32_t worldSpaceId = modSystem.GetGameId(aWorldSpaceId);
+        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
+        if (pWorldSpace)
+            cellName = pWorldSpace->GetName();
+    }
+    else
+    {
+        const uint32_t cellId = modSystem.GetGameId(aCellId);
+        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+        if (pCell)
+            cellName = pCell->GetName();
+    }
+
+    return cellName;
+}
+
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_transport(transport)
 {
@@ -70,7 +95,6 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&OverlayService::OnConnectedEvent>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&OverlayService::OnDisconnectedEvent>(this);
     m_connectionErrorConnection = aDispatcher.sink<ConnectionErrorEvent>().connect<&OverlayService::OnConnectionError>(this);
-    //m_cellChangeEventConnection = aDispatcher.sink<CellChangeEvent>().connect<&OverlayService::OnCellChangeEvent>(this);
     m_chatMessageConnection = aDispatcher.sink<NotifyChatMessageBroadcast>().connect<&OverlayService::OnChatMessageReceived>(this);
     m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&OverlayService::OnPlayerJoined>(this);
     m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
@@ -78,6 +102,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_healthChangeConnection = aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&OverlayService::OnHealthChangeBroadcast>(this);
+    m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -253,28 +278,11 @@ void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEv
 void OverlayService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, acMessage.ServerId);
+    pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetString(1, acMessage.Username.c_str());
     pArguments->SetInt(2, acMessage.Level);
 
-    auto& modSystem = m_world.GetModSystem();
-
-    String cellName = "";
-    if (acMessage.WorldSpaceId)
-    {
-        const uint32_t worldSpaceId = modSystem.GetGameId(acMessage.WorldSpaceId);
-        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
-        if (pWorldSpace)
-            cellName = pWorldSpace->GetName();
-    }
-    else
-    {
-        const uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
-        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
-        if (pCell)
-            cellName = pCell->GetName();
-    }
-
+    String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
     pArguments->SetString(3, cellName.c_str());
 
     m_pOverlay->ExecuteAsync("playerconnected", pArguments);
@@ -283,7 +291,7 @@ void OverlayService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcep
 void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, acMessage.ServerId);
+    pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetString(1, acMessage.Username.c_str());
     m_pOverlay->ExecuteAsync("playerdisconnected", pArguments);
 }
@@ -324,23 +332,11 @@ void OverlayService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& 
     m_pOverlay->ExecuteAsync("healthset", pArguments);
 }
 
-#if 0
-void OverlayService::OnCellChangeEvent(const CellChangeEvent& aCellChangeEvent) noexcept
+void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept
 {
-    spdlog::warn("OnCellChangeEvent ! %s", aCellChangeEvent.Name);
-    // Hacky as fuck... Idk why the first cellchangeevent broke UI. It's not a big deal because when player connected we
-    // force cell changed event But change event come before connected event.
-    static bool firstCellChangeEvent = false;
-    if (!m_pOverlay || !firstCellChangeEvent)
-    {
-        firstCellChangeEvent = true;
-        return;
-    }
-    SendSystemMessage("On Cell change event");
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, 1);
-    pArguments->SetString(1, aCellChangeEvent.Name);
+    pArguments->SetInt(0, acMessage.PlayerId);
+    String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
+    pArguments->SetString(3, cellName.c_str());
     m_pOverlay->ExecuteAsync("setcell", pArguments);
-    spdlog::warn("OnCellChangeEvent end !");
 }
-#endif

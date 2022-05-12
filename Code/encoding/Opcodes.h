@@ -97,5 +97,6 @@ enum ServerOpcode : unsigned char
     kNotifyPlayerLeft,
     kNotifyPlayerJoined,
     kNotifyPlayerLevel,
+    kNotifyPlayerCellChanged,
     kServerOpcodeMax
 };
