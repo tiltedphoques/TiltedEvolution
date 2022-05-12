@@ -205,6 +205,7 @@ void OverlayService::OnUpdate(const UpdateEvent&) noexcept
     pArguments->SetInt(3, 0);
     pArguments->SetInt(4, internalStats.UncompressedSentBytes);
     pArguments->SetInt(5, internalStats.UncompressedRecvBytes);
+    m_pOverlay->ExecuteAsync("debugdata", pArguments);
 }
 
 void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acMessage) noexcept
