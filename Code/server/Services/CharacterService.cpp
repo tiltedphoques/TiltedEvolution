@@ -65,7 +65,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
 {
 }
 
-void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
+void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
 {
     const auto& characterComponent = aRegistry.get<CharacterComponent>(aEntity);
 
@@ -75,8 +75,9 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
     apSpawnRequest->IsDead = characterComponent.IsDead;
-    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
+    apSpawnRequest->PlayerId = characterComponent.PlayerId;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -650,6 +651,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
         pPlayer->SetCharacter(cEntity);
         pPlayer->GetQuestLogComponent().QuestContent = message.QuestContent;
+        characterComponent.PlayerId = pPlayer->GetId();
 
         auto& dispatcher = m_world.GetDispatcher();
         dispatcher.trigger(PlayerEnterWorldEvent(pPlayer));

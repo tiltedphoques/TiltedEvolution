@@ -43,3 +43,8 @@ void ActorExtension::SetPlayer(bool aSet) noexcept
         onlineFlags &= ~kPlayer;
 }
 
+void ActorExtension::SetPlayerId(int32_t aId) noexcept
+{
+    PlayerId = aId;
+}
+

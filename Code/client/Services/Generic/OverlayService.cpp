@@ -23,6 +23,7 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
+#include <Events/RemotePlayerSpawnedEvent.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
@@ -71,6 +72,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&OverlayService::OnPlayerJoined>(this);
     m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
+    m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -269,6 +271,14 @@ void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
     pArguments->SetInt(0, acMessage.ServerId);
     pArguments->SetString(1, acMessage.Username.c_str());
     m_pOverlay->ExecuteAsync("playerdisconnected", pArguments);
+}
+
+void OverlayService::OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent& acEvent) noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acEvent.PlayerId);
+    pArguments->SetBool(1, acEvent.Spawned);
+    m_pOverlay->ExecuteAsync("setplayer3Dloaded", pArguments);
 }
 
 #if 0

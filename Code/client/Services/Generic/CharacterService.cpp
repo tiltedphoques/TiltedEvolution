@@ -32,6 +32,7 @@
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+#include <Events/RemotePlayerSpawnedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -112,6 +113,20 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_subtitleEventConnection = m_dispatcher.sink<SubtitleEvent>().connect<&CharacterService::OnSubtitleEvent>(this);
     m_subtitleSyncConnection = m_dispatcher.sink<NotifySubtitle>().connect<&CharacterService::OnNotifySubtitle>(this);
+}
+
+void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
+{
+    Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
+    if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
+    {
+        auto* pExtension = pActor->GetExtension();
+        if (pExtension->IsPlayer())
+            World::Get().GetRunner().Trigger(RemotePlayerSpawnedEvent(pExtension->PlayerId, false));
+
+        pActor->Delete();
+        spdlog::info("\tDeleted actor {:X}", aFormId);
+    }
 }
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
@@ -411,6 +426,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
+        pActor->GetExtension()->SetPlayerId(acMessage.PlayerId);
+        m_world.GetRunner().Trigger(RemotePlayerSpawnedEvent(acMessage.PlayerId, true));
     }
 
     if (pActor->IsDead() != acMessage.IsDead)
@@ -600,14 +617,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
     if (itor != std::end(view))
     {
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
-        {
-            const auto pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
-            if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
-            {
-                spdlog::info("\tDeleting {:X}", pFormIdComponent->Id);
-                pActor->Delete();
-            }
-        }
+            CharacterService::DeleteTempActor(pFormIdComponent->Id);
 
         m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
@@ -1301,15 +1311,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 {
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
-        TESForm* const pForm = TESForm::GetById(aFormId);
-        Actor* const pActor = Cast<Actor>(pForm);
-
-        if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
-        {
-            spdlog::info("Temporary Remote Deleted {:X}", aFormId);
-
-            pActor->Delete();
-        }
+        CharacterService::DeleteTempActor(aFormId);
 
         m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
                                    RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
@@ -1395,6 +1397,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
+        pActor->GetExtension()->SetPlayerId(acMessage.PlayerId);
     }
 
     if (pActor->IsDead() != acMessage.IsDead)

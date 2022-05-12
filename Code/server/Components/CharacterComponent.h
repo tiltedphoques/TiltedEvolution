@@ -14,6 +14,7 @@ struct CharacterComponent
     FormIdComponent BaseId{};
     Tints FaceTints{};
     Factions FactionsContent{};
+    int32_t PlayerId{};
     bool DirtyFactions{ false };
     bool IsDead{};
     bool IsPlayer{};

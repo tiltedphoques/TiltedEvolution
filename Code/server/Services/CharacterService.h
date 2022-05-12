@@ -35,7 +35,7 @@ struct CharacterService
 
     TP_NOCOPYMOVE(CharacterService);
 
-    static void Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept;
+    static void Serialize(World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept;
 
 protected:
 
