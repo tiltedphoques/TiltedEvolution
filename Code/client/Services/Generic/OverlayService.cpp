@@ -20,6 +20,7 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifyPlayerDialogue.h>
 #include <Messages/NotifyPlayerLevel.h>
+#include <Messages/NotifyHealthChangeBroadcast.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -30,6 +31,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
+#include <Games/ActorExtension.h>
 
 using TiltedPhoques::OverlayRenderHandlerD3D11;
 using TiltedPhoques::OverlayRenderHandler;
@@ -67,9 +69,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&OverlayService::OnUpdate>(this);
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&OverlayService::OnConnectedEvent>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&OverlayService::OnDisconnectedEvent>(this);
-    m_connectionErrorConnection =
-        aDispatcher.sink<ConnectionErrorEvent>().connect<&OverlayService::OnConnectionError>(this);
-    //m_playerListConnection = aDispatcher.sink<NotifyPlayerList>().connect<&OverlayService::OnPlayerList>(this);
+    m_connectionErrorConnection = aDispatcher.sink<ConnectionErrorEvent>().connect<&OverlayService::OnConnectionError>(this);
     //m_cellChangeEventConnection = aDispatcher.sink<CellChangeEvent>().connect<&OverlayService::OnCellChangeEvent>(this);
     m_chatMessageConnection = aDispatcher.sink<NotifyChatMessageBroadcast>().connect<&OverlayService::OnChatMessageReceived>(this);
     m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&OverlayService::OnPlayerJoined>(this);
@@ -77,6 +77,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
     m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
+    m_healthChangeConnection = aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&OverlayService::OnHealthChangeBroadcast>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -249,23 +250,6 @@ void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEv
     m_pOverlay->ExecuteAsync("triggererror", pArgs);
 }
 
-void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
-{
-    /*
-    for (auto& player : acPlayerList.Players)
-    {
-        spdlog::info("[CLIENT] ID: {} - Name: {}", player.first, player.second);
-
-        auto pArguments = CefListValue::Create();
-        pArguments->SetInt(0, player.first);
-        pArguments->SetString(1, player.second.c_str());
-        pArguments->SetInt(2, 7);
-        pArguments->SetString(3, "House");
-        m_pOverlay->ExecuteAsync("playerconnected", pArguments);
-    }
-    */
-}
-
 void OverlayService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
     auto pArguments = CefListValue::Create();
@@ -318,6 +302,26 @@ void OverlayService::OnPlayerLevel(const NotifyPlayerLevel& acMessage) noexcept
     pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetInt(1, acMessage.NewLevel);
     m_pOverlay->ExecuteAsync("setlevel", pArguments);
+}
+
+void OverlayService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept
+{
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id);
+    if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.Id);
+        return;
+    }
+
+    if (!pActor->GetExtension()->IsPlayer())
+        return;
+
+    const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, pActor->GetExtension()->PlayerId);
+    pArguments->SetInt(1, newHealth);
+    m_pOverlay->ExecuteAsync("healthset", pArguments);
 }
 
 #if 0

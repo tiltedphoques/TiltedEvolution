@@ -24,6 +24,7 @@ struct NotifyPlayerDialogue;
 struct ConnectionErrorEvent;
 struct RemotePlayerSpawnedEvent;
 struct NotifyPlayerLevel;
+struct NotifyHealthChangeBroadcast;
 
 
 using TiltedPhoques::OverlayApp;
@@ -65,15 +66,15 @@ struct OverlayService
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
     void OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept;
-    // void OnPlayerLeave(const PlayerLeaveEvent&) noexcept;
+    //void OnPlayerLeave(const PlayerLeaveEvent&) noexcept;
     void OnCellChangeEvent(const CellChangeEvent&) noexcept;
     void OnChatMessageReceived(const NotifyChatMessageBroadcast&) noexcept;
     void OnPlayerDialogue(const NotifyPlayerDialogue&) noexcept;
-    void OnPlayerList(const NotifyPlayerList&) noexcept;
     void OnPlayerJoined(const NotifyPlayerJoined&) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft&) noexcept;
     void OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent&) noexcept;
     void OnPlayerLevel(const NotifyPlayerLevel&) noexcept;
+    void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept;
 
   private:
     CefRefPtr<OverlayApp> m_pOverlay{nullptr};
@@ -91,10 +92,10 @@ struct OverlayService
     entt::scoped_connection m_connectionErrorConnection;
     entt::scoped_connection m_cellChangeEventConnection;
     entt::scoped_connection m_chatMessageConnection;
-    entt::scoped_connection m_playerListConnection;
     entt::scoped_connection m_playerDialogueConnection;
     entt::scoped_connection m_playerJoinedConnection;
     entt::scoped_connection m_playerLeftConnection;
     entt::scoped_connection m_remotePlayerSpawnedConnection;
     entt::scoped_connection m_playerLevelConnection;
+    entt::scoped_connection m_healthChangeConnection;
 };
