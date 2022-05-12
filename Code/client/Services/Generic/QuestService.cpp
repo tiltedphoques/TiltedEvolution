@@ -60,7 +60,8 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden())
+    if (ScopedQuestOverride::IsOverriden()
+        || !m_world.Get().GetPartyService().IsLeader())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest start/stop event: {:X}", apEvent->formId);
@@ -94,7 +95,8 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden())
+    if (ScopedQuestOverride::IsOverriden()
+        || !m_world.Get().GetPartyService().IsLeader())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest stage event: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
@@ -178,6 +180,8 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
                 pCallbackMgr->RegisterQuest(aFormId);
             else
             {
+                ScopedQuestOverride _;
+
                 pQuest->ScriptSetStage(aStage);
                 return pQuest;
             }

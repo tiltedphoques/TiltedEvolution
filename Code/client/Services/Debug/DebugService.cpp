@@ -12,6 +12,8 @@
 #include <Services/QuestService.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/DialogueEvent.h>
+#include <Events/SubtitleEvent.h>
 
 #include <Games/References.h>
 
@@ -41,6 +43,8 @@
 
 #include <Interface/UI.h>
 #include <Interface/IMenu.h>
+
+#include <Games/Misc/SubtitleManager.h>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
@@ -86,6 +90,24 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
+    m_dialogueConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnDialogue>(this);
+    m_dispatcher.sink<SubtitleEvent>().connect<&DebugService::OnSubtitle>(this);
+}
+
+void DebugService::OnDialogue(const DialogueEvent& acEvent) noexcept
+{
+    if (ActorID)
+        return;
+    ActorID = acEvent.ActorID;
+    VoiceFile = acEvent.VoiceFile;
+}
+
+void DebugService::OnSubtitle(const SubtitleEvent& acEvent) noexcept
+{
+    if (SubActorID)
+        return;
+    SubActorID = acEvent.SpeakerID;
+    SubtitleText = acEvent.Text;
 }
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -142,19 +164,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         s_f8Pressed = false;
 }
 
-uint64_t DebugService::DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
-{
-    auto hash = pManager->GetDescriptorKey();
-    auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
-
-    spdlog::info("Key: {}", hash);
-    std::cout << "uint64_t key = " << hash << ";" << std::endl;
-    if (!pDescriptor)
-        spdlog::error("Descriptor key not found");
-
-    return hash;
-}
-
 static bool g_enableAnimWindow{false};
 static bool g_enableInventoryWindow{false};
 static bool g_enableNetworkWindow{false};
@@ -164,6 +173,7 @@ static bool g_enableSkillsWindow{false};
 static bool g_enablePartyWindow{false};
 static bool g_enableActorValuesWindow{false};
 static bool g_enableQuestWindow{false};
+static bool g_enableCellWindow{false};
 
 void DebugService::OnDraw() noexcept
 {
@@ -193,7 +203,6 @@ void DebugService::OnDraw() noexcept
     }
     if (ImGui::BeginMenu("Components"))
     {
-        ImGui::MenuItem("Show component list", nullptr, &m_toggleComponentWindow);
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
@@ -227,6 +236,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
+        ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
 
         ImGui::EndMenu();
     }
@@ -259,8 +269,10 @@ void DebugService::OnDraw() noexcept
         DrawActorValuesView();
     if (g_enableQuestWindow)
         DrawQuestDebugView();
+    if (g_enableCellWindow)
+        DrawCellView();
 
-    if (m_toggleComponentWindow)
+    if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();
 
     if (m_showBuildTag)

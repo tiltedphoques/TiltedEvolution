@@ -184,7 +184,10 @@ void ActorValueService::OnHealthChange(const HealthChangeEvent& acEvent) noexcep
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*hitteeIt);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     uint32_t serverId = serverIdRes.value();
 

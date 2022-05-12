@@ -14,6 +14,7 @@
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
 #include <Games/TES.h>
+#include <Games/References.h>
 
 #include <Forms/TESObjectCELL.h>
 
@@ -32,10 +33,8 @@ void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
     if (aDifficulty > 5)
         return;
 
-    POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
-    *s_difficulty = aDifficulty;
-
-    difficulty = aDifficulty;
+    int32_t* difficultySetting = Settings::GetDifficulty();
+    *difficultySetting = difficulty = aDifficulty;
 }
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
@@ -140,7 +139,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
 
     if (combatSkills.contains(aSkill))
     {
-        spdlog::info("Set new last used combat skill to {}.", aSkill);
+        spdlog::debug("Set new last used combat skill to {}.", aSkill);
         apThis->GetExtension()->LastUsedCombatSkill = aSkill;
 
         World::Get().GetRunner().Trigger(AddExperienceEvent(deltaExperience));

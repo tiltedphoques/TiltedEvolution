@@ -33,6 +33,8 @@ void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) 
     }
 
     auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
+    Vector<entt::entity> toDestroy;
+
     for (auto entity : objectView)
     {
         const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
@@ -40,6 +42,11 @@ void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) 
         if (cellIdComponent.Cell != acEvent.OldCell)
             continue;
 
+        toDestroy.push_back(entity);
+    }
+
+    for (auto& entity : toDestroy)
+    {
         m_world.destroy(entity);
     }
 }

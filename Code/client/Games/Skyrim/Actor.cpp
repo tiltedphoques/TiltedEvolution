@@ -314,7 +314,7 @@ uint16_t Actor::GetLevel() noexcept
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
-    spdlog::info("Setting inventory for actor {:X}", formID);
+    spdlog::debug("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 
@@ -586,6 +586,12 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
+        if (!World::Get().GetServerSettings().PvpEnabled)
+        {
+            if (apHitter && apHitter->GetExtension()->IsRemotePlayer())
+                return false;
+        }
+
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
@@ -754,7 +760,7 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
             {
-                spdlog::info("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
+                spdlog::debug("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
                 return;
             }
         }

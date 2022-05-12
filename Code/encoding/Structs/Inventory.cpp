@@ -47,6 +47,7 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
     Serialization::WriteBool(aWriter, ExtraEnchantRemoveUnequip);
     Serialization::WriteBool(aWriter, ExtraWorn);
     Serialization::WriteBool(aWriter, ExtraWornLeft);
+    Serialization::WriteBool(aWriter, IsQuestItem);
 }
 
 void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -77,6 +78,7 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     ExtraEnchantRemoveUnequip = Serialization::ReadBool(aReader);
     ExtraWorn = Serialization::ReadBool(aReader);
     ExtraWornLeft = Serialization::ReadBool(aReader);
+    IsQuestItem = Serialization::ReadBool(aReader);
 }
 
 bool Inventory::operator==(const Inventory& acRhs) const noexcept

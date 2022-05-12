@@ -150,7 +150,9 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 
     notify.Level = acEvent.pPlayer->GetLevel();
 
-    GameServer::Get()->SendToPlayers(notify);
+    spdlog::info("[Party] New notify player {:x} {}", notify.ServerId, notify.Username.c_str());
+
+    GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
 }
 
 void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept

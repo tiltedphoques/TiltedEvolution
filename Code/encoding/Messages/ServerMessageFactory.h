@@ -43,6 +43,9 @@
 #include <Messages/TeleportCommandResponse.h>
 #include <Messages/StringCacheUpdate.h>
 #include <Messages/NotifyPlayerRespawn.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyPlayerDialogue.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
 
@@ -64,7 +67,8 @@ struct ServerMessageFactory
                                  NotifyObjectInventoryChanges, NotifySpellCast, NotifyProjectileLaunch, NotifyInterruptCast,
                                  NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage,
                                  NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast,
-                                 TeleportCommandResponse, NotifyPlayerRespawn, NotifyPlayerLeft, NotifyPlayerJoined>;
+                                 TeleportCommandResponse, NotifyPlayerRespawn, NotifyPlayerLeft, NotifyPlayerJoined, 
+                                 NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue>;
 
         return s_visitor(std::forward<T>(func));
     }

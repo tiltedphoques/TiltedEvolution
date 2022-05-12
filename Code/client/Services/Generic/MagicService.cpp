@@ -113,9 +113,9 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
         {
             auto desiredTargetIdRes = Utils::GetServerId(*targetEntityIt);
             if (desiredTargetIdRes.has_value())
-            {
                 request.DesiredTarget = desiredTargetIdRes.value();
-            }
+            else
+                spdlog::error("{}: failed to find server id", __FUNCTION__);
         }
     }
 
@@ -190,7 +190,10 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
         {
             std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
             if (!serverIdRes.has_value())
+            {
+                spdlog::error("{}: failed to find server id", __FUNCTION__);
                 continue;
+            }
 
             uint32_t serverId = serverIdRes.value();
         
@@ -200,7 +203,6 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
                 pDesiredTargetForm = TESForm::GetById(formIdComponent.Id);
             }
         }
-
     }
 
     TESObjectREFR* pDesiredTarget = Cast<TESObjectREFR>(pDesiredTargetForm);
@@ -244,6 +246,9 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
 
     InterruptCastRequest request;
     request.CasterId = localComponent.Id;
+
+    spdlog::debug("Sending out interrupt cast");
+
     m_transport.Send(request);
 #endif
 }
@@ -312,7 +317,10 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     request.TargetId = serverIdRes.value();
     m_transport.Send(request);
@@ -417,7 +425,10 @@ void MagicService::ApplyQueuedEffects() noexcept
 
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
+        {
+            spdlog::error("{}: failed to find server id", __FUNCTION__);
             continue;
+        }
 
         request.TargetId = serverIdRes.value();
 

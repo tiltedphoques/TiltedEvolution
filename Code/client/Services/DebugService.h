@@ -4,7 +4,10 @@
 
 struct World;
 struct ImguiService;
+
 struct UpdateEvent;
+struct DialogueEvent;
+struct SubtitleEvent;
 
 struct TransportService;
 struct BSAnimationGraphManager;
@@ -20,6 +23,10 @@ struct DebugService
     TP_NOCOPYMOVE(DebugService);
 
     void OnUpdate(const UpdateEvent&) noexcept;
+    void OnDialogue(const DialogueEvent&) noexcept;
+    void OnSubtitle(const SubtitleEvent&) noexcept;
+
+    void SetDebugId(const uint32_t aFormId) noexcept;
 
 protected:
 
@@ -46,8 +53,7 @@ private:
     void DrawPartyView();
     void DrawActorValuesView();
     void DrawQuestDebugView();
-
-    uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept;
+    void DrawCellView();
 
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
@@ -57,10 +63,17 @@ private:
 
     uint32_t m_formId = 0;
 
+    uint32_t ActorID = 0;
+    String VoiceFile = "";
+
+    uint32_t SubActorID = 0;
+    String SubtitleText = "";
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
+    entt::scoped_connection m_dialogueConnection;
+
     bool m_showDebugStuff = false;
     bool m_showBuildTag = true;
-    bool m_toggleComponentWindow = false;
     bool m_drawComponentsInWorldSpace = true;
 };
