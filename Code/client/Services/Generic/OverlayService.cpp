@@ -220,10 +220,14 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
     m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
-void OverlayService::OnConnectedEvent(const ConnectedEvent&) noexcept
+void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 {
     m_pOverlay->ExecuteAsync("connect");
     SendSystemMessage("Successfully connected to server");
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acEvent.PlayerId);
+    m_pOverlay->ExecuteAsync("serverid", pArguments);
 }
 
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept

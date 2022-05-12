@@ -26,7 +26,7 @@ struct AuthenticationResponse final : ServerMessage
     bool operator==(const AuthenticationResponse& achRhs) const noexcept
     {
         return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods &&
-               Settings == achRhs.Settings;
+               Settings == achRhs.Settings && PlayerId == achRhs.PlayerId;
     }
 
     ResponseType Type;
@@ -35,4 +35,5 @@ struct AuthenticationResponse final : ServerMessage
     String Version;
     Mods UserMods{};
     ServerSettings Settings{};
+    uint32_t PlayerId{};
 };

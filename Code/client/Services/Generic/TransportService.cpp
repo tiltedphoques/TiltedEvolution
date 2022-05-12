@@ -176,7 +176,7 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
 
         m_dispatcher.trigger(acMessage.UserMods);
         m_dispatcher.trigger(acMessage.Settings);
-        m_dispatcher.trigger(ConnectedEvent());
+        m_dispatcher.trigger(ConnectedEvent(acMessage.PlayerId));
         return; // quit the function here.
     }
 

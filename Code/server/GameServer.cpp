@@ -619,6 +619,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetModIds(playerModsIds);
         pPlayer->SetLevel(acRequest->Level);
 
+        serverResponse.PlayerId = pPlayer->GetId();
+
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
         spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
