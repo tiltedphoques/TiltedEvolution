@@ -45,6 +45,30 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessDisconnectMessage();
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
+        else if (eventName == "launchParty")
+            World::Get().GetPartyService().CreateParty();
+        else if (eventName == "leaveParty")
+            World::Get().GetPartyService().LeaveParty();
+        else if (eventName == "createPartyInvite")
+        {
+            uint32_t aPlayerId = eventArgs->GetInt(0);
+            World::Get().GetPartyService().CreateInvite(aPlayerId);
+        }
+        else if (eventName == "acceptPartyInvite")
+        {
+            uint32_t aInviterId = eventArgs->GetInt(0);
+            World::Get().GetPartyService().AcceptInvite(aInviterId);
+        }
+        else if (eventName == "kickPartyMember")
+        {
+            uint32_t aPlayerId = eventArgs->GetInt(0);
+            World::Get().GetPartyService().KickPartyMember(aPlayerId);
+        }
+        else if (eventName == "changePartyLeader")
+        {
+            uint32_t aPlayerId = eventArgs->GetInt(0);
+            World::Get().GetPartyService().ChangePartyLeader(aPlayerId);
+        }
 
         return true;
     }
