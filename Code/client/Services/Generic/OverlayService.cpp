@@ -20,13 +20,13 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifyPlayerDialogue.h>
 #include <Messages/NotifyPlayerLevel.h>
-#include <Messages/NotifyHealthChangeBroadcast.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
 #include <Events/RemotePlayerSpawnedEvent.h>
+#include <Events/RemotePlayerDespawnedEvent.h>
 #include <Events/UpdateEvent.h>
 
 #include <PlayerCharacter.h>
@@ -88,6 +88,13 @@ String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
     return cellName;
 }
 
+float CalculateHealthPercentage(Actor* apActor) noexcept
+{
+    const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
+    const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
+    return health / maxHealth * 100.f;
+}
+
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_transport(transport)
 {
@@ -101,7 +108,6 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
     m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
-    m_healthChangeConnection = aDispatcher.sink<NotifyHealthChangeBroadcast>().connect<&OverlayService::OnHealthChangeBroadcast>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
 }
 
@@ -212,6 +218,16 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
     m_pOverlay->ExecuteAsync("systemmessage", pArguments);
 }
 
+void OverlayService::SetPlayerHealthPercentage(Actor* apActor) const noexcept
+{
+    float percentage = CalculateHealthPercentage(apActor);
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, apActor->GetExtension()->PlayerId);
+    pArguments->SetInt(1, static_cast<int>(percentage));
+    m_pOverlay->ExecuteAsync("healthset", pArguments);
+}
+
 void OverlayService::OnUpdate(const UpdateEvent&) noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -298,10 +314,26 @@ void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 
 void OverlayService::OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent& acEvent) noexcept
 {
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+    if (!pActor)
+    {
+        spdlog::error("{}: cannot find actor for form id {:X}", __FUNCTION__, acEvent.FormId);
+        return;
+    }
+
+    float percentage = CalculateHealthPercentage(pActor);
+
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
-    pArguments->SetBool(1, acEvent.Spawned);
-    m_pOverlay->ExecuteAsync("setplayer3Dloaded", pArguments);
+    pArguments->SetInt(1, static_cast<int>(percentage));
+    m_pOverlay->ExecuteAsync("setplayer3dloaded", pArguments);
+}
+
+void OverlayService::OnRemotePlayerDespawned(const RemotePlayerDespawnedEvent& acEvent) noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acEvent.PlayerId);
+    m_pOverlay->ExecuteAsync("setplayer3dunloaded", pArguments);
 }
 
 void OverlayService::OnPlayerLevel(const NotifyPlayerLevel& acMessage) noexcept
@@ -310,26 +342,6 @@ void OverlayService::OnPlayerLevel(const NotifyPlayerLevel& acMessage) noexcept
     pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetInt(1, acMessage.NewLevel);
     m_pOverlay->ExecuteAsync("setlevel", pArguments);
-}
-
-void OverlayService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept
-{
-    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id);
-    if (!pActor)
-    {
-        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.Id);
-        return;
-    }
-
-    if (!pActor->GetExtension()->IsPlayer())
-        return;
-
-    const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
-
-    auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, pActor->GetExtension()->PlayerId);
-    pArguments->SetInt(1, newHealth);
-    m_pOverlay->ExecuteAsync("healthset", pArguments);
 }
 
 void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept

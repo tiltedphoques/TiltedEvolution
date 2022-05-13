@@ -11,6 +11,7 @@ struct RenderSystemD3D11;
 struct D3D11RenderProvider;
 struct FormIdComponent;
 struct World;
+struct Actor;
 struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
@@ -22,8 +23,8 @@ struct NotifyPlayerLeft;
 struct NotifyPlayerDialogue;
 struct ConnectionErrorEvent;
 struct RemotePlayerSpawnedEvent;
+struct RemotePlayerDespawnedEvent;
 struct NotifyPlayerLevel;
-struct NotifyHealthChangeBroadcast;
 struct NotifyPlayerCellChanged;
 
 
@@ -61,6 +62,8 @@ struct OverlayService
 
     void SendSystemMessage(const std::string& acMessage);
 
+    void SetPlayerHealthPercentage(Actor* pActor) const noexcept;
+
   protected:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
@@ -71,8 +74,8 @@ struct OverlayService
     void OnPlayerJoined(const NotifyPlayerJoined&) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft&) noexcept;
     void OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent&) noexcept;
+    void OnRemotePlayerDespawned(const RemotePlayerDespawnedEvent&) noexcept;
     void OnPlayerLevel(const NotifyPlayerLevel&) noexcept;
-    void OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept;
     void OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
 
   private:
@@ -95,7 +98,7 @@ struct OverlayService
     entt::scoped_connection m_playerJoinedConnection;
     entt::scoped_connection m_playerLeftConnection;
     entt::scoped_connection m_remotePlayerSpawnedConnection;
+    entt::scoped_connection m_remotePlayerDespawnedConnection;
     entt::scoped_connection m_playerLevelConnection;
-    entt::scoped_connection m_healthChangeConnection;
     entt::scoped_connection m_cellChangedConnection;
 };

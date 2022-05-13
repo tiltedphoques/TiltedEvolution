@@ -22,7 +22,7 @@ struct ActorExtension
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
     int32_t LastUsedCombatSkill = -1;
-    uint32_t PlayerId{};
+    uint32_t PlayerId = -1;
 
 private:
 

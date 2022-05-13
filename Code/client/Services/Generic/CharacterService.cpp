@@ -33,6 +33,7 @@
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
 #include <Events/RemotePlayerSpawnedEvent.h>
+#include <Events/RemotePlayerDespawnedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -122,7 +123,7 @@ void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
     {
         auto* pExtension = pActor->GetExtension();
         if (pExtension->IsPlayer())
-            World::Get().GetRunner().Trigger(RemotePlayerSpawnedEvent(pExtension->PlayerId, false));
+            World::Get().GetRunner().Trigger(RemotePlayerDespawnedEvent(pExtension->PlayerId));
 
         pActor->Delete();
         spdlog::info("\tDeleted actor {:X}", aFormId);
@@ -427,7 +428,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
         pActor->GetExtension()->SetPlayerId(acMessage.PlayerId);
-        m_world.GetRunner().Trigger(RemotePlayerSpawnedEvent(acMessage.PlayerId, true));
+        m_world.GetRunner().Trigger(RemotePlayerSpawnedEvent(pActor->formID, acMessage.PlayerId));
     }
 
     if (pActor->IsDead() != acMessage.IsDead)

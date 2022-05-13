@@ -304,6 +304,9 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
         if (!pExtension->IsPlayer())
             pActor->Kill();
     }
+
+    if (pActor->GetExtension()->IsRemotePlayer())
+        World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor);
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
