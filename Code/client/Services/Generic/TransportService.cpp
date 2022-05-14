@@ -139,7 +139,9 @@ void TransportService::OnConnected()
     }
 
     auto& modSystem = m_world.GetModSystem();
-    modSystem.GetServerModId(pPlayer->GetWorldSpace()->formID, request.WorldSpaceId);
+    if (pPlayer->GetWorldSpace())
+        modSystem.GetServerModId(pPlayer->GetWorldSpace()->formID, request.WorldSpaceId);
+    
     modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
 
     request.Level = pPlayer->GetLevel();
