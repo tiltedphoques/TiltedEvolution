@@ -13,16 +13,17 @@
       <div *ngIf="player.value.health === 0" class="app-group-member-dead">
       </div>
       {{ player.value.name }} Id:{{ player.value.serverId }}
-      <div class="app-group-member-health" *ngIf="isConnected && (player.value.health || player.value.health === 0)">
+      <div class="app-group-member-health" *ngIf="isConnected && (player.value.health || player.value.health === 0) && player.value.isLoaded">
         <div class="app-group-member-health-value" [app-health]="player.value.health">
         </div>
       </div>
     </div>
 
     <div *ngIf="active" class="command">
-      <button class="app-group-button" *ngIf="!isConnect && group!.owner && group!.owner!.name == player.name"
+      <!--<button class="app-group-button" *ngIf="!isConnect && group!.owner && group!.owner!.name == player.name"
         (click)="launchParty()" [disabled]="isLaunchPartyDisable()">Launch party</button>
       <button class="app-group-button" (click)="leave()">Leave</button>
+      -->
     </div>
   </div>
 </div>
