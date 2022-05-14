@@ -146,8 +146,7 @@ export class RootComponent implements OnInit, OnDestroy {
             name: 'Dumbeldor',
             online: true,
             connected: true,
-            level: 10,
-            health: 75
+            level: 10
           }
         ));
         this.client.playerConnectedChange.next(new Player(
@@ -162,7 +161,15 @@ export class RootComponent implements OnInit, OnDestroy {
         this.client.isLoadedChange.next(new Player(
           {
             serverId: 1,
-            isLoaded: true
+            isLoaded: true,
+            health: 50
+          }
+        ));
+        this.client.isLoadedChange.next(new Player(
+          {
+            serverId: 2,
+            isLoaded: false,
+            health: 75
           }
         ));
         this.client.activationStateChange.next(!this.active);
@@ -172,6 +179,8 @@ export class RootComponent implements OnInit, OnDestroy {
         let whisper = true;
 
         this.client.messageReception.next({ name, content: message, whisper})
+
+        this.client.connectionStateChange.next(true);
       }
     }
 
