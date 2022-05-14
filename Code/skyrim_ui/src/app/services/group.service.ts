@@ -154,6 +154,7 @@ export class GroupService implements OnDestroy {
         const p = group.members.get(player.serverId);
         if (p) {
           p.isLoaded = player.isLoaded;
+          p.health = player.health;
         }
       }
     });
