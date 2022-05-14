@@ -107,6 +107,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
     m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
+    m_remotePlayerDespawnedConnection = aDispatcher.sink<RemotePlayerDespawnedEvent>().connect<&OverlayService::OnRemotePlayerDespawned>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
 }
@@ -327,6 +328,8 @@ void OverlayService::OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent& acEve
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
     pArguments->SetInt(1, static_cast<int>(percentage));
+    spdlog::debug("[3dLoad] {} - {}", acEvent.PlayerId, percentage);
+
     m_pOverlay->ExecuteAsync("setPlayer3dLoaded", pArguments);
 }
 
@@ -334,6 +337,8 @@ void OverlayService::OnRemotePlayerDespawned(const RemotePlayerDespawnedEvent& a
 {
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
+    spdlog::debug("[3dUnload] {}", acEvent.PlayerId);
+
     m_pOverlay->ExecuteAsync("setPlayer3dUnloaded", pArguments);
 }
 
