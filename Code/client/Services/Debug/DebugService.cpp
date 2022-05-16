@@ -92,6 +92,9 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+    if (!BSGraphics::GetMainWindow()->IsForeground())
+        return;
+
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
     static std::atomic<bool> s_f6Pressed = false;

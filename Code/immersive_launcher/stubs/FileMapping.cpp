@@ -30,6 +30,8 @@ HMODULE(WINAPI* RealGetModuleHandleA)(LPSTR) = nullptr;
 NTSTATUS(WINAPI* RealLdrLoadDll)(const wchar_t*, uint32_t*, UNICODE_STRING*, HANDLE*) = nullptr;
 NTSTATUS(WINAPI* RealLdrGetDllHandle)(PWSTR, PULONG, PUNICODE_STRING, PVOID*) = nullptr;
 NTSTATUS(WINAPI* RealLdrGetDllFullName)(HMODULE, PUNICODE_STRING) = nullptr;
+NTSTATUS(WINAPI* RealLdrGetDllHandleEx)
+(ULONG Flags, PWSTR DllPath, PULONG DllCharacteristics, UNICODE_STRING* DllName, PVOID* DllHandle) = nullptr;
 
 inline bool IsUsingMO2()
 {
@@ -100,6 +102,17 @@ NTSTATUS WINAPI TP_LdrGetDllHandle(PWSTR DllPath, PULONG DllCharacteristics, PUN
     return RealLdrGetDllHandle(DllPath, DllCharacteristics, DllName, DllHandle);
 }
 
+NTSTATUS WINAPI TP_LdrGetDllHandleEx(ULONG Flags, PWSTR DllPath, PULONG DllCharacteristics, UNICODE_STRING* DllName, PVOID *DllHandle) 
+{
+    if (DllName && std::wcsncmp(TARGET_NAME L".exe", DllName->Buffer, DllName->Length) == 0)
+    {
+        *DllHandle = NtInternal::ThePeb()->pImageBase;
+        return 0; // success
+    }
+
+    return RealLdrGetDllHandleEx(Flags, DllPath, DllCharacteristics, DllName, DllHandle);
+}
+
 NTSTATUS WINAPI TP_LdrGetDllFullName(HMODULE Module, PUNICODE_STRING DllName)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
@@ -133,6 +146,14 @@ bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
     // not recognized immedeatly, but still looks like game code...
     HMODULE hMod = HModFromAddress(pRbp);
 
+    // simple debug hook
+#if 0
+    if (hMod == GetModuleHandleW(L"NvCameraAllowlisting64.dll"))
+    {
+        __debugbreak();
+    }
+#endif
+
     if (hMod == NtInternal::ThePeb()->pImageBase || 
         hMod == nullptr /*This is a hook, virtual allocd, not owned by anybody, so we assign ownership to the ST directory*/)
     {
@@ -144,7 +165,7 @@ bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
     return !IsLocalModulePath(hMod);
 }
 
-static DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, DWORD aSize)
+DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, DWORD aSize)
 {
     // trampoline space for USVFS
     TP_EMPTY_HOOK_PLACEHOLDER;
@@ -185,7 +206,7 @@ struct ScopedOSHeapItem
 
 // NOTE(Vince): Introduce one layer of indirection by calling GetModuleFileNameW function directly, to trigger usvfs
 // indirection.
-static DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DWORD aBufferSize)
+DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DWORD aBufferSize)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
@@ -275,7 +296,8 @@ void CoreStubsInit()
     // SKSE calls
     // https://github.com/ianpatt/skse64/blob/d79e8f081194f538c24d493e1b57331d837a25c0/skse64_common/Utilities.cpp#L11
 
-    VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandle", &TP_LdrGetDllHandle, (void**)&RealLdrGetDllHandle));
+    //VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandle", &TP_LdrGetDllHandle, (void**)&RealLdrGetDllHandle));
+    VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandleEx", &TP_LdrGetDllHandleEx, (void**)&RealLdrGetDllHandleEx));
 
     // TODO(Vince): we need some check if usvfs already fucked with this?
     // MH_CreateHookApi(L"ntdll.dll", "LdrGetDllFullName", &TP_LdrGetDllFullName, (void**)&RealLdrGetDllFullName);

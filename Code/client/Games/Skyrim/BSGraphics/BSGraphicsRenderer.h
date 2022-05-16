@@ -31,6 +31,8 @@ struct RendererWindow
     int uiWindowHeight;
     IDXGISwapChain* pSwapChain;
     BSGraphics::RenderTarget SwapChainRenderTarget;
+
+    bool IsForeground();
 };
 
 RendererWindow* GetMainWindow();
