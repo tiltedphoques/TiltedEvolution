@@ -21,12 +21,12 @@ public:
     static VersionDb& Get();
 
 private:
-    std::map<unsigned long long, unsigned long long> _data;
-    std::map<unsigned long long, unsigned long long> _rdata;
+    TiltedPhoques::Map<uintptr_t, uintptr_t> _data;
+    TiltedPhoques::Map<uintptr_t, uintptr_t> _rdata;
     int _ver[4];
     std::string _verStr;
     std::string _moduleName;
-    unsigned long long _base;
+    uintptr_t _base;
 
     template <typename T> static T read(std::ifstream& file)
     {
@@ -35,14 +35,14 @@ private:
         return v;
     }
 
-    static void* ToPointer(unsigned long long v)
+    static void* ToPointer(uintptr_t v)
     {
         return (void*)v;
     }
 
-    static unsigned long long FromPointer(void* ptr)
+    static uintptr_t FromPointer(void* ptr)
     {
-        return (unsigned long long)ptr;
+        return (uintptr_t)ptr;
     }
 
     static bool ParseVersionFromString(const char* ptr, int& major, int& minor, int& revision, int& build)
@@ -61,25 +61,25 @@ public:
         return _verStr;
     }
 
-    const std::map<unsigned long long, unsigned long long>& GetOffsetMap() const
+    const TiltedPhoques::Map<uintptr_t, uintptr_t>& GetOffsetMap() const
     {
         return _data;
     }
 
-    void* FindAddressById(unsigned long long id) const
+    void* FindAddressById(uintptr_t id) const
     {
-        unsigned long long b = _base;
+        uintptr_t b = _base;
         if (b == 0)
             return NULL;
 
-        unsigned long long offset = 0;
+        uintptr_t offset = 0;
         if (!FindOffsetById(id, offset))
             return NULL;
 
         return ToPointer(b + offset);
     }
 
-    bool FindOffsetById(unsigned long long id, unsigned long long& result) const
+    bool FindOffsetById(uintptr_t id, uintptr_t& result) const
     {
         auto itr = _data.find(id);
         if (itr != _data.end())
@@ -90,17 +90,17 @@ public:
         return false;
     }
 
-    bool FindIdByAddress(void* ptr, unsigned long long& result) const
+    bool FindIdByAddress(void* ptr, uintptr_t& result) const
     {
-        unsigned long long b = _base;
+        uintptr_t b = _base;
         if (b == 0)
             return false;
 
-        unsigned long long addr = FromPointer(ptr);
+        uintptr_t addr = FromPointer(ptr);
         return FindIdByOffset(addr - b, result);
     }
 
-    bool FindIdByOffset(unsigned long long offset, unsigned long long& result) const
+    bool FindIdByOffset(uintptr_t offset, uintptr_t& result) const
     {
         auto itr = _rdata.find(offset);
         if (itr == _rdata.end())
@@ -232,7 +232,7 @@ public:
 
         {
             HMODULE handle = GetModuleHandleA(NULL);
-            _base = (unsigned long long)handle;
+            _base = (uintptr_t)handle;
         }
 
         int ptrSize = read<int>(file);
@@ -243,10 +243,10 @@ public:
         unsigned char b1, b2;
         unsigned short w1, w2;
         unsigned int d1, d2;
-        unsigned long long q1, q2;
-        unsigned long long pvid = 0;
-        unsigned long long poffset = 0;
-        unsigned long long tpoffset;
+        uintptr_t q1, q2;
+        uintptr_t pvid = 0;
+        uintptr_t poffset = 0;
+        uintptr_t tpoffset;
         for (int i = 0; i < addrCount; i++)
         {
             type = read<unsigned char>(file);
@@ -256,7 +256,7 @@ public:
             switch (low)
             {
             case 0:
-                q1 = read<unsigned long long>(file);
+                q1 = read<uintptr_t>(file);
                 break;
             case 1:
                 q1 = pvid + 1;
@@ -291,12 +291,12 @@ public:
             }
             }
 
-            tpoffset = (high & 8) != 0 ? (poffset / (unsigned long long)ptrSize) : poffset;
+            tpoffset = (high & 8) != 0 ? (poffset / (uintptr_t)ptrSize) : poffset;
 
             switch (high & 7)
             {
             case 0:
-                q2 = read<unsigned long long>(file);
+                q2 = read<uintptr_t>(file);
                 break;
             case 1:
                 q2 = tpoffset + 1;
@@ -330,7 +330,7 @@ public:
             }
 
             if ((high & 8) != 0)
-                q2 *= (unsigned long long)ptrSize;
+                q2 *= (uintptr_t)ptrSize;
 
             _data[q1] = q2;
             _rdata[q2] = q1;
@@ -348,18 +348,21 @@ public:
         if (!f.good())
             return false;
 
-        for (auto itr = _data.begin(); itr != _data.end(); itr++)
+        for (auto& it : _data)
         {
             f << std::dec;
-            f << itr->first;
+            f << it.first;
             f << '\t';
             f << std::hex;
-            f << itr->second + 0x140000000;
+            f << it.second + 0x140000000;
             f << '\n';
         }
 
         return true;
     }
+
+    bool DumpVersionIDC(const std::string& path);
+    bool CreateMapping(const std::string& inf, const std::string& outf);
 };
 
 template <class T> 
