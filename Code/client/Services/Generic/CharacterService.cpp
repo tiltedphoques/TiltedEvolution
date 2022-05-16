@@ -1023,12 +1023,11 @@ void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) n
 void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    ActorExtension* pPlayerEx = pPlayer->GetExtension();
 
-    if (pPlayerEx->LastUsedCombatSkill == -1)
+    if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
-    pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
+    pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept

@@ -140,7 +140,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
     if (combatSkills.contains(aSkill))
     {
         spdlog::debug("Set new last used combat skill to {}.", aSkill);
-        apThis->GetExtension()->LastUsedCombatSkill = aSkill;
+        PlayerCharacter::LastUsedCombatSkill = aSkill;
 
         World::Get().GetRunner().Trigger(AddExperienceEvent(deltaExperience));
     }
