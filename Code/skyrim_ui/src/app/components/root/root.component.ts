@@ -20,15 +20,21 @@ import { environment } from '../../../environments/environment';
 import { User } from '../../models/user';
 import { Player } from '../../models/player';
 
+import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { PlayerList } from 'src/app/models/player-list';
+import { PlayerListService } from 'src/app/services/player-list.service';
+
 @Component({
   selector: 'app-root',
   templateUrl: './root.component.html',
-  styleUrls: [ './root.component.scss' ],
+  styleUrls: ['./root.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  animations: [ controlsAnimation, notificationsAnimation, popupsAnimation ],
+  animations: [controlsAnimation, notificationsAnimation, popupsAnimation],
   host: { 'data-app-root-game': environment.game.toString() }
 })
 export class RootComponent implements OnInit, OnDestroy {
+
+  faCogs: IconDefinition = faCogs;
 
   @ViewChild('chat')
   private chatComp!: ChatComponent;
@@ -42,7 +48,8 @@ export class RootComponent implements OnInit, OnDestroy {
   public constructor(
     private client: ClientService,
     private user: UserService,
-    private sound: SoundService
+    private sound: SoundService,
+    private playerList: PlayerListService
   ) {
   }
 
@@ -131,56 +138,61 @@ export class RootComponent implements OnInit, OnDestroy {
     this.client.reconnect();
   }
 
-  @HostListener('window:keydown.escape', [ '$event' ])
+  @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
     if (!this.view) {
       if (environment.game) {
         this.client.deactivate();
-      }
-      else {
-        this.user.login('1', 'Dumbeldor');
-        this.client.playerConnectedChange.next(new Player(
-          {
-            serverId: 1,
-            name: 'Dumbeldor',
-            online: true,
-            connected: true,
-            level: 10
-          }
-        ));
-        this.client.playerConnectedChange.next(new Player(
-          {
-            serverId: 2,
-            name: 'Pokang',
-            online: true,
-            connected: true,
-            level: 12
-          }
-        ));
-        this.client.isLoadedChange.next(new Player(
-          {
-            serverId: 1,
-            isLoaded: true,
-            health: 50
-          }
-        ));
-        this.client.isLoadedChange.next(new Player(
-          {
-            serverId: 2,
-            isLoaded: false,
-            health: 75
-          }
-        ));
+      } else {
+
+        if (!this.connected) {
+          this.user.login('1', 'Dumbeldor');
+
+          this.client.connectionStateChange.next(true);
+
+          this.client.playerConnectedChange.next(new Player(
+            {
+              serverId: 1,
+              name: 'Dumbeldor',
+              online: true,
+              connected: true,
+              level: 10
+            }
+          ));
+          this.client.playerConnectedChange.next(new Player(
+            {
+              serverId: 2,
+              name: 'Pokang',
+              online: true,
+              connected: true,
+              level: 12
+            }
+          ));
+          this.client.isLoadedChange.next(new Player(
+            {
+              serverId: 1,
+              isLoaded: true,
+              health: 50
+            }
+          ));
+          this.client.isLoadedChange.next(new Player(
+            {
+              serverId: 2,
+              isLoaded: false,
+              health: 75
+            }
+          ));
+
+
+          let name = "Banana";
+          let message = "Hello Guys";
+          let whisper = true;
+
+          this.client.messageReception.next({ name, content: message, whisper })
+        }
         this.client.activationStateChange.next(!this.active);
 
-        let name = "Banana";
-        let message = "Hello Guys";
-        let whisper = true;
-
-        this.client.messageReception.next({ name, content: message, whisper})
-
-        this.client.connectionStateChange.next(true);
       }
     }
 
