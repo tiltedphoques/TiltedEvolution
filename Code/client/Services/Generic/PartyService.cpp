@@ -1,12 +1,10 @@
-#include <TiltedOnlinePCH.h>
-
-
-#include <imgui.h>
-#include <Events/UpdateEvent.h>
-
 #include <Services/PartyService.h>
+
 #include <Services/ImguiService.h>
 #include <Services/TransportService.h>
+
+#include <Events/UpdateEvent.h>
+#include <Events/DisconnectedEvent.h>
 
 #include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPartyInfo.h>
@@ -24,6 +22,7 @@ PartyService::PartyService(entt::dispatcher& aDispatcher, TransportService& aTra
     : m_transportService(aTransportService)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this);
+    m_disconnectConnection = aDispatcher.sink<DisconnectedEvent>().connect<&PartyService::OnDisconnected>(this);
 
     m_playerListConnection = aDispatcher.sink<NotifyPlayerList>().connect<&PartyService::OnPlayerList>(this);
     m_partyInfoConnection = aDispatcher.sink<NotifyPartyInfo>().connect<&PartyService::OnPartyInfo>(this);
@@ -45,14 +44,15 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
     while (itor != std::end(m_invitations))
     {
         if (itor->second < cCurrentTick)
-        {
             itor = m_invitations.erase(itor);
-        }
         else
-        {
             ++itor;
-        }
     }
+}
+
+void PartyService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
+{
+    DestroyParty();
 }
 
 void PartyService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
@@ -80,10 +80,7 @@ void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcep
 void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
 {
     spdlog::debug("[PartyService]: Left party");
-    m_inParty = false;
-    m_isLeader = false;
-    m_leaderPlayerId = -1;
-    m_partyMembers.clear();
+    DestroyParty();
 }
 
 void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcept
@@ -94,4 +91,12 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
     m_isLeader = acPartyJoined.IsLeader;
     m_leaderPlayerId = acPartyJoined.LeaderPlayerId;
     m_partyMembers = acPartyJoined.PlayerIds;
+}
+
+void PartyService::DestroyParty() noexcept
+{
+    m_inParty = false;
+    m_isLeader = false;
+    m_leaderPlayerId = -1;
+    m_partyMembers.clear();
 }

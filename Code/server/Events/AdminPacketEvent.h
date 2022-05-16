@@ -1,8 +1,10 @@
 #pragma once
 
-
 using TiltedPhoques::ConnectionId_t;
 
+/**
+* @brief Wrapper for admin messages.
+*/
 template<class T>
 struct AdminPacketEvent
 {

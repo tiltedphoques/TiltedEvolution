@@ -19,6 +19,8 @@ constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeo
 // Use this to raise the SKSE baseline
 constexpr int kSKSEMinBuild = 20100;
 
+HMODULE g_SKSEModuleHandle{nullptr};
+
 struct FileVersion
 {
     static constexpr uint8_t scVersionSize = 4;
@@ -70,6 +72,11 @@ std::string GetSKSEStyleExeVersion()
     return exeBuild;
 }
 } // namespace
+
+bool IsScriptExtenderLoaded()
+{
+    return g_SKSEModuleHandle;
+}
 
 void LoadScriptExender()
 {
@@ -133,11 +140,21 @@ void LoadScriptExender()
     }
 #endif
 
-    if (LoadLibraryW(needle->c_str()))
+    if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
     {
-        spdlog::info("Successfully loaded {} {}", needle->string(), skseVersion);
-        spdlog::info("Be aware that messages that start without a colored [timestamp] prefix are logs from the "
-                     "Script Extender and its loaded mods.");
+        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, "StartSKSE")))
+        {
+            spdlog::info(
+                "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "
+                "logs from the "
+                "Script Extender and its loaded mods.",
+                skseVersion);
+
+            pStartSKSE();
+            spdlog::info("SKSE is active");
+        }
+        else
+            spdlog::warn("SKSE dll doesn't expose StartSKSE(), it may be outdated.");
     }
     else
     {

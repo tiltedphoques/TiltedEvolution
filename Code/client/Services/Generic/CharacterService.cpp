@@ -1,21 +1,17 @@
-#include <TiltedOnlinePCH.h>
-
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Services/PapyrusService.h"
-
+#include <Services/PartyService.h>
 
 #include <Services/CharacterService.h>
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
-#include <Services/QuestService.h>
 
 #include <Games/References.h>
+#include <Games/Misc/SubtitleManager.h>
 
-#include <ExtraData/ExtraLeveledCreature.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
-#include <ExtraData/ExtraLeveledCreature.h>
 
 #include <Components.h>
 
@@ -23,18 +19,19 @@
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
-#include <Systems/CacheSystem.h>
 
+#include <Events/ActorAddedEvent.h>
+#include <Events/ActorRemovedEvent.h>
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/EquipmentChangeEvent.h>
-#include <Events/UpdateEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
 #include <Events/AddExperienceEvent.h>
+#include <Events/DialogueEvent.h>
+#include <Events/SubtitleEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -61,6 +58,10 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/SubtitleRequest.h>
+#include <Messages/NotifySubtitle.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -74,8 +75,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
-    m_formIdAddedConnection = m_world.on_construct<FormIdComponent>().connect<&CharacterService::OnFormIdComponentAdded>(this);
-    m_formIdRemovedConnection = m_world.on_destroy<FormIdComponent>().connect<&CharacterService::OnFormIdComponentRemoved>(this);
+    m_referenceAddedConnection = m_dispatcher.sink<ActorAddedEvent>().connect<&CharacterService::OnActorAdded>(this);
+    m_referenceRemovedConnection = m_dispatcher.sink<ActorRemovedEvent>().connect<&CharacterService::OnActorRemoved>(this);
 
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this);
     m_actionConnection = m_dispatcher.sink<ActionEvent>().connect<&CharacterService::OnActionEvent>(this);
@@ -105,51 +106,69 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
     m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
+
+    m_dialogueEventConnection = m_dispatcher.sink<DialogueEvent>().connect<&CharacterService::OnDialogueEvent>(this);
+    m_dialogueSyncConnection = m_dispatcher.sink<NotifyDialogue>().connect<&CharacterService::OnNotifyDialogue>(this);
+
+    m_subtitleEventConnection = m_dispatcher.sink<SubtitleEvent>().connect<&CharacterService::OnSubtitleEvent>(this);
+    m_subtitleSyncConnection = m_dispatcher.sink<NotifySubtitle>().connect<&CharacterService::OnNotifySubtitle>(this);
 }
 
-void CharacterService::OnFormIdComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
-    if (!m_transport.IsOnline())
-        return;
-
-    auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-
-    // Security check
-    auto* const pForm = TESForm::GetById(formIdComponent.Id);
-    auto* const pActor = RTTI_CAST(pForm, TESForm, Actor);
-    if (!pActor)
-        return;
-
-    if (pActor->GetExtension()->IsRemote())
+    if (acEvent.FormId == 0x14)
     {
-        spdlog::info("New entity remotely managed? {:X}", pActor->formID);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+        pActor->GetExtension()->SetPlayer(true);
     }
 
-    if (auto* pRemoteComponent = aRegistry.try_get<RemoteComponent>(aEntity); pRemoteComponent)
+    entt::entity entity;
+
+    const auto view = m_world.view<RemoteComponent>();
+    const auto it = std::find_if(std::begin(view), std::end(view), [&acEvent, view](entt::entity entity) {
+        auto& remoteComponent = view.get<RemoteComponent>(entity);
+        return remoteComponent.CachedRefId == acEvent.FormId;
+    });
+
+    if (it != std::end(view))
     {
-        RequestSpawnData requestSpawnData;
-        requestSpawnData.Id = pRemoteComponent->Id;
-        m_transport.Send(requestSpawnData);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+        pActor->GetExtension()->SetRemote(true);
+
+        entity = *it;
     }
+    else
+        entity = m_world.create();
 
-    if (aRegistry.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))
-        return;
+    m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
 
-    CacheSystem::Setup(World::Get(), aEntity, pActor);
-
-    // TODO: why check for npc?
-    auto* const pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
-    if(pNpc)
-    {
-        RequestServerAssignment(aRegistry, aEntity);
-    }
+    ProcessNewEntity(entity);
 }
 
-void CharacterService::OnFormIdComponentRemoved(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 {
-    auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+    auto view = m_world.view<FormIdComponent>();
+    const auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.FormId](auto aEntity) 
+    {
+        return view.get<FormIdComponent>(aEntity).Id == formId;
+    });
 
-    CancelServerAssignment(aRegistry, aEntity, formIdComponent.Id);
+    if (entityIt == view.end())
+    {
+        spdlog::error("Actor to remove not found in form ids map {:X}", acEvent.FormId);
+        return;
+    }
+
+    const auto cId = *entityIt;
+
+    auto& formIdComponent = view.get<FormIdComponent>(cId);
+    CancelServerAssignment(*entityIt, formIdComponent.Id);
+
+    if (m_world.all_of<FormIdComponent>(cId))
+        m_world.remove<FormIdComponent>(cId);
+
+    if (m_world.orphan(cId))
+        m_world.destroy(cId);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -159,16 +178,29 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunFactionsUpdates();
     RunRemoteUpdates();
     RunExperienceUpdates();
-    RunWeaponDrawUpdates(acUpdateEvent);
+    ApplyCachedWeaponDraws(acUpdateEvent);
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
 {
     // Go through all the forms that were previously detected
-    auto view = m_world.view<FormIdComponent>();
-    for (auto entity : view)
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    Vector<entt::entity> entities(view.begin(), view.end());
+
+    for (auto entity : entities)
     {
-        OnFormIdComponentAdded(m_world, entity);
+        auto& formIdComponent = m_world.get<FormIdComponent>(entity);
+        // Delete all temporary actors on connect
+        if (formIdComponent.Id > 0xFF000000)
+        {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+            if (pActor)
+                pActor->Delete();
+
+            continue;
+        }
+
+        ProcessNewEntity(entity);
     }
 }
 
@@ -179,7 +211,7 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     {
         auto& formIdComponent = remoteView.get<FormIdComponent>(entity);
 
-        auto pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        auto pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (!pActor)
             continue;
 
@@ -223,7 +255,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
     {
         TESForm* const pForm = TESForm::GetById(formIdComponent->Id);
-        Actor* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+        Actor* const pActor = Cast<Actor>(pForm);
 
         if (!pActor)
             return;
@@ -245,17 +277,11 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     else
     {
         auto* const pForm = TESForm::GetById(formIdComponent->Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = Cast<Actor>(pForm);
         if (!pActor)
         {
             m_world.destroy(cEntity);
             return;
-        }
-
-        const auto* pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
-        if (pNpc)
-        {
-            spdlog::warn("Spawn Actor: {:X}, and NPC {}", pActor->formID, pNpc->fullName.value);
         }
 
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
@@ -273,9 +299,21 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
-        const uint32_t cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
-        const TESForm* const pCellForm = TESForm::GetById(cCellId);
-        TESObjectCELL* const pCell = RTTI_CAST(pCellForm, TESForm, TESObjectCELL);
+        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acMessage.CellId);
+        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
+
+        // In case of lazy-loading of exterior cells
+        if (!pCell)
+        {
+            const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
+            TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+            if (pWorldSpace)
+            {
+                GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
+                pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+            }
+        }
+
         if (pCell)
             pActor->MoveTo(pCell, acMessage.Position);
     }
@@ -309,18 +347,20 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         if (acMessage.BaseId != GameId{})
         {
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
-            if(cNpcId == 0)
+            if (cNpcId == 0)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
                 return;
             }
 
-            pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
+            pNpc = Cast<TESNPC>(TESForm::GetById(cNpcId));
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
         {
+            // Players and npcs with temporary ref ids and base ids (usually random events)
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
+            // TODO(cosideci): facegen for fully temporary NPCs
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
@@ -331,7 +371,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
 
         auto* const pForm = TESForm::GetById(cActorId);
-        pActor = RTTI_CAST(pForm, TESForm, Actor);
+        pActor = Cast<Actor>(pForm);
 
         if (!pActor)
         {
@@ -365,9 +405,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+
     pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
     if (acMessage.IsPlayer)
+    {
         pActor->SetIgnoreFriendlyHit(true);
+        pActor->SetPlayerRespawnMode();
+    }
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -409,7 +453,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         auto* const pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = Cast<Actor>(pForm);
 
         if (!pActor)
             return;
@@ -489,7 +533,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
         {
             auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
-            auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+            auto* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
             if (!pActor)
                 return;
 
@@ -503,6 +547,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
 
 void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept
 {
+    // TODO(cosideci): handle case if no one has it, therefore no RemoteComponent
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [&acMessage, &view](auto entity) {
@@ -513,11 +558,14 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     {
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
-        auto* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        auto* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (pActor)
         {
             pActor->GetExtension()->SetRemote(false);
 
+            // TODO(cosideci): this should be done differently.
+            // Send an ownership claim request, and have the server broadcast the result.
+            // Only then should components be added or removed.
             m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
             m_world.emplace<LocalAnimationComponent>(*itor);
             m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
@@ -553,7 +601,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
     {
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
         {
-            const auto pActor = RTTI_CAST(TESForm::GetById(pFormIdComponent->Id), TESForm, Actor);
+            const auto pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
             if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
             {
                 spdlog::info("\tDeleting {:X}", pFormIdComponent->Id);
@@ -567,9 +615,12 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
 
 void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept
 {
-    Actor* pActor = GetByServerId(Actor, acMessage.ActorId);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActorId);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ActorId);
         return;
+    }
 
     pActor->Delete();
 
@@ -591,14 +642,17 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     uint32_t serverId = serverIdRes.value();
 
     RequestRespawn request;
     request.ActorId = serverId;
 
-    Actor* pActor = GetByServerId(Actor, serverId);
+    Actor* pActor = Utils::GetByServerId<Actor>(serverId);
     if (pActor)
         pActor->Delete();
 
@@ -691,7 +745,7 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
     ProjectileLaunchData launchData{};
 #endif
 
-    launchData.pShooter = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, TESObjectREFR);
+    launchData.pShooter = Cast<TESObjectREFR>(TESForm::GetById(formIdComponent.Id));
 
     launchData.Origin.x = acMessage.OriginX;
     launchData.Origin.y = acMessage.OriginY;
@@ -702,26 +756,26 @@ void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& ac
 
 #if TP_SKYRIM64
     const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
-    launchData.pFromWeapon = RTTI_CAST(TESForm::GetById(cFromWeaponId), TESForm, TESObjectWEAP);
+    launchData.pFromWeapon = Cast<TESObjectWEAP>(TESForm::GetById(cFromWeaponId));
 #endif
 
 #if TP_FALLOUT4
-    Actor* pShooter = RTTI_CAST(launchData.pShooter, TESObjectREFR, Actor);
+    Actor* pShooter = Cast<Actor>(launchData.pShooter);
     pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
 #endif
 
     const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
-    launchData.pFromAmmo = RTTI_CAST(TESForm::GetById(cFromAmmoId), TESForm, TESAmmo);
+    launchData.pFromAmmo = Cast<TESAmmo>(TESForm::GetById(cFromAmmoId));
 
     launchData.fZAngle = acMessage.ZAngle;
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
 
     const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = RTTI_CAST(TESForm::GetById(cParentCellId), TESForm, TESObjectCELL);
+    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
 
     const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
-    launchData.pSpell = RTTI_CAST(TESForm::GetById(cSpellId), TESForm, MagicItem);
+    launchData.pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
 
     launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
 
@@ -776,7 +830,10 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
     if (!riderServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     const auto mountIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.MountID, view](auto entity) {
         return view.get<FormIdComponent>(entity).Id == id;
@@ -792,12 +849,15 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     std::optional<uint32_t> mountServerIdRes = Utils::GetServerId(cMountEntity);
     if (!mountServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     if (m_world.try_get<RemoteComponent>(cMountEntity))
     {
         const TESForm* pMountForm = TESForm::GetById(acEvent.MountID);
-        Actor* pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+        Actor* pMount = Cast<Actor>(pMountForm);
         pMount->GetExtension()->SetRemote(false);
 
         m_world.emplace<LocalComponent>(cMountEntity, mountServerIdRes.value());
@@ -837,22 +897,27 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
 
     auto& riderFormIdComponent = remoteView.get<FormIdComponent>(*riderIt);
     TESForm* pRiderForm = TESForm::GetById(riderFormIdComponent.Id);
-    Actor* pRider = RTTI_CAST(pRiderForm, TESForm, Actor);
+    Actor* pRider = Cast<Actor>(pRiderForm);
 
     Actor* pMount = nullptr;
 
     auto formView = m_world.view<FormIdComponent>();
-    for (auto entity : formView)
+    Vector<entt::entity> entities(formView.begin(), formView.end());
+
+    for (auto entity : entities)
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
+        {
+            spdlog::error("{}: failed to find server id", __FUNCTION__);
             continue;
+        }
 
         uint32_t serverId = serverIdRes.value();
 
         if (serverId == acMessage.MountId)
         {
-            auto& mountFormIdComponent = formView.get<FormIdComponent>(entity);
+            auto& mountFormIdComponent = m_world.get<FormIdComponent>(entity);
 
             if (m_world.all_of<LocalComponent>(entity))
             {
@@ -861,7 +926,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
             }
 
             TESForm* pMountForm = TESForm::GetById(mountFormIdComponent.Id);
-            pMount = RTTI_CAST(pMountForm, TESForm, Actor);
+            pMount = Cast<Actor>(pMountForm);
             pMount->GetExtension()->SetRemote(true);
 
             InterpolationSystem::Setup(m_world, entity);
@@ -893,7 +958,10 @@ void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const
 
     std::optional<uint32_t> actorServerIdRes = Utils::GetServerId(cActorEntity);
     if (!actorServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     NewPackageRequest request;
     request.ActorId = actorServerIdRes.value();
@@ -920,7 +988,7 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
     auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
     const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    Actor* pActor = Cast<Actor>(pForm);
 
     const uint32_t cPackageFormId = World::Get().GetModSystem().GetGameId(acMessage.PackageId);
     const TESForm* pPackageForm = TESForm::GetById(cPackageFormId);
@@ -931,7 +999,7 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
         return;
     }
 
-    TESPackage* pPackage = RTTI_CAST(pPackageForm, TESForm, TESPackage);
+    TESPackage* pPackage = Cast<TESPackage>(pPackageForm);
 
     pActor->SetPackage(pPackage);
 }
@@ -952,50 +1020,178 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
 }
 
-void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const entt::entity aEntity) const noexcept
+void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto serverIdRes = Utils::GetServerId(*entityIt);
+    if (!serverIdRes)
+    {
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.ActorID);
+        return;
+    }
+
+    DialogueRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.SoundFilename = acEvent.VoiceFile;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    pActor->StopCurrentDialogue(true);
+    pActor->SpeakSound(acMessage.SoundFilename.c_str());
+}
+
+void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.SpeakerID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto serverIdRes = Utils::GetServerId(*entityIt);
+    if (!serverIdRes)
+    {
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.SpeakerID);
+        return;
+    }
+
+    SubtitleRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.Text = acEvent.Text;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
+}
+
+void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
+{
+    if (!m_transport.IsOnline())
+        return;
+
+    auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
+
+    auto* const pForm = TESForm::GetById(formIdComponent.Id);
+    auto* const pActor = Cast<Actor>(pForm);
+    if (!pActor)
+        return;
+
+    if (pActor->GetExtension()->IsRemote())
+    {
+        spdlog::info("New entity remotely managed? {:X}", pActor->formID);
+    }
+
+    if (auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity); pRemoteComponent)
+    {
+        RequestSpawnData requestSpawnData;
+        requestSpawnData.Id = pRemoteComponent->Id;
+        m_transport.Send(requestSpawnData);
+    }
+
+    if (m_world.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))
+        return;
+
+    CacheSystem::Setup(World::Get(), aEntity, pActor);
+
+    RequestServerAssignment(aEntity);
+}
+
+void CharacterService::RequestServerAssignment(const entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
         return;
 
     static uint32_t sCookieSeed = 0;
 
-    const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+    const auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
 
-    auto* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    auto* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
     if (!pActor)
         return;
 
-    auto* const pNpc = RTTI_CAST(pActor->baseForm, TESForm, TESNPC);
+    auto* const pNpc = Cast<TESNPC>(pActor->baseForm);
     if (!pNpc)
-        return;
-
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-    if (!m_world.GetModSystem().GetServerModId(formIdComponent.Id, modId, baseId))
-        return;
-
-    uint32_t cellBaseId = 0;
-    uint32_t cellModId = 0;
-    if (!m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, cellModId, cellBaseId))
         return;
 
     AssignCharacterRequest message;
 
     message.Cookie = sCookieSeed;
-    message.ReferenceId.BaseId = baseId;
-    message.ReferenceId.ModId = modId;
-    message.CellId.BaseId = cellBaseId;
-    message.CellId.ModId = cellModId;
+
+    if (!m_world.GetModSystem().GetServerModId(formIdComponent.Id, message.ReferenceId))
+    {
+        spdlog::error("Server reference id not found for form id {:X}", formIdComponent.Id);
+        return;
+    }
+
+    if (!m_world.GetModSystem().GetServerModId(pActor->parentCell->formID, message.CellId))
+    {
+        spdlog::error("Server cell id not found for cell id {:X}", pActor->parentCell->formID);
+        return;
+    }
 
     if (const auto pWorldSpace = pActor->GetWorldSpace())
     {
-        uint32_t worldSpaceBaseId = 0;
-        uint32_t worldSpaceModId = 0;
-        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, worldSpaceModId, worldSpaceBaseId))
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, message.WorldSpaceId))
             return;
-
-        message.WorldSpaceId.BaseId = worldSpaceBaseId;
-        message.WorldSpaceId.ModId = worldSpaceModId;
     }
 
     message.Position = pActor->position;
@@ -1005,6 +1201,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
+    const auto isNpcTemporary = pNpc->formID >= 0xFF000000;
 
     if(isPlayer)
     {
@@ -1013,7 +1210,7 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
 
     const auto changeFlags = pNpc->GetChangeFlags();
 
-    if(isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
+    if (isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
@@ -1075,10 +1272,13 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.IsDead = pActor->IsDead();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if(isTemporary)
+    if (isTemporary /* && !isNpcTemporary */)
     {
-        if (!World::Get().GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        {
+            spdlog::error("Server NPC form id not found for form id {:X}", pNpc->formID);
             return;
+        }
     }
 
     // Serialize actions
@@ -1087,22 +1287,22 @@ void CharacterService::RequestServerAssignment(entt::registry& aRegistry, const 
     message.LatestAction = pExtension->LatestAnimation;
     pActor->SaveAnimationVariables(message.LatestAction.Variables);
 
-    spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, aEntity);
+    spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, to_integral(aEntity));
 
     if (m_transport.Send(message))
     {
-        aRegistry.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
+        m_world.emplace<WaitingForAssignmentComponent>(aEntity, sCookieSeed);
 
         sCookieSeed++;
     }
 }
 
-void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const entt::entity aEntity, const uint32_t aFormId) const noexcept
+void CharacterService::CancelServerAssignment(const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
-    if (aRegistry.all_of<RemoteComponent>(aEntity))
+    if (m_world.all_of<RemoteComponent>(aEntity))
     {
         TESForm* const pForm = TESForm::GetById(aFormId);
-        Actor* const pActor = RTTI_CAST(pForm, TESForm, Actor);
+        Actor* const pActor = Cast<Actor>(pForm);
 
         if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
         {
@@ -1111,35 +1311,35 @@ void CharacterService::CancelServerAssignment(entt::registry& aRegistry, const e
             pActor->Delete();
         }
 
-        aRegistry.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
+        m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
                                    RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
 
         return;
     }
 
     // In the event we were waiting for assignment, drop it
-    if (aRegistry.all_of<WaitingForAssignmentComponent>(aEntity))
+    if (m_world.all_of<WaitingForAssignmentComponent>(aEntity))
     {
-        auto& waitingComponent = aRegistry.get<WaitingForAssignmentComponent>(aEntity);
+        auto& waitingComponent = m_world.get<WaitingForAssignmentComponent>(aEntity);
 
         CancelAssignmentRequest message;
         message.Cookie = waitingComponent.Cookie;
 
         m_transport.Send(message);
 
-        aRegistry.remove<WaitingForAssignmentComponent>(aEntity);
+        m_world.remove<WaitingForAssignmentComponent>(aEntity);
     }
 
-    if (aRegistry.all_of<LocalComponent>(aEntity))
+    if (m_world.all_of<LocalComponent>(aEntity))
     {
-        auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
+        auto& localComponent = m_world.get<LocalComponent>(aEntity);
 
         RequestOwnershipTransfer request;
         request.ServerId = localComponent.Id;
 
         m_transport.Send(request);
 
-        aRegistry.remove<LocalAnimationComponent, LocalComponent>(aEntity);
+        m_world.remove<LocalAnimationComponent, LocalComponent>(aEntity);
     }
 }
 
@@ -1169,7 +1369,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
                 return nullptr;
             }
 
-            pNpc = RTTI_CAST(TESForm::GetById(cNpcId), TESForm, TESNPC);
+            pNpc = Cast<TESNPC>(TESForm::GetById(cNpcId));
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
@@ -1189,16 +1389,18 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, pInterpolationComponent->Position);
     pActor->SetActorValues(acMessage.InitialActorValues);
+
     pActor->GetExtension()->SetPlayer(acMessage.IsPlayer);
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
+        pActor->SetPlayerRespawnMode();
     }
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    m_world.emplace<WaitingFor3D>(aEntity);
+    m_world.emplace_or_replace<WaitingFor3D>(aEntity);
 
     return pActor;
 }
@@ -1233,8 +1435,8 @@ void CharacterService::RunLocalUpdates() const noexcept
 
 void CharacterService::RunRemoteUpdates() noexcept
 {
-    // Delay by 120ms to let the interpolation system accumulate interpolation points
-    const auto tick = m_transport.GetClock().GetCurrentTick() - 120;
+    // Delay by 300ms to let the interpolation system accumulate interpolation points
+    const auto tick = m_transport.GetClock().GetCurrentTick() - 300;
 
     // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to spawn it
     auto interpolatedEntities =
@@ -1249,7 +1451,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (pFormIdComponent)
         {
             auto* pForm = TESForm::GetById(pFormIdComponent->Id);
-            pActor = RTTI_CAST(pForm, TESForm, Actor);
+            pActor = Cast<Actor>(pForm);
         }
        
         InterpolationSystem::Update(pActor, interpolationComponent, tick);
@@ -1263,7 +1465,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         auto& formIdComponent = animatedView.get<FormIdComponent>(entity);
 
         auto* pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = Cast<Actor>(pForm);
         if (!pActor)
             continue;
 
@@ -1278,7 +1480,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         auto& faceGenComponent = facegenView.get<FaceGenComponent>(entity);
 
         const auto* pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = Cast<Actor>(pForm);
         if (!pActor)
             continue;
 
@@ -1287,9 +1489,6 @@ void CharacterService::RunRemoteUpdates() noexcept
 
     auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
 
-    StackAllocator<1 << 13> allocator;
-    ScopedAllocator _{allocator};
-
     Vector<entt::entity> toRemove;
     for (auto entity : waitingView)
     {
@@ -1297,7 +1496,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         auto& remoteComponent = waitingView.get<RemoteComponent>(entity);
 
         const auto* pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = Cast<Actor>(pForm);
         if (!pActor || !pActor->GetNiNode())
             continue;
 
@@ -1337,7 +1536,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
         auto& cacheComponent = factionedActors.get<CacheComponent>(entity);
 
         const auto* pForm = TESForm::GetById(formIdComponent.Id);
-        const auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        const auto* pActor = Cast<Actor>(pForm);
         if (!pActor)
             continue;
 
@@ -1360,11 +1559,12 @@ void CharacterService::RunFactionsUpdates() const noexcept
 void CharacterService::RunSpawnUpdates() const noexcept
 {
     auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
-    for (auto entity : invisibleView)
+    for (const auto entity : entities)
     {
-        auto& remoteComponent = invisibleView.get<RemoteComponent>(entity);
-        auto& interpolationComponent = invisibleView.get<InterpolationComponent>(entity);
+        auto& remoteComponent = m_world.get<RemoteComponent>(entity);
+        auto& interpolationComponent = m_world.get<InterpolationComponent>(entity);
 
         if (const auto pWorldSpace = PlayerCharacter::Get()->GetWorldSpace())
         {
@@ -1372,11 +1572,11 @@ void CharacterService::RunSpawnUpdates() const noexcept
             float characterY = interpolationComponent.Position.y;
             const auto characterCoords = GridCellCoords::CalculateGridCellCoords(characterX, characterY);
             const TES* pTES = TES::Get();
-            const auto playerCoords = GridCellCoords::GridCellCoords(pTES->centerGridX, pTES->centerGridY);
+            const auto playerCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
             if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
             {
-                auto* pActor = RTTI_CAST(TESForm::GetById(remoteComponent.CachedRefId), TESForm, Actor);
+                auto* pActor = Cast<Actor>(TESForm::GetById(remoteComponent.CachedRefId));
                 if (!pActor)
                 {
                     pActor = CreateCharacterForEntity(entity);
@@ -1421,7 +1621,7 @@ void CharacterService::RunExperienceUpdates() noexcept
     spdlog::debug("Sending over experience {}", message.Experience);
 }
 
-void CharacterService::RunWeaponDrawUpdates(const UpdateEvent& acUpdateEvent) noexcept
+void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) noexcept
 {
     std::vector<uint32_t> toRemove{};
 
@@ -1433,7 +1633,7 @@ void CharacterService::RunWeaponDrawUpdates(const UpdateEvent& acUpdateEvent) no
         if (data.first <= 0.5)
             continue;
 
-        Actor* pActor = RTTI_CAST(TESForm::GetById(cId), TESForm, Actor);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(cId));
         if (!pActor)
             continue;
 

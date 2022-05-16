@@ -1,5 +1,3 @@
-#include <stdafx.h>
-
 #include <Services/CharacterService.h>
 #include <Components.h>
 #include <GameServer.h>
@@ -12,7 +10,6 @@
 #include <Events/UpdateEvent.h>
 #include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
-#include <Scripts/Npc.h>
 
 #include <Game/OwnerView.h>
 
@@ -39,6 +36,10 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/SubtitleRequest.h>
+#include <Messages/NotifySubtitle.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -59,6 +60,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
     , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
+    , m_dialogueConnection(aDispatcher.sink<PacketEvent<DialogueRequest>>().connect<&CharacterService::OnDialogueRequest>(this))
+    , m_subtitleConnection(aDispatcher.sink<PacketEvent<SubtitleRequest>>().connect<&CharacterService::OnSubtitleRequest>(this))
 {
 }
 
@@ -211,6 +214,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
+            response.WorldSpaceId = cellIdComponent.WorldSpaceId;
 
             acMessage.pPlayer->Send(response);
             return;
@@ -385,8 +389,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
             continue;
         }
 
-        Script::Npc npc(*itor, m_world);
-
         auto& movementComponent = view.get<MovementComponent>(*itor);
         auto& cellIdComponent = view.get<CellIdComponent>(*itor);
         auto& animationComponent = view.get<AnimationComponent>(*itor);
@@ -406,13 +408,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         cellIdComponent.Cell = movement.CellId;
         cellIdComponent.WorldSpaceId = movement.WorldSpaceId;
         cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
-
-        auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
-
-        if (canceled)
-        {
-            movementComponent = movementCopy;
-        }
 
         for (auto& action : update.ActionEvents)
         {
@@ -557,8 +552,32 @@ void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceR
     if (!partyComponent.JoinedPartyId.has_value())
         return;
 
-    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+    spdlog::debug("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
+}
+
+void CharacterService::OnDialogueRequest(const PacketEvent<DialogueRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyDialogue notify{};
+    notify.ServerId = message.ServerId;
+    notify.SoundFilename = message.SoundFilename;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+}
+
+void CharacterService::OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifySubtitle notify{};
+    notify.ServerId = message.ServerId;
+    notify.Text = message.Text;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept

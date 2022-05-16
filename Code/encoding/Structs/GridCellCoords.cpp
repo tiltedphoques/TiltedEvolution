@@ -3,6 +3,11 @@
 
 using TiltedPhoques::Serialization;
 
+GridCellCoords::GridCellCoords()
+{
+    Reset();
+}
+
 GridCellCoords::GridCellCoords(int32_t aX, int32_t aY) noexcept
     : X(aX)
     , Y(aY)
@@ -30,6 +35,11 @@ void GridCellCoords::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
 {
     X = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Y = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+}
+
+GridCellCoords GridCellCoords::CalculateGridCellCoords(const Vector3_NetQuantize& aCoords) noexcept
+{
+    return CalculateGridCellCoords(aCoords.x, aCoords.y);
 }
 
 GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const float aY) noexcept

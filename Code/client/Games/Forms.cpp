@@ -55,7 +55,7 @@ void TESNPC::Deserialize(const String& acBuffer, uint32_t aChangeFlags) noexcept
 
 void TESNPC::Initialize() noexcept
 {
-    auto pPlayerBaseForm = RTTI_CAST(PlayerCharacter::Get()->baseForm, TESForm, TESNPC);
+    auto pPlayerBaseForm = Cast<TESNPC>(PlayerCharacter::Get()->baseForm);
 
     // These values are all defaulted, if the other actor did not modify them they won't be loaded, therefore we need to force them before load
     attackDataForm.attackDataMap = pPlayerBaseForm->attackDataForm.attackDataMap;

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <Windows.h>
+#include <Commctrl.h>
+
 #include <TiltedCore/Stl.hpp>
 
-TiltedPhoques::String WinErrorToStringA(uint32_t aErrorCode);
+void Die(const wchar_t* aText);
 
-void Die(const char* aText);
+void ShowProgressDialog();

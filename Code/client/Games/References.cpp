@@ -25,14 +25,17 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <Games/Misc/Lock.h>
+#include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <TiltedCore/Serialization.hpp>
 
 #include <Services/PapyrusService.h>
+#include <Services/DebugService.h>
 #include <World.h>
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
@@ -49,6 +52,27 @@ static TRotate* RealRotateY = nullptr;
 static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
 static TLockChange* RealLockChange = nullptr;
+
+namespace GameplayFormulas
+{
+
+float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
+{
+    using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
+    POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
+
+    bool isPlayer = apHittee == PlayerCharacter::Get();
+    float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->difficulty, ActorValueInfo::kHealth, isPlayer);
+
+    float realDamage = aDamage;
+
+    if (fabs(aDamage) <= 0.000099999997 || multiplier < 1.0)
+        realDamage = aDamage * multiplier;
+
+    return realDamage;
+}
+
+}
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
@@ -93,8 +117,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
-            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
-            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
 
@@ -181,8 +204,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
-            // TODO: since graph descriptor fetch relies on ActorExtension, this won't work on objects
-            auto* pActor = RTTI_CAST(this, TESObjectREFR, Actor);
+            auto* pActor = Cast<Actor>(this);
             if (!pActor)
                 return;
 
@@ -335,6 +357,19 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
+void TESObjectREFR::PayGold(int32_t aAmount) noexcept
+{
+    ScopedInventoryOverride _;
+    PayGoldToContainer(nullptr, aAmount);
+}
+
+void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept
+{
+    TP_THIS_FUNCTION(TPayGoldToContainer, void, TESObjectREFR, TESObjectREFR*, int32_t);
+    POINTER_SKYRIMSE(TPayGoldToContainer, s_payGoldToContainer, 37511);
+    ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
+}
+
 float Actor::GetSpeed() noexcept
 {
     static BSFixedString speedSampledStr("SpeedSampled");
@@ -381,6 +416,13 @@ void Actor::QueueUpdate() noexcept
 #endif
 
     pSetting->data = originalValue;
+}
+
+TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept
+{
+    TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
+    POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
+    return ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
@@ -625,7 +667,7 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
     const auto* pLock = apThis->GetLock();
     uint8_t lockLevel = pLock->lockLevel;
 
-    World::Get().GetRunner().Trigger(LockChangeEvent(apThis, pLock->flags, lockLevel));
+    World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->flags, lockLevel));
 
     ThisCall(RealLockChange, apThis);
 }
@@ -666,6 +708,43 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
     return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
+TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
+static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
+{
+    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
+                  (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+
+    if (apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+
+    return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+}
+
+void Actor::SpeakSound(const char* pFile)
+{
+    uint32_t handle[3]{};
+    handle[0] = -1;
+    ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
+}
+
+TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* apRefr);
+static TSetCurrentPickREFR* RealSetCurrentPickREFR = nullptr;
+
+void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObjectREFR>* apRefr)
+{
+    uint32_t formId = 0;
+
+    TESObjectREFR* pObject = TESObjectREFR::GetByHandle(apRefr->handle.iBits);
+    if (pObject)
+        formId = pObject->formID;
+
+    World::Get().GetDebugService().SetDebugId(formId);
+
+    return ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -692,6 +771,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
         POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
 
+        POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
+
+        POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -700,6 +783,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
+        RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -709,5 +794,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealLockChange, HookLockChange);
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
+        TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+        TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
     });
 

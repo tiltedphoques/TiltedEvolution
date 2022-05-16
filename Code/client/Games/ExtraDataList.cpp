@@ -1,5 +1,7 @@
 #include "ExtraDataList.h"
 
+#include <Games/Overrides.h>
+
 ExtraDataList* ExtraDataList::New() noexcept
 {
     ExtraDataList* pExtraDataList = Memory::Allocate<ExtraDataList>();
@@ -27,10 +29,15 @@ bool ExtraDataList::Contains(ExtraData aType) const
 
 BSExtraData* ExtraDataList::GetByType(ExtraData aType) const
 {
-    BSScopedLock<BSRecursiveLock> _(lock);
+    if (!ScopedExtraDataOverride::IsOverriden())
+        lock.Lock();
 
     if (!Contains(aType))
+    {
+        if (!ScopedExtraDataOverride::IsOverriden())
+            lock.Unlock();
         return nullptr;
+    }
 
     auto pEntry = data;
 #if TP_SKYRIM
@@ -41,6 +48,9 @@ BSExtraData* ExtraDataList::GetByType(ExtraData aType) const
     {
         pEntry = pEntry->next;
     }
+
+    if (!ScopedExtraDataOverride::IsOverriden())
+        lock.Unlock();
 
     return pEntry;
 }
@@ -126,4 +136,11 @@ void ExtraDataList::SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge
     TP_THIS_FUNCTION(TSetEnchantmentData, void, ExtraDataList, EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip);
     POINTER_SKYRIMSE(TSetEnchantmentData, setEnchantmentData, 12060);
     ThisCall(setEnchantmentData, this, apItem, aCharge, aRemoveOnUnequip);
+}
+
+bool ExtraDataList::HasQuestObjectAlias() noexcept
+{
+    TP_THIS_FUNCTION(THasQuestObjectAlias, bool, ExtraDataList);
+    POINTER_SKYRIMSE(THasQuestObjectAlias, s_hasQuestObjectAlias, 12052);
+    return ThisCall(s_hasQuestObjectAlias, this);
 }

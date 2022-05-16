@@ -1,8 +1,7 @@
 #pragma once
 
-class GRefCountImplCore
+struct GRefCountImplCore
 {
-  public:
     virtual ~GRefCountImplCore() = default;
 
     static void CheckInvalidDelete(GRefCountImplCore*)
@@ -19,22 +18,21 @@ class GRefCountImplCore
     std::uint32_t _pad0C{0};
 };
 
-class GRefCountImpl : GRefCountImplCore
+struct GRefCountImpl : GRefCountImplCore
 {
-  public:
     virtual ~GRefCountImpl() = default; // 00
 };
 static_assert(sizeof(GRefCountImpl) == 0x10);
 
-template <class Base, std::uint32_t StatType> class GRefCountBaseStatImpl : public Base
+template <class Base, std::uint32_t StatType>
+struct GRefCountBaseStatImpl : Base
 {
-  public:
     // GFC_MEMORY_REDEFINE_NEW_IMPL(Base, GFC_REFCOUNTALLOC_CHECK_DELETE, StatType);
 };
 
-template <class T, std::uint32_t STAT> class GRefCountBase : public GRefCountBaseStatImpl<GRefCountImpl, STAT>
+template <class T, std::uint32_t STAT>
+struct GRefCountBase : GRefCountBaseStatImpl<GRefCountImpl, STAT>
 {
-  public:
     enum
     {
         kStatType = STAT
@@ -85,9 +83,8 @@ struct GStatGroups
     };
 };
 
-class FxDelegateHandler : public GRefCountBase<FxDelegateHandler, GStatGroups::kGStat_Default_Mem>
+struct FxDelegateHandler : GRefCountBase<FxDelegateHandler, GStatGroups::kGStat_Default_Mem>
 {
-  public:
     using CallbackFn = void(const void*);
 
     class CallbackProcessor
@@ -113,9 +110,8 @@ enum class UI_MESSAGE_RESULTS
 
 struct UIMessage;
 
-class IMenu : public FxDelegateHandler
+struct IMenu : FxDelegateHandler
 {
-  public:
     virtual ~IMenu() = default;
 
     void Accept(CallbackProcessor* apProcessor) override;
@@ -181,7 +177,6 @@ class IMenu : public FxDelegateHandler
         return uiMenuFlags & kFreezeFramePause;
     }
 
-  public:
     void* uiMovie{nullptr};
     int8_t depthPriority{3};
     uint8_t pad19{0};

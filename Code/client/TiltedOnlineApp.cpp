@@ -30,6 +30,7 @@ TiltedOnlineApp::TiltedOnlineApp()
     create_directory(logPath, ec);
 
     auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
+    //rotatingLogger->set_level(spdlog::level::debug);
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
 
@@ -50,8 +51,8 @@ void* TiltedOnlineApp::GetMainAddress() const
 bool TiltedOnlineApp::BeginMain()
 {
     World::Create();
-    World::Get().ctx<DiscordService>().Init();
-    World::Get().set<RenderSystemD3D11>(World::Get().ctx<OverlayService>(), World::Get().ctx<ImguiService>());
+    World::Get().ctx().at<DiscordService>().Init();
+    World::Get().ctx().emplace<RenderSystemD3D11>(World::Get().ctx().at<OverlayService>(), World::Get().ctx().at<ImguiService>());
 
     LoadScriptExender();
     return true;
@@ -84,6 +85,8 @@ void TiltedOnlineApp::Update()
 bool TiltedOnlineApp::Attach()
 {
     TiltedPhoques::Debug::OnAttach();
+
+    //TiltedPhoques::Nop(0x1405D3FA1, 6);
     return true;
 }
 

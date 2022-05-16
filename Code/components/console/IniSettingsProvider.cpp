@@ -7,6 +7,7 @@
 #include <console/IniSettingsProvider.h>
 #include <console/ConsoleUtils.h>
 #include <console/Setting.h>
+#include <console/ConsoleRegistry.h>
 
 #include <charconv>
 #include <fstream>
@@ -17,14 +18,6 @@ namespace Console
 {
 namespace
 {
-static void ShittyFileWrite(const std::filesystem::path& path, const std::string& data)
-{
-    // TODO: Get rid of this, its horrible.
-    std::ofstream myfile(path.c_str());
-    myfile << data.c_str();
-    myfile.close();
-}
-
 template <typename T, typename TVal>
 static SI_Error SetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TVal a_nValue,
                             const T* a_pComment = nullptr)
@@ -70,21 +63,12 @@ std::pair<std::string, std::string> SplitSection(const SettingBase* setting)
 }
 } // namespace
 
-void SaveSettingsToIni(const std::filesystem::path& aPath, bool aFirstRun)
+void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath)
 {
     CSimpleIni ini;
 
     SI_Error error{SI_Error::SI_OK};
-
-    SettingBase::VisitAll([&](SettingBase* setting) {
-        // In first run mode we dont write hidden settings. so the user will be less
-        // aware of them
-        if (aFirstRun)
-        {
-            if (setting->IsHidden())
-                return;
-        }
-
+    aReg.ForAllSettings([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
         auto& name = items.second;
@@ -124,20 +108,22 @@ void SaveSettingsToIni(const std::filesystem::path& aPath, bool aFirstRun)
     });
 
     std::string buf;
-    ini.Save(buf, true);
+    error = ini.Save(buf, true);
+    BASE_ASSERT(error == SI_Error::SI_OK, "Saving the ini failed");
 
-    ShittyFileWrite(aPath, buf);
+    // TODO(Vince): eventually we shall burn the ini library
+    TiltedPhoques::SaveFile(aPath, TiltedPhoques::String(buf));
 }
 
-void LoadSettingsFromIni(const std::filesystem::path& aPath)
+void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath)
 {
     CSimpleIni ini;
     {
         auto buf = TiltedPhoques::LoadFile(aPath);
-        ini.LoadData(buf.c_str());
+        BASE_ASSERT(ini.LoadData(buf.c_str()) == SI_Error::SI_OK, "Failed to load ini data");
     }
 
-    SettingBase::VisitAll([&](SettingBase* setting) {
+    aReg.ForAllSettings([&](SettingBase* setting) {
         auto items = SplitSection(setting);
         auto& section = items.first;
         auto& name = items.second;

@@ -17,12 +17,17 @@ struct CellChangeEvent;
 struct TransportService;
 struct NotifyChatMessageBroadcast;
 struct NotifyPlayerList;
+struct NotifyPlayerDialogue;
+struct ConnectionErrorEvent;
+
 
 using TiltedPhoques::OverlayApp;
 
+/**
+* @brief Controls the UI from the client.
+*/
 struct OverlayService
 {
-  public:
     OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher);
     ~OverlayService() noexcept;
 
@@ -53,9 +58,11 @@ struct OverlayService
   protected:
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
+    void OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept;
     // void OnPlayerLeave(const PlayerLeaveEvent&) noexcept;
     void OnCellChangeEvent(const CellChangeEvent&) noexcept;
     void OnChatMessageReceived(const NotifyChatMessageBroadcast&) noexcept;
+    void OnPlayerDialogue(const NotifyPlayerDialogue&) noexcept;
     void OnPlayerList(const NotifyPlayerList&) noexcept;
 
   private:
@@ -70,7 +77,9 @@ struct OverlayService
 
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
+    entt::scoped_connection m_connectionErrorConnection;
     entt::scoped_connection m_cellChangeEventConnection;
     entt::scoped_connection m_chatMessageConnection;
     entt::scoped_connection m_playerListConnection;
+    entt::scoped_connection m_playerDialogueConnection;
 };

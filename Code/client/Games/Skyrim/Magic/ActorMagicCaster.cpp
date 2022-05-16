@@ -16,6 +16,7 @@ static TInterruptCast* RealInterruptCast = nullptr;
 
 void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t auiTargetCount, MagicItem* apSpell)
 {
+    // TODO(cosideci): why is this here?
     if (!abSuccess)
         return;
 
@@ -35,7 +36,8 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
         }
     }
 
-    World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell, targetFormId));
+    if (apSpell)
+        World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell->formID, targetFormId));
 
     spdlog::debug("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}, desired target: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell, targetFormId);
 

@@ -2,7 +2,7 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <string>
+#include <TiltedCore/Stl.hpp>
 
 namespace Console
 {
@@ -10,20 +10,20 @@ namespace Console
 class StringTokenizer
 {
   public:
-    StringTokenizer(std::string acInput, const char* acpDelim = nullptr);
+    StringTokenizer(TiltedPhoques::String acInput, const char* acpDelim = nullptr);
 
     size_t CountTokens() noexcept;
-    void GetNext(std::string& s);
+    void GetNext(TiltedPhoques::String& s);
 
     bool HasMore() const noexcept
     {
         return (m_begin != m_end);
     }
   private:
-    std::string m_delim;
-    std::string m_string;
+    TiltedPhoques::String m_delim;
+    TiltedPhoques::String m_string;
     int m_count;
-    std::string::size_type m_begin;
-    std::string::size_type m_end;
+    TiltedPhoques::String::size_type m_begin;
+    TiltedPhoques::String::size_type m_end;
 };
 } // namespace Console

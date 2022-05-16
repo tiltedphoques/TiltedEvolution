@@ -13,6 +13,10 @@
 
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
+#include <Games/TES.h>
+#include <Games/References.h>
+
+#include <Forms/TESObjectCELL.h>
 
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
 TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
@@ -23,6 +27,15 @@ static TPickUpObject* RealPickUpObject = nullptr;
 static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
+
+void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
+{
+    if (aDifficulty > 5)
+        return;
+
+    int32_t* difficultySetting = Settings::GetDifficulty();
+    *difficultySetting = difficulty = aDifficulty;
+}
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
 {
@@ -39,6 +52,41 @@ void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noex
     spdlog::debug("Added {} experience to skill {}", deltaExperience, aSkill);
 }
 
+void PlayerCharacter::RespawnPlayer() noexcept
+{
+    // Make bleedout state recoverable
+    SetNoBleedoutRecovery(false);
+
+    DispellAllSpells();
+
+    // Reset health to max
+    // TODO(cosideci): there's a cleaner way to do this
+    ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
+
+    TESObjectCELL* pCell = nullptr;
+
+    if (GetWorldSpace())
+    {
+        // TP to Whiterun temple when killed in world space
+        TES* pTes = TES::Get();
+        pCell = ModManager::Get()->GetCellFromCoordinates(pTes->centerGridX, pTes->centerGridY, GetWorldSpace(), false);
+    }
+    else
+    {
+        // TP to start of cell when killed in an interior
+        pCell = GetParentCell();
+    }
+
+    NiPoint3 pos{};
+    NiPoint3 rot{};
+    pCell->GetCOCPlacementInfo(&pos, &rot, true);
+
+    MoveTo(pCell, pos);
+
+    // Make bleedout state unrecoverable again for when the player goes down the next time
+    SetNoBleedoutRecovery(true);
+}
+
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
     // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
@@ -50,11 +98,10 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
         modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
         item.Count = aCount;
 
-        // TODO: not sure about this
         if (apObject->GetExtraDataList())
             apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), true));
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 
     ScopedInventoryOverride _;
@@ -92,7 +139,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
 
     if (combatSkills.contains(aSkill))
     {
-        spdlog::info("Set new last used combat skill to {}.", aSkill);
+        spdlog::debug("Set new last used combat skill to {}.", aSkill);
         apThis->GetExtension()->LastUsedCombatSkill = aSkill;
 
         World::Get().GetRunner().Trigger(AddExperienceEvent(deltaExperience));

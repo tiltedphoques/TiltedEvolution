@@ -3,8 +3,11 @@
 #include "launcher.h"
 #include <Windows.h>
 #include <combaseapi.h>
+#include <base/threading/ThreadUtils.h>
 
+#include "utils/ComUtils.h"
 #include "script_extender/SEMemoryBlock.h"
+#include <crash_handler/CrashHandler.h>
 
 #include <TiltedCore/Platform.hpp>
 
@@ -37,34 +40,26 @@ static void PreloadSystemDlls()
         loadSystemDll(dll);
 }
 
-struct ComScope
-{
-    ComScope()
-    {
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        TP_UNUSED(hr);
-    }
-    ~ComScope()
-    {
-        CoUninitialize();
-    }
-};
-
 int main(int argc, char** argv)
 {
-    //Sleep(5000);
+    Base::SetCurrentThreadName("MainLauncherThread");
 
     // memory block for Script Extender reserved as early as we can
     script_extender::SEMemoryBlock b;
     if (!b.Good())
     {
-        Die("Failed to pre-reserve script extender zone.\nAsk Force!");
+        Die(L"Failed to pre-reserve script extender zone.\nAsk Force!");
         return -1;
     }
+
     PreloadSystemDlls();
     CoreStubsInit();
+
     ComScope cs;
     TP_UNUSED(cs);
 
-    return launcher::StartUp(argc, argv);
+    ScopedCrashHandler _;
+    auto ret = launcher::StartUp(argc, argv);
+
+    return ret;
 }

@@ -1,7 +1,7 @@
 
 #include <imgui.h>
 #include <EquipManager.h>
-#include <services/TestService.h>
+#include <services/DebugService.h>
 
 #if (TP_SKYRIM64)
 #include <Games/Skyrim/Forms/TESForm.h>
@@ -27,7 +27,20 @@
 #include <structs/AnimationGraphDescriptorManager.h>
 #include <inttypes.h>
 
-void TestService::DrawAnimDebugView()
+uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
+{
+    auto hash = pManager->GetDescriptorKey();
+    auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+
+    spdlog::info("Key: {}", hash);
+    std::cout << "uint64_t key = " << hash << ";" << std::endl;
+    if (!pDescriptor)
+        spdlog::error("Descriptor key not found");
+
+    return hash;
+}
+
+void DebugService::DrawAnimDebugView()
 {
     static uint32_t fetchFormId = 0;
     static Actor* pActor = nullptr;
@@ -49,7 +62,7 @@ void TestService::DrawAnimDebugView()
         {
             auto* pFetchForm = TESForm::GetById(fetchFormId);
             if (pFetchForm)
-                pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+                pActor = Cast<Actor>(pFetchForm);
         }
 
         s_values.clear();

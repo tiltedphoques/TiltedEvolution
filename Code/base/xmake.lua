@@ -1,5 +1,5 @@
 
-target("Base")
+target("BaseLib")
     add_configfiles("BuildInfo.h.in")
     set_kind("static")
     set_group("common")
@@ -7,7 +7,8 @@ target("Base")
     add_headerfiles("**.h")
     add_files("**.cpp")
     add_packages(
-        "tiltedcore", 
+        "tiltedcore",
+        "sentry-native", 
         "hopscotch-map", 
         "gtest",
         "spdlog")

@@ -5,6 +5,9 @@ struct Actor;
 struct FaceGenComponent;
 struct Tints;
 
+/**
+* @brief Manages the face gen of remote players.
+*/
 struct FaceGenSystem
 {
     static void Update(World& aWorld, Actor* apActor, FaceGenComponent& aFaceGenComponent) noexcept;

@@ -104,7 +104,7 @@ struct TESForm : BaseFormComponent
         if (aSet)
             flags |= IGNORE_FRIENDLY_HITS;
         else
-            flags &= IGNORE_FRIENDLY_HITS;
+            flags &= ~IGNORE_FRIENDLY_HITS;
     }
 
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }

@@ -1,30 +1,19 @@
-#include <Components.h>
 #include <GameServer.h>
 
-#include <Scripts/Player.h>
 #include <Services/OverlayService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/SendChatMessageRequest.h>
-
-#include <Events/PlayerEnterWorldEvent.h>
+#include <Messages/PlayerDialogueRequest.h>
+#include <Messages/NotifyPlayerDialogue.h>
 
 #include <regex>
 
 OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
-    : m_world(aWorld),
-      m_chatMessageConnection(
-          aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this))
+    : m_world(aWorld)
 {
-}
-
-void OverlayService::BroadcastMessage(const std::string aMessage)
-{
-    NotifyChatMessageBroadcast notifyMessage;
-    notifyMessage.PlayerName = "";
-    notifyMessage.ChatMessage = aMessage;
-
-    GameServer::Get()->SendToPlayers(notifyMessage);
+    m_chatMessageConnection = aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this);
+    m_playerDialogueConnection = aDispatcher.sink<PacketEvent<PlayerDialogueRequest>>().connect<&OverlayService::OnPlayerDialogue>(this);
 }
 
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
@@ -33,13 +22,29 @@ void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>
     notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
 
     // TODO: std regex is slow
-    std::regex escapeHtml{"<[^>]+>\s+(?=<)|<[^>]+>"};
+    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
     GameServer::Get()->SendToPlayers(notifyMessage);
 }
 
+void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyPlayerDialogue notify;
+    notify.Text = acMessage.pPlayer->GetUsername() + ": " + message.Text;
+
+    auto& party = acMessage.pPlayer->GetParty();
+
+    // TODO(cosideci): exclude player?
+    GameServer::Get()->SendToParty(notify, party);
+}
+
 #if 0
+#include <Components.h>
+#include <Events/PlayerEnterWorldEvent.h>
+
 void OverlayService::HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept
 {
     const Script::Player cPlayer(acEvent.Entity, m_world);

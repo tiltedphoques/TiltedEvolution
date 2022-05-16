@@ -7,7 +7,6 @@
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
-#include <Messages/ServerScriptUpdate.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/ServerSkySeed.h>
 #include <Messages/CharacterSpawnRequest.h>
@@ -43,6 +42,11 @@
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/TeleportCommandResponse.h>
+#include <Messages/StringCacheUpdate.h>
+#include <Messages/NotifyPlayerRespawn.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyPlayerDialogue.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -55,6 +59,7 @@ struct ServerMessageFactory
         auto s_visitor =
             CreateMessageVisitor<AuthenticationResponse, AssignCharacterResponse, ServerReferencesMoveRequest,
                                  ServerScriptUpdate, ServerTimeSettings, ServerSkySeed, CharacterSpawnRequest, NotifyInventoryChanges,
+                                 ServerTimeSettings, CharacterSpawnRequest, NotifyInventoryChanges, StringCacheUpdate,
                                  NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges, NotifyPartyJoined, NotifyPartyLeft,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
@@ -62,7 +67,7 @@ struct ServerMessageFactory
                                  NotifyObjectInventoryChanges, NotifySpellCast, NotifyProjectileLaunch, NotifyInterruptCast,
                                  NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage,
                                  NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast,
-                                 TeleportCommandResponse>;
+                                 TeleportCommandResponse, NotifyPlayerRespawn, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue>;
 
         return s_visitor(std::forward<T>(func));
     }

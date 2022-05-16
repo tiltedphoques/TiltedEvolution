@@ -38,12 +38,12 @@ target(name)
     end
     add_deps(
         "UiProcess",
-        "Common",
+        "CommonLib",
+        "BaseLib",
         "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
-        "TiltedScript",
         "TiltedUi",
         {inherit = true}
     )
@@ -57,8 +57,6 @@ target(name)
         "discord",
         "imgui",
         "cef",
-        "lua",
-        "sol2",
         "minhook",
         "entt",
         "glm",

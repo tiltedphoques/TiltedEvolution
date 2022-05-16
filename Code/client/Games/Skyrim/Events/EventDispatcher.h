@@ -90,7 +90,9 @@ struct TESContainerChangedEvent
 
 struct TESDeathEvent
 {
-
+    TESObjectREFR* pActorDying;
+    TESObjectREFR* pActorKiller;
+    bool isDead;
 };
 
 struct TESDestructionStageChangedEvent
@@ -263,7 +265,11 @@ struct TESPlayerBowShotEvent
 
 struct TESTopicInfoEvent
 {
-
+    TESObjectREFR* hSpeakerRef;
+    void* pCallback;
+    uint32_t uiTopicInfoFormID;
+    int32_t eType;
+    uint16_t usStage;
 };
 
 struct TESTrackedStatsEvent
@@ -278,17 +284,20 @@ struct TESTrapHitEvent
 
 struct TESTriggerEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESTriggerEnterEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESTriggerLeaveEvent
 {
-
+    TESObjectREFR* pTrigger;
+    TESObjectREFR* pActionRef;
 };
 
 struct TESUniqueIDChangeEvent

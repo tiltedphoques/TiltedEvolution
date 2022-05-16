@@ -35,7 +35,7 @@ void Tints::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
     {
         Serialization::WriteVarInt(aWriter, entry.Type);
         aWriter.WriteBits(entry.Color, 32);
-        Serialization::WriteString(aWriter, entry.Name);
+        entry.Name.Serialize(aWriter);
         aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&entry.Alpha), 32);
     }
 }
@@ -56,7 +56,7 @@ void Tints::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 
         aReader.ReadBits(buffer, 32);
         entry.Color = buffer & 0xFFFFFFFF;
-        entry.Name = Serialization::ReadString(aReader);
+        entry.Name.Deserialize(aReader);
 
         aReader.ReadBits(buffer, 32);
         tmp = buffer & 0xFFFFFFFF;

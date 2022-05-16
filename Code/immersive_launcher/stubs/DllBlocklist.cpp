@@ -9,13 +9,16 @@ namespace stubs
     // for causing crashes and incompatibility with ST
     const wchar_t* const kDllBlocklist[] = {
 #if defined(TARGET_ST)
-        L"EngineFixes.dll",    // Skyrim Engine Fixes, breaks our hooks
-        L"SkyrimSoulsRE.dll",  // Our mod implements this with special handling
+        L"EngineFixes.dll",          // Skyrim Engine Fixes, breaks our hooks
+        L"SkyrimSoulsRE.dll",        // Our mod implements this with special handling
 #elif defined(TARGET_FT)
-        L"FallSouls.dll",      // Our mod implements this with special handling
+        L"FallSouls.dll",            // Our mod implements this with special handling
 #endif
-        L"crashhandler64.dll", // Stream crash handler, breaks heap
-        L"fraps64.dll",        // Breaks tilted ui
+        L"crashhandler64.dll",       // Stream crash handler, breaks heap
+        L"fraps64.dll",              // Breaks tilted ui
+        L"SpecialK64.dll",           // breaks rendering
+        L"ReShade64_SpecialK64.dll", // same reason
+        L"NvCamera64.dll",           // broken af nvidia stuff
        // L"atiuxp64.dll",
        // L"aticfx64.dll"
     };

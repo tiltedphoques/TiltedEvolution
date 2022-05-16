@@ -1,5 +1,3 @@
-#include <stdafx.h>
-
 #include "Player.h"
 #include <GameServer.h>
 
@@ -79,6 +77,11 @@ void Player::SetModIds(Vector<uint16_t> aModIds) noexcept
 void Player::SetCharacter(entt::entity aCharacter) noexcept
 {
     m_character = aCharacter;
+}
+
+void Player::SetStringCacheId(uint32_t aStringCacheId) noexcept
+{
+    m_stringCacheId = aStringCacheId;
 }
 
 void Player::SetCellComponent(const CellIdComponent& aCellComponent) noexcept

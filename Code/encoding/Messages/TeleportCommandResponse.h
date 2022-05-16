@@ -18,10 +18,12 @@ struct TeleportCommandResponse final : ServerMessage
     bool operator==(const TeleportCommandResponse& achRhs) const noexcept
     {
         return GetOpcode() == achRhs.GetOpcode() &&
+               WorldSpaceId == achRhs.WorldSpaceId &&
                CellId == achRhs.CellId &&
                Position == achRhs.Position;
     }
 
     GameId CellId{};
     Vector3_NetQuantize Position{};
+    GameId WorldSpaceId{};
 };

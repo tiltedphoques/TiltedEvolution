@@ -42,6 +42,7 @@
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
+#include "Actor.h"
 
 void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 {
@@ -200,7 +201,7 @@ Factions Actor::GetFactions() const noexcept
 
     auto& modSystem = World::Get().GetModSystem();
 
-    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    auto* pNpc = Cast<TESNPC>(baseForm);
     if (pNpc)
     {
         auto& factions = pNpc->actorData.factions;
@@ -216,7 +217,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pChanges = RTTI_CAST(extraData.GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraData::Faction));
     if (pChanges)
     {
         for (auto i = 0u; i < pChanges->entries.length; ++i)
@@ -242,7 +243,7 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
     {
         float value = actorValueOwner.GetValue(i);
         actorValues.ActorValuesList.insert({i, value});
-        float maxValue = actorValueOwner.GetMaxValue(i);
+        float maxValue = actorValueOwner.GetPermanentValue(i);
         actorValues.ActorMaxValuesList.insert({i, maxValue});
     }
 
@@ -254,9 +255,9 @@ float Actor::GetActorValue(uint32_t aId) const noexcept
     return actorValueOwner.GetValue(aId);
 }
 
-float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
 {
-    return actorValueOwner.GetMaxValue(aId);
+    return actorValueOwner.GetPermanentValue(aId);
 }
 
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
@@ -264,7 +265,7 @@ void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
     actorValueOwner.SetValue(aId, aValue);
 }
 
-void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
     const float current = GetActorValue(aId);
     actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
@@ -297,9 +298,16 @@ MagicEquipment Actor::GetMagicEquipment() const noexcept
     return equipment;
 }
 
+int32_t Actor::GetGoldAmount() noexcept
+{
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
+    return ThisCall(s_getGoldAmount, this);
+}
+
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
-    spdlog::info("Setting inventory for actor {:X}", formID);
+    spdlog::debug("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 
@@ -331,18 +339,26 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
     }
 }
 
+void Actor::SetEssentialEx(bool aSet) noexcept
+{
+    SetEssential(true);
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (pBase)
+        pBase->actorData.SetEssential(true);
+}
+
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
     for (auto& value : acActorValues.ActorMaxValuesList)
     {
         float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(0, value.first, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::PERMANENT, value.first, value.second - current);
     }
 
     for (auto& value : acActorValues.ActorValuesList)
     {
         float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(2, value.first, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, value.first, value.second - current);
     }
 }
 
@@ -354,8 +370,8 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.NpcFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -364,8 +380,8 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.ExtraFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -380,6 +396,20 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 37677);
 
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
+}
+
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
 }
 
 void Actor::UnEquipAll() noexcept
@@ -442,23 +472,30 @@ void Actor::GenerateMagicCasters() noexcept
     if (!leftHandCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-        leftHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        leftHandCaster = Cast<ActorMagicCaster>(pCaster);
     }
     if (!rightHandCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-        rightHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        rightHandCaster = Cast<ActorMagicCaster>(pCaster);
     }
     if (!shoutCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
-        shoutCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        shoutCaster = Cast<ActorMagicCaster>(pCaster);
     }
     if (!instantCaster)
     {
         MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
-        instantCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        instantCaster = Cast<ActorMagicCaster>(pCaster);
     }
+}
+
+void Actor::DispellAllSpells() noexcept
+{
+    using TDispellAllSpells = void(void*, uint32_t, Actor*);
+    POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
+    s_dispell(nullptr, 0, this);
 }
 
 bool Actor::IsDead() noexcept
@@ -470,6 +507,11 @@ bool Actor::IsDead() noexcept
 
 void Actor::Kill() noexcept
 {
+    // Never kill players
+    ActorExtension* pExtension = GetExtension();
+    if (pExtension->IsPlayer())
+        return;
+
     PAPYRUS_FUNCTION(void, Actor, Kill, void*);
 
     s_pKill(this, NULL);
@@ -496,7 +538,7 @@ static TForceState* RealForceState = nullptr;
 void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float aX, float aZ,
                       TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
 {
-    /*const auto pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    /*const auto pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
     {
         spdlog::info("For TESNPC: {}, spawn at {} {} {}", pNpc->fullName.value, apPosition->m_x, apPosition->m_y,
@@ -515,7 +557,7 @@ static TSpawnActorInWorld* RealSpawnActorInWorld = nullptr;
 // TODO: this isn't SpawnActorInWorld, this is TESObjectREFR::UpdateReference3D()
 bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 {
-    const auto* pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    const auto* pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
     {
         spdlog::info("Spawn Actor: {:X}, and NPC {}", apThis->formID, pNpc->fullName.value);
@@ -529,39 +571,50 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
-    const auto pExHittee = apThis->GetExtension();
+    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage);
+
+    float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    bool wouldKill = (currentHealth - realDamage) <= 0.f;
+
+    const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
+        if (!World::Get().GetServerSettings().PvpEnabled)
+        {
+            if (apHitter && apHitter->GetExtension()->IsRemotePlayer())
+                return false;
+        }
+
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
     {
-        return false;
+        return wouldKill;
     }
 
     if (apHitter)
     {
-        const auto pExHitter = apHitter->GetExtension();
+        const auto* pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
             return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
         {
-            return false;
+            return wouldKill;
         }
     }
 
     if (pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
         return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
     {
-        return false;
+        return wouldKill;
     }
 }
 
@@ -570,7 +623,7 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1)
 {
-    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+    const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
     if (pValueModEffect)
     {
@@ -621,7 +674,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
         item.Count = aCount;
-        
+
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 
@@ -644,7 +697,6 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
             modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
             item.Count = aCount;
             
-            // TODO: not sure about this
             if (apObject->GetExtraDataList())
                 apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
@@ -695,13 +747,13 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
 
     if (pOwner && pTarget)
     {
-        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
-        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+        auto pTargetActor = Cast<Actor>(pTarget);
         if (pOwnerActor && pTargetActor)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
             {
-                spdlog::info("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
+                spdlog::debug("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
                 return;
             }
         }

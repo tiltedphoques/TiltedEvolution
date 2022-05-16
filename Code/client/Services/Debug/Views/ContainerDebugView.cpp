@@ -1,13 +1,13 @@
 #include <imgui.h>
 #include <inttypes.h>
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <PlayerCharacter.h>
 #include <EquipManager.h>
 #include <World.h>
 #include <DefaultObjectManager.h>
 
-void TestService::DrawContainerDebugView()
+void DebugService::DrawContainerDebugView()
 {
     static TESForm* pFetchForm = nullptr;
     static Actor* pActor = nullptr;
@@ -23,7 +23,7 @@ void TestService::DrawContainerDebugView()
         {
             pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
-                pActor = RTTI_CAST(pFetchForm, TESForm, Actor);
+                pActor = Cast<Actor>(pFetchForm);
         }
     }
 
@@ -52,7 +52,7 @@ void TestService::DrawContainerDebugView()
                     auto& modSystem = World::Get().GetModSystem();
                     uint32_t itemId = modSystem.GetGameId(entry.BaseId);
                     TESForm* pItem = TESForm::GetById(itemId);
-                    Actor* pActor = RTTI_CAST(TESForm::GetById(actorId), TESForm, Actor);
+                    Actor* pActor = Cast<Actor>(TESForm::GetById(actorId));
                     EquipManager::Get()->Equip(pActor, pItem, nullptr, entry.Count,
                                                DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
                 });
@@ -63,7 +63,7 @@ void TestService::DrawContainerDebugView()
                     auto& modSystem = World::Get().GetModSystem();
                     uint32_t itemId = modSystem.GetGameId(entry.BaseId);
                     TESForm* pItem = TESForm::GetById(itemId);
-                    Actor* pActor = RTTI_CAST(TESForm::GetById(actorId), TESForm, Actor);
+                    Actor* pActor = Cast<Actor>(TESForm::GetById(actorId));
                     EquipManager::Get()->UnEquip(pActor, pItem, nullptr, entry.Count,
                                                  DefaultObjectManager::Get().rightEquipSlot, false, true, false, false,
                                                  nullptr);

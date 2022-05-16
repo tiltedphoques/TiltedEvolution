@@ -1,7 +1,7 @@
 
 #include <Components.h>
 #include <es_loader/ESLoader.h>
-#include <stdafx.h>
+
 
 uint32_t ModsComponent::AddStandard(const String& acpFilename) noexcept
 {

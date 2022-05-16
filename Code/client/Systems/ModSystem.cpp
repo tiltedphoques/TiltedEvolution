@@ -89,18 +89,20 @@ void ModSystem::HandleMods(const Mods& acMods) noexcept
     {
         if (Mod* pMod = pModManager->GetByName(mod.Filename.c_str()))
         {
-            if (mod.IsLite())
+            if (mod.IsLite)
             {
-                m_serverToGame.emplace(mod.Id, GameMod{pMod->GetId() & 0xFFFu, true});
+                m_serverToGame.emplace(mod.Id, GameMod{static_cast<uint16_t>(pMod->GetId() & 0xFFFu), true});
                 m_liteToServer.emplace(pMod->GetId(), mod.Id);
             }
             else
             {
-                m_serverToGame.emplace(mod.Id, GameMod{pMod->GetId() & 0xFFu, false});
+                m_serverToGame.emplace(mod.Id, GameMod{static_cast<uint16_t>(pMod->GetId() & 0xFFu), false});
                 m_standardToServer[pMod->GetId() & 0xFF] = mod.Id;
             }
         }
-
-        // this should never get hit.
+        else
+        {
+            spdlog::error("Failed to find mod {}, is lite? {}, id: {:X}", mod.Filename.c_str(), mod.IsLite, mod.Id);
+        }
     }
 }

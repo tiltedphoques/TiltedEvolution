@@ -3,6 +3,9 @@
 struct Mods;
 struct GameId;
 
+/**
+* @brief Makes sure that different clients can have independent load orders and mods.
+*/
 struct ModSystem
 {
     ModSystem(entt::dispatcher& aDispatcher) noexcept;

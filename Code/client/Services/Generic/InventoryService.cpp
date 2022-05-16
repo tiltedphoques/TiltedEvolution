@@ -30,10 +30,16 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
+    m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&InventoryService::OnUpdate>(this);
     m_inventoryConnection = m_dispatcher.sink<InventoryChangeEvent>().connect<&InventoryService::OnInventoryChangeEvent>(this);
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
     m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
+}
+
+void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
+{
+    RunWeaponStateUpdates();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
@@ -53,12 +59,15 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
     request.Item = std::move(acEvent.Item);
-    request.DropOrPickUp = acEvent.DropOrPickUp;
+    request.Drop = acEvent.Drop;
 
     m_transport.Send(request);
 
@@ -83,9 +92,12 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
-    Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.ActorId), TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.ActorId));
     if (!pActor)
         return;
 
@@ -111,11 +123,14 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
 {
-    if (acMessage.DropOrPickUp)
+    if (acMessage.Drop)
     {
-        Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+        Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
         if (!pActor)
+        {
+            spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ServerId);
             return;
+        }
 
         ScopedInventoryOverride _;
 
@@ -123,7 +138,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
         ModSystem& modSystem = World::Get().GetModSystem();
 
         uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
-        TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
+        TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
         if (!pObject)
         {
             spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
@@ -136,7 +151,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
     }
     else
     {
-        TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
+        TESObjectREFR* pObject = Utils::GetByServerId<TESObjectREFR>(acMessage.ServerId);
         if (!pObject)
             return;
 
@@ -148,14 +163,23 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ServerId);
         return;
+    }
 
     auto& modSystem = World::Get().GetModSystem();
 
     uint32_t itemId = modSystem.GetGameId(acMessage.ItemId);
     TESForm* pItem = TESForm::GetById(itemId);
+
+    if (!pItem)
+    {
+        spdlog::error("Could not find inventory item {:X}:{:X}", acMessage.ItemId.ModId, acMessage.ItemId.BaseId);
+        return;
+    }
 
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
@@ -210,6 +234,42 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
                 if (pArmor)
                     pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
             }
+        }
+    }
+}
+
+void InventoryService::RunWeaponStateUpdates() noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 500ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+
+    for (auto entity : view)
+    {
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        auto& localComponent = view.get<LocalComponent>(entity);
+
+        bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+        if (isWeaponDrawn != localComponent.IsWeaponDrawn)
+        {
+            localComponent.IsWeaponDrawn = isWeaponDrawn;
+
+            DrawWeaponRequest request;
+            request.Id = localComponent.Id;
+            request.IsWeaponDrawn = isWeaponDrawn;
+
+            m_transport.Send(request);
         }
     }
 }

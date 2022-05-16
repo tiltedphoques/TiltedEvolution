@@ -5,6 +5,9 @@ struct UpdateEvent;
 struct PlayerJoinEvent;
 struct PlayerLeaveEvent;
 
+/**
+* @brief Dispatches the current player list to the clients.
+*/
 struct ServerListService
 {
     ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -30,7 +33,8 @@ private:
         uint16_t aTick, 
         uint16_t aPlayerCount, 
         uint16_t aPlayerMaxCount, 
-        String acTagList) noexcept;
+        String acTagList,
+        bool aPublic) noexcept;
 
     World& m_world;
 

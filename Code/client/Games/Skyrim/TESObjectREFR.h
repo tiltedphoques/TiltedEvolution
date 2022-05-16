@@ -73,7 +73,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_4C();
     virtual void sub_4D();
     virtual void sub_4E();
-    virtual void sub_4F();
+    virtual void StopCurrentDialogue(bool aForce);
     virtual void sub_50();
     virtual void sub_51();
     virtual void sub_52();
@@ -95,7 +95,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_62();
     virtual void sub_63();
     virtual void sub_64();
-    virtual void sub_65();
+    virtual void DetachHavok();
     virtual void sub_66();
     virtual void sub_67();
     virtual void sub_68();
@@ -174,6 +174,8 @@ struct TESObjectREFR : TESForm
     void Disable() const noexcept;
     void Enable() const noexcept;
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
+    void PayGold(int32_t aAmount) noexcept;
+    void PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept;
 
     void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 

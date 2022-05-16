@@ -4,11 +4,10 @@ services:
   skyrim_server:
     build:
       context: .
-      args:
-        project: skyrim
     volumes:
-     - ./build/config:/config
-     - ./build/logs:/logs
+     - ./build/config:/home/server/config
+     - ./build/logs:/home/server/logs
+     - ./build/data:/home/server/data
     ports:
     - 10578:10578/udp
     
