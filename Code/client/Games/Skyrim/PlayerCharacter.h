@@ -138,7 +138,7 @@ struct TESQuest;
 struct PlayerCharacter : Actor
 {
     static constexpr FormType Type = FormType::Character;
-    static int32_t LastUsedCombatSkill = -1;
+    static int32_t LastUsedCombatSkill;
 
     static PlayerCharacter* Get() noexcept;
 

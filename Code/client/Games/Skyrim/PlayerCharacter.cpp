@@ -18,6 +18,8 @@
 
 #include <Forms/TESObjectCELL.h>
 
+int32_t PlayerCharacter::LastUsedCombatSkill = -1;
+
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
 TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
 TP_THIS_FUNCTION(TAddSkillExperience, void, PlayerCharacter, int32_t aSkill, float aExperience);
