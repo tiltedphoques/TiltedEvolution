@@ -32,8 +32,6 @@
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
-#include <Events/RemotePlayerSpawnedEvent.h>
-#include <Events/RemotePlayerDespawnedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -121,10 +119,6 @@ void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
     Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
     if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
     {
-        auto* pExtension = pActor->GetExtension();
-        if (pExtension->IsPlayer())
-            World::Get().GetRunner().Trigger(RemotePlayerDespawnedEvent(pExtension->PlayerId));
-
         pActor->Delete();
         spdlog::info("\tDeleted actor {:X}", aFormId);
     }
@@ -427,8 +421,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
-        pActor->GetExtension()->SetPlayerId(acMessage.PlayerId);
-        m_world.GetRunner().Trigger(RemotePlayerSpawnedEvent(pActor->formID, acMessage.PlayerId));
+        m_world.emplace_or_replace<PlayerComponent>(*entity, acMessage.PlayerId);
     }
 
     if (pActor->IsDead() != acMessage.IsDead)
@@ -442,7 +435,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     AnimationSystem::Setup(m_world, *entity);
 
-    m_world.emplace<WaitingFor3D>(*entity);
+    m_world.emplace_or_replace<WaitingFor3D>(*entity);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -1343,6 +1336,8 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         m_world.remove<LocalAnimationComponent, LocalComponent>(aEntity);
     }
+
+    m_world.remove<PlayerComponent>(aEntity);
 }
 
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
@@ -1397,7 +1392,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
-        pActor->GetExtension()->SetPlayerId(acMessage.PlayerId);
+        m_world.emplace_or_replace<PlayerComponent>(aEntity, acMessage.PlayerId);
     }
 
     if (pActor->IsDead() != acMessage.IsDead)

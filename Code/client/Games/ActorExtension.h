@@ -17,11 +17,9 @@ struct ActorExtension
     bool IsLocalPlayer() const noexcept;
     void SetRemote(bool aSet) noexcept;
     void SetPlayer(bool aSet) noexcept;
-    void SetPlayerId(int32_t aId) noexcept;
 
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
-    uint32_t PlayerId = -1;
 
 private:
 
