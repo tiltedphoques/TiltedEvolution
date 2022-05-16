@@ -60,7 +60,7 @@ bool GridCellCoords::IsCellInGridCell(const GridCellCoords& aCell, const GridCel
 {
     int32_t gridsToLoad = aIsDragon ? m_gridsToLoadIfDragon : m_gridsToLoad;
     int32_t distanceToBorder = gridsToLoad / 2;
-    if ((abs(aCell.X - aGridCell.X) <= distanceToBorder) && abs(aCell.Y - aGridCell.Y) <= distanceToBorder)
+    if ((abs(aCell.X - aGridCell.X) <= distanceToBorder) && (abs(aCell.Y - aGridCell.Y) <= distanceToBorder))
         return true;
     return false;
 }

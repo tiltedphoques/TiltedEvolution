@@ -9,7 +9,7 @@ using TiltedPhoques::Buffer;
 struct GridCellCoords
 {
     static const int32_t m_gridsToLoad = 5;
-    static const int32_t m_gridsToLoadIfDragon = 10;
+    static const int32_t m_gridsToLoadIfDragon = 20;
 
     static GridCellCoords CalculateGridCellCoords(const Vector3_NetQuantize& aCoords) noexcept;
     static GridCellCoords CalculateGridCellCoords(const float aX, const float aY) noexcept;
