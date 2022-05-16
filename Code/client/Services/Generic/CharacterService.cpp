@@ -150,7 +150,7 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
     else
         entity = m_world.create();
 
-    m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
+    m_world.emplace_or_replace<FormIdComponent>(entity, acEvent.FormId);
 
     ProcessNewEntity(entity);
 }
@@ -409,7 +409,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
     }
-    
+
+    m_world.emplace_or_replace<FormIdComponent>(*entity, pActor->formID);
+
     if (pActor->IsDisabled())
         pActor->Enable();
 
@@ -1305,6 +1307,8 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
 void CharacterService::CancelServerAssignment(const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
+    m_world.remove<PlayerComponent>(aEntity);
+
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
         CharacterService::DeleteTempActor(aFormId);
@@ -1339,8 +1343,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         m_world.remove<LocalAnimationComponent, LocalComponent>(aEntity);
     }
-
-    m_world.remove<PlayerComponent>(aEntity);
 }
 
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
@@ -1383,6 +1385,8 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
     if (!pActor)
         return nullptr;
+
+    m_world.emplace_or_replace<FormIdComponent>(aEntity, pActor->formID);
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
@@ -1559,7 +1563,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
-    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, WaitingFor3D>();
     Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
     for (const auto entity : entities)
