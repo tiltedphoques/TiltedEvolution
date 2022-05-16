@@ -626,6 +626,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetDead(message.IsDead);
     characterComponent.SetPlayer(isPlayer);
     characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
+    characterComponent.SetDragon(message.IsDragon);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;

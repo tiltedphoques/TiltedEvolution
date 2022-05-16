@@ -223,6 +223,7 @@ struct Actor : TESObjectREFR
     void DispellAllSpells() noexcept;
 
     bool IsDead() noexcept;
+    bool IsDragon() noexcept;
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;

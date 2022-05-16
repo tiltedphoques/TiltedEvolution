@@ -1270,6 +1270,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    message.IsDragon = pActor->IsDragon();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
     if (isTemporary /* && !isNpcTemporary */)
