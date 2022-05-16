@@ -74,9 +74,9 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
-    apSpawnRequest->IsDead = characterComponent.IsDead;
-    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
-    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+    apSpawnRequest->IsDead = characterComponent.IsDead();
+    apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
+    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -210,8 +210,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
-            response.IsDead = characterComponent.IsDead;
-            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+            response.IsDead = characterComponent.IsDead();
+            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
             response.WorldSpaceId = cellIdComponent.WorldSpaceId;
@@ -366,8 +366,8 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
         const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*it);
         if (pCharacterComponent)
         {
-            notifySpawnData.IsDead = pCharacterComponent->IsDead;
-            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn;
+            notifySpawnData.IsDead = pCharacterComponent->IsDead();
+            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
         }
 
         acMessage.pPlayer->Send(notifySpawnData);
@@ -438,7 +438,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
         auto& characterComponent = view.get<CharacterComponent>(*it);
         characterComponent.FactionsContent = factions;
-        characterComponent.DirtyFactions = true;
+        characterComponent.SetDirtyFactions(true);
     }
 }
 
@@ -622,9 +622,9 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
-    characterComponent.IsDead = message.IsDead;
-    characterComponent.IsPlayer = isPlayer;
-    characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
+    characterComponent.SetDead(message.IsDead);
+    characterComponent.SetPlayer(isPlayer);
+    characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -690,7 +690,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
 
         // If we have nothing new to send skip this
-        if (characterComponent.DirtyFactions == false)
+        if (characterComponent.IsDirtyFactions())
             continue;
 
         for (auto pPlayer : m_world.GetPlayerManager())
@@ -707,7 +707,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             change = characterComponent.FactionsContent;
         }
 
-        characterComponent.DirtyFactions = false;
+        characterComponent.SetDirtyFactions(false);
     }
 
     for (auto [pPlayer, message] : messages)
