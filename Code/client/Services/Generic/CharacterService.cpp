@@ -1307,6 +1307,8 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
 void CharacterService::CancelServerAssignment(const entt::entity aEntity, const uint32_t aFormId) const noexcept
 {
+    m_world.remove<PlayerComponent>(aEntity);
+
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
         CharacterService::DeleteTempActor(aFormId);
@@ -1341,8 +1343,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         m_world.remove<LocalAnimationComponent, LocalComponent>(aEntity);
     }
-
-    m_world.remove<PlayerComponent>(aEntity);
 }
 
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
