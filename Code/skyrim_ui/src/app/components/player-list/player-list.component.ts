@@ -32,6 +32,10 @@ export class PlayerListComponent implements OnInit, OnDestroy {
         return this.clientService.connectionStateChange.value;
     }
 
+    public teleportToPlayer(playerId: number) {
+        this.clientService.teleportToPlayer(playerId);
+    }
+
     public cancel(): void {
         this.done.next();
     }
