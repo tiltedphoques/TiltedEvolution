@@ -21,6 +21,9 @@
 #include <Messages/NotifyPlayerDialogue.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
+#include <Messages/NotifyTeleport.h>
+
+#include <Structs/GridCellCoords.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
@@ -108,6 +111,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerRemovedConnection = m_world.on_destroy<PlayerComponent>().connect<&OverlayService::OnPlayerComponentRemoved>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
+    m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -378,4 +382,31 @@ void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessag
     String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
     pArguments->SetString(3, cellName.c_str());
     m_pOverlay->ExecuteAsync("setCell", pArguments);
+}
+
+void OverlayService::OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept
+{
+    auto& modSystem = m_world.GetModSystem();
+
+    const uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+    if (!pCell)
+    {
+        const uint32_t worldSpaceId = modSystem.GetGameId(acMessage.WorldSpaceId);
+        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
+        if (pWorldSpace)
+        {
+            GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
+            pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+        }
+
+        if (!pCell)
+        {
+            spdlog::error("Failed to fetch cell to teleport to.");
+            m_world.GetOverlayService().SendSystemMessage("Teleporting to player failed.");
+            return;
+        }
+    }
+
+    PlayerCharacter::Get()->MoveTo(pCell, acMessage.Position);
 }

@@ -24,6 +24,7 @@ struct NotifyPlayerDialogue;
 struct ConnectionErrorEvent;
 struct NotifyPlayerLevel;
 struct NotifyPlayerCellChanged;
+struct NotifyTeleport;
 
 
 using TiltedPhoques::OverlayApp;
@@ -75,6 +76,7 @@ struct OverlayService
     void OnPlayerLeft(const NotifyPlayerLeft&) noexcept;
     void OnPlayerLevel(const NotifyPlayerLevel&) noexcept;
     void OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
+    void OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept;
 
   private:
     CefRefPtr<OverlayApp> m_pOverlay{nullptr};
@@ -99,4 +101,5 @@ struct OverlayService
     entt::scoped_connection m_playerRemovedConnection;
     entt::scoped_connection m_playerLevelConnection;
     entt::scoped_connection m_cellChangedConnection;
+    entt::scoped_connection m_teleportConnection;
 };

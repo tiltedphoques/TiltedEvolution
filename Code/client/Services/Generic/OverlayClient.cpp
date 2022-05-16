@@ -8,6 +8,7 @@
 #include <Events/CommandEvent.h>
 
 #include <Messages/SendChatMessageRequest.h>
+#include <Messages/TeleportRequest.h>
 
 #include <World.h>
 
@@ -69,6 +70,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             uint32_t aPlayerId = eventArgs->GetInt(0);
             World::Get().GetPartyService().ChangePartyLeader(aPlayerId);
         }
+        else if (eventName == "teleportToPlayer")
+            ProcessTeleportMessage(eventArgs);
 
         return true;
     }
@@ -116,4 +119,12 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
             m_transport.Send(messageRequest);
         }
     }
+}
+
+void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
+{
+    TeleportRequest request{};
+    request.PlayerId = aEventArgs->GetInt(0);
+
+    m_transport.Send(request);
 }

@@ -47,6 +47,7 @@ enum ClientOpcode : unsigned char
     kSubtitleRequest,
     kPlayerDialogueRequest,
     kPlayerLevelRequest,
+    kTeleportRequest,
     kClientOpcodeMax
 };
 
@@ -98,5 +99,6 @@ enum ServerOpcode : unsigned char
     kNotifyPlayerJoined,
     kNotifyPlayerLevel,
     kNotifyPlayerCellChanged,
+    kNotifyTeleport,
     kServerOpcodeMax
 };
