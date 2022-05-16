@@ -140,7 +140,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
             // If it is a new cell grid, don't check for previously loaded cells.
             if (!aNewCellGrid)
             {
-                if (GridCellCoords::IsCellInGridCell(m_centerGrid, {startGridX + i, startGridY + j}))
+                if (GridCellCoords::IsCellInGridCell(m_centerGrid, {startGridX + i, startGridY + j}, false))
                     continue;
             }
 

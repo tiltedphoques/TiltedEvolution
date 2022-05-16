@@ -140,12 +140,12 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
 
         if (pPlayer->GetCellComponent().WorldSpaceId != acEvent.WorldSpaceId ||
             pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords))
+                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(removeMessage);
         }
         else if (pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords))
+                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(spawnMessage);
         }
@@ -248,8 +248,9 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
 {
     const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
 
-    auto& characterOwnerComponent = view.get<OwnerComponent>(acEvent.Entity);
-    auto& characterCellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
+    auto& characterComponent = view.get<CharacterComponent>(acEvent.Entity);
+    auto& ownerComponent = view.get<OwnerComponent>(acEvent.Entity);
+    auto& cellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
 
     NotifyOwnershipTransfer response;
     response.ServerId = World::ToInteger(acEvent.Entity);
@@ -257,11 +258,11 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
     bool foundOwner = false;
     for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (characterOwnerComponent.GetOwner() == pPlayer)
+        if (ownerComponent.GetOwner() == pPlayer)
             continue;
 
         bool isPlayerInvalid = false;
-        for (const auto invalidOwner : characterOwnerComponent.InvalidOwners)
+        for (const auto invalidOwner : ownerComponent.InvalidOwners)
         {
             isPlayerInvalid = invalidOwner == pPlayer;
             if (isPlayerInvalid)
@@ -271,10 +272,10 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
         if (isPlayerInvalid)
             continue;
 
-        if (!pPlayer->GetCellComponent().IsInRange(characterCellIdComponent))
+        if (!pPlayer->GetCellComponent().IsInRange(cellIdComponent, characterComponent.IsDragon()))
             continue;
 
-        characterOwnerComponent.SetOwner(pPlayer);
+        ownerComponent.SetOwner(pPlayer);
 
         pPlayer->Send(response);
 
@@ -698,7 +699,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
             auto& message = messages[pPlayer];
@@ -728,7 +729,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     lastSendTimePoint = now;
 
-    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
+    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>();
 
     TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
 
@@ -741,6 +742,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     for (auto entity : characterView)
     {
+        auto& characterComponent = characterView.get<CharacterComponent>(entity);
         auto& movementComponent = characterView.get<MovementComponent>(entity);
         auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
@@ -755,7 +757,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
             auto& message = messages[pPlayer];

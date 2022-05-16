@@ -1574,7 +1574,8 @@ void CharacterService::RunSpawnUpdates() const noexcept
             const TES* pTES = TES::Get();
             const auto playerCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
-            if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
+            // TODO(cosideci): IsDragon probably shouldn't be straight up false here.
+            if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords, false))
             {
                 auto* pActor = Cast<Actor>(TESForm::GetById(remoteComponent.CachedRefId));
                 if (!pActor)
