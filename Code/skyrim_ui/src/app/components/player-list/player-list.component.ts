@@ -28,6 +28,10 @@ export class PlayerListComponent implements OnInit, OnDestroy {
         return this.playerListService.playerList.value;
     }
 
+    public get getListSize(): number {
+        return this.playerList.players.size;
+    }
+
     public get isConnected(): boolean {
         return this.clientService.connectionStateChange.value;
     }
