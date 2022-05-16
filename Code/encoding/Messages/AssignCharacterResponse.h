@@ -20,24 +20,24 @@ struct AssignCharacterResponse final : ServerMessage
     bool operator==(const AssignCharacterResponse& achRhs) const noexcept
     {
         return GetOpcode() == achRhs.GetOpcode() &&
-               Owner == achRhs.Owner &&
                Cookie == achRhs.Cookie &&
                ServerId == achRhs.ServerId &&
                Position == achRhs.Position &&
                CellId == achRhs.CellId &&
                WorldSpaceId == achRhs.WorldSpaceId &&
                AllActorValues == achRhs.AllActorValues &&
+               Owner == achRhs.Owner &&
                IsDead == achRhs.IsDead &&
                IsWeaponDrawn == achRhs.IsWeaponDrawn;
     }
 
-    bool Owner{ false };
     uint32_t Cookie{};
     uint32_t ServerId{};
     Vector3_NetQuantize Position{};
     GameId CellId{};
     GameId WorldSpaceId{};
     ActorValues AllActorValues{};
+    bool Owner{ false };
     bool IsDead{};
     bool IsWeaponDrawn{};
 };
