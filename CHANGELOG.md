@@ -1,3 +1,15 @@
+# [1.30.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.1...v1.30.0) (2022-05-16)
+
+
+### Bug Fixes
+
+* Ensure taskdialog always shows ([832daff](https://github.com/tiltedphoques/TiltedEvolution/commit/832daff0f5181b84dfc682eef1cba23802f39513))
+
+
+### Features
+
+* Only process input when ST window is active. ([828e7ba](https://github.com/tiltedphoques/TiltedEvolution/commit/828e7bae4edcb53e27b1c1c0221e509de6fbad6b))
+
 ## [1.29.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.0...v1.29.1) (2022-05-11)
 
 
