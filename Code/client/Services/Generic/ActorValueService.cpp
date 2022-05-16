@@ -306,7 +306,7 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
     }
 
     if (pActor->GetExtension()->IsRemotePlayer())
-        World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor);
+        World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor->formID);
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept

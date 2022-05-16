@@ -22,8 +22,6 @@ struct NotifyPlayerJoined;
 struct NotifyPlayerLeft;
 struct NotifyPlayerDialogue;
 struct ConnectionErrorEvent;
-struct RemotePlayerSpawnedEvent;
-struct RemotePlayerDespawnedEvent;
 struct NotifyPlayerLevel;
 struct NotifyPlayerCellChanged;
 
@@ -62,19 +60,19 @@ struct OverlayService
 
     void SendSystemMessage(const std::string& acMessage);
 
-    void SetPlayerHealthPercentage(Actor* pActor) const noexcept;
+    void SetPlayerHealthPercentage(uint32_t aFormId) const noexcept;
 
   protected:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
+    void OnPlayerComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
+    void OnPlayerComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
     void OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept;
     void OnChatMessageReceived(const NotifyChatMessageBroadcast&) noexcept;
     void OnPlayerDialogue(const NotifyPlayerDialogue&) noexcept;
     void OnPlayerJoined(const NotifyPlayerJoined&) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft&) noexcept;
-    void OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent&) noexcept;
-    void OnRemotePlayerDespawned(const RemotePlayerDespawnedEvent&) noexcept;
     void OnPlayerLevel(const NotifyPlayerLevel&) noexcept;
     void OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
 
@@ -97,8 +95,8 @@ struct OverlayService
     entt::scoped_connection m_playerDialogueConnection;
     entt::scoped_connection m_playerJoinedConnection;
     entt::scoped_connection m_playerLeftConnection;
-    entt::scoped_connection m_remotePlayerSpawnedConnection;
-    entt::scoped_connection m_remotePlayerDespawnedConnection;
+    entt::scoped_connection m_playerAddedConnection;
+    entt::scoped_connection m_playerRemovedConnection;
     entt::scoped_connection m_playerLevelConnection;
     entt::scoped_connection m_cellChangedConnection;
 };

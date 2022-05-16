@@ -25,8 +25,6 @@
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
-#include <Events/RemotePlayerSpawnedEvent.h>
-#include <Events/RemotePlayerDespawnedEvent.h>
 #include <Events/UpdateEvent.h>
 
 #include <PlayerCharacter.h>
@@ -106,8 +104,8 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&OverlayService::OnPlayerJoined>(this);
     m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
-    m_remotePlayerSpawnedConnection = aDispatcher.sink<RemotePlayerSpawnedEvent>().connect<&OverlayService::OnRemotePlayerSpawned>(this);
-    m_remotePlayerDespawnedConnection = aDispatcher.sink<RemotePlayerDespawnedEvent>().connect<&OverlayService::OnRemotePlayerDespawned>(this);
+    m_playerAddedConnection = m_world.on_construct<PlayerComponent>().connect<&OverlayService::OnPlayerComponentAdded>(this);
+    m_playerRemovedConnection = m_world.on_destroy<PlayerComponent>().connect<&OverlayService::OnPlayerComponentRemoved>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
 }
@@ -219,12 +217,31 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
     m_pOverlay->ExecuteAsync("systemMessage", pArguments);
 }
 
-void OverlayService::SetPlayerHealthPercentage(Actor* apActor) const noexcept
+void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
 {
-    float percentage = CalculateHealthPercentage(apActor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
+    if (!pActor)
+    {
+        spdlog::error("{}: cannot find actor for form id {:X}", __FUNCTION__, aFormId);
+        return;
+    }
+
+    float percentage = CalculateHealthPercentage(pActor);
+
+    auto view = m_world.view<FormIdComponent, PlayerComponent>();
+    auto entityIt = std::find_if(view.begin(), view.end(),
+                                 [view, aFormId](auto aEntity) { return view.get<FormIdComponent>(aEntity).Id == aFormId; });
+
+    if (entityIt == view.end())
+    {
+        spdlog::error("{}: cannot find player entity for form id {:X}", __FUNCTION__, aFormId);
+        return;
+    }
+
+    const auto& playerComponent = view.get<PlayerComponent>(*entityIt);
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, apActor->GetExtension()->PlayerId);
+    pArguments->SetInt(0, playerComponent.Id);
     pArguments->SetInt(1, static_cast<int>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
@@ -254,17 +271,6 @@ void OverlayService::OnUpdate(const UpdateEvent&) noexcept
     m_pOverlay->ExecuteAsync("debugData", pArguments);
 }
 
-void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acMessage) noexcept
-{
-    if (!m_pOverlay)
-        return;
-
-    auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.PlayerName.c_str());
-    pArguments->SetString(1, acMessage.ChatMessage.c_str());
-    m_pOverlay->ExecuteAsync("message", pArguments);
-}
-
 void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 {
     m_pOverlay->ExecuteAsync("connect");
@@ -279,6 +285,49 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 {
     m_pOverlay->ExecuteAsync("disconnect");
     SendSystemMessage("Disconnected from server");
+}
+
+void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept
+{
+    const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+    if (!pActor)
+    {
+        spdlog::error("{}: cannot find actor for form id {:X}", __FUNCTION__, formIdComponent.Id);
+        return;
+    }
+
+    float percentage = CalculateHealthPercentage(pActor);
+
+    const auto& playerComponent = aRegistry.get<PlayerComponent>(aEntity);
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, playerComponent.Id);
+    pArguments->SetInt(1, static_cast<int>(percentage));
+
+    m_pOverlay->ExecuteAsync("setPlayer3dLoaded", pArguments);
+}
+
+void OverlayService::OnPlayerComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
+{
+    const auto& playerComponent = aRegistry.get<PlayerComponent>(aEntity);
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, playerComponent.Id);
+
+    m_pOverlay->ExecuteAsync("setPlayer3dUnloaded", pArguments);
+}
+
+void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acMessage) noexcept
+{
+    if (!m_pOverlay)
+        return;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetString(0, acMessage.PlayerName.c_str());
+    pArguments->SetString(1, acMessage.ChatMessage.c_str());
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
@@ -312,34 +361,6 @@ void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
     pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetString(1, acMessage.Username.c_str());
     m_pOverlay->ExecuteAsync("playerDisconnected", pArguments);
-}
-
-void OverlayService::OnRemotePlayerSpawned(const RemotePlayerSpawnedEvent& acEvent) noexcept
-{
-    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
-    if (!pActor)
-    {
-        spdlog::error("{}: cannot find actor for form id {:X}", __FUNCTION__, acEvent.FormId);
-        return;
-    }
-
-    float percentage = CalculateHealthPercentage(pActor);
-
-    auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, acEvent.PlayerId);
-    pArguments->SetInt(1, static_cast<int>(percentage));
-    spdlog::debug("[3dLoad] {} - {}", acEvent.PlayerId, percentage);
-
-    m_pOverlay->ExecuteAsync("setPlayer3dLoaded", pArguments);
-}
-
-void OverlayService::OnRemotePlayerDespawned(const RemotePlayerDespawnedEvent& acEvent) noexcept
-{
-    auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, acEvent.PlayerId);
-    spdlog::debug("[3dUnload] {}", acEvent.PlayerId);
-
-    m_pOverlay->ExecuteAsync("setPlayer3dUnloaded", pArguments);
 }
 
 void OverlayService::OnPlayerLevel(const NotifyPlayerLevel& acMessage) noexcept
