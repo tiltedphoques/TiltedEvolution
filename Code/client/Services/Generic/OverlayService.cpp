@@ -293,7 +293,7 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 
 void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept
 {
-    const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
+    const auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
 
     Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
     if (!pActor)
@@ -304,7 +304,7 @@ void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::ent
 
     float percentage = CalculateHealthPercentage(pActor);
 
-    const auto& playerComponent = aRegistry.get<PlayerComponent>(aEntity);
+    const auto& playerComponent = m_world.get<PlayerComponent>(aEntity);
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, playerComponent.Id);
@@ -315,7 +315,7 @@ void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::ent
 
 void OverlayService::OnPlayerComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
 {
-    const auto& playerComponent = aRegistry.get<PlayerComponent>(aEntity);
+    const auto& playerComponent = m_world.get<PlayerComponent>(aEntity);
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, playerComponent.Id);

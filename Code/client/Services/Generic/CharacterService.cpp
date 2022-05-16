@@ -150,7 +150,7 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
     else
         entity = m_world.create();
 
-    m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
+    m_world.emplace_or_replace<FormIdComponent>(entity, acEvent.FormId);
 
     ProcessNewEntity(entity);
 }
@@ -409,7 +409,9 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
     }
-    
+
+    m_world.emplace_or_replace<FormIdComponent>(*entity, pActor->formID);
+
     if (pActor->IsDisabled())
         pActor->Enable();
 
@@ -1383,6 +1385,8 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
     if (!pActor)
         return nullptr;
+
+    m_world.emplace_or_replace<FormIdComponent>(aEntity, pActor->formID);
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
