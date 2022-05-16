@@ -66,10 +66,6 @@ export class GroupService implements OnDestroy {
       this.isConnect = connect;
       this.group.next(undefined);
       this.updateGroup();
-
-      if (!connect) {
-        this.wsService.send({operation:'leave'}, true);
-      }
     });
   }
 
@@ -92,7 +88,7 @@ export class GroupService implements OnDestroy {
 
   private onPlayerConnected() {
     this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe((player: Player) => {
-
+      
       const group = this.createGroup(this.group.value);
 
       if (group) {

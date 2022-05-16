@@ -1,0 +1,10 @@
+<div id="app-player-list-container" *ngIf="playerList">
+    <div *ngFor="let player of playerList!.players | keyvalue" [title]="player.value.cellName">
+        {{ player.value.name }} Id:{{ player.value.serverId }}
+    </div>
+</div>
+
+
+<div class="buttons">
+    <button class="btnCancel" (click)="cancel()">Back</button>
+</div>
