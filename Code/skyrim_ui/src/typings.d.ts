@@ -250,4 +250,9 @@ interface SkyrimTogether {
    * Deactivate UI and release control.
    */
   deactivate(): void;
+
+  /**
+   * Teleport to given player
+   */
+  teleportToPlayer(playerId: number): void;
 }

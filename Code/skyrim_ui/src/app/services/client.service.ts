@@ -227,6 +227,15 @@ export class ClientService implements OnDestroy {
     this.disconnect();
   }
 
+  public teleportToPlayer(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.teleportToPlayer(playerId);
+    }
+    else {
+      this.messageReception.next({ content: "Youre not ingame, duh" });
+    }
+  }
+
   /**
    * Called when the UI is first initialized.
    */

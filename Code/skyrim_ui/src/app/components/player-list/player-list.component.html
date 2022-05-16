@@ -1,6 +1,7 @@
 <div id="app-player-list-container" *ngIf="playerList">
     <div *ngFor="let player of playerList!.players | keyvalue" [title]="player.value.cellName">
-        {{ player.value.name }} Id:{{ player.value.serverId }}
+        {{ player.value.name }} Id:{{ player.value.serverId }} <button class="btnCancel" (click)="teleportToPlayer(player.value.serverId)">Teleport to</button>
+        <hr>
     </div>
 </div>
 
