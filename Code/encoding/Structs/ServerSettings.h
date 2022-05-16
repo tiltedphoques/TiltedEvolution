@@ -12,5 +12,7 @@ struct ServerSettings
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    uint32_t Difficulty;
+    uint32_t Difficulty{};
+    bool GreetingsEnabled{};
+    bool PvpEnabled{};
 };

@@ -88,8 +88,6 @@ bool TESQuest::SetStage(uint16_t newStage)
 
 void TESQuest::ScriptSetStage(uint16_t stageIndex)
 {
-    ScopedQuestOverride _;
-
     for (Stage* stage : stages)
     {
         if (stage->stageIndex == stageIndex && stage->IsDone())

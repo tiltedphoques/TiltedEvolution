@@ -74,7 +74,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (arData.pCaster)
         {
             ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-            if (pCasterExtension->IsRemotePlayer())
+            if (pCasterExtension->IsRemotePlayer() && !World::Get().GetServerSettings().PvpEnabled)
                 return false;
         }
 

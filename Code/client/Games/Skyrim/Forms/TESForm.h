@@ -83,7 +83,7 @@ struct TESForm : BaseFormComponent
     virtual void CopyFrom(TESForm* apForm);
     virtual void sub_30();
     virtual void sub_31();
-    virtual void sub_32();
+    virtual const char* GetFormEditorID();
     virtual void sub_33();
     virtual void sub_34();
     virtual void sub_35();

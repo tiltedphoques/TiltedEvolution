@@ -59,7 +59,10 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
@@ -89,7 +92,10 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.ActorId));
     if (!pActor)
