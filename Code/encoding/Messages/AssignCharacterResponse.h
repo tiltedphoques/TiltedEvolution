@@ -22,6 +22,7 @@ struct AssignCharacterResponse final : ServerMessage
         return GetOpcode() == achRhs.GetOpcode() &&
                Cookie == achRhs.Cookie &&
                ServerId == achRhs.ServerId &&
+               PlayerId == achRhs.PlayerId &&
                Position == achRhs.Position &&
                CellId == achRhs.CellId &&
                WorldSpaceId == achRhs.WorldSpaceId &&
@@ -33,6 +34,7 @@ struct AssignCharacterResponse final : ServerMessage
 
     uint32_t Cookie{};
     uint32_t ServerId{};
+    uint32_t PlayerId{};
     Vector3_NetQuantize Position{};
     GameId CellId{};
     GameId WorldSpaceId{};

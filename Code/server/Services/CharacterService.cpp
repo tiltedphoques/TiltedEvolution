@@ -211,6 +211,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
+            response.PlayerId = characterComponent.PlayerId;
             response.IsDead = characterComponent.IsDead;
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
             response.Position = movementComponent.Position;
@@ -660,6 +661,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     AssignCharacterResponse response;
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
+    response.PlayerId = characterComponent.PlayerId;
     response.Owner = true;
     response.AllActorValues = message.AllActorValues;
 

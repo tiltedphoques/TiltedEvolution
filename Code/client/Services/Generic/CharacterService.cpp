@@ -279,6 +279,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
+    if (acMessage.PlayerId != 0)
+        m_world.emplace_or_replace<PlayerComponent>(cEntity, acMessage.PlayerId);
+
     if (acMessage.Owner)
     {
         m_world.emplace<LocalComponent>(cEntity, acMessage.ServerId);
