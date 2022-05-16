@@ -31,7 +31,7 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
 {
     const auto filename = acFilePath.c_str();
 
-    DWORD dwHandle, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
+    DWORD dwHandle = 0, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
     if (0 == sz)
     {
         return 1;

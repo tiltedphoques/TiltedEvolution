@@ -24,13 +24,16 @@ TiltedPhoques::WString WinErrorToString(uint32_t aErrorCode)
 }
 } // namespace
 
-void Die(const wchar_t* aText)
+void Die(const wchar_t* aText, bool aNow)
 {
     DWORD ec = GetLastError();
     std::wstring fmt =
         ec == 0 ? aText
                 : fmt::format(L"{}\nError: {} = {}", aText, GetLastError(), WinErrorToString(GetLastError()).c_str());
     MessageBoxW(nullptr, fmt.c_str(), PRODUCT_NAME, MB_ICONSTOP);
+
+    if (aNow)
+        TerminateProcess(GetCurrentProcess(), 5);
 }
 
 void ShowProgressDialog()
