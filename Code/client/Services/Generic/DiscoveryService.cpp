@@ -172,13 +172,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         return;
     }
 
-    const GridCellCoords gameCurrentGrid(pTES->currentGridX, pTES->currentGridY);
-    const GridCellCoords gameCenterGrid(pTES->centerGridX, pTES->centerGridY);
-
-    m_centerGrid = gameCenterGrid;
-
-    changeEvent.CenterCoords = gameCenterGrid;
-    changeEvent.PlayerCoords = gameCurrentGrid;
+    changeEvent.CenterCoords = m_centerGrid = {pTES->centerGridX, pTES->centerGridY};
 
     m_dispatcher.trigger(changeEvent);
 
