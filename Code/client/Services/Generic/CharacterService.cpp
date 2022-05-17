@@ -413,6 +413,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         pActor->SetPlayerRespawnMode();
     }
 
+        MapMarkerData* pMarkerData = MapMarkerData::New();
+        pMarkerData->name.value.Set(pActor->baseForm->GetName());
+        pMarkerData->flags = MapMarkerData::Flag::VISIBLE;
+        pMarkerData->type = MapMarkerData::Type::kGiantCamp;
+        pActor->extraData.SetMarkerData(pMarkerData);
+    }
+
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
@@ -1395,6 +1402,12 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
+
+        MapMarkerData* pMarkerData = MapMarkerData::New();
+        pMarkerData->name.value.Set(pActor->baseForm->GetName());
+        pMarkerData->flags = MapMarkerData::Flag::VISIBLE;
+        pMarkerData->type = MapMarkerData::Type::kGiantCamp;
+        pActor->extraData.SetMarkerData(pMarkerData);
     }
 
     if (pActor->IsDead() != acMessage.IsDead)

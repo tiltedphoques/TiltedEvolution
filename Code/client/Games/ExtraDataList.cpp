@@ -144,3 +144,10 @@ bool ExtraDataList::HasQuestObjectAlias() noexcept
     POINTER_SKYRIMSE(THasQuestObjectAlias, s_hasQuestObjectAlias, 12052);
     return ThisCall(s_hasQuestObjectAlias, this);
 }
+
+void ExtraDataList::SetMarkerData(MapMarkerData* apMarkerData) noexcept
+{
+    TP_THIS_FUNCTION(TSetMarkerData, void, ExtraDataList, MapMarkerData* apMarkerData);
+    POINTER_SKYRIMSE(TSetMarkerData, setMarkerData, 11607);
+    ThisCall(setMarkerData, this, apMarkerData);
+}

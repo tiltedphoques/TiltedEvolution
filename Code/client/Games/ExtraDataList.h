@@ -6,6 +6,7 @@
 
 #include <Forms/AlchemyItem.h>
 #include <Forms/EnchantmentItem.h>
+#include <Misc/MapMarkerData.h>
 
 struct ExtraDataList
 {
@@ -30,6 +31,7 @@ struct ExtraDataList
     void SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip) noexcept;
     
     [[nodiscard]] bool HasQuestObjectAlias() noexcept;
+    void SetMarkerData(MapMarkerData* apMarkerData) noexcept;
 
 #if TP_FALLOUT4
     void* unk0;
