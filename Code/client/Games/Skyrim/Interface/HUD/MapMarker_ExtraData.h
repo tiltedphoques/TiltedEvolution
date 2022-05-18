@@ -8,7 +8,6 @@ struct MapMarkerData
     {
         MapMarkerData* pMarkerData = Memory::Allocate<MapMarkerData>();
 
-        // MapMarker_14014ace0_ExtraData
         TP_THIS_FUNCTION(TMapMarkerDataCtor, MapMarkerData*, MapMarkerData);
         POINTER_SKYRIMSE(TMapMarkerDataCtor, s_mapMarkerDataCtor, 12945);
         return s_mapMarkerDataCtor.Get()(pMarkerData);
