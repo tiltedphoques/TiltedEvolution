@@ -82,7 +82,6 @@ void PlayerService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) co
         request.WorldSpaceId = GameId(modId, baseId);
         request.PlayerCell = acEvent.PlayerCell;
         request.CenterCoords = acEvent.CenterCoords;
-        request.PlayerCoords = acEvent.PlayerCoords;
         request.Cells = acEvent.Cells;
 
         m_transport.Send(request);

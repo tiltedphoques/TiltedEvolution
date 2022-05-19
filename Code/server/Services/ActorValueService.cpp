@@ -105,7 +105,7 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
     if (it != characterView.end())
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*it);
-        characterComponent.IsDead = message.IsDead;
+        characterComponent.SetDead(message.IsDead);
         spdlog::debug("Updating death state {:x}:{}", message.Id, message.IsDead);
     }
 

@@ -37,7 +37,12 @@
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
 
+#include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
+
 #include <Games/Overrides.h>
+#include <Games/Skyrim/BSAnimationGraphManager.h>
+#include <Havok/hkbStateMachine.h>
+#include <Havok/hkbBehaviorGraph.h>
 
 #ifdef SAVE_STUFF
 
@@ -503,6 +508,22 @@ bool Actor::IsDead() noexcept
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
 
     return s_pIsDead(this);
+}
+
+bool Actor::IsDragon() noexcept
+{
+    // TODO: if anyone has a better way of doing this, please do tell.
+    BSAnimationGraphManager* pManager = nullptr;
+    animationGraphHolder.GetBSAnimationGraph(&pManager);
+
+    if (!pManager)
+        return false;
+
+    const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+    if (!pGraph)
+        return false;
+
+    return AnimationGraphDescriptor_BHR_Master::m_key == pManager->GetDescriptorKey();
 }
 
 void Actor::Kill() noexcept
