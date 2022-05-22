@@ -16,7 +16,7 @@ export XMAKE_ROOT=y && \
 apt update && \
 apt install cmake -y && \
 xmake config -y && \
-xmake -j8 && \
+xmake -j`nproc` && \
 objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug && \
 objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
 
