@@ -157,7 +157,8 @@ export class RootComponent implements OnInit, OnDestroy {
               name: 'Dumbeldor',
               online: true,
               connected: true,
-              level: 10
+              level: 10,
+              cellName: 'Falkreath'
             }
           ));
           this.client.playerConnectedChange.next(new Player(
@@ -166,7 +167,8 @@ export class RootComponent implements OnInit, OnDestroy {
               name: 'Pokang',
               online: true,
               connected: true,
-              level: 12
+              level: 12,
+              cellName: 'Whiterun'
             }
           ));
           this.client.isLoadedChange.next(new Player(
