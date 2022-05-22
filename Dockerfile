@@ -27,6 +27,8 @@ xmake install -o package
 
 FROM ubuntu:20.04 AS skyrim
 
+RUN apt update && apt install libssl1.1
+
 # We copy it twice since we can't really tell the arch from Dockerfile :(
 COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/x86_64-linux-gnu/libstdc++.so.6
 COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/aarch64-linux-gnu/libstdc++.so.6
