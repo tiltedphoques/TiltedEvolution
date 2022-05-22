@@ -1,15 +1,4 @@
-FROM ubuntu:20.04 AS builder
-
-RUN apt update && \
-    apt install software-properties-common -y && \
-    add-apt-repository 'deb http://mirrors.kernel.org/ubuntu hirsute main universe' -y && \
-    apt update && \
-    apt install libssl-dev curl p7zip-full p7zip-rar zip unzip zlib1g-dev -y
-
-RUN curl -fsSL https://xmake.io/shget.text > getxmake.sh && chmod +x getxmake.sh && ./getxmake.sh && \
-    apt remove gcc-10 g++-10 -y && \
-    apt install gcc-11 g++-11 -y && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
+FROM tiltedphoques/builder AS builder
 
 WORKDIR /home/server
 
