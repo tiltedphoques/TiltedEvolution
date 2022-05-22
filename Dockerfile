@@ -1,4 +1,6 @@
-FROM tiltedphoques/builder AS builder
+ARG arch=amd64
+
+FROM tiltedphoques/builder:${arch} AS builder
 
 WORKDIR /home/server
 
