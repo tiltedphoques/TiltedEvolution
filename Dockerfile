@@ -13,6 +13,8 @@ COPY ./Code ./Code
 RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
 export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
+apt update && \
+apt install cmake -y && \
 xmake config -y && \
 xmake -j8 && \
 objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug && \
