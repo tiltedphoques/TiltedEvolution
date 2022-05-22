@@ -23,13 +23,11 @@ xmake install -o package
 
 FROM ubuntu:20.04 AS skyrim
 
-RUN apt update && \
-    apt install software-properties-common -y && \
-    add-apt-repository 'deb http://mirrors.kernel.org/ubuntu hirsute main universe' -y && \
-    apt update && apt upgrade -y && \
-    apt remove software-properties-common -y && \
-    apt autoremove -y
+# We copy it twice since we can't really tell the arch from Dockerfile :(
+COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/x86_64-linux-gnu/libstdc++.so.6
+COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/aarch64-linux-gnu/libstdc++.so.6
 
+# Now copy the actual bins
 COPY --from=builder /home/server/package/lib/libSTServer.so /home/server/libSTServer.so
 COPY --from=builder /home/server/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
 COPY --from=builder /home/server/package/bin/crashpad_handler /home/server/crashpad_handler
