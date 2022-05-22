@@ -1,4 +1,4 @@
-ARG arch=amd64
+ARG arch=x64
 
 FROM tiltedphoques/builder:${arch} AS builder
 
@@ -15,8 +15,8 @@ export PATH="$XMAKE_ROOTDIR:$PATH" && \
 export XMAKE_ROOT=y && \
 xmake config -y && \
 xmake -j8 && \
-objcopy --only-keep-debug /home/server/build/linux/x64/release/SkyrimTogetherServer /home/server/build/linux/x64/release/SkyrimTogetherServer.debug && \
-objcopy --only-keep-debug /home/server/build/linux/x64/release/libSTServer.so /home/server/build/linux/x64/release/libSTServer.debug
+objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug && \
+objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
 
 RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
 export PATH="$XMAKE_ROOTDIR:$PATH" && \
@@ -33,8 +33,8 @@ COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/aarch64-linux-gnu/
 COPY --from=builder /home/server/package/lib/libSTServer.so /home/server/libSTServer.so
 COPY --from=builder /home/server/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
 COPY --from=builder /home/server/package/bin/crashpad_handler /home/server/crashpad_handler
-COPY --from=builder /home/server/build/linux/x64/release/libSTServer.debug /home/server/libSTServer.debug
-COPY --from=builder /home/server/build/linux/x64/release/SkyrimTogetherServer.debug /home/server/SkyrimTogetherServer.debug
+COPY --from=builder /home/server/build/linux/${arch}/release/libSTServer.debug /home/server/libSTServer.debug
+COPY --from=builder /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug /home/server/SkyrimTogetherServer.debug
 WORKDIR /home/server
 ENTRYPOINT ["./SkyrimTogetherServer"]
 
