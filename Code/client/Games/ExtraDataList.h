@@ -6,7 +6,7 @@
 
 #include <Forms/AlchemyItem.h>
 #include <Forms/EnchantmentItem.h>
-#include <Misc/MapMarkerData.h>
+#include <Interface/HUD/MapMarker_ExtraData.h>
 
 struct ExtraDataList
 {

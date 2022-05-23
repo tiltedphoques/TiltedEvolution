@@ -4,14 +4,7 @@
 
 struct MapMarkerData
 {
-    static MapMarkerData* New() noexcept
-    {
-        MapMarkerData* pMarkerData = Memory::Allocate<MapMarkerData>();
-
-        TP_THIS_FUNCTION(TMapMarkerDataCtor, MapMarkerData*, MapMarkerData);
-        POINTER_SKYRIMSE(TMapMarkerDataCtor, s_mapMarkerDataCtor, 12945);
-        return s_mapMarkerDataCtor.Get()(pMarkerData);
-    }
+    static MapMarkerData* New() noexcept;
 
     enum class Flag : uint8_t
     {

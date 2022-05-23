@@ -124,7 +124,7 @@ void UIMessageQueue__AddMessage(void* a1, const BSFixedString* a2, UIMessage::UI
 
 #include <imgui.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
-#include <Interface/Debug/DebugText.h>
+#include <Debug/DebugText.h>
 
 static void (*sub_140F05F1)(UI*);
 
@@ -163,5 +163,5 @@ static TiltedPhoques::Initializer s_s([]() {
     // use 8 threads by default!
     // TiltedPhoques::Put<uint8_t>(0x141E45770, 8);
 
-    TiltedPhoques::SwapCall(0x1405D7BED, sub_140F05F1, &Hook_sub_140F05F10);
+    //TiltedPhoques::SwapCall(0x1405D7BED, sub_140F05F1, &Hook_sub_140F05F10);
 });

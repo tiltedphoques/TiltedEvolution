@@ -94,6 +94,13 @@ void TESForm::SetSkipSaveFlag(bool aSet) noexcept
         flags &= ~flag;*/
 }
 
+void TESForm::SetTemporary()
+{
+    using TSetTemporary = void*(TESForm*);
+    POINTER_SKYRIMSE(TSetTemporary, setTemp, 14642);
+    setTemp.Get()(this);
+}
+
 uint32_t TESForm::GetChangeFlags() const noexcept
 {
     struct Unk

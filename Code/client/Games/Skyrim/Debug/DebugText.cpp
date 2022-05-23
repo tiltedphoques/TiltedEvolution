@@ -1,5 +1,5 @@
 
-#include <Interface/Debug/DebugText.h>
+#include <Debug/DebugText.h>
 
 DebugText* (*DebugText_Instance)(bool) = nullptr;
 void (*DebugText_DeleteAllText)(DebugText*) = nullptr;
