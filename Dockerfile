@@ -2,6 +2,8 @@ ARG arch=x64
 
 FROM tiltedphoques/builder:${arch} AS builder
 
+ARG arch
+
 WORKDIR /home/server
 
 COPY ./modules ./modules
@@ -26,6 +28,8 @@ export XMAKE_ROOT=y && \
 xmake install -o package
 
 FROM ubuntu:20.04 AS skyrim
+
+ARG arch
 
 RUN apt update && apt install libssl1.1
 
