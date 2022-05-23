@@ -12,7 +12,7 @@ struct MapMarkerData
         VISIBLE = 1,
     };
 
-    enum class Type : uint8_t
+    enum class Type : uint16_t
     {
         kNone = 0,
 		kCity = 1,
@@ -76,8 +76,11 @@ struct MapMarkerData
     };
 
     TESFullName name;
-    Flag flags;
-    Type type;
-    uint16_t pad12 = 0;
-    uint32_t pad14 = 0;
+    Flag cFlags;
+    Flag cOriginalFlags;
+    Type sType;
 };
+
+static_assert(offsetof(MapMarkerData, MapMarkerData::cFlags) == 16);
+static_assert(offsetof(MapMarkerData, MapMarkerData::sType) == 18);
+static_assert(sizeof(MapMarkerData) == 24);

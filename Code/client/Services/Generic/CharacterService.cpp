@@ -428,8 +428,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         MapMarkerData* pMarkerData = MapMarkerData::New();
         pMarkerData->name.value.Set(pActor->baseForm->GetName());
-        pMarkerData->flags = MapMarkerData::Flag::VISIBLE;
-        pMarkerData->type = MapMarkerData::Type::kGiantCamp;
+        pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
+        pMarkerData->sType = MapMarkerData::Type::kGiantCamp;
         pActor->extraData.SetMarkerData(pMarkerData);
     }
 
@@ -1415,8 +1415,8 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
         MapMarkerData* pMarkerData = MapMarkerData::New();
         pMarkerData->name.value.Set(pActor->baseForm->GetName());
-        pMarkerData->flags = MapMarkerData::Flag::VISIBLE;
-        pMarkerData->type = MapMarkerData::Type::kGiantCamp;
+        pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
+        pMarkerData->sType = MapMarkerData::Type::kCity;
         pActor->extraData.SetMarkerData(pMarkerData);
     }
 
