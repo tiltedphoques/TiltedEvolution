@@ -18,6 +18,11 @@ bool EffectItem::IsSlowEffect() const noexcept
     return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSlowTime;
 }
 
+bool EffectItem::IsInivisibilityEffect() const noexcept
+{
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kInvisibility;
+}
+
 bool EffectItem::IsWerewolfEffect() const noexcept
 {
     return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kWerewolf;

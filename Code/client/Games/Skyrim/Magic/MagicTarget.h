@@ -44,6 +44,8 @@ struct MagicTarget
     {
         bool CheckAddEffect(void* arArgs, float afResistance);
 
+        bool ShouldSync();
+
         Actor* pCaster;
         MagicItem* pSpell;
         EffectItem* pEffectItem;

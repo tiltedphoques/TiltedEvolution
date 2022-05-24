@@ -21,6 +21,8 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
 
+#include <Games/Overrides.h>
+
 #if TP_SKYRIM64
 #include <Forms/SpellItem.h>
 #include <PlayerCharacter.h>
@@ -69,7 +71,9 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     // only sync concentration spells through spell cast sync, the rest through projectile sync for accuracy
     if (SpellItem* pSpell = Cast<SpellItem>(TESForm::GetById(acEvent.SpellId)))
     {
-        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION)
+        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION &&
+            !pSpell->IsWardSpell() &&
+            !pSpell->IsInvisibilitySpell())
         {
             spdlog::debug("Canceled magic spell");
             return;
@@ -119,7 +123,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
         }
     }
 
-    spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
+    spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
                  request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
@@ -181,7 +185,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
         return;
     }
 
-    TESForm* pDesiredTargetForm = nullptr;
+    TESObjectREFR* pDesiredTarget = nullptr;
 
     if (acMessage.DesiredTarget != 0)
     {
@@ -200,12 +204,12 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
             if (serverId == acMessage.DesiredTarget)
             {
                 const auto& formIdComponent = view.get<FormIdComponent>(entity);
-                pDesiredTargetForm = TESForm::GetById(formIdComponent.Id);
+                pDesiredTarget = Cast<TESObjectREFR>(TESForm::GetById(formIdComponent.Id));
             }
         }
     }
 
-    TESObjectREFR* pDesiredTarget = Cast<TESObjectREFR>(pDesiredTargetForm);
+    ScopedSpellCastOverride _;
 
     switch (acMessage.CastingSource)
     {
@@ -221,7 +225,11 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     case MagicSystem::CastingSource::INSTANT:
         pActor->instantCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
         break;
+    default:
+        spdlog::warn("{}: could not find casting source {}", __FUNCTION__, acMessage.CastingSource);
     }
+
+    spdlog::info("Successfully casted remote spell");
 #endif
 }
 
@@ -240,14 +248,17 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
     });
 
     if (casterEntityIt == std::end(view))
+    {
+        spdlog::warn("{}: could not find caster, form id {:X}", __FUNCTION__, formId);
         return;
+    }
 
     auto& localComponent = view.get<LocalComponent>(*casterEntityIt);
 
     InterruptCastRequest request;
     request.CasterId = localComponent.Id;
 
-    spdlog::debug("Sending out interrupt cast");
+    spdlog::info("Sending out interrupt cast");
 
     m_transport.Send(request);
 #endif
@@ -275,7 +286,7 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 
     pActor->InterruptCast(false);
 
-    spdlog::debug("Interrupt remote cast successful");
+    spdlog::info("Interrupt remote cast successful");
 #endif
 }
 
@@ -284,6 +295,17 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 #if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
+
+    // These effects are applied through spell cast sync
+    if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
+    {
+        if (pSpellItem->eCastingType == MagicSystem::CastingType::CONCENTRATION || 
+            pSpellItem->IsWardSpell() ||
+            pSpellItem->IsInvisibilitySpell())
+        {
+            return;
+        }
+    }
 
     AddTargetRequest request;
 
@@ -324,6 +346,8 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     request.TargetId = serverIdRes.value();
     m_transport.Send(request);
+
+    spdlog::info("Sending effect sync request");
 #endif
 }
 
@@ -395,6 +419,8 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
         pActor = PlayerCharacter::Get();
 
     pActor->magicTarget.AddTarget(data);
+
+    spdlog::info("Applied remote magic effect");
 #endif
 }
 

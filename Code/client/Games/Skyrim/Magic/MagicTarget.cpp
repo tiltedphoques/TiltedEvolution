@@ -11,6 +11,8 @@
 
 #include <Events/AddTargetEvent.h>
 
+#include <Games/Overrides.h>
+
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
 TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount, TESBoundObject* apSource, char abLoadCast, char abAdjust);
@@ -29,9 +31,18 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
     return result;
 }
 
+bool MagicTarget::AddTargetData::ShouldSync()
+{
+    return !pEffectItem->IsSummonEffect() &&
+           !pSpell->IsInvisibilitySpell() &&
+           !pSpell->IsWardSpell();
+}
+
 // If you want a detailed flowchart of what's happening here, ask cosi
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
+    spdlog::info("HookAddTarget");
+
     // TODO: this can be fixed by properly implementing multiple inheritance
     Actor* pTargetActor = (Actor*)((uint8_t*)apThis - 0x98);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
@@ -44,6 +55,10 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     if (arData.pEffectItem->IsVampireLordEffect())
         pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
+
+    // TODO(cosideci): maybe call MagicTarget::AddTarget()?
+    if (ScopedSpellCastOverride::IsOverriden())
+        return ThisCall(RealAddTarget, apThis, arData);
 
     AddTargetEvent addTargetEvent{};
     addTargetEvent.TargetID = pTargetActor->formID;
@@ -79,7 +94,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         }
 
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && !arData.pEffectItem->IsSummonEffect())
+        if (result && arData.ShouldSync())
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
@@ -90,7 +105,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (pCasterExtension->IsLocalPlayer())
         {
             bool result = ThisCall(RealAddTarget, apThis, arData);
-            if (result && !arData.pEffectItem->IsSummonEffect())
+            if (result && arData.ShouldSync())
                 World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
         }
@@ -103,7 +118,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     if (pTargetActorEx->IsLocal())
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && !arData.pEffectItem->IsSummonEffect())
+        if (result && arData.ShouldSync())
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
