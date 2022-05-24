@@ -141,6 +141,8 @@ struct PlayerCharacter : Actor
 
     static PlayerCharacter* Get() noexcept;
 
+    static void SetGodMode(bool aSet) noexcept;
+
     const GameArray<TintMask*>& GetTints() const noexcept;
 
     void SetDifficulty(const int32_t aDifficulty) noexcept;

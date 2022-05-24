@@ -187,6 +187,14 @@ void DebugService::OnDraw() noexcept
     DrawEntitiesView();
 
     ImGui::BeginMainMenuBar();
+    if (ImGui::BeginMenu("Helpers"))
+    {
+        if (ImGui::Button("Unstuck player"))
+        {
+            auto* pPlayer = PlayerCharacter::Get();
+            pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+        }
+    }
     if (ImGui::BeginMenu("Server"))
     {
         static char s_address[256] = "127.0.0.1:10578";

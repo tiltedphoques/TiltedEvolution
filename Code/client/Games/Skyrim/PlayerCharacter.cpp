@@ -28,6 +28,12 @@ static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
 
+void PlayerCharacter::SetGodMode(bool aSet) noexcept
+{
+    POINTER_SKYRIMSE(bool, bGodMode, 404238);
+    *bGodMode.Get() = aSet;
+}
+
 void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
 {
     if (aDifficulty > 5)
