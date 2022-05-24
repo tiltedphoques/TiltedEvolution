@@ -474,25 +474,12 @@ bool Actor::InitiateMountPackage(Actor* apMount) noexcept
 
 void Actor::GenerateMagicCasters() noexcept
 {
-    if (!leftHandCaster)
+    using CS = MagicSystem::CastingSource;
+
+    for (int i = 0; i < 4; i++)
     {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-        leftHandCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!rightHandCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-        rightHandCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!shoutCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
-        shoutCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!instantCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
-        instantCaster = Cast<ActorMagicCaster>(pCaster);
+        if (casters[i] == nullptr)
+            casters[i] = Cast<ActorMagicCaster>(GetMagicCaster(static_cast<CS>(i)));
     }
 }
 

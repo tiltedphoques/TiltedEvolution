@@ -5,6 +5,7 @@ set_languages("c99", "cxx20")
 
 if is_plat("windows") then
     add_cxflags("/bigobj")
+    add_syslinks("kernel32")
 end
 
 if is_plat("linux") then

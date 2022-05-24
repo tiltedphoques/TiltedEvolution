@@ -44,7 +44,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: C:\Users\runneradmin\AppData\Local\.xmake\packages
-        key: ${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua') }}-${{ hashFiles('C:\Users\runneradmin\AppData\Local\.xmake\xmake.conf') }}-${{ hashFiles('C:\Users\runneradmin\AppData\Local\.xmake\repositories\**') }}
+        key: v2-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua') }}-${{ hashFiles('C:\Users\runneradmin\AppData\Local\.xmake\xmake.conf') }}-${{ hashFiles('C:\Users\runneradmin\AppData\Local\.xmake\repositories\**') }}
 
     - name: Prepare npm
       run: npm install @semantic-release/github @semantic-release/exec conventional-changelog-conventionalcommits

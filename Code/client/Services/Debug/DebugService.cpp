@@ -45,6 +45,7 @@
 #include <Interface/IMenu.h>
 
 #include <Games/Misc/SubtitleManager.h>
+#include <Games/Overrides.h>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
@@ -80,6 +81,8 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 
     Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
     pActor->SetActorInventory(inventory);
+
+    pActor->GetExtension()->SetPlayer(true);
 
     m_actors.emplace_back(pActor);
 }
@@ -161,6 +164,16 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+            if (m_actors.empty())
+                PlaceActorInWorld();
+            else
+            {
+                ScopedSpellCastOverride _;
+                auto pActor = m_actors[0];
+                pActor->GenerateMagicCasters();
+                pActor->casters[0]->CastSpellImmediate(Cast<MagicItem>(TESForm::GetById(0x27EB6)),
+                                                                           false, nullptr, 1.f, false, 0.f);
+            }
         }
     }
     else
