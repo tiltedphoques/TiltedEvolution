@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.2...v1.31.0) (2022-05-24)
+
+
+### Features
+
+* player stands up after death ([f9d6fcd](https://github.com/tiltedphoques/TiltedEvolution/commit/f9d6fcdec577a49f66ab090eeeaa88825c23e506))
+
 ## [1.30.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.1...v1.30.2) (2022-05-24)
 
 
