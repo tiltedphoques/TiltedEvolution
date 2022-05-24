@@ -108,7 +108,7 @@ void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
             spdlog::error("This isn't a crime faction! {:X}", crimeFactionId);
             continue;
         }
-        
+
         PayFine(pCrimeFaction, false, false);
     }
 }
