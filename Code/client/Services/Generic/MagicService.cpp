@@ -123,7 +123,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
         }
     }
 
-    spdlog::info("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
+    spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
                  request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
@@ -227,7 +227,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     pCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
 
-    spdlog::info("Successfully casted remote spell");
+    spdlog::debug("Successfully casted remote spell");
 #endif
 }
 
@@ -257,7 +257,7 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
     request.CasterId = localComponent.Id;
     request.CastingSource = acEvent.CastingSource;
 
-    spdlog::info("Sending out interrupt cast");
+    spdlog::debug("Sending out interrupt cast");
 
     m_transport.Send(request);
 #endif
@@ -300,7 +300,7 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 
     pCaster->InterruptCast();
 
-    spdlog::info("Interrupt remote cast successful");
+    spdlog::debug("Interrupt remote cast successful");
 #endif
 }
 
@@ -359,7 +359,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     request.TargetId = serverIdRes.value();
     m_transport.Send(request);
 
-    spdlog::info("Sending effect sync request");
+    spdlog::debug("Sending effect sync request");
 #endif
 }
 
@@ -432,7 +432,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
 
     pActor->magicTarget.AddTarget(data);
 
-    spdlog::info("Applied remote magic effect");
+    spdlog::debug("Applied remote magic effect");
 #endif
 }
 
