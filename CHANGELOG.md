@@ -1,3 +1,15 @@
+## [1.30.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.1...v1.30.2) (2022-05-24)
+
+
+### Bug Fixes
+
+* chose arch when building ([440f2c0](https://github.com/tiltedphoques/TiltedEvolution/commit/440f2c06f006dc395cd36904c34a743d267494e5))
+* docker args should live forever ([8aab802](https://github.com/tiltedphoques/TiltedEvolution/commit/8aab8027531c5ce1c168900577187c2707e56cf5))
+* libc++ version ([55be85c](https://github.com/tiltedphoques/TiltedEvolution/commit/55be85cb9a89a9eb72478f746d296d55640bfddc))
+* raspberry pi again ([7a5f200](https://github.com/tiltedphoques/TiltedEvolution/commit/7a5f200af1c29e433be4821c9d5a123a38c8cd18))
+* raspberrypi build ([b09ae83](https://github.com/tiltedphoques/TiltedEvolution/commit/b09ae838b7ef60e8065e76c1eeaedb75b24df275))
+* runner for raspberry pi needs libssl ([8fda608](https://github.com/tiltedphoques/TiltedEvolution/commit/8fda60859679631e4de3603805ad39031cdf7dd4))
+
 ## [1.30.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.0...v1.30.1) (2022-05-19)
 
 # [1.30.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.1...v1.30.0) (2022-05-16)
