@@ -1,3 +1,12 @@
+## [1.31.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.0...v1.31.1) (2022-05-24)
+
+
+### Bug Fixes
+
+* double damage on projectiles ([bdd7baf](https://github.com/tiltedphoques/TiltedEvolution/commit/bdd7baffadfcb9c4c5c3dcb10e7237ca50108722))
+* invisibility ([b1b233f](https://github.com/tiltedphoques/TiltedEvolution/commit/b1b233f97ad47df0a583653568b89c777006973d))
+* ward spell not disappearing ([ef86bde](https://github.com/tiltedphoques/TiltedEvolution/commit/ef86bde884118b36959b6960c899dc29b274e85f))
+
 # [1.31.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.2...v1.31.0) (2022-05-24)
 
 
