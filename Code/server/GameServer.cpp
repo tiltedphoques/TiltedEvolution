@@ -429,16 +429,14 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 
     const auto& cellComponent = view.get<CellIdComponent>(*it);
-    const auto* characterComponent = m_pWorld->try_get<CharacterComponent>(acOrigin);
-    if (!characterComponent)
-    {
-        spdlog::error("No character component for origin entity {:X}", World::ToInteger(acOrigin));
-        return;
-    }
+
+    bool isDragon = false;
+    if (const auto* characterComponent = m_pWorld->try_get<CharacterComponent>(acOrigin))
+        isDragon = characterComponent->IsDragon();
 
     for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (cellComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent->IsDragon()) && pPlayer != apExcludedPlayer)
+        if (cellComponent.IsInRange(pPlayer->GetCellComponent(), isDragon) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
 }

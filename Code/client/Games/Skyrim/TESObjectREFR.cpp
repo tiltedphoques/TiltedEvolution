@@ -640,13 +640,14 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
-        item.Count = -aCount;
 
         if (apExtraList)
         {
             ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apExtraList);
         }
+
+        item.Count = -aCount;
 
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
