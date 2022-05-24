@@ -37,7 +37,6 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 
 bool knockdownStart = false;
 double knockdownTimer = 0.0;
-NiPoint3 newPosition{};
 
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
@@ -160,7 +159,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
     if (m_respawnTimer <= 0.0)
     {
-        newPosition = pPlayer->RespawnPlayer();
+        pPlayer->RespawnPlayer();
 
         knockdownTimer = 1.0;
         knockdownStart = true;
@@ -179,7 +178,7 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
     if (knockdownStart)
     {
         knockdownTimer -= acDeltaTime;
-        if (PlayerCharacter::Get()->position == newPosition)
+        if (knockdownTimer <= 0.0)
         {
             PlayerCharacter::SetGodMode(true);
             godmodeStart = true;
