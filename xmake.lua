@@ -1,5 +1,4 @@
 set_xmakever("2.6.2")
-add_requireconfs("*", { build = true })
 
 -- c code will use c99,
 set_languages("c99", "cxx20")
