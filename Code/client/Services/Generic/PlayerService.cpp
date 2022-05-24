@@ -37,6 +37,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 
 bool knockdownStart = false;
 double knockdownTimer = 0.0;
+NiPoint3 newPosition{};
 
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
@@ -151,13 +152,15 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         // just by setting its health back to max. Therefore, put it to 0.
         if (pPlayer->GetActorValue(ActorValueInfo::kHealth) > 0.f)
             pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 0);
+
+        pPlayer->PayCrimeGoldToAllFactions();
     }
 
     m_respawnTimer -= acDeltaTime;
 
     if (m_respawnTimer <= 0.0)
     {
-        pPlayer->RespawnPlayer();
+        newPosition = pPlayer->RespawnPlayer();
 
         knockdownTimer = 1.0;
         knockdownStart = true;
@@ -176,7 +179,7 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
     if (knockdownStart)
     {
         knockdownTimer -= acDeltaTime;
-        if (knockdownTimer <= 0.0)
+        if (PlayerCharacter::Get()->position == newPosition)
         {
             PlayerCharacter::SetGodMode(true);
             godmodeStart = true;
