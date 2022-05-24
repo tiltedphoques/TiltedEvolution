@@ -335,9 +335,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
         return;
     }
 
-    entt::entity entity = *it;
-
-    std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
     if (!serverIdRes.has_value())
     {
         spdlog::error("{}: failed to find server id", __FUNCTION__);

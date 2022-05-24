@@ -9,7 +9,11 @@ bool MagicItem::IsWardSpell() noexcept
 bool MagicItem::IsInvisibilitySpell() noexcept
 {
     BGSKeyword* pMagicInvisibility = Cast<BGSKeyword>(TESForm::GetById(0x1ea6f));
-    bool result = keyword.Contains(pMagicInvisibility);
-    spdlog::warn("IsInvisib {}", result);
-    return result;
+    return keyword.Contains(pMagicInvisibility);
+}
+
+bool MagicItem::IsHealingSpell() noexcept
+{
+    BGSKeyword* pMagicRestoreHealth = Cast<BGSKeyword>(TESForm::GetById(0x1ceb0));
+    return keyword.Contains(pMagicRestoreHealth);
 }

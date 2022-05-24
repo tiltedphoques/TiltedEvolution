@@ -71,11 +71,12 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (!arData.pCaster)
             return false;
 
-        ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-        if (!pCasterExtension->IsLocalPlayer())
+        if (!arData.pSpell->IsHealingSpell())
             return false;
 
-        if (!arData.pEffectItem->IsHealingEffect())
+        ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+        // TODO(cosideci): should be IsLocal() maybe to account for local npcs healing remote players?
+        if (!pCasterExtension->IsLocalPlayer())
             return false;
 
         bool result = ThisCall(RealAddTarget, apThis, arData);
@@ -88,6 +89,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     {
         if (arData.pCaster)
         {
+            // TODO: cancel if ishealing, or it gets applied twice?
             ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
             if (pCasterExtension->IsRemotePlayer() && !World::Get().GetServerSettings().PvpEnabled)
                 return false;

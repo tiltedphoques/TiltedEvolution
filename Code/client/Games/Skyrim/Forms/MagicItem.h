@@ -11,6 +11,7 @@ struct MagicItem : TESBoundObject
 {
     bool IsWardSpell() noexcept;
     bool IsInvisibilitySpell() noexcept;
+    bool IsHealingSpell() noexcept;
 
     TESFullName fullName;
     BGSKeywordForm keyword;
