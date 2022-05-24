@@ -171,7 +171,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 ScopedSpellCastOverride _;
                 auto pActor = m_actors[0];
                 pActor->GenerateMagicCasters();
-                pActor->leftHandCaster->CastSpellImmediate(Cast<MagicItem>(TESForm::GetById(0x27EB6)),
+                pActor->casters[0]->CastSpellImmediate(Cast<MagicItem>(TESForm::GetById(0x27EB6)),
                                                                            false, nullptr, 1.f, false, 0.f);
             }
         }

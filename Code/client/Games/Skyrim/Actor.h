@@ -312,10 +312,7 @@ public:
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<void*> addedSpells;
-    ActorMagicCaster* leftHandCaster;
-    ActorMagicCaster* rightHandCaster;
-    ActorMagicCaster* shoutCaster;
-    ActorMagicCaster* instantCaster;
+    ActorMagicCaster* casters[4];
     MagicItem* magicItems[4];
     TESForm* equippedShout;
     uint32_t someRefrHandle;

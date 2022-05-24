@@ -133,6 +133,8 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
 void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept
 {
 #if TP_SKYRIM64
+    using CS = MagicSystem::CastingSource;
+
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
     {
@@ -152,12 +154,17 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     pActor->GenerateMagicCasters();
 
     // Only left hand casters need dual casting (?)
-    pActor->leftHandCaster->SetDualCasting(acMessage.IsDualCasting);
+    pActor->casters[CS::LEFT_HAND]->SetDualCasting(acMessage.IsDualCasting);
+
+    if (acMessage.CastingSource >= 4)
+    {
+        spdlog::warn("{}: could not find casting source {}", __FUNCTION__, acMessage.CastingSource);
+        return;
+    }
 
     MagicItem* pSpell = nullptr;
 
-    if (acMessage.CastingSource < 4)
-        pSpell = pActor->magicItems[acMessage.CastingSource];
+    pSpell = pActor->magicItems[acMessage.CastingSource];
 
     if (!pSpell)
     {
@@ -211,23 +218,14 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
 
     ScopedSpellCastOverride _;
 
-    switch (acMessage.CastingSource)
+    MagicCaster* pCaster = pActor->GetMagicCaster(static_cast<CS>(acMessage.CastingSource));
+    if (!pCaster)
     {
-    case MagicSystem::CastingSource::LEFT_HAND:
-        pActor->leftHandCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
-        break;
-    case MagicSystem::CastingSource::RIGHT_HAND:
-        pActor->rightHandCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
-        break;
-    case MagicSystem::CastingSource::OTHER:
-        pActor->shoutCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
-        break;
-    case MagicSystem::CastingSource::INSTANT:
-        pActor->instantCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
-        break;
-    default:
-        spdlog::warn("{}: could not find casting source {}", __FUNCTION__, acMessage.CastingSource);
+        spdlog::warn("{}: failed to find caster.", __FUNCTION__);
+        return;
     }
+
+    pCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
 
     spdlog::info("Successfully casted remote spell");
 #endif
@@ -257,6 +255,7 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
 
     InterruptCastRequest request;
     request.CasterId = localComponent.Id;
+    request.CastingSource = acEvent.CastingSource;
 
     spdlog::info("Sending out interrupt cast");
 
@@ -267,6 +266,12 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
 void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept
 {
 #if TP_SKYRIM64
+    if (acMessage.CastingSource >= 4)
+    {
+        spdlog::warn("{}: could not find casting source {}", __FUNCTION__, acMessage.CastingSource);
+        return;
+    }
+
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
     const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
     {
@@ -284,7 +289,16 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
     const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
     Actor* pActor = Cast<Actor>(pForm);
 
-    pActor->InterruptCast(false);
+    pActor->GenerateMagicCasters();
+
+    MagicCaster* pCaster = pActor->GetMagicCaster(static_cast<MagicSystem::CastingSource>(acMessage.CastingSource));
+    if (!pCaster)
+    {
+        spdlog::warn("{}: failed to find caster.", __FUNCTION__);
+        return;
+    }
+
+    pCaster->InterruptCast();
 
     spdlog::info("Interrupt remote cast successful");
 #endif

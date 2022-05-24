@@ -22,9 +22,7 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
     if (!abSuccess)
         return;
 
-    Actor* pActor = apThis->pCasterActor;
-
-    if (pActor->GetExtension()->IsRemote())
+    if (apThis->pCasterActor->GetExtension()->IsRemote())
         return;
 
     uint32_t targetFormId = 0;
@@ -49,9 +47,7 @@ void TP_MAKE_THISCALL(HookInterruptCast, ActorMagicCaster, bool abRefund)
     ActorExtension* pExtended = apThis->pCasterActor->GetExtension();
 
     if (pExtended->IsLocal())
-    {
-        World::Get().GetRunner().Trigger(InterruptCastEvent(apThis->pCasterActor->formID));
-    }
+        World::Get().GetRunner().Trigger(InterruptCastEvent(apThis->pCasterActor->formID, apThis->eCastingSource));
 
     ThisCall(RealInterruptCast, apThis, abRefund);
 }
