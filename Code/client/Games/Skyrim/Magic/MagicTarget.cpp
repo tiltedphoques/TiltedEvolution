@@ -38,13 +38,17 @@ bool MagicTarget::AddTargetData::ShouldSync()
            !pSpell->IsWardSpell();
 }
 
+Actor* MagicTarget::GetTargetAsActor()
+{
+    TP_THIS_FUNCTION(TGetTargetAsActor, Actor*, MagicTarget);
+    POINTER_SKYRIMSE(TGetTargetAsActor, getTargetAsActor, 34529);
+    return ThisCall(getTargetAsActor, this);
+}
+
 // If you want a detailed flowchart of what's happening here, ask cosi
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
-    spdlog::info("HookAddTarget");
-
-    // TODO: this can be fixed by properly implementing multiple inheritance
-    Actor* pTargetActor = (Actor*)((uint8_t*)apThis - 0x98);
+    Actor* pTargetActor = apThis->GetTargetAsActor();
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (!pTargetActorEx)
@@ -56,7 +60,6 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     if (arData.pEffectItem->IsVampireLordEffect())
         pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
-    // TODO(cosideci): maybe call MagicTarget::AddTarget()?
     if (ScopedSpellCastOverride::IsOverriden())
         return ThisCall(RealAddTarget, apThis, arData);
 

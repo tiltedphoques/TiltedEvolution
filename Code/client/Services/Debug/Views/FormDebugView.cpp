@@ -13,7 +13,7 @@
 
 void DebugService::DrawFormDebugView()
 {
-    static TESObjectREFR* pRefr = nullptr;
+    static Actor* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
 
     ImGui::Begin("Form");
@@ -27,7 +27,7 @@ void DebugService::DrawFormDebugView()
         {
             pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
-                pRefr = Cast<TESObjectREFR>(pFetchForm);
+                pRefr = Cast<Actor>(pFetchForm);
         }
     }
 
@@ -39,12 +39,13 @@ void DebugService::DrawFormDebugView()
 
     if (pRefr)
     {
+        /*
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), pRefr->formID);
         ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
+        */
 
-        /*
-        for (ActiveEffect* pEffect : *pActor->currentProcess->middleProcess->ActiveEffects)
+        for (ActiveEffect* pEffect : *pRefr->currentProcess->middleProcess->ActiveEffects)
         {
             if (!pEffect)
                 continue;
@@ -56,8 +57,10 @@ void DebugService::DrawFormDebugView()
             ImGui::InputFloat("Duration", &pEffect->fDuration, 0, 0, "%.1f", ImGuiInputTextFlags_ReadOnly);
             ImGui::InputFloat("Magnitude", &pEffect->fMagnitude, 0, 0, "%.1f", ImGuiInputTextFlags_ReadOnly);
             ImGui::InputInt("Flags", (int*)&pEffect->uiFlags, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            if (ImGui::Button("Elapse time"))
+                m_world.GetRunner().Queue([pEffect]() { pEffect->fElapsedSeconds = pEffect->fDuration - 3.f; });
         }
-        */
     }
 
     ImGui::End();

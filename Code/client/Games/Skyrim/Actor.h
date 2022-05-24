@@ -70,7 +70,7 @@ struct Actor : TESObjectREFR
     virtual void sub_C0();
     virtual void sub_C1();
     virtual void sub_C2();
-    virtual void sub_C3();
+    virtual void SetRefraction(bool aEnable, float aRefraction);
     virtual void sub_C4();
     virtual void sub_C5();
     virtual void sub_C6();
@@ -99,7 +99,7 @@ struct Actor : TESObjectREFR
     virtual void sub_DD();
     virtual void sub_DE();
     virtual void PutCreatedPackage(struct TESPackage*, bool = false, bool = true, bool = true); // 14069BBF0
-    virtual void sub_E0();
+    virtual void UpdateAlpha();
     virtual void sub_E1();
     virtual void sub_E2();
     virtual void sub_E3();
