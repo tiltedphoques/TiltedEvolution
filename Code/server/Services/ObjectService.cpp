@@ -24,6 +24,8 @@ ObjectService::ObjectService(World &aWorld, entt::dispatcher &aDispatcher) : m_w
     m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&ObjectService::OnScriptAnimationRequest>(this);
 }
 
+// TODO(cosideci): the cell handling of objects need to be revamped.
+// We already store the location and worldspace of the mod through CellIdComponent.
 void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
     for (Player* pPlayer : m_world.GetPlayerManager())

@@ -189,10 +189,9 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
     }
 
-    // TODO(cosideci): confirm usage of GetCellId()
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
+    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->parentCell->formID, request.CellId))
     {
-        spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->GetCellId());
+        spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->parentCell->formID);
         return;
     }
 
@@ -258,10 +257,9 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
 
-    // TODO(cosideci): confirm usage of GetCellId()
-    if (!m_world.GetModSystem().GetServerModId(pObject->GetCellId(), request.CellId))
+    if (!m_world.GetModSystem().GetServerModId(pObject->parentCell->formID, request.CellId))
     {
-        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->GetCellId());
+        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->parentCell->formID);
         return;
     }
 
