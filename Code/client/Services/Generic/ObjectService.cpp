@@ -54,19 +54,13 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         return;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    const TESObjectCELL* pCell = pPlayer->parentCell;
 
     // TODO(cosideci): why isn't the event's cell id being used?
     GameId cellId{};
-    if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
     {
-        spdlog::error("Server cell id not found for cell form id {:X}", pPlayer->parentCell->formID);
-        return;
-    }
-
-    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(pPlayer->parentCell->formID));
-    if (!pCell)
-    {
-        spdlog::error("Cell not found for cell form id {:X}", pPlayer->parentCell->formID);
+        spdlog::error("Server cell id not found for cell form id {:X}", pCell->formID);
         return;
     }
 
@@ -189,7 +183,14 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
     }
 
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->parentCell->formID, request.CellId))
+    TESObjectCELL* pCell = acEvent.pObject->GetParentCellEx();
+    if (!pCell)
+    {
+        spdlog::error("Activated object has no parent cell: {:X}", acEvent.pObject->formID);
+        return;
+    }
+
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, request.CellId))
     {
         spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->parentCell->formID);
         return;
@@ -256,6 +257,13 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
     }
 
     const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
+
+    TESObjectCELL* pCell = pObject->GetParentCellEx();
+    if (!pCell)
+    {
+        spdlog::error("Activated object has no parent cell: {:X}", pObject->formID);
+        return;
+    }
 
     if (!m_world.GetModSystem().GetServerModId(pObject->parentCell->formID, request.CellId))
     {

@@ -7,7 +7,7 @@ struct TESWorldSpace;
 
 struct TESObjectCELL : TESForm
 {
-    Vector<TESObjectREFR*> GetRefsByFormTypes(const Vector<FormType>& aFormTypes) noexcept;
+    Vector<TESObjectREFR*> GetRefsByFormTypes(const Vector<FormType>& aFormTypes) const noexcept;
     void GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bool aAllowCellLoad) noexcept;
 
     uint8_t pad20[0x40 - 0x20];

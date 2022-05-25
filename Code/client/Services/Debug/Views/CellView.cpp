@@ -37,7 +37,8 @@ void DebugService::DrawCellView()
     {
         if (ImGui::CollapsingHeader("Parent cell", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::InputScalar("Id", ImGuiDataType_U32, pCell, nullptr, nullptr, "%" PRIx32,
+            const uint32_t cellId = pCell->formID;
+            ImGui::InputScalar("Id", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
                                ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
             char* pName = (char*)pCell->GetName();

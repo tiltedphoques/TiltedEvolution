@@ -153,6 +153,11 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
+TESObjectCELL* TESObjectREFR::GetParentCellEx() const noexcept
+{
+    return parentCell ? parentCell : GetParentCell();
+}
+
 void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
@@ -528,14 +533,16 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     // It is still recommended that the quest leader loots all quest items.
     if (arEntry.IsQuestItem && arEntry.Count > 0)
     {
-        if (IsItemInInventory(objectId))
+        PlayerCharacter* pPlayer = PlayerCharacter::Get();
+
+        if (pPlayer->IsItemInInventory(objectId))
             return;
 
         Actor* pActor = Cast<Actor>(this);
         if (!pActor || !pActor->GetExtension()->IsRemotePlayer())
             return;
 
-        PlayerCharacter::Get()->AddOrRemoveItem(arEntry);
+        pPlayer->AddOrRemoveItem(arEntry);
     }
 }
 
