@@ -98,7 +98,7 @@ void PlayerService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) co
 
 void PlayerService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
 {
-    if (acEvent.WorldSpaceId != GameId{})
+    if (acEvent.WorldSpaceId)
     {
         EnterExteriorCellRequest message;
         message.CellId = acEvent.CellId;

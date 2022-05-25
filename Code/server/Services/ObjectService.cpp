@@ -26,6 +26,7 @@ ObjectService::ObjectService(World &aWorld, entt::dispatcher &aDispatcher) : m_w
 
 // TODO(cosideci): the cell handling of objects need to be revamped.
 // We already store the location and worldspace of the mod through CellIdComponent.
+// Clients need a message saying the entity was destroyed.
 void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
     for (Player* pPlayer : m_world.GetPlayerManager())
@@ -100,7 +101,6 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
             auto& inventoryComp = m_world.emplace<InventoryComponent>(cEntity);
             inventoryComp.Content = object.CurrentInventory;
 
-            // TODO: maybe make this its own message instead of using IsSenderFirst
             ObjectData objectData;
             objectData.Id = object.Id;
             objectData.ServerId = World::ToInteger(cEntity);
@@ -151,12 +151,13 @@ void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage
         objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    for(Player* pPlayer : m_world.GetPlayerManager())
+    for (Player* pPlayer : m_world.GetPlayerManager())
     {
-        if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
-        {
+        if (pPlayer == acMessage.pPlayer)
+            continue;
+
+        if (pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
             pPlayer->Send(notifyLockChange);
-        }
     }
 }
 
