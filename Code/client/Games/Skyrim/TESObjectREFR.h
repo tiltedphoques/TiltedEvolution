@@ -195,8 +195,10 @@ struct TESObjectREFR : TESForm
     Inventory GetArmor() const noexcept;
     Inventory GetWornArmor() const noexcept;
     Inventory GetEquippedItems() const noexcept;
-    void SetInventory(const Inventory& acContainer) noexcept;
 
+    bool IsItemInInventory(uint32_t aFormID) const noexcept;
+
+    void SetInventory(const Inventory& acContainer) noexcept;
     void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
 
     BSHandleRefObject handleRefObject;

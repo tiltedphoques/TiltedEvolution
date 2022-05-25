@@ -464,6 +464,12 @@ Inventory TESObjectREFR::GetEquippedItems() const noexcept
     return inventory;
 }
 
+bool TESObjectREFR::IsItemInInventory(uint32_t aFormID) const noexcept
+{
+    Inventory inventory = GetInventory([aFormID](TESForm& aForm) { return aForm.formID == aFormID; });
+    return !inventory.Entries.empty();
+}
+
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::debug("Setting inventory for {:X}", formID);
@@ -518,14 +524,18 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
     }
 
-    // TODO(cosideci): this needs to be tested. This just creates a copy of the "quest object".
-    // Might cause issues when delivering quests.
-    // Maybe make it so that the quest leader gets the ref, and the other party members get the copy?
-    if (arEntry.IsQuestItem)
+    // TODO(cosideci): this is still flawed. Adding the refr to the quest leader is hard.
+    // It is still recommended that the quest leader loots all quest items.
+    if (arEntry.IsQuestItem && arEntry.Count > 0)
     {
+        if (IsItemInInventory(objectId))
+            return;
+
         Actor* pActor = Cast<Actor>(this);
-        if (pActor && pActor->GetExtension()->IsRemotePlayer())
-            PlayerCharacter::Get()->AddOrRemoveItem(arEntry);
+        if (!pActor || !pActor->GetExtension()->IsRemotePlayer())
+            return;
+
+        PlayerCharacter::Get()->AddOrRemoveItem(arEntry);
     }
 }
 
