@@ -167,7 +167,9 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         }
     }
 
-    const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(pTES->centerGridX, pTES->centerGridY, aWorldSpace, 0);
+    TESObjectCELL* pCell = PlayerCharacter::Get()->GetParentCellEx();
+    if (!pCell)
+        pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, aWorldSpace, false);
 
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, changeEvent.PlayerCell))
     {

@@ -151,12 +151,13 @@ void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage
         objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
     }
 
-    for(Player* pPlayer : m_world.GetPlayerManager())
+    for (Player* pPlayer : m_world.GetPlayerManager())
     {
-        if (pPlayer != acMessage.pPlayer && pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
-        {
+        if (pPlayer == acMessage.pPlayer)
+            continue;
+
+        if (pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
             pPlayer->Send(notifyLockChange);
-        }
     }
 }
 
