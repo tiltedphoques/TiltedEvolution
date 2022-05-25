@@ -19,6 +19,7 @@
 
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
 
 #include <inttypes.h>
 
@@ -56,12 +57,21 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     const TESObjectCELL* pCell = pPlayer->parentCell;
 
-    // TODO(cosideci): why isn't the event's cell id being used?
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
     {
         spdlog::error("Server cell id not found for cell form id {:X}", pCell->formID);
         return;
+    }
+
+    GameId worldSpaceId{};
+    if (TESWorldSpace* pWorldSpace = pPlayer->GetWorldSpace())
+    {
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, worldSpaceId))
+        {
+            spdlog::error("Server world space id not found for world space form id {:X}", pWorldSpace->formID);
+            return;
+        }
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
@@ -74,6 +84,8 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     {
         ObjectData objectData{};
         objectData.CellId = cellId;
+        objectData.WorldSpaceId = worldSpaceId;
+        objectData.CurrentCoords = GridCellCoords::CalculateGridCellCoords(pObject->position.x, pObject->position.y);
 
         if (!m_world.GetModSystem().GetServerModId(pObject->formID, objectData.Id))
         {
@@ -265,7 +277,7 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
         return;
     }
 
-    if (!m_world.GetModSystem().GetServerModId(pObject->parentCell->formID, request.CellId))
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, request.CellId))
     {
         spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->parentCell->formID);
         return;
