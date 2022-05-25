@@ -167,6 +167,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            static bool s_enabled = true;
+
+            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+
+            s_enabled = !s_enabled;
+
         #if 0
             static bool s_enabled = true;
             static bool s_firstPerson = false;
