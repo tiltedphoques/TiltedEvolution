@@ -146,7 +146,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         s_startTimer = true;
         m_respawnTimer = 5.0;
-        FadeOutGame(true, true, 2.5f, true, 2.5f);
+        FadeOutGame(true, true, 3.0f, true, 2.0f);
 
         // If a player dies not by its health reaching 0, getting it up from its bleedout state isn't possible
         // just by setting its health back to max. Therefore, put it to 0.
