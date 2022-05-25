@@ -183,7 +183,7 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
         {
             PlayerCharacter::SetGodMode(true);
             godmodeStart = true;
-            godmodeTimer = 5.0;
+            godmodeTimer = 10.0;
 
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
