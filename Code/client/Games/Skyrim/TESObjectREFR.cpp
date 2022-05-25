@@ -521,12 +521,15 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     // TODO(cosideci): this needs to be tested. This just creates a copy of the "quest object".
     // Might cause issues when delivering quests.
     // Maybe make it so that the quest leader gets the ref, and the other party members get the copy?
+    // After testing, this seems to create many duplicates on subsequent loads. Disable for now.
+    /*
     if (arEntry.IsQuestItem)
     {
         Actor* pActor = Cast<Actor>(this);
         if (pActor && pActor->GetExtension()->IsRemotePlayer())
             PlayerCharacter::Get()->AddOrRemoveItem(arEntry);
     }
+    */
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
@@ -637,13 +640,14 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
-        item.Count = -aCount;
 
         if (apExtraList)
         {
             ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apExtraList);
         }
+
+        item.Count = -aCount;
 
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }

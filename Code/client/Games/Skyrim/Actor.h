@@ -62,7 +62,7 @@ struct Actor : TESObjectREFR
     virtual void sub_B8();
     virtual void sub_B9();
     virtual void sub_BA();
-    virtual void sub_BB();
+    virtual void PayFine(TESFaction* apFaction, bool aGoToJail, bool aRemoveStolenItems);
     virtual void sub_BC();
     virtual void sub_BD();
     virtual void sub_BE();
