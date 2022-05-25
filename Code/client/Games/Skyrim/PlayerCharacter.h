@@ -153,7 +153,9 @@ struct PlayerCharacter : Actor
         return (*pSkills)->skills[aSkill].xp;
     }
 
-    void RespawnPlayer() noexcept;
+    NiPoint3 RespawnPlayer() noexcept;
+
+    void PayCrimeGoldToAllFactions() noexcept;
 
     struct Objective
     {

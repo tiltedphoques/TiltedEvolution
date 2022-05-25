@@ -151,6 +151,8 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         // just by setting its health back to max. Therefore, put it to 0.
         if (pPlayer->GetActorValue(ActorValueInfo::kHealth) > 0.f)
             pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 0);
+
+        pPlayer->PayCrimeGoldToAllFactions();
     }
 
     m_respawnTimer -= acDeltaTime;
