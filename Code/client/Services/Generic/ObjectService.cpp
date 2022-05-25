@@ -75,7 +75,6 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    // TODO(cosideci): create entities for container objects?
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};

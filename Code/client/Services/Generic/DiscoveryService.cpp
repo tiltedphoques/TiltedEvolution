@@ -56,7 +56,8 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 
 void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
 {
-    const auto pWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+    const PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    const auto pWorldSpace = pPlayer->GetWorldSpace();
 
     m_interiorCellId = 0;
 
@@ -86,7 +87,9 @@ void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
             return;
         }
 
-        const TESObjectCELL* pCell = ModManager::Get()->GetCellFromCoordinates(gameCurrentGrid.X, gameCurrentGrid.Y, pWorldSpace, false);
+        TESObjectCELL* pCell = pPlayer->GetParentCellEx();
+        if (!pCell)
+            pCell = ModManager::Get()->GetCellFromCoordinates(gameCurrentGrid.X, gameCurrentGrid.Y, pWorldSpace, false);
 
         if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellChangeEvent.CellId))
         {
