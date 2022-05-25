@@ -1,3 +1,15 @@
+# [1.32.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.1...v1.32.0) (2022-05-25)
+
+
+### Bug Fixes
+
+* gold duplication bug ([6629f8c](https://github.com/tiltedphoques/TiltedEvolution/commit/6629f8c82e36578de584e45097d05d9f4cf621c5))
+
+
+### Features
+
+* pay and clear crime fines on death ([e6f47dd](https://github.com/tiltedphoques/TiltedEvolution/commit/e6f47dd7441a8d58cc449ae94c54c8450f53629c))
+
 ## [1.31.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.0...v1.31.1) (2022-05-24)
 
 
