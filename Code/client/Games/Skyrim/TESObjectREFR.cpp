@@ -535,15 +535,22 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
     {
         PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
-        if (pPlayer->IsItemInInventory(objectId))
-            return;
-
-        Actor* pActor = Cast<Actor>(this);
-        if (!pActor || !pActor->GetExtension()->IsRemotePlayer())
-            return;
-
-        pPlayer->AddOrRemoveItem(arEntry);
+        if (!pPlayer->IsItemInInventory(objectId))
+        {
+            Actor* pActor = Cast<Actor>(this);
+            if (pActor && pActor->GetExtension()->IsRemotePlayer())
+                pPlayer->AddOrRemoveItem(arEntry);
+        }
     }
+
+    UpdateItemList(nullptr);
+}
+
+void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
+{
+    TP_THIS_FUNCTION(TUpdateItemList, void, TESObjectREFR, TESForm*);
+    POINTER_SKYRIMSE(TUpdateItemList, updateItemList, 52849);
+    ThisCall(updateItemList, this, pUnkForm);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept

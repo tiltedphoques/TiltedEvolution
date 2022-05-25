@@ -201,6 +201,7 @@ struct TESObjectREFR : TESForm
 
     void SetInventory(const Inventory& acContainer) noexcept;
     void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
+    void UpdateItemList(TESForm* pUnkForm) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
