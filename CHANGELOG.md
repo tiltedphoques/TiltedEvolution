@@ -1,3 +1,10 @@
+## [1.33.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.0...v1.33.1) (2022-05-26)
+
+
+### Bug Fixes
+
+* helper menu ([ef88e13](https://github.com/tiltedphoques/TiltedEvolution/commit/ef88e1335de2e9501fe099f6b47a7630e23835dc))
+
 # [1.33.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.32.0...v1.33.0) (2022-05-26)
 
 
