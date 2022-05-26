@@ -80,7 +80,7 @@ void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>
         && characterView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*it);
-        characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
+        characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
         spdlog::debug("Updating weapon drawn state {:x}:{}", message.Id, message.IsWeaponDrawn);
     }
 }

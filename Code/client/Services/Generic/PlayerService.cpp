@@ -23,6 +23,7 @@
 #include <Forms/TESObjectCELL.h>
 #include <Games/Overrides.h>
 #include <Games/References.h>
+#include <AI/AIProcess.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -37,9 +38,16 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
 }
 
+bool knockdownStart = false;
+double knockdownTimer = 0.0;
+
+bool godmodeStart = false;
+double godmodeTimer = 0.0;
+
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunRespawnUpdates(acEvent.Delta);
+    RunPostDeathUpdates(acEvent.Delta);
     RunDifficultyUpdates();
     RunLevelUpdates();
 }
@@ -86,7 +94,6 @@ void PlayerService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) co
         request.WorldSpaceId = GameId(modId, baseId);
         request.PlayerCell = acEvent.PlayerCell;
         request.CenterCoords = acEvent.CenterCoords;
-        request.PlayerCoords = acEvent.PlayerCoords;
         request.Cells = acEvent.Cells;
 
         m_transport.Send(request);
@@ -95,7 +102,7 @@ void PlayerService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) co
 
 void PlayerService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
 {
-    if (acEvent.WorldSpaceId != GameId{})
+    if (acEvent.WorldSpaceId)
     {
         EnterExteriorCellRequest message;
         message.CellId = acEvent.CellId;
@@ -154,11 +161,14 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         s_startTimer = true;
         m_respawnTimer = 5.0;
+        FadeOutGame(true, true, 3.0f, true, 2.0f);
 
         // If a player dies not by its health reaching 0, getting it up from its bleedout state isn't possible
         // just by setting its health back to max. Therefore, put it to 0.
         if (pPlayer->GetActorValue(ActorValueInfo::kHealth) > 0.f)
             pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 0);
+
+        pPlayer->PayCrimeGoldToAllFactions();
     }
 
     m_respawnTimer -= acDeltaTime;
@@ -167,9 +177,47 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         pPlayer->RespawnPlayer();
 
+        knockdownTimer = 1.5;
+        knockdownStart = true;
+
         m_transport.Send(PlayerRespawnRequest());
 
         s_startTimer = false;
+    }
+}
+
+void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
+{
+    // If a player dies in ragdoll, it gets stuck.
+    // This code ragdolls the player again upon respawning.
+    // It also makes the player invincible for 5 seconds.
+    if (knockdownStart)
+    {
+        knockdownTimer -= acDeltaTime;
+        if (knockdownTimer <= 0.0)
+        {
+            PlayerCharacter::SetGodMode(true);
+            godmodeStart = true;
+            godmodeTimer = 10.0;
+
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+
+            FadeOutGame(false, true, 0.5f, true, 2.f);
+
+            knockdownStart = false;
+        }
+    }
+
+    if (godmodeStart)
+    {
+        godmodeTimer -= acDeltaTime;
+        if (godmodeTimer <= 0.0)
+        {
+            PlayerCharacter::SetGodMode(false);
+
+            godmodeStart = false;
+        }
     }
 }
 

@@ -13,8 +13,8 @@
 
 void DebugService::DrawFormDebugView()
 {
-    static TESObjectREFR* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
+    static TESObjectREFR* pRefr = nullptr;
 
     ImGui::Begin("Form");
 
@@ -39,12 +39,26 @@ void DebugService::DrawFormDebugView()
 
     if (pRefr)
     {
+        if (auto* pParentCell = pRefr->GetParentCell())
+        {
+            const uint32_t cellId = pParentCell->formID;
+            ImGui::InputScalar("GetParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        if (auto* pParentCell = pRefr->parentCell)
+        {
+            const uint32_t cellId = pParentCell->formID;
+            ImGui::InputScalar("parentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        /*
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), pRefr->formID);
         ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
 
-        /*
-        for (ActiveEffect* pEffect : *pActor->currentProcess->middleProcess->ActiveEffects)
+        for (ActiveEffect* pEffect : *pRefr->currentProcess->middleProcess->ActiveEffects)
         {
             if (!pEffect)
                 continue;
@@ -56,6 +70,9 @@ void DebugService::DrawFormDebugView()
             ImGui::InputFloat("Duration", &pEffect->fDuration, 0, 0, "%.1f", ImGuiInputTextFlags_ReadOnly);
             ImGui::InputFloat("Magnitude", &pEffect->fMagnitude, 0, 0, "%.1f", ImGuiInputTextFlags_ReadOnly);
             ImGui::InputInt("Flags", (int*)&pEffect->uiFlags, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            if (ImGui::Button("Elapse time"))
+                m_world.GetRunner().Queue([pEffect]() { pEffect->fElapsedSeconds = pEffect->fDuration - 3.f; });
         }
         */
     }

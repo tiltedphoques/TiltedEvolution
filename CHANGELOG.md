@@ -1,3 +1,93 @@
+## [1.33.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.0...v1.33.1) (2022-05-26)
+
+
+### Bug Fixes
+
+* helper menu ([ef88e13](https://github.com/tiltedphoques/TiltedEvolution/commit/ef88e1335de2e9501fe099f6b47a7630e23835dc))
+
+# [1.33.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.32.0...v1.33.0) (2022-05-26)
+
+
+### Bug Fixes
+
+* build error ([a155e54](https://github.com/tiltedphoques/TiltedEvolution/commit/a155e545ae840e613203be1fea74e18e84dc5790))
+* duplicating quest items ([2b7c2d9](https://github.com/tiltedphoques/TiltedEvolution/commit/2b7c2d97f5cde192feb4968f2e8df551c25d9d15))
+* implicit cast crash ([b9247f6](https://github.com/tiltedphoques/TiltedEvolution/commit/b9247f66b7ff916bcbdf8038b3bf262fd9910a1d))
+* lockpick not syncing ([a7fc37b](https://github.com/tiltedphoques/TiltedEvolution/commit/a7fc37b1267a1e308bc71aa85c167b47ae01e867))
+* more cell id fixes ([4513476](https://github.com/tiltedphoques/TiltedEvolution/commit/45134760560acf6255053b9704050e8eab2129aa))
+* quest items and lock sync bugs ([cf582f5](https://github.com/tiltedphoques/TiltedEvolution/commit/cf582f50602b218d9565a8614c64793183a9e76f))
+* worldspace object sync and crash fix ([dbdfa00](https://github.com/tiltedphoques/TiltedEvolution/commit/dbdfa00fa8182bcfb6380cd89af9953c9956df0f))
+
+
+### Features
+
+* cool death fade ([51929ac](https://github.com/tiltedphoques/TiltedEvolution/commit/51929acba1f1d829f9acd7dee784165bc3a1589f))
+* update inventory UI listing ([c9c2bce](https://github.com/tiltedphoques/TiltedEvolution/commit/c9c2bceb27b011e78876e4804bd420f32c3550be))
+
+# [1.32.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.1...v1.32.0) (2022-05-25)
+
+
+### Bug Fixes
+
+* gold duplication bug ([6629f8c](https://github.com/tiltedphoques/TiltedEvolution/commit/6629f8c82e36578de584e45097d05d9f4cf621c5))
+
+
+### Features
+
+* pay and clear crime fines on death ([e6f47dd](https://github.com/tiltedphoques/TiltedEvolution/commit/e6f47dd7441a8d58cc449ae94c54c8450f53629c))
+
+## [1.31.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.0...v1.31.1) (2022-05-24)
+
+
+### Bug Fixes
+
+* double damage on projectiles ([bdd7baf](https://github.com/tiltedphoques/TiltedEvolution/commit/bdd7baffadfcb9c4c5c3dcb10e7237ca50108722))
+* invisibility ([b1b233f](https://github.com/tiltedphoques/TiltedEvolution/commit/b1b233f97ad47df0a583653568b89c777006973d))
+* ward spell not disappearing ([ef86bde](https://github.com/tiltedphoques/TiltedEvolution/commit/ef86bde884118b36959b6960c899dc29b274e85f))
+
+# [1.31.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.2...v1.31.0) (2022-05-24)
+
+
+### Features
+
+* player stands up after death ([f9d6fcd](https://github.com/tiltedphoques/TiltedEvolution/commit/f9d6fcdec577a49f66ab090eeeaa88825c23e506))
+
+## [1.30.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.1...v1.30.2) (2022-05-24)
+
+
+### Bug Fixes
+
+* chose arch when building ([440f2c0](https://github.com/tiltedphoques/TiltedEvolution/commit/440f2c06f006dc395cd36904c34a743d267494e5))
+* docker args should live forever ([8aab802](https://github.com/tiltedphoques/TiltedEvolution/commit/8aab8027531c5ce1c168900577187c2707e56cf5))
+* libc++ version ([55be85c](https://github.com/tiltedphoques/TiltedEvolution/commit/55be85cb9a89a9eb72478f746d296d55640bfddc))
+* raspberry pi again ([7a5f200](https://github.com/tiltedphoques/TiltedEvolution/commit/7a5f200af1c29e433be4821c9d5a123a38c8cd18))
+* raspberrypi build ([b09ae83](https://github.com/tiltedphoques/TiltedEvolution/commit/b09ae838b7ef60e8065e76c1eeaedb75b24df275))
+* runner for raspberry pi needs libssl ([8fda608](https://github.com/tiltedphoques/TiltedEvolution/commit/8fda60859679631e4de3603805ad39031cdf7dd4))
+
+## [1.30.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.0...v1.30.1) (2022-05-19)
+
+# [1.30.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.1...v1.30.0) (2022-05-16)
+
+
+### Bug Fixes
+
+* Ensure taskdialog always shows ([832daff](https://github.com/tiltedphoques/TiltedEvolution/commit/832daff0f5181b84dfc682eef1cba23802f39513))
+
+
+### Features
+
+* Only process input when ST window is active. ([828e7ba](https://github.com/tiltedphoques/TiltedEvolution/commit/828e7bae4edcb53e27b1c1c0221e509de6fbad6b))
+
+## [1.29.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.0...v1.29.1) (2022-05-11)
+
+
+### Bug Fixes
+
+* entt corruption bug ([e977810](https://github.com/tiltedphoques/TiltedEvolution/commit/e9778106098bf3114c1c223a9752a6eceb7b4883))
+* nvcamera crash ([5b12535](https://github.com/tiltedphoques/TiltedEvolution/commit/5b1253520d364cbcbab592f0950791c19b887c52))
+* style and bugs ([4c4ceab](https://github.com/tiltedphoques/TiltedEvolution/commit/4c4ceab31f7763af886031dad84e2bc4cabfe635))
+* update health server side ([f49753e](https://github.com/tiltedphoques/TiltedEvolution/commit/f49753ecde2db8e267cae362ee8d534e742bcd48))
+
 # [1.29.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.28.0...v1.29.0) (2022-05-11)
 
 

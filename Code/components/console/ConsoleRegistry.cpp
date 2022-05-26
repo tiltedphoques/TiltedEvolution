@@ -108,7 +108,7 @@ void ConsoleRegistry::RegisterNatives()
 
     RegisterCommand<const char*, const char*>(
         "set", R"(Set a setting e.g "set mysetting true")", [&](ArgStack& aStack) {
-            const std::string variableName{aStack.Pop<std::string>()};
+            const TiltedPhoques::String variableName{aStack.Pop<TiltedPhoques::String>()};
             if (variableName.empty())
             {
                 m_out->error("set <varname> <state>");
@@ -123,7 +123,7 @@ void ConsoleRegistry::RegisterNatives()
                     return;
                 }
 
-                const auto value{aStack.Pop<std::string>()};
+                const auto value{aStack.Pop<TiltedPhoques::String>()};
                 switch (pSetting->type)
                 {
                 case SettingBase::Type::kBoolean: {

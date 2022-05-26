@@ -142,6 +142,8 @@ struct PlayerCharacter : Actor
 
     static PlayerCharacter* Get() noexcept;
 
+    static void SetGodMode(bool aSet) noexcept;
+
     const GameArray<TintMask*>& GetTints() const noexcept;
 
     void SetDifficulty(const int32_t aDifficulty) noexcept;
@@ -152,7 +154,9 @@ struct PlayerCharacter : Actor
         return (*pSkills)->skills[aSkill].xp;
     }
 
-    void RespawnPlayer() noexcept;
+    NiPoint3 RespawnPlayer() noexcept;
+
+    void PayCrimeGoldToAllFactions() noexcept;
 
     struct Objective
     {

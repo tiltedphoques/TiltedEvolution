@@ -55,17 +55,15 @@ int StartUp(int argc, char** argv)
             askSelect = true;
     }
 
+    // TODO(Force): Make some InitSharedResources func.
+    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
+
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
 
     if (!EarlyInstallSucceeded())
         DIE_NOW(L"Early load install failed. Tell Force about this.");
-
-    // TODO(Force): Make some InitSharedResources func.
-    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
-
-    auto r = GetLastError();
 
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();

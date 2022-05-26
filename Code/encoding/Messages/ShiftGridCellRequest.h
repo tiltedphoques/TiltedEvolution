@@ -21,14 +21,15 @@ struct ShiftGridCellRequest final : ClientMessage
 
     bool operator==(const ShiftGridCellRequest& acRhs) const noexcept
     {
-        return WorldSpaceId == acRhs.WorldSpaceId &&
+        return GetOpcode() == acRhs.GetOpcode() &&
+            WorldSpaceId == acRhs.WorldSpaceId &&
+            PlayerCell == acRhs.PlayerCell &&
             CenterCoords == acRhs.CenterCoords &&
-            GetOpcode() == acRhs.GetOpcode();
+            Cells == acRhs.Cells;
     }
     
     GameId WorldSpaceId;
     GameId PlayerCell;
     GridCellCoords CenterCoords;
-    GridCellCoords PlayerCoords;
     Vector<GameId> Cells;
 };

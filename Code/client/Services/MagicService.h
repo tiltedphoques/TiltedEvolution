@@ -18,6 +18,13 @@ struct NotifyAddTarget;
 
 /**
 * @brief Handles magic spell casting and magic effects.
+* 
+* To the poor sod that thinks of venturing into this part of the code base..
+* Yes, the magic sync code is a mess. It is easily the ugliest part of the codebase.
+* I did not get around to refactoring this before going open source, but it definitely should be.
+* I'm sorry, and good luck.
+* 
+* Contact cosideci for more info.
 */
 struct MagicService : BSTEventSink<TESMagicEffectApplyEvent>, BSTEventSink<TESActiveEffectApplyRemove>
 {

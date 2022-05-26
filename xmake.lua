@@ -5,15 +5,17 @@ set_languages("c99", "cxx20")
 
 if is_plat("windows") then
     add_cxflags("/bigobj")
+    add_syslinks("kernel32")
+    set_arch("x64")
 end
 
 if is_plat("linux") then
     add_cxflags("-fPIC")
 end
 
-set_arch("x64")
 set_warnings("all")
 add_vectorexts("sse", "sse2", "sse3", "ssse3")
+add_vectorexts("neon")
 
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg")

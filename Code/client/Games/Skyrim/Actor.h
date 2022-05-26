@@ -62,7 +62,7 @@ struct Actor : TESObjectREFR
     virtual void sub_B8();
     virtual void sub_B9();
     virtual void sub_BA();
-    virtual void sub_BB();
+    virtual void PayFine(TESFaction* apFaction, bool aGoToJail, bool aRemoveStolenItems);
     virtual void sub_BC();
     virtual void sub_BD();
     virtual void sub_BE();
@@ -70,7 +70,7 @@ struct Actor : TESObjectREFR
     virtual void sub_C0();
     virtual void sub_C1();
     virtual void sub_C2();
-    virtual void sub_C3();
+    virtual void SetRefraction(bool aEnable, float aRefraction);
     virtual void sub_C4();
     virtual void sub_C5();
     virtual void sub_C6();
@@ -99,7 +99,7 @@ struct Actor : TESObjectREFR
     virtual void sub_DD();
     virtual void sub_DE();
     virtual void PutCreatedPackage(struct TESPackage*, bool = false, bool = true, bool = true); // 14069BBF0
-    virtual void sub_E0();
+    virtual void UpdateAlpha();
     virtual void sub_E1();
     virtual void sub_E2();
     virtual void sub_E3();
@@ -224,6 +224,7 @@ struct Actor : TESObjectREFR
     void DispellAllSpells() noexcept;
 
     bool IsDead() noexcept;
+    bool IsDragon() noexcept;
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
@@ -312,10 +313,7 @@ public:
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<void*> addedSpells;
-    ActorMagicCaster* leftHandCaster;
-    ActorMagicCaster* rightHandCaster;
-    ActorMagicCaster* shoutCaster;
-    ActorMagicCaster* instantCaster;
+    ActorMagicCaster* casters[4];
     MagicItem* magicItems[4];
     TESForm* equippedShout;
     uint32_t someRefrHandle;
