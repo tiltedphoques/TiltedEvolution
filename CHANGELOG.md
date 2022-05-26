@@ -1,3 +1,22 @@
+# [1.33.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.32.0...v1.33.0) (2022-05-26)
+
+
+### Bug Fixes
+
+* build error ([a155e54](https://github.com/tiltedphoques/TiltedEvolution/commit/a155e545ae840e613203be1fea74e18e84dc5790))
+* duplicating quest items ([2b7c2d9](https://github.com/tiltedphoques/TiltedEvolution/commit/2b7c2d97f5cde192feb4968f2e8df551c25d9d15))
+* implicit cast crash ([b9247f6](https://github.com/tiltedphoques/TiltedEvolution/commit/b9247f66b7ff916bcbdf8038b3bf262fd9910a1d))
+* lockpick not syncing ([a7fc37b](https://github.com/tiltedphoques/TiltedEvolution/commit/a7fc37b1267a1e308bc71aa85c167b47ae01e867))
+* more cell id fixes ([4513476](https://github.com/tiltedphoques/TiltedEvolution/commit/45134760560acf6255053b9704050e8eab2129aa))
+* quest items and lock sync bugs ([cf582f5](https://github.com/tiltedphoques/TiltedEvolution/commit/cf582f50602b218d9565a8614c64793183a9e76f))
+* worldspace object sync and crash fix ([dbdfa00](https://github.com/tiltedphoques/TiltedEvolution/commit/dbdfa00fa8182bcfb6380cd89af9953c9956df0f))
+
+
+### Features
+
+* cool death fade ([51929ac](https://github.com/tiltedphoques/TiltedEvolution/commit/51929acba1f1d829f9acd7dee784165bc3a1589f))
+* update inventory UI listing ([c9c2bce](https://github.com/tiltedphoques/TiltedEvolution/commit/c9c2bceb27b011e78876e4804bd420f32c3550be))
+
 # [1.32.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.1...v1.32.0) (2022-05-25)
 
 
