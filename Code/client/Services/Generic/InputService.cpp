@@ -223,6 +223,9 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
             pRenderer->SetVisible(!active);
 #endif
 
+            // Ensures the game is actually loaded, in case the initial event was sent too early
+            overlay.GetOverlayApp()->ExecuteAsync("entergame");
+
             pRenderer->SetCursorVisible(!active);
 
             // This is to disable the Windows cursor
