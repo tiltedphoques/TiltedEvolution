@@ -146,6 +146,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         s_startTimer = true;
         m_respawnTimer = 5.0;
+        FadeOutGame(true, true, 3.0f, true, 2.0f);
 
         // If a player dies not by its health reaching 0, getting it up from its bleedout state isn't possible
         // just by setting its health back to max. Therefore, put it to 0.
@@ -161,7 +162,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         pPlayer->RespawnPlayer();
 
-        knockdownTimer = 1.0;
+        knockdownTimer = 1.5;
         knockdownStart = true;
 
         m_transport.Send(PlayerRespawnRequest());
@@ -182,10 +183,12 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
         {
             PlayerCharacter::SetGodMode(true);
             godmodeStart = true;
-            godmodeTimer = 5.0;
+            godmodeTimer = 10.0;
 
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+
+            FadeOutGame(false, true, 0.5f, true, 2.f);
 
             knockdownStart = false;
         }
