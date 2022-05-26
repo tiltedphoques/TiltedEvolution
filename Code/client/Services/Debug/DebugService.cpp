@@ -227,6 +227,7 @@ void DebugService::OnDraw() noexcept
             auto* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
         }
+        ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Server"))
     {
