@@ -40,6 +40,7 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyRelinquishControl.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -234,7 +235,7 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.pPlayer->GetConnectionId());
+        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist, server id {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
     }
 
@@ -322,6 +323,10 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+
+    NotifyRelinquishControl notify;
+    notify.ServerId = message.ServerId;
+    characterOwnerComponent.pOwner->Send(notify);
 
     characterOwnerComponent.SetOwner(acMessage.pPlayer);
     characterOwnerComponent.InvalidOwners.clear();

@@ -37,6 +37,7 @@ struct DialogueEvent;
 struct NotifyDialogue;
 struct SubtitleEvent;
 struct NotifySubtitle;
+struct NotifyRelinquishControl;
 
 struct Actor;
 struct World;
@@ -79,10 +80,11 @@ struct CharacterService
     void OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept;
     void OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept;
     void OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept;
-
-private:
+    void OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept;
 
     void ProcessNewEntity(entt::entity aEntity) const noexcept;
+
+private:
     void RequestServerAssignment(entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
 
@@ -130,4 +132,5 @@ private:
     entt::scoped_connection m_dialogueSyncConnection;
     entt::scoped_connection m_subtitleEventConnection;
     entt::scoped_connection m_subtitleSyncConnection;
+    entt::scoped_connection m_relinquishConnection;
 };

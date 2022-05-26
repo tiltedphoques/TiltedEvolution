@@ -62,6 +62,7 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyRelinquishControl.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -112,6 +113,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_subtitleEventConnection = m_dispatcher.sink<SubtitleEvent>().connect<&CharacterService::OnSubtitleEvent>(this);
     m_subtitleSyncConnection = m_dispatcher.sink<NotifySubtitle>().connect<&CharacterService::OnNotifySubtitle>(this);
+
+    m_relinquishConnection = m_dispatcher.sink<NotifyRelinquishControl>().connect<&CharacterService::OnNotifyRelinquishControl>(this);
 }
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
@@ -904,6 +907,7 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     auto formView = m_world.view<FormIdComponent>();
     Vector<entt::entity> entities(formView.begin(), formView.end());
 
+    // TODO(cosideci): remove this, cause of NotifyRelinquishControl?
     for (auto entity : entities)
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
@@ -1099,6 +1103,47 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
+void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept
+{
+    auto formView = m_world.view<FormIdComponent>();
+    Vector<entt::entity> entities(formView.begin(), formView.end());
+
+    for (auto entity : entities)
+    {
+        std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
+        if (!serverIdRes.has_value())
+        {
+            spdlog::error("{}: failed to find server id", __FUNCTION__);
+            continue;
+        }
+
+        uint32_t serverId = serverIdRes.value();
+
+        if (serverId == acMessage.ServerId)
+        {
+            auto& formIdComponent = m_world.get<FormIdComponent>(entity);
+
+            if (m_world.all_of<LocalComponent>(entity))
+            {
+                m_world.remove<LocalAnimationComponent, LocalComponent>(entity);
+                m_world.emplace_or_replace<RemoteComponent>(entity, acMessage.ServerId, formIdComponent.Id);
+            }
+
+            Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+            pActor->GetExtension()->SetRemote(true);
+
+            InterpolationSystem::Setup(m_world, entity);
+            AnimationSystem::Setup(m_world, entity);
+
+            spdlog::warn("Relinquished control of actor {:X} with server id {:X}", pActor->formID, acMessage.ServerId);
+
+            return;
+        }
+    }
+
+    spdlog::error("Did not find actor to relinquish control to, server id {:X}", acMessage.ServerId);
+}
+
 void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1142,9 +1187,31 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
 
     if (auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity); pRemoteComponent)
     {
-        RequestSpawnData requestSpawnData;
-        requestSpawnData.Id = pRemoteComponent->Id;
-        m_transport.Send(requestSpawnData);
+        if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary())
+        {
+            pActor->GetExtension()->SetRemote(false);
+
+            m_world.emplace<LocalComponent>(aEntity, pRemoteComponent->Id);
+            m_world.emplace<LocalAnimationComponent>(aEntity);
+            m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+                                     FaceGenComponent, CacheComponent, WaitingFor3D>(aEntity);
+
+            spdlog::critical("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
+                             pRemoteComponent->Id);
+
+            // TODO(cosideci): send current local data of actor with it(?)
+            RequestOwnershipClaim request;
+            request.ServerId = pRemoteComponent->Id;
+            m_transport.Send(request);
+            return;
+        }
+        else
+        {
+            RequestSpawnData requestSpawnData;
+            requestSpawnData.Id = pRemoteComponent->Id;
+            m_transport.Send(requestSpawnData);
+            return;
+        }
     }
 
     if (m_world.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))

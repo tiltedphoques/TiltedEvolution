@@ -3,6 +3,7 @@
 #include <Services/RunnerService.h>
 #include <Services/TransportService.h>
 #include <Services/PartyService.h>
+#include <Services/CharacterService.h>
 #include <Services/OverlayService.h>
 #include <Services/DebugService.h>
 
@@ -23,6 +24,8 @@ struct World : entt::registry
 
     PartyService& GetPartyService() noexcept { return ctx().at<PartyService>(); }
     const PartyService& GetPartyService() const noexcept { return ctx().at<const PartyService>(); }
+    CharacterService& GetCharacterService() noexcept { return ctx().at<CharacterService>(); }
+    const CharacterService& GetCharacterService() const noexcept { return ctx().at<const CharacterService>(); }
     OverlayService& GetOverlayService() noexcept { return ctx().at<OverlayService>(); }
     const OverlayService& GetOverlayService() const noexcept { return ctx().at<const OverlayService>(); }
     DebugService& GetDebugService() noexcept { return ctx().at<DebugService>(); }
