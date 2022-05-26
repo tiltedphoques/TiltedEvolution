@@ -4,6 +4,13 @@
 
 #include "Games/Primitives.h"
 
+struct PlayerInputHandler
+{
+    virtual ~PlayerInputHandler();
+
+    bool isEnabled;
+};
+
 struct PlayerControlsData
 {
     // members
@@ -27,12 +34,16 @@ struct PlayerControlsData
 
 struct PlayerControls
 {
-    PlayerControls* GetInstance();
+    static PlayerControls* GetInstance();
 
     void SetBlockPlayerInput(bool abFlag)
     {
         bBlockPlayerInput = abFlag;
     }
+
+    void SetEnabled(bool abFlag);
+
+    void SetCamSwitch(bool aSet) noexcept;
 
 public:
     char pad0[0x20];
@@ -49,19 +60,19 @@ public:
     float unk100[20];                       // 100
     GameArray<void*> actionInterestedActor; // 150
     char actorArrayLock[8];                 // 168
-    void* pMovementHandler;                 // 170
-    void* pLookHandler;                     // 178
-    void* pSprintHandler;                   // 180
-    void* pReadyWeaponHandler;              // 188
-    void* pAutoMoveHandler;                 // 190
-    void* pToggleRunHandler;                // 198
-    void* pActivateHandler;                 // 1A0
-    void* pJumpHandler;                     // 1A8
-    void* shoutHandler;                     // 1B0
-    void* attackBlockHandler;               // 1B8
-    void* runHandler;                       // 1C0
-    void* sneakHandler;                     // 1C8
-    void* togglePOVHandler;                 // 1D0
+    PlayerInputHandler* pMovementHandler;                 // 170
+    PlayerInputHandler* pLookHandler;                     // 178
+    PlayerInputHandler* pSprintHandler;                   // 180
+    PlayerInputHandler* pReadyWeaponHandler;              // 188
+    PlayerInputHandler* pAutoMoveHandler;                 // 190
+    PlayerInputHandler* pToggleRunHandler;                // 198
+    PlayerInputHandler* pActivateHandler;                 // 1A0
+    PlayerInputHandler* pJumpHandler;                     // 1A8
+    PlayerInputHandler* shoutHandler;                     // 1B0
+    PlayerInputHandler* attackBlockHandler;               // 1B8
+    PlayerInputHandler* runHandler;                       // 1C0
+    PlayerInputHandler* sneakHandler;                     // 1C8
+    PlayerInputHandler* togglePOVHandler;                 // 1D0
     bool bNotifyingHandlers;                // 1D8
     bool bBlockPlayerInput;                 // 1D9
     std::uint16_t unk1DA;                   // 1DA
@@ -69,3 +80,11 @@ public:
 };
 
 static_assert(offsetof(PlayerControls, PlayerControls::bBlockPlayerInput) == 0x1D9);
+static_assert(offsetof(PlayerControls, PlayerControls::Data) == 0x20);
+
+struct BSInputEnableManager
+{
+    static BSInputEnableManager* Get();
+
+    void EnableOtherEvent(int32_t aFlags, bool aEnable, bool aUnk2);
+};

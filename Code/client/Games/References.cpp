@@ -74,6 +74,13 @@ float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
 
 }
 
+void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
+{
+    using TFadeOutGame = void(bool, bool, float, bool, float);
+    POINTER_SKYRIMSE(TFadeOutGame, fadeOutGame, 52847);
+    fadeOutGame.Get()(aFadingOut, aBlackFade, aFadeDuration, aRemainVisible, aSecondsToFade);
+}
+
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
     TESObjectREFR* pResult = nullptr;

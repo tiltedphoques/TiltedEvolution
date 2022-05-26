@@ -13,8 +13,8 @@
 
 void DebugService::DrawFormDebugView()
 {
-    static Actor* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
+    static TESObjectREFR* pRefr = nullptr;
 
     ImGui::Begin("Form");
 
@@ -27,7 +27,7 @@ void DebugService::DrawFormDebugView()
         {
             pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
-                pRefr = Cast<Actor>(pFetchForm);
+                pRefr = Cast<TESObjectREFR>(pFetchForm);
         }
     }
 
@@ -39,11 +39,24 @@ void DebugService::DrawFormDebugView()
 
     if (pRefr)
     {
+        if (auto* pParentCell = pRefr->GetParentCell())
+        {
+            const uint32_t cellId = pParentCell->formID;
+            ImGui::InputScalar("GetParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        if (auto* pParentCell = pRefr->parentCell)
+        {
+            const uint32_t cellId = pParentCell->formID;
+            ImGui::InputScalar("parentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
         /*
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), pRefr->formID);
         ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
-        */
 
         for (ActiveEffect* pEffect : *pRefr->currentProcess->middleProcess->ActiveEffects)
         {
@@ -61,6 +74,7 @@ void DebugService::DrawFormDebugView()
             if (ImGui::Button("Elapse time"))
                 m_world.GetRunner().Queue([pEffect]() { pEffect->fElapsedSeconds = pEffect->fDuration - 3.f; });
         }
+        */
     }
 
     ImGui::End();

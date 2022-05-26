@@ -38,6 +38,7 @@
 #include <Games/TES.h>
 
 #include <AI/AIProcess.h>
+#include <AI/Movement/PlayerControls.h>
 
 #include <Messages/RequestRespawn.h>
 
@@ -46,6 +47,7 @@
 
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
+#include <Camera/PlayerCamera.h>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
@@ -164,16 +166,34 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
-            if (m_actors.empty())
-                PlaceActorInWorld();
+
+            static bool s_enabled = true;
+
+            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+
+            s_enabled = !s_enabled;
+
+        #if 0
+            static bool s_enabled = true;
+            static bool s_firstPerson = false;
+
+            auto* pCamera = PlayerCamera::Get();
+            auto* pPlayerControls = PlayerControls::GetInstance();
+
+            if (s_enabled)
+            {
+                s_firstPerson = pCamera->IsFirstPerson();
+                pCamera->ForceFirstPerson();
+            }
             else
             {
-                ScopedSpellCastOverride _;
-                auto pActor = m_actors[0];
-                pActor->GenerateMagicCasters();
-                pActor->casters[0]->CastSpellImmediate(Cast<MagicItem>(TESForm::GetById(0x27EB6)),
-                                                                           false, nullptr, 1.f, false, 0.f);
+                s_firstPerson ? pCamera->ForceFirstPerson() : pCamera->ForceThirdPerson();
             }
+
+            pPlayerControls->SetCamSwitch(s_enabled);
+
+            s_enabled = !s_enabled;
+        #endif
         }
     }
     else
