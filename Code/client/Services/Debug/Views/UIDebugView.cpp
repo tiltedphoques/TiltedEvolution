@@ -5,38 +5,45 @@
 #include <Services/DebugService.h>
 #include <imgui.h>
 
-static void (*ConstructThisShit)(TESObjectREFR*);
-static void (*GetHandle_TESREFR)(TESObjectREFR*, uint32_t*);
-
-static void SpawnMapmarker()
+static void SpawnOurMapmarker(TESObjectREFR* apRefr, const char* apName, const MapMarkerData::Type aType)
 {
-    TESObjectREFR* refr = Memory::Allocate<TESObjectREFR>();
-    ConstructThisShit(refr);
-    // dont save this form
-    refr->SetTemporary();
-
-    refr->rotation = {};
-    refr->position = PlayerCharacter::Get()->position;
-
     MapMarkerData* pMarkerData = MapMarkerData::New();
-    // pMarkerData->name.value.Set(pActor->baseForm->GetName());
-    pMarkerData->name.value.Set("Labradoodle");
+    pMarkerData->name.value.Set(apName);
     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
-    pMarkerData->sType = MapMarkerData::Type::kCity;
-    refr->extraData.SetMarkerData(pMarkerData);
-
+    pMarkerData->sType = aType; // "custom destination" marker either 66 or 0
+    apRefr->extraData.SetMarkerData(pMarkerData);
+    // hmm..
     uint32_t handle = 0;
-    GetHandle_TESREFR(refr, &handle);
-    PlayerCharacter::Get()->CurrentMapmarkerRefHandles.Resize(
-        PlayerCharacter::Get()->CurrentMapmarkerRefHandles.length + 1);
-    PlayerCharacter::Get()->CurrentMapmarkerRefHandles[PlayerCharacter::Get()->CurrentMapmarkerRefHandles.length - 1] =
-        handle;
+    apRefr->GetHandle(handle);
+
+    auto* pPlayer = PlayerCharacter::Get();
+    pPlayer->CurrentMapmarkerRefHandles.Add(&handle);
 }
 
-static TiltedPhoques::Initializer s_initUiDebugView([]() {
-    ConstructThisShit = reinterpret_cast<decltype(ConstructThisShit)>(0x140295760);
-    GetHandle_TESREFR = reinterpret_cast<decltype(GetHandle_TESREFR)>(0x1402ADF90);
-});
+static void SpawnMapmarker(const char* apName, float posoff)
+{
+    TESObjectREFR* pRefr = TESObjectREFR::New();
+    pRefr->SetTemporary();
+
+    // pos will later be fetched through TESObjectREFR::GetLookingAtLocation for scaleform
+    pRefr->rotation = {};
+    pRefr->position = PlayerCharacter::Get()->position;
+    pRefr->position.x += posoff;
+
+    SpawnOurMapmarker(pRefr, apName, MapMarkerData::Type::kMousePointer);
+}
+
+static void SpawnMapmarker2(const char* apName, float posoff, int i)
+{
+    TESObjectREFR* pRefr = TESObjectREFR::New();
+    pRefr->SetTemporary();
+
+    pRefr->rotation = {};
+    pRefr->position = PlayerCharacter::Get()->position;
+    pRefr->position.x += posoff;
+
+    SpawnOurMapmarker(pRefr, apName, (MapMarkerData::Type)i);
+}
 
 void DebugService::DrawUIView()
 {
@@ -56,8 +63,18 @@ void DebugService::DrawUIView()
         UI::Get()->CloseAllMenus();
     }
 
-    if (ImGui::Button("Place test mapmarker"))
+    if (ImGui::Button("Place all test markers"))
     {
-        SpawnMapmarker();
+        float off = 0.f;
+        for (int i = 0; i < 66; i++)
+        {
+            char buf[512];
+            snprintf(buf, 512, "m%d", i);
+            SpawnMapmarker2(buf, off, i);
+
+            off += 2000.f;
+        }
+
+        // SpawnMapmarker("TEST");
     }
 }

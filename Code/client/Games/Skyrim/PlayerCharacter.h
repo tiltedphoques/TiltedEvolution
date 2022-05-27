@@ -3,6 +3,7 @@
 #include <Actor.h>
 #include <Misc/TintMask.h>
 #include <Forms/ActorValueInfo.h>
+#include <BSCore/BSTArray.h>
 
 struct Skills
 {
@@ -167,7 +168,7 @@ struct PlayerCharacter : Actor
 
     //uint8_t pad1[0x580 - sizeof(Actor) - 112 - 0x10];
     uint8_t pad1[0x4F8 - sizeof(Actor)];
-    GameArray<uint32_t> CurrentMapmarkerRefHandles;
+    creation::BSTArray<uint32_t> CurrentMapmarkerRefHandles;
     char pad510[0x580 - 0x510];
     GameArray<ObjectiveInstance> objectives; 
     uint8_t pad588[0x9B0 - 0x598];

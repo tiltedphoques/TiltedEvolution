@@ -29,6 +29,8 @@ enum class ITEM_REMOVE_REASON
 
 struct TESObjectREFR : TESForm
 {
+    static TESObjectREFR* New() noexcept;
+
     enum ChangeFlags : uint32_t
     {
         CHANGE_REFR_MOVE = 1 << 1,
@@ -49,6 +51,8 @@ struct TESObjectREFR : TESForm
 
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
     static uint32_t* GetNullHandle() noexcept;
+
+    void GetHandle(uint32_t& aHandle) noexcept;
 
     static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
     static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;

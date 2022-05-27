@@ -83,6 +83,24 @@ void TESObjectREFR::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& a
 
 #endif
 
+TESObjectREFR* TESObjectREFR::New() noexcept
+{
+    TESObjectREFR* pRefr = Memory::Allocate<TESObjectREFR>();
+
+    TP_THIS_FUNCTION(TTESObjectREFRCtor, void, TESObjectREFR);
+    POINTER_SKYRIMSE(TTESObjectREFRCtor, s_TESObjectREFRCtor, 19501);
+    s_TESObjectREFRCtor.Get()(pRefr);
+    return pRefr;
+}
+
+void TESObjectREFR::GetHandle(uint32_t &aHandle) noexcept
+{
+    TP_THIS_FUNCTION(TGetHandle, void, TESObjectREFR, uint32_t*);
+    POINTER_SKYRIMSE(TGetHandle, s_GetHandle, 19846);
+
+    s_GetHandle.Get()(this, &aHandle);
+}
+
 ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
