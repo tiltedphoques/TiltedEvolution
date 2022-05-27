@@ -8,11 +8,7 @@ bool BSTArrayHeapAllocator::Allocate(uint32_t auiMinSize, uint32_t auiSize)
     const uint32_t minSize = auiMinSize > 4 ? auiMinSize : 4;
     const size_t allocSize = static_cast<size_t>(auiSize) * minSize;
 
-    //m_pBuffer = Memory::Allocate(allocSize);
-
-    // TODO; proper memory primitives
-    m_pBuffer = new uint8_t[allocSize];
-    if (m_pBuffer)
+    if (m_pBuffer = reinterpret_cast<uint8_t*>(Memory::Allocate(allocSize)))
     {
         m_uiBufferSize = minSize;
     }
@@ -22,7 +18,7 @@ bool BSTArrayHeapAllocator::Allocate(uint32_t auiMinSize, uint32_t auiSize)
 
 void BSTArrayHeapAllocator::Deallocate()
 {
-    delete[] m_pBuffer;
+    Memory::Free(static_cast<void*>(m_pBuffer));
 
     m_pBuffer = nullptr;
     m_uiBufferSize = 0;
@@ -39,7 +35,7 @@ bool BSTArrayHeapAllocator::Reallocate(uint32_t aiMinNewSizeInItems, uint32_t ai
         return Allocate(minSize, aiElemSize);
 
     const size_t allocSize = static_cast<size_t>(aiElemSize) * minSize;
-    uint8_t* newBuffer = new uint8_t[allocSize];
+    uint8_t* newBuffer = reinterpret_cast<uint8_t*>(Memory::Allocate(allocSize));
 
     if (newBuffer)
     {
