@@ -1,23 +1,27 @@
-#include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
+#include <PlayerCharacter.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
 
 #include <Games/Overrides.h>
 
+#include <Events/AddExperienceEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
-#include <Events/AddExperienceEvent.h>
 
 #include <World.h>
 
-#include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
-#include <Games/TES.h>
 #include <Games/References.h>
+#include <Games/Skyrim/Forms/ActorValueInfo.h>
+#include <Games/TES.h>
 
 #include <Forms/TESObjectCELL.h>
 
+#include <BSCore/BSSpinLock.h>
+
+namespace
+{
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
 TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
 TP_THIS_FUNCTION(TAddSkillExperience, void, PlayerCharacter, int32_t aSkill, float aExperience);
@@ -27,6 +31,9 @@ static TPickUpObject* RealPickUpObject = nullptr;
 static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
+
+BSSpinLock* MapLock = nullptr;
+} // namespace
 
 void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
 {
@@ -87,9 +94,27 @@ void PlayerCharacter::RespawnPlayer() noexcept
     SetNoBleedoutRecovery(true);
 }
 
-char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
+void PlayerCharacter::AddMapmarkerRef(uint32_t aMapRef)
 {
-    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
+    BSScopedSpinLock _(*MapLock);
+    CurrentMapmarkerRefHandles.Add(aMapRef);
+}
+
+void PlayerCharacter::RemoveMapmarkerRef(uint32_t aMapRef)
+{
+    BSScopedSpinLock _(*MapLock);
+
+    // yes... thats really how bethesda does it...
+    auto index = CurrentMapmarkerRefHandles.Find(aMapRef);
+    if (index != -1)
+        CurrentMapmarkerRefHandles.Remove(index, 1);
+}
+
+char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1,
+                      bool aUnk2)
+{
+    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation
+    // sync
     if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
     {
         auto& modSystem = World::Get().GetModSystem();
@@ -123,9 +148,10 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
 void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, float aExperience)
 {
     // TODO: armor skills? sneak?
-    static const Set<int32_t> combatSkills{ActorValueInfo::kAlteration, ActorValueInfo::kConjuration, ActorValueInfo::kDestruction,
-                                           ActorValueInfo::kIllusion, ActorValueInfo::kRestoration, ActorValueInfo::kOneHanded,
-                                           ActorValueInfo::kTwoHanded, ActorValueInfo::kMarksman, ActorValueInfo::kBlock};
+    static const Set<int32_t> combatSkills{
+        ActorValueInfo::kAlteration, ActorValueInfo::kConjuration, ActorValueInfo::kDestruction,
+        ActorValueInfo::kIllusion,   ActorValueInfo::kRestoration, ActorValueInfo::kOneHanded,
+        ActorValueInfo::kTwoHanded,  ActorValueInfo::kMarksman,    ActorValueInfo::kBlock};
 
     Skills::Skill skill = Skills::GetSkillFromActorValue(aSkill);
     float oldExperience = apThis->GetSkillExperience(skill);
@@ -159,8 +185,7 @@ bool TP_MAKE_THISCALL(HookCalculateExperience, int32_t, float* aFactor, float* a
     return result;
 }
 
-static TiltedPhoques::Initializer s_playerCharacterHooks([]()
-{
+static TiltedPhoques::Initializer s_playerCharacterHooks([]() {
     POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 40533);
     POINTER_SKYRIMSE(TSetBeastForm, s_setBeastForm, 55497);
     POINTER_SKYRIMSE(TAddSkillExperience, s_addSkillExperience, 40488);
@@ -175,4 +200,7 @@ static TiltedPhoques::Initializer s_playerCharacterHooks([]()
     TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
     TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
     TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
+
+    const VersionDbPtr<uint8_t> mapLockloc(404255);
+    MapLock = reinterpret_cast<decltype(MapLock)>(mapLockloc.Get());
 });

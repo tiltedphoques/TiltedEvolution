@@ -5,7 +5,7 @@
 #include <Services/DebugService.h>
 #include <imgui.h>
 
-static void SpawnOurMapmarker(TESObjectREFR* apRefr, const char* apName, const MapMarkerData::Type aType)
+static uint32_t SpawnOurMapmarker(TESObjectREFR* apRefr, const char* apName, const MapMarkerData::Type aType)
 {
     MapMarkerData* pMarkerData = MapMarkerData::New();
     pMarkerData->name.value.Set(apName);
@@ -16,21 +16,21 @@ static void SpawnOurMapmarker(TESObjectREFR* apRefr, const char* apName, const M
     uint32_t handle = 0;
     apRefr->GetHandle(handle);
 
-    auto* pPlayer = PlayerCharacter::Get();
-    pPlayer->CurrentMapmarkerRefHandles.Add(&handle);
+    PlayerCharacter::Get()->AddMapmarkerRef(handle);
+
+    return handle;
 }
 
-static void SpawnMapmarker(const char* apName, float posoff)
+static uint32_t g_TestMapmarkerHandle = 0;
+
+static void SpawnMapmarker(const char* apName)
 {
+    // pos will later be fetched through TESObjectREFR::GetLookingAtLocation for scaleform
     TESObjectREFR* pRefr = TESObjectREFR::New();
     pRefr->SetTemporary();
-
-    // pos will later be fetched through TESObjectREFR::GetLookingAtLocation for scaleform
     pRefr->rotation = {};
     pRefr->position = PlayerCharacter::Get()->position;
-    pRefr->position.x += posoff;
-
-    SpawnOurMapmarker(pRefr, apName, MapMarkerData::Type::kMousePointer);
+    g_TestMapmarkerHandle = SpawnOurMapmarker(pRefr, apName, MapMarkerData::Type::kMousePointer);
 }
 
 static void SpawnMapmarker2(const char* apName, float posoff, int i)
@@ -76,5 +76,15 @@ void DebugService::DrawUIView()
         }
 
         // SpawnMapmarker("TEST");
+    }
+
+    if (ImGui::Button("Spawn Testmarker"))
+    {
+        SpawnMapmarker("test");
+    }
+
+    if (ImGui::Button("Remove Testmarker"))
+    {
+        PlayerCharacter::Get()->RemoveMapmarkerRef(g_TestMapmarkerHandle);
     }
 }

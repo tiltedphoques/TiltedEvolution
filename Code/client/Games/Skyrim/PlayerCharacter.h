@@ -154,6 +154,9 @@ struct PlayerCharacter : Actor
 
     void RespawnPlayer() noexcept;
 
+    void AddMapmarkerRef(uint32_t aMapRef);
+    void RemoveMapmarkerRef(uint32_t aMapRef);
+
     struct Objective
     {
         BSFixedString name;

@@ -158,7 +158,7 @@ namespace creation
         }
 
 		// T needs copy semantics implemented
-        int64_t Add(const T* apValue);
+        int64_t Add(const T& aValue);
         bool Insert(uint32_t aIndex, const T* apValue);
         void Remove(uint32_t aIndex, uint32_t aHowMany);
         void Clear(bool aFreeMemory);

@@ -16,3 +16,21 @@ class BSSpinLock
     std::atomic<std::uint32_t> uiLockCount = 0;
 };
 static_assert(sizeof(BSSpinLock) == 8);
+
+// utility class defined by us
+class BSScopedSpinLock
+{
+  public:
+    explicit BSScopedSpinLock(BSSpinLock& aLock) : m_lock(aLock)
+    {
+        aLock.Lock();
+    }
+
+    ~BSScopedSpinLock()
+    {
+        m_lock.Unlock();
+    }
+
+  private:
+    BSSpinLock& m_lock;
+};

@@ -62,7 +62,7 @@ template <class T, class Allocator> T* BSTArray<T, Allocator>::GetLast()
     return &reinterpret_cast<T*>(this->m_pBuffer)[m_uiSize - 1];
 }
 
-template <class T, class Allocator> int64_t BSTArray<T, Allocator>::Add(const T* apValue)
+template <class T, class Allocator> int64_t BSTArray<T, Allocator>::Add(const T& aValue)
 {
     Functor_t functor(this);
 
@@ -71,7 +71,7 @@ template <class T, class Allocator> int64_t BSTArray<T, Allocator>::Add(const T*
     {
         T* instance = const_cast<T*>(GetAt(index));
         if (instance)
-            *(instance) = *apValue;
+            *(instance) = aValue;
     }
 
     return index;
