@@ -848,7 +848,7 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
     if (!riderServerIdRes.has_value())
     {
-        spdlog::error("{}: failed to find server id", __FUNCTION__);
+        spdlog::error(__FUNCTION__ ": failed to find server id");
         return;
     }
 

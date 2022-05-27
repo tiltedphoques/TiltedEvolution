@@ -113,16 +113,4 @@ struct MapMenu final : public IMenu, public BSTEventSink<MenuOpenCloseEvent>, pu
     bool unk8;
     uint64_t unk30590; // 30590
 };
-
 static_assert(sizeof(MapMenu) == 0x30598);
-
-struct CallbackProcessor_Vtable
-{
-    int64(__fastcall* dtor_0)(CallbackProcessor_Vtable*);
-    void(__fastcall* Process)(const __int64 &, void(*)(void*));
-};
-
-struct CallbackProcessor
-{
-    CallbackProcessor_Vtable* vtable;
-};
