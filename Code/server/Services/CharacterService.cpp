@@ -257,6 +257,8 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         auto& movementComponent = view.get<MovementComponent>(*it);
         movementComponent.Position = message.Position;
         movementComponent.Sent = true;
+
+        GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
