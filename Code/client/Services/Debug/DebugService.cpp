@@ -210,6 +210,7 @@ static bool g_enablePartyWindow{false};
 static bool g_enableActorValuesWindow{false};
 static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
+static bool g_enableProcessesWindow{false};
 
 void DebugService::OnDraw() noexcept
 {
@@ -282,6 +283,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
+        ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
 
         ImGui::EndMenu();
     }
@@ -316,6 +318,8 @@ void DebugService::OnDraw() noexcept
         DrawQuestDebugView();
     if (g_enableCellWindow)
         DrawCellView();
+    if (g_enableProcessesWindow)
+        DrawProcessView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();
