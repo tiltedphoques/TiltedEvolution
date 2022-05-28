@@ -269,21 +269,24 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
+    auto* const pForm = TESForm::GetById(formIdComponent->Id);
+    auto* pActor = Cast<Actor>(pForm);
+    if (!pActor)
+    {
+        spdlog::error(__FUNCTION__ ": actor not found, form id: {:X}", formIdComponent->Id);
+        m_world.destroy(cEntity);
+        return;
+    }
+
     if (acMessage.Owner)
     {
         m_world.emplace<LocalComponent>(cEntity, acMessage.ServerId);
         m_world.emplace<LocalAnimationComponent>(cEntity);
+
+        pActor->GetExtension()->SetRemote(false);
     }
     else
     {
-        auto* const pForm = TESForm::GetById(formIdComponent->Id);
-        auto* pActor = Cast<Actor>(pForm);
-        if (!pActor)
-        {
-            m_world.destroy(cEntity);
-            return;
-        }
-
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);
