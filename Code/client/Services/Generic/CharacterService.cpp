@@ -62,6 +62,7 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyActorTeleport.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -112,6 +113,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_subtitleEventConnection = m_dispatcher.sink<SubtitleEvent>().connect<&CharacterService::OnSubtitleEvent>(this);
     m_subtitleSyncConnection = m_dispatcher.sink<NotifySubtitle>().connect<&CharacterService::OnNotifySubtitle>(this);
+
+    m_actorTeleportConnection = m_dispatcher.sink<NotifyActorTeleport>().connect<&CharacterService::OnNotifyActorTeleport>(this);
 }
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
@@ -302,23 +305,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
-        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acMessage.CellId);
-        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
-
-        // In case of lazy-loading of exterior cells
-        if (!pCell)
-        {
-            const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
-            TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
-            if (pWorldSpace)
-            {
-                GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
-                pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
-            }
-        }
-
-        if (pCell)
-            pActor->MoveTo(pCell, acMessage.Position);
+        MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
     }
 }
 
@@ -586,7 +573,7 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
 
     spdlog::warn("Actor for ownership transfer not found {:X}", acMessage.ServerId);
 
-    RequestOwnershipTransfer request;
+    RequestOwnershipTransfer request{};
     request.ServerId = acMessage.ServerId;
 
     m_transport.Send(request);
@@ -1126,6 +1113,42 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
     SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
+void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept
+{
+    auto& modSystem = m_world.GetModSystem();
+
+    const uint32_t cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(cActorId));
+    if (!pActor)
+    {
+        spdlog::error(__FUNCTION__ ": failed to retrieve actor to teleport.");
+        return;
+    }
+
+    MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
+}
+
+void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept
+{
+    const uint32_t cCellId = m_world.GetModSystem().GetGameId(acCellId);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
+
+    // In case of lazy-loading of exterior cells
+    if (!pCell)
+    {
+        const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acWorldSpaceId);
+        TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+        if (pWorldSpace)
+        {
+            GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acPosition);
+            pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+        }
+    }
+
+    if (pCell)
+        apActor->MoveTo(pCell, acPosition);
+}
+
 void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
@@ -1338,8 +1361,30 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
     {
         auto& localComponent = m_world.get<LocalComponent>(aEntity);
 
-        RequestOwnershipTransfer request;
+        RequestOwnershipTransfer request{};
         request.ServerId = localComponent.Id;
+
+        if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
+        {
+            if (pActor->IsTemporary())
+            {
+                auto& modSystem = m_world.GetModSystem();
+
+                if (TESWorldSpace* pWorldSpace = pActor->GetWorldSpace())
+                {
+                    if (!modSystem.GetServerModId(pWorldSpace->formID, request.WorldSpaceId))
+                        spdlog::error("World space id not found, despite having a world space, {:X}", pWorldSpace->formID);
+                }
+
+                if (TESObjectCELL* pCell = pActor->GetParentCell())
+                {
+                    if (!modSystem.GetServerModId(pCell->formID, request.CellId))
+                        spdlog::error("Cell id not found, despite having a cell, {:X}", pCell->formID);
+                }
+
+                request.Position = pActor->position;
+            }
+        }
 
         m_transport.Send(request);
 
