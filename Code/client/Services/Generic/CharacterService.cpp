@@ -406,10 +406,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     }
     else
     {
+        const uint32_t cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
+
         auto waitingView = m_world.view<FormIdComponent, WaitingForAssignmentComponent>();
-        const auto waitingItor = std::find_if(std::begin(waitingView), std::end(waitingView), [waitingView, Id = acMessage.FormId](auto entity)
+        const auto waitingItor = std::find_if(std::begin(waitingView), std::end(waitingView), [waitingView, cActorId](auto entity)
         {
-            return waitingView.get<FormIdComponent>(entity).Id == Id;
+            return waitingView.get<FormIdComponent>(entity).Id == cActorId;
         });
 
         if (waitingItor != std::end(waitingView))
@@ -417,8 +419,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             spdlog::info("Character with form id {:X} already has a spawn request in progress.", acMessage.FormId);
             return;
         }
-
-        const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
 
         auto* const pForm = TESForm::GetById(cActorId);
         pActor = Cast<Actor>(pForm);
