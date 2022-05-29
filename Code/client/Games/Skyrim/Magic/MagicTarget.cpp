@@ -49,10 +49,10 @@ Actor* MagicTarget::GetTargetAsActor()
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     Actor* pTargetActor = apThis->GetTargetAsActor();
-    ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
-
-    if (!pTargetActorEx)
+    if (!pTargetActor)
         return ThisCall(RealAddTarget, apThis, arData);
+
+    ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (arData.pEffectItem->IsWerewolfEffect())
         pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
