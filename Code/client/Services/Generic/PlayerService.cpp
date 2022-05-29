@@ -7,6 +7,7 @@
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/PlayerDialogueEvent.h>
+#include <Events/PlayerMapMarkerUpdateEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
@@ -32,6 +33,8 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
     m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
+    m_playerMapMarkerConnection =
+        m_dispatcher.sink<PlayerMapMarkerUpdateEvent>().connect<&PlayerService::OnPlayerMapMarkerUpdateEvent>(this);
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -42,12 +45,19 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
-    PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
+    auto* pPlayer = PlayerCharacter::Get();
+
+    pPlayer->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
     // Restore to the default value (150)
     float* greetDistance = Settings::GetGreetDistance();
     *greetDistance = 150.f;
+
+    // make sure to only display markers of players within the same cell...
+    //pPlayer->RemoveMapmarkerRef();
+
+    // ... remove all foreign mapmarkers...
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -122,6 +132,13 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     request.Text = acEvent.Text;
 
     m_transport.Send(request);
+}
+
+// on join/leave, add to our array...
+void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept
+{
+    // for only players that are in the same worldspace as we are...
+    //for (auto &it : )
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept

@@ -9,6 +9,7 @@ struct ServerSettings;
 struct GridCellChangeEvent;
 struct CellChangeEvent;
 struct PlayerDialogueEvent;
+struct PlayerMapMarkerUpdateEvent;
 
 struct NotifyPlayerRespawn;
 
@@ -31,6 +32,7 @@ protected:
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept;
+    void OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept;
 
 private:
 
@@ -58,4 +60,5 @@ private:
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_playerDialogueConnection;
+    entt::scoped_connection m_playerMapMarkerConnection;
 };
