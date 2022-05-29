@@ -186,7 +186,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent, OwnerComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
@@ -206,6 +206,19 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             auto& characterComponent = view.get<CharacterComponent>(*itor);
             auto& movementComponent = view.get<MovementComponent>(*itor);
             auto& cellIdComponent = view.get<CellIdComponent>(*itor);
+            auto& ownerComponent = view.get<OwnerComponent>(*itor);
+
+            auto& partyService = m_world.GetPartyService();
+
+            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer))
+            {
+                PartyService::Party* pParty = partyService.GetPlayerParty(acMessage.pPlayer);
+                Player* pOwningPlayer = view.get<OwnerComponent>(*itor).GetOwner();
+
+                // Transfer ownership if owning player is in the same party as the owner
+                if (std::find(pParty->Members.begin(), pParty->Members.end(), pOwningPlayer) != pParty->Members.end())
+                    TransferOwnership(acMessage.pPlayer, World::ToInteger(*itor));
+            }
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
@@ -334,30 +347,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
 {
-    auto& message = acMessage.Packet;
-
-    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
-    auto view = m_world.view<OwnerComponent>();
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
-    {
-        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", acMessage.pPlayer->GetConnectionId(), message.ServerId);
-        return;
-    }
-
-    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-
-    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
-    {
-        NotifyRelinquishControl notify;
-        notify.ServerId = message.ServerId;
-        characterOwnerComponent.pOwner->Send(notify);
-    }
-
-    characterOwnerComponent.SetOwner(acMessage.pPlayer);
-    characterOwnerComponent.InvalidOwners.clear();
-
-    spdlog::info("\tOwnership claimed {:X}", message.ServerId);
+    TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
@@ -699,6 +689,31 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
 }
 
+void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept
+{
+    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    auto view = m_world.view<OwnerComponent>();
+    const auto it = view.find(static_cast<entt::entity>(acServerId));
+    if (it == view.end())
+    {
+        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", apPlayer->GetConnectionId(), acServerId);
+        return;
+    }
+
+    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+
+    if (characterOwnerComponent.GetOwner() != apPlayer)
+    {
+        NotifyRelinquishControl notify;
+        notify.ServerId = acServerId;
+        characterOwnerComponent.pOwner->Send(notify);
+    }
+
+    characterOwnerComponent.SetOwner(apPlayer);
+    characterOwnerComponent.InvalidOwners.clear();
+
+    spdlog::info("\tOwnership claimed {:X}", acServerId);
+}
 
 void CharacterService::ProcessFactionsChanges() const noexcept
 {

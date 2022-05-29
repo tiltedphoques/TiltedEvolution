@@ -31,6 +31,9 @@ struct PartyService
     TP_NOCOPYMOVE(PartyService);
 
     const Party* GetById(uint32_t aId) const noexcept;
+    bool IsPlayerInParty(Player* const apPlayer) const noexcept;
+    bool IsPlayerLeader(Player* const apPlayer) noexcept;
+    Party* GetPlayerParty(Player* const apPlayer) noexcept;
 
 protected:
 

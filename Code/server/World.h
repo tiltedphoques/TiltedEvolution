@@ -3,6 +3,7 @@
 #include "Services/AdminService.h"
 
 #include <Services/PlayerService.h>
+#include <Services/PartyService.h>
 #include <Services/CharacterService.h>
 #include <Services/CalendarService.h>
 #include <Services/QuestService.h>
@@ -24,6 +25,8 @@ struct World : entt::registry
     const CharacterService& GetCharacterService() const noexcept { return ctx().at<const CharacterService>(); }
     PlayerService& GetPlayerService() noexcept { return ctx().at<PlayerService>(); }
     const PlayerService& GetPlayerService() const noexcept { return ctx().at<const PlayerService>(); }
+    PartyService& GetPartyService() noexcept { return ctx().at<PartyService>(); }
+    const PartyService& GetPartyService() const noexcept { return ctx().at<const PartyService>(); }
     CalendarService& GetCalendarService() noexcept { return ctx().at<CalendarService>(); }
     const CalendarService& GetCalendarService() const noexcept { return ctx().at<const CalendarService>(); }
     QuestService& GetQuestService() noexcept { return ctx().at<QuestService>(); }
