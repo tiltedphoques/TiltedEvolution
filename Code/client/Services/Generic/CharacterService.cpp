@@ -1130,11 +1130,14 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
 
 void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept
 {
-    const uint32_t cCellId = m_world.GetModSystem().GetGameId(acCellId);
-    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
-
+    TESObjectCELL* pCell = nullptr;
+    if (!acWorldSpaceId)
+    {
+        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acCellId);
+        pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
+    }
     // In case of lazy-loading of exterior cells
-    if (!pCell)
+    else
     {
         const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acWorldSpaceId);
         TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
@@ -1145,8 +1148,15 @@ void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpac
         }
     }
 
-    if (pCell)
-        apActor->MoveTo(pCell, acPosition);
+    if (!pCell)
+    {
+        spdlog::error(__FUNCTION__
+            ": failed to fetch cell to teleport, actor: {:X}, worldspace: {:X}, cell: {:X}, position: {}, {}, {}",
+            apActor->formID, acWorldSpaceId.BaseId, acCellId.BaseId, acPosition.x, acPosition.y, acPosition.z);
+        return;
+    }
+
+    apActor->MoveTo(pCell, acPosition);
 }
 
 void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
