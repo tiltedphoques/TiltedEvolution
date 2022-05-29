@@ -42,6 +42,8 @@ void ImguiService::Render() const
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
     m_drawSignal.publish();
     ImGui::Render();
 
