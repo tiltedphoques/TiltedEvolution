@@ -1103,6 +1103,7 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
     auto formView = m_world.view<FormIdComponent>();
     Vector<entt::entity> entities(formView.begin(), formView.end());
 
+    // TODO(cosideci): this entity iteration shouldn't technically be necessary, just look for the local component
     for (auto entity : entities)
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
@@ -1136,7 +1137,7 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
         }
     }
 
-    spdlog::error("Did not find actor to relinquish control to, server id {:X}", acMessage.ServerId);
+    spdlog::error("Did not find actor to relinquish control of, server id {:X}", acMessage.ServerId);
 }
 
 void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
@@ -1230,7 +1231,9 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
 
     if (auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity); pRemoteComponent)
     {
-        if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary())
+        // TODO(cosideci): don't just take all actors (i.e. from other parties),
+        // maybe check it server side, add a variable to the request.
+        if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
                              pRemoteComponent->Id);
@@ -1373,6 +1376,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsDead = pActor->IsDead();
     message.IsDragon = pActor->IsDragon();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
+    message.IsMount = pActor->IsMount();
 
     if (isTemporary /* && !isNpcTemporary */)
     {

@@ -29,7 +29,8 @@ struct AssignCharacterRequest final : ClientMessage
 
     bool operator==(const AssignCharacterRequest& acRhs) const noexcept
     {
-        return Cookie == acRhs.Cookie &&
+        return GetOpcode() == acRhs.GetOpcode() &&
+            Cookie == acRhs.Cookie &&
             ReferenceId == acRhs.ReferenceId &&
             FormId == acRhs.FormId &&
             CellId == acRhs.CellId &&
@@ -47,7 +48,7 @@ struct AssignCharacterRequest final : ClientMessage
             IsDead == acRhs.IsDead &&
             IsWeaponDrawn == acRhs.IsWeaponDrawn &&
             IsDragon == acRhs.IsDragon &&
-            GetOpcode() == acRhs.GetOpcode();
+            IsMount == acRhs.IsMount;
     }
 
     uint32_t Cookie{};
@@ -68,4 +69,5 @@ struct AssignCharacterRequest final : ClientMessage
     bool IsDead{};
     bool IsWeaponDrawn{};
     bool IsDragon{};
+    bool IsMount{};
 };

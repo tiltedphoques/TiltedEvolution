@@ -233,8 +233,14 @@ struct Actor : TESObjectREFR
 
     enum ActorFlags
     {
+        IS_A_MOUNT = 1 << 1,
         IS_ESSENTIAL = 1 << 18,
     };
+
+    bool IsMount() const noexcept
+    {
+        return flags2 & ActorFlags::IS_A_MOUNT;
+    }
 
     bool IsEssential() const noexcept
     {

@@ -210,7 +210,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             auto& partyService = m_world.GetPartyService();
 
-            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer))
+            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer)
+                && !characterComponent.IsMount())
             {
                 PartyService::Party* pParty = partyService.GetPlayerParty(acMessage.pPlayer);
                 Player* pOwningPlayer = view.get<OwnerComponent>(*itor).GetOwner();
@@ -647,6 +648,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetPlayer(isPlayer);
     characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
     characterComponent.SetDragon(message.IsDragon);
+    characterComponent.SetMount(message.IsMount);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
