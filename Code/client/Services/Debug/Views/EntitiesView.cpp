@@ -4,6 +4,7 @@
 
 #include <AI/AIProcess.h>
 #include <PlayerCharacter.h>
+#include <Games/ActorExtension.h>
 
 #include <World.h>
 #include <imgui.h>
@@ -159,6 +160,8 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     int isDead = int(pActor->IsDead());
     ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    int isRemote = int(pActor->GetExtension()->IsRemote());
+    ImGui::InputInt("Is remote?", &isRemote, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);

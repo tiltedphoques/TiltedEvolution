@@ -41,7 +41,7 @@ ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatche
 
 void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept
 {
-    auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(aEntity);
+    auto& actorValuesComponent = m_world.emplace_or_replace<ActorValuesComponent>(aEntity);
 
     for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
