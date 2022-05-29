@@ -25,7 +25,45 @@ if has_config("unitybuild") then
     add_rules("c++.unity_build", {batchsize = 12})
 end
 
-add_requires("entt", "recastnavigation")
+package("magnum-integration-docking")
+    set_base("magnum-integration")
+    on_load("windows", "linux", "macosx", function (package)
+        local configdeps = {bullet = "bullet3",
+                            eigen = "eigen3",
+                            glm = "glm",
+                            imgui = "imgui v1.87-docking"}
+        for config, dep in pairs(configdeps) do
+            if package:config(config) then
+                package:add("deps", dep)
+            end
+        end
+    end)
+package_end()
+
+add_requires(
+    "entt", 
+    "recastnavigation", 
+    "tiltedcore", 
+    "cryptopp", 
+    "spdlog", 
+    "cpp-httplib",
+    "gtest", 
+    "mem", 
+    "glm", 
+    "sentry-native", 
+    "magnum", 
+    "magnum-integration-docking",
+    "zlib")
+
+add_requireconfs("cpp-httplib", {configs = {ssl = true}})
+add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
+add_requireconfs("magnum", { configs = { sdl2 = true }})
+add_requireconfs("magnum-integration-docking",  { configs = { imgui = true }})
+add_requireconfs("magnum-integration-docking.magnum",  { configs = { sdl2 = true }})
+
+if is_plat("windows") then
+    add_requires("discord", "imgui v1.87-docking")
+end
 
 before_build(function (target)
     import("modules.version")
