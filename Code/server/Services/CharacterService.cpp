@@ -210,6 +210,8 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             auto& partyService = m_world.GetPartyService();
 
+            bool isOwner = false;
+
             if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer)
                 && !characterComponent.IsMount())
             {
@@ -218,13 +220,16 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
                 // Transfer ownership if owning player is in the same party as the owner
                 if (std::find(pParty->Members.begin(), pParty->Members.end(), pOwningPlayer) != pParty->Members.end())
+                {
                     TransferOwnership(acMessage.pPlayer, World::ToInteger(*itor));
+                    isOwner = true;
+                }
             }
 
             AssignCharacterResponse response;
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
-            response.Owner = false;
+            response.Owner = isOwner;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
             response.IsDead = characterComponent.IsDead();
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
