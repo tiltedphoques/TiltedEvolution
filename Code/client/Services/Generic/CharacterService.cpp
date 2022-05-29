@@ -210,6 +210,8 @@ void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 
     if (m_world.orphan(cId))
         m_world.destroy(cId);
+
+    spdlog::info("Actor removed, form id: {:X}", acEvent.FormId);
 }
 
 void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -267,7 +269,7 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
 
 void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept
 {
-    spdlog::info("Received for cookie {:X}", acMessage.Cookie);
+    spdlog::info("Received for cookie {:X}, server id {:X}", acMessage.Cookie, acMessage.ServerId);
 
     auto view = m_world.view<WaitingForAssignmentComponent>();
     const auto itor = std::find_if(std::begin(view), std::end(view), [view, cookie = acMessage.Cookie](auto entity)
@@ -288,18 +290,20 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     const auto formIdComponent = m_world.try_get<FormIdComponent>(cEntity);
     if (!formIdComponent)
     {
-        spdlog::error("CharacterService::OnAssignCharacter(): form id component doesn't exist, cookie: {:X}", acMessage.Cookie);
+        spdlog::error(__FUNCTION__ ": form id component doesn't exist, cookie: {:X}", acMessage.Cookie);
         return;
     }
 
     // This code path triggers when the character has been spawned through CharacterSpawnRequest
     if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
     {
-        TESForm* const pForm = TESForm::GetById(formIdComponent->Id);
-        Actor* const pActor = Cast<Actor>(pForm);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent->Id));
 
         if (!pActor)
+        {
+            spdlog::error(__FUNCTION__ ": could not find actor for already owned entity, form id: {:X}", formIdComponent->Id);
             return;
+        }
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -307,11 +311,12 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[formIdComponent->Id] = {0, acMessage.IsWeaponDrawn};
 
+        spdlog::info("Applied updates on assignment response, form id: {:X}", formIdComponent->Id);
+
         return;
     }
 
-    auto* const pForm = TESForm::GetById(formIdComponent->Id);
-    auto* pActor = Cast<Actor>(pForm);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent->Id));
     if (!pActor)
     {
         spdlog::error(__FUNCTION__ ": actor not found, form id: {:X}", formIdComponent->Id);
@@ -321,13 +326,17 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
     if (acMessage.Owner)
     {
-        m_world.emplace<LocalComponent>(cEntity, acMessage.ServerId);
-        m_world.emplace<LocalAnimationComponent>(cEntity);
+        spdlog::info("Received local actor, form id: {:X}", pActor->formID);
+
+        m_world.emplace_or_replace<LocalComponent>(cEntity, acMessage.ServerId);
+        m_world.emplace_or_replace<LocalAnimationComponent>(cEntity);
 
         pActor->GetExtension()->SetRemote(false);
     }
     else
     {
+        spdlog::info("Received remote actor, form id: {:X}", pActor->formID);
+
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);
@@ -424,6 +433,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         spdlog::error("Actor object {:X} could not be created.", acMessage.ServerId);
         return;
     }
+
+    spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
     
     if (pActor->IsDisabled())
         pActor->Enable();
@@ -1178,7 +1189,9 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
 
     MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
 
-    spdlog::warn("Successfully teleported actor");
+    spdlog::info("Successfully teleported actor, form id: {:X}, world space: {:X}, cell: {:X}, position: ({}, {}, {})",
+                 pActor->formID, acMessage.WorldSpaceId.BaseId, acMessage.CellId.BaseId, acMessage.Position.x,
+                 acMessage.Position.y, acMessage.Position.z);
 }
 
 void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept
@@ -1393,7 +1406,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.LatestAction = pExtension->LatestAnimation;
     pActor->SaveAnimationVariables(message.LatestAction.Variables);
 
-    spdlog::info("Request id: {:X}, cookie: {:X}, {:X}", formIdComponent.Id, sCookieSeed, to_integral(aEntity));
+    spdlog::info("Request id: {:X}, cookie: {:X}, entity: {:X}", formIdComponent.Id, sCookieSeed, to_integral(aEntity));
 
     if (m_transport.Send(message))
     {
@@ -1407,8 +1420,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 {
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
-        TESForm* const pForm = TESForm::GetById(aFormId);
-        Actor* const pActor = Cast<Actor>(pForm);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
 
         if (pActor)
         {
@@ -1471,7 +1483,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
             }
         }
 
-        spdlog::warn("Transferring ownership of local actor, server id: {:X}, worldspace: {:X}, cell: {:X}, position: "
+        spdlog::info("Transferring ownership of local actor, server id: {:X}, worldspace: {:X}, cell: {:X}, position: "
                      "({}, {}, {})",
                      request.ServerId, request.WorldSpaceId.BaseId, request.CellId.BaseId, request.Position.x,
                      request.Position.y, request.Position.z);

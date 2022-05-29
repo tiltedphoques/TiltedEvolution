@@ -3,6 +3,7 @@
 #include <Services/CharacterService.h>
 
 #include <AI/AIProcess.h>
+#include <PlayerCharacter.h>
 
 #include <World.h>
 #include <imgui.h>
@@ -126,7 +127,7 @@ void DebugService::DisplayEntityPanel(entt::entity aEntity) noexcept
     const auto pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
 
     if (pFormIdComponent)               DisplayFormComponent(*pFormIdComponent);
-    if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent);
+    if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent, pFormIdComponent ? pFormIdComponent->Id : 0);
     if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent, aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
 }
 
@@ -153,33 +154,30 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
         });
     }
 
-    if (ImGui::Button("Stop dialogue"))
-    {
-        m_world.GetRunner().Queue([id = aFormComponent.Id]() {
-            Actor* pActor = Cast<Actor>(TESForm::GetById(id));
-            pActor->StopCurrentDialogue(true);
-        });
-    }
-
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     int isDead = int(pActor->IsDead());
     ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-    int isWeaponDrawn = int(pActor->actorState.IsWeaponDrawn());
-    ImGui::InputInt("Is weapon drawn?", &isWeaponDrawn, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-    int isBleedingOut = int(pActor->actorState.IsBleedingOut());
-    ImGui::InputInt("Is bleeding out?", &isBleedingOut, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
 #endif
 }
 
-void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept
+void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent, const uint32_t acFormId) const noexcept
 {
     if (!ImGui::CollapsingHeader("Local Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
+
+    if (ImGui::Button("Teleport to me"))
+    {
+        m_world.GetRunner().Queue([acFormId]() {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(acFormId));
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            pActor->MoveTo(pPlayer->parentCell, pPlayer->position);
+        });
+    }
 
     auto& action = aLocalComponent.CurrentAction;
     ImGui::InputInt("Net Id", (int*)&aLocalComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
