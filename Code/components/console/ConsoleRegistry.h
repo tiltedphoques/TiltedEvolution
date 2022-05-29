@@ -66,7 +66,7 @@ class ConsoleRegistry
         kDirty
     };
 
-    ExecutionResult TryExecuteCommand(const std::string& acLine);
+    ExecutionResult TryExecuteCommand(const TiltedPhoques::String& acLine);
 
     CommandBase* FindCommand(const char* acName);
     SettingBase* FindSetting(const char* acName);
@@ -101,9 +101,10 @@ class ConsoleRegistry
   private:
     void AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand);
     void AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting);
-    void StoreCommandInHistory(const std::string& acLine);
+    void StoreCommandInHistory(const TiltedPhoques::String& acLine);
 
-    ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const std::string* acStringArgs, ArgStack& aStackOut);
+    ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const TiltedPhoques::String* acStringArgs,
+                                   ArgStack& aStackOut);
 
   private:
     std::mutex m_listLock;
@@ -111,7 +112,7 @@ class ConsoleRegistry
     TiltedPhoques::Vector<SettingBase*> m_settings;
     TiltedPhoques::Vector<UniquePtr<CommandBase>> m_dynamicCommands;
     TiltedPhoques::Vector<UniquePtr<SettingBase>> m_dynamicSettings;
-    TiltedPhoques::Vector<std::string> m_commandHistory;
+    TiltedPhoques::Vector<TiltedPhoques::String> m_commandHistory;
     CommandQueue m_queue;
     bool m_requestFlush = true;
 

@@ -19,6 +19,8 @@ constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeo
 // Use this to raise the SKSE baseline
 constexpr int kSKSEMinBuild = 20100;
 
+HMODULE g_SKSEModuleHandle{nullptr};
+
 struct FileVersion
 {
     static constexpr uint8_t scVersionSize = 4;
@@ -29,7 +31,7 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
 {
     const auto filename = acFilePath.c_str();
 
-    DWORD dwHandle, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
+    DWORD dwHandle = 0, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
     if (0 == sz)
     {
         return 1;
@@ -70,6 +72,11 @@ std::string GetSKSEStyleExeVersion()
     return exeBuild;
 }
 } // namespace
+
+bool IsScriptExtenderLoaded()
+{
+    return g_SKSEModuleHandle;
+}
 
 void LoadScriptExender()
 {
@@ -133,9 +140,9 @@ void LoadScriptExender()
     }
 #endif
 
-    if (auto* pSKSELibraryHandle = LoadLibraryW(needle->c_str()))
+    if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
     {
-        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(pSKSELibraryHandle, "StartSKSE")))
+        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, "StartSKSE")))
         {
             spdlog::info(
                 "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "

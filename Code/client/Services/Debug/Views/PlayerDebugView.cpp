@@ -1,26 +1,18 @@
+#include <Services/DebugService.h>
 
 #include <imgui.h>
 #include <inttypes.h>
 #include <Games/TES.h>
 
-#if (TP_SKYRIM64)
-#include <Games/Skyrim/PlayerCharacter.h>
-#include <Games/Skyrim/Forms/TESObjectCELL.h>
-#include <Games/Skyrim/Forms/TESWorldSpace.h>
-#else
-#include <Games/Fallout4/PlayerCharacter.h>
-#include <Games/Fallout4/Forms/TESObjectCELL.h>
-#include <Games/Fallout4/Forms/TESWorldSpace.h>
-#endif
-
-#include <Services/DebugService.h>
+#include <PlayerCharacter.h>
+#include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
 
 void DebugService::DrawPlayerDebugView()
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer)
     {
-        // TODO: maybe draw somethin?
         return;
     }
 

@@ -122,7 +122,7 @@ static bool RegisterQuitHandler()
 #ifdef _WIN32
 static bool ShowEULADialog()
 {
-    Base::TaskDialog dia(GetModuleHandleW(nullptr), L"Tilted Platform Agreement", L"Confirm the Tilted Platform EULA",
+    Base::TaskDialog dia(LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102)), L"Tilted Platform Agreement", L"Confirm the Tilted Platform EULA",
                          L"TODO: Link to EULA", nullptr);
     dia.AppendButton(100, L"Accept EULA");
     dia.AppendButton(101, L"Deny EULA");

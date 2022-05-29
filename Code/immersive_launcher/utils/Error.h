@@ -5,6 +5,6 @@
 
 #include <TiltedCore/Stl.hpp>
 
-void Die(const wchar_t* aText);
+void Die(const wchar_t* aText, bool aKillNow = false);
 
 void ShowProgressDialog();

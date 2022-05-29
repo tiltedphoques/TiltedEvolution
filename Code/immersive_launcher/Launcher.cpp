@@ -16,10 +16,13 @@
 
 #include "base/dialogues/win/TaskDialog.h"
 
-// These symbols are defined within the client code
+// These symbols are defined within the client code skyrimtogetherclient
 extern void InstallStartHook();
 extern void RunTiltedApp();
 extern void RunTiltedInit(const std::filesystem::path& acGamePath, const TiltedPhoques::String& aExeVersion);
+
+// Defined in EarlyLoad.dll
+bool __declspec(dllimport) EarlyInstallSucceeded();
 
 HICON g_SharedWindowIcon = nullptr;
 
@@ -29,9 +32,10 @@ static LaunchContext* g_context = nullptr;
 
 LaunchContext* GetLaunchContext()
 {
+    #if 0
     if (!g_context)
         __debugbreak();
-
+    #endif
     return g_context;
 }
 
@@ -51,14 +55,15 @@ int StartUp(int argc, char** argv)
             askSelect = true;
     }
 
+    // TODO(Force): Make some InitSharedResources func.
+    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
+
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
 
-    // TODO(Force): Make some InitSharedResources func.
-    g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
-
-    auto r = GetLastError();
+    if (!EarlyInstallSucceeded())
+        DIE_NOW(L"Early load install failed. Tell Force about this.");
 
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();
@@ -124,3 +129,12 @@ void InitClient()
     RunTiltedApp();
 }
 } // namespace launcher
+
+// CreateProcess in suspended mode.
+// Inject usvfs_64.dll -> invoke InitHooks
+// (https://github.com/ModOrganizer2/usvfs/blob/f8051c179dee114b7e06c5dab2482977c285d611/src/usvfs_dll/usvfs.cpp#L352)
+// Resume proc
+
+
+// InjectDLLRemoteThread ->SkipInit
+

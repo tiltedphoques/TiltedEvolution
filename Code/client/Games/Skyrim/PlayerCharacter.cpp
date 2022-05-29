@@ -14,6 +14,7 @@
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
 #include <Games/TES.h>
+#include <Games/References.h>
 
 #include <Forms/TESObjectCELL.h>
 
@@ -27,15 +28,19 @@ static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
 
+void PlayerCharacter::SetGodMode(bool aSet) noexcept
+{
+    POINTER_SKYRIMSE(bool, bGodMode, 404238);
+    *bGodMode.Get() = aSet;
+}
+
 void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
 {
     if (aDifficulty > 5)
         return;
 
-    POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
-    *s_difficulty = aDifficulty;
-
-    difficulty = aDifficulty;
+    int32_t* difficultySetting = Settings::GetDifficulty();
+    *difficultySetting = difficulty = aDifficulty;
 }
 
 void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noexcept
@@ -53,7 +58,7 @@ void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noex
     spdlog::debug("Added {} experience to skill {}", deltaExperience, aSkill);
 }
 
-void PlayerCharacter::RespawnPlayer() noexcept
+NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
 {
     // Make bleedout state recoverable
     SetNoBleedoutRecovery(false);
@@ -86,6 +91,26 @@ void PlayerCharacter::RespawnPlayer() noexcept
 
     // Make bleedout state unrecoverable again for when the player goes down the next time
     SetNoBleedoutRecovery(true);
+
+    return pos;
+}
+
+void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
+{
+    // Yes, yes, this isn't great, but there's no "pay fines everywhere" function
+    TiltedPhoques::Vector<uint32_t> crimeFactionIds{ 0x28170, 0x267E3, 0x29DB0, 0x2816D, 0x2816e, 0x2816C, 0x2816B, 0x267EA, 0x2816F, 0x4018279 };
+
+    for (uint32_t crimeFactionId : crimeFactionIds)
+    {
+        TESFaction* pCrimeFaction = Cast<TESFaction>(TESForm::GetById(crimeFactionId));
+        if (!pCrimeFaction)
+        {
+            spdlog::error("This isn't a crime faction! {:X}", crimeFactionId);
+            continue;
+        }
+
+        PayFine(pCrimeFaction, false, false);
+    }
 }
 
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
@@ -140,7 +165,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
 
     if (combatSkills.contains(aSkill))
     {
-        spdlog::info("Set new last used combat skill to {}.", aSkill);
+        spdlog::debug("Set new last used combat skill to {}.", aSkill);
         apThis->GetExtension()->LastUsedCombatSkill = aSkill;
 
         World::Get().GetRunner().Trigger(AddExperienceEvent(deltaExperience));

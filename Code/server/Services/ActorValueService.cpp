@@ -41,7 +41,8 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
     notify.Id = acMessage.Packet.Id;
     notify.Values = acMessage.Packet.Values;
 
-    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -65,7 +66,8 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
     notify.Id = message.Id;
     notify.Values = message.Values;
 
-    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
@@ -73,12 +75,23 @@ void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthC
     auto& message = acMessage.Packet;
 
     // TODO(cosideci): should server side health not be updated?
+    auto actorValuesView = m_world.view<ActorValuesComponent, OwnerComponent>();
+
+    auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
+
+    if (it != actorValuesView.end())
+    {
+        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
+        auto currentHealth = actorValuesComponent.CurrentActorValues.ActorValuesList[24];
+        actorValuesComponent.CurrentActorValues.ActorValuesList[24] = currentHealth - message.DeltaHealth;
+    }
 
     NotifyHealthChangeBroadcast notify;
     notify.Id = message.Id;
     notify.DeltaHealth = message.DeltaHealth;
 
-    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -92,7 +105,7 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
     if (it != characterView.end())
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*it);
-        characterComponent.IsDead = message.IsDead;
+        characterComponent.SetDead(message.IsDead);
         spdlog::debug("Updating death state {:x}:{}", message.Id, message.IsDead);
     }
 
@@ -100,6 +113,7 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
     notify.Id = message.Id;
     notify.IsDead = message.IsDead;
 
-    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 

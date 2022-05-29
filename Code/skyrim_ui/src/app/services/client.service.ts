@@ -16,6 +16,8 @@ export interface Message {
 
   /** Message content. */
   content: string;
+
+  whisper?: boolean;
 }
 
 /** Client game service. */
@@ -99,6 +101,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('openingmenu', this.onOpeningMenu.bind(this));
       skyrimtogether.on('message', this.onMessage.bind(this));
       skyrimtogether.on('systemmessage', this.onSystemMessage.bind(this));
+      skyrimtogether.on('whispermessage', this.onWhisperMessage.bind(this));
       skyrimtogether.on('connect', this.onConnect.bind(this));
       skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
       skyrimtogether.on('namechange', this.onNameChange.bind(this));
@@ -131,6 +134,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('openingmenu');
       skyrimtogether.off('message');
       skyrimtogether.off('systemmessage');
+      skyrimtogether.off('whispermessage');
       skyrimtogether.off('connect');
       skyrimtogether.off('disconnect');
       skyrimtogether.off('namechange');
@@ -295,6 +299,19 @@ export class ClientService implements OnDestroy {
   private onSystemMessage(message: string): void {
     this.zone.run(() => {
       this.messageReception.next({ content: message });
+    });
+  }
+
+  /**
+   * Called when a whisper message is received.
+   *
+   * @param name Sender's name.
+   * @param message Message content.
+   */
+   private onWhisperMessage(name: string, message: string): void {
+    let whisper = true;
+    this.zone.run(() => {
+      this.messageReception.next({ name, content: message, whisper});
     });
   }
 

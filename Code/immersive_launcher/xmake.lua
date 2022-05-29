@@ -29,6 +29,7 @@ local function build_launcher()
         "**.cpp",
         "launcher.rc")
     add_deps(
+        "ImmersiveElf",
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
@@ -63,8 +64,6 @@ local function build_launcher()
         "mem",
         "sentry-native")
 end
-
-add_requires("sentry-native")
 
 target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")

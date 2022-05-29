@@ -19,6 +19,7 @@
 
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
 
 #include <inttypes.h>
 
@@ -54,24 +55,26 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         return;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    const TESObjectCELL* pCell = pPlayer->parentCell;
 
-    // TODO(cosideci): why isn't the event's cell id being used?
     GameId cellId{};
-    if (!m_world.GetModSystem().GetServerModId(pPlayer->parentCell->formID, cellId))
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
     {
-        spdlog::error("Server cell id not found for cell form id {:X}", pPlayer->parentCell->formID);
+        spdlog::error("Server cell id not found for cell form id {:X}", pCell->formID);
         return;
     }
 
-    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(pPlayer->parentCell->formID));
-    if (!pCell)
+    GameId worldSpaceId{};
+    if (TESWorldSpace* pWorldSpace = pPlayer->GetWorldSpace())
     {
-        spdlog::error("Cell not found for cell form id {:X}", pPlayer->parentCell->formID);
-        return;
+        if (!m_world.GetModSystem().GetServerModId(pWorldSpace->formID, worldSpaceId))
+        {
+            spdlog::error("Server world space id not found for world space form id {:X}", pWorldSpace->formID);
+            return;
+        }
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    // TODO(cosideci): create entities for container objects?
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};
@@ -80,6 +83,8 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     {
         ObjectData objectData{};
         objectData.CellId = cellId;
+        objectData.WorldSpaceId = worldSpaceId;
+        objectData.CurrentCoords = GridCellCoords::CalculateGridCellCoords(pObject->position.x, pObject->position.y);
 
         if (!m_world.GetModSystem().GetServerModId(pObject->formID, objectData.Id))
         {
@@ -189,10 +194,16 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
     }
 
-    // TODO(cosideci): confirm usage of GetCellId()
-    if (!m_world.GetModSystem().GetServerModId(acEvent.pObject->GetCellId(), request.CellId))
+    TESObjectCELL* pCell = acEvent.pObject->GetParentCellEx();
+    if (!pCell)
     {
-        spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->GetCellId());
+        spdlog::error("Activated object has no parent cell: {:X}", acEvent.pObject->formID);
+        return;
+    }
+
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, request.CellId))
+    {
+        spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->parentCell->formID);
         return;
     }
 
@@ -210,10 +221,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*pEntity);
     if (!serverIdRes.has_value())
-    {
-        spdlog::error("Server id not found for form id {:X}", acEvent.pActivator->formID);
         return;
-    }
 
     request.ActivatorId = serverIdRes.value();
 
@@ -261,10 +269,16 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
 
-    // TODO(cosideci): confirm usage of GetCellId()
-    if (!m_world.GetModSystem().GetServerModId(pObject->GetCellId(), request.CellId))
+    TESObjectCELL* pCell = pObject->GetParentCellEx();
+    if (!pCell)
     {
-        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->GetCellId());
+        spdlog::error("Activated object has no parent cell: {:X}", pObject->formID);
+        return;
+    }
+
+    if (!m_world.GetModSystem().GetServerModId(pCell->formID, request.CellId))
+    {
+        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->parentCell->formID);
         return;
     }
 

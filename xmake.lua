@@ -5,15 +5,17 @@ set_languages("c99", "cxx20")
 
 if is_plat("windows") then
     add_cxflags("/bigobj")
+    add_syslinks("kernel32")
+    set_arch("x64")
 end
 
 if is_plat("linux") then
     add_cxflags("-fPIC")
 end
 
-set_arch("x64")
 set_warnings("all")
 add_vectorexts("sse", "sse2", "sse3", "ssse3")
+add_vectorexts("neon")
 
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg")
@@ -23,7 +25,31 @@ if has_config("unitybuild") then
     add_rules("c++.unity_build", {batchsize = 12})
 end
 
-add_requires("entt", "recastnavigation")
+add_requires(
+    "entt", 
+    "recastnavigation", 
+    "tiltedcore", 
+    "cryptopp", 
+    "spdlog", 
+    "cpp-httplib",
+    "gtest", 
+    "mem", 
+    "glm", 
+    "sentry-native", 
+    "magnum", 
+    "magnum-integration",
+    "zlib")
+
+add_requireconfs("cpp-httplib", {configs = {ssl = true}})
+add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
+add_requireconfs("magnum", { configs = { sdl2 = true }})
+add_requireconfs("magnum-integration",  { configs = { imgui = true }})
+add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
+add_requireconfs("magnum-integration.imgui", {version = "v1.87-docking", override = true})
+
+if is_plat("windows") then
+    add_requires("discord", "imgui v1.87-docking")
+end
 
 before_build(function (target)
     import("modules.version")

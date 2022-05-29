@@ -4,14 +4,16 @@
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/SendChatMessageRequest.h>
+#include <Messages/PlayerDialogueRequest.h>
+#include <Messages/NotifyPlayerDialogue.h>
 
 #include <regex>
 
 OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
-    : m_world(aWorld),
-      m_chatMessageConnection(
-          aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this))
+    : m_world(aWorld)
 {
+    m_chatMessageConnection = aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this);
+    m_playerDialogueConnection = aDispatcher.sink<PacketEvent<PlayerDialogueRequest>>().connect<&OverlayService::OnPlayerDialogue>(this);
 }
 
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
@@ -24,6 +26,19 @@ void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
     GameServer::Get()->SendToPlayers(notifyMessage);
+}
+
+void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyPlayerDialogue notify;
+    notify.Text = acMessage.pPlayer->GetUsername() + ": " + message.Text;
+
+    auto& party = acMessage.pPlayer->GetParty();
+
+    // TODO(cosideci): exclude player?
+    GameServer::Get()->SendToParty(notify, party);
 }
 
 #if 0

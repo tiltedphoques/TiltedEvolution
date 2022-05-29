@@ -15,9 +15,11 @@ struct InterruptCastRequest final : ClientMessage
 
     bool operator==(const InterruptCastRequest& acRhs) const noexcept
     {
-        return CasterId == acRhs.CasterId &&
-               GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+               CasterId == acRhs.CasterId && 
+               CastingSource == acRhs.CastingSource;
     }
 
     uint32_t CasterId;
+    int32_t CastingSource;
 };

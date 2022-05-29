@@ -8,6 +8,7 @@ struct DisconnectedEvent;
 struct ServerSettings;
 struct GridCellChangeEvent;
 struct CellChangeEvent;
+struct PlayerDialogueEvent;
 
 struct NotifyPlayerRespawn;
 
@@ -29,6 +30,7 @@ protected:
     void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
+    void OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept;
 
 private:
 
@@ -36,6 +38,7 @@ private:
     * @brief Run the respawn timer, and if it hits 0, respawn the player.
     */
     void RunRespawnUpdates(const double acDeltaTime) noexcept;
+    void RunPostDeathUpdates(const double acDeltaTime) noexcept;
     /**
     * @brief Make sure difficulty doesn't get changed while connected
     */
@@ -55,4 +58,5 @@ private:
     entt::scoped_connection m_notifyRespawnConnection;
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
+    entt::scoped_connection m_playerDialogueConnection;
 };

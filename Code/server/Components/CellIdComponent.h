@@ -39,7 +39,7 @@ struct CellIdComponent
         return !WorldSpaceId;
     }
 
-    bool IsInRange(const CellIdComponent& acRhs) const noexcept
+    bool IsInRange(const CellIdComponent& acRhs, bool aIsDragon) const noexcept
     {
         if (IsInInteriorCell())
             return Cell == acRhs.Cell;
@@ -47,7 +47,7 @@ struct CellIdComponent
         if (WorldSpaceId != acRhs.WorldSpaceId)
             return false;
 
-        return GridCellCoords::IsCellInGridCell(acRhs.CenterCoords, CenterCoords);
+        return GridCellCoords::IsCellInGridCell(acRhs.CenterCoords, CenterCoords, aIsDragon);
     }
 
     GameId Cell{};

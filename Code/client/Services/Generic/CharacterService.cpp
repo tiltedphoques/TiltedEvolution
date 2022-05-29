@@ -1,15 +1,14 @@
-#include <TiltedOnlinePCH.h>
-
 #include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Services/PapyrusService.h"
-
+#include <Services/PartyService.h>
 
 #include <Services/CharacterService.h>
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
 
 #include <Games/References.h>
+#include <Games/Misc/SubtitleManager.h>
 
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
@@ -31,6 +30,8 @@
 #include <Events/InitPackageEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
 #include <Events/AddExperienceEvent.h>
+#include <Events/DialogueEvent.h>
+#include <Events/SubtitleEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -57,6 +58,10 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/SubtitleRequest.h>
+#include <Messages/NotifySubtitle.h>
 
 #include <World.h>
 #include <Games/TES.h>
@@ -101,6 +106,12 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
     m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
+
+    m_dialogueEventConnection = m_dispatcher.sink<DialogueEvent>().connect<&CharacterService::OnDialogueEvent>(this);
+    m_dialogueSyncConnection = m_dispatcher.sink<NotifyDialogue>().connect<&CharacterService::OnNotifyDialogue>(this);
+
+    m_subtitleEventConnection = m_dispatcher.sink<SubtitleEvent>().connect<&CharacterService::OnSubtitleEvent>(this);
+    m_subtitleSyncConnection = m_dispatcher.sink<NotifySubtitle>().connect<&CharacterService::OnNotifySubtitle>(this);
 }
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
@@ -273,12 +284,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             return;
         }
 
-        const auto* pNpc = Cast<TESNPC>(pActor->baseForm);
-        if (pNpc)
-        {
-            spdlog::warn("Spawn Actor: {:X}, and NPC {}", pActor->formID, pNpc->fullName.value);
-        }
-
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);
@@ -294,9 +299,21 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
-        const uint32_t cCellId = World::Get().GetModSystem().GetGameId(acMessage.CellId);
-        const TESForm* const pCellForm = TESForm::GetById(cCellId);
-        TESObjectCELL* const pCell = Cast<TESObjectCELL>(pCellForm);
+        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acMessage.CellId);
+        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
+
+        // In case of lazy-loading of exterior cells
+        if (!pCell)
+        {
+            const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
+            TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+            if (pWorldSpace)
+            {
+                GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
+                pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+            }
+        }
+
         if (pCell)
             pActor->MoveTo(pCell, acMessage.Position);
     }
@@ -530,6 +547,7 @@ void CharacterService::OnFactionsChanges(const NotifyFactionsChanges& acEvent) c
 
 void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept
 {
+    // TODO(cosideci): handle case if no one has it, therefore no RemoteComponent
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [&acMessage, &view](auto entity) {
@@ -545,6 +563,9 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
         {
             pActor->GetExtension()->SetRemote(false);
 
+            // TODO(cosideci): this should be done differently.
+            // Send an ownership claim request, and have the server broadcast the result.
+            // Only then should components be added or removed.
             m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
             m_world.emplace<LocalAnimationComponent>(*itor);
             m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
@@ -621,7 +642,10 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     uint32_t serverId = serverIdRes.value();
 
@@ -806,7 +830,10 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
     if (!riderServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     const auto mountIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.MountID, view](auto entity) {
         return view.get<FormIdComponent>(entity).Id == id;
@@ -822,7 +849,10 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 
     std::optional<uint32_t> mountServerIdRes = Utils::GetServerId(cMountEntity);
     if (!mountServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     if (m_world.try_get<RemoteComponent>(cMountEntity))
     {
@@ -878,7 +908,10 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     {
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
+        {
+            spdlog::error("{}: failed to find server id", __FUNCTION__);
             continue;
+        }
 
         uint32_t serverId = serverIdRes.value();
 
@@ -925,7 +958,10 @@ void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const
 
     std::optional<uint32_t> actorServerIdRes = Utils::GetServerId(cActorEntity);
     if (!actorServerIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     NewPackageRequest request;
     request.ActorId = actorServerIdRes.value();
@@ -982,6 +1018,109 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
         return;
 
     pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
+}
+
+void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto serverIdRes = Utils::GetServerId(*entityIt);
+    if (!serverIdRes)
+    {
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.ActorID);
+        return;
+    }
+
+    DialogueRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.SoundFilename = acEvent.VoiceFile;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    pActor->StopCurrentDialogue(true);
+    pActor->SpeakSound(acMessage.SoundFilename.c_str());
+}
+
+void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.SpeakerID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto serverIdRes = Utils::GetServerId(*entityIt);
+    if (!serverIdRes)
+    {
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.SpeakerID);
+        return;
+    }
+
+    SubtitleRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.Text = acEvent.Text;
+
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
 void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
@@ -1131,9 +1270,10 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    message.IsDragon = pActor->IsDragon();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
 
-    if (isTemporary && !isNpcTemporary)
+    if (isTemporary /* && !isNpcTemporary */)
     {
         if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
@@ -1435,7 +1575,8 @@ void CharacterService::RunSpawnUpdates() const noexcept
             const TES* pTES = TES::Get();
             const auto playerCoords = GridCellCoords(pTES->centerGridX, pTES->centerGridY);
 
-            if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords))
+            // TODO(cosideci): IsDragon probably shouldn't be straight up false here.
+            if (GridCellCoords::IsCellInGridCell(characterCoords, playerCoords, false))
             {
                 auto* pActor = Cast<Actor>(TESForm::GetById(remoteComponent.CachedRefId));
                 if (!pActor)

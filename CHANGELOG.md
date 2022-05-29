@@ -1,3 +1,179 @@
+## [1.33.3](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.2...v1.33.3) (2022-05-29)
+
+## [1.33.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.1...v1.33.2) (2022-05-28)
+
+
+### Bug Fixes
+
+* magic effect crash ([f53ca46](https://github.com/tiltedphoques/TiltedEvolution/commit/f53ca468581fad38274c507f2ae13ef398a0282e))
+
+## [1.33.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.0...v1.33.1) (2022-05-26)
+
+
+### Bug Fixes
+
+* helper menu ([ef88e13](https://github.com/tiltedphoques/TiltedEvolution/commit/ef88e1335de2e9501fe099f6b47a7630e23835dc))
+
+# [1.33.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.32.0...v1.33.0) (2022-05-26)
+
+
+### Bug Fixes
+
+* build error ([a155e54](https://github.com/tiltedphoques/TiltedEvolution/commit/a155e545ae840e613203be1fea74e18e84dc5790))
+* duplicating quest items ([2b7c2d9](https://github.com/tiltedphoques/TiltedEvolution/commit/2b7c2d97f5cde192feb4968f2e8df551c25d9d15))
+* implicit cast crash ([b9247f6](https://github.com/tiltedphoques/TiltedEvolution/commit/b9247f66b7ff916bcbdf8038b3bf262fd9910a1d))
+* lockpick not syncing ([a7fc37b](https://github.com/tiltedphoques/TiltedEvolution/commit/a7fc37b1267a1e308bc71aa85c167b47ae01e867))
+* more cell id fixes ([4513476](https://github.com/tiltedphoques/TiltedEvolution/commit/45134760560acf6255053b9704050e8eab2129aa))
+* quest items and lock sync bugs ([cf582f5](https://github.com/tiltedphoques/TiltedEvolution/commit/cf582f50602b218d9565a8614c64793183a9e76f))
+* worldspace object sync and crash fix ([dbdfa00](https://github.com/tiltedphoques/TiltedEvolution/commit/dbdfa00fa8182bcfb6380cd89af9953c9956df0f))
+
+
+### Features
+
+* cool death fade ([51929ac](https://github.com/tiltedphoques/TiltedEvolution/commit/51929acba1f1d829f9acd7dee784165bc3a1589f))
+* update inventory UI listing ([c9c2bce](https://github.com/tiltedphoques/TiltedEvolution/commit/c9c2bceb27b011e78876e4804bd420f32c3550be))
+
+# [1.32.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.1...v1.32.0) (2022-05-25)
+
+
+### Bug Fixes
+
+* gold duplication bug ([6629f8c](https://github.com/tiltedphoques/TiltedEvolution/commit/6629f8c82e36578de584e45097d05d9f4cf621c5))
+
+
+### Features
+
+* pay and clear crime fines on death ([e6f47dd](https://github.com/tiltedphoques/TiltedEvolution/commit/e6f47dd7441a8d58cc449ae94c54c8450f53629c))
+
+## [1.31.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.31.0...v1.31.1) (2022-05-24)
+
+
+### Bug Fixes
+
+* double damage on projectiles ([bdd7baf](https://github.com/tiltedphoques/TiltedEvolution/commit/bdd7baffadfcb9c4c5c3dcb10e7237ca50108722))
+* invisibility ([b1b233f](https://github.com/tiltedphoques/TiltedEvolution/commit/b1b233f97ad47df0a583653568b89c777006973d))
+* ward spell not disappearing ([ef86bde](https://github.com/tiltedphoques/TiltedEvolution/commit/ef86bde884118b36959b6960c899dc29b274e85f))
+
+# [1.31.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.2...v1.31.0) (2022-05-24)
+
+
+### Features
+
+* player stands up after death ([f9d6fcd](https://github.com/tiltedphoques/TiltedEvolution/commit/f9d6fcdec577a49f66ab090eeeaa88825c23e506))
+
+## [1.30.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.1...v1.30.2) (2022-05-24)
+
+
+### Bug Fixes
+
+* chose arch when building ([440f2c0](https://github.com/tiltedphoques/TiltedEvolution/commit/440f2c06f006dc395cd36904c34a743d267494e5))
+* docker args should live forever ([8aab802](https://github.com/tiltedphoques/TiltedEvolution/commit/8aab8027531c5ce1c168900577187c2707e56cf5))
+* libc++ version ([55be85c](https://github.com/tiltedphoques/TiltedEvolution/commit/55be85cb9a89a9eb72478f746d296d55640bfddc))
+* raspberry pi again ([7a5f200](https://github.com/tiltedphoques/TiltedEvolution/commit/7a5f200af1c29e433be4821c9d5a123a38c8cd18))
+* raspberrypi build ([b09ae83](https://github.com/tiltedphoques/TiltedEvolution/commit/b09ae838b7ef60e8065e76c1eeaedb75b24df275))
+* runner for raspberry pi needs libssl ([8fda608](https://github.com/tiltedphoques/TiltedEvolution/commit/8fda60859679631e4de3603805ad39031cdf7dd4))
+
+## [1.30.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.30.0...v1.30.1) (2022-05-19)
+
+# [1.30.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.1...v1.30.0) (2022-05-16)
+
+
+### Bug Fixes
+
+* Ensure taskdialog always shows ([832daff](https://github.com/tiltedphoques/TiltedEvolution/commit/832daff0f5181b84dfc682eef1cba23802f39513))
+
+
+### Features
+
+* Only process input when ST window is active. ([828e7ba](https://github.com/tiltedphoques/TiltedEvolution/commit/828e7bae4edcb53e27b1c1c0221e509de6fbad6b))
+
+## [1.29.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.29.0...v1.29.1) (2022-05-11)
+
+
+### Bug Fixes
+
+* entt corruption bug ([e977810](https://github.com/tiltedphoques/TiltedEvolution/commit/e9778106098bf3114c1c223a9752a6eceb7b4883))
+* nvcamera crash ([5b12535](https://github.com/tiltedphoques/TiltedEvolution/commit/5b1253520d364cbcbab592f0950791c19b887c52))
+* style and bugs ([4c4ceab](https://github.com/tiltedphoques/TiltedEvolution/commit/4c4ceab31f7763af886031dad84e2bc4cabfe635))
+* update health server side ([f49753e](https://github.com/tiltedphoques/TiltedEvolution/commit/f49753ecde2db8e267cae362ee8d534e742bcd48))
+
+# [1.29.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.28.0...v1.29.0) (2022-05-11)
+
+
+### Bug Fixes
+
+* :angry: ([9829284](https://github.com/tiltedphoques/TiltedEvolution/commit/98292840c55f3f3e41cb0ddcb56bae3293c0b99f))
+* actor not dying after kill move ([489a1f8](https://github.com/tiltedphoques/TiltedEvolution/commit/489a1f83b31eb2117f240482c69363b5925d1eb6))
+* add missing \ ([7f6b5f8](https://github.com/tiltedphoques/TiltedEvolution/commit/7f6b5f8d6b29ee326c8102036be9a6c9519304c4))
+* build error ([78bd5f1](https://github.com/tiltedphoques/TiltedEvolution/commit/78bd5f1a04471032bff320b3084ff23b4d1d6536))
+* Cast breaking with const/volatile ([df8f648](https://github.com/tiltedphoques/TiltedEvolution/commit/df8f64860d6e98b020ef428d2b00bdbe65034309))
+* crash and mopo light bug ([76ccb07](https://github.com/tiltedphoques/TiltedEvolution/commit/76ccb0725a1ddce94294c7d4ed3271a60390f974))
+* crashes in inventory and projectile systems ([6a0ef9c](https://github.com/tiltedphoques/TiltedEvolution/commit/6a0ef9c0b53014c9bb092a4c0e79b27110d5ecbd))
+* destroy party on disconnect ([3944b58](https://github.com/tiltedphoques/TiltedEvolution/commit/3944b58171627041baa1c10efdb60da1e0ba2351))
+* disable input hook in title screen ([1548e48](https://github.com/tiltedphoques/TiltedEvolution/commit/1548e480c1730d42c053cefe5b4f3cd23881ee50))
+* disable SSL verification server side as users are having a hard time installing certificates :'( ([c370743](https://github.com/tiltedphoques/TiltedEvolution/commit/c3707430280d8bcf5375552cf069af3121a38c99))
+* disconnect and reconnect crash ([69f2201](https://github.com/tiltedphoques/TiltedEvolution/commit/69f2201c445e4226ab46da9484666786d7818373))
+* docker build ([cd2f1b6](https://github.com/tiltedphoques/TiltedEvolution/commit/cd2f1b655b49fb856b5a89b47b10a47977bd3899))
+* docker copy ([798c232](https://github.com/tiltedphoques/TiltedEvolution/commit/798c232ebb00755907047c10e71a81f4e2dfc108))
+* docker runner needs the same C environment as builder ([b8cbf2e](https://github.com/tiltedphoques/TiltedEvolution/commit/b8cbf2e8874587c4f5e03dc5d3ff3e04f9d1bfce))
+* dragon breath weapon sync ([4f86c01](https://github.com/tiltedphoques/TiltedEvolution/commit/4f86c01cbb60073be79cb44a877c1a23911f1412))
+* entt corruption ([a73dcaf](https://github.com/tiltedphoques/TiltedEvolution/commit/a73dcaf7d1fdba16154a720b5fccb95d67ecd4ca))
+* entt crash ([cc4291c](https://github.com/tiltedphoques/TiltedEvolution/commit/cc4291cdd0107d8083ea8d896ed315ae8483647d))
+* execution arrow fix. ([b1f95a9](https://github.com/tiltedphoques/TiltedEvolution/commit/b1f95a92de70af61b54d2c055dbf0f0b226912db))
+* fix? ([56f0de5](https://github.com/tiltedphoques/TiltedEvolution/commit/56f0de5222936259101a6955b83366841a17a883))
+* install script ([6279301](https://github.com/tiltedphoques/TiltedEvolution/commit/6279301a8f6ce078f1b32909d59839b31d549bfc))
+* invalid ids sent by the client ([ca45005](https://github.com/tiltedphoques/TiltedEvolution/commit/ca45005dd925c6f4352be93fdde85e0dac98596b))
+* inventory related crashes ([568b6c6](https://github.com/tiltedphoques/TiltedEvolution/commit/568b6c6ac2bea1227d27b8f512cefa511136e0f2))
+* invisible players ([aa004c0](https://github.com/tiltedphoques/TiltedEvolution/commit/aa004c00af3fd78fc2fac3edd4d7e98d385d70b6))
+* issue with waitingfor3d ([f4a528f](https://github.com/tiltedphoques/TiltedEvolution/commit/f4a528f512f9c25302538ae3cde75a6f28b93d00))
+* linux build ([6c71ba3](https://github.com/tiltedphoques/TiltedEvolution/commit/6c71ba3dfc151ab9148dd8b4f07dcdd09c7cbb8f))
+* Log related issues ([7232adf](https://github.com/tiltedphoques/TiltedEvolution/commit/7232adf669f378ee43906bd467d4728036bb5712))
+* logic bugs. ([5b1c596](https://github.com/tiltedphoques/TiltedEvolution/commit/5b1c5962c2681207a8f110882af3b5de5c855126))
+* memory issue with packets ([6cb2392](https://github.com/tiltedphoques/TiltedEvolution/commit/6cb23926bdee8cfa3d3d82399751dbc384d564e4))
+* missing file save ([4f73e08](https://github.com/tiltedphoques/TiltedEvolution/commit/4f73e08cc9e1658187516f0297b01036f56c833f))
+* overlay issues when device is lost ([c8ed2ac](https://github.com/tiltedphoques/TiltedEvolution/commit/c8ed2acbb05565d65730cb08cdcf7fd03fc7ffc6))
+* player death handling sliding bug ([7704b44](https://github.com/tiltedphoques/TiltedEvolution/commit/7704b445ec90bb2f04667d3df1267bc6dccb2126))
+* potential entt corruption client side ([183f1df](https://github.com/tiltedphoques/TiltedEvolution/commit/183f1df954282eff7a81b1648de1790748e48dbd))
+* properly apply magic pvp ([1431cf4](https://github.com/tiltedphoques/TiltedEvolution/commit/1431cf4379194f614100c3bdccb51de08a481f7c))
+* remote player sliding after death ([181b19b](https://github.com/tiltedphoques/TiltedEvolution/commit/181b19b1d707cc9ac687e61c7e2c4d40808abade))
+* remove more unused includes ([58ce7c9](https://github.com/tiltedphoques/TiltedEvolution/commit/58ce7c987df5cc84280aef59ac6e4615ed7eafa1))
+* remove stack allocator where memory can overrun ([967439d](https://github.com/tiltedphoques/TiltedEvolution/commit/967439d4bdec6eb8b831aada64db9f039ecc49c0))
+* sentry upload & /crash to test ([87b2362](https://github.com/tiltedphoques/TiltedEvolution/commit/87b23624a2b3260f984fc34788095d8191e084d3))
+* server console now gets closed when stdin is closed ([943fc1d](https://github.com/tiltedphoques/TiltedEvolution/commit/943fc1d3c6c024abbfe9060a58d4e7b24cf0cef6))
+* server side entt corruption ([fa2afe5](https://github.com/tiltedphoques/TiltedEvolution/commit/fa2afe5d545db3dc85abc39cac5ec16492b6ee30))
+* spdlog 1.10 build & regex bug ([94016fb](https://github.com/tiltedphoques/TiltedEvolution/commit/94016fb436814bde200c7dd79e2a751f4b396efa))
+* symbol uploads ([b216e3f](https://github.com/tiltedphoques/TiltedEvolution/commit/b216e3f44d99055b9e5237dc9934e959a824ee82))
+* windows build ([8e4dd91](https://github.com/tiltedphoques/TiltedEvolution/commit/8e4dd91213048d0b71ea33fd5e2d422190bf081f))
+
+
+### Features
+
+* add doxyfile with base configuration ([828ec1a](https://github.com/tiltedphoques/TiltedEvolution/commit/828ec1ac3b2140a11e6589d17596928b45ff0c26))
+* EnableGreetings for npcs server setting ([9c4d951](https://github.com/tiltedphoques/TiltedEvolution/commit/9c4d9517eb8acbedb1431388d662f6729138bc72))
+* forcefully trigger voice lines ([671cf08](https://github.com/tiltedphoques/TiltedEvolution/commit/671cf0852817c7047384db7b5beb6155c8f2de64))
+* linux server now with crash handler ([677a505](https://github.com/tiltedphoques/TiltedEvolution/commit/677a505eda9bde5bff484afbb2c1c46cdd9d191b))
+* new dialog. ([eeb67e8](https://github.com/tiltedphoques/TiltedEvolution/commit/eeb67e81773d11208e20f8e5e042466745e94ca5))
+* Port the game server to run dedicated. ([e2e08f8](https://github.com/tiltedphoques/TiltedEvolution/commit/e2e08f8079f60f4ff37c2279dde549aa1050130c))
+* quest sync through stages ([b4609ed](https://github.com/tiltedphoques/TiltedEvolution/commit/b4609ed80341a241d38b60d6730885b5621a7bb0))
+* respawn at temple on death ([8906c1f](https://github.com/tiltedphoques/TiltedEvolution/commit/8906c1f943d10b7cedbc2520471fa13b87da3a71))
+* sentry crash handling ([799269a](https://github.com/tiltedphoques/TiltedEvolution/commit/799269ad982c2b16a143484810de7065f81db537))
+* server decides game difficulty ([df053b2](https://github.com/tiltedphoques/TiltedEvolution/commit/df053b2aed6b17f1910a11b68834932f77dcb6d7))
+* server side pvp setting ([7ffe66b](https://github.com/tiltedphoques/TiltedEvolution/commit/7ffe66be8e842c458369821a67088d04dd207494))
+* SetStage debugger ([1ca9f4f](https://github.com/tiltedphoques/TiltedEvolution/commit/1ca9f4f8899a90294f09f6f8376a7d10ccd764ed))
+* settings menu for HUD ([0641c5c](https://github.com/tiltedphoques/TiltedEvolution/commit/0641c5cbb9137093dc2f09856dfe9e8cbd746abb))
+* SettingService (volume, mute audio, etc.) ([a214061](https://github.com/tiltedphoques/TiltedEvolution/commit/a214061edeec2b7580be60e21545c1f4f018d2c9))
+* SKSE & MO2 policies. ([6b33705](https://github.com/tiltedphoques/TiltedEvolution/commit/6b33705b0e45591a195fad547099d20f0017ca21))
+* **SKSE:** Support new SKSE init procedure. ([1928f34](https://github.com/tiltedphoques/TiltedEvolution/commit/1928f34ac33700dba6c721b21908a06fc4f6ad94))
+* spawn at start of dungeon on death ([a3fc821](https://github.com/tiltedphoques/TiltedEvolution/commit/a3fc821137f8d7a3b1ab818aef5b476ff63b9ff4))
+* spawn random encounters ([cfca1cb](https://github.com/tiltedphoques/TiltedEvolution/commit/cfca1cbaae778b4e47d916bf5604b559379288f5))
+* string caching ([862e46b](https://github.com/tiltedphoques/TiltedEvolution/commit/862e46bc48f44ace369e2d67dfdf72c41f550c6f))
+* subtitle sync ([8145a0a](https://github.com/tiltedphoques/TiltedEvolution/commit/8145a0a2bd9254b47d657aefdd5a698a8c29a554))
+* sync player dialogue through chat ([e811196](https://github.com/tiltedphoques/TiltedEvolution/commit/e811196c086a8619208897532cb9e5826c639ca4))
+* sync quest items ([99b16c4](https://github.com/tiltedphoques/TiltedEvolution/commit/99b16c4bbed7899a5f2e4a79827f92a2aba03db2))
+* teleport command to players in different cell ([147fa7c](https://github.com/tiltedphoques/TiltedEvolution/commit/147fa7c3778cb6735b80e4a66e603d24bd00c573))
+* **threading:** Name all game threads & own threads. ([d397a62](https://github.com/tiltedphoques/TiltedEvolution/commit/d397a62e86359cac3eed809d3b66340905b96b2f))
+* **usvfs:** 500IQ hook (yes really) ([b02f9a1](https://github.com/tiltedphoques/TiltedEvolution/commit/b02f9a10e667c77c252cb2c622e37fd9ab40c24a))
+
 # [1.28.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.27.0...v1.28.0) (2022-04-17)
 
 

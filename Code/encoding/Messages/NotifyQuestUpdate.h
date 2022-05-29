@@ -16,8 +16,10 @@ struct NotifyQuestUpdate final : ServerMessage
 
     bool operator==(const NotifyQuestUpdate& acRhs) const noexcept
     {
-        return Id == acRhs.Id && Status == acRhs.Status && Stage == acRhs.Stage && GetOpcode() == acRhs.GetOpcode();
-
+        return GetOpcode() == acRhs.GetOpcode() &&
+               Id == acRhs.Id && 
+               Stage == acRhs.Stage && 
+               Status == acRhs.Stage;
     }
 
     enum StatusCode : uint8_t
@@ -28,6 +30,6 @@ struct NotifyQuestUpdate final : ServerMessage
     };
 
     GameId Id;
-    uint8_t Status; 
     uint16_t Stage;
+    uint8_t Status; 
 };

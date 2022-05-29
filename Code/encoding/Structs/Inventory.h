@@ -50,6 +50,7 @@ struct Inventory
         bool ExtraEnchantRemoveUnequip{};
         bool ExtraWorn{};
         bool ExtraWornLeft{};
+        bool IsQuestItem{};
 
         bool operator==(const Entry& acRhs) const noexcept;
         bool operator!=(const Entry& acRhs) const noexcept;
@@ -81,7 +82,8 @@ struct Inventory
                    ExtraPoisonCount == acRhs.ExtraPoisonCount &&
                    ExtraSoulLevel == acRhs.ExtraSoulLevel &&
                    ExtraWorn == acRhs.ExtraWorn &&
-                   ExtraWornLeft == acRhs.ExtraWornLeft;
+                   ExtraWornLeft == acRhs.ExtraWornLeft &&
+                   IsQuestItem == acRhs.IsQuestItem;
         }
 
         bool IsWorn() const noexcept

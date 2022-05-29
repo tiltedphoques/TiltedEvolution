@@ -9,11 +9,13 @@
 
 std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 
+extern HICON g_SharedWindowIcon;
+
 static void ShowAddressLibraryError(const wchar_t* apGamePath)
 {
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\SKSE\\Plugins", apGamePath);
 
-    Base::TaskDialog dia(GetModuleHandleW(nullptr), L"Error", L"Failed to load Skyrim Address Library",
+    Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Skyrim Address Library",
                          L"Make sure to use the All in one Anniversary Edition", errorDetail.c_str());
     dia.AppendButton(0xBEEF, L"Visit Address Library modpage on nexusmods.com");
     const int result = dia.Show();

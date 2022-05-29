@@ -43,6 +43,9 @@ enum ClientOpcode : unsigned char
     kSendChatMessageRequest,
     kTeleportCommandRequest,
     kPlayerRespawnRequest,
+    kDialogueRequest,
+    kSubtitleRequest,
+    kPlayerDialogueRequest,
     kClientOpcodeMax
 };
 
@@ -87,5 +90,8 @@ enum ServerOpcode : unsigned char
     kTeleportCommandResponse,
     kStringCacheUpdate,
     kNotifyPlayerRespawn,
+    kNotifyDialogue,
+    kNotifySubtitle,
+    kNotifyPlayerDialogue,
     kServerOpcodeMax
 };

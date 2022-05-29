@@ -12,7 +12,8 @@ struct AuthenticationResponse final : ServerMessage
     {
         kAccepted,
         kWrongVersion,
-        kMissingMods,
+        kModsMismatch,
+        kClientModsDisallowed,
     };
 
     AuthenticationResponse() : ServerMessage(Opcode)
@@ -24,13 +25,13 @@ struct AuthenticationResponse final : ServerMessage
 
     bool operator==(const AuthenticationResponse& achRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() && 
-               Type == achRhs.Type && 
-               UserMods == achRhs.UserMods &&
+        return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods &&
                Settings == achRhs.Settings;
     }
 
     ResponseType Type;
+    bool SKSEActive{false};
+    bool MO2Active{false}; 
     String Version;
     Mods UserMods{};
     ServerSettings Settings{};

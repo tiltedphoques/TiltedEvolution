@@ -1,34 +1,31 @@
-#app-debug{
+#app-debug {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   height: 1.6vw;
   padding: 1px;
-  color:rgb(196, 196, 196);
+  color: rgb(196, 196, 196);
 
-  b{
+  b {
     color: white;
   }
 
-  fa-icon{
+  fa-icon {
     margin-right: 0.2vw;
     margin-left: 0.15vw;
-    color:white;
+    color: white;
   }
-  span{
+
+  span {
     padding-top: 0.2vw;
     padding-bottom: 0.2vw;
     border: solid grey 1px;
     background-color: rgba($color: #000000, $alpha: 0.5);
   }
 }
-.app-debug-button{
+
+.app-debug-button {
   padding: 0.25vw;
-  background-color: #292929;
   border-radius: 2px;
   margin-left: 1.8%;
-  margin-top: 0.25%;
-}
-.app-debug-button:hover{
-  box-shadow: 0px 0px 5px #646464;
 }

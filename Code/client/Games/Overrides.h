@@ -34,6 +34,8 @@ namespace details
     struct Activate {};
     struct Inventory {};
     struct ExtraData {};
+    struct Quest {};
+    struct SpellCast {};
 }
 
 using ScopedEquipOverride = ScopedOverride<details::Equip>;
@@ -43,3 +45,5 @@ using ScopedExperienceOverride = ScopedOverride<details::Experience>;
 using ScopedActivateOverride = ScopedOverride<details::Activate>;
 using ScopedInventoryOverride = ScopedOverride<details::Inventory>;
 using ScopedExtraDataOverride = ScopedOverride<details::ExtraData>;
+using ScopedQuestOverride = ScopedOverride<details::Quest>;
+using ScopedSpellCastOverride = ScopedOverride<details::SpellCast>;

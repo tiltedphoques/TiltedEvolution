@@ -37,7 +37,12 @@
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
 
+#include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
+
 #include <Games/Overrides.h>
+#include <Games/Skyrim/BSAnimationGraphManager.h>
+#include <Havok/hkbStateMachine.h>
+#include <Havok/hkbBehaviorGraph.h>
 
 #ifdef SAVE_STUFF
 
@@ -307,7 +312,7 @@ int32_t Actor::GetGoldAmount() noexcept
 
 void Actor::SetActorInventory(Inventory& aInventory) noexcept
 {
-    spdlog::info("Setting inventory for actor {:X}", formID);
+    spdlog::debug("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 
@@ -469,25 +474,12 @@ bool Actor::InitiateMountPackage(Actor* apMount) noexcept
 
 void Actor::GenerateMagicCasters() noexcept
 {
-    if (!leftHandCaster)
+    using CS = MagicSystem::CastingSource;
+
+    for (int i = 0; i < 4; i++)
     {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-        leftHandCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!rightHandCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-        rightHandCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!shoutCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
-        shoutCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!instantCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
-        instantCaster = Cast<ActorMagicCaster>(pCaster);
+        if (casters[i] == nullptr)
+            casters[i] = Cast<ActorMagicCaster>(GetMagicCaster(static_cast<CS>(i)));
     }
 }
 
@@ -503,6 +495,22 @@ bool Actor::IsDead() noexcept
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
 
     return s_pIsDead(this);
+}
+
+bool Actor::IsDragon() noexcept
+{
+    // TODO: if anyone has a better way of doing this, please do tell.
+    BSAnimationGraphManager* pManager = nullptr;
+    animationGraphHolder.GetBSAnimationGraph(&pManager);
+
+    if (!pManager)
+        return false;
+
+    const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+    if (!pGraph)
+        return false;
+
+    return AnimationGraphDescriptor_BHR_Master::m_key == pManager->GetDescriptorKey();
 }
 
 void Actor::Kill() noexcept
@@ -571,50 +579,50 @@ static TDamageActor* RealDamageActor = nullptr;
 
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
 {
-    float oldHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage);
 
-    const auto pExHittee = apThis->GetExtension();
+    float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    bool wouldKill = (currentHealth - realDamage) <= 0.f;
+
+    const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
-        float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
-        float damage = oldHealth - newHealth;
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
-        return result;
+        if (!World::Get().GetServerSettings().PvpEnabled)
+        {
+            if (apHitter && apHitter->GetExtension()->IsRemotePlayer())
+                return false;
+        }
+
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
     {
-        return false;
+        return wouldKill;
     }
 
     if (apHitter)
     {
-        const auto pExHitter = apHitter->GetExtension();
+        const auto* pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
-            float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
-            float damage = oldHealth - newHealth;
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
-            return result;
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
         {
-            return false;
+            return wouldKill;
         }
     }
 
     if (pExHittee->IsLocal())
     {
-        bool result = ThisCall(RealDamageActor, apThis, aDamage, apHitter);
-        float newHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
-        float damage = oldHealth - newHealth;
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -damage));
-        return result;
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
     {
-        return false;
+        return wouldKill;
     }
 }
 
@@ -674,7 +682,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
         item.Count = aCount;
-        
+
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 
@@ -696,7 +704,7 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
             Inventory::Entry item{};
             modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
             item.Count = aCount;
-            
+
             if (apObject->GetExtraDataList())
                 apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
@@ -753,7 +761,7 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
             {
-                spdlog::info("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
+                spdlog::debug("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
                 return;
             }
         }

@@ -11,6 +11,8 @@ import { AssetDecoder } from './asset/asset-decoder';
 import { TextAssetDecoder } from './asset/asset-decoders/text.asset-decoder';
 import { AudioAssetDecoder } from './asset/asset-decoders/audio.asset-decoder';
 
+import { SettingService } from './setting.service';
+
 export { TextAsset, AudioAsset };
 
 /** Current state of the asset. */
@@ -80,7 +82,7 @@ export class AssetService {
    *
    * @param http HTTP service.
    */
-  public constructor(private http: HttpClient) {}
+  public constructor(private http: HttpClient, private settingService: SettingService) {}
 
   /**
    * Load and store a text file.
@@ -223,6 +225,6 @@ export class AssetService {
   /** Asset decoders. */
   private decoders = new Map<Kind, AssetDecoder<any>>([
     [ Kind.Text, new TextAssetDecoder() ],
-    [ Kind.Audio, new AudioAssetDecoder() ]
+    [ Kind.Audio, new AudioAssetDecoder(this.settingService) ]
   ]);
 }

@@ -36,6 +36,10 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/SubtitleRequest.h>
+#include <Messages/NotifySubtitle.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -56,6 +60,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
     , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
+    , m_dialogueConnection(aDispatcher.sink<PacketEvent<DialogueRequest>>().connect<&CharacterService::OnDialogueRequest>(this))
+    , m_subtitleConnection(aDispatcher.sink<PacketEvent<SubtitleRequest>>().connect<&CharacterService::OnSubtitleRequest>(this))
 {
 }
 
@@ -68,9 +74,9 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
-    apSpawnRequest->IsDead = characterComponent.IsDead;
-    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
-    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+    apSpawnRequest->IsDead = characterComponent.IsDead();
+    apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
+    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -134,12 +140,12 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
 
         if (pPlayer->GetCellComponent().WorldSpaceId != acEvent.WorldSpaceId ||
             pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords))
+                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(removeMessage);
         }
         else if (pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords))
+                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(spawnMessage);
         }
@@ -204,10 +210,11 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.ServerId = World::ToInteger(*itor);
             response.Owner = false;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
-            response.IsDead = characterComponent.IsDead;
-            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+            response.IsDead = characterComponent.IsDead();
+            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
+            response.WorldSpaceId = cellIdComponent.WorldSpaceId;
 
             acMessage.pPlayer->Send(response);
             return;
@@ -241,8 +248,9 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
 {
     const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
 
-    auto& characterOwnerComponent = view.get<OwnerComponent>(acEvent.Entity);
-    auto& characterCellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
+    auto& characterComponent = view.get<CharacterComponent>(acEvent.Entity);
+    auto& ownerComponent = view.get<OwnerComponent>(acEvent.Entity);
+    auto& cellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
 
     NotifyOwnershipTransfer response;
     response.ServerId = World::ToInteger(acEvent.Entity);
@@ -250,11 +258,11 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
     bool foundOwner = false;
     for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (characterOwnerComponent.GetOwner() == pPlayer)
+        if (ownerComponent.GetOwner() == pPlayer)
             continue;
 
         bool isPlayerInvalid = false;
-        for (const auto invalidOwner : characterOwnerComponent.InvalidOwners)
+        for (const auto invalidOwner : ownerComponent.InvalidOwners)
         {
             isPlayerInvalid = invalidOwner == pPlayer;
             if (isPlayerInvalid)
@@ -264,10 +272,10 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
         if (isPlayerInvalid)
             continue;
 
-        if (!pPlayer->GetCellComponent().IsInRange(characterCellIdComponent))
+        if (!pPlayer->GetCellComponent().IsInRange(cellIdComponent, characterComponent.IsDragon()))
             continue;
 
-        characterOwnerComponent.SetOwner(pPlayer);
+        ownerComponent.SetOwner(pPlayer);
 
         pPlayer->Send(response);
 
@@ -359,8 +367,8 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
         const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*it);
         if (pCharacterComponent)
         {
-            notifySpawnData.IsDead = pCharacterComponent->IsDead;
-            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn;
+            notifySpawnData.IsDead = pCharacterComponent->IsDead();
+            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
         }
 
         acMessage.pPlayer->Send(notifySpawnData);
@@ -431,7 +439,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
         auto& characterComponent = view.get<CharacterComponent>(*it);
         characterComponent.FactionsContent = factions;
-        characterComponent.DirtyFactions = true;
+        characterComponent.SetDirtyFactions(true);
     }
 }
 
@@ -545,8 +553,32 @@ void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceR
     if (!partyComponent.JoinedPartyId.has_value())
         return;
 
-    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
+    spdlog::debug("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
+}
+
+void CharacterService::OnDialogueRequest(const PacketEvent<DialogueRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyDialogue notify{};
+    notify.ServerId = message.ServerId;
+    notify.SoundFilename = message.SoundFilename;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+}
+
+void CharacterService::OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifySubtitle notify{};
+    notify.ServerId = message.ServerId;
+    notify.Text = message.Text;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
@@ -591,9 +623,10 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
-    characterComponent.IsDead = message.IsDead;
-    characterComponent.IsPlayer = isPlayer;
-    characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
+    characterComponent.SetDead(message.IsDead);
+    characterComponent.SetPlayer(isPlayer);
+    characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
+    characterComponent.SetDragon(message.IsDragon);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -659,7 +692,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
 
         // If we have nothing new to send skip this
-        if (characterComponent.DirtyFactions == false)
+        if (characterComponent.IsDirtyFactions())
             continue;
 
         for (auto pPlayer : m_world.GetPlayerManager())
@@ -667,7 +700,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
             auto& message = messages[pPlayer];
@@ -676,7 +709,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             change = characterComponent.FactionsContent;
         }
 
-        characterComponent.DirtyFactions = false;
+        characterComponent.SetDirtyFactions(false);
     }
 
     for (auto [pPlayer, message] : messages)
@@ -697,7 +730,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     lastSendTimePoint = now;
 
-    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
+    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>();
 
     TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
 
@@ -710,6 +743,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     for (auto entity : characterView)
     {
+        auto& characterComponent = characterView.get<CharacterComponent>(entity);
         auto& movementComponent = characterView.get<MovementComponent>(entity);
         auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
@@ -724,7 +758,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
             auto& message = messages[pPlayer];

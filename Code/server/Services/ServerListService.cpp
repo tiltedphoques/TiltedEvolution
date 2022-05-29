@@ -12,7 +12,7 @@
 
 static constexpr char kMasterServerEndpoint[] =
 #if TP_SKYRIM
-    //"http://127.0.0.1";
+    //"http://127.0.0.1:8000";
     "https://skyrim-reborn-list.skyrim-together.com";
 #elif TP_FALLOUT
     "https://fallout-reborn-list.skyrim-together.com";
@@ -55,19 +55,16 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    if (!bAnnounceServer)
-        return;
-
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
     auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
-                        pServer->GetPort(), cInfo.tick_rate, pc, kPlayerMaxCap, cInfo.tagList);
+                        pServer->GetPort(), cInfo.tick_rate, pc, kPlayerMaxCap, cInfo.tagList, bAnnounceServer);
 }
 
 void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
-                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList) noexcept
+                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept
 {
     const std::string kVersion{BUILD_COMMIT};
     const httplib::Params params{
@@ -80,14 +77,24 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         {"player_count", std::to_string(aPlayerCount)},
         {"max_player_count", std::to_string(aPlayerMaxCount)},
         {"tags", std::string(acTagList.c_str(), acTagList.size())},
+        {"public", aPublic ? "true" : "false" },
     };
 
     httplib::Client client(kMasterServerEndpoint);
+    client.enable_server_certificate_verification(false);
     const auto response = client.Post("/announce", params);
 
     // If we send a 203 it means we banned this server
-    if (response && response->status == 203)
+    if (response)
     {
-        GameServer::Get()->Close();
+        if (response->status == 403)
+            GameServer::Get()->Kill();
+        else if (response->status != 200)
+            spdlog::error("Server list error! {}", response->body);
+
+    }
+    else
+    {
+        spdlog::error("Server could not reach the server list! {}", to_string(response.error()));
     }
 }
