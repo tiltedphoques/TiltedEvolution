@@ -347,9 +347,12 @@ void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershi
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
 
-    NotifyRelinquishControl notify;
-    notify.ServerId = message.ServerId;
-    characterOwnerComponent.pOwner->Send(notify);
+    if (characterOwnerComponent.GetOwner() != acMessage.pPlayer)
+    {
+        NotifyRelinquishControl notify;
+        notify.ServerId = message.ServerId;
+        characterOwnerComponent.pOwner->Send(notify);
+    }
 
     characterOwnerComponent.SetOwner(acMessage.pPlayer);
     characterOwnerComponent.InvalidOwners.clear();
