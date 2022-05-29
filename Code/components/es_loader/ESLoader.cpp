@@ -44,10 +44,14 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
         return nullptr;
     }
 
+    return MakeUnique<RecordCollection>();
+
+    /*
     auto recordCollection = LoadFiles();
     recordCollection->BuildReferences();
 
     return std::move(recordCollection);
+    */
 }
 
 bool ESLoader::LoadLoadOrder()

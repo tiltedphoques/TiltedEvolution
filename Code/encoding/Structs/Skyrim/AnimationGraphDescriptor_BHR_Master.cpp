@@ -161,10 +161,8 @@ AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(Animati
         kbDisableInterp = 151,
         kfPhonemeDefaultWeight = 152,
     };
-
-    uint64_t key = 18331100224015734760;
     
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
         AnimationGraphDescriptor(
             // Bools
             {kbAnimationDriven,

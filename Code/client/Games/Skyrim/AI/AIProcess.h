@@ -8,6 +8,8 @@ struct AIProcess
 {
     bool SetCurrentAmmo(TESAmmo* apAmmo) noexcept;
 
+    void KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude);
+
     void* unk0;
     MiddleProcess* middleProcess;
     void* unk8;

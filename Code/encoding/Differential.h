@@ -6,8 +6,8 @@
 template <class T>
 struct Differential
 {
-    static [[nodiscard]] Differential Prepare(const T& aPreviousValue) noexcept;
-    static [[nodiscard]] Differential Make(const T& aPreviousValue, const T& aNextValue) noexcept;
+    [[nodiscard]] static Differential Prepare(const T& aPreviousValue) noexcept;
+    [[nodiscard]] static Differential Make(const T& aPreviousValue, const T& aNextValue) noexcept;
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;

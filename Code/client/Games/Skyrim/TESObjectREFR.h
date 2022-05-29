@@ -166,6 +166,7 @@ struct TESObjectREFR : TESForm
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
+    TESObjectCELL* GetParentCellEx() const noexcept;
 
     void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -199,9 +200,12 @@ struct TESObjectREFR : TESForm
     Inventory GetArmor() const noexcept;
     Inventory GetWornArmor() const noexcept;
     Inventory GetEquippedItems() const noexcept;
-    void SetInventory(const Inventory& acContainer) noexcept;
 
+    bool IsItemInInventory(uint32_t aFormID) const noexcept;
+
+    void SetInventory(const Inventory& acContainer) noexcept;
     void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
+    void UpdateItemList(TESForm* pUnkForm) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

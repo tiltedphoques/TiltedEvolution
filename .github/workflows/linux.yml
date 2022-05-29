@@ -39,6 +39,8 @@ jobs:
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: '2.6.5'
 
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository

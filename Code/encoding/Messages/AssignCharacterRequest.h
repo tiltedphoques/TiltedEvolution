@@ -46,6 +46,7 @@ struct AssignCharacterRequest final : ClientMessage
             AllActorValues == acRhs.AllActorValues &&
             IsDead == acRhs.IsDead &&
             IsWeaponDrawn == acRhs.IsWeaponDrawn &&
+            IsDragon == acRhs.IsDragon &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -66,4 +67,5 @@ struct AssignCharacterRequest final : ClientMessage
     ActorValues AllActorValues{};
     bool IsDead{};
     bool IsWeaponDrawn{};
+    bool IsDragon{};
 };

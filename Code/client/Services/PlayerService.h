@@ -40,6 +40,7 @@ private:
     * @brief Run the respawn timer, and if it hits 0, respawn the player.
     */
     void RunRespawnUpdates(const double acDeltaTime) noexcept;
+    void RunPostDeathUpdates(const double acDeltaTime) noexcept;
     /**
     * @brief Make sure difficulty doesn't get changed while connected
     */

@@ -76,5 +76,5 @@ private:
 
     bool m_showDebugStuff = false;
     bool m_showBuildTag = true;
-    bool m_drawComponentsInWorldSpace = true;
+    bool m_drawComponentsInWorldSpace = false;
 };

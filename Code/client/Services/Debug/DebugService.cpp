@@ -38,6 +38,7 @@
 #include <Games/TES.h>
 
 #include <AI/AIProcess.h>
+#include <AI/Movement/PlayerControls.h>
 
 #include <Messages/RequestRespawn.h>
 
@@ -45,6 +46,8 @@
 #include <Interface/UI.h>
 
 #include <Games/Misc/SubtitleManager.h>
+#include <Games/Overrides.h>
+#include <Camera/PlayerCamera.h>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
@@ -82,6 +85,8 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 
     Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
     pActor->SetActorInventory(inventory);
+
+    pActor->GetExtension()->SetPlayer(true);
 
     m_actors.emplace_back(pActor);
 }
@@ -163,6 +168,34 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
+
+            static bool s_enabled = true;
+
+            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+
+            s_enabled = !s_enabled;
+
+        #if 0
+            static bool s_enabled = true;
+            static bool s_firstPerson = false;
+
+            auto* pCamera = PlayerCamera::Get();
+            auto* pPlayerControls = PlayerControls::GetInstance();
+
+            if (s_enabled)
+            {
+                s_firstPerson = pCamera->IsFirstPerson();
+                pCamera->ForceFirstPerson();
+            }
+            else
+            {
+                s_firstPerson ? pCamera->ForceFirstPerson() : pCamera->ForceThirdPerson();
+            }
+
+            pPlayerControls->SetCamSwitch(s_enabled);
+
+            s_enabled = !s_enabled;
+        #endif
         }
     }
     else
@@ -189,6 +222,15 @@ void DebugService::OnDraw() noexcept
     DrawEntitiesView();
 
     ImGui::BeginMainMenuBar();
+    if (ImGui::BeginMenu("Helpers"))
+    {
+        if (ImGui::Button("Unstuck player"))
+        {
+            auto* pPlayer = PlayerCharacter::Get();
+            pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+        }
+        ImGui::EndMenu();
+    }
     if (ImGui::BeginMenu("Server"))
     {
         static char s_address[256] = "127.0.0.1:10578";

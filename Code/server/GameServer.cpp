@@ -409,6 +409,7 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
     }
 }
 
+// NOTE: this doesn't check objects in range, only characters in range.
 void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
@@ -429,9 +430,13 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
 
     const auto& cellComponent = view.get<CellIdComponent>(*it);
 
+    bool isDragon = false;
+    if (const auto* characterComponent = m_pWorld->try_get<CharacterComponent>(acOrigin))
+        isDragon = characterComponent->IsDragon();
+
     for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (cellComponent.IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
+        if (cellComponent.IsInRange(pPlayer->GetCellComponent(), isDragon) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
 }

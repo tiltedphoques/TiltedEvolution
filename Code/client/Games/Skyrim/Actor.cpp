@@ -37,7 +37,12 @@
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
 
+#include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
+
 #include <Games/Overrides.h>
+#include <Games/Skyrim/BSAnimationGraphManager.h>
+#include <Havok/hkbStateMachine.h>
+#include <Havok/hkbBehaviorGraph.h>
 
 #ifdef SAVE_STUFF
 
@@ -469,25 +474,12 @@ bool Actor::InitiateMountPackage(Actor* apMount) noexcept
 
 void Actor::GenerateMagicCasters() noexcept
 {
-    if (!leftHandCaster)
+    using CS = MagicSystem::CastingSource;
+
+    for (int i = 0; i < 4; i++)
     {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-        leftHandCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!rightHandCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-        rightHandCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!shoutCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
-        shoutCaster = Cast<ActorMagicCaster>(pCaster);
-    }
-    if (!instantCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
-        instantCaster = Cast<ActorMagicCaster>(pCaster);
+        if (casters[i] == nullptr)
+            casters[i] = Cast<ActorMagicCaster>(GetMagicCaster(static_cast<CS>(i)));
     }
 }
 
@@ -503,6 +495,22 @@ bool Actor::IsDead() noexcept
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
 
     return s_pIsDead(this);
+}
+
+bool Actor::IsDragon() noexcept
+{
+    // TODO: if anyone has a better way of doing this, please do tell.
+    BSAnimationGraphManager* pManager = nullptr;
+    animationGraphHolder.GetBSAnimationGraph(&pManager);
+
+    if (!pManager)
+        return false;
+
+    const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+    if (!pGraph)
+        return false;
+
+    return AnimationGraphDescriptor_BHR_Master::m_key == pManager->GetDescriptorKey();
 }
 
 void Actor::Kill() noexcept
@@ -696,7 +704,7 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
             Inventory::Entry item{};
             modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
             item.Count = aCount;
-            
+
             if (apObject->GetExtraDataList())
                 apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 

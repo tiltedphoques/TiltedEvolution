@@ -171,6 +171,11 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
+TESObjectCELL* TESObjectREFR::GetParentCellEx() const noexcept
+{
+    return parentCell ? parentCell : GetParentCell();
+}
+
 void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
@@ -482,6 +487,12 @@ Inventory TESObjectREFR::GetEquippedItems() const noexcept
     return inventory;
 }
 
+bool TESObjectREFR::IsItemInInventory(uint32_t aFormID) const noexcept
+{
+    Inventory inventory = GetInventory([aFormID](TESForm& aForm) { return aForm.formID == aFormID; });
+    return !inventory.Entries.empty();
+}
+
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     spdlog::debug("Setting inventory for {:X}", formID);
@@ -536,15 +547,28 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
     }
 
-    // TODO(cosideci): this needs to be tested. This just creates a copy of the "quest object".
-    // Might cause issues when delivering quests.
-    // Maybe make it so that the quest leader gets the ref, and the other party members get the copy?
-    if (arEntry.IsQuestItem)
+    // TODO(cosideci): this is still flawed. Adding the refr to the quest leader is hard.
+    // It is still recommended that the quest leader loots all quest items.
+    if (arEntry.IsQuestItem && arEntry.Count > 0)
     {
-        Actor* pActor = Cast<Actor>(this);
-        if (pActor && pActor->GetExtension()->IsRemotePlayer())
-            PlayerCharacter::Get()->AddOrRemoveItem(arEntry);
+        PlayerCharacter* pPlayer = PlayerCharacter::Get();
+
+        if (!pPlayer->IsItemInInventory(objectId))
+        {
+            Actor* pActor = Cast<Actor>(this);
+            if (pActor && pActor->GetExtension()->IsRemotePlayer())
+                pPlayer->AddOrRemoveItem(arEntry);
+        }
     }
+
+    UpdateItemList(nullptr);
+}
+
+void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
+{
+    TP_THIS_FUNCTION(TUpdateItemList, void, TESObjectREFR, TESForm*);
+    POINTER_SKYRIMSE(TUpdateItemList, updateItemList, 52849);
+    ThisCall(updateItemList, this, pUnkForm);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
@@ -655,13 +679,14 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
-        item.Count = -aCount;
 
         if (apExtraList)
         {
             ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apExtraList);
         }
+
+        item.Count = -aCount;
 
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }

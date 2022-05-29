@@ -56,10 +56,11 @@ bool GridCellCoords::AreGridCellsOverlapping(const GridCellCoords& aCoords1, con
     return false;
 }
 
-bool GridCellCoords::IsCellInGridCell(const GridCellCoords& aCell, const GridCellCoords& aGridCell) noexcept
+bool GridCellCoords::IsCellInGridCell(const GridCellCoords& aCell, const GridCellCoords& aGridCell, bool aIsDragon) noexcept
 {
-    int32_t distanceToBorder = m_gridsToLoad / 2;
-    if ((abs(aCell.X - aGridCell.X) <= distanceToBorder) && abs(aCell.Y - aGridCell.Y) <= distanceToBorder)
+    int32_t gridsToLoad = aIsDragon ? m_gridsToLoadIfDragon : m_gridsToLoad;
+    int32_t distanceToBorder = gridsToLoad / 2;
+    if ((abs(aCell.X - aGridCell.X) <= distanceToBorder) && (abs(aCell.Y - aGridCell.Y) <= distanceToBorder))
         return true;
     return false;
 }
