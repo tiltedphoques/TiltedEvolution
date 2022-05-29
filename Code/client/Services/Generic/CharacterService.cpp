@@ -117,6 +117,30 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_actorTeleportConnection = m_dispatcher.sink<NotifyActorTeleport>().connect<&CharacterService::OnNotifyActorTeleport>(this);
 }
 
+bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept
+{
+    Actor* const pActor = Cast<Actor>(TESForm::GetById(acFormId));
+    if (!pActor)
+        return false;
+
+    pActor->GetExtension()->SetRemote(false);
+
+    // TODO(cosideci): this should be done differently.
+    // Send an ownership claim request, and have the server broadcast the result.
+    // Only then should components be added or removed.
+    m_world.emplace<LocalComponent>(acEntity, acServerId);
+    m_world.emplace<LocalAnimationComponent>(acEntity);
+    m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+                             FaceGenComponent, CacheComponent, WaitingFor3D>(acEntity);
+
+    RequestOwnershipClaim request;
+    request.ServerId = acServerId;
+
+    m_transport.Send(request);
+
+    return true;
+}
+
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
     if (acEvent.FormId == 0x14)
@@ -548,25 +572,9 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     {
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
-        auto* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
-        if (pActor)
+        if (TakeOwnership(formIdComponent.Id, acMessage.ServerId, *itor))
         {
-            pActor->GetExtension()->SetRemote(false);
-
-            // TODO(cosideci): this should be done differently.
-            // Send an ownership claim request, and have the server broadcast the result.
-            // Only then should components be added or removed.
-            m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
-            m_world.emplace<LocalAnimationComponent>(*itor);
-            m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                                     FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
-
-            RequestOwnershipClaim request;
-            request.ServerId = acMessage.ServerId;
-
-            m_transport.Send(request);
-            spdlog::info("Ownership claimed {:X}", request.ServerId);
-
+            spdlog::info("Ownership claimed {:X}", acMessage.ServerId);
             return;
         }
     }
@@ -845,21 +853,7 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     }
 
     if (m_world.try_get<RemoteComponent>(cMountEntity))
-    {
-        const TESForm* pMountForm = TESForm::GetById(acEvent.MountID);
-        Actor* pMount = Cast<Actor>(pMountForm);
-        pMount->GetExtension()->SetRemote(false);
-
-        m_world.emplace<LocalComponent>(cMountEntity, mountServerIdRes.value());
-        m_world.emplace<LocalAnimationComponent>(cMountEntity);
-        m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                       FaceGenComponent, CacheComponent, WaitingFor3D>(cMountEntity);
-
-        RequestOwnershipClaim request;
-        request.ServerId = mountServerIdRes.value();
-
-        m_transport.Send(request);
-    }
+        TakeOwnership(acEvent.MountID, *mountServerIdRes, cMountEntity);
 
     MountRequest request;
     request.MountId = mountServerIdRes.value();

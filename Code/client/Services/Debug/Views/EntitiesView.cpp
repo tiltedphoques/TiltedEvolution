@@ -1,5 +1,7 @@
 #include <Services/DebugService.h>
 
+#include <Services/CharacterService.h>
+
 #include <AI/AIProcess.h>
 
 #include <World.h>
@@ -123,7 +125,7 @@ void DebugService::DisplayEntityPanel(entt::entity aEntity) noexcept
 
     if (pFormIdComponent)               DisplayFormComponent(*pFormIdComponent);
     if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent);
-    if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent);
+    if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent, aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
 }
 
 void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept
@@ -184,10 +186,17 @@ void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent) const 
     ImGui::InputScalarN("State", ImGuiDataType_U32, &action.State1, 2, nullptr, nullptr, "%x", ImGuiInputTextFlags_ReadOnly);
 }
 
-void DebugService::DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept
+void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept
 {
     if (!ImGui::CollapsingHeader("Remote Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
 
-    ImGui::InputInt("Server Id", (int*)&aLocalComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputInt("Server Id", (int*)&aRemoteComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    if (ImGui::Button("Take ownership"))
+    {
+        m_world.GetRunner().Queue([acEntity, acFormId]() {
+            if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+                World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
+        });
+    }
 }

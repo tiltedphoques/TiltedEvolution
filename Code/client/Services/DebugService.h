@@ -40,7 +40,7 @@ private:
     void DisplayEntityPanel(entt::entity aEntity) noexcept;
     void DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept;
     void DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept;
-    void DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept;
+    void DisplayRemoteComponent(RemoteComponent& aLocalComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept;
 
     void DrawEntitiesView();
     void DrawComponentDebugView();
