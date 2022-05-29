@@ -87,6 +87,9 @@ ImGuiDriver::ImGuiDriver()
     ImGui::CreateContext();
 
     auto& io = ImGui::GetIO();
+
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
     InstallClipboardHandlers(io);
 
     // io.IniFilename = nullptr;
