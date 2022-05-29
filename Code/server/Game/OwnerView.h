@@ -87,6 +87,10 @@ template <class... T>
 decltype(auto) OwnerView<T...>::find(entt::entity aEntity) const
 {
     auto it = m_view.find(aEntity);
+
+    if (it == m_view.end())
+        return m_view.end();
+
     if (m_view.template get<OwnerComponent>(*it).GetOwner() == m_pPlayer)
         return iterator(m_pPlayer, it, std::end(m_view), m_view);
 
