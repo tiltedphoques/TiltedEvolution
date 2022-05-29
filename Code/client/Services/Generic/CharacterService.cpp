@@ -122,11 +122,21 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
 bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept
 {
-    Actor* const pActor = Cast<Actor>(TESForm::GetById(acFormId));
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acFormId));
     if (!pActor)
+    {
+        spdlog::error("Cannot find actor to take control over, form id: {:X}, server id: {:X}", acFormId, acServerId);
         return false;
+    }
 
-    pActor->GetExtension()->SetRemote(false);
+    ActorExtension* pExtension = pActor->GetExtension();
+    if (pExtension->IsRemotePlayer())
+    {
+        spdlog::error("Cannot take control over remote player actor, form id: {:X}, server id: {:X}", acFormId, acServerId);
+        return false;
+    }
+
+    pExtension->SetRemote(false);
 
     // TODO(cosideci): this should be done differently.
     // Send an ownership claim request, and have the server broadcast the result.
@@ -136,6 +146,7 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
     m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
                              FaceGenComponent, CacheComponent, WaitingFor3D>(acEntity);
 
+    // TODO(cosideci): send current local data of actor with it(?)
     RequestOwnershipClaim request;
     request.ServerId = acServerId;
 
@@ -1221,20 +1232,11 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary())
         {
-            pActor->GetExtension()->SetRemote(false);
-
-            m_world.emplace<LocalComponent>(aEntity, pRemoteComponent->Id);
-            m_world.emplace<LocalAnimationComponent>(aEntity);
-            m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                                     FaceGenComponent, CacheComponent, WaitingFor3D>(aEntity);
-
-            spdlog::critical("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
+            spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
                              pRemoteComponent->Id);
 
-            // TODO(cosideci): send current local data of actor with it(?)
-            RequestOwnershipClaim request;
-            request.ServerId = pRemoteComponent->Id;
-            m_transport.Send(request);
+            TakeOwnership(pActor->formID, pRemoteComponent->Id, aEntity);
+
             return;
         }
         else
