@@ -1398,6 +1398,11 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
             }
         }
 
+        spdlog::warn("Transferring ownership of local actor, server id: {:X}, worldspace: {:X}, cell: {:X}, position: "
+                     "({}, {}, {})",
+                     request.ServerId, request.WorldSpaceId.BaseId, request.CellId.BaseId, request.Position.x,
+                     request.Position.y, request.Position.z);
+
         m_transport.Send(request);
 
         m_world.remove<LocalAnimationComponent, LocalComponent>(aEntity);
