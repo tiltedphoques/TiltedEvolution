@@ -3,7 +3,6 @@
 #include "World.h"
 
 #include <Services/DiscoveryService.h>
-#include <Services/CharacterService.h>
 #include <Services/InputService.h>
 #include <Services/TransportService.h>
 #include <Services/RunnerService.h>

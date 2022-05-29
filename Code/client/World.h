@@ -4,6 +4,7 @@
 #include <Services/TransportService.h>
 #include <Services/PartyService.h>
 #include <Services/OverlayService.h>
+#include <Services/CharacterService.h>
 #include <Services/DebugService.h>
 
 #include <Systems/ModSystem.h>
