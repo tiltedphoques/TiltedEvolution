@@ -105,8 +105,14 @@ void DebugService::DisplayObjects() noexcept
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), formComponent.Id);
 
+        if (!m_world.all_of<LocalComponent, RemoteComponent>(it))
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+
         if (ImGui::Selectable(name, m_formId == formComponent.Id))
             m_formId = formComponent.Id;
+
+        if (!m_world.all_of<LocalComponent, RemoteComponent>(it))
+            ImGui::PopStyleColor();
 
         if(m_formId == formComponent.Id)
             s_selected = i;

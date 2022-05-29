@@ -92,6 +92,7 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
     m_partyMembers = acPartyJoined.PlayerIds;
 
     // Takes ownership of all actors
+    /*
     if (m_isLeader)
     {
         auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
@@ -102,6 +103,7 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
             m_world.GetCharacterService().ProcessNewEntity(entity);
         }
     }
+    */
 }
 
 void PartyService::DestroyParty() noexcept
