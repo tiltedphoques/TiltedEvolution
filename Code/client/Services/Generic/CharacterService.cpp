@@ -295,6 +295,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     }
 
     // This code path triggers when the character has been spawned through CharacterSpawnRequest
+    // TODO(cosideci): since I check for WaitingForAssignmentComponent now, this path shouldn't ever trigger
     if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
     {
         Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent->Id));
@@ -311,7 +312,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[formIdComponent->Id] = {0, acMessage.IsWeaponDrawn};
 
-        spdlog::info("Applied updates on assignment response, form id: {:X}", formIdComponent->Id);
+        spdlog::critical("Applied updates on assignment response, form id: {:X}", formIdComponent->Id);
 
         return;
     }
@@ -405,6 +406,18 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     }
     else
     {
+        auto waitingView = m_world.view<FormIdComponent, WaitingForAssignmentComponent>();
+        const auto waitingItor = std::find_if(std::begin(waitingView), std::end(waitingView), [waitingView, Id = acMessage.FormId](auto entity)
+        {
+            return waitingView.get<FormIdComponent>(entity).Id == Id;
+        });
+
+        if (waitingItor != std::end(waitingView))
+        {
+            spdlog::info("Character with form id {:X} already has a spawn request in progress.", acMessage.FormId);
+            return;
+        }
+
         const auto cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
 
         auto* const pForm = TESForm::GetById(cActorId);
@@ -1289,7 +1302,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     if (!pNpc)
         return;
 
-    AssignCharacterRequest message;
+    AssignCharacterRequest message{};
 
     message.Cookie = sCookieSeed;
 
