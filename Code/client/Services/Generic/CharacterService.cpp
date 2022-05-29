@@ -62,6 +62,7 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
 #include <World.h>
@@ -114,7 +115,33 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_subtitleEventConnection = m_dispatcher.sink<SubtitleEvent>().connect<&CharacterService::OnSubtitleEvent>(this);
     m_subtitleSyncConnection = m_dispatcher.sink<NotifySubtitle>().connect<&CharacterService::OnNotifySubtitle>(this);
 
+    m_actorTeleportConnection = m_dispatcher.sink<NotifyActorTeleport>().connect<&CharacterService::OnNotifyActorTeleport>(this);
+
     m_relinquishConnection = m_dispatcher.sink<NotifyRelinquishControl>().connect<&CharacterService::OnNotifyRelinquishControl>(this);
+}
+
+bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept
+{
+    Actor* const pActor = Cast<Actor>(TESForm::GetById(acFormId));
+    if (!pActor)
+        return false;
+
+    pActor->GetExtension()->SetRemote(false);
+
+    // TODO(cosideci): this should be done differently.
+    // Send an ownership claim request, and have the server broadcast the result.
+    // Only then should components be added or removed.
+    m_world.emplace<LocalComponent>(acEntity, acServerId);
+    m_world.emplace<LocalAnimationComponent>(acEntity);
+    m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
+                             FaceGenComponent, CacheComponent, WaitingFor3D>(acEntity);
+
+    RequestOwnershipClaim request;
+    request.ServerId = acServerId;
+
+    m_transport.Send(request);
+
+    return true;
 }
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
@@ -272,21 +299,24 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
+    auto* const pForm = TESForm::GetById(formIdComponent->Id);
+    auto* pActor = Cast<Actor>(pForm);
+    if (!pActor)
+    {
+        spdlog::error(__FUNCTION__ ": actor not found, form id: {:X}", formIdComponent->Id);
+        m_world.destroy(cEntity);
+        return;
+    }
+
     if (acMessage.Owner)
     {
         m_world.emplace<LocalComponent>(cEntity, acMessage.ServerId);
         m_world.emplace<LocalAnimationComponent>(cEntity);
+
+        pActor->GetExtension()->SetRemote(false);
     }
     else
     {
-        auto* const pForm = TESForm::GetById(formIdComponent->Id);
-        auto* pActor = Cast<Actor>(pForm);
-        if (!pActor)
-        {
-            m_world.destroy(cEntity);
-            return;
-        }
-
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
         pActor->GetExtension()->SetRemote(true);
@@ -302,23 +332,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
-        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acMessage.CellId);
-        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
-
-        // In case of lazy-loading of exterior cells
-        if (!pCell)
-        {
-            const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
-            TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
-            if (pWorldSpace)
-            {
-                GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
-                pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
-            }
-        }
-
-        if (pCell)
-            pActor->MoveTo(pCell, acMessage.Position);
+        MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
     }
 }
 
@@ -561,32 +575,16 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     {
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
 
-        auto* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
-        if (pActor)
+        if (TakeOwnership(formIdComponent.Id, acMessage.ServerId, *itor))
         {
-            pActor->GetExtension()->SetRemote(false);
-
-            // TODO(cosideci): this should be done differently.
-            // Send an ownership claim request, and have the server broadcast the result.
-            // Only then should components be added or removed.
-            m_world.emplace<LocalComponent>(*itor, acMessage.ServerId);
-            m_world.emplace<LocalAnimationComponent>(*itor);
-            m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                                     FaceGenComponent, CacheComponent, WaitingFor3D>(*itor);
-
-            RequestOwnershipClaim request;
-            request.ServerId = acMessage.ServerId;
-
-            m_transport.Send(request);
-            spdlog::info("Ownership claimed {:X}", request.ServerId);
-
+            spdlog::info("Ownership claimed {:X}", acMessage.ServerId);
             return;
         }
     }
 
     spdlog::warn("Actor for ownership transfer not found {:X}", acMessage.ServerId);
 
-    RequestOwnershipTransfer request;
+    RequestOwnershipTransfer request{};
     request.ServerId = acMessage.ServerId;
 
     m_transport.Send(request);
@@ -858,21 +856,7 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     }
 
     if (m_world.try_get<RemoteComponent>(cMountEntity))
-    {
-        const TESForm* pMountForm = TESForm::GetById(acEvent.MountID);
-        Actor* pMount = Cast<Actor>(pMountForm);
-        pMount->GetExtension()->SetRemote(false);
-
-        m_world.emplace<LocalComponent>(cMountEntity, mountServerIdRes.value());
-        m_world.emplace<LocalAnimationComponent>(cMountEntity);
-        m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                       FaceGenComponent, CacheComponent, WaitingFor3D>(cMountEntity);
-
-        RequestOwnershipClaim request;
-        request.ServerId = mountServerIdRes.value();
-
-        m_transport.Send(request);
-    }
+        TakeOwnership(acEvent.MountID, *mountServerIdRes, cMountEntity);
 
     MountRequest request;
     request.MountId = mountServerIdRes.value();
@@ -1168,6 +1152,54 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
     SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
+void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept
+{
+    auto& modSystem = m_world.GetModSystem();
+
+    const uint32_t cActorId = World::Get().GetModSystem().GetGameId(acMessage.FormId);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(cActorId));
+    if (!pActor)
+    {
+        spdlog::error(__FUNCTION__ ": failed to retrieve actor to teleport.");
+        return;
+    }
+
+    MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
+
+    spdlog::warn("Successfully teleported actor");
+}
+
+void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept
+{
+    TESObjectCELL* pCell = nullptr;
+    if (!acWorldSpaceId)
+    {
+        const uint32_t cCellId = m_world.GetModSystem().GetGameId(acCellId);
+        pCell = Cast<TESObjectCELL>(TESForm::GetById(cCellId));
+    }
+    // In case of lazy-loading of exterior cells
+    else
+    {
+        const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acWorldSpaceId);
+        TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+        if (pWorldSpace)
+        {
+            GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acPosition);
+            pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+        }
+    }
+
+    if (!pCell)
+    {
+        spdlog::error(__FUNCTION__
+            ": failed to fetch cell to teleport, actor: {:X}, worldspace: {:X}, cell: {:X}, position: {}, {}, {}",
+            apActor->formID, acWorldSpaceId.BaseId, acCellId.BaseId, acPosition.x, acPosition.y, acPosition.z);
+        return;
+    }
+
+    apActor->MoveTo(pCell, acPosition);
+}
+
 void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
 {
     if (!m_transport.IsOnline())
@@ -1372,11 +1404,17 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
         TESForm* const pForm = TESForm::GetById(aFormId);
         Actor* const pActor = Cast<Actor>(pForm);
 
-        if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
+        if (pActor)
         {
-            spdlog::info("Temporary Remote Deleted {:X}", aFormId);
-
-            pActor->Delete();
+            if (pActor->IsTemporary())
+            {
+                spdlog::info("Temporary Remote Deleted {:X}", aFormId);
+                pActor->Delete();
+            }
+            else
+            {
+                pActor->GetExtension()->SetRemote(false);
+            }
         }
 
         m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
@@ -1402,8 +1440,35 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
     {
         auto& localComponent = m_world.get<LocalComponent>(aEntity);
 
-        RequestOwnershipTransfer request;
+        RequestOwnershipTransfer request{};
         request.ServerId = localComponent.Id;
+
+        if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
+        {
+            if (!pActor->IsTemporary())
+            {
+                auto& modSystem = m_world.GetModSystem();
+
+                if (TESWorldSpace* pWorldSpace = pActor->GetWorldSpace())
+                {
+                    if (!modSystem.GetServerModId(pWorldSpace->formID, request.WorldSpaceId))
+                        spdlog::error("World space id not found, despite having a world space, {:X}", pWorldSpace->formID);
+                }
+
+                if (TESObjectCELL* pCell = pActor->GetParentCell())
+                {
+                    if (!modSystem.GetServerModId(pCell->formID, request.CellId))
+                        spdlog::error("Cell id not found, despite having a cell, {:X}", pCell->formID);
+                }
+
+                request.Position = pActor->position;
+            }
+        }
+
+        spdlog::warn("Transferring ownership of local actor, server id: {:X}, worldspace: {:X}, cell: {:X}, position: "
+                     "({}, {}, {})",
+                     request.ServerId, request.WorldSpaceId.BaseId, request.CellId.BaseId, request.Position.x,
+                     request.Position.y, request.Position.z);
 
         m_transport.Send(request);
 

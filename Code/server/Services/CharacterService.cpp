@@ -40,6 +40,7 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
@@ -230,13 +231,35 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 {
     auto& message = acMessage.Packet;
 
-    OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    OwnerView<FormIdComponent, CharacterComponent, CellIdComponent, MovementComponent> view(m_world, acMessage.GetSender());
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
     if (it == view.end())
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist, server id {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
+        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
+    }
+
+    if (message.WorldSpaceId || message.CellId)
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(*it);
+
+        NotifyActorTeleport notify{};
+        notify.FormId = formIdComponent.Id;
+        notify.WorldSpaceId = message.WorldSpaceId;
+        notify.CellId = message.CellId;
+        notify.Position = message.Position;
+
+        auto& cellIdComponent = view.get<CellIdComponent>(*it);
+        cellIdComponent.WorldSpaceId = message.WorldSpaceId;
+        cellIdComponent.Cell = message.CellId;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
+
+        auto& movementComponent = view.get<MovementComponent>(*it);
+        movementComponent.Position = message.Position;
+        movementComponent.Sent = true;
+
+        GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
     }
 
     auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
@@ -618,8 +641,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     if (message.WorldSpaceId != GameId{})
     {
         cellIdComponent.WorldSpaceId = message.WorldSpaceId;
-        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
-        cellIdComponent.CenterCoords = coords;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
     }
 
     auto& characterComponent = m_world.emplace<CharacterComponent>(cEntity);

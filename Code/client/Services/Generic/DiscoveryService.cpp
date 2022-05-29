@@ -208,9 +208,9 @@ void DiscoveryService::VisitForms() noexcept
     if (!pProcessLists)
         return;
 
-    for (uint32_t i = 0; i < pProcessLists->HighActorHandleArray.length; ++i)
+    for (uint32_t i = 0; i < pProcessLists->highActorHandleArray.length; ++i)
     {
-        TESObjectREFR* const pRefr = TESObjectREFR::GetByHandle(pProcessLists->HighActorHandleArray[i]);
+        TESObjectREFR* const pRefr = TESObjectREFR::GetByHandle(pProcessLists->highActorHandleArray[i]);
         if (pRefr)
         {
             if (pRefr->GetNiNode())

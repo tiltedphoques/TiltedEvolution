@@ -84,7 +84,6 @@ void CrashHandler::RemovePreviousDump(std::filesystem::path path)
         if (entry.path().string().find("crash") != std::string::npos)
         {
             DeleteFileA(entry.path().string().c_str());
-            break;
         }
     }
 }

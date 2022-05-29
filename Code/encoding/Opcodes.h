@@ -93,6 +93,7 @@ enum ServerOpcode : unsigned char
     kNotifyDialogue,
     kNotifySubtitle,
     kNotifyPlayerDialogue,
+    kNotifyActorTeleport,
     kNotifyRelinquishControl,
     kServerOpcodeMax
 };
