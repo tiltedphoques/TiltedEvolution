@@ -1126,6 +1126,8 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
     }
 
     MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
+
+    spdlog::warn("Successfully teleported actor");
 }
 
 void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept
@@ -1341,11 +1343,17 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
         TESForm* const pForm = TESForm::GetById(aFormId);
         Actor* const pActor = Cast<Actor>(pForm);
 
-        if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
+        if (pActor)
         {
-            spdlog::info("Temporary Remote Deleted {:X}", aFormId);
-
-            pActor->Delete();
+            if (pActor->IsTemporary())
+            {
+                spdlog::info("Temporary Remote Deleted {:X}", aFormId);
+                pActor->Delete();
+            }
+            else
+            {
+                pActor->GetExtension()->SetRemote(false);
+            }
         }
 
         m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
@@ -1376,7 +1384,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
-            if (pActor->IsTemporary())
+            if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();
 
