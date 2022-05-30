@@ -318,9 +318,9 @@ int32_t Actor::GetGoldAmount() noexcept
     return ThisCall(s_getGoldAmount, this);
 }
 
-void Actor::SetActorInventory(Inventory& aInventory) noexcept
+void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
-    spdlog::debug("Setting inventory for actor {:X}", formID);
+    spdlog::info("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 

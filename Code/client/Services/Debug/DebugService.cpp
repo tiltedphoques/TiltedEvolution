@@ -81,7 +81,7 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
+    const Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
     pActor->SetActorInventory(inventory);
 
     pActor->GetExtension()->SetPlayer(true);

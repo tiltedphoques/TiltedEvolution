@@ -557,7 +557,7 @@ void TESObjectREFR::LockChange() noexcept
     ThisCall(RealLockChange, this);
 }
 
-const float TESObjectREFR::GetHeight() noexcept
+float TESObjectREFR::GetHeight() noexcept
 {
     auto boundMax = GetBoundMax();
     return boundMax.z - GetBoundMin().z;

@@ -333,10 +333,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         m_world.emplace_or_replace<LocalAnimationComponent>(cEntity);
 
         pActor->GetExtension()->SetRemote(false);
+
+        // TODO: apply those actor values and inventory stuff here too
+        // or, alternatively, update the values remotely, broadcast them
     }
     else
     {
-        spdlog::info("Received remote actor, form id: {:X}", pActor->formID);
+        spdlog::info("Received remote actor, form id: {:X}, isweapondrawn: {}", pActor->formID, acMessage.IsWeaponDrawn);
 
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
@@ -346,11 +349,13 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         AnimationSystem::Setup(m_world, cEntity);
 
         pActor->SetActorValues(acMessage.AllActorValues);
+        pActor->SetActorInventory(acMessage.CurrentInventory);
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-        if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
+        // TODO(cosideci): might be better if you don't do this check
+        //if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
             m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
         MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
@@ -485,7 +490,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 // TODO(cosideci): this is probably not necessary anymore
 void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
 {
-    auto view = m_world.view<FormIdComponent, WaitingFor3D>();
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
 
     const auto itor = std::find_if(std::begin(view), std::end(view), [view, id = acMessage.Id](auto entity) { 
         if (auto serverId = Utils::GetServerId(entity))
@@ -496,27 +501,29 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
         return false;
     });
 
-    if (itor != std::end(view))
+    if (itor == std::end(view))
+        return;
+
+    if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(*itor))
     {
-        auto& waitingFor3D = view.get<WaitingFor3D>(*itor);
-        waitingFor3D.SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
-        waitingFor3D.SpawnRequest.InventoryContent = acMessage.InitialInventory;
-        waitingFor3D.SpawnRequest.IsDead = acMessage.IsDead;
-        waitingFor3D.SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
-
-        auto& formIdComponent = view.get<FormIdComponent>(*itor);
-        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
-
-        if (!pActor)
-            return;
-
-        pActor->SetActorValues(waitingFor3D.SpawnRequest.InitialActorValues);
-        pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
-        m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
-
-        if (pActor->IsDead() != acMessage.IsDead)
-            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+        pWaitingFor3D->SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
+        pWaitingFor3D->SpawnRequest.InventoryContent = acMessage.InitialInventory;
+        pWaitingFor3D->SpawnRequest.IsDead = acMessage.IsDead;
+        pWaitingFor3D->SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
     }
+
+    auto& formIdComponent = view.get<FormIdComponent>(*itor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+
+    if (!pActor)
+        return;
+
+    pActor->SetActorValues(acMessage.InitialActorValues);
+    pActor->SetActorInventory(acMessage.InitialInventory);
+    m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
+
+    if (pActor->IsDead() != acMessage.IsDead)
+        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 }
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept

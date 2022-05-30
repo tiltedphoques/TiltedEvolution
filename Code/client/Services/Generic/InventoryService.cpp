@@ -60,7 +60,8 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error("{}: failed to find server id", __FUNCTION__);
+        spdlog::error(__FUNCTION__ ": failed to find server id, target form id: {:X}, item id: {:X}, count: {}", 
+                      acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
         return;
     }
 
@@ -93,7 +94,8 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error("{}: failed to find server id", __FUNCTION__);
+        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, unequip: {}, slot: {:X}", 
+                      acEvent.ActorId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
         return;
     }
 

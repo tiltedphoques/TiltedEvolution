@@ -186,7 +186,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent, OwnerComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent, OwnerComponent, InventoryComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
@@ -201,6 +201,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
+            auto& inventoryComponent = view.get<InventoryComponent>(*itor);
             auto& characterComponent = view.get<CharacterComponent>(*itor);
             auto& movementComponent = view.get<MovementComponent>(*itor);
             auto& cellIdComponent = view.get<CellIdComponent>(*itor);
@@ -224,11 +225,12 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
                 }
             }
 
-            AssignCharacterResponse response;
+            AssignCharacterResponse response{};
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
             response.Owner = isOwner;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
+            response.CurrentInventory = inventoryComponent.Content;
             response.IsDead = characterComponent.IsDead();
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
             response.Position = movementComponent.Position;
@@ -236,6 +238,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.WorldSpaceId = cellIdComponent.WorldSpaceId;
 
             acMessage.pPlayer->Send(response);
+
             return;
         }
     }
@@ -682,11 +685,10 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
         dispatcher.trigger(PlayerEnterWorldEvent(pPlayer));
     }
 
-    AssignCharacterResponse response;
+    AssignCharacterResponse response{};
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
     response.Owner = true;
-    response.AllActorValues = message.AllActorValues;
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);
 
