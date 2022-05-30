@@ -251,18 +251,17 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 {
     auto& message = acMessage.Packet;
 
-    OwnerView<FormIdComponent, CharacterComponent, CellIdComponent, MovementComponent> view(m_world, acMessage.GetSender());
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
 
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
+    if (!m_world.valid(cEntity))
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
+        spdlog::warn("Client {:X} requested ownership transfer of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
     }
 
     if (message.WorldSpaceId || message.CellId)
     {
-        auto& formIdComponent = view.get<FormIdComponent>(*it);
+        auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
 
         NotifyActorTeleport notify{};
         notify.FormId = formIdComponent.Id;
@@ -270,22 +269,22 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         notify.CellId = message.CellId;
         notify.Position = message.Position;
 
-        auto& cellIdComponent = view.get<CellIdComponent>(*it);
+        auto& cellIdComponent = m_world.get<CellIdComponent>(cEntity);
         cellIdComponent.WorldSpaceId = message.WorldSpaceId;
         cellIdComponent.Cell = message.CellId;
         cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
 
-        auto& movementComponent = view.get<MovementComponent>(*it);
+        auto& movementComponent = m_world.get<MovementComponent>(cEntity);
         movementComponent.Position = message.Position;
         movementComponent.Sent = true;
 
         GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
     }
 
-    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+    auto& characterOwnerComponent = m_world.get<OwnerComponent>(cEntity);
     characterOwnerComponent.InvalidOwners.push_back(acMessage.pPlayer);
 
-    m_world.GetDispatcher().trigger(OwnershipTransferEvent(*it));
+    m_world.GetDispatcher().trigger(OwnershipTransferEvent(cEntity));
 }
 
 void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& acEvent) const noexcept
