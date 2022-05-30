@@ -165,10 +165,6 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &isDead, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     int isRemote = int(pActor->GetExtension()->IsRemote());
     ImGui::InputScalar("Is remote?", ImGuiDataType_U8, &isRemote, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
-    int isWeaponDrawn = int(pActor->actorState.IsWeaponDrawn());
-    ImGui::InputScalar("Is weapon drawn?", ImGuiDataType_U8, &isWeaponDrawn, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
-    int isWeaponFullyDrawn = int(pActor->actorState.IsWeaponFullyDrawn());
-    ImGui::InputScalar("Is weapon fully drawn?", ImGuiDataType_U8, &isWeaponFullyDrawn, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);

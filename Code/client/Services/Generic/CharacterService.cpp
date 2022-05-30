@@ -1161,7 +1161,11 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
             InterpolationSystem::Setup(m_world, entity);
             AnimationSystem::Setup(m_world, entity);
 
-            spdlog::warn("Relinquished control of actor {:X} with server id {:X}", pActor->formID, acMessage.ServerId);
+            spdlog::info("Relinquished control of actor {:X} with server id {:X}", pActor->formID, acMessage.ServerId);
+
+            RequestSpawnData request{};
+            request.Id = serverId;
+            m_transport.Send(request);
 
             return;
         }
@@ -1714,7 +1718,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
         message.Changes[localComponent.Id] = factions;
     }
 
-    if(!message.Changes.empty())
+    if (!message.Changes.empty())
         m_transport.Send(message);
 }
 
@@ -1744,9 +1748,7 @@ void CharacterService::RunSpawnUpdates() const noexcept
                 {
                     pActor = CreateCharacterForEntity(entity);
                     if (!pActor)
-                    {
                         continue;
-                    }
 
                     remoteComponent.CachedRefId = pActor->formID;
                 }
