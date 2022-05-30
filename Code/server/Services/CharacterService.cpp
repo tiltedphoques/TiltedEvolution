@@ -200,8 +200,6 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             // This entity already has an owner
             spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
-            const auto* pServer = GameServer::Get();
-
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
             auto& characterComponent = view.get<CharacterComponent>(*itor);
             auto& movementComponent = view.get<MovementComponent>(*itor);

@@ -144,7 +144,7 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
     m_world.emplace_or_replace<LocalComponent>(acEntity, acServerId);
     m_world.emplace_or_replace<LocalAnimationComponent>(acEntity);
     m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                             FaceGenComponent, CacheComponent, WaitingFor3D>(acEntity);
+                             FaceGenComponent, CacheComponent>(acEntity);
 
     // TODO(cosideci): send current local data of actor with it(?)
     RequestOwnershipClaim request;
@@ -453,6 +453,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         pActor->Enable();
 
     pActor->GetExtension()->SetRemote(true);
+
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
     pActor->MoveTo(PlayerCharacter::Get()->parentCell, acMessage.Position);
@@ -469,14 +470,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
-    remoteComponent.SpawnRequest = acMessage;
 
     auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
     interpolationComponent.Position = acMessage.Position;
 
     AnimationSystem::Setup(m_world, *entity);
 
-    m_world.emplace_or_replace<WaitingFor3D>(*entity);
+    m_world.emplace_or_replace<WaitingFor3D>(*entity, acMessage);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
@@ -485,23 +485,24 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 // TODO(cosideci): this is probably not necessary anymore
 void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
 {
-    auto view = m_world.view<RemoteComponent, FormIdComponent>();
+    auto view = m_world.view<FormIdComponent, WaitingFor3D>();
 
-    const auto id = acMessage.Id;
-
-    const auto itor = std::find_if(std::begin(view), std::end(view), [view, id](auto entity) {
-        const auto& remoteComponent = view.get<RemoteComponent>(entity);
-
-        return remoteComponent.Id == id;
+    const auto itor = std::find_if(std::begin(view), std::end(view), [view, id = acMessage.Id](auto entity) { 
+        if (auto serverId = Utils::GetServerId(entity))
+        {
+            if (*serverId == id)
+                return true;
+        }
+        return false;
     });
 
     if (itor != std::end(view))
     {
-        auto& remoteComponent = view.get<RemoteComponent>(*itor);
-        remoteComponent.SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
-        remoteComponent.SpawnRequest.InventoryContent = acMessage.InitialInventory;
-        remoteComponent.SpawnRequest.IsDead = acMessage.IsDead;
-        remoteComponent.SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
+        auto& waitingFor3D = view.get<WaitingFor3D>(*itor);
+        waitingFor3D.SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
+        waitingFor3D.SpawnRequest.InventoryContent = acMessage.InitialInventory;
+        waitingFor3D.SpawnRequest.IsDead = acMessage.IsDead;
+        waitingFor3D.SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
         Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
@@ -509,8 +510,8 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
         if (!pActor)
             return;
 
-        pActor->SetActorValues(remoteComponent.SpawnRequest.InitialActorValues);
-        pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
+        pActor->SetActorValues(waitingFor3D.SpawnRequest.InitialActorValues);
+        pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
         m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
 
         if (pActor->IsDead() != acMessage.IsDead)
@@ -1501,13 +1502,13 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
 Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const noexcept
 {
-    auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
+    auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(aEntity);
     auto* pInterpolationComponent = m_world.try_get<InterpolationComponent>(aEntity);
 
-    if (!pRemoteComponent || !pInterpolationComponent)
+    if (!pWaitingFor3D || !pInterpolationComponent)
         return nullptr;
 
-    auto& acMessage = pRemoteComponent->SpawnRequest;
+    auto& acMessage = pWaitingFor3D->SpawnRequest;
 
     Actor* pActor = nullptr;
 
@@ -1555,8 +1556,6 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
-
-    m_world.emplace_or_replace<WaitingFor3D>(aEntity);
 
     return pActor;
 }
@@ -1643,28 +1642,29 @@ void CharacterService::RunRemoteUpdates() noexcept
         FaceGenSystem::Update(m_world, pActor, faceGenComponent);
     }
 
-    auto waitingView = m_world.view<FormIdComponent, RemoteComponent, WaitingFor3D>();
+    auto waitingView = m_world.view<FormIdComponent, WaitingFor3D>();
 
     Vector<entt::entity> toRemove;
     for (auto entity : waitingView)
     {
         auto& formIdComponent = waitingView.get<FormIdComponent>(entity);
-        auto& remoteComponent = waitingView.get<RemoteComponent>(entity);
+        auto& waitingFor3D = waitingView.get<WaitingFor3D>(entity);
 
-        const auto* pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = Cast<Actor>(pForm);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (!pActor || !pActor->GetNiNode())
             continue;
 
-        pActor->SetActorInventory(remoteComponent.SpawnRequest.InventoryContent);
-        pActor->SetFactions(remoteComponent.SpawnRequest.FactionsContent);
-        pActor->LoadAnimationVariables(remoteComponent.SpawnRequest.LatestAction.Variables);
-        m_weaponDrawUpdates[pActor->formID] = {0, remoteComponent.SpawnRequest.IsWeaponDrawn};
+        pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
+        pActor->SetFactions(waitingFor3D.SpawnRequest.FactionsContent);
+        pActor->LoadAnimationVariables(waitingFor3D.SpawnRequest.LatestAction.Variables);
+        m_weaponDrawUpdates[pActor->formID] = {0, waitingFor3D.SpawnRequest.IsWeaponDrawn};
 
-        if (pActor->IsDead() != remoteComponent.SpawnRequest.IsDead)
-            remoteComponent.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
+        if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
+            waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
         toRemove.push_back(entity);  
+
+        spdlog::info("Applied 3D for actor, form id: {:X}", pActor->formID);
     }
 
     for (auto entity : toRemove)
@@ -1714,7 +1714,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
-    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>(entt::exclude<FormIdComponent>);
+    auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, WaitingFor3D>(entt::exclude<FormIdComponent>);
     Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 
     for (const auto entity : entities)
