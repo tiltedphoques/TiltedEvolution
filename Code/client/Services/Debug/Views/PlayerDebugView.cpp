@@ -95,5 +95,19 @@ void DebugService::DrawPlayerDebugView()
         ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
     }
 
+    auto& modSystem = m_world.GetModSystem();
+
+    if (ImGui::CollapsingHeader("Worn armor"))
+    {
+        Inventory wornArmor{};
+        wornArmor = pPlayer->GetWornArmor();
+        for (const auto& armor : wornArmor.Entries)
+        {
+            const uint32_t armorId = armor.BaseId.BaseId;
+            ImGui::InputScalar("Item id", ImGuiDataType_U32, (void*)&armorId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+    }
+
     ImGui::End();
 }
