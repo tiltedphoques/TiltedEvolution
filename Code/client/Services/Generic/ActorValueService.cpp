@@ -61,8 +61,7 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-    const auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = Cast<Actor>(pForm);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (pActor != NULL)
     {

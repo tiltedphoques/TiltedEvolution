@@ -141,8 +141,8 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
     // TODO(cosideci): this should be done differently.
     // Send an ownership claim request, and have the server broadcast the result.
     // Only then should components be added or removed.
-    m_world.emplace<LocalComponent>(acEntity, acServerId);
-    m_world.emplace<LocalAnimationComponent>(acEntity);
+    m_world.emplace_or_replace<LocalComponent>(acEntity, acServerId);
+    m_world.emplace_or_replace<LocalAnimationComponent>(acEntity);
     m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
                              FaceGenComponent, CacheComponent, WaitingFor3D>(acEntity);
 
@@ -476,13 +476,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     AnimationSystem::Setup(m_world, *entity);
 
-    m_world.emplace<WaitingFor3D>(*entity);
+    m_world.emplace_or_replace<WaitingFor3D>(*entity);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
 }
 
-// TODO: verify/simplify this spawn data stuff
+// TODO(cosideci): this is probably not necessary anymore
 void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
 {
     auto view = m_world.view<RemoteComponent, FormIdComponent>();
@@ -504,8 +504,7 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
         remoteComponent.SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
 
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
-        auto* const pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = Cast<Actor>(pForm);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
         if (!pActor)
             return;
@@ -1245,14 +1244,11 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
 
     auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
 
-    auto* const pForm = TESForm::GetById(formIdComponent.Id);
-    auto* const pActor = Cast<Actor>(pForm);
+    Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
     if (!pActor)
-        return;
-
-    if (pActor->GetExtension()->IsRemote())
     {
-        spdlog::info("New entity remotely managed? {:X}", pActor->formID);
+        spdlog::warn(__FUNCTION__ ": actor for new entity not found, form id: {:X}", formIdComponent.Id);
+        return;
     }
 
     if (auto* pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity); pRemoteComponent)
@@ -1265,16 +1261,12 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
                              pRemoteComponent->Id);
 
             TakeOwnership(pActor->formID, pRemoteComponent->Id, aEntity);
-
-            return;
         }
         else
-        {
-            RequestSpawnData requestSpawnData;
-            requestSpawnData.Id = pRemoteComponent->Id;
-            m_transport.Send(requestSpawnData);
-            return;
-        }
+            spdlog::info("New entity remotely managed, form id: {:X}, server id: {:X}", pActor->formID,
+                             pRemoteComponent->Id);
+
+        return;
     }
 
     if (m_world.any_of<RemoteComponent, LocalComponent, WaitingForAssignmentComponent>(aEntity))
