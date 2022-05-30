@@ -344,7 +344,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     if (it == std::end(view))
     {
-        spdlog::warn("Target not found for magic add target, form id: {:X}", acEvent.TargetID);
+        spdlog::warn("Form id not found for magic add target, form id: {:X}", acEvent.TargetID);
         m_queuedEffects[acEvent.TargetID] = request;
         return;
     }
@@ -352,7 +352,8 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
     if (!serverIdRes.has_value())
     {
-        spdlog::error("{}: failed to find server id", __FUNCTION__);
+        spdlog::warn("Server id not found for magic add target, form id: {:X}", acEvent.TargetID);
+        m_queuedEffects[acEvent.TargetID] = request;
         return;
     }
 
@@ -463,10 +464,7 @@ void MagicService::ApplyQueuedEffects() noexcept
 
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
-        {
-            spdlog::error("{}: failed to find server id", __FUNCTION__);
             continue;
-        }
 
         request.TargetId = serverIdRes.value();
 
