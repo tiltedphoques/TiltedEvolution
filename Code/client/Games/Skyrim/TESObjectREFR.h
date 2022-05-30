@@ -188,7 +188,7 @@ struct TESObjectREFR : TESForm
     Lock* CreateLock() noexcept;
     void LockChange() noexcept;
 
-    float GetHeight() noexcept;
+    const float GetHeight() noexcept;
     void EnableImpl() noexcept;
 
     Inventory GetInventory() const noexcept;

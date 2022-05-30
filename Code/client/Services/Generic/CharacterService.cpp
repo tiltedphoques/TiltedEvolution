@@ -310,7 +310,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
         if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-            m_weaponDrawUpdates[formIdComponent->Id] = {0, acMessage.IsWeaponDrawn};
+            m_weaponDrawUpdates[formIdComponent->Id] = {acMessage.IsWeaponDrawn};
 
         spdlog::critical("Applied updates on assignment response, form id: {:X}", formIdComponent->Id);
 
@@ -354,9 +354,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-        // TODO(cosideci): might be better if you don't do this check
-        //if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-            m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
+        m_weaponDrawUpdates[pActor->formID] = {acMessage.IsWeaponDrawn};
 
         MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
     }
@@ -487,7 +485,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
 }
 
-// TODO(cosideci): this is probably not necessary anymore
 void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
 {
     auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
@@ -520,10 +517,12 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
 
     pActor->SetActorValues(acMessage.InitialActorValues);
     pActor->SetActorInventory(acMessage.InitialInventory);
-    m_weaponDrawUpdates[pActor->formID] = {0, acMessage.IsWeaponDrawn};
+    m_weaponDrawUpdates[pActor->formID] = {acMessage.IsWeaponDrawn};
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    spdlog::info("Applied remote spawn data, actor form id: {:X}", pActor->formID);
 }
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept
@@ -1664,7 +1663,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
         pActor->SetFactions(waitingFor3D.SpawnRequest.FactionsContent);
         pActor->LoadAnimationVariables(waitingFor3D.SpawnRequest.LatestAction.Variables);
-        m_weaponDrawUpdates[pActor->formID] = {0, waitingFor3D.SpawnRequest.IsWeaponDrawn};
+        m_weaponDrawUpdates[pActor->formID] = {waitingFor3D.SpawnRequest.IsWeaponDrawn};
 
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
             waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
@@ -1793,17 +1792,23 @@ void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) 
     {
         auto& data = m_weaponDrawUpdates[cId];
 
-        data.first += acUpdateEvent.Delta;
-        if (data.first <= 0.5)
+        data.m_timer += acUpdateEvent.Delta;
+
+        // We do 2 passes because Skyrim's weapon drawing is the most finnicky thing in existance
+        double maxTime = data.m_isFirstPass ? 0.5 : 2.0;
+        if (data.m_timer <= maxTime)
             continue;
 
         Actor* pActor = Cast<Actor>(TESForm::GetById(cId));
         if (!pActor)
             continue;
 
-        pActor->SetWeaponDrawnEx(data.second);
+        pActor->SetWeaponDrawnEx(data.m_drawWeapon);
 
-        toRemove.push_back(cId);
+        if (!data.m_isFirstPass)
+            toRemove.push_back(cId);
+
+        data.m_isFirstPass = false;
     }
 
     for (uint32_t id : toRemove)

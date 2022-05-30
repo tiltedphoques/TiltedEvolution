@@ -6,8 +6,11 @@
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
 
+#include <Messages/RequestSpawnData.h>
+
 #include <World.h>
 #include <imgui.h>
+#include <inttypes.h>
 
 void DebugService::DrawEntitiesView()
 {
@@ -159,9 +162,13 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     int isDead = int(pActor->IsDead());
-    ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &isDead, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     int isRemote = int(pActor->GetExtension()->IsRemote());
-    ImGui::InputInt("Is remote?", &isRemote, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Is remote?", ImGuiDataType_U8, &isRemote, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
+    int isWeaponDrawn = int(pActor->actorState.IsWeaponDrawn());
+    ImGui::InputScalar("Is weapon drawn?", ImGuiDataType_U8, &isWeaponDrawn, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
+    int isWeaponFullyDrawn = int(pActor->actorState.IsWeaponFullyDrawn());
+    ImGui::InputScalar("Is weapon fully drawn?", ImGuiDataType_U8, &isWeaponFullyDrawn, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
@@ -195,11 +202,24 @@ void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, con
         return;
 
     ImGui::InputInt("Server Id", (int*)&aRemoteComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
     if (ImGui::Button("Take ownership"))
     {
         m_world.GetRunner().Queue([acEntity, acFormId]() {
             if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
                 World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
+        });
+    }
+
+    if (ImGui::Button("Get spawn data"))
+    {
+        m_world.GetRunner().Queue([this, acEntity, acFormId]() {
+            if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+            {
+                RequestSpawnData request{};
+                request.Id = pRemoteCompoment->Id;
+                m_transport.Send(request);
+            }
         });
     }
 }

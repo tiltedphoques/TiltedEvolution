@@ -111,7 +111,19 @@ private:
 
     float m_cachedExperience = 0.f;
 
-    Map<uint32_t, std::pair<double, bool>> m_weaponDrawUpdates{};
+    struct WeaponDrawData
+    {
+        WeaponDrawData() = default;
+        WeaponDrawData(bool aDrawWeapon)
+            : m_drawWeapon(aDrawWeapon)
+        {}
+
+        double m_timer = 0.0;
+        bool m_drawWeapon = false;
+        bool m_isFirstPass = true;
+    };
+
+    Map<uint32_t, WeaponDrawData> m_weaponDrawUpdates{};
 
     entt::scoped_connection m_referenceAddedConnection;
     entt::scoped_connection m_referenceRemovedConnection;
