@@ -116,7 +116,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
-    request.CurrentInventory = pActor->GetEquippedItems();
+    request.CurrentInventory = pActor->GetEquipment();
 
     m_transport.Send(request);
 }
