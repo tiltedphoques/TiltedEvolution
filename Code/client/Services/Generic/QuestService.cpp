@@ -49,6 +49,8 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
 
 void QuestService::OnConnected(const ConnectedEvent&) noexcept
 {
+    // TODO: this should be followed with whatever the quest leader selected
+    /*
     // deselect any active quests
     auto* pPlayer = PlayerCharacter::Get();
     for (auto& objective : pPlayer->objectives)
@@ -56,6 +58,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
         if (auto* pQuest = objective.instance->quest)
             pQuest->SetActive(false);
     }
+    */
 }
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)

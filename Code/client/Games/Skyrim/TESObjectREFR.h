@@ -195,7 +195,6 @@ struct TESObjectREFR : TESForm
     Inventory GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept;
     Inventory GetArmor() const noexcept;
     Inventory GetWornArmor() const noexcept;
-    Inventory GetEquippedItems() const noexcept;
 
     bool IsItemInInventory(uint32_t aFormID) const noexcept;
 

@@ -303,6 +303,14 @@ MagicEquipment Actor::GetMagicEquipment() const noexcept
     return equipment;
 }
 
+Inventory Actor::GetEquipment() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    inventory.CurrentMagicEquipment = GetMagicEquipment();
+    return inventory;
+}
+
 int32_t Actor::GetGoldAmount() noexcept
 {
     TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
@@ -310,9 +318,9 @@ int32_t Actor::GetGoldAmount() noexcept
     return ThisCall(s_getGoldAmount, this);
 }
 
-void Actor::SetActorInventory(Inventory& aInventory) noexcept
+void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
-    spdlog::debug("Setting inventory for actor {:X}", formID);
+    spdlog::info("Setting inventory for actor {:X}", formID);
 
     UnEquipAll();
 
@@ -328,18 +336,21 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
     if (acEquipment.LeftHandSpell)
     {
         uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
+        spdlog::debug("Setting left hand spell: {:X}", mainHandWeaponId);
         pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
     }
 
     if (acEquipment.RightHandSpell)
     {
         uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
+        spdlog::debug("Setting right hand spell: {:X}", secondaryHandWeaponId);
         pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
     }
 
     if (acEquipment.Shout)
     {
         uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
+        spdlog::debug("Setting shout: {:X}", shoutId);
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
     }
 }

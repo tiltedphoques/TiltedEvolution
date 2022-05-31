@@ -2,11 +2,9 @@
 #include <Components.h>
 
 #include <Services/CharacterService.h>
-#include <Services/PlayerService.h>
 #include <Services/ObjectService.h>
 #include <Services/QuestService.h>
 #include <Services/ServerListService.h>
-#include <Services/PartyService.h>
 #include <Services/ActorValueService.h>
 #include <Services/AdminService.h>
 #include <Services/InventoryService.h>

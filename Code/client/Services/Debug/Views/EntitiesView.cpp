@@ -1,9 +1,19 @@
 #include <Services/DebugService.h>
 
+#include <Services/CharacterService.h>
+
 #include <AI/AIProcess.h>
+#include <PlayerCharacter.h>
+#include <Games/ActorExtension.h>
+#include <Forms/TESObjectCELL.h>
+
+#include <Messages/RequestSpawnData.h>
+
+#include <Events/MoveActorEvent.h>
 
 #include <World.h>
 #include <imgui.h>
+#include <inttypes.h>
 
 void DebugService::DrawEntitiesView()
 {
@@ -53,16 +63,18 @@ void DebugService::DisplayEntities() noexcept
         auto& formComponent = view.get<FormIdComponent>(it);
         const auto pActor = Cast<Actor>(TESForm::GetById(formComponent.Id));
 
-        if (!pActor || !pActor->baseForm)
+        if (!pActor)
             continue;
 
         char name[256];
+
+        if (!pActor->baseForm)
+            strncpy_s(name, "UNNAMED", sizeof(name));
+
         sprintf_s(name, std::size(name), "%s (%x)", pActor->baseForm->GetName(), formComponent.Id);
 
         if (ImGui::Selectable(name, m_formId == formComponent.Id))
-        {
             m_formId = formComponent.Id;
-        }
 
         if(m_formId == formComponent.Id)
             s_selected = i;
@@ -122,8 +134,8 @@ void DebugService::DisplayEntityPanel(entt::entity aEntity) noexcept
     const auto pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
 
     if (pFormIdComponent)               DisplayFormComponent(*pFormIdComponent);
-    if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent);
-    if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent);
+    if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent, pFormIdComponent ? pFormIdComponent->Id : 0);
+    if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent, aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
 }
 
 void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept
@@ -149,33 +161,29 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
         });
     }
 
-    if (ImGui::Button("Stop dialogue"))
-    {
-        m_world.GetRunner().Queue([id = aFormComponent.Id]() {
-            Actor* pActor = Cast<Actor>(TESForm::GetById(id));
-            pActor->StopCurrentDialogue(true);
-        });
-    }
-
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     ImGui::InputFloat3("Rotation", pActor->rotation.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
     int isDead = int(pActor->IsDead());
-    ImGui::InputInt("Is dead?", &isDead, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-    int isWeaponDrawn = int(pActor->actorState.IsWeaponDrawn());
-    ImGui::InputInt("Is weapon drawn?", &isWeaponDrawn, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
-    int isBleedingOut = int(pActor->actorState.IsBleedingOut());
-    ImGui::InputInt("Is bleeding out?", &isBleedingOut, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &isDead, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
+    int isRemote = int(pActor->GetExtension()->IsRemote());
+    ImGui::InputScalar("Is remote?", ImGuiDataType_U8, &isRemote, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
 #endif
 }
 
-void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept
+void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent, const uint32_t acFormId) const noexcept
 {
     if (!ImGui::CollapsingHeader("Local Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
+
+    if (ImGui::Button("Teleport to me"))
+    {
+        auto* pPlayer = PlayerCharacter::Get();
+        m_world.GetRunner().Trigger(MoveActorEvent(acFormId, pPlayer->parentCell->formID, pPlayer->position));
+    }
 
     auto& action = aLocalComponent.CurrentAction;
     ImGui::InputInt("Net Id", (int*)&aLocalComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
@@ -184,10 +192,30 @@ void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent) const 
     ImGui::InputScalarN("State", ImGuiDataType_U32, &action.State1, 2, nullptr, nullptr, "%x", ImGuiInputTextFlags_ReadOnly);
 }
 
-void DebugService::DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept
+void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept
 {
     if (!ImGui::CollapsingHeader("Remote Component", ImGuiTreeNodeFlags_DefaultOpen))
         return;
 
-    ImGui::InputInt("Server Id", (int*)&aLocalComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputInt("Server Id", (int*)&aRemoteComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Take ownership"))
+    {
+        m_world.GetRunner().Queue([acEntity, acFormId]() {
+            if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+                World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
+        });
+    }
+
+    if (ImGui::Button("Get spawn data"))
+    {
+        m_world.GetRunner().Queue([this, acEntity, acFormId]() {
+            if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+            {
+                RequestSpawnData request{};
+                request.Id = pRemoteCompoment->Id;
+                m_transport.Send(request);
+            }
+        });
+    }
 }

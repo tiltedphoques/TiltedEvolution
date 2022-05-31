@@ -79,5 +79,7 @@ target(name)
         "kernel32")
 end
 
+add_requires("tiltedcore", {debug = true})
+
 build_client("SkyrimTogetherClient", "TP_SKYRIM=1")
 --build_client("FalloutTogetherClient", "TP_FALLOUT=1")
