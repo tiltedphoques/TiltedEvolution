@@ -4,6 +4,9 @@
 
 #include <PlayerCharacter.h>
 #include <Forms/TESQuest.h>
+#include <Forms/TESObjectCELL.h>
+
+#include <Events/MoveActorEvent.h>
 
 #include <imgui.h>
 
@@ -30,25 +33,58 @@ void DebugService::DrawQuestDebugView()
 
         foundQuests.insert(pQuest->formID);
 
-        if (pQuest->IsActive())
-        {
-            ImGui::TextColored({255.f, 0.f, 255.f, 255.f}, "%s|%x|%s", pQuest->idName.AsAscii(),
-                               pQuest->flags, pQuest->fullName.value.AsAscii());
+        if (!pQuest->IsActive())
+            continue;
 
-            for (auto* stage : pQuest->stages)
+        char questName[256];
+        sprintf_s(questName, std::size(questName), "%s (%s)", pQuest->fullName.value.AsAscii(), pQuest->idName.AsAscii());
+        if (!ImGui::CollapsingHeader(questName))
+            continue;
+
+        if (ImGui::CollapsingHeader("Stages"))
+        {
+            for (auto* pStage : pQuest->stages)
             {
-                ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d, is done? %s", stage->stageIndex, stage->IsDone() ? "true" : "false");
+                ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d, is done? %s", pStage->stageIndex, pStage->IsDone() ? "true" : "false");
 
                 char setStage[64];
-                sprintf_s(setStage, std::size(setStage), "Set stage (%d)", stage->stageIndex);
+                sprintf_s(setStage, std::size(setStage), "Set stage (%d)", pStage->stageIndex);
 
                 if (ImGui::Button(setStage))
-                    pQuest->ScriptSetStage(stage->stageIndex);
+                    pQuest->ScriptSetStage(pStage->stageIndex);
             }
         }
-        else
+
+        if (ImGui::CollapsingHeader("Actors"))
         {
-            ImGui::Text("%s|%x|%s", pQuest->idName.AsAscii(), pQuest->flags, pQuest->fullName.value.AsAscii());
+            Set<uint32_t> foundActors{};
+
+            for (BGSScene* pScene : pQuest->scenes)
+            {
+                for (uint32_t actorId : pScene->actorIds)
+                {
+                    Actor* pActor = Cast<Actor>(pQuest->GetAliasedRef(actorId));
+                    if (!pActor)
+                        continue;
+
+                    if (foundActors.contains(pActor->formID))
+                        continue;
+
+                    foundActors.insert(pActor->formID);
+
+                    char name[256];
+                    sprintf_s(name, std::size(name), "%s (%x)", pActor->baseForm->GetName(), pActor->formID);
+                    ImGui::BulletText(name);
+
+                    ImGui::PushID(pActor->formID);
+                    if (ImGui::Button("Teleport to me"))
+                    {
+                        auto* pPlayer = PlayerCharacter::Get();
+                        m_world.GetRunner().Trigger(MoveActorEvent(pActor->formID, pPlayer->parentCell->formID, pPlayer->position));
+                    }
+                    ImGui::PopID();
+                }
+            }
         }
     }
 

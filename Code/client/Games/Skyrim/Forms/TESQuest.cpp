@@ -4,6 +4,17 @@
 
 #include <Games/Overrides.h>
 
+TESObjectREFR* TESQuest::GetAliasedRef(uint32_t aAliasID) noexcept
+{
+    TP_THIS_FUNCTION(TGetAliasedRef, BSPointerHandle<TESObjectREFR>*, TESQuest, BSPointerHandle<TESObjectREFR>*, uint32_t);
+    POINTER_SKYRIMSE(TGetAliasedRef, getAliasedRef, 25066);
+
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(getAliasedRef, this, &result, aAliasID);
+
+    return TESObjectREFR::GetByHandle(result.handle.iBits);
+}
+
 TESQuest::State TESQuest::getState()
 {
     if (flags >= 0)

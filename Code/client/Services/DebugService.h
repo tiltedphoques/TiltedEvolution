@@ -8,6 +8,7 @@ struct ImguiService;
 struct UpdateEvent;
 struct DialogueEvent;
 struct SubtitleEvent;
+struct MoveActorEvent;
 
 struct TransportService;
 struct BSAnimationGraphManager;
@@ -25,6 +26,7 @@ struct DebugService
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnDialogue(const DialogueEvent&) noexcept;
     void OnSubtitle(const SubtitleEvent&) noexcept;
+    void OnMoveActor(const MoveActorEvent&) noexcept;
 
     void SetDebugId(const uint32_t aFormId) noexcept;
 

@@ -181,7 +181,8 @@ void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent, const 
         m_world.GetRunner().Queue([acFormId]() {
             Actor* pActor = Cast<Actor>(TESForm::GetById(acFormId));
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
-            pActor->MoveTo(pPlayer->parentCell, pPlayer->position);
+            if (pActor)
+                pActor->MoveTo(pPlayer->parentCell, pPlayer->position);
         });
     }
 
