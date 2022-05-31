@@ -135,6 +135,8 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     if (!pActor || !pCell)
         return;
 
+    //pActor->MoveTo(pCell, acEvent.Position);
+
     moveData.pActor = pActor;
     moveData.pCell = pCell;
     moveData.position = acEvent.Position;
