@@ -5,8 +5,11 @@
 #include <AI/AIProcess.h>
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <Messages/RequestSpawnData.h>
+
+#include <Events/MoveActorEvent.h>
 
 #include <World.h>
 #include <imgui.h>
@@ -178,11 +181,9 @@ void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent, const 
 
     if (ImGui::Button("Teleport to me"))
     {
-        m_world.GetRunner().Queue([acFormId]() {
-            Actor* pActor = Cast<Actor>(TESForm::GetById(acFormId));
-            PlayerCharacter* pPlayer = PlayerCharacter::Get();
-            if (pActor)
-                pActor->MoveTo(pPlayer->parentCell, pPlayer->position);
+        m_world.GetRunner().Queue([this, acFormId]() {
+            auto* pPlayer = PlayerCharacter::Get();
+            m_world.GetRunner().Trigger(MoveActorEvent(acFormId, pPlayer->parentCell->formID, pPlayer->position));
         });
     }
 
