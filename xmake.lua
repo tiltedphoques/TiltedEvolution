@@ -1,4 +1,9 @@
-set_xmakever("2.6.2")
+set_xmakever("2.6.5")
+
+-- If newer version of xmake, remove ccache until it actually works
+if set_policy ~= nil then
+    set_policy("build.ccache", false)
+end
 
 -- c code will use c99,
 set_languages("c99", "cxx20")
