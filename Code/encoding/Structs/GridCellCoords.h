@@ -1,6 +1,6 @@
 #pragma once
 
-#include <TiltedCore/Buffer.hpp>
+
 #include <Structs/Vector3_NetQuantize.h>
 #include <limits>
 

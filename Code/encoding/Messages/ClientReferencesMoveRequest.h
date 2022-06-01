@@ -2,7 +2,6 @@
 
 #include "Message.h"
 #include <Structs/ReferenceUpdate.h>
-#include <TiltedCore/Stl.hpp>
 
 using TiltedPhoques::String;
 

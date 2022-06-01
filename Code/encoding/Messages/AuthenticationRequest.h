@@ -2,7 +2,7 @@
 
 #include "Message.h"
 #include <Structs/Mods.h>
-#include <TiltedCore/Buffer.hpp>
+
 
 struct AuthenticationRequest final : ClientMessage
 {

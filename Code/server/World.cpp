@@ -45,3 +45,5 @@ World::World()
         ctx().emplace<ModsComponent>().AddServerMod(it);
     }
 }
+
+World::~World() noexcept = default;

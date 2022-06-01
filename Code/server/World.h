@@ -9,12 +9,15 @@
 
 #include "Game/PlayerManager.h"
 
-#include <es_loader/RecordCollection.h>
+namespace ESLoader
+{
+struct RecordCollection;
+}
 
 struct World : entt::registry
 {
     World();
-    ~World() noexcept = default;
+    ~World() noexcept;
 
     TP_NOCOPYMOVE(World);
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <TiltedCore/Buffer.hpp>
-#include <glm/vec2.hpp>
 
 using TiltedPhoques::Buffer;
 

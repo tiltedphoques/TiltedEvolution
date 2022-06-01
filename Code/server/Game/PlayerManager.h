@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Player.h"
+struct Player;
 
 struct PlayerManager
 {

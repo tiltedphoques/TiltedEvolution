@@ -1,6 +1,6 @@
 #pragma once
 
-#include <TiltedCore/Buffer.hpp>
+
 #include <Structs/GameId.h>
 #include <Structs/LockData.h>
 #include <Structs/Inventory.h>
