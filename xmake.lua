@@ -1,4 +1,9 @@
-set_xmakever("2.6.2")
+set_xmakever("2.6.5")
+
+-- If newer version of xmake, remove ccache until it actually works
+if set_policy ~= nil then
+    set_policy("build.ccache", false)
+end
 
 -- c code will use c99,
 set_languages("c99", "cxx20")
@@ -36,8 +41,6 @@ add_requires(
     "mem", 
     "glm", 
     "sentry-native", 
-    "magnum", 
-    "magnum-integration",
     "zlib")
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
@@ -48,7 +51,11 @@ add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration.imgui", {version = "v1.87-docking", override = true})
 
 if is_plat("windows") then
-    add_requires("discord", "imgui v1.87-docking")
+    add_requires(
+        "discord", 
+        "imgui v1.87-docking",     
+        "magnum", 
+        "magnum-integration")
 end
 
 before_build(function (target)

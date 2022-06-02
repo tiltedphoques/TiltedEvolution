@@ -7,6 +7,8 @@
 #include <Messages/PlayerDialogueRequest.h>
 #include <Messages/NotifyPlayerDialogue.h>
 
+#include "Game/Player.h"
+
 #include <regex>
 
 OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)

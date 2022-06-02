@@ -2,9 +2,6 @@
 
 #include "CachedString.h"
 
-#include <TiltedCore/Buffer.hpp>
-#include <TiltedCore/Stl.hpp>
-
 using TiltedPhoques::Buffer;
 using TiltedPhoques::Vector;
 

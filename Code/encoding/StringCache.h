@@ -1,8 +1,5 @@
 #pragma once
 
-#include <mutex>
-#include <TiltedCore/Stl.hpp>
-#include <optional>
 #include <Messages/StringCacheUpdate.h>
 
 struct StringCache

@@ -4,13 +4,14 @@
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/Message.h>
 #include <World.h>
-#include <StringCache.h>
 
 using TiltedPhoques::ConnectionId_t;
 using TiltedPhoques::Server;
 using TiltedPhoques::String;
 
 struct AuthenticationRequest;
+struct Player;
+struct PartyComponent;
 
 namespace Console
 {

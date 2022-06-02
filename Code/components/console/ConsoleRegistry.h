@@ -5,7 +5,6 @@
 #include <console/Command.h>
 #include <console/CommandQueue.h>
 #include <console/Setting.h>
-#include <spdlog/spdlog-inl.h>
 
 namespace Console
 {

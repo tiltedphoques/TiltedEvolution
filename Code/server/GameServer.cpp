@@ -1,5 +1,3 @@
-#include "Messages/StringCacheUpdate.h"
-
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
@@ -18,11 +16,7 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
-#include <console/ConsoleRegistry.h>
 
-#if TP_PLATFORM_WINDOWS
-#include <windows.h>
-#endif
 
 namespace
 {
