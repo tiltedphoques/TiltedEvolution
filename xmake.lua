@@ -25,7 +25,31 @@ if has_config("unitybuild") then
     add_rules("c++.unity_build", {batchsize = 12})
 end
 
-add_requires("entt", "recastnavigation")
+add_requires(
+    "entt", 
+    "recastnavigation", 
+    "tiltedcore", 
+    "cryptopp", 
+    "spdlog", 
+    "cpp-httplib",
+    "gtest", 
+    "mem", 
+    "glm", 
+    "sentry-native", 
+    "magnum", 
+    "magnum-integration",
+    "zlib")
+
+add_requireconfs("cpp-httplib", {configs = {ssl = true}})
+add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
+add_requireconfs("magnum", { configs = { sdl2 = true }})
+add_requireconfs("magnum-integration",  { configs = { imgui = true }})
+add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
+add_requireconfs("magnum-integration.imgui", {version = "v1.87-docking", override = true})
+
+if is_plat("windows") then
+    add_requires("discord", "imgui v1.87-docking")
+end
 
 before_build(function (target)
     import("modules.version")

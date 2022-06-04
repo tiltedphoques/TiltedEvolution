@@ -1,5 +1,3 @@
-add_requires("glm")
-
 if is_plat("windows") then
     includes("client")
     includes("immersive_elf")

@@ -65,8 +65,6 @@ local function build_launcher()
         "sentry-native")
 end
 
-add_requires("sentry-native")
-
 target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")
     add_defines(

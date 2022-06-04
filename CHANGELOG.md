@@ -1,3 +1,12 @@
+## [1.33.3](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.2...v1.33.3) (2022-05-29)
+
+## [1.33.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.1...v1.33.2) (2022-05-28)
+
+
+### Bug Fixes
+
+* magic effect crash ([f53ca46](https://github.com/tiltedphoques/TiltedEvolution/commit/f53ca468581fad38274c507f2ae13ef398a0282e))
+
 ## [1.33.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.0...v1.33.1) (2022-05-26)
 
 
