@@ -186,7 +186,6 @@ export class RootComponent implements OnInit, OnDestroy {
             }
           ));
 
-
           let name = "Banana";
           let message = "Hello Guys";
           let whisper = true;
