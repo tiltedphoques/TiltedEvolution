@@ -28,7 +28,7 @@ void Hook_MapMenu_AdvanceMovie(MapMenu* apSelf, float afInterval, int aCurrentTi
 {
     if (mapTimer->GetTimeMS() > kPlayerMarkersUpdateTime)
     {
-        //World::Get().GetRunner().Trigger(PlayerMapMarkerUpdateEvent());
+        World::Get().GetRunner().Trigger(PlayerMapMarkerUpdateEvent());
 
         #if 0
         char stack[0x40]{};
@@ -41,8 +41,7 @@ void Hook_MapMenu_AdvanceMovie(MapMenu* apSelf, float afInterval, int aCurrentTi
         #endif
 
         //MapMenu_RefreshMarkers(apSelf);
-
-        *(uint8_t*)((uint8_t*)apSelf + 0x30498) = 1;
+        //*(uint8_t*)((uint8_t*)apSelf + 0x30498) = 1;
     }
 
     MapMenu_AdvanceMovie(apSelf, afInterval, aCurrentTime);
