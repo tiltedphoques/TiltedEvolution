@@ -60,6 +60,7 @@ protected:
     void OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
+    void TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept;
 
     void ProcessFactionsChanges() const noexcept;
     void ProcessMovementChanges() const noexcept;

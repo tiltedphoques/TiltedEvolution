@@ -1,8 +1,5 @@
 #pragma once
 
-#include <TiltedCore/Buffer.hpp>
-#include <TiltedCore/Stl.hpp>
-
 struct ActorValues
 {
     ActorValues() = default;

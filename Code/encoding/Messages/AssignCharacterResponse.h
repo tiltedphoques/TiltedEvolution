@@ -5,6 +5,7 @@
 #include <Structs/ActorValues.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/GameId.h>
+#include <Structs/Inventory.h>
 
 struct AssignCharacterResponse final : ServerMessage
 {
@@ -27,6 +28,7 @@ struct AssignCharacterResponse final : ServerMessage
                CellId == achRhs.CellId &&
                WorldSpaceId == achRhs.WorldSpaceId &&
                AllActorValues == achRhs.AllActorValues &&
+               CurrentInventory == achRhs.CurrentInventory &&
                Owner == achRhs.Owner &&
                IsDead == achRhs.IsDead &&
                IsWeaponDrawn == achRhs.IsWeaponDrawn;
@@ -39,6 +41,7 @@ struct AssignCharacterResponse final : ServerMessage
     GameId CellId{};
     GameId WorldSpaceId{};
     ActorValues AllActorValues{};
+    Inventory CurrentInventory{};
     bool Owner{ false };
     bool IsDead{};
     bool IsWeaponDrawn{};

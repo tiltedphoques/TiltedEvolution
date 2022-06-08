@@ -9,6 +9,7 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     CellId.Serialize(aWriter);
     WorldSpaceId.Serialize(aWriter);
     AllActorValues.Serialize(aWriter);
+    CurrentInventory.Serialize(aWriter);
     Serialization::WriteBool(aWriter, Owner);
     Serialization::WriteBool(aWriter, IsDead);
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
@@ -23,6 +24,7 @@ void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     CellId.Deserialize(aReader);
     WorldSpaceId.Deserialize(aReader);
     AllActorValues.Deserialize(aReader);
+    CurrentInventory.Deserialize(aReader);
     Owner = Serialization::ReadBool(aReader);
     IsDead = Serialization::ReadBool(aReader);
     IsWeaponDrawn = Serialization::ReadBool(aReader);

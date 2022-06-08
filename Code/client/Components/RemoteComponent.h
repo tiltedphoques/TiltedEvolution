@@ -4,8 +4,6 @@
 #error Include Components.h instead
 #endif
 
-#include <Messages/CharacterSpawnRequest.h>
-
 #include <Structs/Inventory.h>
 
 struct RemoteComponent
@@ -14,5 +12,4 @@ struct RemoteComponent
 
     uint32_t Id;
     uint32_t CachedRefId;
-    CharacterSpawnRequest SpawnRequest{};
 };

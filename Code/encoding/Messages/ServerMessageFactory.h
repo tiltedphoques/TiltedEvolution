@@ -46,6 +46,8 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/NotifySubtitle.h>
 #include <Messages/NotifyPlayerDialogue.h>
+#include <Messages/NotifyActorTeleport.h>
+#include <Messages/NotifyRelinquishControl.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifyPlayerLevel.h>
@@ -70,7 +72,8 @@ struct ServerMessageFactory
                                  NotifyObjectInventoryChanges, NotifySpellCast, NotifyProjectileLaunch, NotifyInterruptCast,
                                  NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage,
                                  NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast,
-                                 TeleportCommandResponse, NotifyPlayerRespawn, NotifyPlayerLeft, NotifyPlayerJoined, 
+                                 TeleportCommandResponse, NotifyPlayerRespawn, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue,
+                                 NotifyActorTeleport, NotifyRelinquishControl, NotifyPlayerLeft, NotifyPlayerJoined, 
                                  NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyPlayerLevel, NotifyPlayerCellChanged,
                                  NotifyTeleport>;
 

@@ -192,6 +192,7 @@ struct Actor : TESObjectREFR
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
+    Inventory GetEquipment() const noexcept;
     int32_t GetGoldAmount() noexcept;
     uint16_t GetLevel() noexcept;
 
@@ -209,7 +210,7 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
-    void SetActorInventory(Inventory& aInventory) noexcept;
+    void SetActorInventory(const Inventory& aInventory) noexcept;
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
@@ -234,8 +235,14 @@ struct Actor : TESObjectREFR
 
     enum ActorFlags
     {
+        IS_A_MOUNT = 1 << 1,
         IS_ESSENTIAL = 1 << 18,
     };
+
+    bool IsMount() const noexcept
+    {
+        return flags2 & ActorFlags::IS_A_MOUNT;
+    }
 
     bool IsEssential() const noexcept
     {

@@ -41,7 +41,7 @@ ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatche
 
 void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept
 {
-    auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(aEntity);
+    auto& actorValuesComponent = m_world.emplace_or_replace<ActorValuesComponent>(aEntity);
 
     for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
@@ -61,8 +61,7 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-    const auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = Cast<Actor>(pForm);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (pActor != NULL)
     {

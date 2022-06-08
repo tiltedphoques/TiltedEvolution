@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <TiltedCore/Buffer.hpp>
+
 #include <Structs/GameId.h>
 
 struct NotifyEquipmentChanges final : ServerMessage

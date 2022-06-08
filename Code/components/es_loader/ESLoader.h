@@ -6,7 +6,7 @@ namespace fs = std::filesystem;
 
 namespace ESLoader
 {
-class RecordCollection;
+struct RecordCollection;
 
 struct PluginData
 {

@@ -40,6 +40,8 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyActorTeleport.h>
+#include <Messages/NotifyRelinquishControl.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -185,7 +187,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent, OwnerComponent, InventoryComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
@@ -199,18 +201,37 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             // This entity already has an owner
             spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
-            const auto* pServer = GameServer::Get();
-
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
+            auto& inventoryComponent = view.get<InventoryComponent>(*itor);
             auto& characterComponent = view.get<CharacterComponent>(*itor);
             auto& movementComponent = view.get<MovementComponent>(*itor);
             auto& cellIdComponent = view.get<CellIdComponent>(*itor);
+            auto& ownerComponent = view.get<OwnerComponent>(*itor);
 
-            AssignCharacterResponse response;
+            auto& partyService = m_world.GetPartyService();
+
+            bool isOwner = false;
+
+            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer)
+                && !characterComponent.IsMount())
+            {
+                PartyService::Party* pParty = partyService.GetPlayerParty(acMessage.pPlayer);
+                Player* pOwningPlayer = view.get<OwnerComponent>(*itor).GetOwner();
+
+                // Transfer ownership if owning player is in the same party as the owner
+                if (std::find(pParty->Members.begin(), pParty->Members.end(), pOwningPlayer) != pParty->Members.end())
+                {
+                    TransferOwnership(acMessage.pPlayer, World::ToInteger(*itor));
+                    isOwner = true;
+                }
+            }
+
+            AssignCharacterResponse response{};
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
-            response.Owner = false;
+            response.Owner = isOwner;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
+            response.CurrentInventory = inventoryComponent.Content;
             response.IsDead = characterComponent.IsDead();
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
             response.PlayerId = characterComponent.PlayerId;
@@ -219,6 +240,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.WorldSpaceId = cellIdComponent.WorldSpaceId;
 
             acMessage.pPlayer->Send(response);
+
             return;
         }
     }
@@ -231,19 +253,40 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 {
     auto& message = acMessage.Packet;
 
-    OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
 
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
+    if (!m_world.valid(cEntity))
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.pPlayer->GetConnectionId());
+        spdlog::warn("Client {:X} requested ownership transfer of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
     }
 
-    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+    if (message.WorldSpaceId || message.CellId)
+    {
+        auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
+
+        NotifyActorTeleport notify{};
+        notify.FormId = formIdComponent.Id;
+        notify.WorldSpaceId = message.WorldSpaceId;
+        notify.CellId = message.CellId;
+        notify.Position = message.Position;
+
+        auto& cellIdComponent = m_world.get<CellIdComponent>(cEntity);
+        cellIdComponent.WorldSpaceId = message.WorldSpaceId;
+        cellIdComponent.Cell = message.CellId;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
+
+        auto& movementComponent = m_world.get<MovementComponent>(cEntity);
+        movementComponent.Position = message.Position;
+        movementComponent.Sent = true;
+
+        GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+    }
+
+    auto& characterOwnerComponent = m_world.get<OwnerComponent>(cEntity);
     characterOwnerComponent.InvalidOwners.push_back(acMessage.pPlayer);
 
-    m_world.GetDispatcher().trigger(OwnershipTransferEvent(*it));
+    m_world.GetDispatcher().trigger(OwnershipTransferEvent(cEntity));
 }
 
 void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& acEvent) const noexcept
@@ -312,23 +355,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
 {
-    auto& message = acMessage.Packet;
-
-    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
-    auto view = m_world.view<OwnerComponent>();
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
-    {
-        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", acMessage.pPlayer->GetConnectionId(), message.ServerId);
-        return;
-    }
-
-    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-
-    characterOwnerComponent.SetOwner(acMessage.pPlayer);
-    characterOwnerComponent.InvalidOwners.clear();
-
-    spdlog::info("\tOwnership claimed {:X}", message.ServerId);
+    TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
@@ -615,8 +642,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     if (message.WorldSpaceId != GameId{})
     {
         cellIdComponent.WorldSpaceId = message.WorldSpaceId;
-        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
-        cellIdComponent.CenterCoords = coords;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
     }
 
     auto& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
@@ -629,6 +655,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetPlayer(isPlayer);
     characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
     characterComponent.SetDragon(message.IsDragon);
+    characterComponent.SetMount(message.IsMount);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -660,12 +687,11 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
         dispatcher.trigger(PlayerEnterWorldEvent(pPlayer));
     }
 
-    AssignCharacterResponse response;
+    AssignCharacterResponse response{};
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
     response.PlayerId = characterComponent.PlayerId;
     response.Owner = true;
-    response.AllActorValues = message.AllActorValues;
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);
 
@@ -673,6 +699,31 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
 }
 
+void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept
+{
+    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    auto view = m_world.view<OwnerComponent>();
+    const auto it = view.find(static_cast<entt::entity>(acServerId));
+    if (it == view.end())
+    {
+        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", apPlayer->GetConnectionId(), acServerId);
+        return;
+    }
+
+    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+
+    if (characterOwnerComponent.GetOwner() != apPlayer)
+    {
+        NotifyRelinquishControl notify;
+        notify.ServerId = acServerId;
+        characterOwnerComponent.pOwner->Send(notify);
+    }
+
+    characterOwnerComponent.SetOwner(apPlayer);
+    characterOwnerComponent.InvalidOwners.clear();
+
+    spdlog::info("\tOwnership claimed {:X}", acServerId);
+}
 
 void CharacterService::ProcessFactionsChanges() const noexcept
 {

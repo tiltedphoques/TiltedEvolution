@@ -1,5 +1,6 @@
 #pragma once
 
+struct World;
 struct ImguiService;
 struct TransportService;
 struct UpdateEvent;
@@ -15,7 +16,7 @@ struct NotifyPartyLeft;
 */
 struct PartyService
 {
-    PartyService(entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept;
+    PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept;
     ~PartyService() = default;
 
     TP_NOCOPYMOVE(PartyService);
@@ -76,6 +77,7 @@ private:
     uint32_t m_leaderPlayerId;
     Vector<uint32_t> m_partyMembers;
 
+    World& m_world;
     TransportService& m_transport;
 
     entt::scoped_connection m_updateConnection;

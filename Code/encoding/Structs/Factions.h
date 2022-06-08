@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Structs/Faction.h>
-#include <TiltedCore/Stl.hpp>
+#include "Faction.h"
 
 using TiltedPhoques::Vector;
 

@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <TiltedCore/Stl.hpp>
-#include <TiltedCore/Buffer.hpp>
 
 using TiltedPhoques::String;
 using TiltedPhoques::Vector;

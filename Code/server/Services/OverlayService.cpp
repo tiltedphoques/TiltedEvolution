@@ -9,6 +9,8 @@
 #include <Messages/TeleportRequest.h>
 #include <Messages/NotifyTeleport.h>
 
+#include "Game/Player.h"
+
 #include <regex>
 
 OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)

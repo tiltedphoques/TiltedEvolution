@@ -1,8 +1,5 @@
 #pragma once
 
-#include <TiltedCore/Stl.hpp>
-#include <cstdint>
-
 struct AnimationGraphDescriptor
 {
     AnimationGraphDescriptor() = default;

@@ -3,7 +3,6 @@
 #include "World.h"
 
 #include <Services/DiscoveryService.h>
-#include <Services/CharacterService.h>
 #include <Services/InputService.h>
 #include <Services/TransportService.h>
 #include <Services/RunnerService.h>
@@ -12,7 +11,6 @@
 #include <Services/DiscordService.h>
 #include <Services/ObjectService.h>
 #include <Services/QuestService.h>
-#include <Services/PartyService.h>
 #include <Services/ActorValueService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
@@ -41,7 +39,7 @@ World::World()
      ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
      ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
      ctx().emplace<QuestService>(*this, m_dispatcher);
-     ctx().emplace<PartyService>(m_dispatcher, m_transport);
+     ctx().emplace<PartyService>(*this, m_dispatcher, m_transport);
      ctx().emplace<ActorValueService>(*this, m_dispatcher, m_transport);
      ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
      ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);

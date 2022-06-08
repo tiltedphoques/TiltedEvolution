@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Structs/GameId.h>
-#include <TiltedCore/Buffer.hpp>
+
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
 #include <Structs/AnimationVariables.h>

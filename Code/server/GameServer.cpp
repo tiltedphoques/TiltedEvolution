@@ -1,5 +1,3 @@
-#include "Messages/StringCacheUpdate.h"
-
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
@@ -22,9 +20,6 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
 
-#if TP_PLATFORM_WINDOWS
-#include <windows.h>
-#endif
 
 namespace
 {
