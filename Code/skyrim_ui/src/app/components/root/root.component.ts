@@ -145,7 +145,6 @@ export class RootComponent implements OnInit, OnDestroy {
       if (environment.game) {
         this.client.deactivate();
       } else {
-
         if (!this.connected) {
           this.user.login('1', 'Dumbeldor');
 

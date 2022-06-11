@@ -35,7 +35,8 @@ export class PlayerListService {
                 return;
             }
             this.isConnect = connect;
-            this.playerList.next(undefined);
+            //this.playerList.next(undefined);
+
             this.updatePlayerList();
         });
     }

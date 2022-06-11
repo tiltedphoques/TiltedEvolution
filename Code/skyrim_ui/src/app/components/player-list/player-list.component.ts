@@ -25,10 +25,17 @@ export class PlayerListComponent implements OnInit, OnDestroy {
     }
 
     public get playerList(): PlayerList | undefined {
+        console.log("##LIST##");
+        console.log("list " + this.playerListService.playerList);
+        console.log("list " + this.playerListService.playerList.value);
         return this.playerListService.playerList.value;
     }
 
     public get getListSize(): number {
+        console.log("##SIZE##");
+        console.log("service " + this.playerListService);
+        console.log("list " + this.playerList);
+        console.log("players" + this.playerList.players);
         return this.playerList.players.size;
     }
 
