@@ -1,3 +1,34 @@
+# [1.34.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.3...v1.34.0) (2022-06-11)
+
+
+### Bug Fixes
+
+* actor stuck on traveling through door ([6cd70c5](https://github.com/tiltedphoques/TiltedEvolution/commit/6cd70c544745bbdb7804cafb0780f22be35578d4))
+* build error ([497d679](https://github.com/tiltedphoques/TiltedEvolution/commit/497d6792d9fc901ae4eef1f89fc1e2665f1ce8fc))
+* build error ([677daaa](https://github.com/tiltedphoques/TiltedEvolution/commit/677daaaffcc3ccecbd41bc00ad0a0052f277755b))
+* conjure familiar ghost effect apply ([5651b65](https://github.com/tiltedphoques/TiltedEvolution/commit/5651b655d662323fed2a80a5a642564a3aadd060))
+* disable xmake ccache as it is broken ([ec019da](https://github.com/tiltedphoques/TiltedEvolution/commit/ec019da33063a5959c4fcfb9148f8e93386765ef))
+* don't tp temporaries ([b1912d8](https://github.com/tiltedphoques/TiltedEvolution/commit/b1912d8085005a863d18235d0c8f1d8c87130a68))
+* double applying of RemoteComponent ([c6bf19c](https://github.com/tiltedphoques/TiltedEvolution/commit/c6bf19c7d460c191293a685f2cef71a86c1ece5d))
+* double queue of event ([3f53434](https://github.com/tiltedphoques/TiltedEvolution/commit/3f53434457eae479415597d0f021a04f7ef91ec2))
+* entity actor mover ([046aadd](https://github.com/tiltedphoques/TiltedEvolution/commit/046aadd8ff7b2fca7e2992d473be5c9e6372eacc))
+* form id comparison ([a11649e](https://github.com/tiltedphoques/TiltedEvolution/commit/a11649ed87b2ab96d10ad9a0d365d60d0af235d5))
+* isOwner bool on assignment ([563cf47](https://github.com/tiltedphoques/TiltedEvolution/commit/563cf472df2b8eb99e46fbdca92f4119c43f5fc7))
+* MoveActor bug ([81b338b](https://github.com/tiltedphoques/TiltedEvolution/commit/81b338bfecf7e316205b5d9473a1baa7b60818a1))
+* potential disconnect crash ([c1870b9](https://github.com/tiltedphoques/TiltedEvolution/commit/c1870b9af94f50dc2765e1704d5ee08134e0dc4c))
+* properly update magic equipment ([197f0cc](https://github.com/tiltedphoques/TiltedEvolution/commit/197f0cc3050abc62571898204b99d35ed6769704))
+* server crash ([b93cb7f](https://github.com/tiltedphoques/TiltedEvolution/commit/b93cb7f59f193c98e18d218450586b88fbaae1fe))
+* the door problem (again) ([77c0098](https://github.com/tiltedphoques/TiltedEvolution/commit/77c009864eee163a2721d0c8976259a8ad781970))
+* transfer temp actors ([a5c3ad7](https://github.com/tiltedphoques/TiltedEvolution/commit/a5c3ad72e180cbbd592ba0931f4b4bb8c93b6aa5))
+* wrongful ownership transfer ([991337b](https://github.com/tiltedphoques/TiltedEvolution/commit/991337bb01762ed6ab7b6c9192ce2f5db71530a4))
+
+
+### Features
+
+* improved quest debugger ([397e971](https://github.com/tiltedphoques/TiltedEvolution/commit/397e9717a980332d6418437d19636b66870439d2))
+* party leader hosts all actors ([0bb89bc](https://github.com/tiltedphoques/TiltedEvolution/commit/0bb89bc7bae1e66bcb63838db4bcf6e1271f573b))
+* transfer ownership to party leader on creation ([7c6a9ed](https://github.com/tiltedphoques/TiltedEvolution/commit/7c6a9ed45e5786266357ec21176310719bf92753))
+
 ## [1.33.3](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.2...v1.33.3) (2022-05-29)
 
 ## [1.33.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.1...v1.33.2) (2022-05-28)
