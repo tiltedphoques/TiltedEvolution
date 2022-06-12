@@ -464,7 +464,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     }
 
     spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
-    
+
     // TODO(cosideci): why?
     m_world.emplace_or_replace<FormIdComponent>(*entity, pActor->formID);
 

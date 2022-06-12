@@ -5,7 +5,7 @@
 
 namespace GameplayFormulas
 {
-float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept;
+float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexcept;
 }
 
 namespace Settings

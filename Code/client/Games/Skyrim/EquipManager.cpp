@@ -189,6 +189,8 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         World::Get().GetRunner().Trigger(evt);
     }
 
+    spdlog::debug("UnEquipHook, actor: {:X}", apActor->formID);
+
     return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
 }
 
@@ -298,15 +300,15 @@ static TiltedPhoques::Initializer s_equipmentHooks([]()
     POINTER_SKYRIMSE(TEquipShout, s_equipShoutFunc, 38930);
     POINTER_SKYRIMSE(TUnEquipShout, s_unequipShoutFunc, 38935);
 
-    RealUnEquip = s_unequipFunc.Get();
     RealEquip = s_equipFunc.Get();
+    RealUnEquip = s_unequipFunc.Get();
     RealEquipSpell = s_equipSpellFunc.Get();
     RealUnEquipSpell = s_unequipSpellFunc.Get();
     RealEquipShout = s_equipShoutFunc.Get();
     RealUnEquipShout = s_unequipShoutFunc.Get();
 
-    TP_HOOK(&RealUnEquip, UnEquipHook);
     TP_HOOK(&RealEquip, EquipHook);
+    TP_HOOK(&RealUnEquip, UnEquipHook);
     TP_HOOK(&RealEquipSpell, EquipSpellHook);
     TP_HOOK(&RealUnEquipSpell, UnEquipSpellHook);
     TP_HOOK(&RealEquipShout, EquipShoutHook);
