@@ -38,7 +38,9 @@ struct CharacterSpawnRequest final : ServerMessage
             InventoryContent == acRhs.InventoryContent &&
             FactionsContent == acRhs.FactionsContent &&
             FaceTints == acRhs.FaceTints &&
+            PlayerId == acRhs.PlayerId &&
             IsDead == acRhs.IsDead &&
+            IsPlayer == acRhs.IsPlayer &&
             IsWeaponDrawn == acRhs.IsWeaponDrawn &&
             GetOpcode() == acRhs.GetOpcode();
     }
@@ -56,6 +58,7 @@ struct CharacterSpawnRequest final : ServerMessage
     ActionEvent LatestAction{};
     Tints FaceTints{};
     ActorValues InitialActorValues{};
+    uint32_t PlayerId{};
     bool IsDead{};
     bool IsPlayer{};
     bool IsWeaponDrawn{};

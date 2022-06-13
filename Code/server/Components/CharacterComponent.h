@@ -93,4 +93,5 @@ struct CharacterComponent
     Tints FaceTints{};
     Factions FactionsContent{};
     uint16_t Flags{};
+    int32_t PlayerId{};
 };

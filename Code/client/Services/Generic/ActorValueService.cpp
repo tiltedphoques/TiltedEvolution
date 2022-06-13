@@ -253,6 +253,9 @@ void ActorValueService::RunDeathStateUpdates() noexcept
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
         Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+            continue;
+
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
@@ -303,6 +306,9 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
         if (!pExtension->IsPlayer())
             pActor->Kill();
     }
+
+    if (pActor->GetExtension()->IsRemotePlayer())
+        World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor->formID);
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept

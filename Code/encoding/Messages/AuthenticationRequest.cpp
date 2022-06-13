@@ -9,6 +9,9 @@ void AuthenticationRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     Serialization::WriteString(aWriter, Version);
     UserMods.Serialize(aWriter);
     Serialization::WriteString(aWriter, Username);
+    WorldSpaceId.Serialize(aWriter);
+    CellId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, Level);
 }
 
 void AuthenticationRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -22,4 +25,7 @@ void AuthenticationRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     Version = Serialization::ReadString(aReader);
     UserMods.Deserialize(aReader);
     Username = Serialization::ReadString(aReader);
+    WorldSpaceId.Deserialize(aReader);
+    CellId.Deserialize(aReader);
+    Level = Serialization::ReadVarInt(aReader) & 0xFFFF;
 }

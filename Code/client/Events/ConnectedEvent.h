@@ -5,5 +5,9 @@
 */
 struct ConnectedEvent
 {
-    ConnectedEvent() {}
+    ConnectedEvent(uint32_t aPlayerId) : PlayerId(aPlayerId)
+    {
+    }
+
+    uint32_t PlayerId{};
 };

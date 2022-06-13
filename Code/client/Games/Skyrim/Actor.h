@@ -194,6 +194,7 @@ struct Actor : TESObjectREFR
     MagicEquipment GetMagicEquipment() const noexcept;
     Inventory GetEquipment() const noexcept;
     int32_t GetGoldAmount() noexcept;
+    uint16_t GetLevel() noexcept;
 
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;

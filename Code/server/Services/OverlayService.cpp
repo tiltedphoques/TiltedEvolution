@@ -6,6 +6,8 @@
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/PlayerDialogueRequest.h>
 #include <Messages/NotifyPlayerDialogue.h>
+#include <Messages/TeleportRequest.h>
+#include <Messages/NotifyTeleport.h>
 
 #include "Game/Player.h"
 
@@ -16,11 +18,12 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
 {
     m_chatMessageConnection = aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this);
     m_playerDialogueConnection = aDispatcher.sink<PacketEvent<PlayerDialogueRequest>>().connect<&OverlayService::OnPlayerDialogue>(this);
+    m_teleportConnection = aDispatcher.sink<PacketEvent<TeleportRequest>>().connect<&OverlayService::OnTeleport>(this);
 }
 
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
-    NotifyChatMessageBroadcast notifyMessage;
+    NotifyChatMessageBroadcast notifyMessage{};
     notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
 
     // TODO: std regex is slow
@@ -34,13 +37,36 @@ void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& 
 {
     auto& message = acMessage.Packet;
 
-    NotifyPlayerDialogue notify;
+    NotifyPlayerDialogue notify{};
     notify.Text = acMessage.pPlayer->GetUsername() + ": " + message.Text;
 
     auto& party = acMessage.pPlayer->GetParty();
 
-    // TODO(cosideci): exclude player?
     GameServer::Get()->SendToParty(notify, party);
+}
+
+void OverlayService::OnTeleport(const PacketEvent<TeleportRequest>& acMessage) const noexcept
+{
+    Player* pTargetPlayer = m_world.GetPlayerManager().GetById(acMessage.Packet.PlayerId);
+    if (!pTargetPlayer)
+        return;
+
+    NotifyTeleport response{};
+
+    auto character = pTargetPlayer->GetCharacter();
+    if (character)
+    {
+        const auto* pMovementComponent = m_world.try_get<MovementComponent>(*character);
+        if (pMovementComponent)
+        {
+            const auto& cellComponent = pTargetPlayer->GetCellComponent();
+            response.CellId = cellComponent.Cell;
+            response.Position = pMovementComponent->Position;
+            response.WorldSpaceId = cellComponent.WorldSpaceId;
+        }
+    }
+
+    acMessage.pPlayer->Send(response);
 }
 
 #if 0

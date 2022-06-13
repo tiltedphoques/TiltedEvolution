@@ -8,6 +8,7 @@
 struct World;
 
 struct PlayerDialogueRequest;
+struct TeleportRequest;
 
 /**
 * @brief Dispatches UI events that modify the UI view of other cients.
@@ -24,6 +25,7 @@ class OverlayService
     void HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept;
     void HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept;
     void OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept;
+    void OnTeleport(const PacketEvent<TeleportRequest>& acMessage) const noexcept;
 
   private:
     World& m_world;
@@ -31,4 +33,5 @@ class OverlayService
     entt::scoped_connection m_chatMessageConnection;
     entt::scoped_connection m_playerEnterWorldConnection;
     entt::scoped_connection m_playerDialogueConnection;
+    entt::scoped_connection m_teleportConnection;
 };

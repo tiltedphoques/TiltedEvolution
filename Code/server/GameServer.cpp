@@ -16,6 +16,9 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
+#include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
+#include <console/ConsoleRegistry.h>
 
 
 namespace
@@ -324,7 +327,13 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
             pPlayer->SetCellComponent(CellIdComponent{{}, {}, {}});
             m_pWorld->GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
         }
+
         m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
+
+        NotifyPlayerLeft notify{};
+        notify.PlayerId = pPlayer->GetId();
+        notify.Username = pPlayer->GetUsername();
+        SendToPlayers(notify);
 
         entt::entity playerCharacter = pPlayer->GetCharacter().value_or(static_cast<entt::entity>(0));
 
@@ -608,6 +617,9 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetUsername(std::move(acRequest->Username));
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
+        pPlayer->SetLevel(acRequest->Level);
+
+        serverResponse.PlayerId = pPlayer->GetId();
 
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
         spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
@@ -627,7 +639,27 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         Send(aConnectionId, initStringCache);
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
+        for (auto* pOtherPlayer : m_pWorld->GetPlayerManager())
+        {
+            if (pOtherPlayer == pPlayer)
+                continue;
+
+            NotifyPlayerJoined notify{};
+            notify.PlayerId = pOtherPlayer->GetId();
+            notify.Username = pOtherPlayer->GetUsername();
+
+            auto& cellComponent = pOtherPlayer->GetCellComponent();
+            notify.WorldSpaceId = cellComponent.WorldSpaceId;
+            notify.CellId = cellComponent.Cell;
+
+            notify.Level = pOtherPlayer->GetLevel();
+
+            spdlog::info("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
+
+            Send(pPlayer->GetConnectionId(), notify);
+        }
+
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {

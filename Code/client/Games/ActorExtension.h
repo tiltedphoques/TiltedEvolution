@@ -20,7 +20,6 @@ struct ActorExtension
 
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
-    int32_t LastUsedCombatSkill = -1;
 
 private:
 

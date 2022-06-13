@@ -47,6 +47,13 @@ struct PartyService
         return m_invitations;
     }
 
+    void CreateParty() const noexcept;
+    void LeaveParty() const noexcept;
+    void CreateInvite(const uint32_t aPlayerId) const noexcept;
+    void AcceptInvite(const uint32_t aInviterId) const noexcept;
+    void KickPartyMember(const uint32_t aPlayerId) const noexcept;
+    void ChangePartyLeader(const uint32_t aPlayerId) const noexcept;
+
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
@@ -71,7 +78,7 @@ private:
     Vector<uint32_t> m_partyMembers;
 
     World& m_world;
-    TransportService& m_transportService;
+    TransportService& m_transport;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectConnection;
