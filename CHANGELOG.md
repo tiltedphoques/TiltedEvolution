@@ -1,3 +1,33 @@
+# [1.35.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.34.0...v1.35.0) (2022-06-13)
+
+
+### Bug Fixes
+
+* actually send the data to ui ([8a39e8f](https://github.com/tiltedphoques/TiltedEvolution/commit/8a39e8f5f789258128dec8eb57300a1a1cb83fc0))
+* add missing entt::scoped_connection ([b4c5dbb](https://github.com/tiltedphoques/TiltedEvolution/commit/b4c5dbbba7485d17ea9ebbce66a2bb1813088870))
+* adjust playerList styling ([765487b](https://github.com/tiltedphoques/TiltedEvolution/commit/765487b03cb3642dd78481db92abb4043518f773))
+* build error ([a130136](https://github.com/tiltedphoques/TiltedEvolution/commit/a1301362cb391c325ba936db8a4a8db13d3ed6d0))
+* build errors ([cfcb75e](https://github.com/tiltedphoques/TiltedEvolution/commit/cfcb75ebcb5114029467396fba204a5f681f0f4d))
+* ci linux ([2d6bb43](https://github.com/tiltedphoques/TiltedEvolution/commit/2d6bb43d4c38d71793bfe2e6920e54dd0e5d30a7))
+* crash ([e5cc47e](https://github.com/tiltedphoques/TiltedEvolution/commit/e5cc47e17082c4acadfe96af5426ec0af9a39e5a))
+* entt crash ([780fe20](https://github.com/tiltedphoques/TiltedEvolution/commit/780fe20a576df21bf5ebe7272c680400d1052e00))
+* extra entt listener for updates to PlayerComponent ([1b032cf](https://github.com/tiltedphoques/TiltedEvolution/commit/1b032cfaffbc80ee1cd1184a58533271636aed4c))
+* invisible players ([feac82e](https://github.com/tiltedphoques/TiltedEvolution/commit/feac82ec57a8735d6bc6527966c32081fe94010e))
+* listen to RemotePlayerDespawnedEvent ([0aa9cc2](https://github.com/tiltedphoques/TiltedEvolution/commit/0aa9cc2546ec1bccadfad90d5edac672ec0b15f7))
+* map to level instead of serverid the second time ([a7d86b1](https://github.com/tiltedphoques/TiltedEvolution/commit/a7d86b133c9f695389110001cf63cd6803d3142f))
+* no worldspace in interiors ([3406433](https://github.com/tiltedphoques/TiltedEvolution/commit/34064338f4b667540eb45bff0b2f4e718fa9ee0b))
+* player removed event ([81069ca](https://github.com/tiltedphoques/TiltedEvolution/commit/81069cacbd798087a86299d9898d937827ff55cb))
+* PlayerComponent for local player ([e9962ce](https://github.com/tiltedphoques/TiltedEvolution/commit/e9962ceded3faf6e71bf334e4500c2a160e0eedd))
+
+
+### Features
+
+* infrastructure for teleport button ([297d028](https://github.com/tiltedphoques/TiltedEvolution/commit/297d0281d46fb0a088e674ebd91eace21cf0650a))
+* net debug data for ui ([8d79a75](https://github.com/tiltedphoques/TiltedEvolution/commit/8d79a759e062ead4f073ef803a905bd7bbefaa4a))
+* player world presence event for party UI ([5b4d5d1](https://github.com/tiltedphoques/TiltedEvolution/commit/5b4d5d1bf7dc8b59a146303c108183b25aa64b92))
+* set initial health on player load ([8c66ac1](https://github.com/tiltedphoques/TiltedEvolution/commit/8c66ac12d16592629ca71a9b33bdc18ecf15c06d))
+* sync level ups in UI ([d325373](https://github.com/tiltedphoques/TiltedEvolution/commit/d325373b2916c61ed927df04dea4e0ef301448b7))
+
 # [1.34.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.3...v1.34.0) (2022-06-11)
 
 
