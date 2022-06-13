@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Components.h>
-
 struct ServerMessage;
 struct Player
 {

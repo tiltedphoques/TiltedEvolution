@@ -37,6 +37,8 @@ struct DialogueEvent;
 struct NotifyDialogue;
 struct SubtitleEvent;
 struct NotifySubtitle;
+struct NotifyActorTeleport;
+struct NotifyRelinquishControl;
 
 struct Actor;
 struct World;
@@ -51,6 +53,8 @@ struct CharacterService
     ~CharacterService() noexcept = default;
 
     TP_NOCOPYMOVE(CharacterService);
+
+    bool TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept;
 
     void OnActorAdded(const ActorAddedEvent& acEvent) noexcept;
     void OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept;
@@ -79,10 +83,16 @@ struct CharacterService
     void OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept;
     void OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept;
     void OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept;
+    void OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept;
+    void OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept;
+
+    void ProcessNewEntity(entt::entity aEntity) const noexcept;
 
 private:
 
-    void ProcessNewEntity(entt::entity aEntity) const noexcept;
+    void MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId,
+                   const Vector3_NetQuantize& acPosition) const noexcept;
+
     void RequestServerAssignment(entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
 
@@ -101,7 +111,19 @@ private:
 
     float m_cachedExperience = 0.f;
 
-    Map<uint32_t, std::pair<double, bool>> m_weaponDrawUpdates{};
+    struct WeaponDrawData
+    {
+        WeaponDrawData() = default;
+        WeaponDrawData(bool aDrawWeapon)
+            : m_drawWeapon(aDrawWeapon)
+        {}
+
+        double m_timer = 0.0;
+        bool m_drawWeapon = false;
+        bool m_isFirstPass = true;
+    };
+
+    Map<uint32_t, WeaponDrawData> m_weaponDrawUpdates{};
 
     entt::scoped_connection m_referenceAddedConnection;
     entt::scoped_connection m_referenceRemovedConnection;
@@ -130,4 +152,6 @@ private:
     entt::scoped_connection m_dialogueSyncConnection;
     entt::scoped_connection m_subtitleEventConnection;
     entt::scoped_connection m_subtitleSyncConnection;
+    entt::scoped_connection m_actorTeleportConnection;
+    entt::scoped_connection m_relinquishConnection;
 };

@@ -1,10 +1,13 @@
-ARG arch=x64
+ARG arch=x86_64
 
 FROM tiltedphoques/builder:${arch} AS builder
 
 ARG arch
 
 WORKDIR /home/server
+
+RUN apt update && \
+apt install cmake -y
 
 COPY ./modules ./modules
 COPY ./Libraries ./Libraries
@@ -18,7 +21,11 @@ export XMAKE_ROOT=y && \
 apt update && \
 apt install cmake -y && \
 xmake config -y && \
-xmake -j`nproc` && \
+xmake -j`nproc`
+
+RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
+export PATH="$XMAKE_ROOTDIR:$PATH" && \
+export XMAKE_ROOT=y && \
 objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug && \
 objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
 

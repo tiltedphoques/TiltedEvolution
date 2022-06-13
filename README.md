@@ -30,5 +30,9 @@ Have some experience in C++, and want to help advance the project faster? Contri
 * [**tp_process/**](./Code/tp_process): Worker for CEF (Chromium Embedded Framework) overlay.
 
 ## License
+[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
 
-Tilted Online is written by multiple independent parties. The copyright of a contribution is held by the contributing party.
+Tilted Online is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.

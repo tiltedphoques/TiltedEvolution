@@ -37,6 +37,7 @@
 #include <TiltedCore/TaskQueue.hpp>
 #include <TiltedCore/Buffer.hpp>
 #include <TiltedCore/Initializer.hpp>
+#include <TiltedCore/Serialization.hpp>
 
 // TiltedReverse
 #include <AutoPtr.hpp>

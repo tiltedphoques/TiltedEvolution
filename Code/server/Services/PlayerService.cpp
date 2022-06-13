@@ -4,9 +4,7 @@
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
-#include <Components.h>
 #include <GameServer.h>
-#include <console/ConsoleRegistry.h>
 
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>

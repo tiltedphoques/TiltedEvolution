@@ -19,6 +19,7 @@
 #include <TiltedCore/Stl.hpp>
 #include <TiltedCore/Outcome.hpp>
 #include <TiltedCore/ViewBuffer.hpp>
+#include <TiltedCore/Serialization.hpp>
 
 #include <any>
 #include <mutex>
@@ -26,6 +27,7 @@
 #include <iostream>
 #include <filesystem>
 #include <codecvt>
+#include <optional>
 
 #include <Server.hpp>
 #include <cxxopts.hpp>
@@ -34,6 +36,9 @@
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 #include <BuildInfo.h>
+
+#include <StringCache.h>
+#include <ConsoleRegistry.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -50,5 +55,8 @@ using TiltedPhoques::MakeShared;
 using TiltedPhoques::Server;
 using TiltedPhoques::ViewBuffer;
 using TiltedPhoques::ScopedAllocator;
+using TiltedPhoques::Map;
 
 #undef GetClassName
+
+#include <Components.h>

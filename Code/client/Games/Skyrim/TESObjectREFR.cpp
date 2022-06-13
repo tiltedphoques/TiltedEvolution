@@ -480,13 +480,6 @@ Inventory TESObjectREFR::GetWornArmor() const noexcept
     return wornArmor;
 }
 
-Inventory TESObjectREFR::GetEquippedItems() const noexcept
-{
-    Inventory inventory = GetInventory();
-    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
-    return inventory;
-}
-
 bool TESObjectREFR::IsItemInInventory(uint32_t aFormID) const noexcept
 {
     Inventory inventory = GetInventory([aFormID](TESForm& aForm) { return aForm.formID == aFormID; });

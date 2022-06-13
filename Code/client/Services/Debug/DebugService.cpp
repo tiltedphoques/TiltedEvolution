@@ -13,7 +13,10 @@
 
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+
 #include <Events/UpdateEvent.h>
+#include <Events/MoveActorEvent.h>
+
 
 #include <Games/References.h>
 
@@ -83,7 +86,7 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 
     auto pActor = Actor::Create(pPlayerBaseForm);
 
-    Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
+    const Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
     pActor->SetActorInventory(inventory);
 
     pActor->GetExtension()->SetPlayer(true);
@@ -99,6 +102,7 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
     m_dialogueConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnDialogue>(this);
     m_dispatcher.sink<SubtitleEvent>().connect<&DebugService::OnSubtitle>(this);
+    m_dispatcher.sink<MoveActorEvent>().connect<&DebugService::OnMoveActor>(this);
 }
 
 void DebugService::OnDialogue(const DialogueEvent& acEvent) noexcept
@@ -117,10 +121,41 @@ void DebugService::OnSubtitle(const SubtitleEvent& acEvent) noexcept
     SubtitleText = acEvent.Text;
 }
 
+// TODO: yeah, i'm aware of how dumb this looks, but things crash if
+// you do it directly by adding an event to the queue, no symbols for tiltedcore when debugging,
+// so this'll do for now
+struct MoveData
+{
+    Actor* pActor = nullptr;
+    TESObjectCELL* pCell = nullptr;
+    NiPoint3 position;
+} moveData;
+
+void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
+{
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(acEvent.CellId));
+
+    if (!pActor || !pCell)
+        return;
+
+    //pActor->MoveTo(pCell, acEvent.Position);
+
+    moveData.pActor = pActor;
+    moveData.pCell = pCell;
+    moveData.position = acEvent.Position;
+}
+
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
         return;
+
+    if (moveData.pActor)
+    {
+        moveData.pActor->MoveTo(moveData.pCell, moveData.position);
+        moveData.pActor = nullptr;
+    }
 
     static std::atomic<bool> s_f8Pressed = false;
     static std::atomic<bool> s_f7Pressed = false;
@@ -169,13 +204,16 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            Actor* pActor = Cast<Actor>(TESForm::GetById(0x1a677));
+            pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
+
+        #if 0
             static bool s_enabled = true;
 
             FadeOutGame(s_enabled, true, 1.f, true, 0.f);
 
             s_enabled = !s_enabled;
 
-        #if 0
             static bool s_enabled = true;
             static bool s_firstPerson = false;
 
@@ -212,6 +250,7 @@ static bool g_enablePartyWindow{false};
 static bool g_enableActorValuesWindow{false};
 static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
+static bool g_enableProcessesWindow{false};
 
 void DebugService::OnDraw() noexcept
 {
@@ -269,6 +308,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
+        ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
 
         ImGui::EndMenu();
     }
@@ -303,6 +343,8 @@ void DebugService::OnDraw() noexcept
         DrawQuestDebugView();
     if (g_enableCellWindow)
         DrawCellView();
+    if (g_enableProcessesWindow)
+        DrawProcessView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();

@@ -1,6 +1,9 @@
+#include "StringCache.h"
+
 #include <GameServer.h>
 #include <Services/StringCacheService.h>
 #include <Events/UpdateEvent.h>
+#include <Game/Player.h>
 
 StringCacheService::StringCacheService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld),

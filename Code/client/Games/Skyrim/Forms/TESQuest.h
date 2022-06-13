@@ -5,6 +5,12 @@
 #include <Components/TESFullName.h>
 #include <Forms/BGSStoryManagerTree.h>
 
+struct BGSScene : TESForm
+{
+    GameArray<void*> phases;
+    GameArray<uint32_t> actorIds;
+};
+
 struct TESQuest : BGSStoryManagerTreeForm
 {
     enum class State : uint8_t
@@ -91,7 +97,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     */
     GameList<Objective> objectives;    // 0x00F8
     char pad108[0x100];                // 0x0108
-    GameArray<void*> scenes;           // 0x0208
+    GameArray<BGSScene*> scenes;       // 0x0208
     char pad210[8];                    // 0x0210
     uint16_t currentStage;             // 0x0228 
     bool alreadyRun;                   // 0x022A
@@ -100,6 +106,8 @@ struct TESQuest : BGSStoryManagerTreeForm
     void* pStartEventData;
     uint64_t unkFlags;
     char pad250[24];
+
+    TESObjectREFR* GetAliasedRef(uint32_t aiAliasID) noexcept;
 
     bool IsStageDone(uint16_t stageIndex);
     void SetCompleted(bool force);

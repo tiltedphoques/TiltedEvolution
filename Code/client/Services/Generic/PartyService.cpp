@@ -1,6 +1,5 @@
 #include <Services/PartyService.h>
 
-#include <Services/ImguiService.h>
 #include <Services/TransportService.h>
 
 #include <Events/UpdateEvent.h>
@@ -18,8 +17,8 @@
 #include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyKickRequest.h>
 
-PartyService::PartyService(entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
-    : m_transportService(aTransportService)
+PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
+    : m_world(aWorld), m_transportService(aTransportService)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this);
     m_disconnectConnection = aDispatcher.sink<DisconnectedEvent>().connect<&PartyService::OnDisconnected>(this);
@@ -91,6 +90,18 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
     m_isLeader = acPartyJoined.IsLeader;
     m_leaderPlayerId = acPartyJoined.LeaderPlayerId;
     m_partyMembers = acPartyJoined.PlayerIds;
+
+    // Takes ownership of all actors
+    if (m_isLeader)
+    {
+        auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+        Vector<entt::entity> entities(view.begin(), view.end());
+
+        for (auto entity : entities)
+        {
+            m_world.GetCharacterService().ProcessNewEntity(entity);
+        }
+    }
 }
 
 void PartyService::DestroyParty() noexcept

@@ -8,6 +8,7 @@ struct ImguiService;
 struct UpdateEvent;
 struct DialogueEvent;
 struct SubtitleEvent;
+struct MoveActorEvent;
 
 struct TransportService;
 struct BSAnimationGraphManager;
@@ -25,6 +26,7 @@ struct DebugService
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnDialogue(const DialogueEvent&) noexcept;
     void OnSubtitle(const SubtitleEvent&) noexcept;
+    void OnMoveActor(const MoveActorEvent&) noexcept;
 
     void SetDebugId(const uint32_t aFormId) noexcept;
 
@@ -39,8 +41,8 @@ private:
     void DisplayObjects() noexcept;
     void DisplayEntityPanel(entt::entity aEntity) noexcept;
     void DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept;
-    void DisplayLocalComponent(LocalComponent& aLocalComponent) const noexcept;
-    void DisplayRemoteComponent(RemoteComponent& aLocalComponent) const noexcept;
+    void DisplayLocalComponent(LocalComponent& aLocalComponent, const uint32_t acFormId) const noexcept;
+    void DisplayRemoteComponent(RemoteComponent& aLocalComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept;
 
     void DrawEntitiesView();
     void DrawComponentDebugView();
@@ -55,6 +57,7 @@ private:
     void DrawQuestDebugView();
     void DrawCellView();
     void DrawUIView();
+    void DrawProcessView();
 
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;

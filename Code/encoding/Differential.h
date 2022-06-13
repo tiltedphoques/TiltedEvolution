@@ -1,7 +1,5 @@
 #pragma once
 
-#include <optional>
-#include <TiltedCore/Buffer.hpp>
 
 template <class T>
 struct Differential

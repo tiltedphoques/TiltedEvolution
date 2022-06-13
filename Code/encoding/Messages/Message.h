@@ -1,9 +1,6 @@
 #pragma once
 
 #include "../Opcodes.h"
-#include <TiltedCore/Buffer.hpp>
-#include <TiltedCore/Stl.hpp>
-#include <TiltedCore/Serialization.hpp>
 
 using TiltedPhoques::String;
 using TiltedPhoques::Serialization;

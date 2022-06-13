@@ -1,8 +1,5 @@
 #pragma once
 
-#include <optional>
-
-#include <TiltedCore/Stl.hpp>
 #include "MagicEquipment.h"
 
 using TiltedPhoques::Buffer;

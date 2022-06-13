@@ -41,6 +41,34 @@ const PartyService::Party* PartyService::GetById(uint32_t aId) const noexcept
     return nullptr;
 }
 
+bool PartyService::IsPlayerInParty(Player* const apPlayer) const noexcept
+{
+    return apPlayer->GetParty().JoinedPartyId.has_value();
+}
+
+bool PartyService::IsPlayerLeader(Player* const apPlayer) noexcept
+{
+    auto& inviterPartyComponent = apPlayer->GetParty();
+    if (inviterPartyComponent.JoinedPartyId)
+    {
+        Party& party = m_parties[*inviterPartyComponent.JoinedPartyId];
+        return party.LeaderPlayerId == apPlayer->GetId();
+    }
+
+    return false;
+}
+
+PartyService::Party* PartyService::GetPlayerParty(Player* const apPlayer) noexcept
+{
+    auto& inviterPartyComponent = apPlayer->GetParty();
+    if (inviterPartyComponent.JoinedPartyId)
+    {
+        return &m_parties[*inviterPartyComponent.JoinedPartyId];
+    }
+
+    return nullptr;
+}
+
 void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     const auto cCurrentTick = GameServer::Get()->GetTick();

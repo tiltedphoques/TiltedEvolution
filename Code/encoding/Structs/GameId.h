@@ -1,7 +1,5 @@
 #pragma once
 
-#include <TiltedCore/Buffer.hpp>
-
 using TiltedPhoques::Buffer;
 
 struct GameId

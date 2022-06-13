@@ -8,6 +8,9 @@
 
 #include <Messages/ServerTimeSettings.h>
 
+#include "Game/Player.h"
+
+
 CalendarService::CalendarService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::OnUpdate>(this);

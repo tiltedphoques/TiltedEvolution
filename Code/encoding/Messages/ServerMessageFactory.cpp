@@ -1,7 +1,5 @@
 #pragma once
 
-#include <TiltedCore/Stl.hpp>
-#include <TiltedCore/Allocator.hpp>
 #include <Messages/ServerMessageFactory.h>
 
 static std::function<UniquePtr<ServerMessage>(TiltedPhoques::Buffer::Reader& aReader)>

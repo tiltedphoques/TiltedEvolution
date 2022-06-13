@@ -64,25 +64,29 @@ struct ProcessLists
     static ProcessLists* Get() noexcept;
 
 #if TP_SKYRIM
-    uint8_t pad0[0x30];
 #else
+    // TODO: fallout 4 offsets are wrong now
     uint8_t pad0[0x40];
 #endif
 
-    GameArray<uint32_t> HighActorHandleArray;
-
-    // TODO: re-reverse stuff below
-#if TP_SKYRIM
-    uint8_t pad48[0x90 - 0x48];
-#else
-
-#endif
-
-    GameArray<uint32_t>* actorBuckets[4]; // 0 is HighActorHandleArray, others are not investigated
+    uint8_t pad00[0x8];
+    bool bProcessHigh;
+    bool bProcessLow;
+    bool bProcessMHigh;
+    bool bProcessMLow;
+    bool bProcessSchedule;
+    uint8_t padD[0x3];
+    int32_t numberHighActors;
+    uint8_t pad14[0x30 - 0x14];
+    GameArray<uint32_t> highActorHandleArray;
+    GameArray<uint32_t> lowActorHandleArray;
+    GameArray<uint32_t> middleHighActorHandleArray;
+    GameArray<uint32_t> middleLowActorHandleArray;
+    GameArray<uint32_t>* actorBuckets[4];
 };
 
 #if TP_SKYRIM
-static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x30);
+static_assert(offsetof(ProcessLists, highActorHandleArray) == 0x30);
 static_assert(offsetof(ProcessLists, actorBuckets) == 0x90);
 #elif TP_FALLOUT4
 static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x40);

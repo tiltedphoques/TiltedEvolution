@@ -2,7 +2,6 @@
 #include "GameServer.h"
 
 #include <common/GameServerInstance.h>
-#include <console/ConsoleRegistry.h>
 
 #ifdef _WIN32
 #define GS_EXPORT __declspec(dllexport)
