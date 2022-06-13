@@ -17,8 +17,9 @@
 #include <Games/TES.h>
 
 #include <Forms/TESObjectCELL.h>
-
 #include <BSCore/BSSpinLock.h>
+
+int32_t PlayerCharacter::LastUsedCombatSkill = -1;
 
 namespace
 {
@@ -192,7 +193,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
     if (combatSkills.contains(aSkill))
     {
         spdlog::debug("Set new last used combat skill to {}.", aSkill);
-        apThis->GetExtension()->LastUsedCombatSkill = aSkill;
+        PlayerCharacter::LastUsedCombatSkill = aSkill;
 
         World::Get().GetRunner().Trigger(AddExperienceEvent(deltaExperience));
     }

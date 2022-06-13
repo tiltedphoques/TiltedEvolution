@@ -8,6 +8,7 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/PlayerDialogueEvent.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
+#include <Events/PlayerLevelEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
@@ -15,6 +16,7 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/PlayerDialogueRequest.h>
+#include <Messages/PlayerLevelRequest.h>
 
 #include <Structs/ServerSettings.h>
 
@@ -34,8 +36,8 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
     m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
-    m_playerMapMarkerConnection =
-        m_dispatcher.sink<PlayerMapMarkerUpdateEvent>().connect<&PlayerService::OnPlayerMapMarkerUpdateEvent>(this);
+    m_playerMapMarkerConnection = m_dispatcher.sink<PlayerMapMarkerUpdateEvent>().connect<&PlayerService::OnPlayerMapMarkerUpdateEvent>(this);
+    m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
 }
 
 static bool knockdownStart = false;
@@ -49,6 +51,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
     RunRespawnUpdates(acEvent.Delta);
     RunPostDeathUpdates(acEvent.Delta);
     RunDifficultyUpdates();
+    RunLevelUpdates();
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
@@ -147,13 +150,24 @@ void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEven
     // for only players that are in the same worldspace as we are...
     for (int32_t handle : m_ownedMaphandles)
     {
-        #if 0
+#if 0
         // fetch smart pointer from handle function
         // then fetch all players,
         if worldspace = remoteworldspace
 
-            #endif
+#endif
     }
+}
+
+void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    PlayerLevelRequest request{};
+    request.NewLevel = PlayerCharacter::Get()->GetLevel();
+
+    m_transport.Send(request);
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
@@ -237,4 +251,31 @@ void PlayerService::RunDifficultyUpdates() const noexcept
         return;
 
     PlayerCharacter::Get()->SetDifficulty(m_serverDifficulty);
+}
+
+void PlayerService::RunLevelUpdates() const noexcept
+{
+    // The LevelUp hook is kinda weird, so ehh, just check periodically, doesn't really cost anything.
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    static uint16_t oldLevel = PlayerCharacter::Get()->GetLevel();
+
+    uint16_t newLevel = PlayerCharacter::Get()->GetLevel();
+    if (newLevel != oldLevel)
+    {
+        PlayerLevelRequest request{};
+        request.NewLevel = newLevel;
+
+        m_transport.Send(request);
+
+        oldLevel = newLevel;
+    }
 }

@@ -18,7 +18,7 @@
 #include <Messages/PartyKickRequest.h>
 
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
-    : m_world(aWorld), m_transportService(aTransportService)
+    : m_world(aWorld), m_transport(aTransportService)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this);
     m_disconnectConnection = aDispatcher.sink<DisconnectedEvent>().connect<&PartyService::OnDisconnected>(this);
@@ -30,9 +30,49 @@ PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_partyLeftConnection = aDispatcher.sink<NotifyPartyLeft>().connect<&PartyService::OnPartyLeft>(this);
 }
 
+void PartyService::CreateParty() const noexcept
+{
+    PartyCreateRequest request;
+    m_transport.Send(request);
+}
+
+void PartyService::LeaveParty() const noexcept
+{
+    PartyLeaveRequest request;
+    m_transport.Send(request);
+}
+
+void PartyService::CreateInvite(const uint32_t aPlayerId) const noexcept
+{
+    PartyInviteRequest request;
+    request.PlayerId = aPlayerId;
+    m_transport.Send(request);
+}
+
+void PartyService::AcceptInvite(const uint32_t aInviterId) const noexcept
+{
+    PartyAcceptInviteRequest request;
+    request.InviterId = aInviterId;
+    m_transport.Send(request);
+}
+
+void PartyService::KickPartyMember(const uint32_t aPlayerId) const noexcept
+{
+    PartyKickRequest kickMessage;
+    kickMessage.PartyMemberPlayerId = aPlayerId;
+    m_transport.Send(kickMessage);
+}
+
+void PartyService::ChangePartyLeader(const uint32_t aPlayerId) const noexcept
+{
+    PartyChangeLeaderRequest changeMessage;
+    changeMessage.PartyMemberPlayerId = aPlayerId;
+    m_transport.Send(changeMessage);
+}
+
 void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
-    const auto cCurrentTick = m_transportService.GetClock().GetCurrentTick();
+    const auto cCurrentTick = m_transport.GetClock().GetCurrentTick();
     if (m_nextUpdate > cCurrentTick)
         return;
 

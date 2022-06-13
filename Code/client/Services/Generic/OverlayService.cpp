@@ -16,13 +16,24 @@
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/NotifyPlayerList.h>
+#include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifyPlayerDialogue.h>
+#include <Messages/NotifyPlayerLevel.h>
+#include <Messages/NotifyPlayerCellChanged.h>
+#include <Messages/NotifyTeleport.h>
+
+#include <Structs/GridCellCoords.h>
 
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
+#include <Events/UpdateEvent.h>
 
 #include <PlayerCharacter.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
+#include <Games/ActorExtension.h>
 
 using TiltedPhoques::OverlayRenderHandlerD3D11;
 using TiltedPhoques::OverlayRenderHandler;
@@ -54,17 +65,54 @@ private:
     RenderSystemD3D11* m_pRenderSystem;
 };
 
+String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
+    String cellName = "UNKNOWN";
+
+    if (aWorldSpaceId)
+    {
+        const uint32_t worldSpaceId = modSystem.GetGameId(aWorldSpaceId);
+        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
+        if (pWorldSpace)
+            cellName = pWorldSpace->GetName();
+    }
+    else
+    {
+        const uint32_t cellId = modSystem.GetGameId(aCellId);
+        TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+        if (pCell)
+            cellName = pCell->GetName();
+    }
+
+    return cellName;
+}
+
+float CalculateHealthPercentage(Actor* apActor) noexcept
+{
+    const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
+    const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
+    return health / maxHealth * 100.f;
+}
+
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_transport(transport)
 {
+    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&OverlayService::OnUpdate>(this);
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&OverlayService::OnConnectedEvent>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&OverlayService::OnDisconnectedEvent>(this);
-    m_connectionErrorConnection =
-        aDispatcher.sink<ConnectionErrorEvent>().connect<&OverlayService::OnConnectionError>(this);
-    //m_playerListConnection = aDispatcher.sink<NotifyPlayerList>().connect<&OverlayService::OnPlayerList>(this);
-    //m_cellChangeEventConnection = aDispatcher.sink<CellChangeEvent>().connect<&OverlayService::OnCellChangeEvent>(this);
+    m_connectionErrorConnection = aDispatcher.sink<ConnectionErrorEvent>().connect<&OverlayService::OnConnectionError>(this);
     m_chatMessageConnection = aDispatcher.sink<NotifyChatMessageBroadcast>().connect<&OverlayService::OnChatMessageReceived>(this);
+    m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&OverlayService::OnPlayerJoined>(this);
+    m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
+    m_playerAddedConnection = m_world.on_construct<PlayerComponent>().connect<&OverlayService::OnPlayerComponentAdded>(this);
+    m_playerAddedConnection = m_world.on_update<PlayerComponent>().connect<&OverlayService::OnPlayerComponentAdded>(this);
+    m_playerRemovedConnection = m_world.on_destroy<PlayerComponent>().connect<&OverlayService::OnPlayerComponentRemoved>(this);
+    m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
+    m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
+    m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -139,11 +187,11 @@ void OverlayService::SetInGame(bool aInGame) noexcept
     if (m_inGame)
     {
         SetVersion(BUILD_COMMIT);
-        m_pOverlay->ExecuteAsync("entergame");
+        m_pOverlay->ExecuteAsync("enterGame");
     }
     else
     {
-        m_pOverlay->ExecuteAsync("exitgame");
+        m_pOverlay->ExecuteAsync("exitGame");
         SetActive(false);
     }
 }
@@ -161,7 +209,7 @@ void OverlayService::SetVersion(const std::string& acVersion)
     auto pArguments = CefListValue::Create();
 
     pArguments->SetString(0, acVersion);
-    m_pOverlay->ExecuteAsync("versionset", pArguments);
+    m_pOverlay->ExecuteAsync("setVersion", pArguments);
 }
 
 void OverlayService::SendSystemMessage(const std::string& acMessage)
@@ -171,7 +219,109 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
 
     auto pArguments = CefListValue::Create();
     pArguments->SetString(0, acMessage);
-    m_pOverlay->ExecuteAsync("systemmessage", pArguments);
+    m_pOverlay->ExecuteAsync("systemMessage", pArguments);
+}
+
+void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
+{
+    Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
+    if (!pActor)
+    {
+        spdlog::error("{}: cannot find actor for form id {:X}", __FUNCTION__, aFormId);
+        return;
+    }
+
+    float percentage = CalculateHealthPercentage(pActor);
+
+    auto view = m_world.view<FormIdComponent, PlayerComponent>();
+    auto entityIt = std::find_if(view.begin(), view.end(),
+                                 [view, aFormId](auto aEntity) { return view.get<FormIdComponent>(aEntity).Id == aFormId; });
+
+    if (entityIt == view.end())
+    {
+        spdlog::error("{}: cannot find player entity for form id {:X}", __FUNCTION__, aFormId);
+        return;
+    }
+
+    const auto& playerComponent = view.get<PlayerComponent>(*entityIt);
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, playerComponent.Id);
+    pArguments->SetInt(1, static_cast<int>(percentage));
+    m_pOverlay->ExecuteAsync("setHealth", pArguments);
+}
+
+void OverlayService::OnUpdate(const UpdateEvent&) noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto internalStats = m_transport.GetStatistics();
+    auto steamStats = m_transport.GetConnectionStatus();
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, steamStats.m_flOutPacketsPerSec);
+    pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
+    pArguments->SetInt(2, steamStats.m_nPing);
+    pArguments->SetInt(3, 0);
+    pArguments->SetInt(4, internalStats.SentBytes);
+    pArguments->SetInt(5, internalStats.RecvBytes);
+
+    m_pOverlay->ExecuteAsync("debugData", pArguments);
+}
+
+void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
+{
+    m_pOverlay->ExecuteAsync("connect");
+    SendSystemMessage("Successfully connected to server");
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acEvent.PlayerId);
+    m_pOverlay->ExecuteAsync("setServerId", pArguments);
+}
+
+void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
+{
+    m_pOverlay->ExecuteAsync("disconnect");
+    SendSystemMessage("Disconnected from server");
+}
+
+void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept
+{
+    const auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
+
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+    if (!pActor)
+    {
+        spdlog::error("{}: cannot find actor for form id {:X}", __FUNCTION__, formIdComponent.Id);
+        return;
+    }
+
+    float percentage = CalculateHealthPercentage(pActor);
+
+    const auto& playerComponent = m_world.get<PlayerComponent>(aEntity);
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, playerComponent.Id);
+    pArguments->SetInt(1, static_cast<int>(percentage));
+
+    m_pOverlay->ExecuteAsync("setPlayer3dLoaded", pArguments);
+}
+
+void OverlayService::OnPlayerComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
+{
+    const auto& playerComponent = m_world.get<PlayerComponent>(aEntity);
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, playerComponent.Id);
+
+    m_pOverlay->ExecuteAsync("setPlayer3dUnloaded", pArguments);
 }
 
 void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acMessage) noexcept
@@ -182,20 +332,7 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
     auto pArguments = CefListValue::Create();
     pArguments->SetString(0, acMessage.PlayerName.c_str());
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
-    spdlog::debug("Received Message from Server and gonna send it to UI: " + acMessage.ChatMessage);
     m_pOverlay->ExecuteAsync("message", pArguments);
-}
-
-void OverlayService::OnConnectedEvent(const ConnectedEvent&) noexcept
-{
-    m_pOverlay->ExecuteAsync("connect");
-    SendSystemMessage("Successfully connected to server");
-}
-
-void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
-{
-    m_pOverlay->ExecuteAsync("disconnect");
-    SendSystemMessage("Disconnected from server");
 }
 
 void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
@@ -207,51 +344,70 @@ void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEv
 {
     auto pArgs = CefListValue::Create();
     pArgs->SetString(0, acConnectedEvent.ErrorDetail.c_str());
-    m_pOverlay->ExecuteAsync("triggererror", pArgs);
+    m_pOverlay->ExecuteAsync("triggerError", pArgs);
 }
 
-void OverlayService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
-{
-    for (auto& player : acPlayerList.Players)
-    {
-        spdlog::info("[CLIENT] ID: {} - Name: {}", player.first, player.second);
-
-        /*
-        auto pArguments = CefListValue::Create();
-        pArguments->SetInt(0, player.first);
-        pArguments->SetString(1, player.second.c_str());
-        pArguments->SetInt(2, 7);
-        pArguments->SetString(3, "House");
-        m_pOverlay->ExecuteAsync("playerconnected", pArguments);
-        */
-    }
-}
-
-#if 0
-void OverlayService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
+void OverlayService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, SERVERID);
-    pArguments->SetString(1, USERNAME);
-    m_pOverlay->ExecuteAsync("playerdisconnected");
+    pArguments->SetInt(0, acMessage.PlayerId);
+    pArguments->SetString(1, acMessage.Username.c_str());
+    pArguments->SetInt(2, acMessage.Level);
+
+    String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
+    pArguments->SetString(3, cellName.c_str());
+
+    m_pOverlay->ExecuteAsync("playerConnected", pArguments);
 }
 
-void OverlayService::OnCellChangeEvent(const CellChangeEvent& aCellChangeEvent) noexcept
+void OverlayService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
-    spdlog::warn("OnCellChangeEvent ! %s", aCellChangeEvent.Name);
-    // Hacky as fuck... Idk why the first cellchangeevent broke UI. It's not a big deal because when player connected we
-    // force cell changed event But change event come before connected event.
-    static bool firstCellChangeEvent = false;
-    if (!m_pOverlay || !firstCellChangeEvent)
-    {
-        firstCellChangeEvent = true;
-        return;
-    }
-    SendSystemMessage("On Cell change event");
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, 1);
-    pArguments->SetString(1, aCellChangeEvent.Name);
-    m_pOverlay->ExecuteAsync("setcell", pArguments);
-    spdlog::warn("OnCellChangeEvent end !");
+    pArguments->SetInt(0, acMessage.PlayerId);
+    pArguments->SetString(1, acMessage.Username.c_str());
+    m_pOverlay->ExecuteAsync("playerDisconnected", pArguments);
 }
-#endif
+
+void OverlayService::OnPlayerLevel(const NotifyPlayerLevel& acMessage) noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.PlayerId);
+    pArguments->SetInt(1, acMessage.NewLevel);
+    m_pOverlay->ExecuteAsync("setLevel", pArguments);
+}
+
+void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.PlayerId);
+    String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
+    pArguments->SetString(3, cellName.c_str());
+    m_pOverlay->ExecuteAsync("setCell", pArguments);
+}
+
+void OverlayService::OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept
+{
+    auto& modSystem = m_world.GetModSystem();
+
+    const uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+    if (!pCell)
+    {
+        const uint32_t worldSpaceId = modSystem.GetGameId(acMessage.WorldSpaceId);
+        TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(worldSpaceId));
+        if (pWorldSpace)
+        {
+            GridCellCoords coordinates = GridCellCoords::CalculateGridCellCoords(acMessage.Position);
+            pCell = pWorldSpace->LoadCell(coordinates.X, coordinates.Y);
+        }
+
+        if (!pCell)
+        {
+            spdlog::error("Failed to fetch cell to teleport to.");
+            m_world.GetOverlayService().SendSystemMessage("Teleporting to player failed.");
+            return;
+        }
+    }
+
+    PlayerCharacter::Get()->MoveTo(pCell, acMessage.Position);
+}

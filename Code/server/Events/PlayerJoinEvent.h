@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Structs/GameId.h>
+
 struct Player;
 
 /**
@@ -11,5 +13,12 @@ struct PlayerJoinEvent
     {
     }
 
+    PlayerJoinEvent(Player* apPlayer, GameId aWorldSpaceId, GameId aCellId) 
+        : pPlayer(apPlayer), WorldSpaceId(aWorldSpaceId), CellId(aCellId)
+    {
+    }
+
     Player* pPlayer;
+    GameId WorldSpaceId{};
+    GameId CellId{};
 };

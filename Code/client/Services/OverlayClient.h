@@ -26,6 +26,7 @@ private:
     void ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessDisconnectMessage();
     void ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs);
+    void ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs);
 
     TransportService& m_transport;
 };

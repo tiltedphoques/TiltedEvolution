@@ -17,6 +17,7 @@
 #include <Messages/PartyCreateRequest.h>
 #include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyKickRequest.h>
+#include <Messages/NotifyPlayerJoined.h>
 
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -167,6 +168,19 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
 void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 {
     BroadcastPlayerList();
+
+    NotifyPlayerJoined notify{};
+    notify.PlayerId = acEvent.pPlayer->GetId();
+    notify.Username = acEvent.pPlayer->GetUsername();
+
+    notify.WorldSpaceId = acEvent.WorldSpaceId;
+    notify.CellId = acEvent.CellId;
+
+    notify.Level = acEvent.pPlayer->GetLevel();
+
+    spdlog::info("[Party] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
+
+    GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
 }
 
 void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept
@@ -315,6 +329,7 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
     }
 }
 
+// TODO(cosideci): why broadcast the whole list every time? Why not just the diff?
 void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
 {
     auto pIgnoredPlayer = apPlayer;

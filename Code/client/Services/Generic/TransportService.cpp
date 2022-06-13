@@ -8,6 +8,8 @@
 
 #include <Games/References.h>
 #include <Games/TES.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <Forms/TESNPC.h>
 #include <TiltedOnlinePCH.h>
@@ -19,6 +21,7 @@
 
 #include <ScriptExtender.h>
 #include <Services/DiscordService.h>
+
 
 //#include <imgui_internal.h>
 
@@ -107,11 +110,13 @@ void TransportService::OnConnected()
     request.SKSEActive = IsScriptExtenderLoaded();
     request.MO2Active = GetModuleHandleW(kMO2DllName);
 
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
+
     // null if discord is not active
     // TODO: think about user opt out
     request.DiscordId = m_world.ctx().at<DiscordService>().GetUser().id;
-
-    if (auto* pNpc = Cast<TESNPC>(PlayerCharacter::Get()->baseForm))
+    auto* pNpc = Cast<TESNPC>(pPlayer->baseForm);
+    if (pNpc)
     {
         request.Username = pNpc->fullName.value.AsAscii();
     }
@@ -132,6 +137,14 @@ void TransportService::OnConnected()
         entry.IsLite = pMod->IsLite();
         entry.Filename = pMod->filename;
     }
+
+    auto& modSystem = m_world.GetModSystem();
+    if (pPlayer->GetWorldSpace())
+        modSystem.GetServerModId(pPlayer->GetWorldSpace()->formID, request.WorldSpaceId);
+    
+    modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
+
+    request.Level = pPlayer->GetLevel();
 
     Send(request);
 }
@@ -165,7 +178,7 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
 
         m_dispatcher.trigger(acMessage.UserMods);
         m_dispatcher.trigger(acMessage.Settings);
-        m_dispatcher.trigger(ConnectedEvent());
+        m_dispatcher.trigger(ConnectedEvent(acMessage.PlayerId));
         return; // quit the function here.
     }
 
