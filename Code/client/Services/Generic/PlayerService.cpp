@@ -51,6 +51,12 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerPosition = m_dispatcher.sink<NotifyPlayerPosition>().connect<&PlayerService::OnNotifyPlayerPosition>(this);
 }
 
+PlayerService::MapInfo::~MapInfo()
+{
+    Memory::Delete(pMarkerData);
+    pPlayer->Delete();
+}
+
 static bool knockdownStart = false;
 static double knockdownTimer = 0.0;
 
@@ -79,7 +85,12 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     // make sure to only display markers of players within the same cell...
     //pPlayer->RemoveMapmarkerRef();
 
-    // ... remove all foreign mapmarkers...
+    TiltedPhoques::Vector<uint32_t> toRemove{};
+    for (const auto& [id, mapInfo] : m_mapHandles)
+        toRemove.push_back(id);
+
+    for (uint32_t id : toRemove)
+        m_mapHandles.erase(id);
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -122,19 +133,18 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
     pMarkerData->sType = MapMarkerData::Type::kMousePointer; // "custom destination" marker either 66 or 0
     pNewPlayer->extraData.SetMarkerData(pMarkerData);
 
-    MapInfo info = {pNewPlayer, pMarkerData};
+    MapInfo& info = m_mapHandles[acMessage.PlayerId];
+    info.pPlayer = pNewPlayer;
+    info.pMarkerData = pMarkerData;
 
     uint32_t handle;
     pNewPlayer->GetHandle(handle);
     PlayerCharacter::Get()->AddMapmarkerRef(handle);
-
-    mapHandles[acMessage.PlayerId] = info;
-
-    // TODO: crashes on next iteration if spawned nearby
 }
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
+    m_mapHandles.erase(acMessage.PlayerId);
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
@@ -199,17 +209,19 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {   
-     spdlog::critical("Player {:X} position {} {}", acMessage.PlayerId, acMessage.Position.x, acMessage.Position.y);
-     MapInfo info = mapHandles.at(acMessage.PlayerId);
-     // TODO: these raw ptrs are a bad idea
-     TESObjectREFR* pPlayer = info.pPlayer;
-     MapMarkerData* pMarkerData = info.pMarkerData;
-     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
-     pPlayer->position.x = acMessage.Position.x;
-     pPlayer->position.y = acMessage.Position.y;
-     // TODO: should probably send z coordinate too
-     pPlayer->position.z = 0;
-     // TODO: cells should be sent to update
+    const MapInfo& info = m_mapHandles.at(acMessage.PlayerId);
+    TESObjectREFR* pPlayer = info.pPlayer;
+    MapMarkerData* pMarkerData = info.pMarkerData;
+
+    pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
+
+    pPlayer->position = acMessage.Position;
+
+    // TODO: rotation doesn't seem to work
+    pPlayer->rotation.x = acMessage.Rotation.x;
+    pPlayer->rotation.z = acMessage.Rotation.y;
+
+    // TODO: cells should be sent to update
 }
 
 // on join/leave, add to our array...

@@ -4,6 +4,7 @@ void NotifyPlayerPosition::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) 
 {
     Serialization::WriteVarInt(aWriter, PlayerId);
     Position.Serialize(aWriter);
+    Rotation.Serialize(aWriter);
 }
 
 void NotifyPlayerPosition::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,4 +13,5 @@ void NotifyPlayerPosition::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader
 
     PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Position.Deserialize(aReader);
+    Rotation.Deserialize(aReader);
 }

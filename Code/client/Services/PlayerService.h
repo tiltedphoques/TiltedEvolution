@@ -66,11 +66,14 @@ private:
 
     struct MapInfo
     {
+        ~MapInfo();
+
+        // TODO: these raw ptrs are a bad idea
         TESObjectREFR* pPlayer;
         MapMarkerData* pMarkerData;
     };
 
-    TiltedPhoques::Map<uint32_t, MapInfo> mapHandles;
+    TiltedPhoques::Map<uint32_t, MapInfo> m_mapHandles;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <Structs/Vector2_NetQuantize.h>
+#include <Structs/Vector3_NetQuantize.h>
 
 struct NotifyPlayerPosition final : ServerMessage
 {
@@ -18,9 +18,11 @@ struct NotifyPlayerPosition final : ServerMessage
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                PlayerId == acRhs.PlayerId &&
-               Position == acRhs.Position;
+               Position == acRhs.Position &&
+               Rotation == acRhs.Rotation;
     }
 
     uint32_t PlayerId{};
-    Vector2_NetQuantize Position{};
+    Vector3_NetQuantize Position{};
+    Vector3_NetQuantize Rotation{};
 };

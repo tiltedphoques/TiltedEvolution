@@ -220,7 +220,7 @@ void PlayerService::OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& 
 void PlayerService::ProcessPlayerPositionChanges() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms;
+    constexpr auto cDelayBetweenSnapshots = 500ms;
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenSnapshots)
@@ -243,8 +243,11 @@ void PlayerService::ProcessPlayerPositionChanges() const noexcept
 
         auto& message = messages.emplace_back();
         message.PlayerId = pPlayer->GetId();
-        message.Position.x = movementComponent->Position.x;
-        message.Position.y = movementComponent->Position.y;
+
+        message.Position = movementComponent->Position;
+
+        message.Rotation.x = movementComponent->Rotation.x;
+        message.Rotation.y = movementComponent->Rotation.z;
     }
 
     for (auto& message : messages)
