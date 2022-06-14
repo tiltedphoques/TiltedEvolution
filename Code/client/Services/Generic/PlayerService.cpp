@@ -162,17 +162,6 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     m_transport.Send(request);
 }
 
-void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
-{
-    if (!m_transport.IsConnected())
-        return;
-
-    PlayerLevelRequest request{};
-    request.NewLevel = PlayerCharacter::Get()->GetLevel();
-
-    m_transport.Send(request);
-}
-
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {
 }
