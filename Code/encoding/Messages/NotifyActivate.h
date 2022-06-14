@@ -16,9 +16,9 @@ struct NotifyActivate final : ServerMessage
 
     bool operator==(const NotifyActivate& acRhs) const noexcept
     {
-        return Id == acRhs.Id && 
-               ActivatorId == acRhs.ActivatorId &&
-               GetOpcode() == acRhs.GetOpcode();
+        return GetOpcode() == acRhs.GetOpcode() &&
+               Id == acRhs.Id && 
+               ActivatorId == acRhs.ActivatorId;
     }
 
     GameId Id;

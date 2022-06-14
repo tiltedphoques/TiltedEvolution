@@ -16,11 +16,11 @@ struct AddTargetRequest final : ClientMessage
 
     bool operator==(const AddTargetRequest& acRhs) const noexcept
     {
-        return TargetId == acRhs.TargetId &&
+        return GetOpcode() == acRhs.GetOpcode() &&
+               TargetId == acRhs.TargetId &&
                SpellId == acRhs.SpellId && 
                EffectId == acRhs.EffectId &&
-               Magnitude == acRhs.Magnitude &&
-               GetOpcode() == acRhs.GetOpcode();
+               Magnitude == acRhs.Magnitude;
     }
 
     uint32_t TargetId{};

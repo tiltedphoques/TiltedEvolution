@@ -318,6 +318,13 @@ int32_t Actor::GetGoldAmount() noexcept
     return ThisCall(s_getGoldAmount, this);
 }
 
+uint16_t Actor::GetLevel() noexcept
+{
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
+    POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
+    return ThisCall(s_getLevel, this);
+}
+
 void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
@@ -585,12 +592,12 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
     return ThisCall(RealSpawnActorInWorld, apThis);
 }
 
-TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter, bool aKillMove);
 static TDamageActor* RealDamageActor = nullptr;
 
-bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
-    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage);
+    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);
 
     float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
     bool wouldKill = (currentHealth - realDamage) <= 0.f;
@@ -605,7 +612,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         }
 
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
     }
     else if (pExHittee->IsRemotePlayer())
     {
@@ -618,7 +625,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         if (pExHitter->IsLocalPlayer())
         {
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
-            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
         }
         if (pExHitter->IsRemotePlayer())
         {
@@ -629,7 +636,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     if (pExHittee->IsLocal())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
     }
     else
     {

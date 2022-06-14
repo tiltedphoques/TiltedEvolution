@@ -96,28 +96,29 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('init', this.onInit.bind(this));
       skyrimtogether.on('activate', this.onActivate.bind(this));
       skyrimtogether.on('deactivate', this.onDeactivate.bind(this));
-      skyrimtogether.on('entergame', this.onEnterGame.bind(this));
-      skyrimtogether.on('exitgame', this.onExitGame.bind(this));
-      skyrimtogether.on('openingmenu', this.onOpeningMenu.bind(this));
+      skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
+      skyrimtogether.on('exitGame', this.onExitGame.bind(this));
+      skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
       skyrimtogether.on('message', this.onMessage.bind(this));
-      skyrimtogether.on('systemmessage', this.onSystemMessage.bind(this));
-      skyrimtogether.on('whispermessage', this.onWhisperMessage.bind(this));
+      skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
+      skyrimtogether.on('whisperMessage', this.onWhisperMessage.bind(this));
       skyrimtogether.on('connect', this.onConnect.bind(this));
       skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
-      skyrimtogether.on('namechange', this.onNameChange.bind(this));
-      skyrimtogether.on('versionset', this.onVersionSet.bind(this));
-      skyrimtogether.on('debug', this.onDebug.bind(this));
-      skyrimtogether.on('debugdata', this.onUpdateDebug.bind(this));
-      skyrimtogether.on('userdataset', this.onUserDataSet.bind(this));
-      skyrimtogether.on('playerconnected', this.onPlayerConnected.bind(this));
-      skyrimtogether.on('playerdisconnected', this.onPlayerDisconnected.bind(this));
-      skyrimtogether.on('healthset', this.onHealthSet.bind(this));
-      skyrimtogether.on('setlevel', this.onSetLevel.bind(this));
-      skyrimtogether.on('setcell', this.onSetCell.bind(this));
-      skyrimtogether.on('setplayer3Dloaded', this.onSetPlayer3DLoaded.bind(this));
-      skyrimtogether.on('serverid', this.onServerId.bind(this));
-      skyrimtogether.on('protocolmismatch', this.onProtocolMismatch.bind(this));
-      skyrimtogether.on('triggererror', this.onTriggerError.bind(this));
+      skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
+      skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
+      skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
+      skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
+      skyrimtogether.on('userDataSet', this.onUserDataSet.bind(this)); //not needed anymore
+      skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
+      skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
+      skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
+      skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
+      skyrimtogether.on('setCell', this.onSetCell.bind(this));
+      skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
+      skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
+      skyrimtogether.on('setServerId', this.onSetServerId.bind(this));
+      skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
+      skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
     }
   }
 
@@ -129,28 +130,29 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('init');
       skyrimtogether.off('activate');
       skyrimtogether.off('deactivate');
-      skyrimtogether.off('entergame');
-      skyrimtogether.off('exitgame');
-      skyrimtogether.off('openingmenu');
+      skyrimtogether.off('enterGame');
+      skyrimtogether.off('exitGame');
+      skyrimtogether.off('openingMenu');
       skyrimtogether.off('message');
-      skyrimtogether.off('systemmessage');
-      skyrimtogether.off('whispermessage');
+      skyrimtogether.off('systemMessage');
+      skyrimtogether.off('whisperMessage');
       skyrimtogether.off('connect');
       skyrimtogether.off('disconnect');
-      skyrimtogether.off('namechange');
-      skyrimtogether.off('versionset');
+      skyrimtogether.off('setName');
+      skyrimtogether.off('setVersion');
       skyrimtogether.off('debug');
-      skyrimtogether.off('debugdata');
-      skyrimtogether.off('userdataset');
-      skyrimtogether.off('playerconnected');
-      skyrimtogether.off('playerdisconnected');
-      skyrimtogether.off('healthset');
-      skyrimtogether.off('setlevel');
-      skyrimtogether.off('setcell');
-      skyrimtogether.off('setplayer3Dloaded');
-      skyrimtogether.off('serverid');
-      skyrimtogether.off('protocolmismatch');
-      skyrimtogether.off('triggererror');
+      skyrimtogether.off('debugData');
+      skyrimtogether.off('userDataSet');
+      skyrimtogether.off('playerConnected');
+      skyrimtogether.off('playerDisconnected');
+      skyrimtogether.off('setHealth');
+      skyrimtogether.off('setLevel');
+      skyrimtogether.off('setCell');
+      skyrimtogether.off('setPlayer3dLoaded');
+      skyrimtogether.off('setPlayer3dUnloaded');
+      skyrimtogether.off('setServerId');
+      skyrimtogether.off('protocolMismatch');
+      skyrimtogether.off('triggerError');
     }
   }
 
@@ -217,12 +219,19 @@ export class ClientService implements OnDestroy {
    * Reconnect
    */
   public reconnect(): void {
-    this.connectionStateChange.pipe(take(2)).subscribe((isState: boolean) => {
-      if (!isState) {
-        this.connect(this._host, this._port, this._token);
-      }
-    })
-    this.disconnect();
+    if (environment.game) {
+      skyrimtogether.reconnect();
+      this._remainingReconnectionAttempt = 0;
+    }
+  }
+
+  public teleportToPlayer(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.teleportToPlayer(playerId);
+    }
+    else {
+      this.messageReception.next({ content: "Youre not ingame, duh" });
+    }
   }
 
   /**
@@ -338,7 +347,7 @@ export class ClientService implements OnDestroy {
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        this.messageReception.next({content: `Connection lost, trying to reconnect. ${this._remainingReconnectionAttempt} attempts left.`})
+        this.messageReception.next({ content: `Connection lost, trying to reconnect. ${this._remainingReconnectionAttempt} attempts left.` })
         this.connect(this._host, this._port, this._token);
       }
     });
@@ -349,7 +358,7 @@ export class ClientService implements OnDestroy {
    *
    * @param name Player's name.
    */
-  private onNameChange(name: string): void {
+  private onSetName(name: string): void {
     this.zone.run(() => {
       this.nameChange.next(name);
     });
@@ -360,7 +369,7 @@ export class ClientService implements OnDestroy {
    *
    * @param version Game's version.
    */
-  private onVersionSet(version: string): void {
+  private onSetVersion(version: string): void {
     this.zone.run(() => {
       this.versionSet.next(version);
     });
@@ -421,31 +430,37 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  private onHealthSet(serverId: number, health: number) {
+  private onSetHealth(serverId: number, health: number) {
     this.zone.run(() => {
-      this.healthChange.next(new Player({serverId: serverId, health: health}));
+      this.healthChange.next(new Player({ serverId: serverId, health: health }));
     });
   }
 
   private onSetLevel(serverId: number, level: number) {
     this.zone.run(() => {
-      this.levelChange.next(new Player({serverId: serverId, level: level}));
+      this.levelChange.next(new Player({ serverId: serverId, level: level }));
     })
   }
 
   private onSetCell(serverId: number, cellName: string) {
     this.zone.run(() => {
-      this.cellChange.next(new Player({serverId: serverId, cellName: cellName}));
+      this.cellChange.next(new Player({ serverId: serverId, cellName: cellName }));
     })
   }
 
-  private onSetPlayer3DLoaded(serverId: number, isLoaded: boolean) {
+  private onSetPlayer3dLoaded(serverId: number, health: number) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: isLoaded}));
+      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: true, health: health}));
     })
   }
 
-  private onServerId(serverId: number) {
+  private onSetPlayer3dUnloaded(serverId: number) {
+    this.zone.run(() => {
+      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: false}));
+    })
+  }
+
+  private onSetServerId(serverId: number) {
     this.zone.run(() => {
       this.userService.player.value.serverId = serverId;
     })

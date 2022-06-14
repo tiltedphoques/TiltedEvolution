@@ -15,5 +15,6 @@
 #include <Components/WaitingFor3D.h>
 #include <Components/ActorValuesComponent.h>
 #include <Components/ObjectComponent.h>
+#include <Components/PlayerComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD

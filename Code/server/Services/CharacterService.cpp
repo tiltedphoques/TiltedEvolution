@@ -68,7 +68,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
 {
 }
 
-void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
+void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
 {
     const auto& characterComponent = aRegistry.get<CharacterComponent>(aEntity);
 
@@ -80,6 +80,7 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->IsDead = characterComponent.IsDead();
     apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+    apSpawnRequest->PlayerId = characterComponent.PlayerId;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -235,6 +236,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.CurrentInventory = inventoryComponent.Content;
             response.IsDead = characterComponent.IsDead();
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+            response.PlayerId = characterComponent.PlayerId;
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
             response.WorldSpaceId = cellIdComponent.WorldSpaceId;
@@ -681,6 +683,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
         pPlayer->SetCharacter(cEntity);
         pPlayer->GetQuestLogComponent().QuestContent = message.QuestContent;
+        characterComponent.PlayerId = pPlayer->GetId();
 
         auto& dispatcher = m_world.GetDispatcher();
         dispatcher.trigger(PlayerEnterWorldEvent(pPlayer));
@@ -689,6 +692,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     AssignCharacterResponse response{};
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
+    response.PlayerId = characterComponent.PlayerId;
     response.Owner = true;
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);

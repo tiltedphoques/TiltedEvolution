@@ -9,6 +9,7 @@ struct ServerSettings;
 struct GridCellChangeEvent;
 struct CellChangeEvent;
 struct PlayerDialogueEvent;
+struct PlayerLevelEvent;
 struct PlayerMapMarkerUpdateEvent;
 
 struct NotifyPlayerRespawn;
@@ -48,6 +49,7 @@ private:
     * @brief Make sure difficulty doesn't get changed while connected
     */
     void RunDifficultyUpdates() const noexcept;
+    void RunLevelUpdates() const noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;

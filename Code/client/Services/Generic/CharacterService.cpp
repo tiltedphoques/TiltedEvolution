@@ -167,6 +167,16 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
     return true;
 }
 
+void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
+{
+    Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
+    if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
+    {
+        pActor->Delete();
+        spdlog::info("\tDeleted actor {:X}", aFormId);
+    }
+}
+
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
     if (acEvent.FormId == 0x14)
@@ -193,7 +203,7 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
     else
         entity = m_world.create();
 
-    m_world.emplace<FormIdComponent>(entity, acEvent.FormId);
+    m_world.emplace_or_replace<FormIdComponent>(entity, acEvent.FormId);
 
     ProcessNewEntity(entity);
 }
@@ -335,6 +345,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
+    if (acMessage.PlayerId != 0)
+        m_world.emplace_or_replace<PlayerComponent>(cEntity, acMessage.PlayerId);
+
     if (acMessage.Owner)
     {
         spdlog::info("Received local actor, form id: {:X}", pActor->formID);
@@ -465,6 +478,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
  
+
+    // TODO(cosideci): why?
+    m_world.emplace_or_replace<FormIdComponent>(*entity, pActor->formID);
+
     if (pActor->IsDisabled())
         pActor->Enable();
 
@@ -480,12 +497,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
-
-        MapMarkerData* pMarkerData = MapMarkerData::New();
-        pMarkerData->name.value.Set(pActor->baseForm->GetName());
-        pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
-        pMarkerData->sType = MapMarkerData::Type::kGiantCamp;
-        pActor->extraData.SetMarkerData(pMarkerData);
+        m_world.emplace_or_replace<PlayerComponent>(*entity, acMessage.PlayerId);
     }
 
     if (pActor->IsDead() != acMessage.IsDead)
@@ -660,14 +672,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
     if (itor != std::end(view))
     {
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
-        {
-            const auto pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
-            if (pActor && ((pActor->formID & 0xFF000000) == 0xFF000000))
-            {
-                spdlog::info("\tDeleting {:X}", pFormIdComponent->Id);
-                pActor->Delete();
-            }
-        }
+            CharacterService::DeleteTempActor(pFormIdComponent->Id);
 
         m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
     }
@@ -1061,12 +1066,11 @@ void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) n
 void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    ActorExtension* pPlayerEx = pPlayer->GetExtension();
 
-    if (pPlayerEx->LastUsedCombatSkill == -1)
+    if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
-    pPlayer->AddSkillExperience(pPlayerEx->LastUsedCombatSkill, acMessage.Experience);
+    pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
@@ -1457,6 +1461,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
         Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
+    m_world.remove<PlayerComponent>(aEntity);
 
         if (pActor)
         {
@@ -1571,6 +1576,8 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (!pActor)
         return nullptr;
 
+    m_world.emplace_or_replace<FormIdComponent>(aEntity, pActor->formID);
+
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
     pActor->rotation.z = acMessage.Rotation.y;
@@ -1582,12 +1589,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
-
-        MapMarkerData* pMarkerData = MapMarkerData::New();
-        pMarkerData->name.value.Set(pActor->baseForm->GetName());
-        pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
-        pMarkerData->sType = MapMarkerData::Type::kCity;
-        pActor->extraData.SetMarkerData(pMarkerData);
+        m_world.emplace_or_replace<PlayerComponent>(aEntity, acMessage.PlayerId);
     }
 
     if (pActor->IsDead() != acMessage.IsDead)

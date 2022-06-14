@@ -71,7 +71,7 @@ float* GetGreetDistance() noexcept
 namespace GameplayFormulas
 {
 
-float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
+float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexcept
 {
     using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
     POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
@@ -81,7 +81,8 @@ float CalculateRealDamage(Actor* apHittee, float aDamage) noexcept
 
     float realDamage = aDamage;
 
-    if (fabs(aDamage) <= 0.000099999997 || multiplier < 1.0)
+    // TODO(cosideci): this seems problematic? It may not register the kill for others?
+    if (!aKillMove || multiplier < 1.0)
         realDamage = aDamage * multiplier;
 
     return realDamage;

@@ -46,6 +46,8 @@ enum ClientOpcode : unsigned char
     kDialogueRequest,
     kSubtitleRequest,
     kPlayerDialogueRequest,
+    kPlayerLevelRequest,
+    kTeleportRequest,
     kClientOpcodeMax
 };
 
