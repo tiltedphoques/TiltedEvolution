@@ -9,19 +9,14 @@
 #include <Events/PlayerDialogueEvent.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
 #include <Events/PlayerLevelEvent.h>
-#include <Events/PlayerLevelEvent.h>
-#include <Events/PlayerMapMarkerUpdateEvent.h>
+
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
-#include <Messages/NotifyPlayerLeft.h>
-#include <Messages/NotifyPlayerJoined.h>
 #include <Messages/PlayerDialogueRequest.h>
 #include <Messages/PlayerLevelRequest.h>
-#include <Messages/PlayerLevelRequest.h>
-#include <Messages/NotifyPlayerPosition.h>
 
 #include <Structs/ServerSettings.h>
 
@@ -37,17 +32,12 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&PlayerService::OnDisconnected>(this);
     m_settingsConnection = m_dispatcher.sink<ServerSettings>().connect<&PlayerService::OnServerSettingsReceived>(this);
-    m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&PlayerService::OnPlayerJoined>(this);
-    m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&PlayerService::OnPlayerLeft>(this);
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
     m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
     m_playerMapMarkerConnection = m_dispatcher.sink<PlayerMapMarkerUpdateEvent>().connect<&PlayerService::OnPlayerMapMarkerUpdateEvent>(this);
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
-    m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
-    m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
-    m_playerPosition = m_dispatcher.sink<NotifyPlayerPosition>().connect<&PlayerService::OnNotifyPlayerPosition>(this);
 }
 
 static bool knockdownStart = false;
@@ -92,14 +82,6 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
         float* greetDistance = Settings::GetGreetDistance();
         *greetDistance = 0.f;
     }
-}
-
-void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
-{
-}
-
-void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
-{
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
@@ -161,22 +143,6 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
 
     m_transport.Send(request);
 }
-
-void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
-{
-    if (!m_transport.IsConnected())
-        return;
-
-    PlayerLevelRequest request{};
-    request.NewLevel = PlayerCharacter::Get()->GetLevel();
-
-    m_transport.Send(request);
-}
-
-void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
-{
-}
-
 
 // on join/leave, add to our array...
 void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept

@@ -495,6 +495,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
+
         MapMarkerData* pMarkerData = MapMarkerData::New();
         pMarkerData->name.value.Set(pActor->baseForm->GetName());
         pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
