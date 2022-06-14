@@ -867,6 +867,7 @@ void CharacterService::ProcessPlayerPositionChanges() const noexcept
 
     TiltedPhoques::Vector<NotifyPlayerPosition> messages;
 
+    // TODO: optimize this so that all player updates are sent in one message
     for (Player* pPlayer : m_world.GetPlayerManager())
     {
         if (!pPlayer->GetCharacter())
