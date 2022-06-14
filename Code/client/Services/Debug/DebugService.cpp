@@ -204,8 +204,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            Actor* pActor = Cast<Actor>(TESForm::GetById(0x1a677));
-            pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)
+            {
+                TESObjectREFR* pRefr = TESObjectREFR::GetByHandle(handle);
+                spdlog::critical("Base id: {:X}", pRefr->baseForm->formID);
+            }
 
         #if 0
             static bool s_enabled = true;

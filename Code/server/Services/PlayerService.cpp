@@ -249,6 +249,7 @@ void PlayerService::ProcessPlayerPositionChanges() const noexcept
 
     for (auto& message : messages)
     {
+        spdlog::critical("Sending player {:X} position {} {}", message.PlayerId, message.Position.x, message.Position.y);
         Player* pPlayer = m_world.GetPlayerManager().GetById(message.PlayerId);
         GameServer::Get()->SendToPlayers(message, pPlayer);
     }

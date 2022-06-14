@@ -6,7 +6,7 @@ struct MapMarkerData
 {
     static MapMarkerData* New() noexcept;
 
-    enum class Flag : uint8_t
+    enum Flag : uint8_t
     {
         NONE = 0,
         VISIBLE = 1 << 0,
@@ -80,8 +80,8 @@ struct MapMarkerData
     };
 
     TESFullName name;
-    Flag cFlags;
-    Flag cOriginalFlags;
+    uint8_t cFlags;
+    uint8_t cOriginalFlags;
     Type sType;
 };
 

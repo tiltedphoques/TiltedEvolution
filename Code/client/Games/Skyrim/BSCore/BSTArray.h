@@ -123,7 +123,7 @@ namespace creation
 
 			Iterator operator++()
 			{
-				BSASSERT(!pCurrent, "Invalid iterator");
+				//BSASSERT(!pCurrent, "Invalid iterator");
 
 				++this->pCurrent;
 				return *this;

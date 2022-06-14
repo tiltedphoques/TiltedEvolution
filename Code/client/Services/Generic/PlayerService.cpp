@@ -30,6 +30,7 @@
 #include <Games/Overrides.h>
 #include <Games/References.h>
 #include <AI/AIProcess.h>
+#include <Forms/TESWorldSpace.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -97,16 +98,23 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
 void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
     TESObjectREFR* pNewPlayer = TESObjectREFR::New();
+    pNewPlayer->SetBaseForm(TESForm::GetById(0x10));
+    pNewPlayer->SetSkipSaveFlag(true);
 
+    // TODO: this whole thing should probably be a util function by now
     auto& modSystem = m_world.GetModSystem();
     uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
     TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+    if (!pCell)
+    {
+        const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
+        TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+        if (pWorldSpace)
+            pCell = pWorldSpace->LoadCell(acMessage.CenterCoords.X, acMessage.CenterCoords.Y);
+    }
+
     if (pCell)
         pNewPlayer->SetParentCell(pCell);
-
-    uint32_t handle;
-    
-    pNewPlayer->GetHandle(handle);
 
     MapMarkerData* pMarkerData = MapMarkerData::New();
     pMarkerData->name.value.Set(acMessage.Username.data());
@@ -116,7 +124,10 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 
     MapInfo info = {pNewPlayer, pMarkerData};
 
+    uint32_t handle;
+    pNewPlayer->GetHandle(handle);
     PlayerCharacter::Get()->AddMapmarkerRef(handle);
+
     mapHandles[acMessage.PlayerId] = info;
 
     // TODO: crashes on next iteration if spawned nearby
@@ -188,17 +199,18 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {   
+     spdlog::critical("Player {:X} position {} {}", acMessage.PlayerId, acMessage.Position.x, acMessage.Position.y);
      MapInfo info = mapHandles.at(acMessage.PlayerId);
+     // TODO: these raw ptrs are a bad idea
      TESObjectREFR* pPlayer = info.pPlayer;
      MapMarkerData* pMarkerData = info.pMarkerData;
-     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
+     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
      pPlayer->position.x = acMessage.Position.x;
      pPlayer->position.y = acMessage.Position.y;
      // TODO: should probably send z coordinate too
      pPlayer->position.z = 0;
      // TODO: cells should be sent to update
 }
-
 
 // on join/leave, add to our array...
 void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept
