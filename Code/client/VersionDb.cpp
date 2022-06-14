@@ -39,6 +39,7 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
     return str;
 }
 
+/*
 bool VersionDb::CreateMapping(const std::string& inf, const std::string& outf)
 {
     std::ofstream out(outf.c_str());
@@ -78,3 +79,4 @@ bool VersionDb::CreateMapping(const std::string& inf, const std::string& outf)
 
     return false;
 }
+*/

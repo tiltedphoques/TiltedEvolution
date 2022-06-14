@@ -362,7 +362,7 @@ public:
     }
 
     bool DumpVersionIDC(const std::string& path);
-    bool CreateMapping(const std::string& inf, const std::string& outf);
+    //bool CreateMapping(const std::string& inf, const std::string& outf);
 };
 
 template <class T> 
