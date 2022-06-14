@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Games/ExtraData.h>
-#include <Misc/MapMarkerData.h>
+#include <Interface/HUD/MapMarker_ExtraData.h>
 
 struct ExtraMapMarker : BSExtraData
 {

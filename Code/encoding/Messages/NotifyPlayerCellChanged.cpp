@@ -6,6 +6,7 @@ void NotifyPlayerCellChanged::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteVarInt(aWriter, PlayerId);
     WorldSpaceId.Serialize(aWriter);
     CellId.Serialize(aWriter);
+    CenterCoords.Serialize(aWriter);
 }
 
 void NotifyPlayerCellChanged::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -15,4 +16,5 @@ void NotifyPlayerCellChanged::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     WorldSpaceId.Deserialize(aReader);
     CellId.Deserialize(aReader);
+    CenterCoords.Deserialize(aReader);
 }

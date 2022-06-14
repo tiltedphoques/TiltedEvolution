@@ -22,6 +22,7 @@
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/NotifyPlayerPosition.h>
+#include <Messages/NotifyPlayerCellChanged.h>
 
 #include <Structs/ServerSettings.h>
 
@@ -48,10 +49,29 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
-    m_playerPosition = m_dispatcher.sink<NotifyPlayerPosition>().connect<&PlayerService::OnNotifyPlayerPosition>(this);
+    m_playerPositionConnection = m_dispatcher.sink<NotifyPlayerPosition>().connect<&PlayerService::OnNotifyPlayerPosition>(this);
+    m_playerCellChangeConnection = m_dispatcher.sink<NotifyPlayerCellChanged>().connect<&PlayerService::OnNotifyPlayerCellChanged>(this);
 }
 
-PlayerService::MapInfo::~MapInfo()
+// TODO: this whole thing should probably be a util function by now
+TESObjectCELL* PlayerService::GetCell(const GameId& acCellId, const GameId& acWorldSpaceId, const GridCellCoords& acCenterCoords) const noexcept
+{
+    auto& modSystem = m_world.GetModSystem();
+    uint32_t cellId = modSystem.GetGameId(acCellId);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+
+    if (!pCell)
+    {
+        const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acWorldSpaceId);
+        TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
+        if (pWorldSpace)
+            pCell = pWorldSpace->LoadCell(acCenterCoords.X, acCenterCoords.Y);
+    }
+
+    return pCell;
+}
+
+void PlayerService::MapInfo::Delete() const noexcept
 {
     Memory::Delete(pMarkerData);
     pPlayer->Delete();
@@ -86,8 +106,11 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     //pPlayer->RemoveMapmarkerRef();
 
     TiltedPhoques::Vector<uint32_t> toRemove{};
-    for (const auto& [id, mapInfo] : m_mapHandles)
+    for (auto& [id, mapInfo] : m_mapHandles)
+    {
         toRemove.push_back(id);
+        mapInfo.Delete();
+    }
 
     for (uint32_t id : toRemove)
         m_mapHandles.erase(id);
@@ -112,17 +135,9 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
     pNewPlayer->SetBaseForm(TESForm::GetById(0x10));
     pNewPlayer->SetSkipSaveFlag(true);
 
-    // TODO: this whole thing should probably be a util function by now
-    auto& modSystem = m_world.GetModSystem();
-    uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
-    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
-    if (!pCell)
-    {
-        const uint32_t cWorldSpaceId = m_world.GetModSystem().GetGameId(acMessage.WorldSpaceId);
-        TESWorldSpace* const pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceId));
-        if (pWorldSpace)
-            pCell = pWorldSpace->LoadCell(acMessage.CenterCoords.X, acMessage.CenterCoords.Y);
-    }
+    TESObjectCELL* pCell = GetCell(acMessage.CellId, acMessage.WorldSpaceId, acMessage.CenterCoords);
+
+    // TODO: assert pCell
 
     if (pCell)
         pNewPlayer->SetParentCell(pCell);
@@ -144,7 +159,12 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
-    m_mapHandles.erase(acMessage.PlayerId);
+    auto it = m_mapHandles.find(acMessage.PlayerId);
+    if (it == m_mapHandles.end())
+        return;
+
+    it->second.Delete();
+    m_mapHandles.erase(it);
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
@@ -209,9 +229,12 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {   
-    const MapInfo& info = m_mapHandles.at(acMessage.PlayerId);
-    TESObjectREFR* pPlayer = info.pPlayer;
-    MapMarkerData* pMarkerData = info.pMarkerData;
+    auto it = m_mapHandles.find(acMessage.PlayerId);
+    if (it == m_mapHandles.end())
+        return;
+
+    TESObjectREFR* pPlayer = it->second.pPlayer;
+    MapMarkerData* pMarkerData = it->second.pMarkerData;
 
     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
 
@@ -220,8 +243,26 @@ void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage
     // TODO: rotation doesn't seem to work
     pPlayer->rotation.x = acMessage.Rotation.x;
     pPlayer->rotation.z = acMessage.Rotation.y;
+}
 
-    // TODO: cells should be sent to update
+// TODO: this doesn't work yet
+void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept
+{
+    auto it = m_mapHandles.find(acMessage.PlayerId);
+    if (it == m_mapHandles.end())
+    {
+        spdlog::error("Could not find player");
+        return;
+    }
+
+    TESObjectCELL* pCell = GetCell(acMessage.CellId, acMessage.WorldSpaceId, acMessage.CenterCoords);
+    if (!pCell)
+    {
+        spdlog::error("Could not find cell");
+        return;
+    }
+
+    it->second.pPlayer->SetParentCell(pCell);
 }
 
 // on join/leave, add to our array...
