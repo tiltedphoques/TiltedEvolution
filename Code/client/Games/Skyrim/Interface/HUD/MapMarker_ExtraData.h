@@ -9,7 +9,8 @@ struct MapMarkerData
     enum class Flag : uint8_t
     {
         NONE = 0,
-        VISIBLE = 1,
+        VISIBLE = 1 << 0,
+        CAN_TRAVEL_TO = 1 << 1,
     };
 
     enum class Type : uint16_t

@@ -98,6 +98,12 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
     TESObjectREFR* pNewPlayer = TESObjectREFR::New();
 
+    auto& modSystem = m_world.GetModSystem();
+    uint32_t cellId = modSystem.GetGameId(acMessage.CellId);
+    TESObjectCELL* pCell = Cast<TESObjectCELL>(TESForm::GetById(cellId));
+    if (pCell)
+        pNewPlayer->SetParentCell(pCell);
+
     uint32_t handle;
     
     pNewPlayer->GetHandle(handle);
@@ -108,10 +114,12 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
     pMarkerData->sType = MapMarkerData::Type::kMousePointer; // "custom destination" marker either 66 or 0
     pNewPlayer->extraData.SetMarkerData(pMarkerData);
 
-    struct MapInfo info = {pNewPlayer, pMarkerData};
+    MapInfo info = {pNewPlayer, pMarkerData};
 
     PlayerCharacter::Get()->AddMapmarkerRef(handle);
     mapHandles[acMessage.PlayerId] = info;
+
+    // TODO: crashes on next iteration if spawned nearby
 }
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
@@ -180,11 +188,15 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {   
-     struct MapInfo info = mapHandles.at(acMessage.PlayerId);
+     MapInfo info = mapHandles.at(acMessage.PlayerId);
      TESObjectREFR* pPlayer = info.pPlayer;
      MapMarkerData* pMarkerData = info.pMarkerData;
      pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
-     pPlayer->position = PlayerCharacter::Get()->position;
+     pPlayer->position.x = acMessage.Position.x;
+     pPlayer->position.y = acMessage.Position.y;
+     // TODO: should probably send z coordinate too
+     pPlayer->position.z = 0;
+     // TODO: cells should be sent to update
 }
 
 
