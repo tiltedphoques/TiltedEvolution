@@ -96,6 +96,22 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
 
 void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
+    TESObjectREFR* pNewPlayer = TESObjectREFR::New();
+
+    uint32_t handle;
+    
+    pNewPlayer->GetHandle(handle);
+
+    MapMarkerData* pMarkerData = MapMarkerData::New();
+    pMarkerData->name.value.Set(acMessage.Username.data());
+    pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
+    pMarkerData->sType = MapMarkerData::Type::kMousePointer; // "custom destination" marker either 66 or 0
+    pNewPlayer->extraData.SetMarkerData(pMarkerData);
+
+    struct MapInfo info = {pNewPlayer, pMarkerData};
+
+    PlayerCharacter::Get()->AddMapmarkerRef(handle);
+    mapHandles[acMessage.PlayerId] = info;
 }
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
@@ -163,23 +179,18 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
 }
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
-{
+{   
+     struct MapInfo info = mapHandles.at(acMessage.PlayerId);
+     TESObjectREFR* pPlayer = info.pPlayer;
+     MapMarkerData* pMarkerData = info.pMarkerData;
+     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
+     pPlayer->position = PlayerCharacter::Get()->position;
 }
 
 
 // on join/leave, add to our array...
 void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept
 {
-    // for only players that are in the same worldspace as we are...
-    for (int32_t handle : m_ownedMaphandles)
-    {
-#if 0
-        // fetch smart pointer from handle function
-        // then fetch all players,
-        if worldspace = remoteworldspace
-
-#endif
-    }
 }
 
 void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept

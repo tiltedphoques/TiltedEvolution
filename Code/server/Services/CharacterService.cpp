@@ -127,7 +127,6 @@ void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
 {
     ProcessFactionsChanges();
     ProcessMovementChanges();
-    ProcessPlayerPositionChanges();
 }
 
 void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCellChangeEvent& acEvent) const noexcept
@@ -851,43 +850,6 @@ void CharacterService::ProcessMovementChanges() const noexcept
     {
         if (!message.Updates.empty())
             pPlayer->Send(message);
-    }
-}
-
-void CharacterService::ProcessPlayerPositionChanges() const noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    TiltedPhoques::Vector<NotifyPlayerPosition> messages;
-
-    // TODO: optimize this so that all player updates are sent in one message
-    for (Player* pPlayer : m_world.GetPlayerManager())
-    {
-        if (!pPlayer->GetCharacter())
-            continue;
-
-        auto character = *pPlayer->GetCharacter();
-        auto* movementComponent = m_world.try_get<MovementComponent>(character);
-        if (!movementComponent)
-            continue;
-
-        auto& message = messages.emplace_back();
-        message.PlayerId = pPlayer->GetId();
-        message.Position.x = movementComponent->Position.x;
-        message.Position.y = movementComponent->Position.y;
-    }
-
-    for (auto& message : messages)
-    {
-        Player* pPlayer = m_world.GetPlayerManager().GetById(message.PlayerId);
-        GameServer::Get()->SendToPlayers(message, pPlayer);
     }
 }
 

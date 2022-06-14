@@ -63,7 +63,14 @@ private:
     double m_respawnTimer = 0.0;
     int32_t m_serverDifficulty = 6;
     int32_t m_previousDifficulty = 6;
-    Vector<int32_t> m_ownedMaphandles;
+
+    struct MapInfo
+    {
+        TESObjectREFR* pPlayer;
+        MapMarkerData* pMarkerData;
+    };
+
+    TiltedPhoques::Map<uint32_t, MapInfo> mapHandles;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;

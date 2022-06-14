@@ -1,6 +1,7 @@
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
 #include "Events/PlayerLeaveCellEvent.h"
+#include <Events/UpdateEvent.h>
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -17,11 +18,13 @@
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
+#include <Messages/NotifyPlayerPosition.h>
 
 Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.0f};
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
+    , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this))
     , m_interiorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterInteriorCellRequest>>().connect<&PlayerService::HandleInteriorCellEnter>(this))
     , m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
     , m_exteriorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterExteriorCellRequest>>().connect<&PlayerService::HandleExteriorCellEnter>(this))
@@ -147,6 +150,11 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     SendPlayerCellChanged(pPlayer);
 }
 
+void PlayerService::OnUpdate(const UpdateEvent&) const noexcept
+{
+    ProcessPlayerPositionChanges();
+}
+
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
 {
     float goldLossFactor = fGoldLossFactor.as_float();
@@ -207,4 +215,41 @@ void PlayerService::OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& 
     notify.NewLevel = acMessage.Packet.NewLevel;
 
     GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+}
+
+void PlayerService::ProcessPlayerPositionChanges() const noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenSnapshots = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+        return;
+
+    lastSendTimePoint = now;
+
+    TiltedPhoques::Vector<NotifyPlayerPosition> messages;
+
+    // TODO: optimize this so that all player updates are sent in one message
+    for (Player* pPlayer : m_world.GetPlayerManager())
+    {
+        if (!pPlayer->GetCharacter())
+            continue;
+
+        auto character = *pPlayer->GetCharacter();
+        auto* movementComponent = m_world.try_get<MovementComponent>(character);
+        if (!movementComponent)
+            continue;
+
+        auto& message = messages.emplace_back();
+        message.PlayerId = pPlayer->GetId();
+        message.Position.x = movementComponent->Position.x;
+        message.Position.y = movementComponent->Position.y;
+    }
+
+    for (auto& message : messages)
+    {
+        Player* pPlayer = m_world.GetPlayerManager().GetById(message.PlayerId);
+        GameServer::Get()->SendToPlayers(message, pPlayer);
+    }
 }
