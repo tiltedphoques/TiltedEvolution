@@ -478,7 +478,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
 
-    // TODO(cosideci): why?
+    // TODO(cosideci): why? cause of ui stuff with playercomponent, that's why. not sure whether that's problematic.
     m_world.emplace_or_replace<FormIdComponent>(*entity, pActor->formID);
     if (pActor->IsDisabled())
         pActor->Enable();
@@ -1233,7 +1233,7 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
     Actor* pActor = Cast<Actor>(TESForm::GetById(cActorId));
     if (!pActor)
     {
-        spdlog::error(__FUNCTION__ ": failed to retrieve actor to teleport.");
+        spdlog::error(__FUNCTION__ ": failed to retrieve actor to teleport, actor id: {:X}", acMessage.FormId.BaseId);
         return;
     }
 
