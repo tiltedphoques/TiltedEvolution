@@ -107,8 +107,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerJoinedConnection = aDispatcher.sink<NotifyPlayerJoined>().connect<&OverlayService::OnPlayerJoined>(this);
     m_playerLeftConnection = aDispatcher.sink<NotifyPlayerLeft>().connect<&OverlayService::OnPlayerLeft>(this);
     m_playerDialogueConnection = aDispatcher.sink<NotifyPlayerDialogue>().connect<&OverlayService::OnPlayerDialogue>(this);
-    m_playerAddedConnection = m_world.on_construct<PlayerComponent>().connect<&OverlayService::OnPlayerComponentAdded>(this);
-    m_playerAddedConnection = m_world.on_update<PlayerComponent>().connect<&OverlayService::OnPlayerComponentAdded>(this);
+    m_playerAddedConnection = m_world.on_destroy<WaitingFor3D>().connect<&OverlayService::OnWaitingFor3DRemoved>(this);
     m_playerRemovedConnection = m_world.on_destroy<PlayerComponent>().connect<&OverlayService::OnPlayerComponentRemoved>(this);
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
@@ -292,8 +291,12 @@ void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
     SendSystemMessage("Disconnected from server");
 }
 
-void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept
+void OverlayService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
 {
+    const auto* pPlayerComponent = m_world.try_get<PlayerComponent>(aEntity);
+    if (!pPlayerComponent)
+        return;
+
     const auto& formIdComponent = m_world.get<FormIdComponent>(aEntity);
 
     Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
@@ -305,10 +308,8 @@ void OverlayService::OnPlayerComponentAdded(entt::registry& aRegistry, entt::ent
 
     float percentage = CalculateHealthPercentage(pActor);
 
-    const auto& playerComponent = m_world.get<PlayerComponent>(aEntity);
-
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, playerComponent.Id);
+    pArguments->SetInt(0, pPlayerComponent->Id);
     pArguments->SetInt(1, static_cast<int>(percentage));
 
     m_pOverlay->ExecuteAsync("setPlayer3dLoaded", pArguments);
