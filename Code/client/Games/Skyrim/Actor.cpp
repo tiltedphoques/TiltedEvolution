@@ -454,13 +454,13 @@ void Actor::UnEquipAll() noexcept
                     // Right slot
                     if (pDataList->Contains(ExtraData::Worn))
                     {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
                     }
 
                     // Left slot
                     if (pDataList->Contains(ExtraData::WornLeft))
                     {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false, nullptr);
                     }
                 }
             }
