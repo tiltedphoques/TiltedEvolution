@@ -1,3 +1,66 @@
+## [1.35.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.0...v1.35.1) (2022-06-14)
+
+# [1.35.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.34.0...v1.35.0) (2022-06-13)
+
+
+### Bug Fixes
+
+* actually send the data to ui ([8a39e8f](https://github.com/tiltedphoques/TiltedEvolution/commit/8a39e8f5f789258128dec8eb57300a1a1cb83fc0))
+* add missing entt::scoped_connection ([b4c5dbb](https://github.com/tiltedphoques/TiltedEvolution/commit/b4c5dbbba7485d17ea9ebbce66a2bb1813088870))
+* adjust playerList styling ([765487b](https://github.com/tiltedphoques/TiltedEvolution/commit/765487b03cb3642dd78481db92abb4043518f773))
+* build error ([a130136](https://github.com/tiltedphoques/TiltedEvolution/commit/a1301362cb391c325ba936db8a4a8db13d3ed6d0))
+* build errors ([cfcb75e](https://github.com/tiltedphoques/TiltedEvolution/commit/cfcb75ebcb5114029467396fba204a5f681f0f4d))
+* ci linux ([2d6bb43](https://github.com/tiltedphoques/TiltedEvolution/commit/2d6bb43d4c38d71793bfe2e6920e54dd0e5d30a7))
+* crash ([e5cc47e](https://github.com/tiltedphoques/TiltedEvolution/commit/e5cc47e17082c4acadfe96af5426ec0af9a39e5a))
+* entt crash ([780fe20](https://github.com/tiltedphoques/TiltedEvolution/commit/780fe20a576df21bf5ebe7272c680400d1052e00))
+* extra entt listener for updates to PlayerComponent ([1b032cf](https://github.com/tiltedphoques/TiltedEvolution/commit/1b032cfaffbc80ee1cd1184a58533271636aed4c))
+* invisible players ([feac82e](https://github.com/tiltedphoques/TiltedEvolution/commit/feac82ec57a8735d6bc6527966c32081fe94010e))
+* listen to RemotePlayerDespawnedEvent ([0aa9cc2](https://github.com/tiltedphoques/TiltedEvolution/commit/0aa9cc2546ec1bccadfad90d5edac672ec0b15f7))
+* map to level instead of serverid the second time ([a7d86b1](https://github.com/tiltedphoques/TiltedEvolution/commit/a7d86b133c9f695389110001cf63cd6803d3142f))
+* no worldspace in interiors ([3406433](https://github.com/tiltedphoques/TiltedEvolution/commit/34064338f4b667540eb45bff0b2f4e718fa9ee0b))
+* player removed event ([81069ca](https://github.com/tiltedphoques/TiltedEvolution/commit/81069cacbd798087a86299d9898d937827ff55cb))
+* PlayerComponent for local player ([e9962ce](https://github.com/tiltedphoques/TiltedEvolution/commit/e9962ceded3faf6e71bf334e4500c2a160e0eedd))
+
+
+### Features
+
+* infrastructure for teleport button ([297d028](https://github.com/tiltedphoques/TiltedEvolution/commit/297d0281d46fb0a088e674ebd91eace21cf0650a))
+* net debug data for ui ([8d79a75](https://github.com/tiltedphoques/TiltedEvolution/commit/8d79a759e062ead4f073ef803a905bd7bbefaa4a))
+* player world presence event for party UI ([5b4d5d1](https://github.com/tiltedphoques/TiltedEvolution/commit/5b4d5d1bf7dc8b59a146303c108183b25aa64b92))
+* set initial health on player load ([8c66ac1](https://github.com/tiltedphoques/TiltedEvolution/commit/8c66ac12d16592629ca71a9b33bdc18ecf15c06d))
+* sync level ups in UI ([d325373](https://github.com/tiltedphoques/TiltedEvolution/commit/d325373b2916c61ed927df04dea4e0ef301448b7))
+
+# [1.34.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.3...v1.34.0) (2022-06-11)
+
+
+### Bug Fixes
+
+* actor stuck on traveling through door ([6cd70c5](https://github.com/tiltedphoques/TiltedEvolution/commit/6cd70c544745bbdb7804cafb0780f22be35578d4))
+* build error ([497d679](https://github.com/tiltedphoques/TiltedEvolution/commit/497d6792d9fc901ae4eef1f89fc1e2665f1ce8fc))
+* build error ([677daaa](https://github.com/tiltedphoques/TiltedEvolution/commit/677daaaffcc3ccecbd41bc00ad0a0052f277755b))
+* conjure familiar ghost effect apply ([5651b65](https://github.com/tiltedphoques/TiltedEvolution/commit/5651b655d662323fed2a80a5a642564a3aadd060))
+* disable xmake ccache as it is broken ([ec019da](https://github.com/tiltedphoques/TiltedEvolution/commit/ec019da33063a5959c4fcfb9148f8e93386765ef))
+* don't tp temporaries ([b1912d8](https://github.com/tiltedphoques/TiltedEvolution/commit/b1912d8085005a863d18235d0c8f1d8c87130a68))
+* double applying of RemoteComponent ([c6bf19c](https://github.com/tiltedphoques/TiltedEvolution/commit/c6bf19c7d460c191293a685f2cef71a86c1ece5d))
+* double queue of event ([3f53434](https://github.com/tiltedphoques/TiltedEvolution/commit/3f53434457eae479415597d0f021a04f7ef91ec2))
+* entity actor mover ([046aadd](https://github.com/tiltedphoques/TiltedEvolution/commit/046aadd8ff7b2fca7e2992d473be5c9e6372eacc))
+* form id comparison ([a11649e](https://github.com/tiltedphoques/TiltedEvolution/commit/a11649ed87b2ab96d10ad9a0d365d60d0af235d5))
+* isOwner bool on assignment ([563cf47](https://github.com/tiltedphoques/TiltedEvolution/commit/563cf472df2b8eb99e46fbdca92f4119c43f5fc7))
+* MoveActor bug ([81b338b](https://github.com/tiltedphoques/TiltedEvolution/commit/81b338bfecf7e316205b5d9473a1baa7b60818a1))
+* potential disconnect crash ([c1870b9](https://github.com/tiltedphoques/TiltedEvolution/commit/c1870b9af94f50dc2765e1704d5ee08134e0dc4c))
+* properly update magic equipment ([197f0cc](https://github.com/tiltedphoques/TiltedEvolution/commit/197f0cc3050abc62571898204b99d35ed6769704))
+* server crash ([b93cb7f](https://github.com/tiltedphoques/TiltedEvolution/commit/b93cb7f59f193c98e18d218450586b88fbaae1fe))
+* the door problem (again) ([77c0098](https://github.com/tiltedphoques/TiltedEvolution/commit/77c009864eee163a2721d0c8976259a8ad781970))
+* transfer temp actors ([a5c3ad7](https://github.com/tiltedphoques/TiltedEvolution/commit/a5c3ad72e180cbbd592ba0931f4b4bb8c93b6aa5))
+* wrongful ownership transfer ([991337b](https://github.com/tiltedphoques/TiltedEvolution/commit/991337bb01762ed6ab7b6c9192ce2f5db71530a4))
+
+
+### Features
+
+* improved quest debugger ([397e971](https://github.com/tiltedphoques/TiltedEvolution/commit/397e9717a980332d6418437d19636b66870439d2))
+* party leader hosts all actors ([0bb89bc](https://github.com/tiltedphoques/TiltedEvolution/commit/0bb89bc7bae1e66bcb63838db4bcf6e1271f573b))
+* transfer ownership to party leader on creation ([7c6a9ed](https://github.com/tiltedphoques/TiltedEvolution/commit/7c6a9ed45e5786266357ec21176310719bf92753))
+
 ## [1.33.3](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.2...v1.33.3) (2022-05-29)
 
 ## [1.33.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.33.1...v1.33.2) (2022-05-28)
