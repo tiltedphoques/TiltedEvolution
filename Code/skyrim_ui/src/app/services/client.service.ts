@@ -268,6 +268,7 @@ export class ClientService implements OnDestroy {
   private onEnterGame(): void {
     this.zone.run(() => {
       this.inGameStateChange.next(true);
+      console.log("ENTER GAME: " + this.inGameStateChange.value);
     });
   }
 

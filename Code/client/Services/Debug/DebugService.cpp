@@ -195,7 +195,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         m_showDebugStuff = !m_showDebugStuff;
     }
 
-    if (GetAsyncKeyState(VK_F8))
+    if (GetAsyncKeyState(VK_F8) & 0x01)
     {
         if (!s_f8Pressed)
         {
