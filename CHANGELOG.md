@@ -1,3 +1,11 @@
+## [1.35.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.1...v1.35.2) (2022-06-15)
+
+
+### Bug Fixes
+
+* freeze and several crashes ([4ad660d](https://github.com/tiltedphoques/TiltedEvolution/commit/4ad660de7812efc157991b813fd2cd59ec251d1a))
+* missing player characters ([6fb4a9c](https://github.com/tiltedphoques/TiltedEvolution/commit/6fb4a9c4f1275236fd2e1b3c5beb0473c74f9d96))
+
 ## [1.35.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.0...v1.35.1) (2022-06-14)
 
 # [1.35.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.34.0...v1.35.0) (2022-06-13)
