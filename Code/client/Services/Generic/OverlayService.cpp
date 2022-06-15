@@ -155,6 +155,12 @@ void OverlayService::Reset() const noexcept
     m_pOverlay->GetClient()->Reset();
 }
 
+void OverlayService::Reload() noexcept
+{
+    m_inGame = false;
+    GetOverlayApp()->GetClient()->GetBrowser()->Reload();
+}
+
 void OverlayService::Initialize() noexcept
 {
     m_pOverlay->ExecuteAsync("init");

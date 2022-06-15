@@ -43,6 +43,7 @@ struct OverlayService
 
     void Render() noexcept;
     void Reset() const noexcept;
+    void Reload() noexcept;
 
     void Initialize() noexcept;
 

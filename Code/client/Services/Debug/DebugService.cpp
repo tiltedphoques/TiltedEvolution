@@ -49,6 +49,7 @@
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
 #include <Camera/PlayerCamera.h>
+#include <OverlayApp.hpp>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
@@ -200,10 +201,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            m_world.GetOverlayService().Reload();
+
+        #if 0
             Actor* pActor = Cast<Actor>(TESForm::GetById(0x1a677));
             pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
 
-        #if 0
             static bool s_enabled = true;
 
             FadeOutGame(s_enabled, true, 1.f, true, 0.f);
