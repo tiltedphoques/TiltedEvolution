@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Structs/Vector3_NetQuantize.h>
+#include <Structs/Rotator2_NetQuantize.h>
 
 struct NotifyPlayerPosition final : ServerMessage
 {
@@ -24,5 +25,5 @@ struct NotifyPlayerPosition final : ServerMessage
 
     uint32_t PlayerId{};
     Vector3_NetQuantize Position{};
-    Vector3_NetQuantize Rotation{};
+    Rotator2_NetQuantize Rotation{};
 };
