@@ -32,6 +32,7 @@
 #include <Games/References.h>
 #include <AI/AIProcess.h>
 #include <Forms/TESWorldSpace.h>
+#include <ExtraData/ExtraMapMarker.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -71,10 +72,17 @@ TESObjectCELL* PlayerService::GetCell(const GameId& acCellId, const GameId& acWo
     return pCell;
 }
 
-void PlayerService::MapInfo::Delete() const noexcept
+bool DeleteMarkerDummy(const uint32_t acHandle) noexcept
 {
-    Memory::Delete(pMarkerData);
-    pPlayer->Delete();
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(acHandle);
+    if (!pDummyPlayer)
+        return false;
+
+    pDummyPlayer->Delete();
+
+    PlayerCharacter::Get()->RemoveMapmarkerRef(acHandle);
+
+    return true;
 }
 
 static bool knockdownStart = false;
@@ -102,18 +110,15 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     float* greetDistance = Settings::GetGreetDistance();
     *greetDistance = 150.f;
 
-    // make sure to only display markers of players within the same cell...
-    //pPlayer->RemoveMapmarkerRef();
-
     TiltedPhoques::Vector<uint32_t> toRemove{};
-    for (auto& [id, mapInfo] : m_mapHandles)
+    for (auto& [playerId, handle] : m_mapHandles)
     {
-        toRemove.push_back(id);
-        mapInfo.Delete();
+        toRemove.push_back(playerId);
+        DeleteMarkerDummy(handle);
     }
 
-    for (uint32_t id : toRemove)
-        m_mapHandles.erase(id);
+    for (uint32_t playerId : toRemove)
+        m_mapHandles.erase(playerId);
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -145,25 +150,27 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
     MapMarkerData* pMarkerData = MapMarkerData::New();
     pMarkerData->name.value.Set(acMessage.Username.data());
     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
-    pMarkerData->sType = MapMarkerData::Type::kMousePointer; // "custom destination" marker either 66 or 0
+    pMarkerData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
     pNewPlayer->extraData.SetMarkerData(pMarkerData);
-
-    MapInfo& info = m_mapHandles[acMessage.PlayerId];
-    info.pPlayer = pNewPlayer;
-    info.pMarkerData = pMarkerData;
 
     uint32_t handle;
     pNewPlayer->GetHandle(handle);
     PlayerCharacter::Get()->AddMapmarkerRef(handle);
+
+    m_mapHandles[acMessage.PlayerId] = handle;
 }
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
     auto it = m_mapHandles.find(acMessage.PlayerId);
     if (it == m_mapHandles.end())
+    {
+        spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
         return;
+    }
 
-    it->second.Delete();
+    DeleteMarkerDummy(it->second);
+
     m_mapHandles.erase(it);
 }
 
@@ -231,38 +238,55 @@ void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage
 {   
     auto it = m_mapHandles.find(acMessage.PlayerId);
     if (it == m_mapHandles.end())
+    {
+        spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
         return;
+    }
 
-    TESObjectREFR* pPlayer = it->second.pPlayer;
-    MapMarkerData* pMarkerData = it->second.pMarkerData;
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->second);
+    if (!pDummyPlayer)
+    {
+        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->second);
+        return;
+    }
+    
+    ExtraMapMarker* pMapMarker = Cast<ExtraMapMarker>(pDummyPlayer->extraData.GetByType(ExtraData::MapMarker));
+    if (!pMapMarker || !pMapMarker->pMarkerData)
+    {
+        spdlog::error(__FUNCTION__ ": could not find map marker data, player id: {:X}", acMessage.PlayerId);
+        return;
+    }
 
+    MapMarkerData* pMarkerData = pMapMarker->pMarkerData;
     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
 
-    pPlayer->position = acMessage.Position;
-
-    // TODO: rotation doesn't seem to work
-    pPlayer->rotation.x = acMessage.Rotation.x;
-    pPlayer->rotation.z = acMessage.Rotation.y;
+    pDummyPlayer->position = acMessage.Position;
 }
 
-// TODO: this doesn't work yet
 void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept
 {
     auto it = m_mapHandles.find(acMessage.PlayerId);
     if (it == m_mapHandles.end())
     {
-        spdlog::error("Could not find player");
+        spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
         return;
     }
 
     TESObjectCELL* pCell = GetCell(acMessage.CellId, acMessage.WorldSpaceId, acMessage.CenterCoords);
     if (!pCell)
     {
-        spdlog::error("Could not find cell");
+        spdlog::error(__FUNCTION__ ": could not find cell {:X}", acMessage.CellId.BaseId);
         return;
     }
 
-    it->second.pPlayer->SetParentCell(pCell);
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->second);
+    if (!pDummyPlayer)
+    {
+        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->second);
+        return;
+    }
+
+    pDummyPlayer->SetParentCell(pCell);
 }
 
 // on join/leave, add to our array...

@@ -69,16 +69,7 @@ private:
     int32_t m_serverDifficulty = 6;
     int32_t m_previousDifficulty = 6;
 
-    struct MapInfo
-    {
-        void Delete() const noexcept;
-
-        // TODO: these raw ptrs are a bad idea
-        TESObjectREFR* pPlayer;
-        MapMarkerData* pMarkerData;
-    };
-
-    TiltedPhoques::Map<uint32_t, MapInfo> m_mapHandles;
+    TiltedPhoques::Map<uint32_t, uint32_t> m_mapHandles;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;

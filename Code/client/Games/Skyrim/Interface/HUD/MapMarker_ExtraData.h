@@ -75,6 +75,7 @@ struct MapMarkerData
         kDLC02_ToSkyrim = 57,
         kDLC02_ToSolstheim = 58,
         // see https://i.imgur.com/L1mWPhR.jpeg
+        kMultipleQuest = 64,
         kCustomMarker = 65,
         kMousePointer = 66
     };
