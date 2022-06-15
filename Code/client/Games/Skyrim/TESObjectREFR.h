@@ -206,6 +206,8 @@ struct TESObjectREFR : TESForm
     void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
     void UpdateItemList(TESForm* pUnkForm) noexcept;
 
+    bool IsInInteriorCell() noexcept;
+
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
     IAnimationGraphManagerHolder animationGraphHolder;

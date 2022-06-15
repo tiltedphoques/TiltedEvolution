@@ -142,7 +142,7 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 
     TESObjectCELL* pCell = GetCell(acMessage.CellId, acMessage.WorldSpaceId, acMessage.CenterCoords);
 
-    // TODO: assert pCell
+    TP_ASSERT(pCell, "Cell not found for joined player");
 
     if (pCell)
         pNewPlayer->SetParentCell(pCell);
@@ -258,6 +258,13 @@ void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage
     }
 
     MapMarkerData* pMarkerData = pMapMarker->pMarkerData;
+
+    if (pDummyPlayer->IsInInteriorCell())
+    {
+        pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
+        return;
+    }
+
     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
 
     pDummyPlayer->position = acMessage.Position;
