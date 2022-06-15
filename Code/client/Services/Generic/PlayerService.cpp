@@ -147,6 +147,8 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
     if (pCell)
         pNewPlayer->SetParentCell(pCell);
 
+    // TODO: might have to be respawned when traveling between worldspaces?
+    // doesn't always work when going from solstheim to skyrim
     MapMarkerData* pMarkerData = MapMarkerData::New();
     pMarkerData->name.value.Set(acMessage.Username.data());
     pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
@@ -259,7 +261,13 @@ void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage
 
     MapMarkerData* pMarkerData = pMapMarker->pMarkerData;
 
-    if (pDummyPlayer->IsInInteriorCell())
+    // TODO: this is flawed due to cities being worldspaces on the same map
+    auto* pDummyWorldSpace = pDummyPlayer->GetWorldSpace();
+    auto* pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+
+    if (pDummyPlayer->IsInInteriorCell() || 
+        (pPlayerWorldSpace && pDummyWorldSpace != pPlayerWorldSpace) ||
+        (pDummyWorldSpace && pDummyWorldSpace != pPlayerWorldSpace))
     {
         pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
         return;
