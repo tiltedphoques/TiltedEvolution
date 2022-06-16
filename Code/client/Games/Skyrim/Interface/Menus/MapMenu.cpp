@@ -23,6 +23,11 @@ void (*Hack_Dorefresh)(void*, const char*, void*);
 constexpr uint64_t kPlayerMarkersUpdateTime = 1000;
 } // namespace
 
+void SetWaypoint(MapMenu* apMapMenu, float aCoordinateX, float aCoordinateY)
+{
+    ThisCall(RealSetWaypoint, apMapMenu, aCoordinateX, aCoordinateY);
+}
+
 UI_MESSAGE_RESULTS Hook_MapMenu_ProcessUiMessage(MapMenu* apSelf, UIMessage* apUiMessage)
 {
     return MapMenu_ProcessUiMessage(apSelf, apUiMessage);
@@ -56,7 +61,7 @@ void TP_MAKE_THISCALL(HookSetWaypoint, MapMenu, float aCoordinateX, float aCoord
     Vector3_NetQuantize Position = {};
     Position.x = aCoordinateX;
     Position.y = aCoordinateY;
-    
+
     World::Get().GetRunner().Trigger(PlayerSetWaypointEvent(Position));
 
     ThisCall(RealSetWaypoint, apThis, aCoordinateX, aCoordinateY);

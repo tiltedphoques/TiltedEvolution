@@ -28,6 +28,8 @@
 
 #include <Structs/ServerSettings.h>
 
+#include <Interface/Menus/MapMenu.h>
+#include <Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Games/Overrides.h>
@@ -345,6 +347,7 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
 
 void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) const noexcept
 {
+
     if (!m_transport.IsConnected())
         return;
 
@@ -355,9 +358,9 @@ void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage)
 
 void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept
 {
-    m_waypointData->cOriginalFlags = m_waypointData->cFlags = MapMarkerData::Flag::VISIBLE;
-    m_waypoint->position.x = acMessage.Position.x;
-    m_waypoint->position.y = acMessage.Position.y;
+    MapMenu* pMapMenu = reinterpret_cast<decltype(pMapMenu)>(UI::Get()->FindMenuByName("MapMenu"));
+    spdlog::info(pMapMenu == nullptr);
+    SetWaypoint(pMapMenu, acMessage.Position.x, acMessage.Position.y);
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept

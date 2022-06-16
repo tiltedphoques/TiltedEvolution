@@ -6,6 +6,8 @@
 
 class MenuOpenCloseEvent;
 
+void SetWaypoint(MapMenu* apMapMenu, float aCoordinateX, float aCoordinateY);
+
 struct IMapCameraCallbacks
 {
     // add
