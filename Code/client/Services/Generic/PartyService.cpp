@@ -109,6 +109,16 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         m_isLeader = acPartyInfo.IsLeader;
         m_leaderPlayerId = acPartyInfo.LeaderPlayerId;
         m_partyMembers = acPartyInfo.PlayerIds;
+
+        auto pArguments = CefListValue::Create();
+
+        auto pPlayerIds = CefListValue::Create();
+        for (int i = 0; i < m_partyMembers.size(); i++)
+            pPlayerIds->SetInt(i, m_partyMembers[i]);
+
+        pArguments->SetList(0, pPlayerIds);
+
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInfo", pArguments);
     }
 }
 

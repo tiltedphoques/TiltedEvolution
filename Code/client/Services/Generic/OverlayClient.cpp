@@ -72,6 +72,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         }
         else if (eventName == "teleportToPlayer")
             ProcessTeleportMessage(eventArgs);
+        else if (eventName == "toggleDebugUI")
+            ProcessToggleDebugUI(eventArgs);
 
         return true;
     }
@@ -127,4 +129,9 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
     request.PlayerId = aEventArgs->GetInt(0);
 
     m_transport.Send(request);
+}
+
+void OverlayClient::ProcessToggleDebugUI(CefRefPtr<CefListValue> aEventArgs)
+{
+
 }

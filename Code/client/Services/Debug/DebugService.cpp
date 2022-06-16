@@ -136,8 +136,6 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     if (!pActor || !pCell)
         return;
 
-    //pActor->MoveTo(pCell, acEvent.Position);
-
     moveData.pActor = pActor;
     moveData.pCell = pCell;
     moveData.position = acEvent.Position;
@@ -201,38 +199,17 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            m_world.GetOverlayService().Reload();
+            auto pArguments = CefListValue::Create();
 
-        #if 0
-            Actor* pActor = Cast<Actor>(TESForm::GetById(0x1a677));
-            pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
+            auto pPlayerIds = CefListValue::Create();
+            for (int i = 0; i < 5; i++)
+                pPlayerIds->SetInt(i, i);
 
-            static bool s_enabled = true;
+            pArguments->SetList(0, pPlayerIds);
 
-            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+            m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInfo", pArguments);
 
-            s_enabled = !s_enabled;
-
-            static bool s_enabled = true;
-            static bool s_firstPerson = false;
-
-            auto* pCamera = PlayerCamera::Get();
-            auto* pPlayerControls = PlayerControls::GetInstance();
-
-            if (s_enabled)
-            {
-                s_firstPerson = pCamera->IsFirstPerson();
-                pCamera->ForceFirstPerson();
-            }
-            else
-            {
-                s_firstPerson ? pCamera->ForceFirstPerson() : pCamera->ForceThirdPerson();
-            }
-
-            pPlayerControls->SetCamSwitch(s_enabled);
-
-            s_enabled = !s_enabled;
-        #endif
+            //m_world.GetOverlayService().Reload();
         }
     }
     else

@@ -27,6 +27,7 @@ private:
     void ProcessDisconnectMessage();
     void ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs);
+    void ProcessToggleDebugUI(CefRefPtr<CefListValue> aEventArgs);
 
     TransportService& m_transport;
 };
