@@ -210,6 +210,18 @@ export class ClientService implements OnDestroy {
       this.messageReception.next({ name: this.nameChange.value, content: message });
     }
   }
+  
+  /**
+   * Launch a party.
+   */
+   public launchParty(): void {
+    if (environment.game) {
+      skyrimtogether.launchParty();
+    }
+    else {
+      this.messageReception.next({ content: "You're not ingame, duh" });
+    }
+  }
 
   /**
    * Deactivate UI and release control.

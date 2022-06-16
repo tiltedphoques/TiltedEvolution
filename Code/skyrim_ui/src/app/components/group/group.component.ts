@@ -8,7 +8,6 @@ import { Player } from '../../models/player';
 import { ErrorService } from '../../services/error.service';
 import { SoundService, Sound } from '../../services/sound.service';
 import { LoadingService } from '../../services/loading.service';
-import { StoreService } from '../../services/store.service';
 import { SettingService } from 'src/app/services/setting.service';
 
 
@@ -40,7 +39,6 @@ export class GroupComponent implements OnInit, OnDestroy {
     private errorService: ErrorService,
     private soundService: SoundService,
     private loadingService: LoadingService,
-    private storeService: StoreService,
     private settings: SettingService) {
     this.isShown = this.settings.isPartyShown();
     this.isAutoHide = this.settings.isPartyAutoHidden();
@@ -182,6 +180,8 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   public launchParty() {
+    this.clientService.launchParty();
+    /*
     this.soundService.play(Sound.Focus);
     this.loadingService.setLoading(true);
     this.clientService.messageReception.next({ content: "Your session is being created..." });
@@ -192,5 +192,6 @@ export class GroupComponent implements OnInit, OnDestroy {
         this.loadingService.setLoading(false);
       }
     )
+    */
   }
 }

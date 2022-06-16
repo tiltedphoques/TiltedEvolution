@@ -2,7 +2,6 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Group, State } from '../models/group';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { Player } from '../models/player';
-import { User } from '../models/user';
 import { ClientService } from './client.service';
 import { PopupNotificationService } from './popup-notification.service';
 import { NotificationType } from '../models/popup-notification';
@@ -88,21 +87,18 @@ export class GroupService implements OnDestroy {
     this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe((partyInfo: PartyInfo) => {
       
       const group = this.createGroup(this.group.value);
+      const playerList = this.playerListService.getPlayerList();
 
-      if (group) {
+      if (group && playerList) {
         // TODO: this is very primitive, im sure there's some fancy js way to do this
         group.members.clear();
 
-        const playerList = this.playerListService.getPlayerList();
-
-        if (playerList) {
-          for (const id of partyInfo.serverIds) {
-            const player = this.playerListService.getPlayerList().players.get(id);
-            group.members[id] = player;
-          }
-
-          this.updateGroup();
+        for (const id of partyInfo.serverIds) {
+          const player = this.playerListService.getPlayerList().players.get(id);
+          group.members[id] = player;
         }
+
+        this.updateGroup();
       }
     })
   }

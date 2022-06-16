@@ -16,7 +16,6 @@ import { animation as notificationsAnimation } from './notifications.animation';
 import { animation as popupsAnimation } from './popups.animation';
 
 import { environment } from '../../../environments/environment';
-import { User } from '../../models/user';
 import { Player } from '../../models/player';
 
 import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";

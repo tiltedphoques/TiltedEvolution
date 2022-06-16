@@ -274,4 +274,9 @@ interface SkyrimTogether {
    * Reconnect the client.
    */
   reconnect(): void;
+
+  /** 
+  * Launch a party.
+  */
+  launchParty(): void;
 }
