@@ -17,6 +17,8 @@
 #include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyKickRequest.h>
 
+#include <OverlayApp.hpp>
+
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
     : m_world(aWorld), m_transport(aTransportService)
 {
@@ -119,6 +121,9 @@ void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcep
 void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
 {
     spdlog::debug("[PartyService]: Left party");
+
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
+
     DestroyParty();
 }
 
@@ -142,6 +147,8 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
             m_world.GetCharacterService().ProcessNewEntity(entity);
         }
     }
+
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyJoined");
 }
 
 void PartyService::DestroyParty() noexcept
