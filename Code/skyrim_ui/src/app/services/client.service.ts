@@ -217,9 +217,57 @@ export class ClientService implements OnDestroy {
   /**
    * Launch a party.
    */
-   public launchParty(): void {
+  public launchParty(): void {
     if (environment.game) {
       skyrimtogether.launchParty();
+    }
+    else {
+      this.messageReception.next({ content: "You're not ingame, duh" });
+    }
+  }
+  
+  /**
+   * Create a party invite.
+   */
+  public createPartyInvite(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.createPartyInvite(playerId);
+    }
+    else {
+      this.messageReception.next({ content: "You're not ingame, duh" });
+    }
+  }
+  
+  /**
+   * Accept a party invite.
+   */
+  public acceptPartyInvite(inviterId: number): void {
+    if (environment.game) {
+      skyrimtogether.acceptPartyInvite(inviterId);
+    }
+    else {
+      this.messageReception.next({ content: "You're not ingame, duh" });
+    }
+  }
+  
+  /**
+   * As a party leader, kick a player from the party.
+   */
+  public kickPartyMember(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.kickPartyMember(playerId);
+    }
+    else {
+      this.messageReception.next({ content: "You're not ingame, duh" });
+    }
+  }
+  
+  /**
+   * Leave a party.
+   */
+  public leaveParty(): void {
+    if (environment.game) {
+      skyrimtogether.leaveParty();
     }
     else {
       this.messageReception.next({ content: "You're not ingame, duh" });

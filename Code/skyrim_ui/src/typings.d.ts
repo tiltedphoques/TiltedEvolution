@@ -285,4 +285,30 @@ interface SkyrimTogether {
   * Launch a party.
   */
   launchParty(): void;
+  
+  /** 
+  * Send a party invite to player with player id.
+  * 
+  * @param playerId Id of the player to which the invite should be sent.
+  */
+  createPartyInvite(playerId: number): void;
+  
+  /** 
+  * Accept a party invite.
+  * 
+  * @param inviterId Id of the player who sent the invite.
+  */
+  acceptPartyInvite(inviterId: number): void;
+  
+  /** 
+  * As a party leader, kick a member from the party.
+  * 
+  * @param playerId Id of the player who gets kicked.
+  */
+  kickPartyMember(playerId: number): void;
+  
+  /** 
+  * Leave the currently joined party.
+  */
+  leaveParty(): void;
 }

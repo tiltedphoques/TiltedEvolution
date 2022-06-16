@@ -171,29 +171,27 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.clientService.activationStateChange.value;
   }
 
-  public leave() {
-    this.groupService.leave();
-  }
-
   isLaunchPartyDisable(): boolean {
     return (this.waitLaunch /*|| (this.groupService.getSizeMembers() < 1)*/);
   }
 
   public launchParty() {
-    this.clientService.launchParty();
-    this.soundService.play(Sound.Focus);
-    this.loadingService.setLoading(true);
-    /*
-    this.soundService.play(Sound.Focus);
-    this.loadingService.setLoading(true);
-    this.clientService.messageReception.next({ content: "Your session is being created..." });
-    this.groupService.launch().subscribe(
-      () => { },
-      () => {
-        this.errorService.error('Failed to create a session. Please try again later.');
-        this.loadingService.setLoading(false);
-      }
-    )
-    */
+    this.groupService.launch();
+  }
+
+  public leave() {
+    this.groupService.leave();
+  }
+
+  public invite(playerId: number) {
+    this.groupService.invite(playerId);
+  }
+
+  public accept(inviterId: number) {
+    this.groupService.accept(inviterId);
+  }
+
+  public kick(playerId: number) {
+    this.groupService.kick(playerId);
   }
 }

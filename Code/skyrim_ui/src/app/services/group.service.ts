@@ -9,6 +9,7 @@ import { ErrorService } from './error.service';
 import { Sound, SoundService } from './sound.service';
 import { PartyInfo } from '../models/party-info';
 import { PlayerListService } from './player-list.service';
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +33,8 @@ export class GroupService implements OnDestroy {
               private popupNotificationService: PopupNotificationService,
               private soundService: SoundService,
               private clientService: ClientService,
-              private playerListService: PlayerListService) {
+              private playerListService: PlayerListService,
+              private loadingService: LoadingService) {
     this.onConnectionStateChanged();
     this.subscribeChangeHealth();
     this.onPartyInfo();
@@ -166,60 +168,55 @@ export class GroupService implements OnDestroy {
   }
 
 
+  public launch() {
+    this.clientService.launchParty();
+    this.soundService.play(Sound.Focus);
+    this.loadingService.setLoading(true);
+  }
+
   public leave() {
-    // TODO
-    /*
-    if (this.isConnect) {
-      this.clientService.disconnect();
+    const group = this.createGroup(this.group.value);
+
+    if (group) {
+      this.soundService.play(Sound.Ok);
+
+      this.clientService.leaveParty();
     }
-    else if (this.group.value) {
-      this.wsService.send({operation:'leave'}).subscribe(
-        () => {},
-        () => this.errorService.error('Could not leave the group for the moment. Please try again later.'),
-        () => this.group.next(undefined)
-      );
-    }
-    */
   }
 
-  public invite(userID: number) {
-    // TODO
-    /*
+  public invite(playerId: number) {
     this.soundService.play(Sound.Ok);
-    this.wsService.send({operation:'invite', id: userID}).subscribe(
-      () => {},
-      () => this.errorService.error('Could not send invitation. Please try again later.')
-    );
-    */
+    this.clientService.createPartyInvite(playerId);
   }
 
-  public accept(player: Player) {
-    // TODO
-    /*
-    const group = this.group.value;
-    if (group && (group.owner || group.members.size > 0)) {
-      this.errorService.error("You are already in a group. To join another group, please leave your current group.");
-      return;
-    }
+  public accept(inviterId: number) {
+    const group = this.createGroup(this.group.value);
 
-    this.soundService.play(Sound.Ok);
-    this.wsService.send({operation: 'accept', party: player.invitation}).subscribe(
-      () => {},
-      () => this.errorService.error('Could not accept invitation. Please try again later.'),
-      () => player.invitation = ""
-    );
-    */
+    if (group) {
+      if (group.owner || group.members.size > 0) {
+        this.errorService.error("You are already in a group. To join another group, please leave your current group.");
+        return;
+      }
+
+      this.soundService.play(Sound.Ok);
+  
+      this.clientService.acceptPartyInvite(inviterId);
+    }
   }
 
-  public launch(): Observable<any> {
-    // TODO
-    /*
-    if (this.getSizeMembers() > 0) {
-      return this.wsService.send({operation: 'start'});
+  public kick(playerId: number) {
+    const group = this.createGroup(this.group.value);
+
+    if (group) {
+      if (group.owner.serverId !== this.clientService.localServerId) {
+        this.errorService.error("You cannot kick other members as you are not the party leader.");
+        return;
+      }
+
+      this.soundService.play(Sound.Ok);
+
+      this.clientService.kickPartyMember(playerId);
     }
-    return Observable.throw("You can't start a party alone.");
-    */
-    return Observable.throw("Not implemented");
   }
 
   public getSizeMembers(): number {

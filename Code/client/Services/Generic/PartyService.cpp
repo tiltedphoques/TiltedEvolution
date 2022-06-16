@@ -53,6 +53,9 @@ void PartyService::CreateInvite(const uint32_t aPlayerId) const noexcept
 
 void PartyService::AcceptInvite(const uint32_t aInviterId) const noexcept
 {
+    if (!m_invitations.contains(aInviterId))
+        return;
+
     PartyAcceptInviteRequest request;
     request.InviterId = aInviterId;
     m_transport.Send(request);
@@ -158,7 +161,10 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
         }
     }
 
-    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyJoined");
+    if (m_isLeader)
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
+    else
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyJoined");
 }
 
 void PartyService::DestroyParty() noexcept

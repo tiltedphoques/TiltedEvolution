@@ -58,7 +58,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         else if (eventName == "acceptPartyInvite")
         {
             uint32_t aInviterId = eventArgs->GetInt(0);
-            World::Get().GetPartyService().AcceptInvite(aInviterId);
+            // push to main thread because the party service has to check validity of invite thread safely
+            World::Get().GetRunner().Queue([aInviterId]() { World::Get().GetPartyService().AcceptInvite(aInviterId); });
         }
         else if (eventName == "kickPartyMember")
         {
