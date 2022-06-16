@@ -30,8 +30,8 @@ export class GroupComponent implements OnInit, OnDestroy {
   private isLoading: Subscription;
   private timerSubscription: Subscription;
   private userHealthSubscription: Subscription;
-  private playerConnectedSubscription: Subscription;
   private connectionStateSubscription: Subscription;
+  private partyInfoSubscription: Subscription;
 
   private partyShownSubscription: Subscription;
   private partyAutoHideSubscription: Subscription;
@@ -77,7 +77,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.onPartyAutoHideState();
 
     this.subscribeChangeHealth();
-    this.onPlayerConnected();
+    this.onPartyInfo();
     this.onConnectionState();
   }
 
@@ -88,9 +88,9 @@ export class GroupComponent implements OnInit, OnDestroy {
       }
     })
   }
-
-  private onPlayerConnected() {
-    this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe(() => {
+  
+  private onPartyInfo() {
+    this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe(() => {
       this.changeUIGroup();
     })
   }
@@ -133,7 +133,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.connectionSubscription.unsubscribe();
     this.isLoading.unsubscribe();
     this.userHealthSubscription.unsubscribe();
-    this.playerConnectedSubscription.unsubscribe();
+    this.partyInfoSubscription.unsubscribe();
     this.connectionStateSubscription.unsubscribe();
 
     this.partyShownSubscription.unsubscribe();

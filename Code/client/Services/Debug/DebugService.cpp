@@ -199,17 +199,20 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            m_world.GetOverlayService().Reload();
+
+            /*
             auto pArguments = CefListValue::Create();
 
             auto pPlayerIds = CefListValue::Create();
             for (int i = 0; i < 5; i++)
                 pPlayerIds->SetInt(i, i);
+            pPlayerIds->SetString(5, "hello");
 
             pArguments->SetList(0, pPlayerIds);
 
-            m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInfo", pArguments);
-
-            //m_world.GetOverlayService().Reload();
+            m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("dummyData", pArguments);
+            */
         }
     }
     else

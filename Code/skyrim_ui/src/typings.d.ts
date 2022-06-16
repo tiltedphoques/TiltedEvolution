@@ -78,6 +78,10 @@ declare namespace SkyrimTogetherTypes {
   type ProtocolMismatch = () => void;
 
   type TriggerError = () => void;
+
+  type DummyDataCallback = (data: Array<number>) => void;
+
+  type PartyInfoCallback = (serverIds: Array<number>, leaderId: number) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -157,6 +161,10 @@ interface SkyrimTogether {
 
   on(event: 'triggerError', callback: SkyrimTogetherTypes.TriggerError): void;
 
+  on(event: 'dummyData', callback: SkyrimTogetherTypes.DummyDataCallback): void;
+
+  on(event: 'partyInfo', callback: SkyrimTogetherTypes.PartyInfoCallback): void;
+
   /** Remove listener from when the application is first initialized. */
   off(event: 'init', callback?: SkyrimTogetherTypes.InitCallback): void;
 
@@ -225,6 +233,10 @@ interface SkyrimTogether {
   off(event: 'protocolMismatch', callback?: SkyrimTogetherTypes.ProtocolMismatch): void;
 
   off(event: 'triggerError', callback?: SkyrimTogetherTypes.TriggerError): void;
+
+  off(event: 'dummyData', callback?: SkyrimTogetherTypes.DummyDataCallback): void;
+
+  off(event: 'partyInfo', callback?: SkyrimTogetherTypes.PartyInfoCallback): void;
 
   /**
    * Connect to server at given address and port.

@@ -10,6 +10,8 @@ import { PopupNotificationService } from './popup-notification.service';
 import { NotificationType } from '../models/popup-notification';
 import { ErrorService } from './error.service';
 import { Sound, SoundService } from './sound.service';
+import { PartyInfo } from '../models/party-info';
+import { PlayerListService } from './player-list.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +23,7 @@ export class GroupService implements OnDestroy {
   private connectionSubscription: Subscription;
   private wsSubscription: Subscription;
   private userHealthSubscription: Subscription;
-  private playerConnectedSubscription: Subscription;
+  private partyInfoSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
   private levelSubscription: Subscription;
   private cellSubscription: Subscription;
@@ -34,11 +36,12 @@ export class GroupService implements OnDestroy {
               private errorService: ErrorService,
               private popupNotificationService: PopupNotificationService,
               private soundService: SoundService,
-              private clientService: ClientService) {
+              private clientService: ClientService,
+              private playerListService: PlayerListService) {
     this.onConnectionStateChanged();
     this.subscribeWebSocket();
     this.subscribeChangeHealth();
-    this.onPlayerConnected();
+    this.onPartyInfo();
     this.onPlayerDisconnected();
     this.onLevelChange();
     this.onCellChange();
@@ -48,7 +51,7 @@ export class GroupService implements OnDestroy {
   ngOnDestroy() {
     this.connectionSubscription.unsubscribe();
     this.userHealthSubscription.unsubscribe();
-    this.playerConnectedSubscription.unsubscribe();
+    this.partyInfoSubscription.unsubscribe();
     this.playerDisconnectedSubscription.unsubscribe();
     this.levelSubscription.unsubscribe();
     this.cellSubscription.unsubscribe();
@@ -86,18 +89,21 @@ export class GroupService implements OnDestroy {
     })
   }
 
-  private onPlayerConnected() {
-    this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe((player: Player) => {
+  private onPartyInfo() {
+    this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe((partyInfo: PartyInfo) => {
       
       const group = this.createGroup(this.group.value);
 
       if (group) {
-        group!.owner = new Player({id: 1});
+        // TODO: this is very primitive, im sure there's some fancy js way to do this
+        group.members.clear();
 
-        group.members.set(player.serverId, player);
-        this.soundService.play(Sound.PlayerJoined);
+        for (const id of partyInfo.serverIds) {
+          const player = this.playerListService.playerList.getValue().players.get(id);
+          group.members[id] = player;
+        }
 
-        this.group.next(group);
+        this.updateGroup();
       }
     })
   }

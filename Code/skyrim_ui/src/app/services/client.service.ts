@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { UserService } from './user.service';
 import { Player } from '../models/player';
+import { PartyInfo } from '../models/party-info';
 import { take } from 'rxjs/operators';
 import { ErrorService } from './error.service';
 
@@ -57,6 +58,9 @@ export class ClientService implements OnDestroy {
 
   /** Connect player to server change. */
   public playerConnectedChange = new Subject<Player>();
+
+  /** Connect party info change. */
+  public partyInfoChange = new Subject<PartyInfo>();
 
   /** Disconnect player to server change. */
   public playerDisconnectedChange = new Subject<Player>();
@@ -119,6 +123,8 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('setServerId', this.onSetServerId.bind(this));
       skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
       skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
+      skyrimtogether.on('dummyData', this.onDummyData.bind(this));
+      skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
     }
   }
 
@@ -153,6 +159,8 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('setServerId');
       skyrimtogether.off('protocolMismatch');
       skyrimtogether.off('triggerError');
+      skyrimtogether.off('dummyData');
+      skyrimtogether.off('partyInfo');
     }
   }
 
@@ -477,6 +485,26 @@ export class ClientService implements OnDestroy {
     this.zone.run(() => {
       this.triggerError.next(error);
       this.errorService.error(error);
+    })
+  }
+
+  private onDummyData(data: Array<number>) {
+    this.zone.run(() => {
+      for (const numb of data) {
+        console.log(numb);
+      }
+      console.log(data);
+    })
+  }
+
+  private onPartyInfo(serverIds: Array<number>, leaderId: number) {
+    this.zone.run(() => {
+      this.partyInfoChange.next(new PartyInfo(
+        {
+          serverIds: serverIds,
+          leaderId: leaderId
+        }
+      ));
     })
   }
 }
