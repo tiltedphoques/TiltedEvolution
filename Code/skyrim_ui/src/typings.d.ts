@@ -311,4 +311,11 @@ interface SkyrimTogether {
   * Leave the currently joined party.
   */
   leaveParty(): void;
+  
+  /** 
+  * As a party leader, make someone else the leader.
+  * 
+  * @param playerId Id of the new leader.
+  */
+  changePartyLeader(playerId: number): void;
 }

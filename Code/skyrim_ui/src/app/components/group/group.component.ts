@@ -172,7 +172,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   isLaunchPartyDisable(): boolean {
-    return (this.waitLaunch /*|| (this.groupService.getSizeMembers() < 1)*/);
+    return (this.waitLaunch || (this.groupService.getSizeMembers() < 1));
   }
 
   public launchParty() {
@@ -193,5 +193,9 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   public kick(playerId: number) {
     this.groupService.kick(playerId);
+  }
+
+  public changeLeader(playerId: number) {
+    this.groupService.changeLeader(playerId);
   }
 }

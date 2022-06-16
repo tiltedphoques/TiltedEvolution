@@ -20,11 +20,13 @@ INGAME? {{inGame}} | ACTIVE? {{active}}
       <ng-container *ngIf="connected">
         <button (click)="view = 'disconnect'" data-style-ornament="inverted"
           [attr.data-style-active]="view === 'disconnect'">Disconnect</button>
-        <button (click)="reconnect()" data-style-ornament="inverted"
+        <!--
+          <button (click)="reconnect()" data-style-ornament="inverted"
           [attr.data-style-active]="view === 'reconnect'">Reconnect</button>
-          <button (click)="view = 'playerList'" data-style-ornament="inverted" [attr.data-style-active]="view === 'playerList'">
-            PLayer List
-          </button>
+        -->
+        <button (click)="view = 'playerList'" data-style-ornament="inverted" [attr.data-style-active]="view === 'playerList'">
+          Players
+        </button>
       </ng-container>
       <button (click)="view = 'settings'" data-style-ornament="inverted" [attr.data-style-active]="view === 'settings'">
         Settings

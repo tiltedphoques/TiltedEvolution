@@ -219,6 +219,21 @@ export class GroupService implements OnDestroy {
     }
   }
 
+  public changeLeader(playerId: number) {
+    const group = this.createGroup(this.group.value);
+
+    if (group) {
+      if (group.owner.serverId !== this.clientService.localServerId) {
+        this.errorService.error("You cannot make another member the leader as you are not the party leader.");
+        return;
+      }
+
+      this.soundService.play(Sound.Ok);
+
+      this.clientService.changePartyLeader(playerId);
+    }
+  }
+
   public getSizeMembers(): number {
     return (this.group.value ? this.group.value.members.size : 0);
   }

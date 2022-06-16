@@ -273,6 +273,18 @@ export class ClientService implements OnDestroy {
       this.messageReception.next({ content: "You're not ingame, duh" });
     }
   }
+  
+  /**
+   * As a party leader, make someone else the leader.
+   */
+  public changePartyLeader(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.changePartyLeader(playerId);
+    }
+    else {
+      this.messageReception.next({ content: "You're not ingame, duh" });
+    }
+  }
 
   /**
    * Deactivate UI and release control.
