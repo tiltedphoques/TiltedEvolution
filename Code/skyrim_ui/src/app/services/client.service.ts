@@ -8,6 +8,7 @@ import { Player } from '../models/player';
 import { PartyInfo } from '../models/party-info';
 import { take } from 'rxjs/operators';
 import { ErrorService } from './error.service';
+import { LoadingService } from './loading.service';
 
 /** Message. */
 export interface Message {
@@ -96,7 +97,7 @@ export class ClientService implements OnDestroy {
    *
    * @param zone Angular Zone.
    */
-  public constructor(private zone: NgZone, private errorService: ErrorService) {
+  public constructor(private zone: NgZone, private errorService: ErrorService, private loadingService: LoadingService) {
     if (environment.game) {
       skyrimtogether.on('init', this.onInit.bind(this));
       skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -125,6 +126,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
       skyrimtogether.on('dummyData', this.onDummyData.bind(this));
       skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
+      skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
     }
   }
 
@@ -161,6 +163,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('triggerError');
       skyrimtogether.off('dummyData');
       skyrimtogether.off('partyInfo');
+      skyrimtogether.off('partyCreated');
     }
   }
 
@@ -513,6 +516,12 @@ export class ClientService implements OnDestroy {
           leaderId: leaderId
         }
       ));
+    })
+  }
+
+  private onPartyCreated() {
+    this.zone.run(() => {
+      this.loadingService.setLoading(false);
     })
   }
 }

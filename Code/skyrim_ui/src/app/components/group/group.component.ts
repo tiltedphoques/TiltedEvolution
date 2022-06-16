@@ -176,11 +176,13 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   isLaunchPartyDisable(): boolean {
-    return (this.waitLaunch || (this.groupService.getSizeMembers() < 1));
+    return (this.waitLaunch /*|| (this.groupService.getSizeMembers() < 1)*/);
   }
 
   public launchParty() {
     this.clientService.launchParty();
+    this.soundService.play(Sound.Focus);
+    this.loadingService.setLoading(true);
     /*
     this.soundService.play(Sound.Focus);
     this.loadingService.setLoading(true);

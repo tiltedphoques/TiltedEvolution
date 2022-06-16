@@ -60,8 +60,16 @@ export class GroupService implements OnDestroy {
       if (this.isConnect == connect) {
         return;
       }
+
       this.isConnect = connect;
-      this.group.next(undefined);
+
+      if (connect) {
+        this.createGroup(this.group.value);
+      }
+      else {
+        this.group.next(undefined);
+      }
+
       this.updateGroup();
     });
   }

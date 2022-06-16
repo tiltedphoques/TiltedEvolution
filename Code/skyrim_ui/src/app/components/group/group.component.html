@@ -20,7 +20,7 @@
     </div>
 
     <div *ngIf="active" class="command">
-      <button class="app-group-button" *ngIf="!isConnect && group!.owner && group!.owner!.name == player.name"
+      <button class="app-group-button" *ngIf="!isConnect"
         (click)="launchParty()" [disabled]="isLaunchPartyDisable()">Launch party</button>
       <button class="app-group-button" (click)="leave()">Leave</button>
     </div>
