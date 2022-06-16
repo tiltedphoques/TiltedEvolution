@@ -5,7 +5,6 @@ import { Group } from '../../models/group';
 import { animation as popupsAnimation } from '../root/popups.animation';
 import { ClientService } from '../../services/client.service';
 import { Player } from '../../models/player';
-import { UserService } from '../../services/user.service';
 import { ErrorService } from '../../services/error.service';
 import { SoundService, Sound } from '../../services/sound.service';
 import { LoadingService } from '../../services/loading.service';
@@ -38,7 +37,6 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   constructor(public groupService: GroupService,
     private clientService: ClientService,
-    private userService: UserService,
     private errorService: ErrorService,
     private soundService: SoundService,
     private loadingService: LoadingService,
@@ -83,7 +81,7 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   private subscribeChangeHealth() {
     this.userHealthSubscription = this.clientService.healthChange.subscribe((p: Player) => {
-      if (this.userService.player.value && p.serverId !== this.userService.player.value.serverId) {
+      if (this.clientService.localServerId !== p.serverId) {
         this.changeUIGroup();
       }
     })
@@ -173,10 +171,6 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   public get active(): boolean {
     return this.clientService.activationStateChange.value;
-  }
-
-  public get player(): Player {
-    return this.userService.player.value;
   }
 
   public leave() {

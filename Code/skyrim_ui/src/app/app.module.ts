@@ -9,7 +9,6 @@ import { PopupButtonsDirective } from './directives/popup-buttons.directive';
 import { HealthDirective } from './directives/health.directive';
 
 import { RootComponent } from './components/root/root.component';
-import { FriendsComponent } from './components/friends/friends.component';
 import { ConnectComponent } from './components/connect/connect.component';
 import { DisconnectComponent } from './components/disconnect/disconnect.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
@@ -18,7 +17,6 @@ import { PopupComponent } from './components/popup/popup.component';
 import { WindowComponent } from './components/window/window.component';
 
 import { ClientService } from './services/client.service';
-import { UserService } from './services/user.service';
 import { AssetService } from './services/asset.service';
 import { SoundService } from './services/sound.service';
 import { DebugComponent } from './components/debug/debug.component';
@@ -32,7 +30,6 @@ import { PlayerListService } from './services/player-list.service';
 
 import { GroupComponent } from './components/group/group.component';
 import { NotificationPopupComponent } from './components/notification-popup/notification-popup.component';
-import { FriendComponent } from './components/friend/friend.component';
 import { ToggleComponent } from './components/toggle/toggle.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ServerListComponent } from './components/server-list/server-list.component';
@@ -44,16 +41,16 @@ import { PlayerListComponent } from './components/player-list/player-list.compon
 
 @NgModule({
   declarations: [
-    PopupButtonsDirective, RootComponent, FriendsComponent,
+    PopupButtonsDirective, RootComponent,
     ConnectComponent, DisconnectComponent, NotificationsComponent, ChatComponent, PopupComponent,
-    WindowComponent, DebugComponent, ErrorComponent, GroupComponent, NotificationPopupComponent, HealthDirective, FriendComponent,
+    WindowComponent, DebugComponent, ErrorComponent, GroupComponent, NotificationPopupComponent, HealthDirective,
     ToggleComponent,
     LoadingComponent,
     ServerListComponent, SettingsComponent, PlayerListComponent,
     OrderComponent
   ],
   imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule ],
-  providers: [ ClientService, UserService, AssetService, SoundService,
+  providers: [ ClientService, AssetService, SoundService,
     WebSocketService, ErrorService, GroupService, PlayerListService, StoreService, SettingService ],
   bootstrap: [ RootComponent ]
 })

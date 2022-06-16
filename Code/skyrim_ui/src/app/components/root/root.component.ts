@@ -7,7 +7,6 @@ import {
 import { Subscription } from 'rxjs';
 
 import { ClientService } from '../../services/client.service';
-import { UserService } from '../../services/user.service';
 import { SoundService, Sound } from '../../services/sound.service';
 
 import { ChatComponent } from '../chat/chat.component';
@@ -47,7 +46,6 @@ export class RootComponent implements OnInit, OnDestroy {
 
   public constructor(
     private client: ClientService,
-    private user: UserService,
     private sound: SoundService,
     private playerList: PlayerListService
   ) {
@@ -85,10 +83,6 @@ export class RootComponent implements OnInit, OnDestroy {
     this.activationSubscription.unsubscribe();
     this.gameSubscription.unsubscribe();
     this.activationStateChangeSubscription.unsubscribe();
-  }
-
-  public get currentUser(): User | undefined {
-    return this.user.user.value;
   }
 
   public get openingMenu(): boolean {
@@ -150,7 +144,6 @@ export class RootComponent implements OnInit, OnDestroy {
         this.client.deactivate();
       } else {
         if (!this.connected) {
-          this.user.login('1', 'Dumbeldor');
 
           this.client.connectionStateChange.next(true);
 

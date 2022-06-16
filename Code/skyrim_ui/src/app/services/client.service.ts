@@ -4,7 +4,6 @@ import { BehaviorSubject, ReplaySubject, AsyncSubject, Subject } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
-import { UserService } from './user.service';
 import { Player } from '../models/player';
 import { PartyInfo } from '../models/party-info';
 import { take } from 'rxjs/operators';
@@ -82,6 +81,8 @@ export class ClientService implements OnDestroy {
   /** Receive error from core */
   public triggerError = new BehaviorSubject('');
 
+  public localServerId = -1;
+
   private _host: string;
 
   private _port: number;
@@ -95,7 +96,7 @@ export class ClientService implements OnDestroy {
    *
    * @param zone Angular Zone.
    */
-  public constructor(private zone: NgZone, private userService: UserService, private errorService: ErrorService) {
+  public constructor(private zone: NgZone, private errorService: ErrorService) {
     if (environment.game) {
       skyrimtogether.on('init', this.onInit.bind(this));
       skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -112,7 +113,6 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
       skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
       skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
-      skyrimtogether.on('userDataSet', this.onUserDataSet.bind(this)); //not needed anymore
       skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
       skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
       skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
@@ -409,10 +409,6 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  private onUserDataSet(token: string, username: string) {
-    this.userService.login(token, username);
-  }
-
   private onPlayerConnected(serverId: number, username: string, level: number, cellName: string) {
     this.zone.run(() => {
       this.playerConnectedChange.next(new Player(
@@ -471,7 +467,7 @@ export class ClientService implements OnDestroy {
 
   private onSetServerId(serverId: number) {
     this.zone.run(() => {
-      this.userService.player.value.serverId = serverId;
+      this.localServerId = serverId;
     })
   }
 
