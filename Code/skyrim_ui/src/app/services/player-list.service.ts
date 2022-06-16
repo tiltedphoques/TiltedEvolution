@@ -73,6 +73,10 @@ export class PlayerListService {
         });
     }
 
+    public getPlayerList() {
+        return this.createPlayerList(this.playerList.value);
+    }
+
     private createPlayerList(playerList: PlayerList | undefined) {
         if (!playerList) {
             playerList = new PlayerList();

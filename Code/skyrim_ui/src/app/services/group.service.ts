@@ -93,12 +93,16 @@ export class GroupService implements OnDestroy {
         // TODO: this is very primitive, im sure there's some fancy js way to do this
         group.members.clear();
 
-        for (const id of partyInfo.serverIds) {
-          const player = this.playerListService.playerList.getValue().players.get(id);
-          group.members[id] = player;
-        }
+        const playerList = this.playerListService.getPlayerList();
 
-        this.updateGroup();
+        if (playerList) {
+          for (const id of partyInfo.serverIds) {
+            const player = this.playerListService.getPlayerList().players.get(id);
+            group.members[id] = player;
+          }
+
+          this.updateGroup();
+        }
       }
     })
   }
