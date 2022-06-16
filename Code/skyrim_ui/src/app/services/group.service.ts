@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Group, State } from '../models/group';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
-import { WebSocketService } from './web-socket.service';
 import { Player } from '../models/player';
 import { User } from '../models/user';
 import { ClientService } from './client.service';
@@ -30,8 +29,7 @@ export class GroupService implements OnDestroy {
 
   private isConnect = false;
 
-  constructor(private wsService: WebSocketService,
-              private errorService: ErrorService,
+  constructor(private errorService: ErrorService,
               private popupNotificationService: PopupNotificationService,
               private soundService: SoundService,
               private clientService: ClientService,
@@ -161,6 +159,8 @@ export class GroupService implements OnDestroy {
 
 
   public leave() {
+    // TODO
+    /*
     if (this.isConnect) {
       this.clientService.disconnect();
     }
@@ -171,17 +171,23 @@ export class GroupService implements OnDestroy {
         () => this.group.next(undefined)
       );
     }
+    */
   }
 
   public invite(userID: number) {
+    // TODO
+    /*
     this.soundService.play(Sound.Ok);
     this.wsService.send({operation:'invite', id: userID}).subscribe(
       () => {},
       () => this.errorService.error('Could not send invitation. Please try again later.')
     );
+    */
   }
 
   public accept(player: Player) {
+    // TODO
+    /*
     const group = this.group.value;
     if (group && (group.owner || group.members.size > 0)) {
       this.errorService.error("You are already in a group. To join another group, please leave your current group.");
@@ -194,13 +200,18 @@ export class GroupService implements OnDestroy {
       () => this.errorService.error('Could not accept invitation. Please try again later.'),
       () => player.invitation = ""
     );
+    */
   }
 
   public launch(): Observable<any> {
+    // TODO
+    /*
     if (this.getSizeMembers() > 0) {
       return this.wsService.send({operation: 'start'});
     }
     return Observable.throw("You can't start a party alone.");
+    */
+    return Observable.throw("Not implemented");
   }
 
   public getSizeMembers(): number {

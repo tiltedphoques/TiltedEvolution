@@ -20,7 +20,6 @@ import { ClientService } from './services/client.service';
 import { AssetService } from './services/asset.service';
 import { SoundService } from './services/sound.service';
 import { DebugComponent } from './components/debug/debug.component';
-import { WebSocketService } from './services/web-socket.service';
 import { ErrorService } from './services/error.service';
 import { ErrorComponent } from './components/error/error.component';
 import { GroupService } from './services/group.service';
@@ -51,7 +50,7 @@ import { PlayerListComponent } from './components/player-list/player-list.compon
   ],
   imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule ],
   providers: [ ClientService, AssetService, SoundService,
-    WebSocketService, ErrorService, GroupService, PlayerListService, StoreService, SettingService ],
+    ErrorService, GroupService, PlayerListService, StoreService, SettingService ],
   bootstrap: [ RootComponent ]
 })
 export class AppModule {}
