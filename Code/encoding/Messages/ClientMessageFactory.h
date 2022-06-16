@@ -31,6 +31,7 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/RequestObjectInventoryChanges.h>
+#include <Messages/RequestSetWaypoint.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/InterruptCastRequest.h>
 #include <Messages/AddTargetRequest.h>
@@ -63,8 +64,8 @@ struct ClientMessageFactory
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
                                  ClientReferencesMoveRequest, EnterInteriorCellRequest,
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
-                                 PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest,
-                                 RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
+                                 PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest, 
+                                 RequestSetWaypoint, RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
                                  RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,

@@ -7,6 +7,7 @@ struct ShiftGridCellRequest;
 struct EnterInteriorCellRequest;
 struct EnterExteriorCellRequest;
 struct PlayerRespawnRequest;
+struct RequestSetWaypoint;
 struct PlayerLevelRequest;
 struct UpdateEvent;
 
@@ -28,6 +29,7 @@ protected:
     void HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept;
     void OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept;
     void OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& acMessage) const noexcept;
+    void OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acMessage) const noexcept;
     void ProcessPlayerPositionChanges() const noexcept;
 
 private:
@@ -40,4 +42,5 @@ private:
     entt::scoped_connection m_interiorCellEnterConnection;
     entt::scoped_connection m_playerRespawnConnection;
     entt::scoped_connection m_playerLevelConnection;
+    entt::scoped_connection m_playerSetWaypointConnection;
 };

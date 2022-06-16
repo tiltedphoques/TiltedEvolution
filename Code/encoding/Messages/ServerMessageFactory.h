@@ -35,6 +35,7 @@
 #include <Messages/NotifyScriptAnimation.h>
 #include <Messages/NotifyDrawWeapon.h>
 #include <Messages/NotifyMount.h>
+#include <Messages/NotifySetWaypoint.h>
 #include <Messages/NotifyNewPackage.h>
 #include <Messages/NotifyRespawn.h>
 #include <Messages/NotifySyncExperience.h>
@@ -66,7 +67,7 @@ struct ServerMessageFactory
         auto s_visitor =
             CreateMessageVisitor<AuthenticationResponse, AssignCharacterResponse, ServerReferencesMoveRequest,
                                  ServerTimeSettings, CharacterSpawnRequest, NotifyInventoryChanges, StringCacheUpdate,
-                                 NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
+                                 NotifySetWaypoint, NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges, NotifyPartyJoined, NotifyPartyLeft,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
                                  NotifyLockChange, AssignObjectsResponse, NotifyDeathStateChange, NotifyOwnershipTransfer,

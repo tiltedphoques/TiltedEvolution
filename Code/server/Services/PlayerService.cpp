@@ -13,9 +13,11 @@
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/NotifySetWaypoint.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/NotifyRespawn.h>
 #include <Messages/PlayerLevelRequest.h>
+#include <Messages/RequestSetWaypoint.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyPlayerPosition.h>
@@ -29,9 +31,11 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
     , m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
     , m_exteriorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterExteriorCellRequest>>().connect<&PlayerService::HandleExteriorCellEnter>(this))
     , m_playerRespawnConnection(aDispatcher.sink<PacketEvent<PlayerRespawnRequest>>().connect<&PlayerService::OnPlayerRespawnRequest>(this))
-    , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this))
+    , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this)),
+      m_playerSetWaypointConnection(aDispatcher.sink<PacketEvent<RequestSetWaypoint>>().connect<&PlayerService::OnSetWaypointRequest>(this))
 {
 }
+
 
 void SendPlayerCellChanged(const Player* apPlayer) noexcept
 {
@@ -156,6 +160,18 @@ void PlayerService::OnUpdate(const UpdateEvent&) const noexcept
     ProcessPlayerPositionChanges();
 }
 
+void PlayerService::OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acMessage) const noexcept 
+{
+    auto* pPlayer = acMessage.pPlayer;
+
+    auto& message = acMessage.Packet;
+
+    NotifySetWaypoint notify{};
+    notify.Position = message.Position;
+
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+}
+
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
 {
     float goldLossFactor = fGoldLossFactor.as_float();
@@ -254,3 +270,4 @@ void PlayerService::ProcessPlayerPositionChanges() const noexcept
         GameServer::Get()->SendToPlayers(message, pPlayer);
     }
 }
+

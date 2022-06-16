@@ -11,8 +11,9 @@ struct CellChangeEvent;
 struct PlayerDialogueEvent;
 struct PlayerMapMarkerUpdateEvent;
 struct PlayerLevelEvent;
-struct PlayerLevelEvent;
 struct PlayerMapMarkerUpdateEvent;
+struct PlayerSetWaypointEvent;
+struct NotifySetWaypoint;
 struct NotifyPlayerRespawn;
 struct NotifyPlayerPosition;
 struct NotifyPlayerJoined;
@@ -33,11 +34,13 @@ struct PlayerService
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnConnected(const ConnectedEvent& acEvent) noexcept;
     void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
     void OnServerSettingsReceived(const ServerSettings& acSettings) noexcept;
     void OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept;
     void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
+    void OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept;
@@ -45,6 +48,7 @@ protected:
     void OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept;
     void OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept;
     void OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
+    void OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) const noexcept;
 
 private:
 
@@ -65,6 +69,9 @@ private:
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
+    TESObjectREFR* m_waypoint; 
+    MapMarkerData* m_waypointData; 
+
     double m_respawnTimer = 0.0;
     int32_t m_serverDifficulty = 6;
     int32_t m_previousDifficulty = 6;
@@ -72,6 +79,7 @@ private:
     TiltedPhoques::Map<uint32_t, uint32_t> m_mapHandles;
 
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_settingsConnection;
     entt::scoped_connection m_playerJoinedConnection;
@@ -84,4 +92,6 @@ private:
     entt::scoped_connection m_playerLevelConnection;
     entt::scoped_connection m_playerPositionConnection;
     entt::scoped_connection m_playerCellChangeConnection;
+    entt::scoped_connection m_playerSetWaypointConnection;
+    entt::scoped_connection m_playerNotifySetWaypointConnection;
 };

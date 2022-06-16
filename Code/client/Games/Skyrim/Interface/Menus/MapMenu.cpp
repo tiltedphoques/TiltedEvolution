@@ -1,9 +1,11 @@
 
 #include <BSCore/BSTimer.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
+#include <Events/PlayerSetWaypointEvent.h>
 #include <Interface/Menus/MapMenu.h>
 #include <Interface/UI.h>
 #include <World.h>
+#include <TiltedOnlinePCH.h>
 
 namespace
 {
@@ -13,6 +15,8 @@ UI_MESSAGE_RESULTS (*MapMenu_ProcessUiMessage)(MapMenu*, UIMessage*){nullptr};
 void (*MapMenu_AdvanceMovie)(MapMenu*, float, int){nullptr};
 void (*MapMenu_RefreshMarkers)(MapMenu*){nullptr};
 
+TP_THIS_FUNCTION(MapMenu_SetWaypoint, void, MapMenu, float aCoordinateX, float aCoordinateY);
+static MapMenu_SetWaypoint* RealSetWaypoint = nullptr;
 
 void (*Hack_Dorefresh)(void*, const char*, void*);
 
@@ -47,6 +51,17 @@ void Hook_MapMenu_AdvanceMovie(MapMenu* apSelf, float afInterval, int aCurrentTi
     MapMenu_AdvanceMovie(apSelf, afInterval, aCurrentTime);
 }
 
+void TP_MAKE_THISCALL(HookSetWaypoint, MapMenu, float aCoordinateX, float aCoordinateY)
+{
+    Vector3_NetQuantize Position = {};
+    Position.x = aCoordinateX;
+    Position.y = aCoordinateY;
+    
+    World::Get().GetRunner().Trigger(PlayerSetWaypointEvent(Position));
+
+    ThisCall(RealSetWaypoint, apThis, aCoordinateX, aCoordinateY);
+}
+
 static TiltedPhoques::Initializer s_init([]() {
     const VersionDbPtr<void*> vtableLoc(216501);
     void** vt = vtableLoc.Get();
@@ -62,6 +77,9 @@ static TiltedPhoques::Initializer s_init([]() {
 
     MapMenu_RefreshMarkers = reinterpret_cast<decltype(MapMenu_RefreshMarkers)>(0x1409154B0);
 
+    POINTER_SKYRIMSE(MapMenu_SetWaypoint, s_setWaypoint, 53109);
+    RealSetWaypoint = s_setWaypoint.Get();
+    TP_HOOK(&RealSetWaypoint, HookSetWaypoint);
 // Disabled because the mapmenu in first person breaks.
 // I fix that later, but for now it doesn't break gameplay.
 #if 0
