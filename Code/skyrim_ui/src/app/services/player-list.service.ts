@@ -14,6 +14,7 @@ export class PlayerListService {
   private connectionSubscription: Subscription;
   private playerConnectedSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
+  private cellSubscription: Subscription;
   private partyInviteReceivedSubscription: Subscription;
 
   private isConnect = false;
@@ -22,6 +23,7 @@ export class PlayerListService {
     this.onConnectionStateChanged();
     this.onPlayerConnected();
     this.onPlayerDisconnected();
+    this.onCellChange();
     this.onPartyInviteReceived();
   }
 
@@ -29,6 +31,7 @@ export class PlayerListService {
     this.connectionSubscription.unsubscribe();
     this.playerConnectedSubscription.unsubscribe();
     this.playerDisconnectedSubscription.unsubscribe();
+    this.cellSubscription.unsubscribe();
     this.partyInviteReceivedSubscription.unsubscribe();
   }
 
@@ -72,6 +75,19 @@ export class PlayerListService {
         this.playerList.next(playerList);
       }
     });
+  }
+
+  private onCellChange() {
+    this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
+      const playerList = this.createPlayerList(this.playerList.value);
+
+      if (playerList) {
+        const p = playerList.players.get(player.serverId);
+        if (p) {
+          p.cellName = player.cellName;
+        }
+      }
+    })
   }
 
   private onPartyInviteReceived() {
