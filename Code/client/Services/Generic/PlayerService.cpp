@@ -118,7 +118,21 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
+    m_waypoint = TESObjectREFR::New();
+    m_waypoint->SetBaseForm(TESForm::GetById(0x10));
+    m_waypoint->SetSkipSaveFlag(true);
+    m_waypoint->position.x = -INTMAX_MAX;
+    m_waypoint->position.y = -INTMAX_MAX;
 
+    m_waypointData = MapMarkerData::New();
+    m_waypointData->name.value.Set("Custom Destination");
+    m_waypointData->cOriginalFlags = m_waypointData->cFlags = MapMarkerData::Flag::VISIBLE;
+    m_waypointData->sType = MapMarkerData::Type::kCustomMarker; // "custom destination" marker either 66 or 0
+    m_waypoint->extraData.SetMarkerData(m_waypointData);
+
+    uint32_t handle;
+    m_waypoint->GetHandle(handle);
+    PlayerCharacter::Get()->AddMapmarkerRef(handle);
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
@@ -258,12 +272,20 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     m_transport.Send(request);
 }
 
-void PlayerService::OnMapOpen(const MapOpenEvent& acMessage) const noexcept
+void PlayerService::OnMapOpen(const MapOpenEvent& acMessage) noexcept
 {
+
 }
 
-void PlayerService::OnMapClose(const MapOpenEvent& acMessage) const noexcept
+void PlayerService::OnMapClose(const MapCloseEvent& acMessage) noexcept
 {
+    if (m_waypointActive || m_waypoint->position.x == -INTMAX_MAX)
+    {
+        return;
+    }
+
+    SetWaypoint(PlayerCharacter::Get(), &m_waypoint->position, PlayerCharacter::Get()->GetWorldSpace());
+
 }
 
 
@@ -338,11 +360,7 @@ void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acM
 // on join/leave, add to our array...
 void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept
 {
-    NiPoint3 Position{};
 
-    Position.x = -INTMAX_MAX;
-    Position.y = -INTMAX_MAX;
-    SetWaypoint(PlayerCharacter::Get(), &Position, PlayerCharacter::Get()->GetWorldSpace());
 }
 
 void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
@@ -356,8 +374,12 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
     m_transport.Send(request);
 }
 
-void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) const noexcept
+void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) noexcept
 {
+    m_waypointActive = true;
+
+    m_waypoint->position.x = -INTMAX_MAX;
+    m_waypoint->position.y = -INTMAX_MAX;
 
     if (!m_transport.IsConnected())
         return;
@@ -367,8 +389,10 @@ void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage)
     m_transport.Send(request);
 }
 
-void PlayerService::OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) const noexcept
+void PlayerService::OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) noexcept
 {
+    m_waypointActive = false;
+
     if (!m_transport.IsConnected())
         return;
 
@@ -376,20 +400,17 @@ void PlayerService::OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage)
     m_transport.Send(request);
 }
 
-void PlayerService::OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) const noexcept
+void PlayerService::OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) noexcept
 {
-    RemoveWaypoint(PlayerCharacter::Get());
+    m_waypoint->position.x = -INTMAX_MAX;
+    m_waypoint->position.y = -INTMAX_MAX;
 }
 
-void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept
+void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) noexcept
 {
-    NiPoint3 Position = {};
-    Position.x = acMessage.Position.x;
-    Position.y = acMessage.Position.y;
-
-
-    auto* pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
-    SetWaypoint(PlayerCharacter::Get(), &Position, pPlayerWorldSpace);
+    m_waypointActive = false;
+    RemoveWaypoint(PlayerCharacter::Get());
+    m_waypoint->position = acMessage.Position;
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
@@ -517,7 +538,7 @@ void PlayerService::RunMapUpdates() noexcept
 
             // Map was closed
             case 0:
-                World::Get().GetRunner().Trigger(MapClosedEvent());
+                World::Get().GetRunner().Trigger(MapCloseEvent());
 
             // Map was opened
             case 1:
