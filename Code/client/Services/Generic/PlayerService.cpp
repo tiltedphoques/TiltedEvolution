@@ -118,6 +118,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
+    // TODO: a MapService is warranted at this point.
     m_waypoint = TESObjectREFR::New();
     m_waypoint->SetBaseForm(TESForm::GetById(0x10));
     m_waypoint->SetSkipSaveFlag(true);
@@ -155,6 +156,9 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
     for (uint32_t playerId : toRemove)
         m_mapHandles.erase(playerId);
+
+    m_waypoint->Delete();
+    m_waypoint = nullptr;
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -279,13 +283,10 @@ void PlayerService::OnMapOpen(const MapOpenEvent& acMessage) noexcept
 
 void PlayerService::OnMapClose(const MapCloseEvent& acMessage) noexcept
 {
-    if (m_waypointActive || m_waypoint->position.x == -INTMAX_MAX)
-    {
+    if (!m_transport.IsConnected() || m_waypointActive || m_waypoint->position.x == -INTMAX_MAX)
         return;
-    }
 
     SetWaypoint(PlayerCharacter::Get(), &m_waypoint->position, PlayerCharacter::Get()->GetWorldSpace());
-
 }
 
 
@@ -378,11 +379,11 @@ void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage)
 {
     m_waypointActive = true;
 
-    m_waypoint->position.x = -INTMAX_MAX;
-    m_waypoint->position.y = -INTMAX_MAX;
-
     if (!m_transport.IsConnected())
         return;
+
+    m_waypoint->position.x = -INTMAX_MAX;
+    m_waypoint->position.y = -INTMAX_MAX;
 
     RequestSetWaypoint request = {};
     request.Position = acMessage.Position;
