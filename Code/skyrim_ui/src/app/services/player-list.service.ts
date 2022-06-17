@@ -11,6 +11,7 @@ export class PlayerListService {
 
   public playerList = new BehaviorSubject<PlayerList | undefined>(undefined);
 
+  private debugSubscription: Subscription;
   private connectionSubscription: Subscription;
   private playerConnectedSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
@@ -20,6 +21,7 @@ export class PlayerListService {
   private isConnect = false;
 
   constructor(private clientService: ClientService) {
+    this.onDebug();
     this.onConnectionStateChanged();
     this.onPlayerConnected();
     this.onPlayerDisconnected();
@@ -28,11 +30,18 @@ export class PlayerListService {
   }
 
   ngOnDestroy() {
+    this.debugSubscription.unsubscribe();
     this.connectionSubscription.unsubscribe();
     this.playerConnectedSubscription.unsubscribe();
     this.playerDisconnectedSubscription.unsubscribe();
     this.cellSubscription.unsubscribe();
     this.partyInviteReceivedSubscription.unsubscribe();
+  }
+
+  private onDebug() {
+    this.debugSubscription = this.clientService.debugChange.subscribe(() => {
+      console.log(this.playerList);
+    });
   }
 
   private onConnectionStateChanged() {
@@ -46,7 +55,6 @@ export class PlayerListService {
       this.updatePlayerList();
     });
   }
-
 
   private onPlayerConnected() {
     this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe((player: Player) => {
