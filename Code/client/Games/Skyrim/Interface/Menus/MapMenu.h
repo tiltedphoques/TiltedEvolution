@@ -6,7 +6,8 @@
 
 class MenuOpenCloseEvent;
 
-void SetWaypoint(MapMenu* apMapMenu, float aCoordinateX, float aCoordinateY);
+void SetWaypoint(PlayerCharacter* apPlayer, NiPoint3* apPosition, TESWorldSpace* apWorldSpace);
+void RemoveWaypoint(PlayerCharacter* apPlayer);
 
 struct IMapCameraCallbacks
 {

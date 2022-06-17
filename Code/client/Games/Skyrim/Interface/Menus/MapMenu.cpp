@@ -4,8 +4,9 @@
 #include <Events/PlayerSetWaypointEvent.h>
 #include <Interface/Menus/MapMenu.h>
 #include <Interface/UI.h>
-#include <World.h>
 #include <TiltedOnlinePCH.h>
+#include <PlayerCharacter.h>
+#include <World.h>
 
 namespace
 {
@@ -15,17 +16,25 @@ UI_MESSAGE_RESULTS (*MapMenu_ProcessUiMessage)(MapMenu*, UIMessage*){nullptr};
 void (*MapMenu_AdvanceMovie)(MapMenu*, float, int){nullptr};
 void (*MapMenu_RefreshMarkers)(MapMenu*){nullptr};
 
-TP_THIS_FUNCTION(MapMenu_SetWaypoint, void, MapMenu, float aCoordinateX, float aCoordinateY);
+TP_THIS_FUNCTION(MapMenu_SetWaypoint, void, PlayerCharacter, NiPoint3* apPosition, TESWorldSpace* apWorldSpace);
 static MapMenu_SetWaypoint* RealSetWaypoint = nullptr;
+
+TP_THIS_FUNCTION(MapMenu_RemoveWaypoint, void, PlayerCharacter);
+static MapMenu_RemoveWaypoint* RealRemoveWaypoint = nullptr;
 
 void (*Hack_Dorefresh)(void*, const char*, void*);
 
 constexpr uint64_t kPlayerMarkersUpdateTime = 1000;
 } // namespace
 
-void SetWaypoint(MapMenu* apMapMenu, float aCoordinateX, float aCoordinateY)
+void RemoveWaypoint(PlayerCharacter* apPlayer)
 {
-    ThisCall(RealSetWaypoint, apMapMenu, aCoordinateX, aCoordinateY);
+    ThisCall(RealRemoveWaypoint, apPlayer);
+}
+
+void SetWaypoint(PlayerCharacter* apPlayer, NiPoint3* apPosition, TESWorldSpace* apWorldSpace)
+{
+    ThisCall(RealSetWaypoint, apPlayer, apPosition, apWorldSpace);
 }
 
 UI_MESSAGE_RESULTS Hook_MapMenu_ProcessUiMessage(MapMenu* apSelf, UIMessage* apUiMessage)
@@ -39,7 +48,7 @@ void Hook_MapMenu_AdvanceMovie(MapMenu* apSelf, float afInterval, int aCurrentTi
     {
         World::Get().GetRunner().Trigger(PlayerMapMarkerUpdateEvent());
 
-        #if 0
+#if 0
         char stack[0x40]{};
         *(void**)(&stack) = (void*)0x14179EF28;
 
@@ -47,24 +56,35 @@ void Hook_MapMenu_AdvanceMovie(MapMenu* apSelf, float afInterval, int aCurrentTi
         ((void (*)(void*, int, const char*))address)(apSelf->uiMovie, 5, "WorldMap.MarkerData");
 
         Hack_Dorefresh(apSelf->uiMovie, "RefreshMarkers", &stack);
-        #endif
+#endif
 
-        //MapMenu_RefreshMarkers(apSelf);
+        // MapMenu_RefreshMarkers(apSelf);
         //*(uint8_t*)((uint8_t*)apSelf + 0x30498) = 1;
     }
 
     MapMenu_AdvanceMovie(apSelf, afInterval, aCurrentTime);
 }
 
-void TP_MAKE_THISCALL(HookSetWaypoint, MapMenu, float aCoordinateX, float aCoordinateY)
+void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TESWorldSpace* apWorldSpace)
 {
     Vector3_NetQuantize Position = {};
-    Position.x = aCoordinateX;
-    Position.y = aCoordinateY;
+    Position.x = apPosition->x;
+    Position.y = apPosition->y;
+
+    spdlog::info("SET WAYPOINT {}, {}", Position.x, Position.y);
 
     World::Get().GetRunner().Trigger(PlayerSetWaypointEvent(Position));
 
-    ThisCall(RealSetWaypoint, apThis, aCoordinateX, aCoordinateY);
+    ThisCall(RealSetWaypoint, apThis, apPosition, apWorldSpace);
+}
+
+void TP_MAKE_THISCALL(HookRemoveWaypoint, PlayerCharacter)
+{
+    spdlog::info("REMOVING WAYPOINT");
+
+    ThisCall(RealRemoveWaypoint, apThis);
+    //PlayerCharacter tst = *apThis;
+    //spdlog::info("{}", (void*) & tst);
 }
 
 static TiltedPhoques::Initializer s_init([]() {
@@ -82,9 +102,13 @@ static TiltedPhoques::Initializer s_init([]() {
 
     MapMenu_RefreshMarkers = reinterpret_cast<decltype(MapMenu_RefreshMarkers)>(0x1409154B0);
 
-    POINTER_SKYRIMSE(MapMenu_SetWaypoint, s_setWaypoint, 53109);
+    POINTER_SKYRIMSE(MapMenu_SetWaypoint, s_setWaypoint, 40535);
     RealSetWaypoint = s_setWaypoint.Get();
     TP_HOOK(&RealSetWaypoint, HookSetWaypoint);
+
+    POINTER_SKYRIMSE(MapMenu_RemoveWaypoint, s_removeWaypoint, 53128);
+    RealRemoveWaypoint = s_removeWaypoint.Get();
+    TP_HOOK(&RealRemoveWaypoint, HookRemoveWaypoint);
 // Disabled because the mapmenu in first person breaks.
 // I fix that later, but for now it doesn't break gameplay.
 #if 0

@@ -358,9 +358,11 @@ void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage)
 
 void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept
 {
-    MapMenu* pMapMenu = reinterpret_cast<decltype(pMapMenu)>(UI::Get()->FindMenuByName("MapMenu"));
-    spdlog::info(pMapMenu == nullptr);
-    SetWaypoint(pMapMenu, acMessage.Position.x, acMessage.Position.y);
+    NiPoint3 Position = {};
+    Position.x = acMessage.Position.x;
+    Position.y = acMessage.Position.y;
+    auto* pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
+    SetWaypoint(PlayerCharacter::Get(), &Position, pPlayerWorldSpace);
 }
 
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
