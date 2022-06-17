@@ -11,6 +11,7 @@
 #include <Events/PlayerMapMarkerUpdateEvent.h>
 #include <Events/PlayerLevelEvent.h>
 #include <Events/PlayerSetWaypointEvent.h>
+#include <Events/PlayerDelWaypointEvent.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
@@ -18,6 +19,7 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/RequestSetWaypoint.h>
+#include <Messages/RequestDelWaypoint.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/PlayerDialogueRequest.h>
@@ -25,6 +27,7 @@
 #include <Messages/NotifyPlayerPosition.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifySetWaypoint.h>
+#include <Messages/NotifyDelWaypoint.h>
 
 #include <Structs/ServerSettings.h>
 
@@ -48,6 +51,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerJoinedConnection = m_dispatcher.sink<NotifyPlayerJoined>().connect<&PlayerService::OnPlayerJoined>(this);
     m_playerLeftConnection = m_dispatcher.sink<NotifyPlayerLeft>().connect<&PlayerService::OnPlayerLeft>(this);
     m_playerNotifySetWaypointConnection = m_dispatcher.sink<NotifySetWaypoint>().connect<&PlayerService::OnNotifyPlayerSetWaypoint>(this);
+    m_playerNotifyDelWaypointConnection = m_dispatcher.sink<NotifyDelWaypoint>().connect<&PlayerService::OnNotifyPlayerDelWaypoint>(this);
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyPlayerRespawn>().connect<&PlayerService::OnNotifyPlayerRespawn>(this);
     m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&PlayerService::OnGridCellChangeEvent>(this);
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
@@ -57,6 +61,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerPositionConnection = m_dispatcher.sink<NotifyPlayerPosition>().connect<&PlayerService::OnNotifyPlayerPosition>(this);
     m_playerCellChangeConnection = m_dispatcher.sink<NotifyPlayerCellChanged>().connect<&PlayerService::OnNotifyPlayerCellChanged>(this);
     m_playerSetWaypointConnection = m_dispatcher.sink<PlayerSetWaypointEvent>().connect<&PlayerService::OnPlayerSetWaypoint>(this);
+    m_playerDelWaypointConnection =m_dispatcher.sink<PlayerDelWaypointEvent>().connect<&PlayerService::OnPlayerDelWaypoint>(this);
 }
 
 
@@ -107,21 +112,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
-    m_waypoint = TESObjectREFR::New();
-    //Create Global Waypoint
-    m_waypoint->SetBaseForm(TESForm::GetById(0x10));
-    m_waypoint->SetSkipSaveFlag(true);
 
-    m_waypointData = MapMarkerData::New();
-
-    m_waypointData->name.value.Set("Custom Location");
-    m_waypointData->cOriginalFlags = m_waypointData->cFlags = MapMarkerData::Flag::NONE;
-    m_waypointData->sType = MapMarkerData::Type::kCustomMarker; // "custom destination" marker either 66 or 0
-    m_waypoint->extraData.SetMarkerData(m_waypointData);
-
-    uint32_t handle;
-    m_waypoint->GetHandle(handle);
-    PlayerCharacter::Get()->AddMapmarkerRef(handle);
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
@@ -356,11 +347,28 @@ void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage)
     m_transport.Send(request);
 }
 
+void PlayerService::OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) const noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    RequestDelWaypoint request = {};
+    m_transport.Send(request);
+}
+
+void PlayerService::OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) const noexcept
+{
+    RemoveWaypoint(PlayerCharacter::Get());
+}
+
 void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept
 {
     NiPoint3 Position = {};
     Position.x = acMessage.Position.x;
     Position.y = acMessage.Position.y;
+
+    //SetWindowCursor((MapMenu*)UI::Get()->FindMenuByName("MapMenu"), 0, 0);
+
     auto* pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
     SetWaypoint(PlayerCharacter::Get(), &Position, pPlayerWorldSpace);
 }

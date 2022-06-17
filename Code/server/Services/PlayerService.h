@@ -8,6 +8,7 @@ struct EnterInteriorCellRequest;
 struct EnterExteriorCellRequest;
 struct PlayerRespawnRequest;
 struct RequestSetWaypoint;
+struct RequestDelWaypoint;
 struct PlayerLevelRequest;
 struct UpdateEvent;
 
@@ -30,6 +31,7 @@ protected:
     void OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept;
     void OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& acMessage) const noexcept;
     void OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acMessage) const noexcept;
+    void OnDelWaypointRequest(const PacketEvent<RequestDelWaypoint>& acMessage) const noexcept;
     void ProcessPlayerPositionChanges() const noexcept;
 
 private:
@@ -43,4 +45,5 @@ private:
     entt::scoped_connection m_playerRespawnConnection;
     entt::scoped_connection m_playerLevelConnection;
     entt::scoped_connection m_playerSetWaypointConnection;
+    entt::scoped_connection m_playerDelWaypointConnection;
 };

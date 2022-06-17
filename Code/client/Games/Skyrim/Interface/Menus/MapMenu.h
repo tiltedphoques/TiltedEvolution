@@ -6,6 +6,9 @@
 
 class MenuOpenCloseEvent;
 
+void SetWindowCursor(MapMenu* apMapMenu, float afCursorX, int afCursorY);
+void AdvanceMovie(MapMenu* apMapMenu, float afInterval, int aCurrentTime);
+void RefreshMarkers(MapMenu* apMapMenu);
 void SetWaypoint(PlayerCharacter* apPlayer, NiPoint3* apPosition, TESWorldSpace* apWorldSpace);
 void RemoveWaypoint(PlayerCharacter* apPlayer);
 

@@ -13,7 +13,9 @@ struct PlayerMapMarkerUpdateEvent;
 struct PlayerLevelEvent;
 struct PlayerMapMarkerUpdateEvent;
 struct PlayerSetWaypointEvent;
+struct PlayerDelWaypointEvent;
 struct NotifySetWaypoint;
+struct NotifyDelWaypoint;
 struct NotifyPlayerRespawn;
 struct NotifyPlayerPosition;
 struct NotifyPlayerJoined;
@@ -41,6 +43,7 @@ protected:
     void OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept;
     void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
     void OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept;
+    void OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) const noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept;
@@ -49,6 +52,7 @@ protected:
     void OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept;
     void OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
     void OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) const noexcept;
+    void OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) const noexcept;
 
 private:
 
@@ -92,6 +96,8 @@ private:
     entt::scoped_connection m_playerLevelConnection;
     entt::scoped_connection m_playerPositionConnection;
     entt::scoped_connection m_playerCellChangeConnection;
+    entt::scoped_connection m_playerDelWaypointConnection;
     entt::scoped_connection m_playerSetWaypointConnection;
     entt::scoped_connection m_playerNotifySetWaypointConnection;
+    entt::scoped_connection m_playerNotifyDelWaypointConnection;
 };

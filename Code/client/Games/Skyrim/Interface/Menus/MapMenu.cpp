@@ -2,6 +2,7 @@
 #include <BSCore/BSTimer.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
 #include <Events/PlayerSetWaypointEvent.h>
+#include <Events/PlayerDelWaypointEvent.h>
 #include <Interface/Menus/MapMenu.h>
 #include <Interface/UI.h>
 #include <TiltedOnlinePCH.h>
@@ -22,10 +23,28 @@ static MapMenu_SetWaypoint* RealSetWaypoint = nullptr;
 TP_THIS_FUNCTION(MapMenu_RemoveWaypoint, void, PlayerCharacter);
 static MapMenu_RemoveWaypoint* RealRemoveWaypoint = nullptr;
 
+TP_THIS_FUNCTION(MapMenu_SetWindowCursor, void, MapMenu, float afCursorX, float afCursorY);
+static MapMenu_SetWindowCursor* RealSetWindowCursor = nullptr;
+
 void (*Hack_Dorefresh)(void*, const char*, void*);
 
 constexpr uint64_t kPlayerMarkersUpdateTime = 1000;
 } // namespace
+
+void SetWindowCursor(MapMenu* apMapMenu, float afCursorX, int afCursorY)
+{
+    ThisCall(RealSetWindowCursor, apMapMenu, afCursorX, afCursorY);
+}
+
+void AdvanceMovie(MapMenu* apMapMenu, float afInterval, int aCurrentTime)
+{
+    ThisCall(MapMenu_AdvanceMovie, apMapMenu, afInterval, aCurrentTime);
+}
+
+void RefreshMarkers(MapMenu* apMapMenu)
+{
+    ThisCall(MapMenu_RefreshMarkers, apMapMenu);
+}
 
 void RemoveWaypoint(PlayerCharacter* apPlayer)
 {
@@ -71,8 +90,6 @@ void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TE
     Position.x = apPosition->x;
     Position.y = apPosition->y;
 
-    spdlog::info("SET WAYPOINT {}, {}", Position.x, Position.y);
-
     World::Get().GetRunner().Trigger(PlayerSetWaypointEvent(Position));
 
     ThisCall(RealSetWaypoint, apThis, apPosition, apWorldSpace);
@@ -80,11 +97,8 @@ void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TE
 
 void TP_MAKE_THISCALL(HookRemoveWaypoint, PlayerCharacter)
 {
-    spdlog::info("REMOVING WAYPOINT");
-
+    World::Get().GetRunner().Trigger(PlayerDelWaypointEvent());
     ThisCall(RealRemoveWaypoint, apThis);
-    //PlayerCharacter tst = *apThis;
-    //spdlog::info("{}", (void*) & tst);
 }
 
 static TiltedPhoques::Initializer s_init([]() {
@@ -106,9 +120,13 @@ static TiltedPhoques::Initializer s_init([]() {
     RealSetWaypoint = s_setWaypoint.Get();
     TP_HOOK(&RealSetWaypoint, HookSetWaypoint);
 
-    POINTER_SKYRIMSE(MapMenu_RemoveWaypoint, s_removeWaypoint, 53128);
+    POINTER_SKYRIMSE(MapMenu_RemoveWaypoint, s_removeWaypoint, 40536);
     RealRemoveWaypoint = s_removeWaypoint.Get();
     TP_HOOK(&RealRemoveWaypoint, HookRemoveWaypoint);
+
+    POINTER_SKYRIMSE(MapMenu_SetWindowCursor, s_setWindowCursor, 53109);
+    RealSetWindowCursor = s_setWindowCursor.Get();
+
 // Disabled because the mapmenu in first person breaks.
 // I fix that later, but for now it doesn't break gameplay.
 #if 0

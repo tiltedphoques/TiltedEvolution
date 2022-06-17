@@ -14,10 +14,12 @@
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifySetWaypoint.h>
+#include <Messages/NotifyDelWaypoint.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/NotifyRespawn.h>
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/RequestSetWaypoint.h>
+#include <Messages/RequestDelWaypoint.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyPlayerPosition.h>
@@ -31,8 +33,9 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
     , m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
     , m_exteriorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterExteriorCellRequest>>().connect<&PlayerService::HandleExteriorCellEnter>(this))
     , m_playerRespawnConnection(aDispatcher.sink<PacketEvent<PlayerRespawnRequest>>().connect<&PlayerService::OnPlayerRespawnRequest>(this))
-    , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this)),
-      m_playerSetWaypointConnection(aDispatcher.sink<PacketEvent<RequestSetWaypoint>>().connect<&PlayerService::OnSetWaypointRequest>(this))
+    , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this))
+    , m_playerSetWaypointConnection(aDispatcher.sink<PacketEvent<RequestSetWaypoint>>().connect<&PlayerService::OnSetWaypointRequest>(this))
+    , m_playerDelWaypointConnection(aDispatcher.sink<PacketEvent<RequestDelWaypoint>>().connect<&PlayerService::OnDelWaypointRequest>(this))
 {
 }
 
@@ -168,6 +171,13 @@ void PlayerService::OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& 
 
     NotifySetWaypoint notify{};
     notify.Position = message.Position;
+
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+}
+
+void PlayerService::OnDelWaypointRequest(const PacketEvent<RequestDelWaypoint>& acMessage) const noexcept
+{
+    NotifyDelWaypoint notify{};
 
     GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
