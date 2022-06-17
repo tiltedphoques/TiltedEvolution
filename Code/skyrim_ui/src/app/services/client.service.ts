@@ -62,6 +62,9 @@ export class ClientService implements OnDestroy {
   /** Connect party info change. */
   public partyInfoChange = new Subject<PartyInfo>();
 
+  /** Connect party invite received. */
+  public partyInviteReceivedChange = new Subject<number>();
+
   /** Disconnect player to server change. */
   public playerDisconnectedChange = new Subject<Player>();
 
@@ -127,6 +130,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('dummyData', this.onDummyData.bind(this));
       skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
       skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
+      skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
     }
   }
 
@@ -164,6 +168,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('dummyData');
       skyrimtogether.off('partyInfo');
       skyrimtogether.off('partyCreated');
+      skyrimtogether.off('partyInviteReceived');
     }
   }
 
@@ -582,6 +587,12 @@ export class ClientService implements OnDestroy {
   private onPartyCreated() {
     this.zone.run(() => {
       this.loadingService.setLoading(false);
+    })
+  }
+
+  private onPartyInviteReceived(inviterId: number) {
+    this.zone.run(() => {
+      this.partyInviteReceivedChange.next();
     })
   }
 }

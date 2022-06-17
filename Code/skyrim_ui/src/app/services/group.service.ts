@@ -19,7 +19,6 @@ export class GroupService implements OnDestroy {
   public group = new BehaviorSubject<Group | undefined>(undefined);
 
   private connectionSubscription: Subscription;
-  private wsSubscription: Subscription;
   private userHealthSubscription: Subscription;
   private partyInfoSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
@@ -52,9 +51,6 @@ export class GroupService implements OnDestroy {
     this.levelSubscription.unsubscribe();
     this.cellSubscription.unsubscribe();
     this.loadedSubscription.unsubscribe();
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
-    }
   }
 
   private onConnectionStateChanged() {

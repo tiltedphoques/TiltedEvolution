@@ -30,8 +30,8 @@ export class Player implements Friend {
   /** Connected in server. */
   connected: boolean;
 
-  /** Token Invitation. */
-  invitation: string;
+  /** Invitation received. */
+  invitationReceived: boolean;
 
   /** invitation sent. */
   invitationSent: boolean;
@@ -51,7 +51,7 @@ export class Player implements Friend {
     connected?: boolean,
     health?: number,
     level?: number,
-    invitation?: string,
+    invitationReceived?: boolean,
     invitationSent?: boolean,
     cellName?: string,
     isLoaded?: boolean
@@ -60,7 +60,7 @@ export class Player implements Friend {
     this.serverId = options.serverId || 0;
     this.name = options.name || '';
     this.avatar = options.avatar || '';
-    this.invitation = options.invitation || '';
+    this.invitationReceived = options.invitationReceived || false;
     this.cellName = options.cellName || 'vide';
 
     if (options.health || options.health === 0) {

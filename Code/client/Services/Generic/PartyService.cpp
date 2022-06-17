@@ -128,7 +128,10 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
 void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcept
 {
     spdlog::debug("[PartyService]: Got party invite from {}", acPartyInvite.InviterId);
+
     m_invitations[acPartyInvite.InviterId] = acPartyInvite.ExpiryTick;
+
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInviteReceived");
 }
 
 void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept

@@ -1,30 +1,32 @@
 <div class="tabs">
-    <button class="buttonsPlayerList" (click)="cancel()">Back</button>
+  <button class="buttonsPlayerList" (click)="cancel()">Back</button>
 </div>
 
 <div id="noPlayers" *ngIf="getListSize === 0 ; else notEmpty">
-    Nobody here but us chickens!
+  Nobody here but us chickens!
 </div>
 
 <ng-template #notEmpty>
-    <div class="containerList">
-        <table cellspacing="5" cellpadding="5" class="playerListTable">
-            <thead class="listHeader">
-                <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody class="listBody">
-                <tr *ngFor="let player of playerList!.players | keyvalue">
-                    <td>{{ player.value.serverId }}</td>
-                    <td>{{ player.value.name }}</td>
-                    <td>{{ player.value.cellName }}</td>
-                    <td><button (click)="teleportToPlayer(player.value.serverId)" class="teleBtn">Teleport</button></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <div class="containerList">
+    <table cellspacing="5" cellpadding="5" class="playerListTable">
+      <thead class="listHeader">
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Location</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody class="listBody">
+        <tr *ngFor="let player of playerList!.players | keyvalue">
+          <td>{{ player.value.serverId }}</td>
+          <td>{{ player.value.name }}</td>
+          <td>{{ player.value.cellName }}</td>
+          <td><button (click)="teleportToPlayer(player.value.serverId)" class="teleBtn">Teleport</button></td>
+          <td><button (click)="acceptPartyInvite(player.value.serverId)" class="teleBtn">Accept party invite</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </ng-template>
