@@ -157,7 +157,8 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     for (uint32_t playerId : toRemove)
         m_mapHandles.erase(playerId);
 
-    m_waypoint->Delete();
+    if (m_waypoint)
+        m_waypoint->Delete();
     m_waypoint = nullptr;
 }
 
