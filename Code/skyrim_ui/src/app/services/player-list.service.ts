@@ -64,8 +64,6 @@ export class PlayerListService {
   private onPlayerDisconnected() {
     this.playerDisconnectedSubscription = this.clientService.playerDisconnectedChange.subscribe((player: Player) => {
 
-      console.log(player);
-
       const playerList = this.createPlayerList(this.playerList.value);
 
       if (playerList) {
@@ -102,6 +100,18 @@ export class PlayerListService {
 
   private updatePlayerList() {
     this.playerList.next(this.playerList.value);
+  }
+
+  public sendPartyInvite(inviteeId: number) {
+    this.clientService.createPartyInvite(inviteeId);
+    
+    const playerList = this.createPlayerList(this.playerList.value);
+
+    if (playerList) {
+      playerList.players.get(inviteeId).invitationSent = true;
+
+      this.playerList.next(playerList);
+    }
   }
 
   public acceptPartyInvite(inviterId: number) {

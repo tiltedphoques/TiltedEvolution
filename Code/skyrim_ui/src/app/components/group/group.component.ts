@@ -103,7 +103,6 @@ export class GroupComponent implements OnInit, OnDestroy {
           }
         }
       }
-
     })
   }
 

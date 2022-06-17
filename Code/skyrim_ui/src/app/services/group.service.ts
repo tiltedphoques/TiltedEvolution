@@ -111,7 +111,8 @@ export class GroupService implements OnDestroy {
         group.members.clear();
 
         for (const id of partyInfo.serverIds) {
-          group.members.set(id, playerList.players.get(id));
+          let player = playerList.players.get(id);
+          group.members.set(id, player);
         }
 
         group.owner = partyInfo.leaderId;
