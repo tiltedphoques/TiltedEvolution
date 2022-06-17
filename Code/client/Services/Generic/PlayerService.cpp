@@ -378,11 +378,11 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
 
 void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) noexcept
 {
-    m_waypointActive = true;
 
     if (!m_transport.IsConnected())
         return;
 
+    m_waypointActive = true;
     m_waypoint->position.x = -INTMAX_MAX;
     m_waypoint->position.y = -INTMAX_MAX;
 
@@ -393,10 +393,10 @@ void PlayerService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage)
 
 void PlayerService::OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) noexcept
 {
-    m_waypointActive = false;
-
     if (!m_transport.IsConnected())
         return;
+
+    m_waypointActive = false;
 
     RequestDelWaypoint request = {};
     m_transport.Send(request);
@@ -410,6 +410,14 @@ void PlayerService::OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage
 
 void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) noexcept
 {
+    if (!m_inMap)
+    {
+        NiPoint3 pos{};
+        pos.x = acMessage.Position.x;
+        pos.y = acMessage.Position.y;
+        SetWaypoint(PlayerCharacter::Get(), &pos, PlayerCharacter::Get()->GetWorldSpace());
+        return;
+    }
     m_waypointActive = false;
     RemoveWaypoint(PlayerCharacter::Get());
     m_waypoint->position = acMessage.Position;
