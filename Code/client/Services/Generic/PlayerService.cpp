@@ -116,8 +116,49 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
     RunMapUpdates();
 }
 
+void PlayerService::CreateDummyMarker()
+{
+    TESObjectREFR* dummyMark = TESObjectREFR::New();
+    dummyMark->SetBaseForm(TESForm::GetById(0x10));
+    dummyMark->SetSkipSaveFlag(true);
+    dummyMark->position.x = -INTMAX_MAX;
+    dummyMark->position.y = -INTMAX_MAX;
+
+    MapMarkerData* dummyData = MapMarkerData::New();
+    dummyData->name.value.Set("Custom Destination");
+    dummyData->cOriginalFlags = dummyData->cFlags = MapMarkerData::Flag::VISIBLE;
+    dummyData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
+    dummyMark->extraData.SetMarkerData(dummyData);
+
+    uint32_t handle;
+    dummyMark->GetHandle(handle);
+    PlayerCharacter::Get()->AddMapmarkerRef(handle);
+
+    MapHandleInfo dummy = {-1, handle};
+
+    m_mapHandles.push_back(dummy);
+}
+
+PlayerService::MapHandleInfo* PlayerService::GetDummyMarker()
+{
+    for (auto it = m_mapHandles.begin(); it != m_mapHandles.end(); it++)
+    {
+        if (it->PlayerId = -1)
+        {
+            return &*it;
+        }
+    }
+    return nullptr;
+}
+
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
+    //Create Dummy Map Markers
+    for (int i = 0; i < m_initDummyMarkers; i++)
+    {
+        CreateDummyMarker();
+    }
+
     // TODO: a MapService is warranted at this point.
     m_waypoint = TESObjectREFR::New();
     m_waypoint->SetBaseForm(TESForm::GetById(0x10));
@@ -147,15 +188,11 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     float* greetDistance = Settings::GetGreetDistance();
     *greetDistance = 150.f;
 
-    TiltedPhoques::Vector<uint32_t> toRemove{};
-    for (auto& [playerId, handle] : m_mapHandles)
+    for (auto it = m_mapHandles.begin(); it != m_mapHandles.end(); it++)
     {
-        toRemove.push_back(playerId);
-        DeleteMarkerDummy(handle);
+        DeleteMarkerDummy(it->handle);
     }
-
-    for (uint32_t playerId : toRemove)
-        m_mapHandles.erase(playerId);
+    m_mapHandles.clear();
 
     if (m_waypoint)
         m_waypoint->Delete();
@@ -177,42 +214,45 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
 
 void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
-    TESObjectREFR* pNewPlayer = TESObjectREFR::New();
-    pNewPlayer->SetBaseForm(TESForm::GetById(0x10));
-    pNewPlayer->SetSkipSaveFlag(true);
+    //Associate a dummy marker with this player id
+    MapHandleInfo *dummyInfo = GetDummyMarker();
+    dummyInfo->PlayerId = acMessage.PlayerId;
+
+    TESObjectREFR* pPlayer = TESObjectREFR::GetByHandle(dummyInfo->handle);
 
     TESObjectCELL* pCell = GetCell(acMessage.CellId, acMessage.WorldSpaceId, acMessage.CenterCoords);
 
     TP_ASSERT(pCell, "Cell not found for joined player");
 
     if (pCell)
-        pNewPlayer->SetParentCell(pCell);
+        pPlayer->SetParentCell(pCell);
 
-    // TODO: might have to be respawned when traveling between worldspaces?
-    // doesn't always work when going from solstheim to skyrim
-    MapMarkerData* pMarkerData = MapMarkerData::New();
-    pMarkerData->name.value.Set(acMessage.Username.data());
-    pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
-    pMarkerData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
-    pNewPlayer->extraData.SetMarkerData(pMarkerData);
-
-    uint32_t handle;
-    pNewPlayer->GetHandle(handle);
-    PlayerCharacter::Get()->AddMapmarkerRef(handle);
-
-    m_mapHandles[acMessage.PlayerId] = handle;
+    //Each time a player joins create a spare dummy marker on retainer
+    CreateDummyMarker();
 }
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
-    auto it = m_mapHandles.find(acMessage.PlayerId);
+    auto it = m_mapHandles.begin();
+    for (; it != m_mapHandles.end(); it++)
+    {
+        if (it->PlayerId == acMessage.PlayerId)
+        {
+            TESObjectREFR* dummyPlayer = TESObjectREFR::GetByHandle(it->handle);
+            dummyPlayer->position.x = -INTMAX_MAX;
+            dummyPlayer->position.y = -INTMAX_MAX;
+            PlayerCharacter::Get()->RemoveMapmarkerRef(it->handle);
+            break;
+        }
+    }
+
     if (it == m_mapHandles.end())
     {
         spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
         return;
     }
 
-    DeleteMarkerDummy(it->second);
+    DeleteMarkerDummy(it->handle);
 
     m_mapHandles.erase(it);
 }
@@ -293,17 +333,25 @@ void PlayerService::OnMapClose(const MapCloseEvent& acMessage) noexcept
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {   
-    auto it = m_mapHandles.find(acMessage.PlayerId);
+    auto it = m_mapHandles.begin();
+    for (; it != m_mapHandles.end(); it++)
+    {
+        if (it->PlayerId == acMessage.PlayerId)
+        {
+            break;
+        }
+    }
+
     if (it == m_mapHandles.end())
     {
         spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
         return;
     }
 
-    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->second);
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->handle);
     if (!pDummyPlayer)
     {
-        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->second);
+        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->handle);
         return;
     }
     
@@ -335,7 +383,15 @@ void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage
 
 void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept
 {
-    auto it = m_mapHandles.find(acMessage.PlayerId);
+    auto it = m_mapHandles.begin();
+    for (; it != m_mapHandles.end(); it++)
+    {
+        if (it->PlayerId == acMessage.PlayerId)
+        {
+            break;
+        }
+    }
+
     if (it == m_mapHandles.end())
     {
         spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
@@ -349,10 +405,10 @@ void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acM
         return;
     }
 
-    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->second);
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->handle);
     if (!pDummyPlayer)
     {
-        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->second);
+        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->handle);
         return;
     }
 

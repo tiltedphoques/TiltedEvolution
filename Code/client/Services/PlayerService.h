@@ -63,6 +63,12 @@ private:
 
     TESObjectCELL* GetCell(const GameId& acCellId, const GameId& acWorldSpaceId, const GridCellCoords& acCenterCoords) const noexcept;
 
+    struct MapHandleInfo
+    {
+        uint32_t PlayerId;
+        uint32_t handle;
+    };
+
     /**
     * @brief Run the respawn timer, and if it hits 0, respawn the player.
     */
@@ -79,17 +85,21 @@ private:
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
+    void CreateDummyMarker();
+    MapHandleInfo* GetDummyMarker();
+
     NiPoint3 m_waypointPos;
     TESObjectREFR* m_waypoint; 
     MapMarkerData* m_waypointData;
     bool m_inMap;
     bool m_waypointActive;
+    int m_initDummyMarkers = 10;
 
     double m_respawnTimer = 0.0;
     int32_t m_serverDifficulty = 6;
     int32_t m_previousDifficulty = 6;
-
-    TiltedPhoques::Map<uint32_t, uint32_t> m_mapHandles;
+    
+    Vector<MapHandleInfo> m_mapHandles;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_connectedConnection;
