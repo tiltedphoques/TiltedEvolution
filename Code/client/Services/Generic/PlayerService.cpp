@@ -13,6 +13,8 @@
 #include <Events/PlayerSetWaypointEvent.h>
 #include <Events/PlayerDelWaypointEvent.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
+#include <Events/MapOpenEvent.h>
+#include <Events/MapCloseEvent.h>
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/ShiftGridCellRequest.h>
@@ -28,6 +30,7 @@
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifySetWaypoint.h>
 #include <Messages/NotifyDelWaypoint.h>
+
 
 #include <Structs/ServerSettings.h>
 
@@ -62,6 +65,8 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerCellChangeConnection = m_dispatcher.sink<NotifyPlayerCellChanged>().connect<&PlayerService::OnNotifyPlayerCellChanged>(this);
     m_playerSetWaypointConnection = m_dispatcher.sink<PlayerSetWaypointEvent>().connect<&PlayerService::OnPlayerSetWaypoint>(this);
     m_playerDelWaypointConnection =m_dispatcher.sink<PlayerDelWaypointEvent>().connect<&PlayerService::OnPlayerDelWaypoint>(this);
+    m_mapOpenConnection = m_dispatcher.sink<MapOpenEvent>().connect<&PlayerService::OnMapOpen>(this);
+    m_mapCloseConnection = m_dispatcher.sink<MapCloseEvent>().connect<&PlayerService::OnMapClose>(this);
 }
 
 
@@ -108,6 +113,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
     RunPostDeathUpdates(acEvent.Delta);
     RunDifficultyUpdates();
     RunLevelUpdates();
+    RunMapUpdates();
 }
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
@@ -252,6 +258,15 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     m_transport.Send(request);
 }
 
+void PlayerService::OnMapOpen(const MapOpenEvent& acMessage) const noexcept
+{
+}
+
+void PlayerService::OnMapClose(const MapOpenEvent& acMessage) const noexcept
+{
+}
+
+
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
 {   
     auto it = m_mapHandles.find(acMessage.PlayerId);
@@ -323,6 +338,11 @@ void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acM
 // on join/leave, add to our array...
 void PlayerService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept
 {
+    NiPoint3 Position{};
+
+    Position.x = -INTMAX_MAX;
+    Position.y = -INTMAX_MAX;
+    SetWaypoint(PlayerCharacter::Get(), &Position, PlayerCharacter::Get()->GetWorldSpace());
 }
 
 void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
@@ -367,7 +387,6 @@ void PlayerService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage
     Position.x = acMessage.Position.x;
     Position.y = acMessage.Position.y;
 
-    //SetWindowCursor((MapMenu*)UI::Get()->FindMenuByName("MapMenu"), 0, 0);
 
     auto* pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
     SetWaypoint(PlayerCharacter::Get(), &Position, pPlayerWorldSpace);
@@ -481,4 +500,30 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
+}
+
+void PlayerService::RunMapUpdates() noexcept
+{
+
+    // Update map open status
+    const VersionDbPtr<int> inMapAddr(403437);
+    int* inMap = reinterpret_cast<decltype(inMap)>(inMapAddr.Get());
+
+    // Map Open/Close
+    if (*inMap != m_inMap)
+    {
+        switch (*inMap)
+        {
+
+            // Map was closed
+            case 0:
+                World::Get().GetRunner().Trigger(MapClosedEvent());
+
+            // Map was opened
+            case 1:
+                World::Get().GetRunner().Trigger(MapOpenEvent());
+        }
+    }
+
+    m_inMap = *inMap == 1;
 }

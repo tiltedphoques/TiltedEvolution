@@ -8,6 +8,8 @@ struct DisconnectedEvent;
 struct ServerSettings;
 struct GridCellChangeEvent;
 struct CellChangeEvent;
+struct MapOpenEvent;
+struct MapCloseEvent;
 struct PlayerDialogueEvent;
 struct PlayerMapMarkerUpdateEvent;
 struct PlayerLevelEvent;
@@ -42,8 +44,8 @@ protected:
     void OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept;
     void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
-    void OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) const noexcept;
-    void OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) const noexcept;
+    void OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) noexcept;
+    void OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) noexcept;
     void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
     void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
     void OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) const noexcept;
@@ -51,8 +53,11 @@ protected:
     void OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept;
     void OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept;
     void OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
-    void OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) const noexcept;
-    void OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) const noexcept;
+    void OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) noexcept;
+    void OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) noexcept;
+    void OnMapOpen(const MapOpenEvent& acMessage) noexcept;
+    void OnMapClose(const MapCloseEvent& acMessage) noexcept;
+
 
 private:
 
@@ -68,13 +73,17 @@ private:
     */
     void RunDifficultyUpdates() const noexcept;
     void RunLevelUpdates() const noexcept;
+    void RunMapUpdates() noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
+    NiPoint3 m_waypointPos;
     TESObjectREFR* m_waypoint; 
-    MapMarkerData* m_waypointData; 
+    MapMarkerData* m_waypointData;
+    bool m_inMap;
+    bool m_waypointActive;
 
     double m_respawnTimer = 0.0;
     int32_t m_serverDifficulty = 6;
@@ -100,4 +109,6 @@ private:
     entt::scoped_connection m_playerSetWaypointConnection;
     entt::scoped_connection m_playerNotifySetWaypointConnection;
     entt::scoped_connection m_playerNotifyDelWaypointConnection;
+    entt::scoped_connection m_mapOpenConnection;
+    entt::scoped_connection m_mapCloseConnection;
 };
