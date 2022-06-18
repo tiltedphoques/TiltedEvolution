@@ -13,13 +13,9 @@
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
-#include <Messages/NotifySetWaypoint.h>
-#include <Messages/NotifyDelWaypoint.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/NotifyRespawn.h>
 #include <Messages/PlayerLevelRequest.h>
-#include <Messages/RequestSetWaypoint.h>
-#include <Messages/RequestDelWaypoint.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyPlayerPosition.h>
@@ -28,14 +24,11 @@ Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amou
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
-    , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this))
     , m_interiorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterInteriorCellRequest>>().connect<&PlayerService::HandleInteriorCellEnter>(this))
     , m_gridCellShiftConnection(aDispatcher.sink<PacketEvent<ShiftGridCellRequest>>().connect<&PlayerService::HandleGridCellShift>(this))
     , m_exteriorCellEnterConnection(aDispatcher.sink<PacketEvent<EnterExteriorCellRequest>>().connect<&PlayerService::HandleExteriorCellEnter>(this))
     , m_playerRespawnConnection(aDispatcher.sink<PacketEvent<PlayerRespawnRequest>>().connect<&PlayerService::OnPlayerRespawnRequest>(this))
     , m_playerLevelConnection(aDispatcher.sink<PacketEvent<PlayerLevelRequest>>().connect<&PlayerService::OnPlayerLevelRequest>(this))
-    , m_playerSetWaypointConnection(aDispatcher.sink<PacketEvent<RequestSetWaypoint>>().connect<&PlayerService::OnSetWaypointRequest>(this))
-    , m_playerDelWaypointConnection(aDispatcher.sink<PacketEvent<RequestDelWaypoint>>().connect<&PlayerService::OnDelWaypointRequest>(this))
 {
 }
 
@@ -158,30 +151,6 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
     SendPlayerCellChanged(pPlayer);
 }
 
-void PlayerService::OnUpdate(const UpdateEvent&) const noexcept
-{
-    ProcessPlayerPositionChanges();
-}
-
-void PlayerService::OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acMessage) const noexcept 
-{
-    auto* pPlayer = acMessage.pPlayer;
-
-    auto& message = acMessage.Packet;
-
-    NotifySetWaypoint notify{};
-    notify.Position = message.Position;
-
-    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
-}
-
-void PlayerService::OnDelWaypointRequest(const PacketEvent<RequestDelWaypoint>& acMessage) const noexcept
-{
-    NotifyDelWaypoint notify{};
-
-    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
-}
-
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
 {
     float goldLossFactor = fGoldLossFactor.as_float();
@@ -243,41 +212,3 @@ void PlayerService::OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& 
 
     GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
-
-void PlayerService::ProcessPlayerPositionChanges() const noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 500ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    TiltedPhoques::Vector<NotifyPlayerPosition> messages;
-
-    // TODO: optimize this so that all player updates are sent in one message
-    for (Player* pPlayer : m_world.GetPlayerManager())
-    {
-        if (!pPlayer->GetCharacter())
-            continue;
-
-        auto character = *pPlayer->GetCharacter();
-        auto* movementComponent = m_world.try_get<MovementComponent>(character);
-        if (!movementComponent)
-            continue;
-
-        auto& message = messages.emplace_back();
-        message.PlayerId = pPlayer->GetId();
-
-        message.Position = movementComponent->Position;
-    }
-
-    for (auto& message : messages)
-    {
-        Player* pPlayer = m_world.GetPlayerManager().GetById(message.PlayerId);
-        GameServer::Get()->SendToPlayers(message, pPlayer);
-    }
-}
-
