@@ -88,18 +88,7 @@ TESObjectCELL* PlayerService::GetCell(const GameId& acCellId, const GameId& acWo
     return pCell;
 }
 
-bool DeleteMarkerDummy(const uint32_t acHandle) noexcept
-{
-    auto* pDummyPlayer = TESObjectREFR::GetByHandle(acHandle);
-    if (!pDummyPlayer)
-        return false;
 
-    pDummyPlayer->Delete();
-
-    PlayerCharacter::Get()->RemoveMapmarkerRef(acHandle);
-
-    return true;
-}
 
 static bool knockdownStart = false;
 static double knockdownTimer = 0.0;
@@ -116,40 +105,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
     RunMapUpdates();
 }
 
-void PlayerService::CreateDummyMarker()
-{
-    TESObjectREFR* dummyMark = TESObjectREFR::New();
-    dummyMark->SetBaseForm(TESForm::GetById(0x10));
-    dummyMark->SetSkipSaveFlag(true);
-    dummyMark->position.x = -INTMAX_MAX;
-    dummyMark->position.y = -INTMAX_MAX;
 
-    MapMarkerData* dummyData = MapMarkerData::New();
-    dummyData->name.value.Set("Custom Destination");
-    dummyData->cOriginalFlags = dummyData->cFlags = MapMarkerData::Flag::VISIBLE;
-    dummyData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
-    dummyMark->extraData.SetMarkerData(dummyData);
-
-    uint32_t handle;
-    dummyMark->GetHandle(handle);
-    PlayerCharacter::Get()->AddMapmarkerRef(handle);
-
-    MapHandleInfo dummy = {-1, handle};
-
-    m_mapHandles.push_back(dummy);
-}
-
-PlayerService::MapHandleInfo* PlayerService::GetDummyMarker()
-{
-    for (auto it = m_mapHandles.begin(); it != m_mapHandles.end(); it++)
-    {
-        if (it->PlayerId = -1)
-        {
-            return &*it;
-        }
-    }
-    return nullptr;
-}
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
@@ -188,11 +144,19 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     float* greetDistance = Settings::GetGreetDistance();
     *greetDistance = 150.f;
 
-    for (auto it = m_mapHandles.begin(); it != m_mapHandles.end(); it++)
+    TiltedPhoques::Vector<uint32_t> toRemove{};
+    for (auto& [playerId, handle] : m_mapHandles)
     {
-        DeleteMarkerDummy(it->handle);
+        toRemove.push_back(playerId);
+        DeleteDummyMarker(handle);
     }
-    m_mapHandles.clear();
+
+    for (uint32_t playerId : toRemove)
+        m_mapHandles.erase(playerId);
+
+    for (uint32_t dummyHandle : m_dummyHandles)
+        DeleteDummyMarker(dummyHandle);
+    m_dummyHandles.clear();
 
     if (m_waypoint)
         m_waypoint->Delete();
@@ -215,17 +179,29 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
 void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 {
     //Associate a dummy marker with this player id
-    MapHandleInfo *dummyInfo = GetDummyMarker();
-    dummyInfo->PlayerId = acMessage.PlayerId;
+    uint32_t handle = GetDummyMarker();
 
-    TESObjectREFR* pPlayer = TESObjectREFR::GetByHandle(dummyInfo->handle);
+    TESObjectREFR* pNewPlayer = TESObjectREFR::GetByHandle(handle);
+
+    pNewPlayer->SetBaseForm(TESForm::GetById(0x10));
+    pNewPlayer->SetSkipSaveFlag(true);
 
     TESObjectCELL* pCell = GetCell(acMessage.CellId, acMessage.WorldSpaceId, acMessage.CenterCoords);
 
     TP_ASSERT(pCell, "Cell not found for joined player");
 
     if (pCell)
-        pPlayer->SetParentCell(pCell);
+        pNewPlayer->SetParentCell(pCell);
+
+    // TODO: might have to be respawned when traveling between worldspaces?
+    // doesn't always work when going from solstheim to skyrim
+    MapMarkerData* pMarkerData = MapMarkerData::New();
+    pMarkerData->name.value.Set(acMessage.Username.data());
+    pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
+    pMarkerData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
+    pNewPlayer->extraData.SetMarkerData(pMarkerData);
+
+    m_mapHandles[acMessage.PlayerId] = handle;
 
     //Each time a player joins create a spare dummy marker on retainer
     CreateDummyMarker();
@@ -233,18 +209,12 @@ void PlayerService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 
 void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
 {
-    auto it = m_mapHandles.begin();
-    for (; it != m_mapHandles.end(); it++)
-    {
-        if (it->PlayerId == acMessage.PlayerId)
-        {
-            TESObjectREFR* dummyPlayer = TESObjectREFR::GetByHandle(it->handle);
-            dummyPlayer->position.x = -INTMAX_MAX;
-            dummyPlayer->position.y = -INTMAX_MAX;
-            PlayerCharacter::Get()->RemoveMapmarkerRef(it->handle);
-            break;
-        }
-    }
+    auto it = m_mapHandles.find(acMessage.PlayerId);
+
+    //Move marker off map
+    TESObjectREFR* pLeavePlayer = TESObjectREFR::GetByHandle(it->second);
+    pLeavePlayer->position.x = -INTMAX_MAX;
+    pLeavePlayer->position.y = -INTMAX_MAX;
 
     if (it == m_mapHandles.end())
     {
@@ -252,7 +222,7 @@ void PlayerService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
         return;
     }
 
-    DeleteMarkerDummy(it->handle);
+    DeleteDummyMarker(it->second);
 
     m_mapHandles.erase(it);
 }
@@ -332,29 +302,21 @@ void PlayerService::OnMapClose(const MapCloseEvent& acMessage) noexcept
 
 
 void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept
-{   
-    auto it = m_mapHandles.begin();
-    for (; it != m_mapHandles.end(); it++)
-    {
-        if (it->PlayerId == acMessage.PlayerId)
-        {
-            break;
-        }
-    }
-
+{
+    auto it = m_mapHandles.find(acMessage.PlayerId);
     if (it == m_mapHandles.end())
     {
         spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
         return;
     }
 
-    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->handle);
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->second);
     if (!pDummyPlayer)
     {
-        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->handle);
+        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->second);
         return;
     }
-    
+
     ExtraMapMarker* pMapMarker = Cast<ExtraMapMarker>(pDummyPlayer->extraData.GetByType(ExtraData::MapMarker));
     if (!pMapMarker || !pMapMarker->pMarkerData)
     {
@@ -368,30 +330,22 @@ void PlayerService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage
     auto* pDummyWorldSpace = pDummyPlayer->GetWorldSpace();
     auto* pPlayerWorldSpace = PlayerCharacter::Get()->GetWorldSpace();
 
-    if (pDummyPlayer->IsInInteriorCell() || 
-        (pPlayerWorldSpace && pDummyWorldSpace != pPlayerWorldSpace) ||
+    if (pDummyPlayer->IsInInteriorCell() || (pPlayerWorldSpace && pDummyWorldSpace != pPlayerWorldSpace) ||
         (pDummyWorldSpace && pDummyWorldSpace != pPlayerWorldSpace))
     {
         pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::NONE;
         return;
     }
 
-    pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
+    pMarkerData->cOriginalFlags = pMarkerData->cFlags =
+        MapMarkerData::Flag::VISIBLE | MapMarkerData::Flag::CAN_TRAVEL_TO;
 
     pDummyPlayer->position = acMessage.Position;
 }
 
 void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept
 {
-    auto it = m_mapHandles.begin();
-    for (; it != m_mapHandles.end(); it++)
-    {
-        if (it->PlayerId == acMessage.PlayerId)
-        {
-            break;
-        }
-    }
-
+    auto it = m_mapHandles.find(acMessage.PlayerId);
     if (it == m_mapHandles.end())
     {
         spdlog::error(__FUNCTION__ ": could not find player id {:X}", acMessage.PlayerId);
@@ -405,10 +359,10 @@ void PlayerService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acM
         return;
     }
 
-    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->handle);
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(it->second);
     if (!pDummyPlayer)
     {
-        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->handle);
+        spdlog::error(__FUNCTION__ ": could not find dummy player, handle: {:X}", it->second);
         return;
     }
 
@@ -613,4 +567,45 @@ void PlayerService::RunMapUpdates() noexcept
     }
 
     m_inMap = *inMap == 1;
+}
+
+bool PlayerService::DeleteDummyMarker(const uint32_t acHandle) noexcept
+{
+    auto* pDummyPlayer = TESObjectREFR::GetByHandle(acHandle);
+    if (!pDummyPlayer)
+        return false;
+
+    pDummyPlayer->Delete();
+
+    PlayerCharacter::Get()->RemoveMapmarkerRef(acHandle);
+
+    return true;
+}
+
+void PlayerService::CreateDummyMarker() noexcept
+{
+    TESObjectREFR* dummyMark = TESObjectREFR::New();
+    dummyMark->SetBaseForm(TESForm::GetById(0x10));
+    dummyMark->SetSkipSaveFlag(true);
+    dummyMark->position.x = -INTMAX_MAX;
+    dummyMark->position.y = -INTMAX_MAX;
+
+    MapMarkerData* dummyData = MapMarkerData::New();
+    dummyData->cOriginalFlags = dummyData->cFlags = MapMarkerData::Flag::VISIBLE;
+    dummyData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
+    dummyMark->extraData.SetMarkerData(dummyData);
+
+    uint32_t handle;
+    dummyMark->GetHandle(handle);
+    PlayerCharacter::Get()->AddMapmarkerRef(handle);
+
+    m_dummyHandles.push_back(handle);
+}
+
+uint32_t PlayerService::GetDummyMarker() noexcept
+{
+    if (m_dummyHandles.empty())
+        return m_invalidHandle;
+
+    return m_dummyHandles.back();
 }

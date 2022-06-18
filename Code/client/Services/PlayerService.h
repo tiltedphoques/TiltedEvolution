@@ -85,21 +85,24 @@ private:
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
 
-    void CreateDummyMarker();
-    MapHandleInfo* GetDummyMarker();
+    void CreateDummyMarker() noexcept;
+    uint32_t GetDummyMarker() noexcept;
+    bool DeleteDummyMarker(const uint32_t acHandle) noexcept;
 
     NiPoint3 m_waypointPos;
     TESObjectREFR* m_waypoint; 
     MapMarkerData* m_waypointData;
     bool m_inMap;
     bool m_waypointActive;
+    int m_invalidHandle = -1;
     int m_initDummyMarkers = 10;
 
     double m_respawnTimer = 0.0;
     int32_t m_serverDifficulty = 6;
     int32_t m_previousDifficulty = 6;
     
-    Vector<MapHandleInfo> m_mapHandles;
+    Vector<uint32_t> m_dummyHandles;
+    TiltedPhoques::Map<uint32_t, uint32_t> m_mapHandles;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_connectedConnection;
