@@ -85,6 +85,8 @@ declare namespace SkyrimTogetherTypes {
 
   type PartyCreatedCallback = () => void;
 
+  type PartyLeftCallback = (inviterId: number) => void;
+
   type PartyInviteReceivedCallback = (inviterId: number) => void;
 }
 
@@ -171,6 +173,8 @@ interface SkyrimTogether {
 
   on(event: 'partyCreated', callback: SkyrimTogetherTypes.PartyCreatedCallback): void;
 
+  on(event: 'partyLeft', callback: SkyrimTogetherTypes.PartyLeftCallback): void;
+
   on(event: 'partyInviteReceived', callback: SkyrimTogetherTypes.PartyInviteReceivedCallback): void;
 
   /** Remove listener from when the application is first initialized. */
@@ -247,6 +251,8 @@ interface SkyrimTogether {
   off(event: 'partyInfo', callback?: SkyrimTogetherTypes.PartyInfoCallback): void;
 
   off(event: 'partyCreated', callback?: SkyrimTogetherTypes.PartyCreatedCallback): void;
+
+  off(event: 'partyLeft', callback?: SkyrimTogetherTypes.PartyLeftCallback): void;
 
   off(event: 'partyInviteReceived', callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback): void;
 

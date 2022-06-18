@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Group, State } from '../models/group';
+import { Group } from '../models/group';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { Player } from '../models/player';
 import { ClientService } from './client.service';
@@ -18,9 +18,11 @@ export class GroupService implements OnDestroy {
 
   public group = new BehaviorSubject<Group | undefined>(undefined);
 
+  private debugSubscription: Subscription;
   private connectionSubscription: Subscription;
   private userHealthSubscription: Subscription;
   private partyInfoSubscription: Subscription;
+  private partyLeftSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
   private levelSubscription: Subscription;
   private cellSubscription: Subscription;
@@ -34,9 +36,11 @@ export class GroupService implements OnDestroy {
               private clientService: ClientService,
               private playerListService: PlayerListService,
               private loadingService: LoadingService) {
+    this.onDebug();
     this.onConnectionStateChanged();
     this.subscribeChangeHealth();
     this.onPartyInfo();
+    this.onPartyLeft();
     this.onPlayerDisconnected();
     this.onLevelChange();
     this.onCellChange();
@@ -44,13 +48,21 @@ export class GroupService implements OnDestroy {
   }
 
   ngOnDestroy() {
+    this.debugSubscription.unsubscribe();
     this.connectionSubscription.unsubscribe();
     this.userHealthSubscription.unsubscribe();
     this.partyInfoSubscription.unsubscribe();
+    this.partyLeftSubscription.unsubscribe();
     this.playerDisconnectedSubscription.unsubscribe();
     this.levelSubscription.unsubscribe();
     this.cellSubscription.unsubscribe();
     this.loadedSubscription.unsubscribe();
+  }
+
+  private onDebug() {
+    this.debugSubscription = this.clientService.debugChange.subscribe(() => {
+      console.log(this.group);
+    });
   }
 
   private onConnectionStateChanged() {
@@ -85,7 +97,6 @@ export class GroupService implements OnDestroy {
           this.updateGroup();
         }
       }
-
     })
   }
 
@@ -100,9 +111,26 @@ export class GroupService implements OnDestroy {
         group.members.clear();
 
         for (const id of partyInfo.serverIds) {
-          const player = this.playerListService.getPlayerList().players.get(id);
-          group.members[id] = player;
+          let player = playerList.players.get(id);
+          group.members.set(id, player);
         }
+
+        group.owner = partyInfo.leaderId;
+        group.isEnabled = true;
+
+        this.updateGroup();
+      }
+    })
+  }
+
+  private onPartyLeft() {
+    this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(() => {
+      const group = this.createGroup(this.group.value);
+
+      if (group) {
+        group.isEnabled = false;
+        group.owner = undefined;
+        group.members.clear();
 
         this.updateGroup();
       }
@@ -174,6 +202,10 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
+      if (!group.isEnabled) {
+        return;
+      }
+
       this.soundService.play(Sound.Ok);
 
       this.clientService.leaveParty();
@@ -204,7 +236,7 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      if (group.owner.serverId !== this.clientService.localServerId) {
+      if (group.owner !== this.clientService.localServerId) {
         this.errorService.error("You cannot kick other members as you are not the party leader.");
         return;
       }
@@ -219,7 +251,7 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      if (group.owner.serverId !== this.clientService.localServerId) {
+      if (group.owner !== this.clientService.localServerId) {
         this.errorService.error("You cannot make another member the leader as you are not the party leader.");
         return;
       }
@@ -233,6 +265,10 @@ export class GroupService implements OnDestroy {
   public getSizeMembers(): number {
     
     return (this.group.value ? this.group.value.members.size : 0);
+  }
+
+  public isPartyEnabled(): boolean {
+    return (this.group.value ? this.group.value.isEnabled : false);
   }
 
   private updateGroup() {

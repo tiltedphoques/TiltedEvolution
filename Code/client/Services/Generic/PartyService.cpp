@@ -131,7 +131,9 @@ void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcep
 
     m_invitations[acPartyInvite.InviterId] = acPartyInvite.ExpiryTick;
 
-    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInviteReceived");
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acPartyInvite.InviterId);
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInviteReceived", pArguments);
 }
 
 void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept

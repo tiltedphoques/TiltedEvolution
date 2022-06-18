@@ -62,6 +62,9 @@ export class ClientService implements OnDestroy {
   /** Connect party info change. */
   public partyInfoChange = new Subject<PartyInfo>();
 
+  /** Connect party info change. */
+  public partyLeftChange = new Subject();
+
   /** Connect party invite received. */
   public partyInviteReceivedChange = new Subject<number>();
 
@@ -85,7 +88,10 @@ export class ClientService implements OnDestroy {
   /** Receive error from core */
   public triggerError = new BehaviorSubject('');
 
-  public localServerId = -1;
+  /** Used purely for debugging. */
+  public debugChange = new Subject();
+
+  public localServerId = undefined;
 
   private _host: string;
 
@@ -130,6 +136,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('dummyData', this.onDummyData.bind(this));
       skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
       skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
+      skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
       skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
     }
   }
@@ -168,6 +175,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('dummyData');
       skyrimtogether.off('partyInfo');
       skyrimtogether.off('partyCreated');
+      skyrimtogether.off('partyLeft');
       skyrimtogether.off('partyInviteReceived');
     }
   }
@@ -431,6 +439,7 @@ export class ClientService implements OnDestroy {
    */
   private onDisconnect(isError: boolean): void {
     this.zone.run(() => {
+      this.localServerId = undefined;
       this.connectionStateChange.next(false);
       this.isConnectionInProgressChange.next(false);
 
@@ -566,10 +575,13 @@ export class ClientService implements OnDestroy {
 
   private onDummyData(data: Array<number>) {
     this.zone.run(() => {
+      this.debugChange.next();
+      /*
       for (const numb of data) {
         console.log(numb);
       }
       console.log(data);
+      */
     })
   }
 
@@ -587,12 +599,24 @@ export class ClientService implements OnDestroy {
   private onPartyCreated() {
     this.zone.run(() => {
       this.loadingService.setLoading(false);
+      this.partyInfoChange.next(new PartyInfo(
+        {
+          serverIds: [],
+          leaderId: this.localServerId
+        }
+      ));
+    })
+  }
+
+  private onPartyLeft() {
+    this.zone.run(() => {
+      this.partyLeftChange.next();
     })
   }
 
   private onPartyInviteReceived(inviterId: number) {
     this.zone.run(() => {
-      this.partyInviteReceivedChange.next();
+      this.partyInviteReceivedChange.next(inviterId);
     })
   }
 }

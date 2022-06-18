@@ -11,25 +11,37 @@ export class PlayerListService {
 
   public playerList = new BehaviorSubject<PlayerList | undefined>(undefined);
 
+  private debugSubscription: Subscription;
   private connectionSubscription: Subscription;
   private playerConnectedSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
+  private cellSubscription: Subscription;
   private partyInviteReceivedSubscription: Subscription;
 
   private isConnect = false;
 
   constructor(private clientService: ClientService) {
+    this.onDebug();
     this.onConnectionStateChanged();
     this.onPlayerConnected();
     this.onPlayerDisconnected();
+    this.onCellChange();
     this.onPartyInviteReceived();
   }
 
   ngOnDestroy() {
+    this.debugSubscription.unsubscribe();
     this.connectionSubscription.unsubscribe();
     this.playerConnectedSubscription.unsubscribe();
     this.playerDisconnectedSubscription.unsubscribe();
+    this.cellSubscription.unsubscribe();
     this.partyInviteReceivedSubscription.unsubscribe();
+  }
+
+  private onDebug() {
+    this.debugSubscription = this.clientService.debugChange.subscribe(() => {
+      console.log(this.playerList);
+    });
   }
 
   private onConnectionStateChanged() {
@@ -43,7 +55,6 @@ export class PlayerListService {
       this.updatePlayerList();
     });
   }
-
 
   private onPlayerConnected() {
     this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe((player: Player) => {
@@ -64,8 +75,6 @@ export class PlayerListService {
   private onPlayerDisconnected() {
     this.playerDisconnectedSubscription = this.clientService.playerDisconnectedChange.subscribe((player: Player) => {
 
-      console.log(player);
-
       const playerList = this.createPlayerList(this.playerList.value);
 
       if (playerList) {
@@ -74,6 +83,19 @@ export class PlayerListService {
         this.playerList.next(playerList);
       }
     });
+  }
+
+  private onCellChange() {
+    this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
+      const playerList = this.createPlayerList(this.playerList.value);
+
+      if (playerList) {
+        const p = playerList.players.get(player.serverId);
+        if (p) {
+          p.cellName = player.cellName;
+        }
+      }
+    })
   }
 
   private onPartyInviteReceived() {
@@ -102,6 +124,18 @@ export class PlayerListService {
 
   private updatePlayerList() {
     this.playerList.next(this.playerList.value);
+  }
+
+  public sendPartyInvite(inviteeId: number) {
+    this.clientService.createPartyInvite(inviteeId);
+    
+    const playerList = this.createPlayerList(this.playerList.value);
+
+    if (playerList) {
+      playerList.players.get(inviteeId).invitationSent = true;
+
+      this.playerList.next(playerList);
+    }
   }
 
   public acceptPartyInvite(inviterId: number) {

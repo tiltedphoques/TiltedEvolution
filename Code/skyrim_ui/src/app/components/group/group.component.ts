@@ -103,7 +103,6 @@ export class GroupComponent implements OnInit, OnDestroy {
           }
         }
       }
-
     })
   }
 
@@ -171,8 +170,12 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.clientService.activationStateChange.value;
   }
 
-  isLaunchPartyDisable(): boolean {
-    return (this.waitLaunch || (this.groupService.getSizeMembers() < 1));
+  isLaunchPartyDisabled(): boolean {
+    return (this.waitLaunch || this.groupService.isPartyEnabled());
+  }
+
+  isLeaveDisabled(): boolean {
+    return (this.waitLaunch || !this.groupService.isPartyEnabled());
   }
 
   public launchParty() {

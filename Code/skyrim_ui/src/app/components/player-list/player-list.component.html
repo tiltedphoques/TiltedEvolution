@@ -12,6 +12,7 @@
           <th>Location</th>
           <th></th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody class="listBody">
@@ -20,7 +21,8 @@
           <td>{{ player.value.name }}</td>
           <td>{{ player.value.cellName }}</td>
           <td><button (click)="teleportToPlayer(player.value.serverId)" class="teleBtn">Teleport</button></td>
-          <td><button (click)="acceptPartyInvite(player.value.serverId)" class="teleBtn">Accept party invite</button></td>
+          <td><button (click)="sendPartyInvite(player.value.serverId)" [disabled]="isPlayerNotInvitable(player.value.serverId)" class="teleBtn">Send party invite</button></td>
+          <td><button (click)="acceptPartyInvite(player.value.serverId)" [disabled]="isPlayerNotInvitedToParty(player.value)" class="teleBtn">Accept party invite</button></td>
         </tr>
       </tbody>
     </table>

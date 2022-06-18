@@ -393,7 +393,7 @@ void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessag
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acMessage.PlayerId);
     String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
-    pArguments->SetString(3, cellName.c_str());
+    pArguments->SetString(1, cellName.c_str());
     m_pOverlay->ExecuteAsync("setCell", pArguments);
 }
 
