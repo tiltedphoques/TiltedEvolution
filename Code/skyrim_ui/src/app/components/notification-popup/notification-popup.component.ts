@@ -44,7 +44,7 @@ export class NotificationPopupComponent implements OnDestroy, OnInit {
     this.isActive = false;
     if (this.notification.type === NotificationType.Invitation) {
       if (this.notification.player) {
-        this.groupService.accept(this.notification.player.serverId);
+        this.groupService.accept(this.notification.player.id);
 
         this.popupNotificationService.clearMessage();
       }

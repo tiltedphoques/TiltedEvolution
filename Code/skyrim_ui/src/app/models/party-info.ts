@@ -1,13 +1,13 @@
 export class PartyInfo {
-  serverIds: Array<number>;
+  playerIds: Array<number>;
   leaderId: number;
 
   constructor(options: {
-    serverIds: Array<number>;
+    playerIds: Array<number>;
     leaderId: number;
 
   }) {
-    this.serverIds = options.serverIds;
+    this.playerIds = options.playerIds;
     this.leaderId = options.leaderId;
   }
 }

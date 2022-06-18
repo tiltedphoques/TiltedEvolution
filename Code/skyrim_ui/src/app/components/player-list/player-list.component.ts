@@ -20,15 +20,14 @@ export class PlayerListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-
   }
 
   public get playerList(): PlayerList | undefined {
     return this.playerListService.playerList.value;
   }
 
-  public get getListSize(): number {
-    return this.playerList.players.size;
+  public getListLength(): number {
+    return this.playerListService.getListLength();
   }
 
   public get isConnected(): boolean {
@@ -51,7 +50,7 @@ export class PlayerListComponent implements OnInit, OnDestroy {
     return !player.invitationReceived;
   }
 
-  public isPlayerNotInvitable(serverId: number) {
+  public isPlayerNotInvitable(playerId: number) {
     return false;
   }
 }

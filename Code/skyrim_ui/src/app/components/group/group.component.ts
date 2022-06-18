@@ -9,6 +9,7 @@ import { ErrorService } from '../../services/error.service';
 import { SoundService, Sound } from '../../services/sound.service';
 import { LoadingService } from '../../services/loading.service';
 import { SettingService } from 'src/app/services/setting.service';
+import { PlayerListService } from 'src/app/services/player-list.service';
 
 
 @Component({
@@ -39,7 +40,8 @@ export class GroupComponent implements OnInit, OnDestroy {
     private errorService: ErrorService,
     private soundService: SoundService,
     private loadingService: LoadingService,
-    private settings: SettingService) {
+    private settings: SettingService,
+    private playerListService: PlayerListService) {
     this.isShown = this.settings.isPartyShown();
     this.isAutoHide = this.settings.isPartyAutoHidden();
   }
@@ -79,12 +81,10 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   private subscribeChangeHealth() {
     this.userHealthSubscription = this.clientService.healthChange.subscribe((p: Player) => {
-      if (this.clientService.localServerId !== p.serverId) {
-        this.changeUIGroup();
-      }
+      this.changeUIGroup();
     })
   }
-  
+
   private onPartyInfo() {
     this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe(() => {
       this.changeUIGroup();
@@ -166,24 +166,20 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.groupService.group.value;
   }
 
+  public get groupMembers(): Array<Player> {
+    if (this.group) {
+      return this.playerListService.getPlayerList().players.filter(player => this.group.members.includes(player.id));
+    } else {
+      return [];
+    }
+  }
+
   public get active(): boolean {
     return this.clientService.activationStateChange.value;
   }
 
-  isLaunchPartyDisabled(): boolean {
-    return (this.waitLaunch || this.groupService.isPartyEnabled());
-  }
-
   isLeaveDisabled(): boolean {
     return (this.waitLaunch || !this.groupService.isPartyEnabled());
-  }
-
-  public launchParty() {
-    this.groupService.launch();
-  }
-
-  public leave() {
-    this.groupService.leave();
   }
 
   public invite(playerId: number) {
@@ -200,5 +196,9 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   public changeLeader(playerId: number) {
     this.groupService.changeLeader(playerId);
+  }
+
+  public getLeaderName(): string {
+    return this.groupService.getLeaderName();
   }
 }

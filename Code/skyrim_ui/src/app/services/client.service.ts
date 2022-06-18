@@ -9,6 +9,7 @@ import { PartyInfo } from '../models/party-info';
 import { take } from 'rxjs/operators';
 import { ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
+import { PlayerListService } from './player-list.service';
 
 /** Message. */
 export interface Message {
@@ -91,7 +92,7 @@ export class ClientService implements OnDestroy {
   /** Used purely for debugging. */
   public debugChange = new Subject();
 
-  public localServerId = undefined;
+  public localPlayerId = undefined;
 
   private _host: string;
 
@@ -130,7 +131,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('setCell', this.onSetCell.bind(this));
       skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
       skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
-      skyrimtogether.on('setServerId', this.onSetServerId.bind(this));
+      skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
       skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
       skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
       skyrimtogether.on('dummyData', this.onDummyData.bind(this));
@@ -169,7 +170,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('setCell');
       skyrimtogether.off('setPlayer3dLoaded');
       skyrimtogether.off('setPlayer3dUnloaded');
-      skyrimtogether.off('setServerId');
+      skyrimtogether.off('setLocalPlayerId');
       skyrimtogether.off('protocolMismatch');
       skyrimtogether.off('triggerError');
       skyrimtogether.off('dummyData');
@@ -439,7 +440,7 @@ export class ClientService implements OnDestroy {
    */
   private onDisconnect(isError: boolean): void {
     this.zone.run(() => {
-      this.localServerId = undefined;
+      this.localPlayerId = undefined;
       this.connectionStateChange.next(false);
       this.isConnectionInProgressChange.next(false);
 
@@ -498,12 +499,12 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  private onPlayerConnected(serverId: number, username: string, level: number, cellName: string) {
+  private onPlayerConnected(playerId: number, username: string, level: number, cellName: string) {
     this.zone.run(() => {
       this.playerConnectedChange.next(new Player(
         {
           name: username,
-          serverId: serverId,
+          id: playerId,
           connected: true,
           level: level,
           cellName: cellName
@@ -512,51 +513,51 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  private onPlayerDisconnected(serverId: number, username: string) {
+  private onPlayerDisconnected(playerId: number, username: string) {
     this.zone.run(() => {
       this.playerDisconnectedChange.next(new Player(
         {
           name: username,
-          serverId: serverId,
+          id: playerId,
           connected: false
         }
       ));
     });
   }
 
-  private onSetHealth(serverId: number, health: number) {
+  private onSetHealth(playerId: number, health: number) {
     this.zone.run(() => {
-      this.healthChange.next(new Player({ serverId: serverId, health: health }));
+      this.healthChange.next(new Player({ id: playerId, health: health }));
     });
   }
 
-  private onSetLevel(serverId: number, level: number) {
+  private onSetLevel(playerId: number, level: number) {
     this.zone.run(() => {
-      this.levelChange.next(new Player({ serverId: serverId, level: level }));
+      this.levelChange.next(new Player({ id: playerId, level: level }));
     })
   }
 
-  private onSetCell(serverId: number, cellName: string) {
+  private onSetCell(playerId: number, cellName: string) {
     this.zone.run(() => {
-      this.cellChange.next(new Player({ serverId: serverId, cellName: cellName }));
+      this.cellChange.next(new Player({ id: playerId, cellName: cellName }));
     })
   }
 
-  private onSetPlayer3dLoaded(serverId: number, health: number) {
+  private onSetPlayer3dLoaded(playerId: number, health: number) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: true, health: health}));
+      this.isLoadedChange.next(new Player({id: playerId, isLoaded: true, health: health}));
     })
   }
 
-  private onSetPlayer3dUnloaded(serverId: number) {
+  private onSetPlayer3dUnloaded(playerId: number) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: false}));
+      this.isLoadedChange.next(new Player({id: playerId, isLoaded: false}));
     })
   }
 
-  private onSetServerId(serverId: number) {
+  private onSetLocalPlayerId(playerId: number) {
     this.zone.run(() => {
-      this.localServerId = serverId;
+      this.localPlayerId = playerId;
     })
   }
 
@@ -585,11 +586,11 @@ export class ClientService implements OnDestroy {
     })
   }
 
-  private onPartyInfo(serverIds: Array<number>, leaderId: number) {
+  private onPartyInfo(playerIds: Array<number>, leaderId: number) {
     this.zone.run(() => {
       this.partyInfoChange.next(new PartyInfo(
         {
-          serverIds: serverIds,
+          playerIds: playerIds,
           leaderId: leaderId
         }
       ));
@@ -601,8 +602,8 @@ export class ClientService implements OnDestroy {
       this.loadingService.setLoading(false);
       this.partyInfoChange.next(new PartyInfo(
         {
-          serverIds: [],
-          leaderId: this.localServerId
+          playerIds: [],
+          leaderId: this.localPlayerId
         }
       ));
     })

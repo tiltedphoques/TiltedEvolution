@@ -10,9 +10,6 @@ export class Player implements Friend {
   /** Player ID. */
   id: number;
 
-  /** Server id player. */
-  serverId: number;
-
   /** Username. */
   name: string;
 
@@ -44,11 +41,8 @@ export class Player implements Friend {
 
   isInLocalParty: boolean;
 
-  isLocal: boolean;
-
   constructor(options: {
     id?: number,
-    serverId?: number,
     name?: string,
     avatar?: string,
     online?: boolean,
@@ -60,10 +54,8 @@ export class Player implements Friend {
     cellName?: string,
     isLoaded?: boolean,
     isInLocalParty?: boolean,
-    isLocal?: boolean
   } = {}) {
     this.id = options.id || 0;
-    this.serverId = options.serverId || 0;
     this.name = options.name || '';
     this.avatar = options.avatar || '';
     this.invitationReceived = options.invitationReceived || false;
@@ -112,6 +104,5 @@ export class Player implements Friend {
     }
 
     this.isInLocalParty = options.isInLocalParty || false;
-    this.isLocal = options.isLocal || false;
   }
 }

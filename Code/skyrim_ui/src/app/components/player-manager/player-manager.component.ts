@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
 
 @Component({
   selector: 'app-player-manager',
@@ -21,5 +21,17 @@ export class PlayerManagerComponent implements OnInit, OnDestroy {
 
   public cancel(): void {
     this.done.next();
+  }
+
+  private close() {
+      this.done.next();
+  }
+
+  @HostListener('window:keydown.escape', ['$event'])
+  // @ts-ignore
+  private activate(event: KeyboardEvent): void {
+    this.close();
+    event.stopPropagation();
+    event.preventDefault();
   }
 }

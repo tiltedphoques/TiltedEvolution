@@ -25,10 +25,11 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.isLoading.unsubscribe();
     }
 
-    isLaunchPartyDisable(): boolean {
-        return (this.waitLaunch || (this.groupService.getSizeMembers() < 1));
+    isLaunchPartyDisabled(): boolean {
+        return (this.waitLaunch || (this.groupService.getMembersLength() > 1));
     }
 
     public launchParty() {

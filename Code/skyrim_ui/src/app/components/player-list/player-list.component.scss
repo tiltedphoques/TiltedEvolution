@@ -2,12 +2,15 @@ app-player-list {
     position: relative;
     display: flex;
     flex-direction: column;
+    margin-top: 1rem;
+
+    #noPlayers {
+        overflow: hidden;
+    }
 
     .containerList {
         overflow: auto;
         max-height: 60vh;
-        margin-top: 1rem;
-
 
         .playerListTable {
             width: 100%;

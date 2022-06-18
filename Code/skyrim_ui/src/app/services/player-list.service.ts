@@ -50,7 +50,7 @@ export class PlayerListService {
         return;
       }
       this.isConnect = connect;
-      //this.playerList.next(undefined);
+      this.playerList.next(undefined);
 
       this.updatePlayerList();
     });
@@ -61,11 +61,11 @@ export class PlayerListService {
 
       console.log(player);
 
-      const playerList = this.createPlayerList(this.playerList.value);
+      const playerList = this.getPlayerList();
 
       if (playerList) {
 
-        playerList.players.set(player.serverId, player);
+        playerList.players.push(player);
 
         this.playerList.next(playerList);
       }
@@ -73,12 +73,12 @@ export class PlayerListService {
   }
 
   private onPlayerDisconnected() {
-    this.playerDisconnectedSubscription = this.clientService.playerDisconnectedChange.subscribe((player: Player) => {
+    this.playerDisconnectedSubscription = this.clientService.playerDisconnectedChange.subscribe((playerDisco: Player) => {
 
-      const playerList = this.createPlayerList(this.playerList.value);
+      const playerList = this.getPlayerList();
 
       if (playerList) {
-        playerList.players.delete(player.serverId);
+        playerList.players = playerList.players.filter(player => player.id !== playerDisco.id);
 
         this.playerList.next(playerList);
       }
@@ -87,10 +87,10 @@ export class PlayerListService {
 
   private onCellChange() {
     this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
-      const playerList = this.createPlayerList(this.playerList.value);
+      const playerList = this.getPlayerList();
 
       if (playerList) {
-        const p = playerList.players.get(player.serverId);
+        const p = this.getPlayerById(player.id);
         if (p) {
           p.cellName = player.cellName;
         }
@@ -100,10 +100,10 @@ export class PlayerListService {
 
   private onPartyInviteReceived() {
     this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe((inviterId: number) => {
-      const playerList = this.createPlayerList(this.playerList.value);
+      const playerList = this.getPlayerList();
 
       if (playerList) {
-        playerList.players.get(inviterId).invitationReceived = true;
+        this.getPlayerById(inviterId).invitationReceived = true;
 
         this.playerList.next(playerList);
       }
@@ -112,6 +112,10 @@ export class PlayerListService {
 
   public getPlayerList() {
     return this.createPlayerList(this.playerList.value);
+  }
+
+  public getListLength(): number {
+    return this.getPlayerList() ? this.getPlayerList().players.length : 0;
   }
 
   private createPlayerList(playerList: PlayerList | undefined) {
@@ -129,10 +133,10 @@ export class PlayerListService {
   public sendPartyInvite(inviteeId: number) {
     this.clientService.createPartyInvite(inviteeId);
     
-    const playerList = this.createPlayerList(this.playerList.value);
+    const playerList = this.getPlayerList();
 
     if (playerList) {
-      playerList.players.get(inviteeId).invitationSent = true;
+      this.getPlayerById(inviteeId).invitationSent = true;
 
       this.playerList.next(playerList);
     }
@@ -141,12 +145,16 @@ export class PlayerListService {
   public acceptPartyInvite(inviterId: number) {
     this.clientService.acceptPartyInvite(inviterId);
     
-    const playerList = this.createPlayerList(this.playerList.value);
+    const playerList = this.getPlayerList();
 
     if (playerList) {
-      playerList.players.get(inviterId).invitationReceived = false;
+      this.getPlayerById(inviterId).invitationReceived = false;
 
       this.playerList.next(playerList);
     }
+  }
+
+  public getPlayerById(playerId: number) : Player {
+    return this.getPlayerList().players.find(player => player.id === playerId);
   }
 }

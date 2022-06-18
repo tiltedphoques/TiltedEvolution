@@ -142,13 +142,15 @@ export class RootComponent implements OnInit, OnDestroy {
       if (environment.game) {
         this.client.deactivate();
       } else {
+        this.client.activationStateChange.next(!this.active);
+
         if (!this.connected) {
 
           this.client.connectionStateChange.next(true);
 
           this.client.playerConnectedChange.next(new Player(
             {
-              serverId: 1,
+              id: 1,
               name: 'Dumbeldor',
               online: true,
               connected: true,
@@ -158,7 +160,7 @@ export class RootComponent implements OnInit, OnDestroy {
           ));
           this.client.playerConnectedChange.next(new Player(
             {
-              serverId: 2,
+              id: 2,
               name: 'Pokang',
               online: true,
               connected: true,
@@ -168,14 +170,14 @@ export class RootComponent implements OnInit, OnDestroy {
           ));
           this.client.isLoadedChange.next(new Player(
             {
-              serverId: 1,
+              id: 1,
               isLoaded: true,
               health: 50
             }
           ));
           this.client.isLoadedChange.next(new Player(
             {
-              serverId: 2,
+              id: 2,
               isLoaded: false,
               health: 75
             }
@@ -187,7 +189,7 @@ export class RootComponent implements OnInit, OnDestroy {
 
           this.client.messageReception.next({ name, content: message, whisper })
         }
-        this.client.activationStateChange.next(!this.active);
+        
 
       }
     }

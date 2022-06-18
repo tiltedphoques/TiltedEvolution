@@ -59,21 +59,21 @@ declare namespace SkyrimTogetherTypes {
 
   type UserDataSetCallback = (token: string, username: string) => void;
 
-  type PlayerConnectedCallback = (serverId: number, username: string, level: number, cellName: string) => void;
+  type PlayerConnectedCallback = (playerId: number, username: string, level: number, cellName: string) => void;
 
-  type PlayerDisconnectedCallback = (serverId: number, username: string) => void;
+  type PlayerDisconnectedCallback = (playerId: number, username: string) => void;
 
-  type SetHealthCallback = (serverId: number, health: number) => void;
+  type SetHealthCallback = (playerId: number, health: number) => void;
 
-  type SetLevelCallback = (serverId: number, level: number) => void;
+  type SetLevelCallback = (playerId: number, level: number) => void;
 
-  type SetCellCallback = (serverId: number, cellName: string) => void;
+  type SetCellCallback = (playerId: number, cellName: string) => void;
 
-  type SetPlayer3dLoadedCallback = (serverId: number, health: number) => void;
+  type SetPlayer3dLoadedCallback = (playerId: number, health: number) => void;
 
-  type SetPlayer3dUnloadedCallback = (serverId: number) => void;
+  type SetPlayer3dUnloadedCallback = (playerId: number) => void;
 
-  type SetServerIdCallback = (serverId: number) => void;
+  type SetLocalPlayerIdCallback = (playerId: number) => void;
 
   type ProtocolMismatch = () => void;
 
@@ -81,7 +81,7 @@ declare namespace SkyrimTogetherTypes {
 
   type DummyDataCallback = (data: Array<number>) => void;
 
-  type PartyInfoCallback = (serverIds: Array<number>, leaderId: number) => void;
+  type PartyInfoCallback = (playerIds: Array<number>, leaderId: number) => void;
 
   type PartyCreatedCallback = () => void;
 
@@ -161,7 +161,7 @@ interface SkyrimTogether {
 
   on(event: 'setPlayer3dUnloaded', callback: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback): void;
 
-  on(event: 'setServerId', callback: SkyrimTogetherTypes.SetServerIdCallback): void;
+  on(event: 'setLocalPlayerId', callback: SkyrimTogetherTypes.SetLocalPlayerIdCallback): void;
 
   on(event: 'protocolMismatch', callback: SkyrimTogetherTypes.ProtocolMismatch): void;
 
@@ -240,7 +240,7 @@ interface SkyrimTogether {
 
   off(event: 'setPlayer3dUnloaded', callback?: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback): void;
 
-  off(event: 'setServerId', callback?: SkyrimTogetherTypes.SetServerIdCallback): void;
+  off(event: 'setLocalPlayerId', callback?: SkyrimTogetherTypes.SetLocalPlayerIdCallback): void;
 
   off(event: 'protocolMismatch', callback?: SkyrimTogetherTypes.ProtocolMismatch): void;
 

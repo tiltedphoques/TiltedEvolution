@@ -85,15 +85,15 @@ export class GroupService implements OnDestroy {
   }
 
   private subscribeChangeHealth() {
-    this.userHealthSubscription = this.clientService.healthChange.subscribe((p: Player) => {
+    this.userHealthSubscription = this.clientService.healthChange.subscribe((player: Player) => {
 
       const group = this.group.value;
 
       if (group) {
-        const foundPlayer = group.members.get(p.serverId);
+        const foundPlayer = this.playerListService.getPlayerById(player.id);
 
         if (foundPlayer) {
-          foundPlayer.health = p.health;
+          foundPlayer.health = player.health;
           this.updateGroup();
         }
       }
@@ -108,11 +108,10 @@ export class GroupService implements OnDestroy {
 
       if (group && playerList) {
         // TODO: this is very primitive, im sure there's some fancy js way to do this
-        group.members.clear();
+        group.members.splice(0);
 
-        for (const id of partyInfo.serverIds) {
-          let player = playerList.players.get(id);
-          group.members.set(id, player);
+        for (let id of partyInfo.playerIds) {
+          group.members.push(id);
         }
 
         group.owner = partyInfo.leaderId;
@@ -130,7 +129,7 @@ export class GroupService implements OnDestroy {
       if (group) {
         group.isEnabled = false;
         group.owner = undefined;
-        group.members.clear();
+        group.members.splice(0);
 
         this.updateGroup();
       }
@@ -142,7 +141,8 @@ export class GroupService implements OnDestroy {
       const group = this.createGroup(this.group.value);
 
       if (group) {
-        group.members.delete(player.serverId);
+
+        group.members = group.members.filter(playerId => playerId !== player.id);
 
         this.group.next(group);
       }
@@ -154,7 +154,7 @@ export class GroupService implements OnDestroy {
       const group = this.createGroup(this.group.value);
 
       if (group) {
-        const p = group.members.get(player.serverId);
+        const p = this.playerListService.getPlayerById(player.id);
         if (p) {
           p.level = player.level;
 
@@ -169,7 +169,7 @@ export class GroupService implements OnDestroy {
       const group = this.createGroup(this.group.value);
 
       if (group) {
-        const p = group.members.get(player.serverId);
+        const p = this.playerListService.getPlayerById(player.id);
         if (p) {
           p.cellName = player.cellName;
         }
@@ -182,7 +182,7 @@ export class GroupService implements OnDestroy {
       const group = this.createGroup(this.group.value);
 
       if (group) {
-        const p = group.members.get(player.serverId);
+        const p = this.playerListService.getPlayerById(player.id);
         if (p) {
           p.isLoaded = player.isLoaded;
           p.health = player.health;
@@ -221,7 +221,7 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      if (group.owner || group.members.size > 0) {
+      if (group.owner || group.members.length > 0) {
         this.errorService.error("You are already in a group. To join another group, please leave your current group.");
         return;
       }
@@ -236,7 +236,7 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      if (group.owner !== this.clientService.localServerId) {
+      if (group.owner !== this.clientService.localPlayerId) {
         this.errorService.error("You cannot kick other members as you are not the party leader.");
         return;
       }
@@ -251,7 +251,7 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      if (group.owner !== this.clientService.localServerId) {
+      if (group.owner !== this.clientService.localPlayerId) {
         this.errorService.error("You cannot make another member the leader as you are not the party leader.");
         return;
       }
@@ -262,9 +262,8 @@ export class GroupService implements OnDestroy {
     }
   }
 
-  public getSizeMembers(): number {
-    
-    return (this.group.value ? this.group.value.members.size : 0);
+  public getMembersLength(): number {
+    return (this.group.value ? this.group.value.members.length : 0);
   }
 
   public isPartyEnabled(): boolean {
@@ -285,5 +284,16 @@ export class GroupService implements OnDestroy {
       }
     }
     return this.group.value;
+  }
+
+  public getLeaderName(): string {
+    const group = this.group.value
+    if(group) {
+      let player = this.playerListService.getPlayerById(group.owner);
+      if (player) {
+        return player.name;
+      }
+    }
+    return "";
   }
 }
