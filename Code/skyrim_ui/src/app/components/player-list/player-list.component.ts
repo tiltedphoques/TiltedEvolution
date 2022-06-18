@@ -11,9 +11,6 @@ import { PlayerListService } from "src/app/services/player-list.service";
 })
 export class PlayerListComponent implements OnInit, OnDestroy {
 
-  @Output()
-  public done = new EventEmitter();
-
   constructor(public playerListService: PlayerListService,
     private clientService: ClientService
   ) { }
@@ -50,9 +47,5 @@ export class PlayerListComponent implements OnInit, OnDestroy {
 
   public acceptPartyInvite(inviterId: number) {
     this.playerListService.acceptPartyInvite(inviterId);
-  }
-
-  public cancel(): void {
-    this.done.next();
   }
 }

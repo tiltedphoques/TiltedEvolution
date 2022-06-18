@@ -231,6 +231,7 @@ export class GroupService implements OnDestroy {
   }
 
   public getSizeMembers(): number {
+    
     return (this.group.value ? this.group.value.members.size : 0);
   }
 

@@ -4,6 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import {MatTabsModule} from '@angular/material/tabs';
 
 import { PopupButtonsDirective } from './directives/popup-buttons.directive';
 import { HealthDirective } from './directives/health.directive';
@@ -35,6 +36,8 @@ import { ServerListComponent } from './components/server-list/server-list.compon
 import { OrderComponent } from './components/order/order.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { PlayerListComponent } from './components/player-list/player-list.component';
+import { PlayerManagerComponent } from './components/player-manager/player-manager.component';
+import { PartyMenuComponent } from './components/party-menu/party-menu.component';
 
 
 
@@ -45,10 +48,10 @@ import { PlayerListComponent } from './components/player-list/player-list.compon
     WindowComponent, DebugComponent, ErrorComponent, GroupComponent, NotificationPopupComponent, HealthDirective,
     ToggleComponent,
     LoadingComponent,
-    ServerListComponent, SettingsComponent, PlayerListComponent,
+    ServerListComponent, SettingsComponent, PlayerListComponent, PlayerManagerComponent, PartyMenuComponent,
     OrderComponent
   ],
-  imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule ],
+  imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule, MatTabsModule ],
   providers: [ ClientService, AssetService, SoundService,
     ErrorService, GroupService, PlayerListService, StoreService, SettingService ],
   bootstrap: [ RootComponent ]
