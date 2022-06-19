@@ -345,6 +345,8 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
+    // TODO: how could this possibly trigger?
+    // it's kinda interfering with my WaitingFor3D code
     if (acMessage.PlayerId != 0)
         m_world.emplace_or_replace<PlayerComponent>(cEntity, acMessage.PlayerId);
 
@@ -478,8 +480,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
 
-    // TODO(cosideci): why? cause of ui stuff with playercomponent, that's why. not sure whether that's problematic.
-    m_world.emplace_or_replace<FormIdComponent>(*entity, pActor->formID);
     if (pActor->IsDisabled())
         pActor->Enable();
 
@@ -1464,7 +1464,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
         Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
-    m_world.remove<PlayerComponent>(aEntity);
+        m_world.remove<PlayerComponent>(aEntity);
 
         if (pActor)
         {
@@ -1544,7 +1544,10 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     auto* pInterpolationComponent = m_world.try_get<InterpolationComponent>(aEntity);
 
     if (!pWaitingFor3D || !pInterpolationComponent)
+    {
+        spdlog::error(__FUNCTION__ ": could not find WaitingFor3D or InterpolationComponent");
         return nullptr;
+    }
 
     auto& acMessage = pWaitingFor3D->SpawnRequest;
 
@@ -1576,10 +1579,13 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
         pActor = Actor::Create(pNpc);
     }
 
-    if (!pActor)
-        return nullptr;
+    auto& remoteComponent = m_world.get<RemoteComponent>(aEntity);
 
-    m_world.emplace_or_replace<FormIdComponent>(aEntity, pActor->formID);
+    if (!pActor)
+    {
+        spdlog::error(__FUNCTION__ ": could not spawn actor for remote server id {:X}.", remoteComponent.Id);
+        return nullptr;
+    }
 
     pActor->GetExtension()->SetRemote(true);
     pActor->rotation.x = acMessage.Rotation.x;
@@ -1602,6 +1608,8 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    spdlog::info("Spawned character for entity, server id: {:X}", remoteComponent.Id);
 
     return pActor;
 }

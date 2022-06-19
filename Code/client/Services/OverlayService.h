@@ -67,7 +67,7 @@ struct OverlayService
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
-    void OnPlayerComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
+    void OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
     void OnPlayerComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
     void OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept;
     void OnChatMessageReceived(const NotifyChatMessageBroadcast&) noexcept;
