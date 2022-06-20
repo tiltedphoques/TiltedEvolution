@@ -179,6 +179,37 @@ public:
         _base = 0;
     }
 
+    bool LoadFallout4(const std::filesystem::path& acGamePath)
+    {
+        Clear();
+
+        {
+            HMODULE handle = GetModuleHandleA(NULL);
+            _base = (unsigned long long)handle;
+        }
+
+        const String filename = "version-1-10-163-0.bin";
+
+        // Hardcoded for now cause everyone on fallout 4 uses the same version
+        std::ifstream file(acGamePath / "Data" / "F4SE" / "Plugins" / filename, std::ios::binary);
+        if (!file.good())
+            return false;
+
+        // In Fallout 4's address library, the layout of the data file is just an address followed
+        // by the ID. The last 8 bytes are also an address, but it strangely has no ID (?), hence the subtraction.
+        auto addressCount = (std::filesystem::file_size("Data\\F4SE\\Plugins\\" + filename) - 0x8) / 0x10;
+
+        for (int i = 0; i < addressCount; i++)
+        {
+            auto address = read<unsigned long long>(file);
+			auto id = read<unsigned long long>(file);
+            _data[id] = address;
+            _rdata[address] = id;
+        }
+
+        return true;
+    }
+
     bool Load(const std::filesystem::path& acGamePath, const TiltedPhoques::String& acExeVersion)
     {
         int major, minor, revision, build;

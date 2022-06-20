@@ -11,6 +11,7 @@ std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 
 extern HICON g_SharedWindowIcon;
 
+// TODO: ft
 static void ShowAddressLibraryError(const wchar_t* apGamePath)
 {
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\SKSE\\Plugins", apGamePath);
@@ -30,7 +31,11 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
 
 void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion)
 {
+#if TP_SKYRIM64
     if (!VersionDb::Get().Load(acGamePath, aExeVersion))
+#else
+    if (!VersionDb::Get().LoadFallout4(acGamePath))
+#endif
     {
         ShowAddressLibraryError(acGamePath.c_str());
     }
