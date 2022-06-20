@@ -45,7 +45,11 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     OverlayRenderHandler* Create() override
     {
         auto* pHandler = new OverlayRenderHandlerD3D11(this);
+    #if TP_SKYRIM64
         pHandler->SetVisible(true);
+    #else
+        pHandler->SetVisible(false);
+    #endif
 
         return pHandler;
     }
@@ -147,10 +151,7 @@ void OverlayService::Render() noexcept
     else if (!inGame && m_inGame)
         SetInGame(false);
 
-    // TODO(cosideci): FT spritebatch end aborts for some reason
-#if TP_SKYRIM64
     m_pOverlay->GetClient()->Render();
-#endif
 }
 
 void OverlayService::Reset() const noexcept

@@ -220,6 +220,8 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
             TiltedPhoques::DInputHook::Get().SetEnabled(!active);
             overlay.SetActive(!active);
 #else
+            TiltedPhoques::DInputHook::Get().SetEnabled(!active);
+            overlay.SetActive(!active);
             pRenderer->SetVisible(!active);
 #endif
 
