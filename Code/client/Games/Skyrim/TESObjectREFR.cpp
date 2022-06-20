@@ -505,8 +505,8 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         bool isWornLeft = false;
         if (pExtraDataList)
         {
-            isWorn = pExtraDataList->Contains(ExtraData::Worn);
-            isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+            isWorn = pExtraDataList->Contains(ExtraDataType::Worn);
+            isWornLeft = pExtraDataList->Contains(ExtraDataType::WornLeft);
         }
 
         spdlog::debug("Adding item {:X}, count {}", pObject->formID, arEntry.Count);

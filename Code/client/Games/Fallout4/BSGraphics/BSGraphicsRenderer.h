@@ -33,6 +33,8 @@ struct RendererWindow
     int uiWindowHeight;
     IDXGISwapChain *pSwapChain;
     RenderTarget SwapChainRenderTarget;
+
+    bool IsForeground();
 };
 
 static_assert(sizeof(RendererWindow) == 0x50);

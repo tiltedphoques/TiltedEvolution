@@ -58,7 +58,10 @@ void RenderSystemD3D11::OnDeviceCreation(IDXGISwapChain* apSwapChain)
 void RenderSystemD3D11::OnRender()
 {
     m_imguiService.Render();
+    // TODO(cosideci): FT spritebatch end aborts for some reason
+#if TP_SKYRIM64
     m_overlay.Render();
+#endif
 }
 
 void RenderSystemD3D11::OnReset(IDXGISwapChain* apSwapChain)
