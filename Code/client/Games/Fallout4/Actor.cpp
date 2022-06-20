@@ -85,7 +85,7 @@ Factions Actor::GetFactions() const noexcept
 
     auto& modSystem = World::Get().GetModSystem();
 
-    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    auto* pNpc = Cast<TESNPC>(baseForm);
     if (pNpc)
     {
         auto& factions = pNpc->actorData.factions;
@@ -101,7 +101,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pFactionExtras = RTTI_CAST(extraData->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto* pFactionExtras = Cast<ExtraFactionChanges>(extraData->GetByType(ExtraData::Faction));
     if (pFactionExtras)
     {
         for (auto i = 0u; i < pFactionExtras->entries.length; ++i)
@@ -231,7 +231,7 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
     for (const auto& entry : acFactions.NpcFactions)
     {
         auto* pForm = GetById(modSystem.GetGameId(entry.Id));
-        auto* pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto* pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -241,7 +241,7 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
     for (const auto& entry : acFactions.ExtraFactions)
     {
         auto* pForm = GetById(modSystem.GetGameId(entry.Id));
-        auto* pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto* pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -349,7 +349,7 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue,
                       ActorValueInfo* apActorValueInfo)
 {
-    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+    const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
     if (pValueModEffect)
     {
@@ -382,8 +382,8 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
 
     if (pOwner && pTarget)
     {
-        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
-        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+        auto pTargetActor = Cast<Actor>(pTarget);
         if (pOwnerActor && pTargetActor)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())

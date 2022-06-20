@@ -19,7 +19,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 {
     if (arData.pShooter)
     {
-        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(arData.pShooter);
         if (pActor)
         {
             ActorExtension* pExtendedActor = pActor->GetExtension();
@@ -71,7 +71,7 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
 {
     if (apSource)
     {
-        Actor* pActor = RTTI_CAST(apSource, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(apSource);
         if (pActor)
         {
             ActorExtension* pExtension = pActor->GetExtension();

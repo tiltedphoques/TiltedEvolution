@@ -64,6 +64,7 @@ struct TESLoadGameEvent
 {
 };
 
+// TODO: these addresses
 #define DECLARE_DISPATCHER(name, address) \
 inline EventDispatcher<name>* GetEventDispatcher_##name() \
     { \

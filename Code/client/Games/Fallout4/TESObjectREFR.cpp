@@ -72,7 +72,7 @@ void TESObjectREFR::Activate(TESObjectREFR* apActivator, TESBoundObject* apObjec
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping)
 {
-    auto* pActivator = RTTI_CAST(apActivator, TESObjectREFR, Actor);
+    auto* pActivator = Cast<Actor>(apActivator);
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping));
 
