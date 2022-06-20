@@ -6,6 +6,7 @@ struct ActorValueOwner
 {
     virtual ~ActorValueOwner();
 
+    // TODO: refactor these names
     virtual float GetValue(ActorValueInfo* apInfo) const noexcept;
     virtual float GetMaxValue(ActorValueInfo* apInfo) const noexcept;
     virtual float GetBaseValue(ActorValueInfo* apInfo) const noexcept;

@@ -65,16 +65,16 @@ struct TESLoadGameEvent
 };
 
 // TODO: these addresses
-#define DECLARE_DISPATCHER(name, address) \
+#define DECLARE_DISPATCHER(name, id) \
 inline EventDispatcher<name>* GetEventDispatcher_##name() \
     { \
     using TGetDispatcher = EventDispatcher<name>*(); \
-    POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, address - 0x140000000); \
+    POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, id); \
     return s_getEventDispatcher.Get()(); \
 }; \
 
-DECLARE_DISPATCHER(TESQuestStartStopEvent, 0x1404438B0);
-DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 0x140443810);
-DECLARE_DISPATCHER(TESQuestStageEvent, 0x140443770);
-DECLARE_DISPATCHER(TESActivateEvent, 0x140441C90);
-DECLARE_DISPATCHER(TESLoadGameEvent, 0x140442EB0);
+DECLARE_DISPATCHER(TESQuestStartStopEvent, 1404316);
+DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 181652);
+DECLARE_DISPATCHER(TESQuestStageEvent, 540906);
+DECLARE_DISPATCHER(TESActivateEvent, 166231);
+DECLARE_DISPATCHER(TESLoadGameEvent, 823571);

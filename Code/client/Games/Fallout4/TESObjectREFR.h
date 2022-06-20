@@ -13,6 +13,7 @@ struct TESObjectCELL;
 struct AnimationVariables;
 struct TESBoundObject;
 struct BGSEquipSlot;
+struct ExtraDataList;
 
 struct TESObjectREFR : TESForm
 {

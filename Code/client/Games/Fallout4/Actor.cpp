@@ -1,4 +1,3 @@
-#include <TiltedOnlinePCH.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Forms/TESFaction.h>
 #include <Forms/TESNPC.h>
@@ -8,6 +7,7 @@
 #include <Games/Fallout4/EquipManager.h>
 #include <Forms/BGSObjectInstance.h>
 #include <Games/Misc/ActorKnowledge.h>
+#include <Games/ExtraDataList.h>
 
 #include <Services/PapyrusService.h>
 #include <World.h>
@@ -63,20 +63,6 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
     POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 811140);
 
     return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
-}
-
-Inventory Actor::GetInventory() const noexcept
-{
-    auto& modSystem = World::Get().GetModSystem();
-
-    Inventory InventorySave;
-    InventorySave.Buffer = SerializeInventory();
-
-    auto* pMainHandWeapon = GetEquippedWeapon(0);
-    const uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, InventorySave.RightHandWeapon);
-
-    return InventorySave;
 }
 
 Factions Actor::GetFactions() const noexcept
@@ -147,9 +133,7 @@ ActorValues Actor::GetEssentialActorValues() noexcept
 void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
 {
     TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
-
     POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 1277202);
-
     return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
 }
 
@@ -159,35 +143,10 @@ float Actor::GetActorValue(uint32_t aId) const noexcept
     return actorValueOwner.GetValue(pActorValueInfo);
 }
 
-float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
 {
     ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
     return actorValueOwner.GetMaxValue(pActorValueInfo);
-}
-
-void Actor::SetInventory(const Inventory& acInventory) noexcept
-{
-    spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
-
-    UnEquipAll();
-
-    if (!acInventory.Buffer.empty())
-        DeserializeInventory(acInventory.Buffer);
-
-    auto* pEquipManager = EquipManager::Get();
-    auto& modSystem = World::Get().GetModSystem();
-
-    uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
-
-    if (mainHandWeaponId)
-    {
-        TESForm* pWeapon = TESForm::GetById(mainHandWeaponId);
-        BGSObjectInstance object(pWeapon, nullptr);
-
-        const BGSEquipSlot* pSlot = GetEquipSlot(0);
-
-        pEquipManager->EquipObject(this, object, 0, 1, pSlot, false, true, false, true, false);
-    }
 }
 
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
@@ -252,46 +211,38 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 void Actor::SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, SetFactionRank, const TESFaction*, int8_t);
-
     s_pSetFactionRank(this, acpFaction, aRank);
 }
 
 void Actor::UnEquipAll() noexcept
 {
     TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
-
     POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 1260318);
-
     ThisCall(s_unequipAll, this);
 }
 
 void Actor::RemoveFromAllFactions() noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);
-
     s_pRemoveFromAllFactions(this);
 }
 
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
-
     return s_pIsDead(this);
 }
 
 void Actor::Kill() noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, Kill, void*);
-
     s_pKill(this, NULL);
 }
 
 void Actor::Reset() noexcept
 {
     using ObjectReference = TESObjectREFR;
-
     PAPYRUS_FUNCTION(void, ObjectReference, Reset, int, TESObjectREFR*);
-
     s_pReset(this, 0, nullptr);
 }
 
