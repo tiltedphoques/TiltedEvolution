@@ -147,7 +147,10 @@ void OverlayService::Render() noexcept
     else if (!inGame && m_inGame)
         SetInGame(false);
 
+    // TODO(cosideci): FT spritebatch end aborts for some reason
+#if TP_SKYRIM64
     m_pOverlay->GetClient()->Render();
+#endif
 }
 
 void OverlayService::Reset() const noexcept
