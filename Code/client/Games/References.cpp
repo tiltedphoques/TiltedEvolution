@@ -104,7 +104,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
 
     POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 17201);
-    POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 0x140023740 - 0x140000000);
+    POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 1152089);
 
     s_getRefrByHandle.Get()(aHandle, pResult);
 
@@ -117,7 +117,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 uint32_t* TESObjectREFR::GetNullHandle() noexcept
 {
     POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
-    POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
+    POINTER_FALLOUT4(uint32_t, s_nullHandle, 888642);
 
     return s_nullHandle.Get();
 }
@@ -375,7 +375,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
                      const NiPoint3&, const NiPoint3&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
-    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
+    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 1332435);
 
     ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
@@ -430,7 +430,7 @@ void Actor::QueueUpdate() noexcept
 #endif
 
     POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 40255);
-    POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 0x140D8A1F0 - 0x140000000);
+    POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 302889);
 
 #ifdef TP_SKYRIM
     ThisCall(QueueUpdate, this, true);
@@ -490,7 +490,7 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
     POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 11806);
-    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
+    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 780730);
 
 #if TP_FALLOUT4
     const auto pExtraDataList = extraData;
@@ -534,7 +534,7 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
-    POINTER_FALLOUT4(PlayerCharacter*, s_character, 0x145AA4388 - 0x140000000);
+    POINTER_FALLOUT4(PlayerCharacter*, s_character, 303411);
     POINTER_SKYRIMSE(PlayerCharacter*, s_character, 401069);
 
     return *s_character.Get();
@@ -554,7 +554,7 @@ Lock* TESObjectREFR::GetLock() noexcept
 {
     TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
     POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
-    POINTER_FALLOUT4(TGetLock, realGetLock, 0x14047FEE0 - 0x140000000);
+    POINTER_FALLOUT4(TGetLock, realGetLock, 930786);
 
     return ThisCall(realGetLock, this);
 }
@@ -563,7 +563,7 @@ Lock* TESObjectREFR::CreateLock() noexcept
 {
     TP_THIS_FUNCTION(TCreateLock, Lock*, TESObjectREFR);
     POINTER_SKYRIMSE(TCreateLock, realCreateLock, 20221);
-    POINTER_FALLOUT4(TCreateLock, realCreateLock, 0x14047FD20 - 0x140000000);
+    POINTER_FALLOUT4(TCreateLock, realCreateLock, 1303718);
 
     return ThisCall(realCreateLock, this);
 }
@@ -584,7 +584,7 @@ bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
     TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);
 
     POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 38979);
-    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 0x140E22DF0 - 0x140000000);
+    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 835807);
 
     return ThisCall(setWeaponState, this, aDraw);
 }
@@ -771,28 +771,28 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
-        POINTER_FALLOUT4(TSetPosition, s_setPosition, 0x14040C060 - 0x140000000);
+        POINTER_FALLOUT4(TSetPosition, s_setPosition, 1101833);
 
         POINTER_SKYRIMSE(TRotate, s_rotateX, 19787);
-        POINTER_FALLOUT4(TRotate, s_rotateX, 0x14040BE70 - 0x140000000);
+        POINTER_FALLOUT4(TRotate, s_rotateX, 158657);
 
         POINTER_SKYRIMSE(TRotate, s_rotateY, 19788);
-        POINTER_FALLOUT4(TRotate, s_rotateY, 0x14040BF00 - 0x140000000);
+        POINTER_FALLOUT4(TRotate, s_rotateY, 942683);
 
         POINTER_SKYRIMSE(TRotate, s_rotateZ, 19789);
-        POINTER_FALLOUT4(TRotate, s_rotateZ, 0x14040BF90 - 0x140000000);
+        POINTER_FALLOUT4(TRotate, s_rotateZ, 144722);
 
         POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 37356);
-        POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
+        POINTER_FALLOUT4(TActorProcess, s_actorProcess, 1479788);
 
         POINTER_SKYRIMSE(TLockChange, s_lockChange, 19512);
-        POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
+        POINTER_FALLOUT4(TLockChange, s_lockChange, 1578707);
 
         POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 39114);
-        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 0x140E28F80 - 0x140000000);
+        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 609986);
 
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
-        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
+        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 644844);
 
         POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
 

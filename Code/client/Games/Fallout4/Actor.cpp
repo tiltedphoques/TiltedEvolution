@@ -60,7 +60,7 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
     using TGetEquippedWeapon = TESForm*(__fastcall)(void*, void*, const Actor*, uint32_t);
 
-    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 0x141388BC0 - 0x140000000);
+    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 811140);
 
     return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
 }
@@ -148,7 +148,7 @@ void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
 {
     TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
 
-    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFD00 - 0x140000000);
+    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 1277202);
 
     return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
 }
@@ -260,7 +260,7 @@ void Actor::UnEquipAll() noexcept
 {
     TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
 
-    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E370 - 0x140000000);
+    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 1260318);
 
     ThisCall(s_unequipAll, this);
 }
@@ -398,12 +398,13 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
 }
 
 static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
-    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
-    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
-    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 0x140D6F1C0 - 0x140000000);
-    POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
-    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
-    POINTER_FALLOUT4(TRunDetection, s_runDetection, 0x140F60320 - 0x140000000);
+    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
+    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
+    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 1104083);
+    POINTER_FALLOUT4(TDamageActor, s_damageActor, 1539011);
+    // TODO: not sure about this ID, seems to interfere with jump when hooked?
+    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
+    POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
 
     RealActorConstructor = s_actorCtor.Get();
     RealActorConstructor2 = s_actorCtor2.Get();

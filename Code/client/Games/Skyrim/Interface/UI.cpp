@@ -10,7 +10,7 @@ static bool g_RequestUnpauseAll{false};
 UI* UI::Get()
 {
     POINTER_SKYRIMSE(UI*, s_instance, 400327);
-    POINTER_FALLOUT4(UI*, s_instance, 0x1458D0898 - 0x140000000);
+    POINTER_FALLOUT4(UI*, s_instance, 548588);
 
     return *s_instance.Get();
 }
@@ -23,7 +23,7 @@ bool UI::GetMenuOpen(const BSFixedString& acName) const
     TP_THIS_FUNCTION(TMenuSystem_IsOpen, bool, const UI, const BSFixedString&);
 
     POINTER_SKYRIMSE(TMenuSystem_IsOpen, s_isMenuOpen, 82074);
-    POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 0x142042160 - 0x140000000);
+    POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 1065115);
 
     return ThisCall(s_isMenuOpen.Get(), this, acName);
 }

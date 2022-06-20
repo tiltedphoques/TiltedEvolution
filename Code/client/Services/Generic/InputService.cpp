@@ -336,7 +336,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
 
 #if TP_FALLOUT4
-    POINTER_FALLOUT4(uint8_t, s_viewportLock, 0x3846670);
+    POINTER_FALLOUT4(uint8_t, s_viewportLock, 1549778);
     *s_viewportLock = isVisible ? 1 : 0;
 #endif
 

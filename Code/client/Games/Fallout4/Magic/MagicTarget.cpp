@@ -85,8 +85,8 @@ bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, 
 }
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
-    POINTER_FALLOUT4(TAddTarget, addTarget, 0x140C6C5E0 - 0x140000000);
-    POINTER_FALLOUT4(TCheckAddEffectTargetData, checkAddEffectTargetData, 0x140C6D4F0 - 0x140000000);
+    POINTER_FALLOUT4(TAddTarget, addTarget, 385036);
+    POINTER_FALLOUT4(TCheckAddEffectTargetData, checkAddEffectTargetData, 113034);
 
     RealAddTarget = addTarget.Get();
     RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();

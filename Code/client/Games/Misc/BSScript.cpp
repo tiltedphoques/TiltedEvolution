@@ -75,7 +75,7 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
 static TiltedPhoques::Initializer s_vmHooks([]()
 {
     POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 104788);
-    POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x1427338A0 - 0x140000000);
+    POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 919894);
 
     POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
 
