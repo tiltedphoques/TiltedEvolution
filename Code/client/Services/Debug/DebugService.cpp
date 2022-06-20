@@ -39,25 +39,25 @@
 #include <Games/TES.h>
 
 #include <AI/AIProcess.h>
-#include <AI/Movement/PlayerControls.h>
 
 #include <Messages/RequestRespawn.h>
 
-#include <Interface/UI.h>
-#include <Interface/IMenu.h>
-
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
-#include <Camera/PlayerCamera.h>
 
-#if TP_SKYRIM64
 #include <EquipManager.h>
-#include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
-#include <Games/Skyrim/DefaultObjectManager.h>
-#include <Games/Skyrim/Forms/TESAmmo.h>
-#include <Games/Skyrim/Misc/InventoryEntry.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Interface/UI.h>
+#include <Forms/TESAmmo.h>
+
+// TODO: ft
+#if TP_SKYRIM64
+#include <AI/Movement/PlayerControls.h>
+#include <Interface/UI.h>
+#include <Interface/IMenu.h>
+#include <Camera/PlayerCamera.h>
+#include <BSGraphics/BSGraphicsRenderer.h>
+#include <DefaultObjectManager.h>
+#include <Misc/InventoryEntry.h>
+#include <Misc/MiddleProcess.h>
 #endif
 
 #include <imgui.h>
@@ -144,8 +144,11 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+    // TODO: ft
+#if TP_SKYRIM64
     if (!BSGraphics::GetMainWindow()->IsForeground())
         return;
+#endif
 
     if (moveData.pActor)
     {
@@ -262,7 +265,10 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Unstuck player"))
         {
             auto* pPlayer = PlayerCharacter::Get();
+            // TODO: ft
+        #if TP_SKYRIM64
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+        #endif
         }
         ImGui::EndMenu();
     }
@@ -288,6 +294,8 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
+    // TODO: ft
+#if TP_SKYRIM64
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
@@ -308,6 +316,7 @@ void DebugService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
+#endif
     if (ImGui::BeginMenu("Debuggers"))
     {
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);

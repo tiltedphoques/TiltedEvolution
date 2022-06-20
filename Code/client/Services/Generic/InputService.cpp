@@ -336,8 +336,10 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
 
 #if TP_FALLOUT4
+    // TODO: ft
+    // isVisible got deleted for some reason, figure out why
     POINTER_FALLOUT4(uint8_t, s_viewportLock, 1549778);
-    *s_viewportLock = isVisible ? 1 : 0;
+    //*s_viewportLock = isVisible ? 1 : 0;
 #endif
 
     POINT position;
@@ -413,8 +415,11 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
 #if defined(TP_FALLOUT)
     // Fallout specific code to disable input
+    // TODO: ft
+    /*
     if (isVisible)
         return 1;
+    */
 #endif
 
     return 0;

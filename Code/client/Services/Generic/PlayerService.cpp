@@ -54,7 +54,10 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
+    // TODO: ft
+#if TP_SKYRIM64
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
+#endif
     m_serverDifficulty = m_previousDifficulty = 6;
 
     // Restore to the default value (150)
@@ -64,8 +67,11 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
 {
+    // TODO: ft
+#if TP_SKYRIM64
     m_previousDifficulty = PlayerCharacter::Get()->difficulty;
     PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
+#endif
     m_serverDifficulty = acSettings.Difficulty;
 
     if (!acSettings.GreetingsEnabled)
@@ -135,8 +141,10 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     m_transport.Send(request);
 }
 
+    // TODO: ft
 void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
 {
+#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -144,10 +152,13 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
     request.NewLevel = PlayerCharacter::Get()->GetLevel();
 
     m_transport.Send(request);
+#endif
 }
 
+// TODO: ft
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
+#if TP_SKYRIM64
     static bool s_startTimer = false;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
@@ -184,10 +195,13 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
         s_startTimer = false;
     }
+#endif
 }
 
+// TODO: ft
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
+#if TP_SKYRIM64
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
     // It also makes the player invincible for 5 seconds.
@@ -219,18 +233,24 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
             godmodeStart = false;
         }
     }
+#endif
 }
 
+// TODO: ft
 void PlayerService::RunDifficultyUpdates() const noexcept
 {
+#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
     PlayerCharacter::Get()->SetDifficulty(m_serverDifficulty);
+#endif
 }
 
+// TODO: ft
 void PlayerService::RunLevelUpdates() const noexcept
 {
+#if TP_SKYRIM64
     // The LevelUp hook is kinda weird, so ehh, just check periodically, doesn't really cost anything.
 
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -254,4 +274,5 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
+#endif
 }

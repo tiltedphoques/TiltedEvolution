@@ -51,7 +51,7 @@ target("FalloutTogetherServer")
     set_basename("FTServer")
     add_defines(
         "TARGET_FT",
-        "TP_FALLOUT4=1",
+        "TP_FALLOUT=1",
         "TARGET_PREFIX=\"ft\"")
     add_deps("FalloutEncoding")
     build_server()

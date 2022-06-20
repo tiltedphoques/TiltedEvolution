@@ -28,8 +28,6 @@
 #include <PlayerCharacter.h>
 #endif
 
-#define MAGIC_DEBUG 0
-
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
@@ -40,12 +38,6 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&MagicService::OnNotifyInterruptCast>(this);
     m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&MagicService::OnAddTargetEvent>(this);
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
-
-#if MAGIC_DEBUG
-    auto* pEventList = EventDispatcherManager::Get();
-    pEventList->magicEffectApplyEvent.RegisterSink(this);
-    pEventList->activeEffectApplyRemove.RegisterSink(this);
-#endif
 }
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -475,29 +467,4 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     for (uint32_t formId : markedForRemoval)
         m_queuedEffects.erase(formId);
-}
-
-BSTEventResult MagicService::OnEvent(const TESMagicEffectApplyEvent* apEvent, const EventDispatcher<TESMagicEffectApplyEvent>*)
-{
-#if MAGIC_DEBUG
-    spdlog::warn("TESMagicEffectApplyEvent, target: {:X}, caster: {:X}, effect id: {:X}",
-                 apEvent->hTarget ? apEvent->hTarget->formID : 0,
-                 apEvent->hCaster ? apEvent->hCaster->formID : 0,
-                 apEvent->uiMagicEffectFormID);
-#endif
-
-    return BSTEventResult::kOk;
-}
-
-BSTEventResult MagicService::OnEvent(const TESActiveEffectApplyRemove* apEvent, const EventDispatcher<TESActiveEffectApplyRemove>*)
-{
-#if MAGIC_DEBUG
-    spdlog::error("TESActiveEffectApplyRemove, target: {:X}, caster: {:X}, effect id: {:X}, applied? {}",
-                 apEvent->hTarget ? apEvent->hTarget->formID : 0,
-                 apEvent->hCaster ? apEvent->hCaster->formID : 0,
-                 apEvent->usActiveEffectUniqueID,
-                 apEvent->bIsApplied);
-#endif
-
-    return BSTEventResult::kOk;
 }

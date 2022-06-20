@@ -1,1 +1,3 @@
-#include <TiltedOnlinePCH.h>
+#include "PlayerCharacter.h"
+
+int32_t PlayerCharacter::LastUsedCombatSkill = -1;

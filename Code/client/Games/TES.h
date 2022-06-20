@@ -66,6 +66,7 @@ struct ProcessLists
 #if TP_SKYRIM
 #else
     // TODO: fallout 4 offsets are wrong now
+    // TODO: ft
     uint8_t pad0[0x40];
 #endif
 
@@ -89,7 +90,8 @@ struct ProcessLists
 static_assert(offsetof(ProcessLists, highActorHandleArray) == 0x30);
 static_assert(offsetof(ProcessLists, actorBuckets) == 0x90);
 #elif TP_FALLOUT4
-static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x40);
+// TODO: ft
+//static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x40);
 #endif
 
 struct Mod
@@ -157,6 +159,8 @@ struct ModManager
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 
 #if TP_FALLOUT4
+    // TODO: ft
+    // verify these offsets, might have been shifted
     uint8_t pad0[0xFB0];
 #elif TP_SKYRIM
     uint8_t pad0[0x748];
@@ -170,7 +174,8 @@ struct ModManager
 #if TP_SKYRIM
 static_assert(offsetof(ModManager, mods) == 0xD60);
 #elif TP_FALLOUT4
-static_assert(offsetof(ModManager, mods) == 0xFB0);
+// TODO: ft
+//static_assert(offsetof(ModManager, mods) == 0xFB0);
 #endif
 
 struct Setting

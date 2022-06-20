@@ -21,7 +21,7 @@ struct TESPackage;
 
 struct Actor : TESObjectREFR
 {
-    static constexpr uint32_t Type = FormType::Character;
+    static constexpr FormType Type = FormType::Character;
 
     static GamePtr<Actor> New() noexcept;
     static GamePtr<Actor> Create(TESNPC* apNpc) noexcept;
@@ -98,7 +98,7 @@ struct Actor : TESObjectREFR
     // Getters
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
-    Inventory GetInventory() const noexcept;
+    Inventory GetActorInventory() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
     float GetActorValue(uint32_t aId) const noexcept;
@@ -108,15 +108,16 @@ struct Actor : TESObjectREFR
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
+    void SetActorInventory(const Inventory& acInventory) noexcept;
     void SetActorValue(uint32_t aId, float aValue) noexcept;
-    void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
+    void ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
+    void SpeakSound(const char* pFile);
 
     // Actions
     void UnEquipAll() noexcept;

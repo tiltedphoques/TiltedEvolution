@@ -26,8 +26,10 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
     ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
 }
 
+// TODO: ft
 int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1, BSScript::Variable* apVar2)
 {
+#if TP_SKYRIM64
     BSScript::Object* pObject1 = apVar1->GetObject();
     BSScript::Object* pObject2 = apVar2->GetObject();
 
@@ -70,6 +72,9 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
     }
 
     return ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
+#else
+    return 0;
+#endif
 }
 
 static TiltedPhoques::Initializer s_vmHooks([]()
@@ -80,7 +85,10 @@ static TiltedPhoques::Initializer s_vmHooks([]()
     POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
 
     RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();
+    // TODO: ft
+#if TP_SKYRIM64
     RealCompareVariables = s_compareVariables.Get();
+#endif
 
     TP_HOOK(&RealRegisterPapyrusFunction, HookRegisterPapyrusFunction);
     TP_HOOK(&RealCompareVariables, HookCompareVariables);

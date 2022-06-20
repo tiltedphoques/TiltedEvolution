@@ -65,6 +65,7 @@ struct TESLoadGameEvent
 };
 
 // TODO: these addresses
+#if 0
 #define DECLARE_DISPATCHER(name, id) \
 inline EventDispatcher<name>* GetEventDispatcher_##name() \
     { \
@@ -78,3 +79,4 @@ DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 181652);
 DECLARE_DISPATCHER(TESQuestStageEvent, 540906);
 DECLARE_DISPATCHER(TESActivateEvent, 166231);
 DECLARE_DISPATCHER(TESLoadGameEvent, 823571);
+#endif

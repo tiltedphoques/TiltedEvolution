@@ -29,9 +29,9 @@ DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher)
 
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->loadGameEvent.RegisterSink(this);
-    EventDispatcherManager::Get()->deathEvent.RegisterSink(this);
 #else
-    GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
+    // TODO: ft
+    //GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
 #endif
 }
 
@@ -87,9 +87,14 @@ void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
             return;
         }
 
+        // TODO: ft
+    #if TP_SKYRIM64
         TESObjectCELL* pCell = pPlayer->GetParentCellEx();
         if (!pCell)
             pCell = ModManager::Get()->GetCellFromCoordinates(gameCurrentGrid.X, gameCurrentGrid.Y, pWorldSpace, false);
+    #else
+        TESObjectCELL* pCell = pPlayer->parentCell;
+    #endif
 
         if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellChangeEvent.CellId))
         {
@@ -167,9 +172,14 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         }
     }
 
+    // TODO: ft
+#if TP_SKYRIM64
     TESObjectCELL* pCell = PlayerCharacter::Get()->GetParentCellEx();
     if (!pCell)
         pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, aWorldSpace, false);
+#else
+    TESObjectCELL* pCell = PlayerCharacter::Get()->parentCell;
+#endif
 
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, changeEvent.PlayerCell))
     {
@@ -252,16 +262,10 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
 
+    // TODO: ft
+#if TP_SKYRIM64
     PlayerCharacter::Get()->SetPlayerRespawnMode();
-
-    return BSTEventResult::kOk;
-}
-
-BSTEventResult DiscoveryService::OnEvent(const TESDeathEvent* acEvent, const EventDispatcher<TESDeathEvent>*)
-{
-    spdlog::debug("Actor died, actor: {:X}, killer: {:X}, is dead? {}",
-                 acEvent->pActorDying ? acEvent->pActorDying->formID : 0,
-                 acEvent->pActorKiller ? acEvent->pActorKiller->formID : 0, acEvent->isDead);
+#endif
 
     return BSTEventResult::kOk;
 }

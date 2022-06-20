@@ -73,7 +73,7 @@ void TESNPC::Initialize() noexcept
 
 void TESForm::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 {
-    if(aChangeFlags & 1)
+    if (aChangeFlags & 1)
     {
         aWriter.WriteBytes(reinterpret_cast<uint8_t*>(&flags), 4);
         aWriter.WriteBytes(reinterpret_cast<uint8_t*>(&unk10), 2);

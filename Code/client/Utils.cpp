@@ -28,11 +28,14 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
     return {serverId};
 }
 
+// TODO: ft
 void ShowHudMessage(const TiltedPhoques::String& acMessage)
 {
+#if TP_SKYRIM64
     using TShowHudMessage = void(const char*, const char*, bool);
     POINTER_SKYRIMSE(TShowHudMessage, s_showHudMessage, 52933);
     s_showHudMessage(acMessage.c_str(), nullptr, false);
+#endif
 }
 
 } // namespace Utils

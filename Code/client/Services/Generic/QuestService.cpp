@@ -37,8 +37,9 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds immediately.
     // TESQuestInitEvent can be instead managed by start stop quest management.
 #if TP_FALLOUT
-    GetEventDispatcher_TESQuestStartStopEvent()->RegisterSink(this);
-    GetEventDispatcher_TESQuestStageEvent()->RegisterSink(this);
+    // TODO: ft
+    //GetEventDispatcher_TESQuestStartStopEvent()->RegisterSink(this);
+    //GetEventDispatcher_TESQuestStageEvent()->RegisterSink(this);
 #else
     // bind game event listeners
     auto* pEventList = EventDispatcherManager::Get();
@@ -165,8 +166,10 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
         spdlog::error("Failed to update the client quest state, quest: {:X}, stage: {}, status: {}", formId, aUpdate.Stage, aUpdate.Status);
 }
 
+// TODO: ft
 TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
 {
+#if TP_SKYRIM64
     TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(aFormId));
     if (pQuest)
     {
@@ -192,6 +195,9 @@ TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
     }
 
     return nullptr;
+#else
+    return nullptr;
+#endif
 }
 
 bool QuestService::StopQuest(uint32_t aformId)
@@ -207,13 +213,18 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
+// TODO: ft
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
+#if TP_SKYRIM64
     // non story quests are "blocked" and not synced
     auto& stages = apQuest->stages;
     return apQuest->type == TESQuest::Type::None // internal event
            || apQuest->type == TESQuest::Type::Miscellaneous 
            || stages.Empty();
+#else
+    return false;
+#endif
 }
 
 void QuestService::DebugDumpQuests()

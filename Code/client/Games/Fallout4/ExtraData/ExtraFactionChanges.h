@@ -14,6 +14,7 @@ struct ExtraFactionChanges : BSExtraData
         int8_t rank;
     };
 
+    bool bRemoveCrimeFaction;
     GameArray<Entry> entries;
 };
 

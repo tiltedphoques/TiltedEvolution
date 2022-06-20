@@ -8,6 +8,8 @@ struct PlayerCharacter : Actor
 {
     static PlayerCharacter* Get() noexcept;
 
+    static int32_t LastUsedCombatSkill;
+
     struct Objective
     {
         uint64_t pad0;

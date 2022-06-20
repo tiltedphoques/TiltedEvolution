@@ -7,7 +7,7 @@
 #include <Games/Fallout4/EquipManager.h>
 #include <Forms/BGSObjectInstance.h>
 #include <Games/Misc/ActorKnowledge.h>
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 
 #include <Services/PapyrusService.h>
 #include <World.h>
@@ -149,13 +149,19 @@ float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
     return actorValueOwner.GetMaxValue(pActorValueInfo);
 }
 
+// TODO: ft
+Inventory Actor::GetActorInventory() const noexcept
+{
+    return Inventory{};
+}
+
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
 {
     ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
     actorValueOwner.SetValue(pActorValueInfo, aValue);
 }
 
-void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
     const float current = GetActorValue(aId);
     ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
@@ -168,7 +174,7 @@ void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
     {
         ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
         float current = actorValueOwner.GetValue(pActorValueInfo);
-        actorValueOwner.ForceCurrent(0, pActorValueInfo, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::PERMANENT, pActorValueInfo, value.second - current);
     }
 
     for (auto& value : acActorValues.ActorValuesList)
@@ -177,7 +183,7 @@ void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
         if (value.first == ActorValueInfo::kRads || value.first == ActorValueInfo::kRadHealthMax)
             actorValueOwner.SetValue(pActorValueInfo, value.second);
         float current = actorValueOwner.GetValue(pActorValueInfo);
-        actorValueOwner.ForceCurrent(2, pActorValueInfo, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, pActorValueInfo, value.second - current);
     }
 }
 
@@ -212,6 +218,12 @@ void Actor::SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, SetFactionRank, const TESFaction*, int8_t);
     s_pSetFactionRank(this, acpFaction, aRank);
+}
+
+// TODO: ft
+void Actor::SetActorInventory(const Inventory& acInventory) noexcept
+{
+
 }
 
 void Actor::UnEquipAll() noexcept

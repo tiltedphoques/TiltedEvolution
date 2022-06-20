@@ -5,10 +5,15 @@
 #include <PlayerCharacter.h>
 #include <EquipManager.h>
 #include <World.h>
+// TODO: ft
+#if TP_SKYRIM64
 #include <DefaultObjectManager.h>
+#endif
 
+// TODO: ft
 void DebugService::DrawContainerDebugView()
 {
+#if TP_SKYRIM64
     static TESForm* pFetchForm = nullptr;
     static Actor* pActor = nullptr;
 
@@ -127,4 +132,5 @@ void DebugService::DrawContainerDebugView()
     }
 
     ImGui::End();
+#endif
 }

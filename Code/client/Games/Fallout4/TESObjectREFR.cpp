@@ -36,6 +36,18 @@ void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
     ThisCall(s_load, inventory, apBuffer);
 }
 
+// TODO: ft
+Inventory TESObjectREFR::GetInventory() const noexcept
+{
+    return Inventory{};
+}
+
+// TODO: ft
+void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
+{
+
+}
+
 void TESObjectREFR::RemoveAllItems() noexcept
 {
     using TRemoveAllItems = void(void*, void*, TESObjectREFR*, TESObjectREFR*, bool);
@@ -82,13 +94,19 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, T
 void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObject, ExtraDataList* apExtraData,
                       uint32_t aCount, TESObjectREFR* apOldContainer, void* apUnk1, void* apUnk2)
 {
+    // TODO: ft
+#if TP_SKYRIM64
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+#endif
     ThisCall(RealAddInventoryItem, apThis, apObject, apExtraData, aCount, apOldContainer, apUnk1, apUnk2);
 }
 
 uint32_t* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, uint32_t* apUnk1, void* apUnk2)
 {
+    // TODO: ft
+#if TP_SKYRIM64
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
+#endif
     return ThisCall(RealRemoveInventoryItem, apThis, apUnk1, apUnk2);
 }
 

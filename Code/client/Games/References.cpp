@@ -55,16 +55,26 @@ static TLockChange* RealLockChange = nullptr;
 
 namespace Settings
 {
+// TODO: ft
 int32_t* GetDifficulty() noexcept
 {
+#if TP_SKYRIM64
     POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
     return s_difficulty.Get();
+#else
+    return nullptr;
+#endif
 }
 
+// TODO: ft
 float* GetGreetDistance() noexcept
 {
+#if TP_SKYRIM64
     POINTER_SKYRIMSE(float, s_greetDistance, 370892);
     return s_greetDistance.Get();
+#else
+    return nullptr;
+#endif
 }
 }
 
@@ -77,7 +87,13 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
     POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
 
     bool isPlayer = apHittee == PlayerCharacter::Get();
+
+    // TODO: ft
+#if TP_SKYRIM64
     float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->difficulty, ActorValueInfo::kHealth, isPlayer);
+#else
+    float multiplier = 1.f;
+#endif
 
     float realDamage = aDamage;
 
@@ -90,11 +106,14 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 
 }
 
+// TODO: ft
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
 {
+#if TP_SKYRIM64
     using TFadeOutGame = void(bool, bool, float, bool, float);
     POINTER_SKYRIMSE(TFadeOutGame, fadeOutGame, 52847);
     fadeOutGame.Get()(aFadingOut, aBlackFade, aFadeDuration, aRemainVisible, aSecondsToFade);
+#endif
 }
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
@@ -380,17 +399,23 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
+// TODO: ft
 void TESObjectREFR::PayGold(int32_t aAmount) noexcept
 {
+#if TP_SKYRIM64
     ScopedInventoryOverride _;
     PayGoldToContainer(nullptr, aAmount);
+#endif
 }
 
+// TODO: ft
 void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept
 {
+#if TP_SKYRIM64
     TP_THIS_FUNCTION(TPayGoldToContainer, void, TESObjectREFR, TESObjectREFR*, int32_t);
     POINTER_SKYRIMSE(TPayGoldToContainer, s_payGoldToContainer, 37511);
     ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
+#endif
 }
 
 float Actor::GetSpeed() noexcept
@@ -441,11 +466,16 @@ void Actor::QueueUpdate() noexcept
     pSetting->data = originalValue;
 }
 
+// TODO: ft
 TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept
 {
+#if TP_SKYRIM64
     TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
     POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
     return ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
+#else
+    return nullptr;
+#endif
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
@@ -763,7 +793,8 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     if (pObject)
         formId = pObject->formID;
 
-    World::Get().GetDebugService().SetDebugId(formId);
+    // TODO: ft
+    //World::Get().GetDebugService().SetDebugId(formId);
 
     return ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
@@ -806,8 +837,11 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
+        // TODO: st
+    #if TP_SKYRIM64
         RealSpeakSoundFunction = s_speakSoundFunction.Get();
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
+    #endif
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);

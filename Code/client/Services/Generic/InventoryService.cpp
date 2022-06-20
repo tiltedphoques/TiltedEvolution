@@ -23,7 +23,11 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <EquipManager.h>
+
+// TODO: ft
+#if TP_SKYRIM64
 #include <DefaultObjectManager.h>
+#endif
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -118,7 +122,10 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
+    // TODO: ft
+#if TP_SKYRIM64
     request.CurrentInventory = pActor->GetEquipment();
+#endif
 
     m_transport.Send(request);
 }
@@ -136,7 +143,12 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
         ScopedInventoryOverride _;
 
+        // TODO: ft
+    #if TP_SKYRIM64
         ExtraDataList* pExtraData = pActor->GetExtraDataFromItem(acMessage.Item);
+    #else
+        ExtraDataList* pExtraData = nullptr;
+    #endif
         ModSystem& modSystem = World::Get().GetModSystem();
 
         uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
@@ -148,8 +160,11 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
             return;
         }
 
+        // TODO: ft
+    #if TP_SKYRIM64
         if (acMessage.Item.Count < 0)
             pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
+    #endif
     }
     else
     {
@@ -159,12 +174,17 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
         ScopedInventoryOverride _;
 
+        // TODO: ft
+    #if TP_SKYRIM64
         pObject->AddOrRemoveItem(acMessage.Item);
+    #endif
     }
 }
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
+    // TODO: ft
+#if TP_SKYRIM64
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
     {
@@ -238,6 +258,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             }
         }
     }
+#endif
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

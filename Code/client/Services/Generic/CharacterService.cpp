@@ -481,7 +481,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
+        // TODO: ft
+    #if TP_SKYRIM64
         pActor->SetPlayerRespawnMode();
+    #endif
         m_world.emplace_or_replace<PlayerComponent>(*entity, acMessage.PlayerId);
     }
 
@@ -1054,7 +1057,10 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
+    // TODO: ft
+#if TP_SKYRIM64
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
+#endif
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
@@ -1105,7 +1111,10 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     if (!pActor)
         return;
 
+    // TODO: ft
+#if TP_SKYRIM64
     pActor->StopCurrentDialogue(true);
+#endif
     pActor->SpeakSound(acMessage.SoundFilename.c_str());
 }
 
@@ -1274,6 +1283,8 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
+        // TODO: ft
+    #if TP_SKYRIM64
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
@@ -1284,6 +1295,7 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
         else
             spdlog::info("New entity remotely managed, form id: {:X}, server id: {:X}", pActor->formID,
                              pRemoteComponent->Id);
+    #endif
 
         return;
     }
@@ -1411,9 +1423,12 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    // TODO: ft
+#if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
+#endif
 
     if (isTemporary /* && !isNpcTemporary */)
     {
@@ -1449,6 +1464,8 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (pActor)
         {
+            // TODO: ft
+        #if TP_SKYRIM64
             if (pActor->IsTemporary())
             {
                 spdlog::info("Temporary Remote Deleted {:X}", aFormId);
@@ -1458,6 +1475,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
             {
                 pActor->GetExtension()->SetRemote(false);
             }
+        #endif
         }
 
         m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
@@ -1488,6 +1506,8 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
+            // TODO: ft
+        #if TP_SKYRIM64
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();
@@ -1506,6 +1526,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
                 request.Position = pActor->position;
             }
+        #endif
         }
 
         spdlog::info("Transferring ownership of local actor, server id: {:X}, worldspace: {:X}, cell: {:X}, position: "
@@ -1578,7 +1599,10 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
+        // TODO: ft
+    #if TP_SKYRIM64
         pActor->SetPlayerRespawnMode();
+    #endif
         m_world.emplace_or_replace<PlayerComponent>(aEntity, acMessage.PlayerId);
     }
 

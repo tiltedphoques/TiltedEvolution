@@ -2,7 +2,7 @@
 
 #include <Components/BaseFormComponent.h>
 
-enum FormType : uint8_t
+enum class FormType : uint8_t
 {
     Door = 29,
     Book = 30,
@@ -116,7 +116,7 @@ struct TESForm : BaseFormComponent
     uintptr_t unk8;
     uint32_t flags;
     uint32_t formID;
-    uint16_t sInGameFormFlags;
+    uint16_t unk10;
     FormType formType;
     uint8_t unk1B;
     uint8_t tp_flags; // This is actually padding so we can use it for any purpose

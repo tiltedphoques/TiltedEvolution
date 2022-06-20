@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ExtraData.h"
+#include <ExtraData/ExtraData.h>
 #include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Forms/ActorValueInfo.h>
@@ -167,6 +167,8 @@ struct TESObjectREFR : TESForm
     void Disable() const noexcept;
     void Enable() const noexcept;
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
+    void PayGold(int32_t aAmount) noexcept;
+    void PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept;
 
     void Activate(TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping) noexcept;
 
@@ -174,7 +176,12 @@ struct TESObjectREFR : TESForm
     void LockChange() noexcept;
 
     const float GetHeight() noexcept;
- public:
+
+    Inventory GetInventory() const noexcept;
+
+    void SetInventory(const Inventory& acContainer) noexcept;
+
+public:
 
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];

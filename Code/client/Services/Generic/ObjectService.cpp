@@ -40,7 +40,8 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
 #else
-    GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
+    // TODO: ft
+    //GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
 #endif
 }
 
@@ -75,6 +76,8 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
+    // TODO: ft
+#if TP_SKYRIM64
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};
@@ -105,6 +108,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     m_transport.Send(request);
+#endif
 }
 
 void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessage) noexcept
@@ -194,7 +198,12 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
     }
 
+    // TODO: ft
+#if TP_SKYRIM64
     TESObjectCELL* pCell = acEvent.pObject->GetParentCellEx();
+#else
+    TESObjectCELL* pCell = acEvent.pObject->parentCell;
+#endif
     if (!pCell)
     {
         spdlog::error("Activated object has no parent cell: {:X}", acEvent.pObject->formID);
@@ -269,7 +278,12 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
 
+    // TODO: ft
+#if TP_SKYRIM64
     TESObjectCELL* pCell = pObject->GetParentCellEx();
+#else
+    TESObjectCELL* pCell = pObject->parentCell;
+#endif
     if (!pCell)
     {
         spdlog::error("Activated object has no parent cell: {:X}", pObject->formID);
