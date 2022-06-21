@@ -44,6 +44,21 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 #endif
 }
 
+bool IsVanillaHome(const uint32_t acCellId) noexcept
+{
+    switch (acCellId)
+    {
+    case 0x165a8:
+    case 0x16778:
+    case 0x16bdd:
+    case 0x16a06:
+    case 0x16dfa:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // TODO(cosideci): clear object components
@@ -56,6 +71,11 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     const TESObjectCELL* pCell = pPlayer->parentCell;
+
+    // Vanilla homes should not be synced, so that chest contents,
+    // which are often used as storage, are never accidentally wiped.
+    if (IsVanillaHome(pCell->formID))
+        return;
 
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
@@ -81,6 +101,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     for (TESObjectREFR* pObject : objects)
     {
+
         ObjectData objectData{};
         objectData.CellId = cellId;
         objectData.WorldSpaceId = worldSpaceId;
