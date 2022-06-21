@@ -5,6 +5,7 @@ import { LoadingService } from "src/app/services/loading.service";
 import { Player } from "src/app/models/player";
 import { PlayerList } from "src/app/models/player-list";
 import { PlayerListService } from "src/app/services/player-list.service";
+import { Group } from "src/app/models/group";
 
 @Component({
     selector: 'app-party-menu',
@@ -42,8 +43,16 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
         return this.playerListService.playerList.value.players.filter(player => player.hasInvitedLocalPlayer);
     }
 
+    public get group(): Group | undefined {
+        return this.groupService.group.value;
+    }
+
+    public get members(): Array<Player> | undefined {
+        return this.groupService.getMembers();
+    }
+
     isLaunchPartyDisabled(): boolean {
-        return (this.waitLaunch || (this.groupService.getMembersLength() > 1));
+        return this.groupService.getMembersLength() > 1;
     }
 
     public launchParty() {

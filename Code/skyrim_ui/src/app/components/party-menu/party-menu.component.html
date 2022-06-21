@@ -1,3 +1,39 @@
-<button class="app-group-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled()">Launch party</button>
-<button class="app-group-button" (click)="leave()">Leave</button>
-<button *ngFor="let player of invitees | keyvalue" class="app-group-button" (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
+<!--TODO: styling, cause the div fucks it up-->
+<div *ngIf="!group.isEnabled">
+  <button class="app-group-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled()">Launch party</button>
+  <button *ngFor="let player of invitees | keyvalue" class="app-group-button" (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
+</div>
+<div *ngIf="group.isEnabled">
+  <p>You are currently in a party.</p>
+  
+  <ng-template #notEmpty>
+    <div class="containerList">
+      <table cellspacing="5" cellpadding="5" class="playerListTable">
+        <thead class="listHeader">
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Location</th>
+            <!--
+            <th></th>
+            <th></th>
+            -->
+          </tr>
+        </thead>
+        <tbody class="listBody">
+          <tr *ngFor="let player of members | keyvalue">
+            <td>{{ player.value.level }}</td>
+            <td>{{ player.value.name }}</td>
+            <td>{{ player.value.cellName }}</td>
+            <!--
+            <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
+            <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="player.value.hasBeenInvited" class="teleBtn">Invite</button></td>
+            -->
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <button class="app-group-button" (click)="leave()">Leave</button>
+</div>

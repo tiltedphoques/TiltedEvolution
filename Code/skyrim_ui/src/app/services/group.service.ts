@@ -126,6 +126,7 @@ export class GroupService implements OnDestroy {
     this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(() => {
       const group = this.createGroup(this.group.value);
 
+      // TODO: this is probably redundant now
       if (group) {
         group.isEnabled = false;
         group.owner = undefined;
@@ -193,9 +194,16 @@ export class GroupService implements OnDestroy {
 
 
   public launch() {
-    this.clientService.launchParty();
-    this.soundService.play(Sound.Focus);
-    this.loadingService.setLoading(true);
+    const group = this.createGroup(this.group.value);
+
+    if (group) {
+      this.clientService.launchParty();
+      this.soundService.play(Sound.Focus);
+      this.loadingService.setLoading(true);
+      
+      group.isEnabled = true;
+      this.updateGroup();
+    }
   }
 
   public leave() {
@@ -207,8 +215,13 @@ export class GroupService implements OnDestroy {
       }
 
       this.soundService.play(Sound.Ok);
-
       this.clientService.leaveParty();
+
+      group.isEnabled = false;
+      group.owner = undefined;
+      group.members.splice(0);
+
+      this.updateGroup();
     }
   }
 
@@ -259,6 +272,14 @@ export class GroupService implements OnDestroy {
       this.soundService.play(Sound.Ok);
 
       this.clientService.changePartyLeader(playerId);
+    }
+  }
+
+  public getMembers(): Array<Player> {
+    if (this.group) {
+      return this.playerListService.getPlayerList().players.filter(player => this.group.value.members.includes(player.id));
+    } else {
+      return [];
     }
   }
 

@@ -7,7 +7,7 @@
     <table cellspacing="5" cellpadding="5" class="playerListTable">
       <thead class="listHeader">
         <tr>
-          <th>Id</th>
+          <th></th>
           <th>Name</th>
           <th>Location</th>
           <th></th>
@@ -16,11 +16,11 @@
       </thead>
       <tbody class="listBody">
         <tr *ngFor="let player of playerList!.players | keyvalue">
-          <td>{{ player.value.id }}</td>
+          <td>{{ player.value.level }}</td>
           <td>{{ player.value.name }}</td>
           <td>{{ player.value.cellName }}</td>
           <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-          <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="player.value.hasBeenInvited" class="teleBtn">Send party invite</button></td>
+          <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="player.value.hasBeenInvited" class="teleBtn">Invite</button></td>
         </tr>
       </tbody>
     </table>

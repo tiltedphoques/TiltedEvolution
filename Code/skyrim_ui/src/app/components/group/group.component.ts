@@ -167,11 +167,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   public get groupMembers(): Array<Player> {
-    if (this.group) {
-      return this.playerListService.getPlayerList().players.filter(player => this.group.members.includes(player.id));
-    } else {
-      return [];
-    }
+    return this.groupService.getMembers();
   }
 
   public get active(): boolean {
