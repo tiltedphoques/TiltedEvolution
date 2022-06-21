@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.2...v1.36.0) (2022-06-21)
+
+
+### Features
+
+* dont sync vanilla home chests ([415b6ae](https://github.com/tiltedphoques/TiltedEvolution/commit/415b6aea5ed3929ff3985aef84dc59a22455b4d2))
+
 ## [1.35.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.1...v1.35.2) (2022-06-15)
 
 
