@@ -156,7 +156,7 @@ export class RootComponent implements OnInit, OnDestroy {
               connected: true,
               level: 10,
               cellName: 'Falkreath',
-              invitationReceived: true
+              hasInvitedLocalPlayer: true
             }
           ));
           this.client.playerConnectedChange.next(new Player(

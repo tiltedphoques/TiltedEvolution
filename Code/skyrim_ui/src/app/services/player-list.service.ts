@@ -103,7 +103,7 @@ export class PlayerListService {
       const playerList = this.getPlayerList();
 
       if (playerList) {
-        this.getPlayerById(inviterId).invitationReceived = true;
+        this.getPlayerById(inviterId).hasInvitedLocalPlayer = true;
 
         this.playerList.next(playerList);
       }
@@ -136,7 +136,7 @@ export class PlayerListService {
     const playerList = this.getPlayerList();
 
     if (playerList) {
-      this.getPlayerById(inviteeId).invitationSent = true;
+      this.getPlayerById(inviteeId).hasBeenInvited = true;
 
       this.playerList.next(playerList);
     }
@@ -148,7 +148,7 @@ export class PlayerListService {
     const playerList = this.getPlayerList();
 
     if (playerList) {
-      this.getPlayerById(inviterId).invitationReceived = false;
+      this.getPlayerById(inviterId).hasInvitedLocalPlayer = false;
 
       this.playerList.next(playerList);
     }

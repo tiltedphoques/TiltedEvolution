@@ -27,11 +27,11 @@ export class Player implements Friend {
   /** Connected in server. */
   connected: boolean;
 
-  /** Invitation received. */
-  invitationReceived: boolean;
+  /** Has local player received invitation from this player. */
+  hasInvitedLocalPlayer: boolean;
 
   /** invitation sent. */
-  invitationSent: boolean;
+  hasBeenInvited: boolean;
 
   /** CellName */
   cellName: string;
@@ -49,8 +49,8 @@ export class Player implements Friend {
     connected?: boolean,
     health?: number,
     level?: number,
-    invitationReceived?: boolean,
-    invitationSent?: boolean,
+    hasInvitedLocalPlayer?: boolean,
+    hasBeenInvited?: boolean,
     cellName?: string,
     isLoaded?: boolean,
     isInLocalParty?: boolean,
@@ -58,7 +58,7 @@ export class Player implements Friend {
     this.id = options.id || 0;
     this.name = options.name || '';
     this.avatar = options.avatar || '';
-    this.invitationReceived = options.invitationReceived || false;
+    this.hasInvitedLocalPlayer = options.hasInvitedLocalPlayer || false;
     this.cellName = options.cellName || 'vide';
 
     if (options.health || options.health === 0) {
@@ -89,11 +89,11 @@ export class Player implements Friend {
       this.connected = options.connected;
     }
 
-    if (options.invitationSent === undefined || options.invitationSent === null) {
-      this.invitationSent = false;
+    if (options.hasBeenInvited === undefined || options.hasBeenInvited === null) {
+      this.hasBeenInvited = false;
     }
     else {
-      this.invitationSent = options.invitationSent;
+      this.hasBeenInvited = options.hasBeenInvited;
     }
 
     if (options.isLoaded === undefined || options.isLoaded === null) {

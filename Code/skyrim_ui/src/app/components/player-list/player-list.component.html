@@ -21,8 +21,8 @@
           <td>{{ player.value.name }}</td>
           <td>{{ player.value.cellName }}</td>
           <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-          <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="isPlayerNotInvitable(player.value.id)" class="teleBtn">Send party invite</button></td>
-          <td><button (click)="acceptPartyInvite(player.value.id)" [disabled]="isPlayerNotInvitedToParty(player.value)" class="teleBtn">Accept party invite</button></td>
+          <td><button (click)="sendPartyInvite(player.value.id)" [enabled]="isPlayerInvitable(player.value)" class="teleBtn">Send party invite</button></td>
+          <td><button (click)="acceptPartyInvite(player.value.id)" [enabled]="isPlayerInvitedToParty(player.value)" class="teleBtn">Accept party invite</button></td>
         </tr>
       </tbody>
     </table>

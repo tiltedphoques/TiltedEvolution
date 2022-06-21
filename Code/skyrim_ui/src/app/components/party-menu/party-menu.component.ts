@@ -39,7 +39,7 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
     }
 
     public get invitees(): Array<Player> | undefined {
-        return this.playerListService.playerList.value.players.filter(player => player.invitationReceived === true);
+        return this.playerListService.playerList.value.players.filter(player => player.hasInvitedLocalPlayer);
     }
 
     isLaunchPartyDisabled(): boolean {
