@@ -6,6 +6,7 @@ import { Player } from "src/app/models/player";
 import { PlayerList } from "src/app/models/player-list";
 import { PlayerListService } from "src/app/services/player-list.service";
 import { Group } from "src/app/models/group";
+import { ClientService } from "src/app/services/client.service";
 
 @Component({
     selector: 'app-party-menu',
@@ -21,7 +22,8 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
 
     constructor(public groupService: GroupService, 
                 private loadingService: LoadingService,
-                private playerListService: PlayerListService) 
+                private playerListService: PlayerListService,
+                private clientService: ClientService) 
             { }
 
     ngOnInit(): void {
@@ -51,6 +53,10 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
         return this.groupService.getMembers();
     }
 
+    public get isPartyLeader(): boolean {
+      return this.groupService.group.value.isEnabled && this.groupService.group.value.owner == this.clientService.localPlayerId;
+    }
+
     isLaunchPartyDisabled(): boolean {
         return this.groupService.getMembersLength() > 1;
     }
@@ -65,5 +71,13 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
 
     public acceptPartyInvite(inviterId: number) {
       this.playerListService.acceptPartyInvite(inviterId);
+    }
+
+    public kickMember(playerId: number) {
+      this.clientService.kickPartyMember(playerId);
+    }
+
+    public changeLeader(playerId: number) {
+      this.clientService.changePartyLeader(playerId);
     }
 }

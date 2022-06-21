@@ -15,9 +15,8 @@
             <th>Name</th>
             <th>Location</th>
             <th></th>
-            <!--
             <th></th>
-            -->
+            <th></th>
           </tr>
         </thead>
         <tbody class="listBody">
@@ -26,9 +25,8 @@
             <td>{{ player.value.name }}</td>
             <td>{{ player.value.cellName }}</td>
             <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-            <!--
-            <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="player.value.hasBeenInvited" class="teleBtn">Invite</button></td>
-            -->
+            <td><button (click)="kickMember(player.value.id)" [disabled]="isPartyLeader" class="teleBtn">Kick</button></td>
+            <td><button (click)="changeLeader(player.value.id)" [disabled]="isPartyLeader" class="teleBtn">Make leader</button></td>
           </tr>
         </tbody>
       </table>
