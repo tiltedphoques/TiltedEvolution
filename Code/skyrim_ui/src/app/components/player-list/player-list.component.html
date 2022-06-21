@@ -18,7 +18,7 @@
           <td>{{ player.value.level }}</td>
           <td>{{ player.value.name }}</td>
           <td>{{ player.value.cellName }}</td>
-          <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="player.value.hasBeenInvited" class="teleBtn">Invite</button></td>
+          <td><button (click)="sendPartyInvite(player.value.id)" [disabled]="player.value.hasBeenInvited || !isPartyLeader" class="teleBtn">Invite</button></td>
         </tr>
       </tbody>
     </table>
