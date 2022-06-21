@@ -21,6 +21,7 @@ import { Player } from '../../models/player';
 import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { PlayerList } from 'src/app/models/player-list';
 import { PlayerListService } from 'src/app/services/player-list.service';
+import { PartyInfo } from 'src/app/models/party-info';
 
 @Component({
   selector: 'app-root',
@@ -183,6 +184,14 @@ export class RootComponent implements OnInit, OnDestroy {
               health: 75
             }
           ));
+
+          this.client.partyInfoChange.next(new PartyInfo(
+            {
+              playerIds: [1],
+              leaderId: 0
+            }
+          ));
+          this.client.localPlayerId = 0;
 
           let name = "Banana";
           let message = "Hello Guys";
