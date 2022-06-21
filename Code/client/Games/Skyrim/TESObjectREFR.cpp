@@ -89,7 +89,7 @@ TESObjectREFR* TESObjectREFR::New() noexcept
 
     TP_THIS_FUNCTION(TTESObjectREFRCtor, void, TESObjectREFR);
     POINTER_SKYRIMSE(TTESObjectREFRCtor, s_TESObjectREFRCtor, 19501);
-    s_TESObjectREFRCtor.Get()(pRefr);
+    ThisCall(s_TESObjectREFRCtor, pRefr);
     return pRefr;
 }
 
@@ -97,8 +97,7 @@ void TESObjectREFR::GetHandle(uint32_t &aHandle) noexcept
 {
     TP_THIS_FUNCTION(TGetHandle, void, TESObjectREFR, uint32_t*);
     POINTER_SKYRIMSE(TGetHandle, s_GetHandle, 19846);
-
-    s_GetHandle.Get()(this, &aHandle);
+    ThisCall(s_GetHandle, this, &aHandle);
 }
 
 ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept

@@ -2,20 +2,18 @@
 
 #include "Message.h"
 
-struct RequestDelWaypoint final : ClientMessage
+struct NotifyDeleteWaypoint final : ServerMessage
 {
-    static constexpr ClientOpcode Opcode = kRequestDelWaypoint;
+    static constexpr ServerOpcode Opcode = kNotifyDeleteWaypoint;
 
-    RequestDelWaypoint() : ClientMessage(Opcode)
+    NotifyDeleteWaypoint() : ServerMessage(Opcode)
     {
     }
-
-    virtual ~RequestDelWaypoint() = default;
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestDelWaypoint& acRhs) const noexcept
+    bool operator==(const NotifyDeleteWaypoint& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode();
     }

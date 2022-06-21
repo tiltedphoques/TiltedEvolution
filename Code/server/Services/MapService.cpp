@@ -10,7 +10,7 @@
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
-#include <Messages/NotifyDelWaypoint.h>
+#include <Messages/NotifyDeleteWaypoint.h>
 #include <Messages/NotifyInventoryChanges.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyPlayerLevel.h>
@@ -20,7 +20,7 @@
 #include <Messages/NotifySetWaypoint.h>
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/PlayerRespawnRequest.h>
-#include <Messages/RequestDelWaypoint.h>
+#include <Messages/RequestDeleteWaypoint.h>
 #include <Messages/RequestSetWaypoint.h>
 #include <Messages/ShiftGridCellRequest.h>
 
@@ -28,7 +28,7 @@ MapService::MapService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld), 
       m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&MapService::OnUpdate>(this)),
       m_playerSetWaypointConnection(aDispatcher.sink<PacketEvent<RequestSetWaypoint>>().connect<&MapService::OnSetWaypointRequest>(this)),
-      m_playerDelWaypointConnection(aDispatcher.sink<PacketEvent<RequestDelWaypoint>>().connect<&MapService::OnDelWaypointRequest>(this))
+      m_playerDelWaypointConnection(aDispatcher.sink<PacketEvent<RequestDeleteWaypoint>>().connect<&MapService::OnDelWaypointRequest>(this))
 {
 }
 
@@ -49,9 +49,9 @@ void MapService::OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acM
     GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }
 
-void MapService::OnDelWaypointRequest(const PacketEvent<RequestDelWaypoint>& acMessage) const noexcept
+void MapService::OnDelWaypointRequest(const PacketEvent<RequestDeleteWaypoint>& acMessage) const noexcept
 {
-    NotifyDelWaypoint notify{};
+    NotifyDeleteWaypoint notify{};
 
     GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }

@@ -5,21 +5,21 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/MapCloseEvent.h>
-#include <Events/MapOpenEvent.h>
-#include <Events/PlayerDelWaypointEvent.h>
+#include <Events/MenuCloseEvent.h>
+#include <Events/MenuOpenEvent.h>
+#include <Events/DeleteWaypointEvent.h>
 #include <Events/PlayerDialogueEvent.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
-#include <Events/PlayerSetWaypointEvent.h>
+#include <Events/SetWaypointEvent.h>
 #include <Events/UpdateEvent.h>
-#include <Messages/NotifyDelWaypoint.h>
+#include <Messages/NotifyDeleteWaypoint.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerPosition.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/NotifySetWaypoint.h>
-#include <Messages/RequestDelWaypoint.h>
+#include <Messages/RequestDeleteWaypoint.h>
 #include <Messages/RequestSetWaypoint.h>
 
 #include <AI/AIProcess.h>
@@ -41,14 +41,12 @@ MapService::MapService(World& aWorld, entt::dispatcher& aDispatcher, TransportSe
     m_playerJoinedConnection = m_dispatcher.sink<NotifyPlayerJoined>().connect<&MapService::OnPlayerJoined>(this);
     m_playerLeftConnection = m_dispatcher.sink<NotifyPlayerLeft>().connect<&MapService::OnPlayerLeft>(this);
     m_playerNotifySetWaypointConnection = m_dispatcher.sink<NotifySetWaypoint>().connect<&MapService::OnNotifyPlayerSetWaypoint>(this);
-    m_playerNotifyDelWaypointConnection = m_dispatcher.sink<NotifyDelWaypoint>().connect<&MapService::OnNotifyPlayerDelWaypoint>(this);
-    m_playerMapMarkerConnection = m_dispatcher.sink<PlayerMapMarkerUpdateEvent>().connect<&MapService::OnPlayerMapMarkerUpdateEvent>(this);
+    m_playerNotifyDeleteWaypointConnection = m_dispatcher.sink<NotifyDeleteWaypoint>().connect<&MapService::OnNotifyPlayerDelWaypoint>(this);
     m_playerPositionConnection = m_dispatcher.sink<NotifyPlayerPosition>().connect<&MapService::OnNotifyPlayerPosition>(this);
     m_playerCellChangeConnection = m_dispatcher.sink<NotifyPlayerCellChanged>().connect<&MapService::OnNotifyPlayerCellChanged>(this);
-    m_playerSetWaypointConnection = m_dispatcher.sink<PlayerSetWaypointEvent>().connect<&MapService::OnPlayerSetWaypoint>(this);
-    m_playerDelWaypointConnection = m_dispatcher.sink<PlayerDelWaypointEvent>().connect<&MapService::OnPlayerDelWaypoint>(this);
-    m_mapOpenConnection = m_dispatcher.sink<MapOpenEvent>().connect<&MapService::OnMapOpen>(this);
-    m_mapCloseConnection = m_dispatcher.sink<MapCloseEvent>().connect<&MapService::OnMapClose>(this);
+    m_playerSetWaypointConnection = m_dispatcher.sink<SetWaypointEvent>().connect<&MapService::OnPlayerSetWaypoint>(this);
+    m_playerDelWaypointConnection = m_dispatcher.sink<DeleteWaypointEvent>().connect<&MapService::OnPlayerDelWaypoint>(this);
+    m_mapCloseConnection = m_dispatcher.sink<MenuCloseEvent>().connect<&MapService::OnMenuClose>(this);
 }
 
 // TODO: this whole thing should probably be a util function by now
@@ -177,11 +175,7 @@ void MapService::OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept
     m_mapHandles.erase(it);
 }
 
-void MapService::OnMapOpen(const MapOpenEvent& acMessage) noexcept
-{
-}
-
-void MapService::OnMapClose(const MapCloseEvent& acMessage) noexcept
+void MapService::OnMenuClose(const MenuCloseEvent& acMessage) noexcept
 {
     if (!m_transport.IsConnected() || m_waypointActive || m_waypoint->position.x == -INTMAX_MAX)
         return;
@@ -257,47 +251,48 @@ void MapService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMess
     pDummyPlayer->SetParentCell(pCell);
 }
 
-// on join/leave, add to our array...
-void MapService::OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept
-{
-}
-
-
-void MapService::OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) noexcept
+void MapService::OnPlayerSetWaypoint(const SetWaypointEvent& acMessage) noexcept
 {
 
     if (!m_transport.IsConnected())
         return;
-
-    m_waypointActive = true;
-    m_waypoint->position.x = -INTMAX_MAX;
-    m_waypoint->position.y = -INTMAX_MAX;
+    
+    if (m_waypoint)
+    {
+            m_waypointActive = true;
+            m_waypoint->position.x = -INTMAX_MAX;
+            m_waypoint->position.y = -INTMAX_MAX;
+    }
 
     RequestSetWaypoint request = {};
     request.Position = acMessage.Position;
     m_transport.Send(request);
 }
 
-void MapService::OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) noexcept
+void MapService::OnPlayerDelWaypoint(const DeleteWaypointEvent& acMessage) noexcept
 {
     if (!m_transport.IsConnected())
         return;
 
     m_waypointActive = false;
 
-    RequestDelWaypoint request = {};
+    RequestDeleteWaypoint request = {};
     m_transport.Send(request);
 }
 
-void MapService::OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) noexcept
+void MapService::OnNotifyPlayerDelWaypoint(const NotifyDeleteWaypoint& acMessage) noexcept
 {
     if (!m_inMap)
     {
         RemoveWaypoint(PlayerCharacter::Get());
         return;
     }
-    m_waypoint->position.x = -INTMAX_MAX;
-    m_waypoint->position.y = -INTMAX_MAX;
+
+    if (m_waypoint)
+    {
+        m_waypoint->position.x = -INTMAX_MAX;
+        m_waypoint->position.y = -INTMAX_MAX;
+    }
 }
 
 void MapService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) noexcept
@@ -312,7 +307,9 @@ void MapService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) n
     }
     m_waypointActive = false;
     RemoveWaypoint(PlayerCharacter::Get());
-    m_waypoint->position = acMessage.Position;
+
+    if (m_waypoint)
+        m_waypoint->position = acMessage.Position;
 }
 
 
@@ -321,7 +318,7 @@ void MapService::RunMapUpdates() noexcept
 
     // Update map open status
     const VersionDbPtr<int> inMapAddr(403437);
-    int* inMap = reinterpret_cast<decltype(inMap)>(inMapAddr.Get());
+    bool* inMap = reinterpret_cast<decltype(inMap)>(inMapAddr.Get());
 
     // Map Open/Close
     if (*inMap != m_inMap)
@@ -331,15 +328,15 @@ void MapService::RunMapUpdates() noexcept
 
         // Map was closed
         case 0:
-            World::Get().GetRunner().Trigger(MapCloseEvent());
+            World::Get().GetRunner().Trigger(MenuCloseEvent());
 
         // Map was opened
         case 1:
-            World::Get().GetRunner().Trigger(MapOpenEvent());
+            World::Get().GetRunner().Trigger(MenuOpenEvent());
         }
     }
 
-    m_inMap = *inMap == 1;
+    m_inMap = *inMap == true;
 }
 
 bool MapService::DeleteDummyMarker(const uint32_t acHandle) noexcept

@@ -9,7 +9,7 @@
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/RequestInventoryChanges.h>
-#include <Messages/RequestDelWaypoint.h>
+#include <Messages/RequestDeleteWaypoint.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/PartyInviteRequest.h>
@@ -67,7 +67,7 @@ struct ClientMessageFactory
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
                                  PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest, 
                                  RequestSetWaypoint, RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
-                                 RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest, RequestDelWaypoint,
+                                 RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest, RequestDeleteWaypoint,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,

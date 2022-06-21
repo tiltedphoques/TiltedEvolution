@@ -6,14 +6,14 @@ struct TransportService;
 struct UpdateEvent;
 struct DisconnectedEvent;
 struct CellChangeEvent;
-struct MapOpenEvent;
-struct MapCloseEvent;
+struct MenuOpenEvent;
+struct MenuCloseEvent;
 struct PlayerMapMarkerUpdateEvent;
 struct PlayerMapMarkerUpdateEvent;
-struct PlayerSetWaypointEvent;
-struct PlayerDelWaypointEvent;
+struct SetWaypointEvent;
+struct DeleteWaypointEvent;
 struct NotifySetWaypoint;
-struct NotifyDelWaypoint;
+struct NotifyDeleteWaypoint;
 struct NotifyPlayerPosition;
 struct NotifyPlayerJoined;
 struct NotifyPlayerLeft;
@@ -37,14 +37,12 @@ struct MapService
     void OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept;
     void OnPlayerLeft(const NotifyPlayerLeft& acMessage) noexcept;
     void OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) noexcept;
-    void OnNotifyPlayerDelWaypoint(const NotifyDelWaypoint& acMessage) noexcept;
-    void OnPlayerMapMarkerUpdateEvent(const PlayerMapMarkerUpdateEvent& acEvent) const noexcept;
+    void OnNotifyPlayerDelWaypoint(const NotifyDeleteWaypoint& acMessage) noexcept;
     void OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) const noexcept;
     void OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
-    void OnPlayerSetWaypoint(const PlayerSetWaypointEvent& acMessage) noexcept;
-    void OnPlayerDelWaypoint(const PlayerDelWaypointEvent& acMessage) noexcept;
-    void OnMapOpen(const MapOpenEvent& acMessage) noexcept;
-    void OnMapClose(const MapCloseEvent& acMessage) noexcept;
+    void OnPlayerSetWaypoint(const SetWaypointEvent& acMessage) noexcept;
+    void OnPlayerDelWaypoint(const DeleteWaypointEvent& acMessage) noexcept;
+    void OnMenuClose(const MenuCloseEvent& acMessage) noexcept;
 
   private:
     TESObjectCELL* GetCell(const GameId& acCellId, const GameId& acWorldSpaceId,
@@ -86,7 +84,7 @@ struct MapService
     entt::scoped_connection m_playerDelWaypointConnection;
     entt::scoped_connection m_playerSetWaypointConnection;
     entt::scoped_connection m_playerNotifySetWaypointConnection;
-    entt::scoped_connection m_playerNotifyDelWaypointConnection;
+    entt::scoped_connection m_playerNotifyDeleteWaypointConnection;
     entt::scoped_connection m_mapOpenConnection;
     entt::scoped_connection m_mapCloseConnection;
 };

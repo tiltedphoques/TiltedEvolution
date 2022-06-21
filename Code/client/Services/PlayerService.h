@@ -76,6 +76,5 @@ private:
     entt::scoped_connection m_gridCellChangeConnection;
     entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_playerDialogueConnection;
-    entt::scoped_connection m_playerMapMarkerConnection;
     entt::scoped_connection m_playerLevelConnection;
 };

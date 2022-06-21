@@ -4,7 +4,7 @@
 
 struct World;
 struct RequestSetWaypoint;
-struct RequestDelWaypoint;
+struct RequestDeleteWaypoint;
 struct PlayerLevelRequest;
 struct UpdateEvent;
 
@@ -21,7 +21,7 @@ struct MapService
   protected:
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
     void OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acMessage) const noexcept;
-    void OnDelWaypointRequest(const PacketEvent<RequestDelWaypoint>& acMessage) const noexcept;
+    void OnDelWaypointRequest(const PacketEvent<RequestDeleteWaypoint>& acMessage) const noexcept;
     void ProcessPlayerPositionChanges() const noexcept;
 
   private:

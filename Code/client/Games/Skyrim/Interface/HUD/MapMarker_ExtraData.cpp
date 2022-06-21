@@ -8,7 +8,7 @@ MapMarkerData* MapMarkerData::New() noexcept
     // MapMarker_14014ace0_ExtraData
     TP_THIS_FUNCTION(TMapMarkerDataCtor, void, MapMarkerData);
     POINTER_SKYRIMSE(TMapMarkerDataCtor, s_mapMarkerDataCtor, 12945);
-    s_mapMarkerDataCtor.Get()(pMarkerData);
+    ThisCall(s_mapMarkerDataCtor, pMarkerData);
 
     return pMarkerData;
 }

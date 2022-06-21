@@ -1,8 +1,8 @@
 
 #include <BSCore/BSTimer.h>
 #include <Events/PlayerMapMarkerUpdateEvent.h>
-#include <Events/PlayerSetWaypointEvent.h>
-#include <Events/PlayerDelWaypointEvent.h>
+#include <Events/SetWaypointEvent.h>
+#include <Events/DeleteWaypointEvent.h>
 #include <Interface/Menus/MapMenu.h>
 #include <Interface/UI.h>
 #include <TiltedOnlinePCH.h>
@@ -90,14 +90,14 @@ void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TE
     Position.x = apPosition->x;
     Position.y = apPosition->y;
 
-    World::Get().GetRunner().Trigger(PlayerSetWaypointEvent(Position));
+    World::Get().GetRunner().Trigger(SetWaypointEvent(Position));
 
     ThisCall(RealSetWaypoint, apThis, apPosition, apWorldSpace);
 }
 
 void TP_MAKE_THISCALL(HookRemoveWaypoint, PlayerCharacter)
 {
-    World::Get().GetRunner().Trigger(PlayerDelWaypointEvent());
+    World::Get().GetRunner().Trigger(DeleteWaypointEvent());
     ThisCall(RealRemoveWaypoint, apThis);
 }
 
