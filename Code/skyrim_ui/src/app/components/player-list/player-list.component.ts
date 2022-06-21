@@ -41,8 +41,4 @@ export class PlayerListComponent implements OnInit, OnDestroy {
   public sendPartyInvite(inviteeId: number) {
     this.playerListService.sendPartyInvite(inviteeId);
   }
-
-  public acceptPartyInvite(inviterId: number) {
-    this.playerListService.acceptPartyInvite(inviterId);
-  }
 }

@@ -54,7 +54,7 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
         this.groupService.leave();
     }
 
-    public acceptInvite(player: Player) {
-        this.groupService.accept(player.id);
+    public acceptPartyInvite(inviterId: number) {
+      this.playerListService.acceptPartyInvite(inviterId);
     }
 }
