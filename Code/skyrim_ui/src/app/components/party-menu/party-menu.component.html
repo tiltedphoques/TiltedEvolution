@@ -4,7 +4,7 @@
   <button *ngFor="let player of invitees | keyvalue" class="app-group-button" (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
 </div>
 <div *ngIf="group.isEnabled">
-  <p>You are currently in a party.</p>
+  <button class="app-group-button" (click)="leave()">Leave</button>
   
   <ng-template #notEmpty>
     <div class="containerList">
@@ -25,13 +25,11 @@
             <td>{{ player.value.name }}</td>
             <td>{{ player.value.cellName }}</td>
             <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-            <td><button (click)="kickMember(player.value.id)" [disabled]="isPartyLeader" class="teleBtn">Kick</button></td>
-            <td><button (click)="changeLeader(player.value.id)" [disabled]="isPartyLeader" class="teleBtn">Make leader</button></td>
+            <td><button (click)="kickMember(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn">Kick</button></td>
+            <td><button (click)="changeLeader(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn">Make leader</button></td>
           </tr>
         </tbody>
       </table>
     </div>
   </ng-template>
-
-  <button class="app-group-button" (click)="leave()">Leave</button>
 </div>
