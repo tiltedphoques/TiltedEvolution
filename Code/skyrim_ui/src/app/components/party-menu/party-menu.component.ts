@@ -2,6 +2,9 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation }
 import { Subscription } from "rxjs";
 import { GroupService } from "src/app/services/group.service";
 import { LoadingService } from "src/app/services/loading.service";
+import { Player } from "src/app/models/player";
+import { PlayerList } from "src/app/models/player-list";
+import { PlayerListService } from "src/app/services/player-list.service";
 
 @Component({
     selector: 'app-party-menu',
@@ -15,7 +18,10 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
 
     private isLoading: Subscription;
 
-    constructor(public groupService: GroupService, private loadingService: LoadingService) { }
+    constructor(public groupService: GroupService, 
+                private loadingService: LoadingService,
+                private playerListService: PlayerListService) 
+            { }
 
     ngOnInit(): void {
 
@@ -28,6 +34,14 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
         this.isLoading.unsubscribe();
     }
 
+    public get playerList(): PlayerList | undefined {
+        return this.playerListService.playerList.value;
+    }
+
+    public get invitees(): Array<Player> | undefined {
+        return this.playerListService.playerList.value.players.filter(player => player.invitationReceived === true);
+    }
+
     isLaunchPartyDisabled(): boolean {
         return (this.waitLaunch || (this.groupService.getMembersLength() > 1));
     }
@@ -38,5 +52,9 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
 
     public leave() {
         this.groupService.leave();
+    }
+
+    public acceptInvite(player: Player) {
+        this.groupService.accept(player.id);
     }
 }

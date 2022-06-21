@@ -1,2 +1,3 @@
 <button class="app-group-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled()">Launch party</button>
 <button class="app-group-button" (click)="leave()">Leave</button>
+<button *ngFor="let player of invitees | keyvalue" class="app-group-button" (click)="leave()">Accept invite from {{ player.value.name }}</button>
