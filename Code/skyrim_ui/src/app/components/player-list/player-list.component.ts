@@ -45,12 +45,4 @@ export class PlayerListComponent implements OnInit, OnDestroy {
   public acceptPartyInvite(inviterId: number) {
     this.playerListService.acceptPartyInvite(inviterId);
   }
-
-  public isPlayerInvitable(player: Player) {
-    return !player.hasBeenInvited;
-  }
-
-  public isPlayerInvitedToParty(player: Player) {
-    return player.hasInvitedLocalPlayer;
-  }
 }
