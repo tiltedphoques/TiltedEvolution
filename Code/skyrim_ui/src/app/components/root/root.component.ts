@@ -180,7 +180,7 @@ export class RootComponent implements OnInit, OnDestroy {
           this.client.isLoadedChange.next(new Player(
             {
               id: 2,
-              isLoaded: false,
+              isLoaded: true,
               health: 75
             }
           ));
@@ -188,7 +188,7 @@ export class RootComponent implements OnInit, OnDestroy {
           this.client.partyInfoChange.next(new PartyInfo(
             {
               playerIds: [1,2],
-              leaderId: 1
+              leaderId: 2
             }
           ));
           this.client.localPlayerId = 0;
