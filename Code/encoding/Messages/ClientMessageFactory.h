@@ -9,6 +9,7 @@
 #include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
 #include <Messages/RequestInventoryChanges.h>
+#include <Messages/RequestDeleteWaypoint.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/PartyInviteRequest.h>
@@ -31,6 +32,7 @@
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/RequestObjectInventoryChanges.h>
+#include <Messages/RequestSetWaypoint.h>
 #include <Messages/SpellCastRequest.h>
 #include <Messages/InterruptCastRequest.h>
 #include <Messages/AddTargetRequest.h>
@@ -63,9 +65,9 @@ struct ClientMessageFactory
         auto s_visitor = CreateMessageVisitor<AuthenticationRequest, AssignCharacterRequest, CancelAssignmentRequest,
                                  ClientReferencesMoveRequest, EnterInteriorCellRequest,
                                  RequestInventoryChanges, RequestFactionsChanges, RequestQuestUpdate,
-                                 PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest,
-                                 RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
-                                 RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest,
+                                 PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest, 
+                                 RequestSetWaypoint, RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest,
+                                 RequestHealthChangeBroadcast, RequestSpawnData, ActivateRequest, LockChangeRequest, RequestDeleteWaypoint,
                                  AssignObjectsRequest, RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer,
                                  RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest, ProjectileLaunchRequest, InterruptCastRequest,
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,

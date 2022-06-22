@@ -651,6 +651,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             auto& cellComponent = pOtherPlayer->GetCellComponent();
             notify.WorldSpaceId = cellComponent.WorldSpaceId;
             notify.CellId = cellComponent.Cell;
+            notify.CenterCoords = cellComponent.CenterCoords;
 
             notify.Level = pOtherPlayer->GetLevel();
 
@@ -659,7 +660,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Send(pPlayer->GetConnectionId(), notify);
         }
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId, acRequest->CenterCoords));
     }
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {

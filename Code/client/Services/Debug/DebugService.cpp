@@ -5,16 +5,18 @@
 #include <Havok/BShkbHkxDB.h>
 #include <Havok/hkbBehaviorGraph.h>
 
-#include <Services/ImguiService.h>
 #include <Services/DebugService.h>
-#include <Services/TransportService.h>
+#include <Services/ImguiService.h>
 #include <Services/PapyrusService.h>
 #include <Services/QuestService.h>
+#include <Services/TransportService.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+
+#include <Events/UpdateEvent.h>
 #include <Events/MoveActorEvent.h>
+
 
 #include <Games/References.h>
 
@@ -43,25 +45,27 @@
 
 #include <Messages/RequestRespawn.h>
 
-#include <Interface/UI.h>
 #include <Interface/IMenu.h>
+#include <Interface/UI.h>
 
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
 #include <Camera/PlayerCamera.h>
+#include <ExtraData/ExtraMapMarker.h>
 
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/Interface/UI.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Interface/UI.h>
 #endif
 
 #include <imgui.h>
 #include <inttypes.h>
+
 extern thread_local bool g_overrideFormId;
 
 constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
@@ -71,8 +75,8 @@ static void DrawBuildTag()
     auto* pWindow = BSGraphics::GetMainWindow();
     const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
     ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
-                                            ImColor::ImColor(255.f, 0.f, 0.f),
-                                            kBuildTag);
+                                            ImColor::ImColor(255.f, 0.f, 0.f), kBuildTag);
+
 #endif
 }
 
@@ -91,7 +95,7 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 }
 
 DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport,
-                         ImguiService& aImguiService)
+                           ImguiService& aImguiService)
     : m_dispatcher(aDispatcher), m_transport(aTransport), m_world(aWorld)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
@@ -200,8 +204,17 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            Actor* pActor = Cast<Actor>(TESForm::GetById(0x1a677));
-            pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)
+            {
+                TESObjectREFR* pRefr = TESObjectREFR::GetByHandle(handle);
+                ExtraMapMarker* pData = Cast<ExtraMapMarker>(pRefr->extraData.GetByType(ExtraData::MapMarker));
+                if (!pData || !pData->pMarkerData)
+                    continue;
+
+                const char* pEditorId = pData->pMarkerData->name.value.AsAscii();
+                spdlog::critical("Form id: {:X}, name: {}", pRefr->formID, pEditorId ? pEditorId : "NONE");
+            }
 
         #if 0
             static bool s_enabled = true;
@@ -290,22 +303,7 @@ void DebugService::OnDraw() noexcept
     }
     if (ImGui::BeginMenu("UI"))
     {
-        ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
-        if (ImGui::Button("Log all open windows"))
-        {
-            UI* pUI = UI::Get();
-            for (const auto& it : pUI->menuMap)
-            {
-                if (pUI->GetMenuOpen(it.key))
-                    spdlog::info("{}", it.key.AsAscii());
-            }
-        }
-
-        if (ImGui::Button("Close all menus"))
-        {
-            UI::Get()->CloseAllMenus();
-        }
-
+        DrawUIView();
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Debuggers"))

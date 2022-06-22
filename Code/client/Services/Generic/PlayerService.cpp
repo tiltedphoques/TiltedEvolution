@@ -3,27 +3,36 @@
 #include <World.h>
 
 #include <Events/UpdateEvent.h>
+#include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/PlayerDialogueEvent.h>
+#include <Events/PlayerMapMarkerUpdateEvent.h>
 #include <Events/PlayerLevelEvent.h>
-
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
+#include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
 #include <Messages/PlayerDialogueRequest.h>
 #include <Messages/PlayerLevelRequest.h>
+#include <Messages/NotifyPlayerPosition.h>
+#include <Messages/NotifyPlayerCellChanged.h>
 
 #include <Structs/ServerSettings.h>
 
+#include <Interface/Menus/MapMenu.h>
+#include <Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Games/Overrides.h>
 #include <Games/References.h>
 #include <AI/AIProcess.h>
+#include <Forms/TESWorldSpace.h>
+#include <ExtraData/ExtraMapMarker.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -38,11 +47,11 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
 }
 
-bool knockdownStart = false;
-double knockdownTimer = 0.0;
+static bool knockdownStart = false;
+static double knockdownTimer = 0.0;
 
-bool godmodeStart = false;
-double godmodeTimer = 0.0;
+static bool godmodeStart = false;
+static double godmodeTimer = 0.0;
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
@@ -54,7 +63,9 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
-    PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
+    auto* pPlayer = PlayerCharacter::Get();
+
+    pPlayer->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
     // Restore to the default value (150)

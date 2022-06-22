@@ -3,6 +3,7 @@
 #include <Actor.h>
 #include <Misc/TintMask.h>
 #include <Forms/ActorValueInfo.h>
+#include <BSCore/BSTArray.h>
 
 struct Skills
 {
@@ -158,6 +159,9 @@ struct PlayerCharacter : Actor
 
     void PayCrimeGoldToAllFactions() noexcept;
 
+    void AddMapmarkerRef(uint32_t aMapRef);
+    void RemoveMapmarkerRef(uint32_t aMapRef);
+
     struct Objective
     {
         BSFixedString name;
@@ -170,7 +174,10 @@ struct PlayerCharacter : Actor
         uint64_t instanceCount;
     };
 
-    uint8_t pad1[0x580 - sizeof(Actor)];
+    //uint8_t pad1[0x580 - sizeof(Actor) - 112 - 0x10];
+    uint8_t pad1[0x4F8 - sizeof(Actor)];
+    creation::BSTArray<uint32_t> CurrentMapmarkerRefHandles;
+    char pad510[0x580 - 0x510];
     GameArray<ObjectiveInstance> objectives; 
     uint8_t pad588[0x9B0 - 0x598];
     Skills** pSkills;
@@ -191,4 +198,3 @@ static_assert(offsetof(PlayerCharacter, locationForm) == 0xAC8);
 static_assert(offsetof(PlayerCharacter, baseTints) == 0xB10);
 static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB28);
 static_assert(sizeof(PlayerCharacter) == 0xBE0);
-

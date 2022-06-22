@@ -1,6 +1,7 @@
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
 #include "Events/PlayerLeaveCellEvent.h"
+#include <Events/UpdateEvent.h>
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -17,6 +18,7 @@
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
+#include <Messages/NotifyPlayerPosition.h>
 
 Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.0f};
 
@@ -30,6 +32,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 {
 }
 
+
 void SendPlayerCellChanged(const Player* apPlayer) noexcept
 {
     auto& cellComponent = apPlayer->GetCellComponent();
@@ -38,6 +41,7 @@ void SendPlayerCellChanged(const Player* apPlayer) noexcept
     notify.PlayerId = apPlayer->GetId();
     notify.WorldSpaceId = cellComponent.WorldSpaceId;
     notify.CellId = cellComponent.Cell;
+    notify.CenterCoords = cellComponent.CenterCoords;
 
     GameServer::Get()->SendToPlayers(notify, apPlayer);
 }

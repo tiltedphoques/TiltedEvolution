@@ -10,6 +10,8 @@ enum ClientOpcode : unsigned char
     kEnterInteriorCellRequest,
     kRequestFactionsChanges,
     kRequestQuestUpdate,
+    kRequestSetWaypoint, 
+    kRequestDeleteWaypoint,
     kPartyInviteRequest,
     kPartyAcceptInviteRequest,
     kPartyLeaveRequest,
@@ -61,6 +63,8 @@ enum ServerOpcode : unsigned char
     kNotifyFactionsChanges,
     kNotifyRemoveCharacter,
     kNotifyQuestUpdate,
+    kNotifySetWaypoint,
+    kNotifyDeleteWaypoint,
     kNotifyPlayerList,
     kNotifyPartyInfo,
     kNotifyPartyInvite,
@@ -102,5 +106,6 @@ enum ServerOpcode : unsigned char
     kNotifyPlayerLevel,
     kNotifyPlayerCellChanged,
     kNotifyTeleport,
+    kNotifyPlayerPosition,
     kServerOpcodeMax
 };

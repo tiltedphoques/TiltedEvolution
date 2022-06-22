@@ -12,6 +12,7 @@ void AuthenticationRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     WorldSpaceId.Serialize(aWriter);
     CellId.Serialize(aWriter);
     Serialization::WriteVarInt(aWriter, Level);
+    CenterCoords.Serialize(aWriter);
 }
 
 void AuthenticationRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -28,4 +29,5 @@ void AuthenticationRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     WorldSpaceId.Deserialize(aReader);
     CellId.Deserialize(aReader);
     Level = Serialization::ReadVarInt(aReader) & 0xFFFF;
+    CenterCoords.Deserialize(aReader);
 }
