@@ -4,6 +4,10 @@ app-player-list {
     flex-direction: column;
     margin-top: 1rem;
 
+    #notInParty {
+        overflow: hidden;
+    }
+
     #noPlayers {
         overflow: hidden;
     }

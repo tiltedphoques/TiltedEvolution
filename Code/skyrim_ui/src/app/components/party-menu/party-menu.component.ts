@@ -57,6 +57,10 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
       return this.groupService.group.value.isEnabled && this.groupService.group.value.owner == this.clientService.localPlayerId;
     }
 
+    public get getMembersLength(): number {
+      return this.groupService.getMembersLength();
+    }
+
     isLaunchPartyDisabled(): boolean {
         return this.groupService.getMembersLength() > 1;
     }

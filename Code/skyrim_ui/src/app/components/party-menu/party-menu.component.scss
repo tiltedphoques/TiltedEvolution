@@ -3,4 +3,51 @@ app-party-menu {
     display: flex;
     flex-direction: column;
     margin-top: 1rem;
+
+    #noPlayers {
+        overflow: hidden;
+    }
+
+    .containerList {
+        overflow: auto;
+        max-height: 60vh;
+
+        .playerListTable {
+            width: 100%;
+            border-collapse: collapse;
+
+            .listHeader {
+                position: sticky;
+                top: 0px;
+                background-color: #151515;
+                z-index: 1;
+            }
+
+            th {
+                text-align: left;
+                border-bottom: 1px solid grey;
+                border-collapse: separate;
+
+                button {
+                    padding: 0 0.5rem;
+                }
+            }
+
+            tr:not(:last-child) {
+                border-bottom: 1px solid grey;
+                padding: 15px;
+            }
+
+            #noserv {
+                margin-top: 3%;
+            }
+
+            .teleBtn {
+                padding: 0.25vw;
+                background-color: #292929;
+                border-radius: 2px;
+                margin-left: 5%;
+            }
+        }
+    }
 }
