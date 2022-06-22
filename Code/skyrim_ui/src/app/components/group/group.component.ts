@@ -165,7 +165,8 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   public get groupMembers(): Array<Player> {
-    return this.groupService.getMembers();
+    let members = this.groupService.getMembers();
+    return members.sort((a, b) => (this.isOwner(a.id) === this.isOwner(b.id)) ? 0 : this.isOwner(a.id)? -1 : 1);
   }
 
   public get getOwner(): Player {
