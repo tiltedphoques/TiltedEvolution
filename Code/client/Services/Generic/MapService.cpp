@@ -81,7 +81,6 @@ void MapService::OnConnected(const ConnectedEvent& acEvent) noexcept
         CreateDummyMarker();
     }
 
-    // TODO: a MapService is warranted at this point.
     m_waypoint = TESObjectREFR::New();
     m_waypoint->SetBaseForm(TESForm::GetById(0x10));
     m_waypoint->SetSkipSaveFlag(true);
@@ -94,7 +93,7 @@ void MapService::OnConnected(const ConnectedEvent& acEvent) noexcept
     m_waypointData->sType = MapMarkerData::Type::kCustomMarker; // "custom destination" marker either 66 or 0
     m_waypoint->extraData.SetMarkerData(m_waypointData);
 
-    uint32_t handle;
+    uint32_t handle{};
     m_waypoint->GetHandle(handle);
     PlayerCharacter::Get()->AddMapmarkerRef(handle);
 }
@@ -253,18 +252,17 @@ void MapService::OnNotifyPlayerCellChanged(const NotifyPlayerCellChanged& acMess
 
 void MapService::OnPlayerSetWaypoint(const SetWaypointEvent& acMessage) noexcept
 {
-
     if (!m_transport.IsConnected())
         return;
     
     if (m_waypoint)
     {
-            m_waypointActive = true;
-            m_waypoint->position.x = -INTMAX_MAX;
-            m_waypoint->position.y = -INTMAX_MAX;
+        m_waypointActive = true;
+        m_waypoint->position.x = -INTMAX_MAX;
+        m_waypoint->position.y = -INTMAX_MAX;
     }
 
-    RequestSetWaypoint request = {};
+    RequestSetWaypoint request{};
     request.Position = acMessage.Position;
     m_transport.Send(request);
 }
@@ -276,7 +274,7 @@ void MapService::OnPlayerDelWaypoint(const DeleteWaypointEvent& acMessage) noexc
 
     m_waypointActive = false;
 
-    RequestDeleteWaypoint request = {};
+    RequestDeleteWaypoint request{};
     m_transport.Send(request);
 }
 
@@ -302,9 +300,13 @@ void MapService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) n
         NiPoint3 pos{};
         pos.x = acMessage.Position.x;
         pos.y = acMessage.Position.y;
+        pos.z = acMessage.Position.z;
+
         SetWaypoint(PlayerCharacter::Get(), &pos, PlayerCharacter::Get()->GetWorldSpace());
+
         return;
     }
+
     m_waypointActive = false;
     RemoveWaypoint(PlayerCharacter::Get());
 
@@ -315,7 +317,6 @@ void MapService::OnNotifyPlayerSetWaypoint(const NotifySetWaypoint& acMessage) n
 
 void MapService::RunMapUpdates() noexcept
 {
-
     // Update map open status
     const VersionDbPtr<int> inMapAddr(403437);
     bool* inMap = reinterpret_cast<decltype(inMap)>(inMapAddr.Get());
@@ -365,7 +366,7 @@ void MapService::CreateDummyMarker() noexcept
     dummyData->sType = MapMarkerData::Type::kMultipleQuest; // "custom destination" marker either 66 or 0
     dummyMark->extraData.SetMarkerData(dummyData);
 
-    uint32_t handle;
+    uint32_t handle{};
     dummyMark->GetHandle(handle);
     PlayerCharacter::Get()->AddMapmarkerRef(handle);
 

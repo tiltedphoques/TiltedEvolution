@@ -22,6 +22,4 @@ struct NotifySetWaypoint final : ServerMessage
     }
 
     Vector3_NetQuantize Position;
-
-    
 };

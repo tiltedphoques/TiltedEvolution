@@ -86,9 +86,10 @@ void Hook_MapMenu_AdvanceMovie(MapMenu* apSelf, float afInterval, int aCurrentTi
 
 void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TESWorldSpace* apWorldSpace)
 {
-    Vector3_NetQuantize Position = {};
+    Vector3_NetQuantize Position{};
     Position.x = apPosition->x;
     Position.y = apPosition->y;
+    Position.z = apPosition->z;
 
     World::Get().GetRunner().Trigger(SetWaypointEvent(Position));
 

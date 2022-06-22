@@ -1,5 +1,6 @@
 
 #include <Debug/DebugText.h>
+#if 0
 
 DebugText* (*DebugText_Instance)(bool) = nullptr;
 void (*DebugText_DeleteAllText)(DebugText*) = nullptr;
@@ -71,3 +72,4 @@ static TiltedPhoques::Initializer s_initDebugText([]() {
 
     TiltedPhoques::SwapCall(0x1405D9D84, OldMainF222, &MainFFFFF);
 });
+#endif

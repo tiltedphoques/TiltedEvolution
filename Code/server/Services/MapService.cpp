@@ -39,8 +39,6 @@ void MapService::OnUpdate(const UpdateEvent&) const noexcept
 
 void MapService::OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acMessage) const noexcept
 {
-    auto* pPlayer = acMessage.pPlayer;
-
     auto& message = acMessage.Packet;
 
     NotifySetWaypoint notify{};

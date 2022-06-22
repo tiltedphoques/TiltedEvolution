@@ -124,7 +124,6 @@ void UIMessageQueue__AddMessage(void* a1, const BSFixedString* a2, UIMessage::UI
 
 #include <imgui.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
-#include <Debug/DebugText.h>
 
 static void (*sub_140F05F1)(UI*);
 
