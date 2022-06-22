@@ -43,7 +43,7 @@ constexpr char kEULATextTrue[] = "bConfirmEULA=true";
 
 namespace fs = std::filesystem;
 
-Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "off"};
 using namespace std::chrono_literals;
 } // namespace
 
