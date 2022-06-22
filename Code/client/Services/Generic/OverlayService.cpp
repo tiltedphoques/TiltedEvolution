@@ -95,7 +95,10 @@ float CalculateHealthPercentage(Actor* apActor) noexcept
 {
     const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
     const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
-    return health / maxHealth * 100.f;
+    float percentage = health / maxHealth * 100.f;
+    if (percentage < 0.f)
+        percentage = 0.f;
+    return percentage;
 }
 
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
@@ -260,8 +263,7 @@ void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, playerComponent.Id);
-    // TODO: SetDouble()?
-    pArguments->SetInt(1, static_cast<int>(percentage));
+    pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
 
@@ -417,10 +419,11 @@ void OverlayService::OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept
 
 void OverlayService::OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& acMessage) noexcept
 {
+    const float percentage = acMessage.Percentage >= 0.f ? acMessage.Percentage : 0.f;
+
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acMessage.PlayerId);
-    // TODO: SetDouble()?
-    pArguments->SetInt(1, static_cast<int>(acMessage.Percentage));
+    pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
 
