@@ -14,7 +14,7 @@
       </div>
       {{ player.value.name }} Id:{{ player.value.id }}
       <div class="app-group-member-health"
-        *ngIf="isConnected && (player.value.health || player.value.health === 0) && player.isLoaded">
+        *ngIf="!isConnected || (!player.value.health && player.value.health !== 0) || !player.isLoaded">
         <div class="app-group-member-health-value" [app-health]="player.value.health">
         </div>
       </div>
