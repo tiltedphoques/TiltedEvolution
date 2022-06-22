@@ -187,8 +187,8 @@ export class RootComponent implements OnInit, OnDestroy {
 
           this.client.partyInfoChange.next(new PartyInfo(
             {
-              playerIds: [1],
-              leaderId: 0
+              playerIds: [1,2],
+              leaderId: 1
             }
           ));
           this.client.localPlayerId = 0;

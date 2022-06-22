@@ -172,6 +172,10 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.playerListService.getPlayerById(this.group.owner);
   }
 
+  public isOwner(playerId): boolean {
+    return this.group.owner === playerId;
+  }
+
   public get active(): boolean {
     return this.clientService.activationStateChange.value;
   }

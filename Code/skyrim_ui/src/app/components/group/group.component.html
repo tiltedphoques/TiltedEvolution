@@ -1,20 +1,14 @@
 <div [@popups]="isShown">
   <div id="app-group-container" *ngIf="group">
-    <div class="app-group-member" *ngIf="!isConnected && group!.owner && group!.owner!.name">
-      <div *ngIf="group!.owner!.health === 0" class="app-group-member-dead">
-      </div>
-      {{ getLeaderName() }}
-      <div id="app-group-member-leader">
-      </div>
-    </div>
-    <div [className]="(!isConnected || player.value.isLoaded) ? 'app-group-member' : 'app-group-member not-loaded'"
+    <div [ngClass]="player.value.isLoaded ? 'app-group-member' : 'app-group-member not-loaded'"
       *ngFor="let player of groupMembers | keyvalue" [title]="player.value.cellName">
       <b class="app-group-member-level">{{ player.value.level }} </b>
       <div *ngIf="player.value.health === 0" class="app-group-member-dead">
       </div>
-      {{ player.value.name }} Id:{{ player.value.id }}
+      {{ player.value.name }}
+      <div *ngIf="isOwner(player.value.id)" id="app-group-member-leader"></div>
       <div class="app-group-member-health"
-        *ngIf="!isConnected || (!player.value.health && player.value.health !== 0) || !player.isLoaded">
+        *ngIf="(player.value.health && player.value.health !== 0) && player.value.isLoaded">
         <div class="app-group-member-health-value" [app-health]="player.value.health">
         </div>
       </div>
