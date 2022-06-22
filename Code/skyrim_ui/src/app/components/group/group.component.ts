@@ -108,7 +108,6 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   private onPartyShownState() {
     this.partyShownSubscription = this.settings.partyShownChange.subscribe((state: boolean) => {
-      console.log("partyshow");
       this.isShown = state;
       this.isAutoHide = false;
     });
@@ -116,7 +115,6 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   private onPartyAutoHideState() {
     this.partyAutoHideSubscription = this.settings.partyAutoHideChange.subscribe((state: boolean) => {
-      console.log("partyAuto");
       this.isAutoHide = state;
       if (this.isAutoHide) {
         this.changeUIGroup();

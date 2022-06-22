@@ -58,9 +58,6 @@ export class PlayerListService {
 
   private onPlayerConnected() {
     this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe((player: Player) => {
-
-      console.log(player);
-
       const playerList = this.getPlayerList();
 
       if (playerList) {
