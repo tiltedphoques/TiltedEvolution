@@ -19,7 +19,7 @@ export interface Message {
   /** Message content. */
   content: string;
 
-  whisper?: boolean;
+  dialogue?: boolean;
 }
 
 /** Client game service. */
@@ -117,7 +117,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
       skyrimtogether.on('message', this.onMessage.bind(this));
       skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
-      skyrimtogether.on('whisperMessage', this.onWhisperMessage.bind(this));
+      skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
       skyrimtogether.on('connect', this.onConnect.bind(this));
       skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
       skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
@@ -155,7 +155,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('openingMenu');
       skyrimtogether.off('message');
       skyrimtogether.off('systemMessage');
-      skyrimtogether.off('whisperMessage');
+      skyrimtogether.off('dialogueMessage');
       skyrimtogether.off('connect');
       skyrimtogether.off('disconnect');
       skyrimtogether.off('setName');
@@ -412,15 +412,15 @@ export class ClientService implements OnDestroy {
   }
 
   /**
-   * Called when a whisper message is received.
+   * Called when a dialogue message is received.
    *
    * @param name Sender's name.
    * @param message Message content.
    */
-   private onWhisperMessage(name: string, message: string): void {
-    let whisper = true;
+   private onDialogueMessage(name: string, message: string): void {
+    let dialogue = true;
     this.zone.run(() => {
-      this.messageReception.next({ name, content: message, whisper});
+      this.messageReception.next({ name, content: message, dialogue: dialogue});
     });
   }
 

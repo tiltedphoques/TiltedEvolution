@@ -26,7 +26,6 @@ void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>
     NotifyChatMessageBroadcast notifyMessage{};
     notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
 
-    // TODO: std regex is slow
     std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
@@ -38,10 +37,12 @@ void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& 
     auto& message = acMessage.Packet;
 
     NotifyPlayerDialogue notify{};
-    notify.Text = acMessage.pPlayer->GetUsername() + ": " + message.Text;
+    notify.Name = acMessage.pPlayer->GetUsername();
+
+    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+    notify.Text = std::regex_replace(message.Text, escapeHtml, "");
 
     auto& party = acMessage.pPlayer->GetParty();
-
     GameServer::Get()->SendToParty(notify, party);
 }
 

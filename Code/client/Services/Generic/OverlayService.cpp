@@ -349,7 +349,13 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
 
 void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
 {
-    SendSystemMessage(acMessage.Text.c_str());
+    if (!m_pOverlay)
+        return;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetString(0, acMessage.Name.c_str());
+    pArguments->SetString(1, acMessage.Text.c_str());
+    m_pOverlay->ExecuteAsync("dialogueMessage", pArguments);
 }
 
 void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept

@@ -195,9 +195,9 @@ export class RootComponent implements OnInit, OnDestroy {
 
           let name = "Banana";
           let message = "Hello Guys";
-          let whisper = true;
+          let dialogue = true;
 
-          this.client.messageReception.next({ name, content: message, whisper })
+          this.client.messageReception.next({ name, content: message, dialogue: dialogue })
         }
         
 
