@@ -199,8 +199,6 @@ export class RootComponent implements OnInit, OnDestroy {
 
           this.client.messageReception.next({ name, content: message, dialogue: dialogue })
         }
-        
-
       }
     }
 
