@@ -168,6 +168,10 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.groupService.getMembers();
   }
 
+  public get getOwner(): Player {
+    return this.playerListService.getPlayerById(this.group.owner);
+  }
+
   public get active(): boolean {
     return this.clientService.activationStateChange.value;
   }
