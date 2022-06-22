@@ -40,6 +40,10 @@ export class PlayerListComponent implements OnInit, OnDestroy {
     return this.groupService.group.value.isEnabled && this.groupService.group.value.owner == this.clientService.localPlayerId;
   }
 
+  public isMember(playerId: number): boolean {
+    return this.groupService.group.value.members.includes(playerId);
+  }
+
   public teleportToPlayer(playerId: number) {
     this.clientService.teleportToPlayer(playerId);
   }
