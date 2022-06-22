@@ -44,6 +44,7 @@ private:
     void DisplayLocalComponent(LocalComponent& aLocalComponent, const uint32_t acFormId) const noexcept;
     void DisplayRemoteComponent(RemoteComponent& aLocalComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept;
 
+    void DrawServerView() noexcept;
     void DrawEntitiesView();
     void DrawComponentDebugView();
     void DrawPlayerDebugView();
