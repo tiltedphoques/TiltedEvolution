@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.37.0...v1.37.1) (2022-06-23)
+
+
+### Bug Fixes
+
+* enemies not dying after hitting 0 hp ([853bc8d](https://github.com/tiltedphoques/TiltedEvolution/commit/853bc8d3f84c665a42df0fb9afd95cb33b22b37f))
+
 # [1.37.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.36.0...v1.37.0) (2022-06-23)
 
 
