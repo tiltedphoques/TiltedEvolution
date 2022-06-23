@@ -27,9 +27,9 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
     NotifyChatMessageBroadcast notifyMessage{};
-    notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
 
     std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+    notifyMessage.PlayerName = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
     GameServer::Get()->SendToPlayers(notifyMessage);
@@ -40,9 +40,9 @@ void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& 
     auto& message = acMessage.Packet;
 
     NotifyPlayerDialogue notify{};
-    notify.Name = acMessage.pPlayer->GetUsername();
 
     std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+    notify.Name = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
     notify.Text = std::regex_replace(message.Text, escapeHtml, "");
 
     auto& party = acMessage.pPlayer->GetParty();
