@@ -25,6 +25,7 @@ struct ConnectionErrorEvent;
 struct NotifyPlayerLevel;
 struct NotifyPlayerCellChanged;
 struct NotifyTeleport;
+struct NotifyPlayerHealthUpdate;
 
 
 using TiltedPhoques::OverlayApp;
@@ -43,6 +44,7 @@ struct OverlayService
 
     void Render() noexcept;
     void Reset() const noexcept;
+    void Reload() noexcept;
 
     void Initialize() noexcept;
 
@@ -77,8 +79,12 @@ struct OverlayService
     void OnPlayerLevel(const NotifyPlayerLevel&) noexcept;
     void OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
     void OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept;
+    void OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& acMessage) noexcept;
 
   private:
+    void RunDebugDataUpdates() noexcept;
+    void RunPlayerHealthUpdates() noexcept;
+
     CefRefPtr<OverlayApp> m_pOverlay{nullptr};
     TiltedPhoques::UniquePtr<D3D11RenderProvider> m_pProvider;
 
@@ -102,4 +108,5 @@ struct OverlayService
     entt::scoped_connection m_playerLevelConnection;
     entt::scoped_connection m_cellChangedConnection;
     entt::scoped_connection m_teleportConnection;
+    entt::scoped_connection m_playerHealthConnection;
 };

@@ -38,7 +38,7 @@ Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 // Gameplay
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
-Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", true};
+Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,

@@ -4,9 +4,10 @@
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: flex-start;
-  margin-top: 1vw;
   margin-left: 1.6%;
   width: 20%;
+  padding-top: 1rem;
+
   .command {
     span + button {
       margin-left: 25%;

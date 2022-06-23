@@ -1,12 +1,8 @@
-app-player-list {
+app-party-menu {
     position: relative;
     display: flex;
     flex-direction: column;
     margin-top: 1rem;
-
-    #notInParty {
-        overflow: hidden;
-    }
 
     #noPlayers {
         overflow: hidden;

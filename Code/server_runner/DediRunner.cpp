@@ -131,7 +131,7 @@ void DediRunner::RunGSThread()
 
 void DediRunner::StartTerminalIO()
 {
-    spdlog::get("ConOut")->info("Server console");
+    spdlog::get("ConOut")->info("\nServer started, type /help for a list of commands.\n");
     PrintExecutorArrowHack();
 
     uv_tty_init(&m_loop, &m_tty, 0, 1);

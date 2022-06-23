@@ -22,6 +22,8 @@
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyTeleport.h>
+#include <Messages/RequestPlayerHealthUpdate.h>
+#include <Messages/NotifyPlayerHealthUpdate.h>
 
 #include <Structs/GridCellCoords.h>
 
@@ -91,9 +93,17 @@ String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 
 float CalculateHealthPercentage(Actor* apActor) noexcept
 {
-    const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
     const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
-    return health / maxHealth * 100.f;
+    if (maxHealth == 0.f)
+        return 0.f;
+
+    const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
+
+    float percentage = health / maxHealth * 100.f;
+    if (percentage < 0.f)
+        percentage = 0.f;
+
+    return percentage;
 }
 
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
@@ -112,6 +122,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
     m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
+    m_playerHealthConnection = aDispatcher.sink<NotifyPlayerHealthUpdate>().connect<&OverlayService::OnNotifyPlayerHealthUpdate>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -153,6 +164,17 @@ void OverlayService::Render() noexcept
 void OverlayService::Reset() const noexcept
 {
     m_pOverlay->GetClient()->Reset();
+}
+
+void OverlayService::Reload() noexcept
+{
+    SetInGame(false);
+    SetActive(false);
+    GetOverlayApp()->GetClient()->GetBrowser()->Reload();
+    Initialize();
+    SetInGame(true);
+    m_pOverlay->ExecuteAsync("enterGame");
+    SetActive(true);
 }
 
 void OverlayService::Initialize() noexcept
@@ -246,33 +268,14 @@ void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, playerComponent.Id);
-    pArguments->SetInt(1, static_cast<int>(percentage));
+    pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
 
 void OverlayService::OnUpdate(const UpdateEvent&) noexcept
 {
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenUpdates = 1000ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenUpdates)
-        return;
-
-    lastSendTimePoint = now;
-
-    auto internalStats = m_transport.GetStatistics();
-    auto steamStats = m_transport.GetConnectionStatus();
-
-    auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, steamStats.m_flOutPacketsPerSec);
-    pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
-    pArguments->SetInt(2, steamStats.m_nPing);
-    pArguments->SetInt(3, 0);
-    pArguments->SetInt(4, internalStats.SentBytes);
-    pArguments->SetInt(5, internalStats.RecvBytes);
-
-    m_pOverlay->ExecuteAsync("debugData", pArguments);
+    RunDebugDataUpdates();
+    RunPlayerHealthUpdates();
 }
 
 void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
@@ -338,7 +341,13 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
 
 void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
 {
-    SendSystemMessage(acMessage.Text.c_str());
+    if (!m_pOverlay)
+        return;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetString(0, acMessage.Name.c_str());
+    pArguments->SetString(1, acMessage.Text.c_str());
+    m_pOverlay->ExecuteAsync("dialogueMessage", pArguments);
 }
 
 void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept
@@ -382,7 +391,7 @@ void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessag
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acMessage.PlayerId);
     String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
-    pArguments->SetString(3, cellName.c_str());
+    pArguments->SetString(1, cellName.c_str());
     m_pOverlay->ExecuteAsync("setCell", pArguments);
 }
 
@@ -411,4 +420,61 @@ void OverlayService::OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept
     }
 
     PlayerCharacter::Get()->MoveTo(pCell, acMessage.Position);
+}
+
+void OverlayService::OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& acMessage) noexcept
+{
+    const float percentage = acMessage.Percentage >= 0.f ? acMessage.Percentage : 0.f;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.PlayerId);
+    pArguments->SetDouble(1, static_cast<double>(percentage));
+    m_pOverlay->ExecuteAsync("setHealth", pArguments);
+}
+
+void OverlayService::RunDebugDataUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto internalStats = m_transport.GetStatistics();
+    auto steamStats = m_transport.GetConnectionStatus();
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, steamStats.m_flOutPacketsPerSec);
+    pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
+    pArguments->SetInt(2, steamStats.m_nPing);
+    pArguments->SetInt(3, 0);
+    pArguments->SetInt(4, internalStats.SentBytes);
+    pArguments->SetInt(5, internalStats.RecvBytes);
+
+    m_pOverlay->ExecuteAsync("debugData", pArguments);
+}
+
+// TODO(cosideci): this whole thing is a really hacky solution to 
+// health sync code being somewhat broken for players.
+void OverlayService::RunPlayerHealthUpdates() noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 500ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    RequestPlayerHealthUpdate request{};
+    request.Percentage = CalculateHealthPercentage(PlayerCharacter::Get());
+
+    m_transport.Send(request);
 }

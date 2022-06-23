@@ -1,0 +1,17 @@
+app-player-manager {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    .tabs {
+
+        margin-bottom: 1rem;
+
+        .btnCancel {
+            float: left;
+            padding: 0.25vw;
+            background-color: #292929;
+            border-radius: 2px;
+        }
+    }
+}

@@ -28,9 +28,9 @@ struct NotifyPlayerJoined final : ServerMessage
                Level == acRhs.Level;
     }
 
-    uint32_t PlayerId;
-    String Username;
-    GameId WorldSpaceId;
-    GameId CellId;
-    uint16_t Level;
+    uint32_t PlayerId{};
+    String Username{};
+    GameId WorldSpaceId{};
+    GameId CellId{};
+    uint16_t Level{};
 };

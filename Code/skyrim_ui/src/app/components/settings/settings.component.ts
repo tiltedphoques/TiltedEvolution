@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
 import { ClientService } from "src/app/services/client.service";
 import { SettingService } from "src/app/services/setting.service";
 
@@ -57,5 +57,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
     onAutoHidePartyChange(event: any) {
         this.settings.autoHideParty(event.target.checked);
+    }
+
+    private close() {
+        this.done.next();
+    }
+  
+    @HostListener('window:keydown.escape', ['$event'])
+    // @ts-ignore
+    private activate(event: KeyboardEvent): void {
+      this.close();
+      event.stopPropagation();
+      event.preventDefault();
     }
 }

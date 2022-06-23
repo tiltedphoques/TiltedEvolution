@@ -237,7 +237,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public getClientVersion() {
-    return this.clientService.versionSet.getValue().split("-")[0];
+    return this.clientService.versionSet.value.split("-")[0];
   }
 
   public getServerVersion(server: Server) {

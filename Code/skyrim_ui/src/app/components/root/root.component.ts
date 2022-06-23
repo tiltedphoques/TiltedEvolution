@@ -7,7 +7,6 @@ import {
 import { Subscription } from 'rxjs';
 
 import { ClientService } from '../../services/client.service';
-import { UserService } from '../../services/user.service';
 import { SoundService, Sound } from '../../services/sound.service';
 
 import { ChatComponent } from '../chat/chat.component';
@@ -17,12 +16,12 @@ import { animation as notificationsAnimation } from './notifications.animation';
 import { animation as popupsAnimation } from './popups.animation';
 
 import { environment } from '../../../environments/environment';
-import { User } from '../../models/user';
 import { Player } from '../../models/player';
 
 import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { PlayerList } from 'src/app/models/player-list';
 import { PlayerListService } from 'src/app/services/player-list.service';
+import { PartyInfo } from 'src/app/models/party-info';
 
 @Component({
   selector: 'app-root',
@@ -47,7 +46,6 @@ export class RootComponent implements OnInit, OnDestroy {
 
   public constructor(
     private client: ClientService,
-    private user: UserService,
     private sound: SoundService,
     private playerList: PlayerListService
   ) {
@@ -55,12 +53,16 @@ export class RootComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.activationSubscription = this.client.activationStateChange.subscribe(state => {
+      console.log("ROOT activate event state: " + state);
+      console.log("ROOT activate actual state: " + this.inGame);
       if (this.inGame && state && !this.view) {
         setTimeout(() => this.chatComp.focus(), 100);
       }
     });
 
     this.gameSubscription = this.client.inGameStateChange.subscribe(state => {
+      console.log("ROOT ingame event state: " + state);
+      console.log("ROOT ingame actual state: " + this.inGame);
       if (!state) {
         this.view = undefined;
       }
@@ -81,10 +83,6 @@ export class RootComponent implements OnInit, OnDestroy {
     this.activationSubscription.unsubscribe();
     this.gameSubscription.unsubscribe();
     this.activationStateChangeSubscription.unsubscribe();
-  }
-
-  public get currentUser(): User | undefined {
-    return this.user.user.value;
   }
 
   public get openingMenu(): boolean {
@@ -145,24 +143,26 @@ export class RootComponent implements OnInit, OnDestroy {
       if (environment.game) {
         this.client.deactivate();
       } else {
+        this.client.activationStateChange.next(!this.active);
+
         if (!this.connected) {
-          this.user.login('1', 'Dumbeldor');
 
           this.client.connectionStateChange.next(true);
 
           this.client.playerConnectedChange.next(new Player(
             {
-              serverId: 1,
+              id: 1,
               name: 'Dumbeldor',
               online: true,
               connected: true,
               level: 10,
-              cellName: 'Falkreath'
+              cellName: 'Falkreath',
+              hasInvitedLocalPlayer: true
             }
           ));
           this.client.playerConnectedChange.next(new Player(
             {
-              serverId: 2,
+              id: 2,
               name: 'Pokang',
               online: true,
               connected: true,
@@ -172,27 +172,33 @@ export class RootComponent implements OnInit, OnDestroy {
           ));
           this.client.isLoadedChange.next(new Player(
             {
-              serverId: 1,
+              id: 1,
               isLoaded: true,
               health: 50
             }
           ));
           this.client.isLoadedChange.next(new Player(
             {
-              serverId: 2,
-              isLoaded: false,
+              id: 2,
+              isLoaded: true,
               health: 75
             }
           ));
 
+          this.client.partyInfoChange.next(new PartyInfo(
+            {
+              playerIds: [1],
+              leaderId: 0
+            }
+          ));
+          this.client.localPlayerId = 0;
+
           let name = "Banana";
           let message = "Hello Guys";
-          let whisper = true;
+          let dialogue = true;
 
-          this.client.messageReception.next({ name, content: message, whisper })
+          this.client.messageReception.next({ name, content: message, dialogue: dialogue })
         }
-        this.client.activationStateChange.next(!this.active);
-
       }
     }
 

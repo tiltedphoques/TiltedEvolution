@@ -17,6 +17,8 @@
 #include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyKickRequest.h>
 
+#include <OverlayApp.hpp>
+
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
     : m_world(aWorld), m_transport(aTransportService)
 {
@@ -51,6 +53,9 @@ void PartyService::CreateInvite(const uint32_t aPlayerId) const noexcept
 
 void PartyService::AcceptInvite(const uint32_t aInviterId) const noexcept
 {
+    if (!m_invitations.contains(aInviterId))
+        return;
+
     PartyAcceptInviteRequest request;
     request.InviterId = aInviterId;
     m_transport.Send(request);
@@ -107,18 +112,36 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         m_isLeader = acPartyInfo.IsLeader;
         m_leaderPlayerId = acPartyInfo.LeaderPlayerId;
         m_partyMembers = acPartyInfo.PlayerIds;
+
+        auto pArguments = CefListValue::Create();
+
+        auto pPlayerIds = CefListValue::Create();
+        for (int i = 0; i < m_partyMembers.size(); i++)
+            pPlayerIds->SetInt(i, m_partyMembers[i]);
+
+        pArguments->SetList(0, pPlayerIds);
+
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInfo", pArguments);
     }
 }
 
 void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcept
 {
     spdlog::debug("[PartyService]: Got party invite from {}", acPartyInvite.InviterId);
+
     m_invitations[acPartyInvite.InviterId] = acPartyInvite.ExpiryTick;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acPartyInvite.InviterId);
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInviteReceived", pArguments);
 }
 
 void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
 {
     spdlog::debug("[PartyService]: Left party");
+
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
+
     DestroyParty();
 }
 
@@ -142,6 +165,11 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
             m_world.GetCharacterService().ProcessNewEntity(entity);
         }
     }
+
+    if (m_isLeader)
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
+    else
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyJoined");
 }
 
 void PartyService::DestroyParty() noexcept

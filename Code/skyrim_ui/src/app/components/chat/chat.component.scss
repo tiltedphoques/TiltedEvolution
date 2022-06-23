@@ -31,7 +31,7 @@ app-chat {
         color: #99F;
       }
     }
-    &[data-whisper=true] {
+    &[data-dialogue=true] {
       .app-chat-message {
         color: #00FF33;
       }
