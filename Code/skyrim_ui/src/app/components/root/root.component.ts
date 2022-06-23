@@ -187,8 +187,8 @@ export class RootComponent implements OnInit, OnDestroy {
 
           this.client.partyInfoChange.next(new PartyInfo(
             {
-              playerIds: [1],
-              leaderId: 0
+              playerIds: [1,2],
+              leaderId: 1
             }
           ));
           this.client.localPlayerId = 0;
@@ -202,6 +202,46 @@ export class RootComponent implements OnInit, OnDestroy {
       }
     }
 
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+
+  @HostListener('window:keydown.f3', ['$event'])
+  // @ts-ignore
+  private testGroup(event: KeyboardEvent): void {
+    if (!this.view) {
+      if (environment.game) {
+        this.client.deactivate();
+      } else {
+        this.client.partyInfoChange.next(new PartyInfo(
+          {
+            playerIds: [1],
+            leaderId: 1
+          }
+        ));
+      }
+    }
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  @HostListener('window:keydown.f4', ['$event'])
+  // @ts-ignore
+  private testUnload(event: KeyboardEvent): void {
+    if (!this.view) {
+      if (environment.game) {
+        this.client.deactivate();
+      } else {
+        this.client.isLoadedChange.next(new Player(
+          {
+            id: 2,
+            isLoaded: false,
+            health: 50
+          }
+        ));
+      }
+    }
     event.stopPropagation();
     event.preventDefault();
   }
