@@ -108,14 +108,20 @@ export class GroupService implements OnDestroy {
 
         for (let id of partyInfo.playerIds) {
           group.members.push(id);
-          let player = playerList.players.find(player => player.id == id);
-          player.hasBeenInvited = false;
+
+          for (const player of playerList.players) {
+            if (player.id === id) {
+              player.hasBeenInvited = false;
+              break;
+            }
+          }
         }
 
         group.owner = partyInfo.leaderId;
         group.isEnabled = true;
 
         this.updateGroup();
+        this.playerListService.updatePlayerList();
       }
     })
   }

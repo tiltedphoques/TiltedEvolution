@@ -128,19 +128,19 @@ export class PlayerListService {
     return this.playerList.value;
   }
 
-  private updatePlayerList() {
+  public updatePlayerList() {
     this.playerList.next(this.playerList.value);
   }
 
   public sendPartyInvite(inviteeId: number) {
-    this.clientService.createPartyInvite(inviteeId);
-    
     const playerList = this.getPlayerList();
 
     if (playerList) {
       this.getPlayerById(inviteeId).hasBeenInvited = true;
 
-      this.playerList.next(playerList);
+      this.updatePlayerList();
+
+      this.clientService.createPartyInvite(inviteeId);
     }
   }
 
