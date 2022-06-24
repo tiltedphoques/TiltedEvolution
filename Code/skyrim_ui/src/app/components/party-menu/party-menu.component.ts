@@ -73,6 +73,10 @@ export class PartyMenuComponent implements OnInit, OnDestroy {
         this.groupService.leave();
     }
 
+    public teleportToPlayer(playerId: number) {
+        this.clientService.teleportToPlayer(playerId);
+    }
+
     public acceptPartyInvite(inviterId: number) {
       this.playerListService.acceptPartyInvite(inviterId);
     }

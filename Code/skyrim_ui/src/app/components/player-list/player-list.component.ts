@@ -44,10 +44,6 @@ export class PlayerListComponent implements OnInit, OnDestroy {
     return this.groupService.group.value.members.includes(playerId);
   }
 
-  public teleportToPlayer(playerId: number) {
-    this.clientService.teleportToPlayer(playerId);
-  }
-
   public sendPartyInvite(inviteeId: number) {
     this.playerListService.sendPartyInvite(inviteeId);
   }
