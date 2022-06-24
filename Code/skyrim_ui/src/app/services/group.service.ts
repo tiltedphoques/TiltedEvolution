@@ -104,7 +104,6 @@ export class GroupService implements OnDestroy {
       const playerList = this.playerListService.getPlayerList();
 
       if (group && playerList) {
-        // TODO: this is very primitive, im sure there's some fancy js way to do this
         group.members.splice(0);
 
         for (let id of partyInfo.playerIds) {
@@ -196,9 +195,9 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      this.clientService.launchParty();
       this.soundService.play(Sound.Focus);
       this.loadingService.setLoading(true);
+      this.clientService.launchParty();
       
       group.isEnabled = true;
       this.updateGroup();

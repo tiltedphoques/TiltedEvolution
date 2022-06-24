@@ -27,6 +27,7 @@ import { GroupService } from './services/group.service';
 import { StoreService } from './services/store.service';
 import { SettingService } from './services/setting.service';
 import { PlayerListService } from './services/player-list.service';
+import { MockClientService } from './services/mock-client.service';
 
 import { GroupComponent } from './components/group/group.component';
 import { NotificationPopupComponent } from './components/notification-popup/notification-popup.component';
@@ -52,7 +53,7 @@ import { PartyMenuComponent } from './components/party-menu/party-menu.component
     OrderComponent
   ],
   imports: [ BrowserModule, BrowserAnimationsModule, FormsModule, HttpClientModule, ReactiveFormsModule, FontAwesomeModule, MatTabsModule ],
-  providers: [ ClientService, AssetService, SoundService,
+  providers: [ ClientService, MockClientService, AssetService, SoundService,
     ErrorService, GroupService, PlayerListService, StoreService, SettingService ],
   bootstrap: [ RootComponent ]
 })

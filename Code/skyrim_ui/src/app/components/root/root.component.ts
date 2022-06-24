@@ -19,8 +19,6 @@ import { environment } from '../../../environments/environment';
 import { Player } from '../../models/player';
 
 import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { PlayerList } from 'src/app/models/player-list';
-import { PlayerListService } from 'src/app/services/player-list.service';
 import { PartyInfo } from 'src/app/models/party-info';
 
 @Component({
@@ -154,7 +152,7 @@ export class RootComponent implements OnInit, OnDestroy {
               connected: true,
               level: 10,
               cellName: 'Falkreath',
-              hasInvitedLocalPlayer: true
+              //hasInvitedLocalPlayer: true
             }
           ));
           this.client.playerConnectedChange.next(new Player(
@@ -182,12 +180,15 @@ export class RootComponent implements OnInit, OnDestroy {
             }
           ));
 
+          /*
           this.client.partyInfoChange.next(new PartyInfo(
             {
               playerIds: [1,2],
               leaderId: 1
             }
           ));
+          */
+
           this.client.localPlayerId = 0;
 
           let name = "Banana";

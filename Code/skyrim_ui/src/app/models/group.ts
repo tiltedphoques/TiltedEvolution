@@ -11,6 +11,7 @@ export class Group {
     members?: Array<number>
   } = {}) {
     this.isEnabled = options.isEnabled || false;
+    // TODO: this may be problematic, since the owner id can be 0
     this.owner = options.owner || undefined;
     this.members = options.members || new Array<number>();
   }

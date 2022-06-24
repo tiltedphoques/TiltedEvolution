@@ -3,6 +3,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
 import { ClientService } from './client.service';
+import { MockClientService } from './mock-client.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,11 @@ export class PlayerListService {
 
   private isConnect = false;
 
-  constructor(private clientService: ClientService) {
+  constructor(private clientService: ClientService,
+              // WARNING: do not remove this service dependency.
+              // Due to angular lazy loading, it needs to be instantiated somewhere.
+              // There is surely a better solution, so if you know any, please do refactor.
+              private mockClientService: MockClientService) {
     this.onDebug();
     this.onConnectionStateChanged();
     this.onPlayerConnected();

@@ -6,10 +6,8 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { Player } from '../models/player';
 import { PartyInfo } from '../models/party-info';
-import { take } from 'rxjs/operators';
 import { ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
-import { PlayerListService } from './player-list.service';
 
 /** Message. */
 export interface Message {
@@ -94,6 +92,9 @@ export class ClientService implements OnDestroy {
 
   // The below emitters are used in the mocking service
 
+  /** Used for when a party leader changed. */
+  public partyLaunchedChange = new Subject();
+
   /** Used for when a party invite is sent. */
   public partyInviteChange = new Subject<number>();
 
@@ -102,6 +103,9 @@ export class ClientService implements OnDestroy {
 
   /** Used for when a party member was kicked. */
   public memberKickedChange = new Subject<number>();
+
+  /** Used for when a party leader changed. */
+  public partyLeaderChange = new Subject<number>();
 
   public localPlayerId = undefined;
 
@@ -247,6 +251,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.launchParty();
     }
     else {
+      this.partyLaunchedChange.next();
       this.onPartyCreated();
     }
   }
@@ -307,7 +312,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.changePartyLeader(playerId);
     }
     else {
-      this.messageReception.next({ content: "Simulating change party leader" });
+      this.partyLeaderChange.next(playerId);
     }
   }
 
