@@ -145,12 +145,12 @@ export class PlayerListService {
   }
 
   public acceptPartyInvite(inviterId: number) {
-    this.clientService.acceptPartyInvite(inviterId);
-    
     const playerList = this.getPlayerList();
 
     if (playerList) {
       this.getPlayerById(inviterId).hasInvitedLocalPlayer = false;
+
+      this.clientService.acceptPartyInvite(inviterId);
 
       this.playerList.next(playerList);
     }
@@ -158,5 +158,17 @@ export class PlayerListService {
 
   public getPlayerById(playerId: number) : Player {
     return this.getPlayerList().players.find(player => player.id === playerId);
+  }
+
+  public resetHasBeenInvitedFlags() {
+    const playerList = this.getPlayerList();
+
+    if (playerList) {
+      for (const player of playerList.players) {
+        player.hasBeenInvited = false;
+      }
+
+      this.updatePlayerList();
+    }
   }
 }

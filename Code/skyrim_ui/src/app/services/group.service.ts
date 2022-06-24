@@ -130,8 +130,9 @@ export class GroupService implements OnDestroy {
     this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(() => {
       const group = this.createGroup(this.group.value);
 
-      // TODO: this is probably redundant now
       if (group) {
+        this.playerListService.resetHasBeenInvitedFlags();
+
         group.isEnabled = false;
         group.owner = undefined;
         group.members.splice(0);
