@@ -82,7 +82,8 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
     float realDamage = aDamage;
 
     // TODO(cosideci): this seems problematic? It may not register the kill for others?
-    if (!aKillMove || multiplier < 1.0)
+    // Disabled for now, cause this check seems to have totally broken everything, let's see what happens.
+    //if (!aKillMove || multiplier < 1.0)
         realDamage = aDamage * multiplier;
 
     return realDamage;
