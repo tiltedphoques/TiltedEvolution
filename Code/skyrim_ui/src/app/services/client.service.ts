@@ -236,7 +236,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.launchParty();
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.onPartyCreated();
     }
   }
   
@@ -248,7 +248,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.createPartyInvite(playerId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.messageReception.next({ content: "Simulating create party invite" });
     }
   }
   
@@ -260,7 +260,8 @@ export class ClientService implements OnDestroy {
       skyrimtogether.acceptPartyInvite(inviterId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      // TODO: mock instead
+      this.messageReception.next({ content: "Simulating accept party invite" });
     }
   }
   
@@ -272,7 +273,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.kickPartyMember(playerId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.messageReception.next({ content: "Simulating kick party member" });
     }
   }
   
@@ -284,7 +285,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.leaveParty();
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.onPartyLeft();
     }
   }
   
@@ -296,7 +297,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.changePartyLeader(playerId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.messageReception.next({ content: "Simulating change party leader" });
     }
   }
 
@@ -327,13 +328,14 @@ export class ClientService implements OnDestroy {
       skyrimtogether.teleportToPlayer(playerId);
     }
     else {
-      this.messageReception.next({ content: "Youre not ingame, duh" });
+      this.messageReception.next({ content: "Simulating teleport" });
     }
   }
 
   /**
    * Called when the UI is first initialized.
    */
+  // TODO: is this still used?
   private onInit(): void {
     this.zone.run(() => {
       this.initDone.next(undefined);
