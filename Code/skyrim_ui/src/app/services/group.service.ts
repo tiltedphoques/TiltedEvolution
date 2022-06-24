@@ -3,8 +3,6 @@ import { Group } from '../models/group';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { Player } from '../models/player';
 import { ClientService } from './client.service';
-import { PopupNotificationService } from './popup-notification.service';
-import { NotificationType } from '../models/popup-notification';
 import { ErrorService } from './error.service';
 import { Sound, SoundService } from './sound.service';
 import { PartyInfo } from '../models/party-info';
@@ -31,7 +29,6 @@ export class GroupService implements OnDestroy {
   private isConnect = false;
 
   constructor(private errorService: ErrorService,
-              private popupNotificationService: PopupNotificationService,
               private soundService: SoundService,
               private clientService: ClientService,
               private playerListService: PlayerListService,

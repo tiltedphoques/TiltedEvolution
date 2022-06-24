@@ -92,6 +92,17 @@ export class ClientService implements OnDestroy {
   /** Used purely for debugging. */
   public debugChange = new Subject();
 
+  // The below emitters are used in the mocking service
+
+  /** Used for when a party invite is sent. */
+  public partyInviteChange = new Subject<number>();
+
+  /** Used for when a party invite was accepted by the local player. */
+  public partyJoinedChange = new Subject<number>();
+
+  /** Used for when a party member was kicked. */
+  public memberKickedChange = new Subject<number>();
+
   public localPlayerId = undefined;
 
   private _host: string;
@@ -248,7 +259,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.createPartyInvite(playerId);
     }
     else {
-      this.messageReception.next({ content: "Simulating create party invite" });
+      this.partyInviteChange.next(playerId);
     }
   }
   
@@ -260,8 +271,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.acceptPartyInvite(inviterId);
     }
     else {
-      // TODO: mock instead
-      this.messageReception.next({ content: "Simulating accept party invite" });
+      this.partyJoinedChange.next(inviterId);
     }
   }
   
@@ -273,7 +283,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.kickPartyMember(playerId);
     }
     else {
-      this.messageReception.next({ content: "Simulating kick party member" });
+      this.memberKickedChange.next(playerId);
     }
   }
   
@@ -588,7 +598,7 @@ export class ClientService implements OnDestroy {
     })
   }
 
-  private onPartyInfo(playerIds: Array<number>, leaderId: number) {
+  public onPartyInfo(playerIds: Array<number>, leaderId: number) {
     this.zone.run(() => {
       this.partyInfoChange.next(new PartyInfo(
         {
