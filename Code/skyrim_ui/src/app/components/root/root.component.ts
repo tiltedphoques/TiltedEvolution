@@ -165,6 +165,16 @@ export class RootComponent implements OnInit, OnDestroy {
               cellName: 'Whiterun'
             }
           ));
+          this.client.playerConnectedChange.next(new Player(
+            {
+              id: 3,
+              name: 'Cosideci',
+              online: true,
+              connected: true,
+              level: 69,
+              cellName: 'Whiterun'
+            }
+          ));
           this.client.isLoadedChange.next(new Player(
             {
               id: 1,
@@ -179,15 +189,20 @@ export class RootComponent implements OnInit, OnDestroy {
               health: 75
             }
           ));
+          this.client.isLoadedChange.next(new Player(
+            {
+              id: 3,
+              isLoaded: true,
+              health: 0
+            }
+          ));
 
-          /*
           this.client.partyInfoChange.next(new PartyInfo(
             {
-              playerIds: [1,2],
+              playerIds: [1,2,3],
               leaderId: 1
             }
           ));
-          */
 
           this.client.localPlayerId = 0;
 

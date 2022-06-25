@@ -8,7 +8,7 @@
       {{ player.value.name }}
       <div *ngIf="isOwner(player.value.id)" id="app-group-member-leader"></div>
       <div class="app-group-member-health"
-        *ngIf="(player.value.health && player.value.health !== 0) && player.value.isLoaded">
+        *ngIf="(player.value.health !== undefined) && player.value.isLoaded">
         <div class="app-group-member-health-value" [app-health]="player.value.health">
         </div>
       </div>
