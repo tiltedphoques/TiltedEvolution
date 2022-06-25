@@ -27,11 +27,11 @@
             <label>Auto Hide Timer Length</label>
             <div class="radioBtn">
                 <label for="autoHideTime1">1s</label>
-                <input id="autoHideTime1" type="radio" value="1" name="autoHideTime" [checked]="autoHideTimeSelected(1)" (change)="onAutoHideTimeChange($event)">
+                <input id="autoHideTime1" type="radio" value="1" name="autoHideTime" [checked]="autoHideTimeSelected(1)" (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty">
                 <label for="autoHideTime3">3s</label>
-                <input id="autoHideTime3" type="radio" value="3" name="autoHideTime" [checked]="autoHideTimeSelected(3)" (change)="onAutoHideTimeChange($event)">
+                <input id="autoHideTime3" type="radio" value="3" name="autoHideTime" [checked]="autoHideTimeSelected(3)" (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty">
                 <label for="autoHideTime5">5s</label>
-                <input id="autoHideTime5" type="radio" value="5" name="autoHideTime" [checked]="autoHideTimeSelected(5)" (change)="onAutoHideTimeChange($event)">
+                <input id="autoHideTime5" type="radio" value="5" name="autoHideTime" [checked]="autoHideTimeSelected(5)" (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty">
             </div>
         </div>
         <hr>
