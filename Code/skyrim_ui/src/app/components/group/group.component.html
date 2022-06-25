@@ -5,8 +5,8 @@
       <b class="app-group-member-level">{{ player.value.level }} </b>
       <div *ngIf="player.value.health === 0" class="app-group-member-dead">
       </div>
-      {{ player.value.name }}
       <div *ngIf="isOwner(player.value.id)" id="app-group-member-leader"></div>
+      {{ player.value.name }}
       <div class="app-group-member-health"
         *ngIf="(player.value.health !== undefined) && player.value.isLoaded">
         <div class="app-group-member-health-value" [app-health]="player.value.health">

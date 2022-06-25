@@ -15,6 +15,26 @@ app-settings {
             .flex-item {
                 position: relative;
 
+                .radioBtn {
+                    float: right;
+
+                    input {
+                        float: none;
+                        display: inline-block;
+                    
+                        &:not(:last-child) {
+                            margin-right: 0.5em;
+                        }
+                    }
+
+                    label {
+                        float: none;
+                        position: unset;
+                        display: inline-block;
+                    }
+                }
+
+
                 input {
                     float: right;
 

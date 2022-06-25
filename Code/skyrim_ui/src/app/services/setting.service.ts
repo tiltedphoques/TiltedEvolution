@@ -47,4 +47,11 @@ export class SettingService {
     public isPartyAutoHidden() : boolean {
         return JSON.parse(this.storeService.get('party_autoHide', false));
     }
+
+    public setAutoHideTime(time: number) {
+        this.storeService.set('party_autoHideTime', time);
+    }
+    public getAutoHideTime(): number {
+        return JSON.parse(this.storeService.get('party_autoHideTime', 3));
+    }
 }

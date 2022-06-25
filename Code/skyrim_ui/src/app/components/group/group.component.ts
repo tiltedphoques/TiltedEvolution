@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, OnDestroy, setTestabilityGetter } from '@angular/core';
 import { GroupService } from '../../services/group.service';
 import { Subscription, timer } from 'rxjs';
 import { Group } from '../../models/group';
@@ -110,15 +110,17 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.partyShownSubscription = this.settings.partyShownChange.subscribe((state: boolean) => {
       this.isShown = state;
       this.isAutoHide = false;
+      this.changeUIGroup();
     });
   }
 
   private onPartyAutoHideState() {
     this.partyAutoHideSubscription = this.settings.partyAutoHideChange.subscribe((state: boolean) => {
       this.isAutoHide = state;
-      if (this.isAutoHide) {
-        this.changeUIGroup();
+      if (this.settings.isPartyShown()) {
+        this.isShown = true;
       }
+      this.changeUIGroup();
     })
   }
 
@@ -147,7 +149,8 @@ export class GroupComponent implements OnInit, OnDestroy {
         this.timerSubscription.unsubscribe();
       }
 
-      const source = timer(3000);
+      let timerLength = this.settings.getAutoHideTime() * 1000;
+      let source = timer(timerLength);
 
       this.timerSubscription = source.subscribe(() => {
         console.log("FIN TIMER IS SHOW => FALSE");
@@ -166,7 +169,7 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   public get groupMembers(): Array<Player> {
     let members = this.groupService.getMembers();
-    return members.sort((a, b) => (this.isOwner(a.id) === this.isOwner(b.id)) ? 0 : this.isOwner(a.id)? -1 : 1);
+    return members.sort((a, b) => (this.isOwner(a.id) === this.isOwner(b.id)) ? 0 : this.isOwner(a.id) ? -1 : 1);
   }
 
   public get getOwner(): Player {
