@@ -39,7 +39,5 @@ void CommandService::OnTeleportCommandRequest(const PacketEvent<TeleportCommandR
         }
     }
 
-    spdlog::info("TeleportCommandResponse: {:X}:{:X} at position {}, {}, {}", response.CellId.ModId, response.CellId.BaseId, response.Position.x, response.Position.y, response.Position.z);
-
     acMessage.pPlayer->Send(response);
 }
