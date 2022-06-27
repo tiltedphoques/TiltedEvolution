@@ -54,8 +54,6 @@ export class RootComponent implements OnInit, OnDestroy {
 
   public onInGameStateSubscription() {
     this.gameSubscription = this.client.inGameStateChange.subscribe(state => {
-      console.log("ROOT ingame event state: " + state);
-      console.log("ROOT ingame actual state: " + this.inGame);
       if (!state) {
         this.view = undefined;
       }
@@ -64,8 +62,6 @@ export class RootComponent implements OnInit, OnDestroy {
 
   public onActivationStateSubscription() {
     this.activationSubscription = this.client.activationStateChange.subscribe(state => {
-      console.log("ROOT activate event state: " + state);
-      console.log("ROOT activate actual state: " + this.inGame);
       if (this.inGame && state && !this.view) {
         setTimeout(() => this.chatComp.focus(), 100);
       }
@@ -199,7 +195,7 @@ export class RootComponent implements OnInit, OnDestroy {
 
           this.client.partyInfoChange.next(new PartyInfo(
             {
-              playerIds: [1,2,3],
+              playerIds: [1,2],
               leaderId: 1
             }
           ));

@@ -1,16 +1,15 @@
 <!--TODO: styling-->
 <div id="notInParty" *ngIf="!group.isEnabled ; else inParty">
   <button class="app-group-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled()">Launch party</button>
-  <button *ngFor="let player of invitees | keyvalue" class="app-group-button" (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
+  <button *ngFor="let player of invitees | keyvalue" class="app-group-button"
+    (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
 </div>
 
 <ng-template #inParty>
-  <button class="app-group-button" (click)="leave()">Leave party</button>
-
   <div id="noPlayers" *ngIf="getMembersLength === 0 ; else notEmpty">
     <span>There is nobody in your party yet. Invite them through the player list!</span>
   </div>
-  
+
   <ng-template #notEmpty>
     <div class="containerList">
       <table cellspacing="5" cellpadding="5" class="playerListTable">
@@ -30,11 +29,16 @@
             <td>{{ player.value.name }}</td>
             <td>{{ player.value.cellName }}</td>
             <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-            <td><button (click)="kickMember(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn">Kick</button></td>
-            <td><button (click)="changeLeader(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn">Make leader</button></td>
+            <td><button (click)="kickMember(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn"
+                [ngClass]="!isPartyLeader ? 'hidden' : ''">Kick</button></td>
+            <td><button (click)="changeLeader(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn"
+                [ngClass]="!isPartyLeader ? 'hidden' : ''">Make
+                leader</button></td>
           </tr>
         </tbody>
       </table>
     </div>
   </ng-template>
+
+  <button class="app-group-button btn" (click)="leave()">Leave party</button>
 </ng-template>

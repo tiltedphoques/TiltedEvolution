@@ -8,6 +8,10 @@ app-party-menu {
         overflow: hidden;
     }
 
+    .hidden {
+        display: none;
+    }
+
     .containerList {
         overflow: auto;
         max-height: 60vh;

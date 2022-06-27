@@ -151,24 +151,28 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   private changeUIGroup() {
-    if (this.isAutoHide && this.clientService.connectionStateChange.value) {
-      if (!this.isShown) {
-        this.isShown = true;
-      }
+    //TODO Need to be tested
+    if (this.groupService.group.value && this.groupService.group.value.isEnabled) {
+      if (this.isAutoHide && this.clientService.connectionStateChange.value) {
+        if (!this.isShown) {
+          this.isShown = true;
+        }
 
-      if (this.timerSubscription) {
-        this.timerSubscription.unsubscribe();
-      }
+        if (this.timerSubscription) {
+          this.timerSubscription.unsubscribe();
+        }
 
-      if (!this.active) {
-        let timerLength = this.settings.getAutoHideTime() * 1000;
-        let source = timer(timerLength);
+        if (!this.active) {
+          let timerLength = this.settings.getAutoHideTime() * 1000;
+          let source = timer(timerLength);
 
-        this.timerSubscription = source.subscribe(() => {
-          console.log("FIN TIMER IS SHOW => FALSE");
-          this.isShown = false;
-        })
+          this.timerSubscription = source.subscribe(() => {
+            this.isShown = false;
+          })
+        }
       }
+    } else {
+      this.isShown = false;
     }
   }
 
