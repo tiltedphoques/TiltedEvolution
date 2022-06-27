@@ -36,6 +36,7 @@ Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authen
 Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
 
 // Gameplay
+// TODO: to make this easier for users, use game names for difficulty instead of int
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
@@ -104,8 +105,10 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
     if (uDifficulty.value_as<uint8_t>() > 5)
     {
-        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {})",
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).",
                      uDifficulty.value_as<uint8_t>());
+
+        uDifficulty = 4;
     }
 
     UpdateInfo();

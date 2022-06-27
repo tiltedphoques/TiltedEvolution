@@ -199,10 +199,9 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            /*
             m_world.GetOverlayService().Reload();
-            */
 
+            /*
             auto pArguments = CefListValue::Create();
 
             auto pPlayerIds = CefListValue::Create();
@@ -213,6 +212,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             pArguments->SetList(0, pPlayerIds);
 
             m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("dummyData", pArguments);
+            */
         }
     }
     else
@@ -238,6 +238,7 @@ static bool g_enableProcessesWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Server");
 
     static char s_address[256] = "127.0.0.1:10578";

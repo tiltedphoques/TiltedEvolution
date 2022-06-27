@@ -16,6 +16,7 @@ void DebugService::DrawQuestDebugView()
     auto* pPlayer = PlayerCharacter::Get();
     if (!pPlayer) return;
 
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Quests");
 
     // TODO(cosideci): yes I'll refactor this
