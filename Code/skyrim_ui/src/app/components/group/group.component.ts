@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, OnDestroy, setTestabilityGetter } from '@angular/core';
 import { GroupService } from '../../services/group.service';
 import { Subscription, timer } from 'rxjs';
 import { Group } from '../../models/group';
@@ -35,6 +35,8 @@ export class GroupComponent implements OnInit, OnDestroy {
   private partyShownSubscription: Subscription;
   private partyAutoHideSubscription: Subscription;
 
+  private activationSubscription: Subscription;
+
   constructor(public groupService: GroupService,
     private clientService: ClientService,
     private errorService: ErrorService,
@@ -49,27 +51,29 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
-    this.isLoading = this.loadingService.getLoading().subscribe((isLoading: boolean) => {
-      this.waitLaunch = isLoading;
-    })
+    //TODO Delete? - i see no reason keeping this
 
-    this.connectionSubscription = this.clientService.connectionStateChange.subscribe((state) => {
-      if (this.waitLaunch) {
-        this.loadingService.setLoading(false);
-        this.clientService.messageReception.next({ content: "Connected!" });
+    // this.isLoading = this.loadingService.getLoading().subscribe((isLoading: boolean) => {
+    //   this.waitLaunch = isLoading;
+    // })
 
-        if (state) {
-          this.soundService.play(Sound.Success);
-        }
-        else {
-          this.soundService.play(Sound.Fail);
+    // this.connectionSubscription = this.clientService.connectionStateChange.subscribe((state) => {
+    //   if (this.waitLaunch) {
+    //     this.loadingService.setLoading(false);
+    //     this.clientService.messageReception.next({ content: "Connected!" });
 
-          this.errorService.error(
-            'Unable to reach the game server. Please try again later.'
-          );
-        }
-      }
-    });
+    //     if (state) {
+    //       this.soundService.play(Sound.Success);
+    //     }
+    //     else {
+    //       this.soundService.play(Sound.Fail);
+
+    //       this.errorService.error(
+    //         'Unable to reach the game server. Please try again later.'
+    //       );
+    //     }
+    //   }
+    // });
 
     this.onPartyShownState();
     this.onPartyAutoHideState();
@@ -77,6 +81,13 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.subscribeChangeHealth();
     this.onPartyInfo();
     this.onConnectionState();
+    this.subscribeActivation();
+  }
+
+  private subscribeActivation() {
+    this.activationSubscription = this.clientService.activationStateChange.subscribe((state: boolean) => {
+      this.changeUIGroup();
+    })
   }
 
   private subscribeChangeHealth() {
@@ -110,15 +121,17 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.partyShownSubscription = this.settings.partyShownChange.subscribe((state: boolean) => {
       this.isShown = state;
       this.isAutoHide = false;
+      this.changeUIGroup();
     });
   }
 
   private onPartyAutoHideState() {
     this.partyAutoHideSubscription = this.settings.partyAutoHideChange.subscribe((state: boolean) => {
       this.isAutoHide = state;
-      if (this.isAutoHide) {
-        this.changeUIGroup();
+      if (this.settings.isPartyShown()) {
+        this.isShown = true;
       }
+      this.changeUIGroup();
     })
   }
 
@@ -147,12 +160,15 @@ export class GroupComponent implements OnInit, OnDestroy {
         this.timerSubscription.unsubscribe();
       }
 
-      const source = timer(3000);
+      if (!this.active) {
+        let timerLength = this.settings.getAutoHideTime() * 1000;
+        let source = timer(timerLength);
 
-      this.timerSubscription = source.subscribe(() => {
-        console.log("FIN TIMER IS SHOW => FALSE");
-        this.isShown = false;
-      })
+        this.timerSubscription = source.subscribe(() => {
+          console.log("FIN TIMER IS SHOW => FALSE");
+          this.isShown = false;
+        })
+      }
     }
   }
 
@@ -166,7 +182,7 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   public get groupMembers(): Array<Player> {
     let members = this.groupService.getMembers();
-    return members.sort((a, b) => (this.isOwner(a.id) === this.isOwner(b.id)) ? 0 : this.isOwner(a.id)? -1 : 1);
+    return members.sort((a, b) => (this.isOwner(a.id) === this.isOwner(b.id)) ? 0 : this.isOwner(a.id) ? -1 : 1);
   }
 
   public get getOwner(): Player {

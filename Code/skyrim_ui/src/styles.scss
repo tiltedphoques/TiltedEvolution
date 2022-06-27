@@ -3,52 +3,6 @@
 
 @import 'env';
 
-
-//@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
-
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 400;
-  font-style: normal;
-  src: url('assets/fonts/roboto-condensed/regular-normal.ttf');
-}
-
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 400;
-  font-style: italic;
-  src: url('assets/fonts/roboto-condensed/regular-italic.ttf');
-}
-
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 300;
-  font-style: normal;
-  src: url('assets/fonts/roboto-condensed/light-normal.ttf');
-}
-
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 300;
-  font-style: italic;
-  src: url('assets/fonts/roboto-condensed/light-italic.ttf');
-}
-
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 700;
-  font-style: normal;
-  src: url('assets/fonts/roboto-condensed/bold-normal.ttf');
-}
-
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 700;
-  font-style: italic;
-  src: url('assets/fonts/roboto-condensed/bold-italic.ttf');
-}
-
-
 ::selection {
   color: $-color-background;
   background: mod($-color-background, 1);
@@ -79,7 +33,7 @@ input:not([type=checkbox]),
 textarea,
 optgroup,
 select {
-  font-family: inherit;
+  font-family: $-font-default;
 }
 
 input:not([type=checkbox]),
@@ -105,8 +59,7 @@ option {
 button {
   border: 0;
   opacity: 0.5;
-  font-weight: 700;
-  font-size: 0.9em;
+  font-size: 1rem;
   text-transform: uppercase;
   background: transparent;
   padding: $-size-gap / 2;
@@ -278,5 +231,14 @@ body {
 app-root {
   height: 100vh;
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS', 'Tahoma', 'Geneva',
+    'Verdana', 'sans-serif';
+}

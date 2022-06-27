@@ -11,7 +11,7 @@ export class Group {
     members?: Array<number>
   } = {}) {
     this.isEnabled = options.isEnabled || false;
-    this.owner = options.owner || undefined;
+    this.owner = options.owner;
     this.members = options.members || new Array<number>();
   }
 }

@@ -3,8 +3,6 @@ import { Group } from '../models/group';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { Player } from '../models/player';
 import { ClientService } from './client.service';
-import { PopupNotificationService } from './popup-notification.service';
-import { NotificationType } from '../models/popup-notification';
 import { ErrorService } from './error.service';
 import { Sound, SoundService } from './sound.service';
 import { PartyInfo } from '../models/party-info';
@@ -31,7 +29,6 @@ export class GroupService implements OnDestroy {
   private isConnect = false;
 
   constructor(private errorService: ErrorService,
-              private popupNotificationService: PopupNotificationService,
               private soundService: SoundService,
               private clientService: ClientService,
               private playerListService: PlayerListService,
@@ -107,19 +104,24 @@ export class GroupService implements OnDestroy {
       const playerList = this.playerListService.getPlayerList();
 
       if (group && playerList) {
-        // TODO: this is very primitive, im sure there's some fancy js way to do this
         group.members.splice(0);
 
         for (let id of partyInfo.playerIds) {
           group.members.push(id);
-          let player = playerList.players.find(player => player.id == id);
-          player.hasBeenInvited = false;
+
+          for (const player of playerList.players) {
+            if (player.id === id) {
+              player.hasBeenInvited = false;
+              break;
+            }
+          }
         }
 
         group.owner = partyInfo.leaderId;
         group.isEnabled = true;
 
         this.updateGroup();
+        this.playerListService.updatePlayerList();
       }
     })
   }
@@ -128,8 +130,9 @@ export class GroupService implements OnDestroy {
     this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(() => {
       const group = this.createGroup(this.group.value);
 
-      // TODO: this is probably redundant now
       if (group) {
+        this.playerListService.resetHasBeenInvitedFlags();
+
         group.isEnabled = false;
         group.owner = undefined;
         group.members.splice(0);
@@ -199,9 +202,9 @@ export class GroupService implements OnDestroy {
     const group = this.createGroup(this.group.value);
 
     if (group) {
-      this.clientService.launchParty();
       this.soundService.play(Sound.Focus);
       this.loadingService.setLoading(true);
+      this.clientService.launchParty();
       
       group.isEnabled = true;
       this.updateGroup();

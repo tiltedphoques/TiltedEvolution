@@ -6,10 +6,8 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { Player } from '../models/player';
 import { PartyInfo } from '../models/party-info';
-import { take } from 'rxjs/operators';
 import { ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
-import { PlayerListService } from './player-list.service';
 
 /** Message. */
 export interface Message {
@@ -91,6 +89,23 @@ export class ClientService implements OnDestroy {
 
   /** Used purely for debugging. */
   public debugChange = new Subject();
+
+  // The below emitters are used in the mocking service
+
+  /** Used for when a party leader changed. */
+  public partyLaunchedChange = new Subject();
+
+  /** Used for when a party invite is sent. */
+  public partyInviteChange = new Subject<number>();
+
+  /** Used for when a party invite was accepted by the local player. */
+  public partyJoinedChange = new Subject<number>();
+
+  /** Used for when a party member was kicked. */
+  public memberKickedChange = new Subject<number>();
+
+  /** Used for when a party leader changed. */
+  public partyLeaderChange = new Subject<number>();
 
   public localPlayerId = undefined;
 
@@ -236,7 +251,8 @@ export class ClientService implements OnDestroy {
       skyrimtogether.launchParty();
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.partyLaunchedChange.next();
+      this.onPartyCreated();
     }
   }
   
@@ -248,7 +264,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.createPartyInvite(playerId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.partyInviteChange.next(playerId);
     }
   }
   
@@ -260,7 +276,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.acceptPartyInvite(inviterId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.partyJoinedChange.next(inviterId);
     }
   }
   
@@ -272,7 +288,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.kickPartyMember(playerId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.memberKickedChange.next(playerId);
     }
   }
   
@@ -284,7 +300,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.leaveParty();
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.onPartyLeft();
     }
   }
   
@@ -296,7 +312,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.changePartyLeader(playerId);
     }
     else {
-      this.messageReception.next({ content: "You're not ingame, duh" });
+      this.partyLeaderChange.next(playerId);
     }
   }
 
@@ -327,13 +343,14 @@ export class ClientService implements OnDestroy {
       skyrimtogether.teleportToPlayer(playerId);
     }
     else {
-      this.messageReception.next({ content: "Youre not ingame, duh" });
+      this.messageReception.next({ content: "Simulating teleport" });
     }
   }
 
   /**
    * Called when the UI is first initialized.
    */
+  // TODO: is this still used?
   private onInit(): void {
     this.zone.run(() => {
       this.initDone.next(undefined);
@@ -586,7 +603,7 @@ export class ClientService implements OnDestroy {
     })
   }
 
-  private onPartyInfo(playerIds: Array<number>, leaderId: number) {
+  public onPartyInfo(playerIds: Array<number>, leaderId: number) {
     this.zone.run(() => {
       this.partyInfoChange.next(new PartyInfo(
         {

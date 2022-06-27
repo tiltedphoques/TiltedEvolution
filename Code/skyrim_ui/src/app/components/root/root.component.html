@@ -47,10 +47,10 @@
     <app-popup *ngIf="view === 'serverList'" data-popup="server">
       <app-server-list (done)="view = undefined" (setView)="view = $event"></app-server-list>
     </app-popup>
-    <app-popup *ngIf="view === 'settings'">
+    <app-popup *ngIf="view === 'settings'" data-popup="settings">
       <app-settings (done)="view = undefined" (setView)="view = $event"></app-settings>
     </app-popup>
-    <app-popup *ngIf="view === 'playerManager'">
+    <app-popup *ngIf="view === 'playerManager'" data-popup="playerManager">
       <app-player-manager (done)="view = undefined"></app-player-manager>
     </app-popup>
 

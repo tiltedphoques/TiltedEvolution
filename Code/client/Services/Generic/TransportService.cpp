@@ -110,6 +110,9 @@ void TransportService::OnConnected()
     request.SKSEActive = IsScriptExtenderLoaded();
     request.MO2Active = GetModuleHandleW(kMO2DllName);
 
+    request.Token = m_serverPassword;
+    m_serverPassword = "";
+
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
     // null if discord is not active

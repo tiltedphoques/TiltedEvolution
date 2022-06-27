@@ -19,8 +19,6 @@ import { environment } from '../../../environments/environment';
 import { Player } from '../../models/player';
 
 import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { PlayerList } from 'src/app/models/player-list';
-import { PlayerListService } from 'src/app/services/player-list.service';
 import { PartyInfo } from 'src/app/models/party-info';
 
 @Component({
@@ -42,24 +40,19 @@ export class RootComponent implements OnInit, OnDestroy {
 
   private activationSubscription: Subscription;
   private gameSubscription: Subscription;
-  private activationStateChangeSubscription: Subscription;
 
   public constructor(
     private client: ClientService,
-    private sound: SoundService,
-    private playerList: PlayerListService
+    private sound: SoundService
   ) {
   }
 
   public ngOnInit(): void {
-    this.activationSubscription = this.client.activationStateChange.subscribe(state => {
-      console.log("ROOT activate event state: " + state);
-      console.log("ROOT activate actual state: " + this.inGame);
-      if (this.inGame && state && !this.view) {
-        setTimeout(() => this.chatComp.focus(), 100);
-      }
-    });
+    this.onInGameStateSubscription();
+    this.onActivationStateSubscription();
+  }
 
+  public onInGameStateSubscription() {
     this.gameSubscription = this.client.inGameStateChange.subscribe(state => {
       console.log("ROOT ingame event state: " + state);
       console.log("ROOT ingame actual state: " + this.inGame);
@@ -67,22 +60,24 @@ export class RootComponent implements OnInit, OnDestroy {
         this.view = undefined;
       }
     });
-
-    this.onActivationStateSubscription();
   }
 
   public onActivationStateSubscription() {
-    this.activationStateChangeSubscription = this.client.activationStateChange.subscribe((state: boolean) => {
+    this.activationSubscription = this.client.activationStateChange.subscribe(state => {
+      console.log("ROOT activate event state: " + state);
+      console.log("ROOT activate actual state: " + this.inGame);
+      if (this.inGame && state && !this.view) {
+        setTimeout(() => this.chatComp.focus(), 100);
+      }
       if (!state) {
         this.view = undefined;
       }
-    })
+    });
   }
 
   public ngOnDestroy(): void {
-    this.activationSubscription.unsubscribe();
     this.gameSubscription.unsubscribe();
-    this.activationStateChangeSubscription.unsubscribe();
+    this.activationSubscription.unsubscribe();
   }
 
   public get openingMenu(): boolean {
@@ -157,7 +152,7 @@ export class RootComponent implements OnInit, OnDestroy {
               connected: true,
               level: 10,
               cellName: 'Falkreath',
-              hasInvitedLocalPlayer: true
+              //hasInvitedLocalPlayer: true
             }
           ));
           this.client.playerConnectedChange.next(new Player(
@@ -167,6 +162,16 @@ export class RootComponent implements OnInit, OnDestroy {
               online: true,
               connected: true,
               level: 12,
+              cellName: 'Whiterun'
+            }
+          ));
+          this.client.playerConnectedChange.next(new Player(
+            {
+              id: 3,
+              name: 'Cosideci',
+              online: true,
+              connected: true,
+              level: 69,
               cellName: 'Whiterun'
             }
           ));
@@ -184,13 +189,21 @@ export class RootComponent implements OnInit, OnDestroy {
               health: 75
             }
           ));
+          this.client.isLoadedChange.next(new Player(
+            {
+              id: 3,
+              isLoaded: true,
+              health: 0
+            }
+          ));
 
           this.client.partyInfoChange.next(new PartyInfo(
             {
-              playerIds: [1],
-              leaderId: 0
+              playerIds: [1,2,3],
+              leaderId: 1
             }
           ));
+
           this.client.localPlayerId = 0;
 
           let name = "Banana";
@@ -202,6 +215,46 @@ export class RootComponent implements OnInit, OnDestroy {
       }
     }
 
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+
+  @HostListener('window:keydown.f3', ['$event'])
+  // @ts-ignore
+  private testGroup(event: KeyboardEvent): void {
+    if (!this.view) {
+      if (environment.game) {
+        this.client.deactivate();
+      } else {
+        this.client.partyInfoChange.next(new PartyInfo(
+          {
+            playerIds: [1],
+            leaderId: 1
+          }
+        ));
+      }
+    }
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  @HostListener('window:keydown.f4', ['$event'])
+  // @ts-ignore
+  private testUnload(event: KeyboardEvent): void {
+    if (!this.view) {
+      if (environment.game) {
+        this.client.deactivate();
+      } else {
+        this.client.isLoadedChange.next(new Player(
+          {
+            id: 2,
+            isLoaded: false,
+            health: 50
+          }
+        ));
+      }
+    }
     event.stopPropagation();
     event.preventDefault();
   }

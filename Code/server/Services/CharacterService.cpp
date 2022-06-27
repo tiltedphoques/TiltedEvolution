@@ -199,7 +199,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
         if (itor != std::end(view))
         {
             // This entity already has an owner
-            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
+            spdlog::debug("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
             auto& inventoryComponent = view.get<InventoryComponent>(*itor);
@@ -350,7 +350,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     }
 
     m_world.destroy(*it);
-    spdlog::info("Character destroyed {:X}", acEvent.ServerId);
+    spdlog::debug("Character destroyed {:X}", acEvent.ServerId);
 }
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
@@ -663,7 +663,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
     actorValuesComponent.CurrentActorValues = message.AllActorValues;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
+    spdlog::debug("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
 
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
@@ -722,7 +722,7 @@ void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServ
     characterOwnerComponent.SetOwner(apPlayer);
     characterOwnerComponent.InvalidOwners.clear();
 
-    spdlog::info("\tOwnership claimed {:X}", acServerId);
+    spdlog::debug("\tOwnership claimed {:X}", acServerId);
 }
 
 void CharacterService::ProcessFactionsChanges() const noexcept

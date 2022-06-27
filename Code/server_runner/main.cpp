@@ -43,7 +43,7 @@ constexpr char kEULATextTrue[] = "bConfirmEULA=true";
 
 namespace fs = std::filesystem;
 
-Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "warn"};
+Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
 using namespace std::chrono_literals;
 } // namespace
 
@@ -200,11 +200,14 @@ int main(int argc, char** argv)
     LogInstance logger;
     (void)logger;
 
+    // Disabled EULA check since we have no EULA contents yet
+    /*
     if (!IsEULAAccepted())
     {
         spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
         return 2;
     }
+    */
 
     ScopedCrashHandler _(true, true);
 

@@ -3,6 +3,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
 import { ClientService } from './client.service';
+import { MockClientService } from './mock-client.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,11 @@ export class PlayerListService {
 
   private isConnect = false;
 
-  constructor(private clientService: ClientService) {
+  constructor(private clientService: ClientService,
+              // WARNING: do not remove this service dependency.
+              // Due to angular lazy loading, it needs to be instantiated somewhere.
+              // There is surely a better solution, so if you know any, please do refactor.
+              private mockClientService: MockClientService) {
     this.onDebug();
     this.onConnectionStateChanged();
     this.onPlayerConnected();
@@ -123,29 +128,29 @@ export class PlayerListService {
     return this.playerList.value;
   }
 
-  private updatePlayerList() {
+  public updatePlayerList() {
     this.playerList.next(this.playerList.value);
   }
 
   public sendPartyInvite(inviteeId: number) {
-    this.clientService.createPartyInvite(inviteeId);
-    
     const playerList = this.getPlayerList();
 
     if (playerList) {
       this.getPlayerById(inviteeId).hasBeenInvited = true;
 
-      this.playerList.next(playerList);
+      this.updatePlayerList();
+
+      this.clientService.createPartyInvite(inviteeId);
     }
   }
 
   public acceptPartyInvite(inviterId: number) {
-    this.clientService.acceptPartyInvite(inviterId);
-    
     const playerList = this.getPlayerList();
 
     if (playerList) {
       this.getPlayerById(inviterId).hasInvitedLocalPlayer = false;
+
+      this.clientService.acceptPartyInvite(inviterId);
 
       this.playerList.next(playerList);
     }
@@ -153,5 +158,17 @@ export class PlayerListService {
 
   public getPlayerById(playerId: number) : Player {
     return this.getPlayerList().players.find(player => player.id === playerId);
+  }
+
+  public resetHasBeenInvitedFlags() {
+    const playerList = this.getPlayerList();
+
+    if (playerList) {
+      for (const player of playerList.players) {
+        player.hasBeenInvited = false;
+      }
+
+      this.updatePlayerList();
+    }
   }
 }

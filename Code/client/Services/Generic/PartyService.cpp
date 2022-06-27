@@ -168,8 +168,6 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
 
     if (m_isLeader)
         m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
-    else
-        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyJoined");
 }
 
 void PartyService::DestroyParty() noexcept

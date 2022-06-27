@@ -91,7 +91,7 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
     }
 
     uint16_t port = aEventArgs->GetInt(1) ? aEventArgs->GetInt(1) : 10578;
-    // iAmAToken = aEventArgs->GeString(2);
+    World::Get().GetTransport().SetServerPassword(aEventArgs->GetString(2));
 
     std::string endpoint = baseIp + ":" + std::to_string(port);
 

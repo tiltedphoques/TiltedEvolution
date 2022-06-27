@@ -15,13 +15,24 @@
         <h2>Party</h2>
         <div class="flex-item">
             <label for="showParty">Show Party</label>
-            <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty" [disabled]="isPartyDisabled"
+            <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty" [disabled]="autoHideParty"
                 (change)="onShowPartyChange($event)">
         </div>
         <div class="flex-item">
             <label for="autoHideParty">Auto Hide Party</label>
-            <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty" [disabled]="isPartyDisabled"
+            <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty"
                 (change)="onAutoHidePartyChange($event)">
+        </div>
+        <div class="flex-item">
+            <label>Auto Hide Timer Length</label>
+            <div class="radioBtn">
+                <label for="autoHideTime1">1s</label>
+                <input id="autoHideTime1" type="radio" value="1" name="autoHideTime" [checked]="autoHideTimeSelected(1)" (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty">
+                <label for="autoHideTime3">3s</label>
+                <input id="autoHideTime3" type="radio" value="3" name="autoHideTime" [checked]="autoHideTimeSelected(3)" (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty">
+                <label for="autoHideTime5">5s</label>
+                <input id="autoHideTime5" type="radio" value="5" name="autoHideTime" [checked]="autoHideTimeSelected(5)" (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty">
+            </div>
         </div>
         <hr>
         <h2>Debug</h2>
