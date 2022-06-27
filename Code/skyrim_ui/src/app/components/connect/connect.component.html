@@ -2,7 +2,7 @@
   <p>Connect to a server using its full address. Use the format <strong>address[:port]</strong>. The port defaults to <strong>10578</strong>.</p>
 
     <input #input type="text" placeholder="Address" (keydown.enter)="connect()" [(ngModel)]="address" spellcheck="false">
-    <input type="text" placeholder="Token" (keydown.enter)="connect()" [(ngModel)]="token" spellcheck="false">
+    <input type="text" placeholder="Password" (keydown.enter)="connect()" [(ngModel)]="token" spellcheck="false">
 
   <app-popup-buttons>
     <button [disabled]="connecting" (click)="connect()" data-style-ornament="simple">Connect</button>

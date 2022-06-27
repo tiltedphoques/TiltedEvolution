@@ -33,7 +33,7 @@ Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that s
 Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
 Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
 // Gameplay
 // TODO: to make this easier for users, use game names for difficulty instead of int
@@ -110,6 +110,8 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
         uDifficulty = 4;
     }
+
+    m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
 
     UpdateInfo();
     spdlog::info("Server started on port {}", GetPort());
@@ -537,7 +539,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 
     // check if the proper server password was supplied.
-    if (acRequest->Token == sToken.value())
+    if (acRequest->Token == sPassword.value())
     {
         Mods& responseList = serverResponse.UserMods;
         auto& modsComponent = m_pWorld->ctx().at<ModsComponent>();
@@ -657,7 +659,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             notify.Level = pOtherPlayer->GetLevel();
 
-            spdlog::info("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
+            spdlog::debug("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
             Send(pPlayer->GetConnectionId(), notify);
         }

@@ -55,6 +55,10 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
+    // TODO: list pw protected servers on server list
+    if (GameServer::Get()->IsPasswordProtected())
+        return;
+
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());

@@ -65,6 +65,10 @@ struct GameServer final : Server
     {
         return !m_requestStop;
     }
+    bool IsPasswordProtected() const noexcept
+    {
+        return !m_isPasswordProtected;
+    }
 
     template <class T> void ForEachAdmin(const T& aFunctor)
     {
@@ -89,6 +93,8 @@ private:
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
+
+    bool m_isPasswordProtected{};
 
     Info m_info{};
     UniquePtr<World> m_pWorld;

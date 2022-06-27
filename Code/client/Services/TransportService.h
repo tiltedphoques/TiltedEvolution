@@ -30,6 +30,10 @@ struct TransportService : Client
     void OnUpdate() override;
 
     [[nodiscard]] bool IsOnline() const noexcept { return m_connected; }
+    void SetServerPassword(const std::string& acPassword) noexcept
+    {
+        m_serverPassword = acPassword;
+    }
 
 protected:
 
@@ -44,6 +48,7 @@ private:
     World& m_world;
     entt::dispatcher& m_dispatcher;
     bool m_connected;
+    String m_serverPassword{};
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_sendServerMessageConnection;
