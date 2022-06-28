@@ -148,7 +148,7 @@ export class RootComponent implements OnInit, OnDestroy {
               connected: true,
               level: 10,
               cellName: 'Falkreath',
-              //hasInvitedLocalPlayer: true
+              hasInvitedLocalPlayer: true
             }
           ));
           this.client.playerConnectedChange.next(new Player(
@@ -196,7 +196,7 @@ export class RootComponent implements OnInit, OnDestroy {
           this.client.partyInfoChange.next(new PartyInfo(
             {
               playerIds: [1,2],
-              leaderId: 1
+              leaderId: 0
             }
           ));
 
