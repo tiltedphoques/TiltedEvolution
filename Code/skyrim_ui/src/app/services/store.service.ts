@@ -6,13 +6,13 @@ import { environment } from '../../environments/environment';
 })
 export class StoreService {
 
-  constructor() {}
+  constructor() { }
 
   public get(key: string, valueIfNull: any): any {
     const value = localStorage.getItem(key);
 
     if (value !== null) {
-      if(!environment.game) {
+      if (!environment.game || environment.nightlyBuild) {
         console.log(`Value : ${key} : ${value}`);
       }
       return value;

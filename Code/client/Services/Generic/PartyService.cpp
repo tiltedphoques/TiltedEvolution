@@ -120,6 +120,7 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
             pPlayerIds->SetInt(i, m_partyMembers[i]);
 
         pArguments->SetList(0, pPlayerIds);
+        pArguments->SetInt(1, acPartyInfo.LeaderPlayerId);
 
         m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInfo", pArguments);
     }

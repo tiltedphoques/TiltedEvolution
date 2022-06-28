@@ -213,6 +213,7 @@ void OverlayService::SetInGame(bool aInGame) noexcept
     else
     {
         m_pOverlay->ExecuteAsync("exitGame");
+        // TODO: this does nothing, since m_inGame is false
         SetActive(false);
     }
 }
@@ -285,7 +286,7 @@ void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
-    m_pOverlay->ExecuteAsync("setServerId", pArguments);
+    m_pOverlay->ExecuteAsync("setLocalPlayerId", pArguments);
 }
 
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
@@ -461,7 +462,7 @@ void OverlayService::RunDebugDataUpdates() noexcept
 // health sync code being somewhat broken for players.
 void OverlayService::RunPlayerHealthUpdates() noexcept
 {
-    if (!m_transport.IsConnected())
+    if (!m_transport.IsConnected() || !m_world.GetPartyService().IsInParty())
         return;
 
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -473,8 +474,16 @@ void OverlayService::RunPlayerHealthUpdates() noexcept
 
     lastSendTimePoint = now;
 
+    static float s_previousPercentage = -1.f;
+
+    const float newPercentage = CalculateHealthPercentage(PlayerCharacter::Get());
+    if (newPercentage == s_previousPercentage)
+        return;
+
+    s_previousPercentage = newPercentage;
+
     RequestPlayerHealthUpdate request{};
-    request.Percentage = CalculateHealthPercentage(PlayerCharacter::Get());
+    request.Percentage = newPercentage;
 
     m_transport.Send(request);
 }

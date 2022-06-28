@@ -5,6 +5,10 @@
 
 app-connect {
   display: block;
+  font-size: 1.25rem;
+  font-family: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS', 'Tahoma', 'Geneva',
+  'Verdana', 'sans-serif';
+
 
   app-window {
     @include gapped-vertical($-size-gap);

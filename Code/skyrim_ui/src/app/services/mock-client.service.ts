@@ -66,7 +66,7 @@ export class MockClientService implements OnDestroy {
 
   private onPartyJoined() {
     this.partyJoinedSubscription = this.clientService.partyJoinedChange.subscribe((inviterId: number) => {
-		// TODO
+      
     });
   }
 

@@ -288,8 +288,17 @@ export class GroupService implements OnDestroy {
     }
   }
 
-  public getMembersLength(): number {
-    return (this.group.value ? this.group.value.members.length : 0);
+  public getMembersLength(excludeLocal: boolean): number {
+    if (!this.group.value) {   
+      return 0;
+    }
+    
+    let members = this.group.value.members;
+    if (excludeLocal) {
+      members = members.filter(member => member !== this.clientService.localPlayerId);
+    }
+
+    return members.length;
   }
 
   public isPartyEnabled(): boolean {

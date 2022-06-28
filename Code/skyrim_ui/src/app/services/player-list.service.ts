@@ -109,7 +109,14 @@ export class PlayerListService {
 
         this.playerList.next(playerList);
       }
+
+      
     })
+  }
+
+  public getLocalPlayer(): Player {
+    let localPlayerId = this.clientService.localPlayerId;
+    return this.getPlayerById(localPlayerId);
   }
 
   public getPlayerList() {

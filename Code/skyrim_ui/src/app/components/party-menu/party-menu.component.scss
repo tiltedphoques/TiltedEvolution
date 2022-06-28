@@ -8,9 +8,22 @@ app-party-menu {
         overflow: hidden;
     }
 
+    .hidden {
+        display: none;
+    }
+ 
+    .party-menu-button {
+        padding: 0.25vw;
+        background-color: #292929;
+        border-radius: 2px;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
     .containerList {
         overflow: auto;
         max-height: 60vh;
+        margin-bottom: 1.0rem;
 
         .playerListTable {
             width: 100%;

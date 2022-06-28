@@ -382,7 +382,6 @@ export class ClientService implements OnDestroy {
   private onEnterGame(): void {
     this.zone.run(() => {
       this.inGameStateChange.next(true);
-      console.log("ENTER GAME: " + this.inGameStateChange.value);
     });
   }
 
@@ -619,7 +618,7 @@ export class ClientService implements OnDestroy {
       this.loadingService.setLoading(false);
       this.partyInfoChange.next(new PartyInfo(
         {
-          playerIds: [],
+          playerIds: [this.localPlayerId],
           leaderId: this.localPlayerId
         }
       ));

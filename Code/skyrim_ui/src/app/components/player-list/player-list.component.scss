@@ -12,6 +12,10 @@ app-player-list {
         overflow: hidden;
     }
 
+    .hidden {
+        opacity: 0;
+    }
+
     .containerList {
         overflow: auto;
         max-height: 60vh;

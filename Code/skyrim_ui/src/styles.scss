@@ -3,6 +3,16 @@
 
 @import 'env';
 
+
+input {
+  font-size: 1rem;
+}
+
+input::placeholder {
+  font-size: 1rem !important;
+}
+
+
 ::selection {
   color: $-color-background;
   background: mod($-color-background, 1);

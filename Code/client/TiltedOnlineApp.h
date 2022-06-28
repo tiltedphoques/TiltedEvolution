@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CrashHandler.h"
+//#include "CrashHandler.h"
 
-//#include <crash_handler/CrashHandler.h>
+#include <crash_handler/CrashHandler.h>
 
 struct TiltedOnlineApp final : App
 {
@@ -31,6 +31,6 @@ struct TiltedOnlineApp final : App
     void UninstallHooks();
 
   private:
-    //ScopedCrashHandler m_crashHandler;
-    CrashHandler m_crashHandler;
+    ScopedCrashHandler m_crashHandler;
+    //CrashHandler m_crashHandler;
 };

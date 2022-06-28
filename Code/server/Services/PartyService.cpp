@@ -329,7 +329,6 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
     }
 }
 
-// TODO(cosideci): why broadcast the whole list every time? Why not just the diff?
 void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
 {
     auto pIgnoredPlayer = apPlayer;

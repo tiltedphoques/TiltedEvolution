@@ -67,7 +67,7 @@ struct GameServer final : Server
     }
     bool IsPasswordProtected() const noexcept
     {
-        return !m_isPasswordProtected;
+        return m_isPasswordProtected;
     }
 
     template <class T> void ForEachAdmin(const T& aFunctor)
