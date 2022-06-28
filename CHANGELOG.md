@@ -1,3 +1,12 @@
+## [1.38.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.38.0...v1.38.1) (2022-06-28)
+
+
+### Bug Fixes
+
+* disable buttons for non leader ([c2a4221](https://github.com/tiltedphoques/TiltedEvolution/commit/c2a4221ea86a05f75a81955eac79096da4bcc67c))
+* group ui not showing up ([02b2ec6](https://github.com/tiltedphoques/TiltedEvolution/commit/02b2ec6c526b65419cc170f7cfa8ac9ad3aebb5f))
+* pw protected servers showing on list ([bb55224](https://github.com/tiltedphoques/TiltedEvolution/commit/bb55224ac6495751b4d4e7e435dc1d277c1f6cc0))
+
 # [1.38.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.37.1...v1.38.0) (2022-06-27)
 
 
