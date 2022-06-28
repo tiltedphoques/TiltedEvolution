@@ -286,7 +286,7 @@ void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
-    m_pOverlay->ExecuteAsync("setServerId", pArguments);
+    m_pOverlay->ExecuteAsync("setLocalPlayerId", pArguments);
 }
 
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept

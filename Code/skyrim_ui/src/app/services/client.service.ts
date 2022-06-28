@@ -618,7 +618,7 @@ export class ClientService implements OnDestroy {
       this.loadingService.setLoading(false);
       this.partyInfoChange.next(new PartyInfo(
         {
-          playerIds: [],
+          playerIds: [this.localPlayerId],
           leaderId: this.localPlayerId
         }
       ));
