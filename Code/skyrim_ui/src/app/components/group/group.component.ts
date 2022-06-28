@@ -86,19 +86,19 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   private subscribeActivation() {
     this.activationSubscription = this.clientService.activationStateChange.subscribe((state: boolean) => {
-      this.changeUIGroup();
+      this.flashGroup();
     })
   }
 
   private subscribeChangeHealth() {
     this.userHealthSubscription = this.clientService.healthChange.subscribe((p: Player) => {
-      this.changeUIGroup();
+      this.flashGroup();
     })
   }
 
   private onPartyInfo() {
     this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe(() => {
-      this.changeUIGroup();
+      this.flashGroup();
     })
   }
 
@@ -106,7 +106,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.connectionStateSubscription = this.clientService.connectionStateChange.subscribe((state: boolean) => {
       if (this.isAutoHide) {
         if (state) {
-          this.changeUIGroup();
+          this.flashGroup();
         }
         else {
           if (this.timerSubscription) {
@@ -121,7 +121,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.partyShownSubscription = this.settings.partyShownChange.subscribe((state: boolean) => {
       this.isShown = state;
       this.isAutoHide = false;
-      this.changeUIGroup();
+      this.flashGroup();
     });
   }
 
@@ -131,7 +131,7 @@ export class GroupComponent implements OnInit, OnDestroy {
       if (this.settings.isPartyShown()) {
         this.isShown = true;
       }
-      this.changeUIGroup();
+      this.flashGroup();
     })
   }
 
@@ -150,29 +150,23 @@ export class GroupComponent implements OnInit, OnDestroy {
     }
   }
 
-  private changeUIGroup() {
-    //TODO Need to be tested
-    if (this.groupService.group.value && this.groupService.group.value.isEnabled) {
-      if (this.isAutoHide && this.clientService.connectionStateChange.value) {
-        if (!this.isShown) {
-          this.isShown = true;
-        }
-
-        if (this.timerSubscription) {
-          this.timerSubscription.unsubscribe();
-        }
-
-        if (!this.active) {
-          let timerLength = this.settings.getAutoHideTime() * 1000;
-          let source = timer(timerLength);
-
-          this.timerSubscription = source.subscribe(() => {
-            this.isShown = false;
-          })
-        }
+  private flashGroup() {
+    if (this.isAutoHide && this.clientService.connectionStateChange.value) {
+      if (!this.isShown) {
+        this.isShown = true;
       }
-    } else {
-      this.isShown = false;
+
+      if (this.timerSubscription) {
+        this.timerSubscription.unsubscribe();
+      }
+
+      if (!this.active) {
+        let timerLength = this.settings.getAutoHideTime() * 1000;
+        let source = timer(timerLength);
+        this.timerSubscription = source.subscribe(() => {
+          this.isShown = false;
+        })
+      }
     }
   }
 
