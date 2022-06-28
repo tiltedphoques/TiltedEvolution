@@ -1,8 +1,9 @@
 <div class="app-connect">
   <p>Connect to a server using its full address. Use the format <strong>address:port</strong>. The port defaults to <strong>10578</strong>.</p>
+  <p style="color:rgb(247, 54, 54);">Do NOT connect to any server if you are still in the Helgen intro sequence. Make sure you just escaped Helgen first.</p>
 
-    <input #input type="text" placeholder="Address" (keydown.enter)="connect()" [(ngModel)]="address" spellcheck="false">
-    <input type="text" placeholder="Password" (keydown.enter)="connect()" [(ngModel)]="token" spellcheck="false">
+  <input #input type="text" placeholder="Address" (keydown.enter)="connect()" [(ngModel)]="address" spellcheck="false">
+  <input type="text" placeholder="Password" (keydown.enter)="connect()" [(ngModel)]="token" spellcheck="false">
 
   <app-popup-buttons>
     <button [disabled]="connecting" (click)="connect()" data-style-ornament="simple">Connect</button>

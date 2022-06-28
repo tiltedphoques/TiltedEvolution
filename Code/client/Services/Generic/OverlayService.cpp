@@ -213,6 +213,7 @@ void OverlayService::SetInGame(bool aInGame) noexcept
     else
     {
         m_pOverlay->ExecuteAsync("exitGame");
+        // TODO: this does nothing, since m_inGame is false
         SetActive(false);
     }
 }
