@@ -79,15 +79,6 @@ static TiltedPhoques::Initializer s_viewportHooks([]() {
     // patch dwStyle in BSGraphics::InitWindows
     TiltedPhoques::Put(mem::pointer(initWindowLoc.GetPtr()) + 0xD7 + 1, WS_OVERLAPPEDWINDOW);
 
-    // TODO: ft
-#if 0
-    const VersionDbPtr<void> windowLoc();
-    // TODO: move me to input patches.
-    // don't let the game steal the media keys in windowed mode
-    TiltedPhoques::Put(mem::pointer(windowLoc.GetPtr()) + 0x55 + 2,
-                       /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
-#endif
-
     const VersionDbPtr<void> timerLoc(700870);
     const VersionDbPtr<void> renderInit(564406);
 
