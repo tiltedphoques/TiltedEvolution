@@ -6,7 +6,7 @@ Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>&
     Vector<TESObjectREFR*> references{};
 
     if (!objects.data)
-        return;
+        return references;
 
     for (TESObjectREFR* pObject : objects)
     {

@@ -28,13 +28,22 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
     return {serverId};
 }
 
-// TODO: ft
+// TODO: ft (verify)
 void ShowHudMessage(const TiltedPhoques::String& acMessage)
 {
 #if TP_SKYRIM64
     using TShowHudMessage = void(const char*, const char*, bool);
+#elif TP_FALLOUT4
+    using TShowHudMessage = void(const char*, const char*, bool, bool);
+#endif
+
     POINTER_SKYRIMSE(TShowHudMessage, s_showHudMessage, 52933);
+    POINTER_FALLOUT4(TShowHudMessage, s_showHudMessage, 1163006);
+
+#if TP_SKYRIM64
     s_showHudMessage(acMessage.c_str(), nullptr, false);
+#elif TP_FALLOUT4
+    s_showHudMessage(acMessage.c_str(), nullptr, false, false);
 #endif
 }
 

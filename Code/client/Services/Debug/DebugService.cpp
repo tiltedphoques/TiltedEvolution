@@ -204,6 +204,10 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            Utils::ShowHudMessage("Hello");
+
+            return;
+
             Actor* pActor = Cast<Actor>(TESForm::GetById(ActorID));
             if (pActor)
             {
