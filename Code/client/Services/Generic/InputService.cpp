@@ -226,7 +226,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 #endif
 
             // Ensures the game is actually loaded, in case the initial event was sent too early
-            overlay.GetOverlayApp()->ExecuteAsync("entergame");
+            overlay.GetOverlayApp()->ExecuteAsync("enterGame");
 
             pRenderer->SetCursorVisible(!active);
 

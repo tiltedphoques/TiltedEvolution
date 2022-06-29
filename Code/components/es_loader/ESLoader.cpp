@@ -35,7 +35,7 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
 {
     if (!fs::is_directory(m_directory))
     {
-        spdlog::warn("Data directory not found.");
+        //spdlog::warn("Data directory not found.");
         return nullptr;
     }
 

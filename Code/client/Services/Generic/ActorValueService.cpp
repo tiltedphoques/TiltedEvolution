@@ -307,8 +307,11 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
             pActor->Kill();
     }
 
+    // TODO(cosideci): find fix for player health sync so this can be used again
+    /*
     if (pActor->GetExtension()->IsRemotePlayer())
         World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor->formID);
+    */
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept

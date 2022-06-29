@@ -33,12 +33,13 @@ Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that s
 Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
 Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
+Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
 // Gameplay
+// TODO: to make this easier for users, use game names for difficulty instead of int
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
-Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", true};
+Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -104,9 +105,13 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
     if (uDifficulty.value_as<uint8_t>() > 5)
     {
-        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {})",
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).",
                      uDifficulty.value_as<uint8_t>());
+
+        uDifficulty = 4;
     }
+
+    m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
 
     UpdateInfo();
     spdlog::info("Server started on port {}", GetPort());
@@ -534,7 +539,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 
     // check if the proper server password was supplied.
-    if (acRequest->Token == sToken.value())
+    if (acRequest->Token == sPassword.value())
     {
         Mods& responseList = serverResponse.UserMods;
         auto& modsComponent = m_pWorld->ctx().at<ModsComponent>();
@@ -654,7 +659,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
             notify.Level = pOtherPlayer->GetLevel();
 
-            spdlog::info("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
+            spdlog::debug("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
             Send(pPlayer->GetConnectionId(), notify);
         }

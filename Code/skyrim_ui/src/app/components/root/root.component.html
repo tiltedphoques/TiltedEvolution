@@ -18,11 +18,13 @@
       <ng-container *ngIf="connected">
         <button (click)="view = 'disconnect'" data-style-ornament="inverted"
           [attr.data-style-active]="view === 'disconnect'">Disconnect</button>
-        <button (click)="reconnect()" data-style-ornament="inverted"
+        <!--
+          <button (click)="reconnect()" data-style-ornament="inverted"
           [attr.data-style-active]="view === 'reconnect'">Reconnect</button>
-          <button (click)="view = 'playerList'" data-style-ornament="inverted" [attr.data-style-active]="view === 'playerList'">
-            PLayer List
-          </button>
+        -->
+        <button (click)="view = 'playerManager'" data-style-ornament="inverted" [attr.data-style-active]="view === 'playerManager'">
+          Player Manager
+        </button>
       </ng-container>
       <button (click)="view = 'settings'" data-style-ornament="inverted" [attr.data-style-active]="view === 'settings'">
         Settings
@@ -42,17 +44,14 @@
     <app-popup *ngIf="view === 'disconnect'">
       <app-disconnect (done)="view = undefined"></app-disconnect>
     </app-popup>
-    <app-popup *ngIf="view === 'friends'">
-      <app-friends (done)="view = undefined"></app-friends>
-    </app-popup>
     <app-popup *ngIf="view === 'serverList'" data-popup="server">
       <app-server-list (done)="view = undefined" (setView)="view = $event"></app-server-list>
     </app-popup>
-    <app-popup *ngIf="view === 'settings'">
+    <app-popup *ngIf="view === 'settings'" data-popup="settings">
       <app-settings (done)="view = undefined" (setView)="view = $event"></app-settings>
     </app-popup>
-    <app-popup *ngIf="view === 'playerList'">
-      <app-player-list (done)="view = undefined"></app-player-list>
+    <app-popup *ngIf="view === 'playerManager'" data-popup="playerManager">
+      <app-player-manager (done)="view = undefined"></app-player-manager>
     </app-popup>
 
     <app-error></app-error>

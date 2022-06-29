@@ -1,1 +1,1 @@
-<img *ngIf="isLoading" src="assets/images/loading.gif"/>
+<img *ngIf="isLoading" [ngClass]="isLoading ? 'app-loading-gif' : ''"/>

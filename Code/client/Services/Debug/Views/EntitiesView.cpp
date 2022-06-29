@@ -148,6 +148,7 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     if (!pActor)
         return;
 
+    /*
     if (ImGui::Button("Teleport away"))
     {
         m_world.GetRunner().Queue([id = aFormComponent.Id]() {
@@ -160,6 +161,7 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
             pActor->MoveTo(pCell, pos);
         });
     }
+    */
 
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);

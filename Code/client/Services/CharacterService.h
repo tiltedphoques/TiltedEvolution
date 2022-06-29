@@ -97,6 +97,7 @@ private:
 
     void RequestServerAssignment(entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
+    void DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 

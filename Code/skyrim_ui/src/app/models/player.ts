@@ -10,9 +10,6 @@ export class Player implements Friend {
   /** Player ID. */
   id: number;
 
-  /** Server id player. */
-  serverId: number;
-
   /** Username. */
   name: string;
 
@@ -30,11 +27,11 @@ export class Player implements Friend {
   /** Connected in server. */
   connected: boolean;
 
-  /** Token Invitation. */
-  invitation: string;
+  /** Has local player received invitation from this player. */
+  hasInvitedLocalPlayer: boolean;
 
   /** invitation sent. */
-  invitationSent: boolean;
+  hasBeenInvited: boolean;
 
   /** CellName */
   cellName: string;
@@ -42,25 +39,26 @@ export class Player implements Friend {
   /** isLoaded */
   isLoaded: boolean;
 
+  isInLocalParty: boolean;
+
   constructor(options: {
     id?: number,
-    serverId?: number,
     name?: string,
     avatar?: string,
     online?: boolean,
     connected?: boolean,
     health?: number,
     level?: number,
-    invitation?: string,
-    invitationSent?: boolean,
+    hasInvitedLocalPlayer?: boolean,
+    hasBeenInvited?: boolean,
     cellName?: string,
-    isLoaded?: boolean
+    isLoaded?: boolean,
+    isInLocalParty?: boolean,
   } = {}) {
     this.id = options.id || 0;
-    this.serverId = options.serverId || 0;
     this.name = options.name || '';
     this.avatar = options.avatar || '';
-    this.invitation = options.invitation || '';
+    this.hasInvitedLocalPlayer = options.hasInvitedLocalPlayer || false;
     this.cellName = options.cellName || 'vide';
 
     if (options.health || options.health === 0) {
@@ -91,11 +89,11 @@ export class Player implements Friend {
       this.connected = options.connected;
     }
 
-    if (options.invitationSent === undefined || options.invitationSent === null) {
-      this.invitationSent = false;
+    if (options.hasBeenInvited === undefined || options.hasBeenInvited === null) {
+      this.hasBeenInvited = false;
     }
     else {
-      this.invitationSent = options.invitationSent;
+      this.hasBeenInvited = options.hasBeenInvited;
     }
 
     if (options.isLoaded === undefined || options.isLoaded === null) {
@@ -104,5 +102,7 @@ export class Player implements Friend {
     else {
       this.isLoaded = options.isLoaded;
     }
+
+    this.isInLocalParty = options.isInLocalParty || false;
   }
 }

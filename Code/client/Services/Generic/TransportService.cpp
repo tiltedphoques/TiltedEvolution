@@ -105,10 +105,13 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 
 void TransportService::OnConnected()
 {
-    AuthenticationRequest request;
+    AuthenticationRequest request{};
     request.Version = BUILD_COMMIT;
     request.SKSEActive = IsScriptExtenderLoaded();
     request.MO2Active = GetModuleHandleW(kMO2DllName);
+
+    request.Token = m_serverPassword;
+    m_serverPassword = "";
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
 

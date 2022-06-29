@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
 import { ClientService } from "src/app/services/client.service";
 import { SettingService } from "src/app/services/setting.service";
 
@@ -20,13 +20,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     public showDebug: boolean;
     public autoHideParty: boolean;
     public showParty: boolean;
-    public isPartyDisabled: boolean = false;
+    public autoHideTime: number;
 
     constructor(private settings: SettingService, private client: ClientService) {
 
     }
     ngOnDestroy(): void {
-       
+
     }
     ngOnInit(): void {
         this.volume = this.settings.getVolume();
@@ -34,6 +34,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.showDebug = this.settings.isDebugShown();
         this.autoHideParty = this.settings.isPartyAutoHidden();
         this.showParty = this.settings.isPartyShown();
+        this.autoHideTime = this.settings.getAutoHideTime();
     }
 
     public cancel(): void {
@@ -57,5 +58,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
     onAutoHidePartyChange(event: any) {
         this.settings.autoHideParty(event.target.checked);
+        this.autoHideParty = event.target.checked;
+    }
+    onAutoHideTimeChange(event: any) {
+        this.settings.setAutoHideTime(event.target.value);
+        this.autoHideTime = event.target.value;
+    }
+
+    public autoHideTimeSelected(number: number): boolean {
+        return this.settings.getAutoHideTime() === number;
+    }
+
+    private close() {
+        this.done.next();
+    }
+
+    @HostListener('window:keydown.escape', ['$event'])
+    // @ts-ignore
+    private activate(event: KeyboardEvent): void {
+        this.close();
+        event.stopPropagation();
+        event.preventDefault();
     }
 }

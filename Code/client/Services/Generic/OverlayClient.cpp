@@ -58,7 +58,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         else if (eventName == "acceptPartyInvite")
         {
             uint32_t aInviterId = eventArgs->GetInt(0);
-            World::Get().GetPartyService().AcceptInvite(aInviterId);
+            // push to main thread because the party service has to check validity of invite thread safely
+            World::Get().GetRunner().Queue([aInviterId]() { World::Get().GetPartyService().AcceptInvite(aInviterId); });
         }
         else if (eventName == "kickPartyMember")
         {
@@ -72,6 +73,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         }
         else if (eventName == "teleportToPlayer")
             ProcessTeleportMessage(eventArgs);
+        else if (eventName == "toggleDebugUI")
+            ProcessToggleDebugUI();
 
         return true;
     }
@@ -88,7 +91,7 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
     }
 
     uint16_t port = aEventArgs->GetInt(1) ? aEventArgs->GetInt(1) : 10578;
-    // iAmAToken = aEventArgs->GeString(2);
+    World::Get().GetTransport().SetServerPassword(aEventArgs->GetString(2));
 
     std::string endpoint = baseIp + ":" + std::to_string(port);
 
@@ -127,4 +130,9 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
     request.PlayerId = aEventArgs->GetInt(0);
 
     m_transport.Send(request);
+}
+
+void OverlayClient::ProcessToggleDebugUI()
+{
+    World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff;
 }

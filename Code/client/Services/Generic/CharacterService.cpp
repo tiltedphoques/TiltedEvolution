@@ -120,6 +120,12 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_relinquishConnection = m_dispatcher.sink<NotifyRelinquishControl>().connect<&CharacterService::OnNotifyRelinquishControl>(this);
 }
 
+void CharacterService::DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept
+{
+    m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
+                   RemoteComponent, CacheComponent, WaitingFor3D, PlayerComponent>(aEntity);
+}
+
 bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept
 {
     Actor* pActor = Cast<Actor>(TESForm::GetById(acFormId));
@@ -143,8 +149,7 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
     // Only then should components be added or removed.
     m_world.emplace_or_replace<LocalComponent>(acEntity, acServerId);
     m_world.emplace_or_replace<LocalAnimationComponent>(acEntity);
-    m_world.remove<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, 
-                             FaceGenComponent, CacheComponent>(acEntity);
+    DeleteRemoteEntityComponents(acEntity);
 
     // TODO(cosideci): send current local data of actor with it(?)
     RequestOwnershipClaim request;
@@ -230,7 +235,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
-    RunExperienceUpdates();
+    //RunExperienceUpdates(); // Disabled XP sync for now, there are some bugs with this system.
     ApplyCachedWeaponDraws(acUpdateEvent);
 }
 
@@ -663,7 +668,7 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
             CharacterService::DeleteTempActor(pFormIdComponent->Id);
 
-        m_world.remove<RemoteComponent, RemoteAnimationComponent, InterpolationComponent>(*itor);
+        DeleteRemoteEntityComponents(*itor);
     }
 }
 
@@ -1460,7 +1465,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
     if (m_world.all_of<RemoteComponent>(aEntity))
     {
         Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId));
-        m_world.remove<PlayerComponent>(aEntity);
 
         if (pActor)
         {
@@ -1478,8 +1482,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
         #endif
         }
 
-        m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent,
-                                   RemoteComponent, CacheComponent, WaitingFor3D>(aEntity);
+        DeleteRemoteEntityComponents(aEntity);
 
         return;
     }

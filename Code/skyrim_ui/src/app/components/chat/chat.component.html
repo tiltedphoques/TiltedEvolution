@@ -1,5 +1,5 @@
 <div #log (scroll)="onLogScroll()" class="app-chat-messages" [style.padding-top.px]="padding">
-  <p *ngFor="let message of messages" #entry [attr.data-system]="!message.name" [attr.data-odd]="message.odd" [attr.data-whisper]="message.whisper">
+  <p *ngFor="let message of messages" #entry [attr.data-system]="!message.name" [attr.data-odd]="message.odd" [attr.data-dialogue]="message.dialogue">
     <span class="app-chat-date">[{{message.date | date: 'HH:mm:ss'}}] </span>
     <span class="app-chat-name" *ngIf="message.name">{{message.name}}: </span>
     <span class="app-chat-message" style="user-select: text;" >{{message.content}}</span>

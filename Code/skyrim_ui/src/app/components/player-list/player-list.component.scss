@@ -2,25 +2,23 @@ app-player-list {
     position: relative;
     display: flex;
     flex-direction: column;
+    margin-top: 1rem;
 
-    .tabs {
-
-        .buttonsPlayerList {
-            float: left;
-            padding: 0.25vw;
-            background-color: #292929;
-            border-radius: 2px;
-        }
+    #notInParty {
+        overflow: hidden;
     }
 
+    #noPlayers {
+        overflow: hidden;
+    }
 
-
+    .hidden {
+        opacity: 0;
+    }
 
     .containerList {
         overflow: auto;
         max-height: 60vh;
-        margin-top: 1rem;
-
 
         .playerListTable {
             width: 100%;

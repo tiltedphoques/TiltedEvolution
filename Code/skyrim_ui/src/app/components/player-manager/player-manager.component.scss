@@ -1,0 +1,11 @@
+app-player-manager {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    .buttons {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+    }
+}

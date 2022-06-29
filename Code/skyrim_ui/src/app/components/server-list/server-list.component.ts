@@ -68,6 +68,13 @@ export class ServerListComponent implements OnInit, OnDestroy {
       this.saveFavoriteServerList();
     }
 
+    this.serverListService.getServerList().subscribe((list) => {
+      if (list.length === 0) {
+        this.isLoading = false;
+        return;
+      }
+    });
+    
     this.serverListService.getServerList()
       .pipe(
         switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
@@ -237,7 +244,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public getClientVersion() {
-    return this.clientService.versionSet.getValue().split("-")[0];
+    return this.clientService.versionSet.value.split("-")[0];
   }
 
   public getServerVersion(server: Server) {

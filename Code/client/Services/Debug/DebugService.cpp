@@ -44,6 +44,8 @@
 
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
+#include <Camera/PlayerCamera.h>
+#include <OverlayApp.hpp>
 
 #include <EquipManager.h>
 #include <Forms/TESAmmo.h>
@@ -135,8 +137,6 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     if (!pActor || !pCell)
         return;
 
-    //pActor->MoveTo(pCell, acEvent.Position);
-
     moveData.pActor = pActor;
     moveData.pCell = pCell;
     moveData.position = acEvent.Position;
@@ -197,49 +197,35 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         m_showDebugStuff = !m_showDebugStuff;
     }
 
-    if (GetAsyncKeyState(VK_F8))
+    if (GetAsyncKeyState(VK_F8) & 0x01)
     {
         if (!s_f8Pressed)
         {
             s_f8Pressed = true;
 
-            Actor* pActor = Cast<Actor>(TESForm::GetById(0x1a677));
-            pActor->MoveTo(PlayerCharacter::Get()->parentCell, PlayerCharacter::Get()->position);
+            m_world.GetOverlayService().Reload();
 
-        #if 0
-            static bool s_enabled = true;
+            /*
+            auto pArguments = CefListValue::Create();
 
-            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+            auto pPlayerIds = CefListValue::Create();
+            for (int i = 0; i < 5; i++)
+                pPlayerIds->SetInt(i, i);
+            pPlayerIds->SetString(5, "hello");
 
-            s_enabled = !s_enabled;
+            pArguments->SetList(0, pPlayerIds);
 
-            static bool s_enabled = true;
-            static bool s_firstPerson = false;
-
-            auto* pCamera = PlayerCamera::Get();
-            auto* pPlayerControls = PlayerControls::GetInstance();
-
-            if (s_enabled)
-            {
-                s_firstPerson = pCamera->IsFirstPerson();
-                pCamera->ForceFirstPerson();
-            }
-            else
-            {
-                s_firstPerson ? pCamera->ForceFirstPerson() : pCamera->ForceThirdPerson();
-            }
-
-            pPlayerControls->SetCamSwitch(s_enabled);
-
-            s_enabled = !s_enabled;
-        #endif
+            m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("dummyData", pArguments);
+            */
         }
     }
     else
         s_f8Pressed = false;
 }
 
+static bool g_enableServerWindow{false};
 static bool g_enableAnimWindow{false};
+static bool g_enableEntitiesWindow{false};
 static bool g_enableInventoryWindow{false};
 static bool g_enableNetworkWindow{false};
 static bool g_enableFormsWindow{false};
@@ -251,13 +237,36 @@ static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 
+// TODO: replace with TP_PUBLIC or whatever
+#define TP_PRIVATE_DEBUGGERS 0
+
+void DebugService::DrawServerView() noexcept
+{
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Server");
+
+    static char s_address[256] = "127.0.0.1:10578";
+    ImGui::InputText("Address", s_address, std::size(s_address));
+
+    if (m_transport.IsOnline())
+    {
+        if (ImGui::Button("Disconnect"))
+            m_transport.Close();
+    }
+    else
+    {
+        if (ImGui::Button("Connect"))
+            m_transport.Connect(s_address);
+    }
+
+    ImGui::End();
+}
+
 void DebugService::OnDraw() noexcept
 {
     const auto view = m_world.view<FormIdComponent>();
     if (view.empty() || !m_showDebugStuff)
         return;
-
-    DrawEntitiesView();
 
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Helpers"))
@@ -265,30 +274,11 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Unstuck player"))
         {
             auto* pPlayer = PlayerCharacter::Get();
-            // TODO: ft
-        #if TP_SKYRIM64
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
-        #endif
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Server"))
-    {
-        static char s_address[256] = "127.0.0.1:10578";
-        ImGui::InputText("Address", s_address, std::size(s_address));
-
-        if (m_transport.IsOnline())
-        {
-            if (ImGui::Button("Disconnect"))
-                m_transport.Close();
-        }
-        else
-        {
-            if (ImGui::Button("Connect"))
-                m_transport.Connect(s_address);
-        }
-        ImGui::EndMenu();
-    }
+#if TP_PRIVATE_DEBUGGERS
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
@@ -319,6 +309,11 @@ void DebugService::OnDraw() noexcept
 #endif
     if (ImGui::BeginMenu("Debuggers"))
     {
+        ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
+        ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
+        ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
+
+#if TP_PRIVATE_DEBUGGERS
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
         ImGui::MenuItem("Forms", nullptr, &g_enableFormsWindow);
         ImGui::MenuItem("Inventory", nullptr, &g_enableInventoryWindow);
@@ -326,12 +321,13 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
-        ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
+#endif
 
         ImGui::EndMenu();
     }
+#if TP_PRIVATE_DEBUGGERS
     if (ImGui::BeginMenu("Misc"))
     {
         if (ImGui::Button("Crash Client"))
@@ -341,8 +337,17 @@ void DebugService::OnDraw() noexcept
         }
         ImGui::EndMenu();
     }
+#endif
     ImGui::EndMainMenuBar();
 
+    if (g_enableQuestWindow)
+        DrawQuestDebugView();
+    if (g_enableEntitiesWindow)
+        DrawEntitiesView();
+    if (g_enableServerWindow)
+        DrawServerView();
+
+#if TP_PRIVATE_DEBUGGERS
     if (g_enableNetworkWindow)
         DrawNetworkView();
     if (g_enableFormsWindow)
@@ -359,8 +364,6 @@ void DebugService::OnDraw() noexcept
         DrawPartyView();
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
-    if (g_enableQuestWindow)
-        DrawQuestDebugView();
     if (g_enableCellWindow)
         DrawCellView();
     if (g_enableProcessesWindow)
@@ -368,6 +371,7 @@ void DebugService::OnDraw() noexcept
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();
+#endif
 
     if (m_showBuildTag)
         DrawBuildTag();

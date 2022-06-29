@@ -1,3 +1,67 @@
+## [1.38.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.38.0...v1.38.1) (2022-06-28)
+
+
+### Bug Fixes
+
+* disable buttons for non leader ([c2a4221](https://github.com/tiltedphoques/TiltedEvolution/commit/c2a4221ea86a05f75a81955eac79096da4bcc67c))
+* group ui not showing up ([02b2ec6](https://github.com/tiltedphoques/TiltedEvolution/commit/02b2ec6c526b65419cc170f7cfa8ac9ad3aebb5f))
+* pw protected servers showing on list ([bb55224](https://github.com/tiltedphoques/TiltedEvolution/commit/bb55224ac6495751b4d4e7e435dc1d277c1f6cc0))
+
+# [1.38.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.37.1...v1.38.0) (2022-06-27)
+
+
+### Bug Fixes
+
+* healthbar not always showing ([e4bbba7](https://github.com/tiltedphoques/TiltedEvolution/commit/e4bbba7a20667305542513f462abd51888324499))
+* invite buttons after relaunch party ([a942002](https://github.com/tiltedphoques/TiltedEvolution/commit/a9420021799dea7cfc2732e1d5089a012886af8b))
+* owner undefined check ([65a2df8](https://github.com/tiltedphoques/TiltedEvolution/commit/65a2df80461e32410078fe890ac8b83648f74b91))
+* player unload event ([6616036](https://github.com/tiltedphoques/TiltedEvolution/commit/661603653ebc9a11c5db09572d706d52db9a1cf0))
+* re-enable invite buttons ([b5450d5](https://github.com/tiltedphoques/TiltedEvolution/commit/b5450d5b9269e56fc80b52746e8d41fd16e0fb1a))
+* teleport button ([e286d26](https://github.com/tiltedphoques/TiltedEvolution/commit/e286d268fe3d92d5a0aea094921fa4803b6f99d5))
+* ui not showing sometimes ([d58d771](https://github.com/tiltedphoques/TiltedEvolution/commit/d58d7719bd3a8879982510faad50fcb70cf7e1f9))
+
+
+### Features
+
+* better party auto-hide and ui logic ([1a300ab](https://github.com/tiltedphoques/TiltedEvolution/commit/1a300ab2bd02d86bff891498a61626d5cd3bee55))
+* password protected servers ([b7676de](https://github.com/tiltedphoques/TiltedEvolution/commit/b7676ded513d7805fa81586f605c1f8a90ec7707))
+* UI mock service ([151ffba](https://github.com/tiltedphoques/TiltedEvolution/commit/151ffba312e0556862409cdc9ef29a29bccc1955))
+
+## [1.37.1](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.37.0...v1.37.1) (2022-06-23)
+
+
+### Bug Fixes
+
+* enemies not dying after hitting 0 hp ([853bc8d](https://github.com/tiltedphoques/TiltedEvolution/commit/853bc8d3f84c665a42df0fb9afd95cb33b22b37f))
+
+# [1.37.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.36.0...v1.37.0) (2022-06-23)
+
+
+### Bug Fixes
+
+* buttons enabled ([1fda760](https://github.com/tiltedphoques/TiltedEvolution/commit/1fda7605f871e3010f509fc1b95ca4431d35b503))
+* disable invite button if in party ([f956f95](https://github.com/tiltedphoques/TiltedEvolution/commit/f956f95770de4ca9d19dbe802f3af6236f729f17))
+* group ui data ([bdafbe7](https://github.com/tiltedphoques/TiltedEvolution/commit/bdafbe73fff406387324b88937e7771f53f0b533))
+* health bar not showing up ([327d712](https://github.com/tiltedphoques/TiltedEvolution/commit/327d7121584e55a6cd4f5fa736cf4d8e5928210d))
+* health percentage rounding ([17b4140](https://github.com/tiltedphoques/TiltedEvolution/commit/17b414002e01e19603c998cc7d3c06da9ee35189))
+* setCell for ui display ([b99af4c](https://github.com/tiltedphoques/TiltedEvolution/commit/b99af4c0df394554cffab2e9f85b452a81221493))
+
+
+### Features
+
+* invite party members through main ui ([6043c34](https://github.com/tiltedphoques/TiltedEvolution/commit/6043c34569de0e5a81ddcee9816ac789c5d9b742))
+* launch and leave party through ui ([038b288](https://github.com/tiltedphoques/TiltedEvolution/commit/038b2883edde56e67b07c4f6ed923d6fd1eb1a6c))
+* player health bars in party ui ([5cc0910](https://github.com/tiltedphoques/TiltedEvolution/commit/5cc09108af563a9ccf8fea92d89d9aae53754f35))
+* public debug ui ([415e6f2](https://github.com/tiltedphoques/TiltedEvolution/commit/415e6f2536750b836748b62a5a0732f2f561ef2d))
+* sort group member list ([46e9bcb](https://github.com/tiltedphoques/TiltedEvolution/commit/46e9bcb87c8b29978d009354d22a0dfc78372f37))
+
+# [1.36.0](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.2...v1.36.0) (2022-06-21)
+
+
+### Features
+
+* dont sync vanilla home chests ([415b6ae](https://github.com/tiltedphoques/TiltedEvolution/commit/415b6aea5ed3929ff3985aef84dc59a22455b4d2))
+
 ## [1.35.2](https://github.com/tiltedphoques/TiltedEvolution/compare/v1.35.1...v1.35.2) (2022-06-15)
 
 

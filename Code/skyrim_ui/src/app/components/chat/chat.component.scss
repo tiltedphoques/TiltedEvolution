@@ -14,6 +14,8 @@ app-chat {
   overflow-y: scroll;
   overflow-wrap: break-word;
   padding-right: rem($-size-font, 2px);
+  font-family: $-font-default;
+  font-size: 1rem;
 
   p {
     margin: 0;
@@ -31,7 +33,7 @@ app-chat {
         color: #99F;
       }
     }
-    &[data-whisper=true] {
+    &[data-dialogue=true] {
       .app-chat-message {
         color: #00FF33;
       }

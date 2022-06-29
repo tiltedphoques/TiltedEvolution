@@ -33,14 +33,14 @@ struct AuthenticationRequest final : ClientMessage
             Level == achRhs.Level;
     }
 
-    uint64_t DiscordId;
-    bool SKSEActive;
-    bool MO2Active; 
-    String Token;
-    String Version;
-    Mods UserMods;
-    String Username;
-    GameId WorldSpaceId;
-    GameId CellId;
-    uint16_t Level;
+    uint64_t DiscordId{};
+    bool SKSEActive{};
+    bool MO2Active{};
+    String Token{};
+    String Version{};
+    Mods UserMods{};
+    String Username{};
+    GameId WorldSpaceId{};
+    GameId CellId{};
+    uint16_t Level{};
 };
