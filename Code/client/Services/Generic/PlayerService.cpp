@@ -150,10 +150,9 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
     m_transport.Send(request);
 }
 
-// TODO: ft
+// TODO: ft (verify)
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
-#if TP_SKYRIM64
     static bool s_startTimer = false;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
@@ -190,13 +189,11 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
         s_startTimer = false;
     }
-#endif
 }
 
-// TODO: ft
+// TODO: ft (verify)
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
-#if TP_SKYRIM64
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
     // It also makes the player invincible for 5 seconds.
@@ -228,7 +225,6 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
             godmodeStart = false;
         }
     }
-#endif
 }
 
 void PlayerService::RunDifficultyUpdates() const noexcept

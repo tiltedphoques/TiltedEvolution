@@ -354,14 +354,6 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
     }
 }
 
-void Actor::SetEssentialEx(bool aSet) noexcept
-{
-    SetEssential(true);
-    TESNPC* pBase = Cast<TESNPC>(baseForm);
-    if (pBase)
-        pBase->actorData.SetEssential(true);
-}
-
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
     for (auto& value : acActorValues.ActorMaxValuesList)
@@ -411,20 +403,6 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 37677);
 
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
-}
-
-void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
-{
-    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
-    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
-    ThisCall(s_setNoBleedoutRecovery, this, aSet);
-}
-
-void Actor::SetPlayerRespawnMode() noexcept
-{
-    SetEssentialEx(true);
-    // Makes the player go in an unrecoverable bleedout state
-    SetNoBleedoutRecovery(true);
 }
 
 void Actor::UnEquipAll() noexcept
@@ -491,13 +469,6 @@ void Actor::GenerateMagicCasters() noexcept
         if (casters[i] == nullptr)
             casters[i] = Cast<ActorMagicCaster>(GetMagicCaster(static_cast<CS>(i)));
     }
-}
-
-void Actor::DispellAllSpells() noexcept
-{
-    using TDispellAllSpells = void(void*, uint32_t, Actor*);
-    POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
-    s_dispell(nullptr, 0, this);
 }
 
 bool Actor::IsDead() noexcept
@@ -587,6 +558,7 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter, bool aKillMove);
 static TDamageActor* RealDamageActor = nullptr;
 
+// TODO: this is flawed, since it does not account for invulnerable actors
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
     float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);

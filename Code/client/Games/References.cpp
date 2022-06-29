@@ -73,6 +73,9 @@ float* GetGreetDistance() noexcept
 namespace GameplayFormulas
 {
 
+// TODO: ft
+// fallout 4's damage calc code looks a bit different
+// move this from References.cpp
 float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexcept
 {
     using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
@@ -645,6 +648,65 @@ void Actor::SetPackage(TESPackage* apPackage) noexcept
     s_execInitPackage = true;
     PutCreatedPackage(apPackage);
     s_execInitPackage = false;
+}
+
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
+}
+
+void Actor::SetEssentialEx(bool aSet) noexcept
+{
+    SetEssential(true);
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (pBase)
+        pBase->actorData.SetEssential(true);
+}
+
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    POINTER_FALLOUT4(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 925299);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::DispelAllSpells(bool aNow) noexcept
+{
+    magicTarget.DispelAllSpells(aNow);
+}
+
+void MagicTarget::DispelAllSpells(bool aNow) noexcept
+{
+    TP_THIS_FUNCTION(TDispelAllSpells, void, MagicTarget, bool aNow);
+    POINTER_SKYRIMSE(TDispelAllSpells, dispelAllSpells, 34512);
+    POINTER_FALLOUT4(TDispelAllSpells, dispelAllSpells, 629903);
+    ThisCall(dispelAllSpells, this, aNow);
+}
+
+void TESObjectCELL::GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bool aAllowCellLoad) noexcept
+{
+    TP_THIS_FUNCTION(TGetCOCPlacementInfo, void, TESObjectCELL, NiPoint3*, NiPoint3*, bool);
+    POINTER_SKYRIMSE(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 19075);
+    POINTER_FALLOUT4(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 1045265);
+    ThisCall(s_getCOCPlacementInfo, this, aOutPos, aOutRot, aAllowCellLoad);
+}
+
+void PlayerCharacter::SetGodMode(bool aSet) noexcept
+{
+    POINTER_SKYRIMSE(bool, bGodMode, 404238);
+    POINTER_FALLOUT4(bool, bGodMode, 806707);
+    *bGodMode.Get() = aSet;
+}
+
+void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude)
+{
+    TP_THIS_FUNCTION(TKnockExplosion, void, AIProcess, Actor*, const NiPoint3*, float);
+    POINTER_SKYRIMSE(TKnockExplosion, knockExplosion, 39895);
+    POINTER_FALLOUT4(TKnockExplosion, knockExplosion, 803088);
+    ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
 }
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)

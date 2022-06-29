@@ -65,9 +65,7 @@ struct ProcessLists
 
 #if TP_SKYRIM64
     uint8_t pad00[0x8];
-#else
-    // TODO: fallout 4 offsets are wrong now
-    // TODO: ft
+#elif TP_FALLOUT4
     uint8_t pad00[0x32];
 #endif
 

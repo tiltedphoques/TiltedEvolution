@@ -11,6 +11,11 @@ struct ActorState
     {
         return ((flags2 >> 1) & 7) >= 3;
     }
+    // TODO: confirm
+    bool IsBleedingOut() const noexcept
+    {
+        return ((flags1 >> 17) & 0xFu) - 7 <= 1;
+    }
 
     bool SetWeaponDrawn(bool aDraw) noexcept;
 };

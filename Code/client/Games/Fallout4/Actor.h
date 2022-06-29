@@ -118,17 +118,39 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
-    void SpeakSound(const char* pFile);
+    void SetNoBleedoutRecovery(bool aSet) noexcept;
+    void SetEssentialEx(bool aSet) noexcept;
+    void SetPlayerRespawnMode() noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
     void QueueUpdate() noexcept;
     void RemoveFromAllFactions() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
+    void SpeakSound(const char* pFile);
+
+    enum ActorFlags
+    {
+        IS_A_MOUNT = 1 << 1,
+        IS_ESSENTIAL = 1 << 18,
+    };
+
+    bool IsEssential() const noexcept
+    {
+        return flags2 & ActorFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSetEssential) noexcept
+    {
+        if (aSetEssential)
+            flags2 |= ActorFlags::IS_ESSENTIAL;
+        else
+            flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
 
     MagicTarget magicTarget;
     ActorState actorState;
@@ -146,7 +168,9 @@ struct Actor : TESObjectREFR
 
     uint8_t pad308[0x3E8 - 0x308];
     TESForm* magicItems[4];
-    uint8_t padActorEnd[0x490 - 0x408];
+    uint8_t padActorEnd[0x43C - 0x408];
+    uint32_t flags2;
+    uint8_t padActorEnd[0x490 - 0x440];
 };
 
 static_assert(sizeof(Actor) == 0x490);

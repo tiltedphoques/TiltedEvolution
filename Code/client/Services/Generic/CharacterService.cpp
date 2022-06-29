@@ -486,10 +486,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
-        // TODO: ft
-    #if TP_SKYRIM64
         pActor->SetPlayerRespawnMode();
-    #endif
         m_world.emplace_or_replace<PlayerComponent>(*entity, acMessage.PlayerId);
     }
 
@@ -1602,10 +1599,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     if (acMessage.IsPlayer)
     {
         pActor->SetIgnoreFriendlyHit(true);
-        // TODO: ft
-    #if TP_SKYRIM64
         pActor->SetPlayerRespawnMode();
-    #endif
         m_world.emplace_or_replace<PlayerComponent>(aEntity, acMessage.PlayerId);
     }
 
