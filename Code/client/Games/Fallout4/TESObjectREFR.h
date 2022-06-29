@@ -21,6 +21,27 @@ struct TESObjectREFR : TESForm
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
     static uint32_t* GetNullHandle() noexcept;
 
+    enum ITEM_REMOVE_REASON : int32_t
+    {
+        IRR_NONE = 0x0,
+        IRR_STEALING = 0x1,
+        IRR_SELLING = 0x2,
+        IRR_DROPPING = 0x3,
+        IRR_STORE_IN_CONTAINER = 0x4,
+        IRR_STORE_IN_TEAMMATE = 0x5,
+    };
+
+    struct RemoveItemData
+    {
+        uint8_t stackData[0x20]{};
+        TESBoundObject* pObject{};
+        int32_t iNumber{};
+        ITEM_REMOVE_REASON eReason{};
+        TESObjectREFR* pOtherContainer{};
+        NiPoint3* pDropLoc{};
+        NiPoint3* pRotate{};
+    };
+
     virtual void sub_48();
     virtual void sub_49();
     virtual void sub_4A();
@@ -58,7 +79,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_6A();
     virtual void sub_6B();
     virtual void sub_6C();
-    virtual void sub_6D();
+    virtual BSPointerHandle<TESObjectREFR> RemoveItem(RemoveItemData* arData);
     virtual void sub_6E();
     virtual void sub_6F();
     virtual void sub_70();
@@ -71,7 +92,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_77();
     virtual void sub_78();
     virtual void sub_79();
-    virtual void sub_7A();
+    virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
     virtual void sub_7B();
     virtual void sub_7C();
     virtual void sub_7D();
@@ -174,8 +195,8 @@ struct TESObjectREFR : TESForm
     const float GetHeight() noexcept;
 
     Inventory GetInventory() const noexcept;
-
     void SetInventory(const Inventory& acContainer) noexcept;
+    void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
 
 public:
 

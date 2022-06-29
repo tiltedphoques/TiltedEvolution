@@ -1,10 +1,13 @@
 #include <TiltedOnlinePCH.h>
 #include <Games/References.h>
 #include <World.h>
+
 #include <Events/ActivateEvent.h>
 #include <Events/InventoryChangeEvent.h>
 
 #include <Forms/TESBoundObject.h>
+
+#include <Games/Overrides.h>
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apObject, ExtraDataList* apExtraData, uint32_t aCount,
@@ -28,7 +31,6 @@ Inventory TESObjectREFR::GetInventory() const noexcept
 
     for (auto& item : pInventoryList->DataA)
     {
-        // TODO: reverse whether pObject and spStackData are always both valid
         if (!item.pObject || !item.spStackData)
             continue;
 
@@ -44,28 +46,60 @@ Inventory TESObjectREFR::GetInventory() const noexcept
             inventory.Entries.push_back(std::move(entry));
     }
 
-    int size = 0;
-    for (auto& entry : inventory.Entries)
-        size += entry.Count;
-
-    spdlog::info("size: {}", size);
-
     return inventory;
 }
 
 // TODO: ft
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
+    ScopedInventoryOverride _;
 
+    RemoveAllItems();
+
+    for (const Inventory::Entry& entry : aInventory.Entries)
+    {
+        if (entry.Count != 0)
+            AddOrRemoveItem(entry);
+    }
 }
 
 void TESObjectREFR::RemoveAllItems() noexcept
 {
     using TRemoveAllItems = void(void*, void*, TESObjectREFR*, TESObjectREFR*, bool);
-
     POINTER_FALLOUT4(TRemoveAllItems, s_removeAllItems, 534059);
-
     s_removeAllItems(nullptr, nullptr, this, nullptr, false);
+}
+
+void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
+{
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!pObject)
+    {
+        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
+        return;
+    }
+
+    if (arEntry.Count > 0)
+    {
+        AddObjectToContainer(pObject, nullptr, arEntry.Count, nullptr);
+    }
+    else if (arEntry.Count < 0)
+    {
+        RemoveItemData data{};
+        data.pObject = pObject;
+        data.iNumber = arEntry.Count;
+        // TODO(cosideci): is NONE valid?
+        data.eReason = ITEM_REMOVE_REASON::IRR_NONE;
+        data.pOtherContainer = nullptr;
+        data.pDropLoc = nullptr;
+        data.pRotate = nullptr;
+
+        RemoveItem(&data);
+    }
 }
 
 ActorValueInfo* TESObjectREFR::GetActorValueInfo(uint32_t aId) const noexcept
