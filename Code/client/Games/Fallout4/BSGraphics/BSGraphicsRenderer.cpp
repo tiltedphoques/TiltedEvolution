@@ -75,18 +75,18 @@ void Hook_StopTimer(int type)
 }
 
 static TiltedPhoques::Initializer s_viewportHooks([]() {
-    // TODO: ft
-    #if 0
-    const VersionDbPtr<void> initWindowLoc(564406);
+    const VersionDbPtr<void> initWindowLoc(193855);
     // patch dwStyle in BSGraphics::InitWindows
-    TiltedPhoques::Put(mem::pointer(initWindowLoc.GetPtr()) + 0x174 + 1, WS_OVERLAPPEDWINDOW);
+    TiltedPhoques::Put(mem::pointer(initWindowLoc.GetPtr()) + 0xD7 + 1, WS_OVERLAPPEDWINDOW);
 
-    const VersionDbPtr<void> windowLoc(68781);
+    // TODO: ft
+#if 0
+    const VersionDbPtr<void> windowLoc();
     // TODO: move me to input patches.
     // don't let the game steal the media keys in windowed mode
     TiltedPhoques::Put(mem::pointer(windowLoc.GetPtr()) + 0x55 + 2,
                        /*strip DISCL_EXCLUSIVE bits and append DISCL_NONEXCLUSIVE*/ 3);
-    #endif
+#endif
 
     const VersionDbPtr<void> timerLoc(700870);
     const VersionDbPtr<void> renderInit(564406);
