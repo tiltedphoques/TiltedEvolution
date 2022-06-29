@@ -104,6 +104,7 @@ struct Actor : TESObjectREFR
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
+    uint16_t GetLevel() noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;

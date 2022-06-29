@@ -426,6 +426,14 @@ void Actor::SetSpeed(float aSpeed) noexcept
     animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
 }
 
+uint16_t Actor::GetLevel() noexcept
+{
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
+    POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
+    POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
+    return ThisCall(s_getLevel, this);
+}
+
 
 void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {

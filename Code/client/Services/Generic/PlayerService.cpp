@@ -139,10 +139,8 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     m_transport.Send(request);
 }
 
-// TODO: ft
 void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -150,7 +148,6 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
     request.NewLevel = PlayerCharacter::Get()->GetLevel();
 
     m_transport.Send(request);
-#endif
 }
 
 // TODO: ft
