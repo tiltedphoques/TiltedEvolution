@@ -70,7 +70,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         return;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    const TESObjectCELL* pCell = pPlayer->parentCell;
+    TESObjectCELL* pCell = pPlayer->parentCell;
 
     // Vanilla homes should not be synced, so that chest contents,
     // which are often used as storage, are never accidentally wiped.
@@ -95,8 +95,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    // TODO: ft
-#if TP_SKYRIM64
+    // TODO: ft (verify)
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};
@@ -128,7 +127,6 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     m_transport.Send(request);
-#endif
 }
 
 void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessage) noexcept
