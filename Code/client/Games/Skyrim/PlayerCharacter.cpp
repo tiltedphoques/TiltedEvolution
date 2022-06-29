@@ -65,7 +65,7 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
     // Make bleedout state recoverable
     SetNoBleedoutRecovery(false);
 
-    DispellAllSpells();
+    DispelAllSpells();
 
     // Reset health to max
     // TODO(cosideci): there's a cleaner way to do this

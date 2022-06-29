@@ -117,6 +117,7 @@ void DebugService::OnSubtitle(const SubtitleEvent& acEvent) noexcept
         return;
     SubActorID = acEvent.SpeakerID;
     SubtitleText = acEvent.Text;
+    TopicID = acEvent.TopicFormID;
 }
 
 // TODO: yeah, i'm aware of how dumb this looks, but things crash if
@@ -208,6 +209,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             {
                 pActor->StopCurrentDialogue(true);
                 pActor->SpeakSound(VoiceFile.c_str());
+            }
+            Actor* pSubActor = Cast<Actor>(TESForm::GetById(SubActorID));
+            if (pSubActor)
+            {
+                TESTopicInfo* pTopic = Cast<TESTopicInfo>(TESForm::GetById(TopicID));
+                SubtitleManager::Get()->ShowSubtitle(pSubActor, SubtitleText.c_str(), pTopic);
             }
         }
     }

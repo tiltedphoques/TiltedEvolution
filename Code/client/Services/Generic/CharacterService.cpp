@@ -71,6 +71,7 @@
 #include <Projectiles/Projectile.h>
 #include <Forms/TESObjectWEAP.h>
 #include <Forms/TESAmmo.h>
+#include <Forms/TESTopicInfo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -1093,6 +1094,7 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
 }
 
 // TODO: ft (verify)
+// deal with player voice lines in fallout 4
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1141,8 +1143,37 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     SubtitleRequest request{};
     request.ServerId = serverIdRes.value();
     request.Text = acEvent.Text;
+    request.TopicFormId = acEvent.TopicFormID;
 
     m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    // This is only for fallout 4
+    TESTopicInfo* pInfo = nullptr;
+    pInfo = Cast<TESTopicInfo>(TESForm::GetById(acMessage.TopicFormId));
+
+    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str(), pInfo);
 }
 
 void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept
@@ -1189,30 +1220,6 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
     }
 
     spdlog::error("Did not find actor to relinquish control of, server id {:X}", acMessage.ServerId);
-}
-
-void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
-{
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = Cast<Actor>(pForm);
-
-    if (!pActor)
-        return;
-
-    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
 void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept
