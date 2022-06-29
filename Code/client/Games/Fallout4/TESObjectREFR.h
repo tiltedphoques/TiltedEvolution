@@ -45,7 +45,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_5E();
     virtual void sub_5F();
     virtual void sub_60();
-    virtual void sub_61();
+    virtual void StopCurrentDialogue(bool aForce);
     virtual void sub_62();
     virtual void sub_63();
     virtual void sub_64();

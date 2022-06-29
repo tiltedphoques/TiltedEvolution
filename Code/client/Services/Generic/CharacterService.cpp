@@ -1092,6 +1092,7 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
+// TODO: ft (verify)
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1113,10 +1114,7 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     if (!pActor)
         return;
 
-    // TODO: ft
-#if TP_SKYRIM64
     pActor->StopCurrentDialogue(true);
-#endif
     pActor->SpeakSound(acMessage.SoundFilename.c_str());
 }
 

@@ -203,10 +203,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            float* distance = Settings::GetGreetDistance();
-            spdlog::info("{}", *distance);
-            int32_t* diff = Settings::GetDifficulty();
-            spdlog::info("{}", *diff);
+            Actor* pActor = Cast<Actor>(TESForm::GetById(ActorID));
+            if (pActor)
+            {
+                pActor->StopCurrentDialogue(true);
+                pActor->SpeakSound(VoiceFile.c_str());
+            }
         }
     }
     else

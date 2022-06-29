@@ -168,7 +168,7 @@ struct Actor : TESObjectREFR
 
     uint8_t pad308[0x3E8 - 0x308];
     TESForm* magicItems[4];
-    uint8_t padActorEnd[0x43C - 0x408];
+    uint8_t pad408[0x43C - 0x408];
     uint32_t flags2;
     uint8_t padActorEnd[0x490 - 0x440];
 };

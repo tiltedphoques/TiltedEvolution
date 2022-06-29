@@ -13,7 +13,9 @@
 #include <World.h>
 
 #include <Effects/ValueModifierEffect.h>
+
 #include <Events/HealthChangeEvent.h>
+#include <Events/DialogueEvent.h>
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
@@ -360,6 +362,24 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
     return ThisCall(RealRunDetection, apThis, apTarget);
 }
 
+TP_THIS_FUNCTION(TSpeakSoundFunction, float, Actor, const char* apName, uint32_t* aSoundHand, void* apArchTypeAnimation, int32_t aiStringLength, bool abSetEmotion, void* apOutputModel, bool abQueue, bool abLip, bool abPCapcall);
+static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* aSoundHand, void* apArchTypeAnimation, int32_t aiStringLength, bool abSetEmotion, void* apOutputModel, bool abQueue, bool abLip, bool abPCapcall)
+{
+    if (apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+
+    return ThisCall(RealSpeakSoundFunction, apThis, apName, aSoundHand, apArchTypeAnimation, aiStringLength, abSetEmotion, apOutputModel, abQueue, abLip, abPCapcall);
+}
+
+void Actor::SpeakSound(const char* pFile)
+{
+    uint32_t handle[4]{};
+    handle[0] = -1;
+    ThisCall(RealSpeakSoundFunction, this, pFile, handle, nullptr, 0, false, nullptr, false, true, false);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
     POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
@@ -368,6 +388,7 @@ static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     // TODO: not sure about this ID, seems to interfere with jump when hooked?
     POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
     POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
+    POINTER_FALLOUT4(TSpeakSoundFunction, s_speakSoundFunction, 1567997);
 
     RealActorConstructor = s_actorCtor.Get();
     RealActorConstructor2 = s_actorCtor2.Get();
@@ -375,6 +396,7 @@ static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     RealDamageActor = s_damageActor.Get();
     RealApplyActorEffect = s_applyActorEffect.Get();
     RealRunDetection = s_runDetection.Get();
+    RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
     TP_HOOK(&RealActorConstructor, HookActorContructor);
     TP_HOOK(&RealActorConstructor2, HookActorContructor2);
@@ -382,4 +404,5 @@ static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     TP_HOOK(&RealDamageActor, HookDamageActor);
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
     TP_HOOK(&RealRunDetection, HookRunDetection);
+    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
 });
