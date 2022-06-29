@@ -28,7 +28,6 @@ std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept
     return {serverId};
 }
 
-// TODO: ft (verify)
 void ShowHudMessage(const TiltedPhoques::String& acMessage)
 {
 #if TP_SKYRIM64

@@ -29,7 +29,7 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 // TODO: ft
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
-#if TP_SKYRIM64
+#if 0
     // TODO: this can be fixed by properly implementing multiple inheritance
     Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();

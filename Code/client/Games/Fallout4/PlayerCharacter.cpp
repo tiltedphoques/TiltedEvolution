@@ -17,25 +17,10 @@ void PlayerCharacter::SetDifficulty(const int32_t aDifficulty, bool aForceUpdate
     ThisCall(setDifficulty, this, aDifficulty, aForceUpdate, aExpectGameDataLoaded);
 }
 
-// TODO: ft
 void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
 {
-    /*
-    // Yes, yes, this isn't great, but there's no "pay fines everywhere" function
-    TiltedPhoques::Vector<uint32_t> crimeFactionIds{ 0x28170, 0x267E3, 0x29DB0, 0x2816D, 0x2816e, 0x2816C, 0x2816B, 0x267EA, 0x2816F, 0x4018279 };
-
-    for (uint32_t crimeFactionId : crimeFactionIds)
-    {
-        TESFaction* pCrimeFaction = Cast<TESFaction>(TESForm::GetById(crimeFactionId));
-        if (!pCrimeFaction)
-        {
-            spdlog::error("This isn't a crime faction! {:X}", crimeFactionId);
-            continue;
-        }
-
-        PayFine(pCrimeFaction, false, false);
-    }
-    */
+    // TODO: fallout 4 doesn't have "bounties".
+    // Still, aggro should be removed somehow on respawn.
 }
 
 // TODO: ft (verify)
