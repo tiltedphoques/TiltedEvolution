@@ -204,7 +204,8 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            Utils::ShowHudMessage("Hello");
+            //spdlog::info("{}", (uint64_t)PlayerCharacter::Get());
+            PlayerCharacter::Get()->GetInventory();
 
             return;
 

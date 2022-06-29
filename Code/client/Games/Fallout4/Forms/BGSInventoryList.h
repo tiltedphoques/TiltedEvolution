@@ -3,7 +3,7 @@
 #include <Events/EventDispatcher.h>
 #include "BGSInventoryItem.h"
 
-struct BGSInventoryList : BSTEventSink<BGSInventoryListEvent::Event>
+struct BGSInventoryList : EventDispatcher<BGSInventoryListEvent::Event>
 {
     // TODO: maybe use this?
     struct __declspec(align(4)) IsQuestObjectFunctor
@@ -18,3 +18,5 @@ struct BGSInventoryList : BSTEventSink<BGSInventoryListEvent::Event>
     BSPointerHandle<TESObjectREFR> hOwner;
     BSReadWriteLock RWLock;
 };
+
+static_assert(sizeof(BGSInventoryList) == 0x80);

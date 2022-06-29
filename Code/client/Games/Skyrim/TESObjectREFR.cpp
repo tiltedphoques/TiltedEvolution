@@ -93,27 +93,6 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
     return ThisCall(s_getContainerChangs, this);
 }
 
-void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
-{
-    auto changes = GetContainerChanges();
-
-    auto entries = changes->entries;
-    uint32_t entryCount = 0;
-    for (auto entry : *entries)
-    {
-        entryCount++;
-    }
-    if (entryCount > 1024)
-        spdlog::error("Inventory entry count is really big: {:X}:{}", formID, entryCount);
-
-    changes->Save(apBuffer);
-}
-
-void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
-{
-    GetContainerChanges()->Load(apBuffer);
-}
-
 void TESObjectREFR::RemoveAllItems() noexcept
 {
     using ObjectReference = TESObjectREFR;
@@ -376,7 +355,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
         if (!aFilter(*pGameEntry->form))
             continue;
 
-        Inventory::Entry entry;
+        Inventory::Entry entry{};
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
         entry.Count = pGameEntry->count;
 

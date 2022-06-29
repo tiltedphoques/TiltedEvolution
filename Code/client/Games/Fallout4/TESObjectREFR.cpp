@@ -4,6 +4,8 @@
 #include <Events/ActivateEvent.h>
 #include <Events/InventoryChangeEvent.h>
 
+#include <Forms/TESBoundObject.h>
+
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apObject, ExtraDataList* apExtraData, uint32_t aCount,
                  TESObjectREFR* apOldContainer, void* apUnk1, void* apUnk2);
@@ -13,33 +15,42 @@ static TActivate* RealActivate = nullptr;
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TRemoveInventoryItem* RealRemoveInventoryItem = nullptr;
 
-void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
-{
-    TP_ASSERT(inventory, "SaveInventory is called, but inventory is null!");
-
-    TP_THIS_FUNCTION(TSaveFunc, void, void, BGSSaveFormBuffer*);
-
-    POINTER_FALLOUT4(TSaveFunc, s_save, 1579055);
-
-    ThisCall(s_save, inventory, apBuffer);
-}
-
-void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
-{
-    TP_THIS_FUNCTION(TLoadFunc, void, void, BGSLoadFormBuffer*);
-
-    POINTER_FALLOUT4(TLoadFunc, s_load, 1392172);
-
-    sub_A8();
-    sub_A7(nullptr);
-
-    ThisCall(s_load, inventory, apBuffer);
-}
-
 // TODO: ft
 Inventory TESObjectREFR::GetInventory() const noexcept
 {
-    return Inventory{};
+    // TODO: inventory list has RWLock, should probably use?
+
+    Inventory inventory{};
+    if (!pInventoryList)
+        return inventory;
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    for (auto& item : pInventoryList->DataA)
+    {
+        // TODO: reverse whether pObject and spStackData are always both valid
+        if (!item.pObject || !item.spStackData)
+            continue;
+
+        Inventory::Entry entry{};
+        modSystem.GetServerModId(item.pObject->formID, entry.BaseId);
+
+        for (auto* pStack = item.spStackData; pStack; pStack = pStack->spNextStack)
+        {
+            entry.Count += pStack->uiCount;
+        }
+
+        if (entry.Count != 0)
+            inventory.Entries.push_back(std::move(entry));
+    }
+
+    int size = 0;
+    for (auto& entry : inventory.Entries)
+        size += entry.Count;
+
+    spdlog::info("size: {}", size);
+
+    return inventory;
 }
 
 // TODO: ft

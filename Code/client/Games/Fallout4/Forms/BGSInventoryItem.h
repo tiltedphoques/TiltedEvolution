@@ -1,5 +1,8 @@
 #pragma once
 
+#include <ExtraData/ExtraDataList.h>
+#include <Forms/TESBoundObject.h>
+
 struct BGSInventoryItem
 {
     struct Stack : BSIntrusiveRefCounted
@@ -21,8 +24,33 @@ struct BGSInventoryItem
         ExtraDataList* spExtra;
         uint32_t uiCount;
         Flag usFlags;
+
+        // TODO(cosideci): impl range based loop
+    #if 0
+        struct Iterator 
+        {
+            Iterator(Stack* apEntry) : m_pEntry(apEntry) {}
+            Iterator operator++() { m_pEntry = m_pEntry->spNextStack; return *this; }
+            bool operator!=(const Iterator& acRhs) const { return m_pEntry != acRhs.m_pEntry; }
+            T* operator*() const { return m_pEntry->data; }
+        private:
+            Stack* m_pEntry;
+        };
+
+        Iterator begin() 
+        {
+            return Iterator(&entry);
+        }
+
+        Iterator end()
+        {
+            return Iterator(nullptr);
+        }
+    #endif
     };
 
     TESBoundObject* pObject;
     Stack* spStackData;
 };
+
+static_assert(sizeof(BGSInventoryItem) == 0x10);
