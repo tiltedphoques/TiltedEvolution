@@ -64,6 +64,28 @@ struct TESLoadGameEvent
 {
 };
 
+struct BGSInventoryListEvent
+{
+    enum Type : int16_t
+    {
+        AddStack = 0x0,
+        ChangedStack = 0x1,
+        AddNewItem = 0x2,
+        RemoveItem = 0x3,
+        Clear = 0x4,
+        UpdateWeight = 0x5,
+    };
+
+    struct Event
+    {
+        Type ChangeType;
+        BSPointerHandle<TESObjectREFR> hOwner;
+        TESBoundObject* pObjAffected;
+        uint32_t uiCount;
+        uint32_t uiStackId;
+    };
+};
+
 // TODO: idk why, but it can't find POINTER_FALLOUT4
 #define POINTER_FALLOUT4(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
 

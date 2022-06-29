@@ -6,6 +6,7 @@
 #include <Forms/ActorValueInfo.h>
 #include <Misc/ActorValueOwner.h>
 #include <Games/Misc/Lock.h>
+#include <Forms/BGSInventoryList.h>
 
 struct NiNode;
 struct BSFaceGenNiNode;
@@ -198,7 +199,7 @@ public:
     TESForm* baseForm;
     void* unkE8;
     void* loadState;
-    void* inventory;
+    BGSInventoryList* pInventoryList;
     ExtraDataList* extraData;
     uint64_t unk108;
 };
