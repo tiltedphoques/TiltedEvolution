@@ -231,21 +231,16 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 #endif
 }
 
-// TODO: ft
 void PlayerService::RunDifficultyUpdates() const noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
     PlayerCharacter::Get()->SetDifficulty(m_serverDifficulty);
-#endif
 }
 
-// TODO: ft
 void PlayerService::RunLevelUpdates() const noexcept
 {
-#if TP_SKYRIM64
     // The LevelUp hook is kinda weird, so ehh, just check periodically, doesn't really cost anything.
 
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -269,5 +264,4 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
-#endif
 }
