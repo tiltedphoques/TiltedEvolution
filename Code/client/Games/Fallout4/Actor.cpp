@@ -151,10 +151,9 @@ float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
     return actorValueOwner.GetMaxValue(pActorValueInfo);
 }
 
-// TODO: ft
 Inventory Actor::GetActorInventory() const noexcept
 {
-    return Inventory{};
+    return GetInventory();
 }
 
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
@@ -222,10 +221,11 @@ void Actor::SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept
     s_pSetFactionRank(this, acpFaction, aRank);
 }
 
-// TODO: ft
 void Actor::SetActorInventory(const Inventory& acInventory) noexcept
 {
+    UnEquipAll();
 
+    SetInventory(acInventory);
 }
 
 void Actor::UnEquipAll() noexcept
