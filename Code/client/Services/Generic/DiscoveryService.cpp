@@ -30,8 +30,7 @@ DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher)
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->loadGameEvent.RegisterSink(this);
 #else
-    // TODO: ft
-    //GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
+    GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
 #endif
 }
 
@@ -211,7 +210,6 @@ void DiscoveryService::VisitForms() noexcept
         }
         else
             s_previousForms.erase(formId);
-
     };
 
     ProcessLists* const pProcessLists = ProcessLists::Get();
@@ -262,10 +260,7 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
 
-    // TODO: ft
-#if TP_SKYRIM64
     PlayerCharacter::Get()->SetPlayerRespawnMode();
-#endif
 
     return BSTEventResult::kOk;
 }

@@ -37,9 +37,8 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds immediately.
     // TESQuestInitEvent can be instead managed by start stop quest management.
 #if TP_FALLOUT
-    // TODO: ft
-    //GetEventDispatcher_TESQuestStartStopEvent()->RegisterSink(this);
-    //GetEventDispatcher_TESQuestStageEvent()->RegisterSink(this);
+    GetEventDispatcher_TESQuestStartStopEvent()->RegisterSink(this);
+    GetEventDispatcher_TESQuestStageEvent()->RegisterSink(this);
 #else
     // bind game event listeners
     auto* pEventList = EventDispatcherManager::Get();

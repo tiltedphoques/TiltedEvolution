@@ -6,6 +6,7 @@ TP_THIS_FUNCTION(TPlayDialogueOption, bool, MenuTopicManager, int32_t aIndex);
 static TPlayDialogueOption* RealPlayDialogueOption = nullptr;
 
 // TODO: ft
+// should this even be synced for fallout 4?
 MenuTopicManager* MenuTopicManager::Get() noexcept
 {
 #if TP_SKYRIM64
@@ -41,14 +42,15 @@ bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
 
 TiltedPhoques::Initializer s_menuTopicHooks([]()
 {
+    // TODO: ft
+    // should this even be synced for fallout 4?
+#if TP_SKYRIM64
     POINTER_SKYRIMSE(TPlayDialogueOption, s_playDialogueOption, 35269);
 
-    // TODO: ft
-#if TP_SKYRIM64
     RealPlayDialogueOption = s_playDialogueOption.Get();
-#endif
 
     TP_HOOK(&RealPlayDialogueOption, HookPlayDialogueOption);
+#endif
 });
 
 

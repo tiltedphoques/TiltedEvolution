@@ -40,8 +40,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 #if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
 #else
-    // TODO: ft
-    //GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
+    GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
 #endif
 }
 
