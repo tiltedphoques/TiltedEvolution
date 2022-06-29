@@ -55,26 +55,18 @@ static TLockChange* RealLockChange = nullptr;
 
 namespace Settings
 {
-// TODO: ft
 int32_t* GetDifficulty() noexcept
 {
-#if TP_SKYRIM64
     POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
+    POINTER_FALLOUT4(int32_t, s_difficulty, 1072875);
     return s_difficulty.Get();
-#else
-    return nullptr;
-#endif
 }
 
-// TODO: ft
 float* GetGreetDistance() noexcept
 {
-#if TP_SKYRIM64
     POINTER_SKYRIMSE(float, s_greetDistance, 370892);
+    POINTER_FALLOUT4(float, s_greetDistance, 855966);
     return s_greetDistance.Get();
-#else
-    return nullptr;
-#endif
 }
 }
 
