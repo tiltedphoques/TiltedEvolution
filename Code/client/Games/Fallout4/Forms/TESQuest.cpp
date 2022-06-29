@@ -2,6 +2,8 @@
 
 #include <Forms/TESQuest.h>
 
+#include <Services/PapyrusService.h>
+
 void TESQuest::SetActive(bool toggle)
 {
     // bethesda implemented a new event dispatcher
@@ -19,11 +21,10 @@ void TESQuest::SetStopped()
     MarkChanged(2);
 }
 
-bool TESQuest::UnkSetRunning(bool &success, bool force)
+bool TESQuest::EnsureQuestStarted(bool &success, bool force)
 {
-    using TSetRunning = bool(TESQuest*, bool*, bool);
+    TP_THIS_FUNCTION(TSetRunning, bool, TESQuest, bool*, bool);
     POINTER_FALLOUT4(TSetRunning, SetRunning, 966434);
-
     return SetRunning(this, &success, force);
 }
 
@@ -33,4 +34,17 @@ bool TESQuest::SetStage(uint16_t stage)
     POINTER_FALLOUT4(TSetStage, SetStage, 952800);
 
     return SetStage(this, stage);
+}
+
+void TESQuest::ScriptSetStage(uint16_t stageIndex)
+{
+    for (auto& stage : stages)
+    {
+        if (stage.stageIndex == stageIndex && stage.IsDone())
+            return;
+    }
+
+    using Quest = TESQuest;
+    PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
+    s_pSetCurrentStageID(this, stageIndex);
 }
