@@ -147,10 +147,7 @@ void TransportService::OnConnected()
     
     modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
 
-    // TODO: ft
-#if TP_SKYRIM64
     request.Level = pPlayer->GetLevel();
-#endif
 
     Send(request);
 }
