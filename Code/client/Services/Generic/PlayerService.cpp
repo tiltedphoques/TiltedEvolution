@@ -57,9 +57,13 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
-    // Restore to the default value (150)
+    // Restore to the default value (150 in skyrim, 175 in fallout 4)
     float* greetDistance = Settings::GetGreetDistance();
+#if TP_SKYRIM64
     *greetDistance = 150.f;
+#elif TP_FALLOUT4
+    *greetDistance = 175.f;
+#endif
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -135,7 +139,7 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
     m_transport.Send(request);
 }
 
-    // TODO: ft
+// TODO: ft
 void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
