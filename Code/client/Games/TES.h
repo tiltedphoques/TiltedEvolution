@@ -63,22 +63,26 @@ struct ProcessLists
 {
     static ProcessLists* Get() noexcept;
 
-#if TP_SKYRIM
+#if TP_SKYRIM64
+    uint8_t pad00[0x8];
 #else
     // TODO: fallout 4 offsets are wrong now
     // TODO: ft
-    uint8_t pad0[0x40];
+    uint8_t pad00[0x32];
 #endif
 
-    uint8_t pad00[0x8];
     bool bProcessHigh;
     bool bProcessLow;
     bool bProcessMHigh;
     bool bProcessMLow;
     bool bProcessSchedule;
+#if TP_SKYRIM64
     uint8_t padD[0x3];
     int32_t numberHighActors;
     uint8_t pad14[0x30 - 0x14];
+#elif TP_FALLOUT4
+    uint8_t pad37[0x40 - 0x37];
+#endif
     GameArray<uint32_t> highActorHandleArray;
     GameArray<uint32_t> lowActorHandleArray;
     GameArray<uint32_t> middleHighActorHandleArray;
@@ -86,12 +90,13 @@ struct ProcessLists
     GameArray<uint32_t>* actorBuckets[4];
 };
 
-#if TP_SKYRIM
+#if TP_SKYRIM64
 static_assert(offsetof(ProcessLists, highActorHandleArray) == 0x30);
 static_assert(offsetof(ProcessLists, actorBuckets) == 0x90);
 #elif TP_FALLOUT4
-// TODO: ft
-//static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x40);
+static_assert(offsetof(ProcessLists, bProcessHigh) == 0x32);
+static_assert(offsetof(ProcessLists, bProcessSchedule) == 0x36);
+static_assert(offsetof(ProcessLists, highActorHandleArray) == 0x40);
 #endif
 
 struct Mod
