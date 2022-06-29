@@ -158,24 +158,27 @@ struct ModManager
     Mod* GetByName(const char* acpName) const noexcept;
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 
-#if TP_FALLOUT4
-    // TODO: ft
-    // verify these offsets, might have been shifted
-    uint8_t pad0[0xFB0];
-#elif TP_SKYRIM
+#if TP_SKYRIM64
     uint8_t pad0[0x748];
+#elif TP_FALLOUT4
+    uint8_t pad0[0x7E8];
 #endif
 
     GameArray<TESQuest*> quests;
+
+#if TP_SKYRIM64
     uint8_t pad760[0xD60 - 0x760];
+#elif TP_FALLOUT4
+    uint8_t pad800[0xFB0 - 0x800];
+#endif
+
     GameList<Mod> mods;
 };
 
 #if TP_SKYRIM
 static_assert(offsetof(ModManager, mods) == 0xD60);
 #elif TP_FALLOUT4
-// TODO: ft
-//static_assert(offsetof(ModManager, mods) == 0xFB0);
+static_assert(offsetof(ModManager, mods) == 0xFB0);
 #endif
 
 struct Setting
