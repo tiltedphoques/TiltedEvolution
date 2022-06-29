@@ -54,10 +54,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
-    // TODO: ft
-#if TP_SKYRIM64
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
-#endif
     m_serverDifficulty = m_previousDifficulty = 6;
 
     // Restore to the default value (150)
@@ -67,11 +64,8 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
 {
-    // TODO: ft
-#if TP_SKYRIM64
-    m_previousDifficulty = PlayerCharacter::Get()->difficulty;
+    m_previousDifficulty = *Settings::GetDifficulty();
     PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
-#endif
     m_serverDifficulty = acSettings.Difficulty;
 
     if (!acSettings.GreetingsEnabled)
