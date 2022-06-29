@@ -44,7 +44,6 @@
 
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
-#include <Camera/PlayerCamera.h>
 #include <OverlayApp.hpp>
 
 #include <EquipManager.h>
@@ -52,6 +51,7 @@
 
 // TODO: ft
 #if TP_SKYRIM64
+#include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
 #include <Interface/UI.h>
 #include <Interface/IMenu.h>
@@ -271,11 +271,13 @@ void DebugService::OnDraw() noexcept
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Helpers"))
     {
+#if TP_SKYRIM64
         if (ImGui::Button("Unstuck player"))
         {
             auto* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
         }
+#endif
         ImGui::EndMenu();
     }
 #if TP_PRIVATE_DEBUGGERS
@@ -285,7 +287,6 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
     // TODO: ft
-#if TP_SKYRIM64
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
