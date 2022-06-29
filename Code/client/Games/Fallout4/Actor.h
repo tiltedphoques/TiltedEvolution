@@ -140,6 +140,13 @@ struct Actor : TESObjectREFR
         IS_ESSENTIAL = 1 << 18,
     };
 
+    // TODO: ft verify, fallout has no mounts? unlikely, but maybe this flag is reused for something else?
+    // those helicopters maybe?
+    bool IsMount() const noexcept
+    {
+        return flags2 & ActorFlags::IS_A_MOUNT;
+    }
+
     bool IsEssential() const noexcept
     {
         return flags2 & ActorFlags::IS_ESSENTIAL;

@@ -1283,8 +1283,7 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
-        // TODO: ft
-    #if TP_SKYRIM64
+        // TODO: ft (verify)
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
@@ -1295,7 +1294,6 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
         else
             spdlog::info("New entity remotely managed, form id: {:X}, server id: {:X}", pActor->formID,
                              pRemoteComponent->Id);
-    #endif
 
         return;
     }
@@ -1423,12 +1421,12 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
-    // TODO: ft
+    // TODO: ft, fallout probably uses skycells for those choppers
 #if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
+#endif
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
-#endif
 
     if (isTemporary /* && !isNpcTemporary */)
     {
@@ -1463,8 +1461,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (pActor)
         {
-            // TODO: ft
-        #if TP_SKYRIM64
             if (pActor->IsTemporary())
             {
                 spdlog::info("Temporary Remote Deleted {:X}", aFormId);
@@ -1474,7 +1470,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
             {
                 pActor->GetExtension()->SetRemote(false);
             }
-        #endif
         }
 
         DeleteRemoteEntityComponents(aEntity);
@@ -1504,8 +1499,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
-            // TODO: ft
-        #if TP_SKYRIM64
+            // TODO: ft (verify)
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();
@@ -1524,7 +1518,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
                 request.Position = pActor->position;
             }
-        #endif
         }
 
         spdlog::info("Transferring ownership of local actor, server id: {:X}, worldspace: {:X}, cell: {:X}, position: "

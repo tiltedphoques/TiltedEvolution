@@ -112,6 +112,7 @@ struct TESForm : BaseFormComponent
         return;
     }
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
+    bool IsTemporary() const noexcept { return formID >= 0xFF000000; }
 
     uintptr_t unk8;
     uint32_t flags;
