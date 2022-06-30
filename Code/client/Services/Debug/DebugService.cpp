@@ -223,7 +223,7 @@ static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 
 // TODO: replace with TP_PUBLIC or whatever
-#define TP_PRIVATE_DEBUGGERS 0
+#define TP_PRIVATE_DEBUGGERS 1
 
 void DebugService::DrawServerView() noexcept
 {
@@ -272,6 +272,7 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
     // TODO: ft
+#if TP_SKYRIM64
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
@@ -292,6 +293,7 @@ void DebugService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
+#endif
 #endif
     if (ImGui::BeginMenu("Debuggers"))
     {

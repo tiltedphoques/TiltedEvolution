@@ -37,6 +37,10 @@
 #include <Services/DebugService.h>
 #include <World.h>
 
+#if TP_FALLOUT4
+#include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
+#endif
+
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
 thread_local uint32_t ScopedReferencesOverride::s_refCount = 0;
 
@@ -198,9 +202,29 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
             aVariables.Integers.resize(pDescriptor->IntegerLookupTable.size());
 
+#if TP_FALLOUT4
+            hkbVariableValueSet* pFirstPersonVariables = nullptr;
+            if (pActor->formID == 0x14)
+                pFirstPersonVariables = pManager->animationGraphs.Get(1)->behaviorGraph->animationVariables;
+#endif
+
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
-                const auto idx = pDescriptor->BooleanLookUpTable[i];
+                auto idx = pDescriptor->BooleanLookUpTable[i];
+
+#if TP_FALLOUT4
+                if (pActor->formID == 0x14)
+                {
+                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
+                    if (!firstPersonIdx)
+                        continue;
+
+                    if (pFirstPersonVariables->data[*firstPersonIdx] != 0)
+                        aVariables.Booleans |= (1ull << i);
+
+                    continue;
+                }
+#endif
 
                 if (pVariableSet->data[idx] != 0)
                     aVariables.Booleans |= (1ull << i);
@@ -209,12 +233,50 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pActor->formID == 0x14)
+                {
+                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
+                    if (!firstPersonIdx)
+                    {
+                        // TODO: find a way to not modify it at all instead of setting it to 0
+                        // For example: on save, check if remote player, and if so, check if index
+                        // maybe make it a member var map instead of a switch static func?
+                        // maybe send a var with the variables indicating first or third person?
+                        aVariables.Floats[i] = 0.f;
+                        continue;
+                    }
+
+                    aVariables.Floats[i] = *reinterpret_cast<float*>(&pFirstPersonVariables->data[*firstPersonIdx]);
+
+                    continue;
+                }
+#endif
+
                 aVariables.Floats[i] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
             }
 
             for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->IntegerLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pActor->formID == 0x14)
+                {
+                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
+                    if (!firstPersonIdx)
+                    {
+                        aVariables.Integers[i] = 0.f;
+                        continue;
+                    }
+
+                    aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pFirstPersonVariables->data[*firstPersonIdx]);
+
+                    continue;
+                }
+#endif
+
                 aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
             }
         }
@@ -253,11 +315,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
-            {
-                //if ((formID & 0xFF000000) == 0xFF000000)
-                    //spdlog::info("Form id {} has {}", formID, pGraph->behaviorGraph->stateMachine->name);
                 return;
-            }
 
             const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
             
@@ -268,6 +326,14 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
 
+#if TP_FALLOUT4
+                if (pExtendedActor->IsRemotePlayer())
+                {
+                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
+                        continue;
+                }
+#endif
+
                 if (pVariableSet->size > idx)
                 {
                     pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
@@ -277,12 +343,30 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pExtendedActor->IsRemotePlayer())
+                {
+                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
+                        continue;
+                }
+#endif
+
                 *reinterpret_cast<float*>(&pVariableSet->data[idx]) = aVariables.Floats.size() > i ? aVariables.Floats[i] : 0.f;
             }
 
             for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->IntegerLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pExtendedActor->IsRemotePlayer())
+                {
+                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
+                        continue;
+                }
+#endif
+
                 *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers.size() > i ? aVariables.Integers[i] : 0;
             }
         }
