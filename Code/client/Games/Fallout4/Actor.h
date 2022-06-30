@@ -137,6 +137,7 @@ struct Actor : TESObjectREFR
     void ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState = false, bool abSilent = true) noexcept;
     void DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
+    void UnequipItem(TESBoundObject* apObject) noexcept;
 
     enum ActorFlags
     {

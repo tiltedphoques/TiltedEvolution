@@ -74,8 +74,10 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     // Vanilla homes should not be synced, so that chest contents,
     // which are often used as storage, are never accidentally wiped.
+#if TP_SKYRIM64
     if (IsVanillaHome(pCell->formID))
         return;
+#endif
 
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
@@ -96,6 +98,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
     // TODO: ft (verify)
+    // Door seemed to be at the wrong form id (29, now 32), verify this.
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};

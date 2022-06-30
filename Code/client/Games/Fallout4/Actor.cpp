@@ -17,6 +17,8 @@
 #include <Events/HealthChangeEvent.h>
 #include <Events/DialogueEvent.h>
 
+#include <Games/Overrides.h>
+
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorDestructor, void*, Actor);
@@ -276,6 +278,8 @@ void Actor::Respawn() noexcept
 // TODO(cosideci): this is flawed, since we need to equip specific stacks.
 void Actor::ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState, bool abSilent) noexcept
 {
+    ScopedEquipOverride _;
+
     TP_THIS_FUNCTION(TProcessScriptedEquip, void, Actor, TESBoundObject*, bool, bool);
     POINTER_FALLOUT4(TProcessScriptedEquip, processScriptedEquip, 868003);
     ThisCall(processScriptedEquip, this, apObj, abEquipLockState, abSilent);
@@ -304,11 +308,19 @@ void Actor::DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoi
     BGSObjectInstance object(apObject, nullptr);
 
     TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*,
-                     BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3);
+                     BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3*);
     POINTER_FALLOUT4(TDropObject, dropObject, 1482294);
 
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(dropObject, this, &result, apObject, nullptr, aCount, apPoint, apRotate);
+    ThisCall(dropObject, this, &result, &object, nullptr, aCount, apPoint, apRotate);
+}
+
+void Actor::UnequipItem(TESBoundObject* apObject) noexcept
+{
+    ScopedEquipOverride _;
+
+    PAPYRUS_FUNCTION(void, Actor, UnequipItem, TESBoundObject*, bool, bool);
+    s_pUnequipItem(this, apObject, false, true);
 }
 
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);

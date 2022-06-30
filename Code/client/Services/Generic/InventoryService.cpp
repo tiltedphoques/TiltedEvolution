@@ -24,10 +24,11 @@
 #include <Games/Overrides.h>
 #include <EquipManager.h>
 
-// TODO: ft
-#if TP_SKYRIM64
-#include <DefaultObjectManager.h>
+#if TP_FALLOUT4
+#include <Forms/BGSObjectInstance.h>
 #endif
+
+#include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -156,8 +157,6 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    // TODO: ft
-#if TP_SKYRIM64
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
     {
@@ -181,6 +180,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
 
     auto* pEquipManager = EquipManager::Get();
 
+#if TP_SKYRIM64
     if (acMessage.IsSpell)
     {
         uint32_t spellSlotId = 0;
@@ -191,6 +191,8 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
         else
             pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
+
+        return;
     }
     else if (acMessage.IsShout)
     {
@@ -198,40 +200,55 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             pEquipManager->UnEquipShout(pActor, pItem);
         else
             pEquipManager->EquipShout(pActor, pItem);
+
+        return;
+    }
+#endif
+
+    auto* pObject = Cast<TESBoundObject>(pItem);
+
+    // TODO: ExtraData necessary? probably
+    if (acMessage.Unequip)
+    {
+#if TP_SKYRIM64
+        pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
+#elif TP_FALLOUT4
+        // TODO: this is flawed, little control over slots and extra data
+        if (pObject)
+            pActor->UnequipItem(pObject);
+#endif
     }
     else
     {
-        // TODO: ExtraData necessary? probably
-        if (acMessage.Unequip)
-            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
-        else
+        // Unequip all armor first, since the game won't auto unequip armor
+#if TP_SKYRIM64
+        Inventory wornArmor{};
+        if (pItem->formType == FormType::Armor)
         {
-            // Unequip all armor first, since the game won't auto unequip armor
-            Inventory wornArmor{};
-            if (pItem->formType == FormType::Armor)
-            {
-                wornArmor = pActor->GetWornArmor();
-                for (const auto& armor : wornArmor.Entries)
-                {
-                    uint32_t armorId = modSystem.GetGameId(armor.BaseId);
-                    TESForm* pArmor = TESForm::GetById(armorId);
-                    if (pArmor)
-                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
-                }
-            }
-
-            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
-
+            wornArmor = pActor->GetWornArmor();
             for (const auto& armor : wornArmor.Entries)
             {
                 uint32_t armorId = modSystem.GetGameId(armor.BaseId);
                 TESForm* pArmor = TESForm::GetById(armorId);
                 if (pArmor)
-                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+                    pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
             }
         }
-    }
+
+        pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+
+        for (const auto& armor : wornArmor.Entries)
+        {
+            uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+            TESForm* pArmor = TESForm::GetById(armorId);
+            if (pArmor)
+                pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+        }
+#elif TP_FALLOUT4
+        // TODO(cosideci): same armor trick required for fallout 4?
+        pActor->ProcessScriptedEquip(pObject);
 #endif
+    }
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept

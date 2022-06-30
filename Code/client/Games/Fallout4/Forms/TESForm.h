@@ -4,9 +4,10 @@
 
 enum class FormType : uint8_t
 {
-    Door = 29,
+    Armor = 29,
     Book = 30,
     Container = 31,
+    Door = 32,
     Ammo = 44,
     Npc = 45,
     LeveledCharacter = 46,
