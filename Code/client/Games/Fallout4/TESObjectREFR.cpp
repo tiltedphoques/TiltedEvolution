@@ -8,6 +8,9 @@
 #include <Forms/TESBoundObject.h>
 #include <Forms/TESObjectARMO.h>
 #include <Forms/TESObjectWEAP.h>
+#include <Forms/BGSObjectInstance.h>
+
+#include <EquipManager.h>
 
 #include <Games/Overrides.h>
 
@@ -97,7 +100,10 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
         if (arEntry.IsWorn())
         {
             if (Actor* pActor = Cast<Actor>(this))
-                pActor->ProcessScriptedEquip(pObject);
+            {
+                BGSObjectInstance object(pObject, nullptr);
+                EquipManager::Get()->EquipObject(pActor, object, 0, arEntry.Count, nullptr, false, true, false, false, false);
+            }
         }
     }
     else if (arEntry.Count < 0)

@@ -232,6 +232,8 @@ void Actor::SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept
 
 void Actor::SetActorInventory(const Inventory& acInventory) noexcept
 {
+    spdlog::info("Setting actor inventory, form id: {:X}", formID);
+
     UnEquipAll();
 
     SetInventory(acInventory);
