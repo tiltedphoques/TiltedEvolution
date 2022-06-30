@@ -137,4 +137,6 @@ struct RendererInitReturn
 
 static_assert(sizeof(RendererInitReturn) == 0x8);
 
+RendererWindow* GetMainWindow();
+
 }

@@ -48,6 +48,7 @@
 
 #include <EquipManager.h>
 #include <Forms/TESAmmo.h>
+#include <BSGraphics/BSGraphicsRenderer.h>
 
 // TODO: ft
 #if TP_SKYRIM64
@@ -56,7 +57,6 @@
 #include <Interface/UI.h>
 #include <Interface/IMenu.h>
 #include <Camera/PlayerCamera.h>
-#include <BSGraphics/BSGraphicsRenderer.h>
 #include <DefaultObjectManager.h>
 #include <Misc/InventoryEntry.h>
 #include <Misc/MiddleProcess.h>
@@ -145,11 +145,8 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
-    // TODO: ft
-#if TP_SKYRIM64
     if (!BSGraphics::GetMainWindow()->IsForeground())
         return;
-#endif
 
     if (moveData.pActor)
     {

@@ -20,7 +20,6 @@ static TActivate* RealActivate = nullptr;
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TRemoveInventoryItem* RealRemoveInventoryItem = nullptr;
 
-// TODO: ft
 Inventory TESObjectREFR::GetInventory() const noexcept
 {
     // TODO: inventory list has RWLock, should probably use?
@@ -45,7 +44,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
             entry.BaseId = baseId;
             entry.Count = pStack->uiCount;
 
-            // If an item with mutliple copies is equipped, they will be in the same stack.
+            // If an item with multiple copies is equipped, they will be in the same stack.
             // The stacks only make distinctions between modified items.
             if (pStack->usFlags != BGSInventoryItem::Stack::Flag::INV_SLOT_INDEX_1)
                 entry.ExtraWorn = true;
@@ -57,7 +56,6 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return inventory;
 }
 
-// TODO: ft
 void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
 {
     ScopedInventoryOverride _;
