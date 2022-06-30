@@ -49,12 +49,12 @@
 #include <EquipManager.h>
 #include <Forms/TESAmmo.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
+#include <Interface/UI.h>
 
 // TODO: ft
 #if TP_SKYRIM64
 #include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
-#include <Interface/UI.h>
 #include <Interface/IMenu.h>
 #include <Camera/PlayerCamera.h>
 #include <DefaultObjectManager.h>
@@ -271,8 +271,6 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
         ImGui::EndMenu();
     }
-    // TODO: ft
-#if TP_SKYRIM64
     if (ImGui::BeginMenu("UI"))
     {
         ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
@@ -286,14 +284,15 @@ void DebugService::OnDraw() noexcept
             }
         }
 
+#if TP_SKYRIM64
         if (ImGui::Button("Close all menus"))
         {
             UI::Get()->CloseAllMenus();
         }
+#endif
 
         ImGui::EndMenu();
     }
-#endif
 #endif
     if (ImGui::BeginMenu("Debuggers"))
     {

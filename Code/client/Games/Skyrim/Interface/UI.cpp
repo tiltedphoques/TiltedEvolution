@@ -10,8 +10,6 @@ static bool g_RequestUnpauseAll{false};
 UI* UI::Get()
 {
     POINTER_SKYRIMSE(UI*, s_instance, 400327);
-    POINTER_FALLOUT4(UI*, s_instance, 548588);
-
     return *s_instance.Get();
 }
 
