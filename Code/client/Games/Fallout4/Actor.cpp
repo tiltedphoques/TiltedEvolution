@@ -266,6 +266,14 @@ void Actor::Respawn() noexcept
     Reset();
 }
 
+// TODO(cosideci): this is flawed, since we need to equip specific stacks.
+void Actor::ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState, bool abSilent) noexcept
+{
+    TP_THIS_FUNCTION(TProcessScriptedEquip, void, Actor, TESBoundObject*, bool, bool);
+    POINTER_FALLOUT4(TProcessScriptedEquip, processScriptedEquip, 868003);
+    ThisCall(processScriptedEquip, this, apObj, abEquipLockState, abSilent);
+}
+
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
 static TDamageActor* RealDamageActor = nullptr;
 

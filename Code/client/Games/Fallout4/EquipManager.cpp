@@ -108,6 +108,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
 static TiltedPhoques::Initializer s_equipmentHooks([]()
 {
+#if 0
     POINTER_FALLOUT4(TEquip, s_equipFunc, 1474879);
     POINTER_FALLOUT4(TUnEquip, s_unequipFunc, 1265293);
 
@@ -116,4 +117,5 @@ static TiltedPhoques::Initializer s_equipmentHooks([]()
 
     TP_HOOK(&RealUnEquip, UnEquipHook);
     TP_HOOK(&RealEquip, EquipHook);
+#endif
 });

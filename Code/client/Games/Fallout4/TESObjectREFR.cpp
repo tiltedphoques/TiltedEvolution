@@ -6,6 +6,8 @@
 #include <Events/InventoryChangeEvent.h>
 
 #include <Forms/TESBoundObject.h>
+#include <Forms/TESObjectARMO.h>
+#include <Forms/TESObjectWEAP.h>
 
 #include <Games/Overrides.h>
 
@@ -34,16 +36,22 @@ Inventory TESObjectREFR::GetInventory() const noexcept
         if (!item.pObject || !item.spStackData)
             continue;
 
-        Inventory::Entry entry{};
-        modSystem.GetServerModId(item.pObject->formID, entry.BaseId);
+        GameId baseId{};
+        modSystem.GetServerModId(item.pObject->formID, baseId);
 
         for (auto* pStack = item.spStackData; pStack; pStack = pStack->spNextStack)
         {
-            entry.Count += pStack->uiCount;
-        }
+            Inventory::Entry entry{};
+            entry.BaseId = baseId;
+            entry.Count = pStack->uiCount;
 
-        if (entry.Count != 0)
+            // If an item with mutliple copies is equipped, they will be in the same stack.
+            // The stacks only make distinctions between modified items.
+            if (pStack->usFlags != BGSInventoryItem::Stack::Flag::INV_SLOT_INDEX_1)
+                entry.ExtraWorn = true;
+
             inventory.Entries.push_back(std::move(entry));
+        }
     }
 
     return inventory;
@@ -85,7 +93,14 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
 
     if (arEntry.Count > 0)
     {
-        AddObjectToContainer(pObject, nullptr, arEntry.Count, nullptr);
+        ExtraDataList list{};
+        AddObjectToContainer(pObject, &list, arEntry.Count, nullptr);
+
+        if (arEntry.IsWorn())
+        {
+            if (Actor* pActor = Cast<Actor>(this))
+                pActor->ProcessScriptedEquip(pObject);
+        }
     }
     else if (arEntry.Count < 0)
     {

@@ -204,23 +204,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //spdlog::info("{}", (uint64_t)PlayerCharacter::Get());
-            PlayerCharacter::Get()->GetInventory();
-
-            return;
-
-            Actor* pActor = Cast<Actor>(TESForm::GetById(ActorID));
-            if (pActor)
-            {
-                pActor->StopCurrentDialogue(true);
-                pActor->SpeakSound(VoiceFile.c_str());
-            }
-            Actor* pSubActor = Cast<Actor>(TESForm::GetById(SubActorID));
-            if (pSubActor)
-            {
-                TESTopicInfo* pTopic = Cast<TESTopicInfo>(TESForm::GetById(TopicID));
-                SubtitleManager::Get()->ShowSubtitle(pSubActor, SubtitleText.c_str(), pTopic);
-            }
+            PlaceActorInWorld();
         }
     }
     else

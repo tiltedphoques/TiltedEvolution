@@ -7,6 +7,8 @@ struct BGSInventoryItem
 {
     struct Stack : BSIntrusiveRefCounted
     {
+        // Seems that most of these flags aren't used.
+        // INV_SLOT_INDEX_1 seems to mean not equipped.
         enum class Flag : int32_t
         {
             INV_SLOT_INDEX_1 = 0x0,

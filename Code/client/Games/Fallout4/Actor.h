@@ -133,6 +133,7 @@ struct Actor : TESObjectREFR
     void Reset() noexcept;
     void Respawn() noexcept;
     void SpeakSound(const char* pFile);
+    void ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState = false, bool abSilent = true) noexcept;
 
     enum ActorFlags
     {
