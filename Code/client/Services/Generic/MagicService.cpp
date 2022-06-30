@@ -23,9 +23,13 @@
 
 #include <Games/Overrides.h>
 
-#if TP_SKYRIM64
 #include <Forms/SpellItem.h>
 #include <PlayerCharacter.h>
+
+// TODO: these paths are inconsistent
+#if TP_FALLOUT4
+#include <Magic/EffectItem.h>
+#include <Magic/EffectSetting.h>
 #endif
 
 // TODO: ft
@@ -299,10 +303,11 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 
 void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 {
-#if TP_SKYRIM64
+#if 1
     if (!m_transport.IsConnected())
         return;
 
+#if TP_SKYRIM64
     // These effects are applied through spell cast sync
     if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
     {
@@ -313,8 +318,9 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
             return;
         }
     }
+#endif
 
-    AddTargetRequest request;
+    AddTargetRequest request{};
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
     {
@@ -359,7 +365,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
-#if TP_SKYRIM64
+#if 1
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
     {
@@ -411,18 +417,23 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     data.pSpell = pSpell;
     data.pEffectItem = pEffect;
     data.fMagnitude = acMessage.Magnitude;
+#if TP_SKYRIM64
     data.fUnkFloat1 = 1.0f;
+#endif
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
+#if TP_SKYRIM64
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (pEffect->IsVampireLordEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
+    // TODO: ft, check if this bug also occurs in fallout 4
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
+#endif
 
     pActor->magicTarget.AddTarget(data);
 

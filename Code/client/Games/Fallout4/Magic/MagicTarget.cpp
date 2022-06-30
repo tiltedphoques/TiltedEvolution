@@ -8,6 +8,8 @@
 #include "EffectSetting.h"
 #include "MagicItem.h"
 
+#include <Games/Overrides.h>
+
 #include <Events/AddTargetEvent.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
@@ -26,22 +28,39 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
     return result;
 }
 
+Actor* MagicTarget::GetTargetAsActor()
+{
+    TP_THIS_FUNCTION(TGetTargetAsActor, Actor*, MagicTarget);
+    POINTER_FALLOUT4(TGetTargetAsActor, getTargetAsActor, 129826);
+    return ThisCall(getTargetAsActor, this);
+}
+
 // TODO: ft
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
-#if 0
-    // TODO: this can be fixed by properly implementing multiple inheritance
-    Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
+    Actor* pTargetActor = apThis->GetTargetAsActor();
+    if (!pTargetActor)
+        return ThisCall(RealAddTarget, apThis, arData);
+
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (!pTargetActorEx)
         return ThisCall(RealAddTarget, apThis, arData);
 
+    if (ScopedSpellCastOverride::IsOverriden())
+        return ThisCall(RealAddTarget, apThis, arData);
+
+    AddTargetEvent addTargetEvent{};
+    addTargetEvent.TargetID = pTargetActor->formID;
+    addTargetEvent.SpellID = arData.pSpell->formID;
+    addTargetEvent.EffectID = arData.pEffectItem->pEffectSetting->formID;
+    addTargetEvent.Magnitude = arData.fMagnitude;
+
     if (pTargetActorEx->IsLocalPlayer())
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+        if (result)
+            World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
     else if (pTargetActorEx->IsRemotePlayer())
@@ -55,8 +74,8 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (pCasterExtension->IsLocalPlayer())
         {
             bool result = ThisCall(RealAddTarget, apThis, arData);
-            if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-                World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            if (result)
+                World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
         }
         else if (pCasterExtension->IsRemotePlayer())
@@ -68,17 +87,14 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     if (pTargetActorEx->IsLocal())
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+        if (result)
+            World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
     else
     {
         return false;
     }
-#else
-    return ThisCall(RealAddTarget, apThis, arData);
-#endif
 }
 
 bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, void* arArgs, float afResistance)
