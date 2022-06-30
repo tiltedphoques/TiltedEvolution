@@ -592,6 +592,8 @@ std::optional<uint32_t> AnimationGraphDescriptor_Master_Behavior::TranslateThird
         // ints
     case TP::kiState:
         return FP::kiState;
+    case TP::kiSyncSprintState:
+        return FP::kiSyncSprintState;
     case TP::kiWeaponChargeMode:
         return FP::kiWeaponChargeMode;
     case TP::kiAttackState:
@@ -703,6 +705,7 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
             TP::kbAnimateWeaponBones,
         },
         {TP::kiState,
+            TP::kiSyncSprintState,
             TP::kiWeaponChargeMode,
             TP::kiAttackState,
             TP::kiGetUpType,

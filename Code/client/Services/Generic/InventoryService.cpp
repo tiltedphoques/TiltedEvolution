@@ -246,7 +246,8 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
         }
 #elif TP_FALLOUT4
         // TODO(cosideci): same armor trick required for fallout 4?
-        pActor->ProcessScriptedEquip(pObject);
+        BGSObjectInstance object(pObject, nullptr);
+        EquipManager::Get()->EquipObject(pActor, object, 0, acMessage.Count, nullptr, false, true, false, false, false);
 #endif
     }
 }

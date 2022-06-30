@@ -179,7 +179,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             auto* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->GraphDescriptorHash == 0)
             {
-                // Force first person graph to be used on player
+                // Force third person graph to be used on player
                 if (pActor->formID == 0x14)
                     pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey(0);
                 else
@@ -203,6 +203,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             aVariables.Integers.resize(pDescriptor->IntegerLookupTable.size());
 
 #if TP_FALLOUT4
+            // TODO: maybe send a var with the variables indicating first or third person?
             hkbVariableValueSet* pFirstPersonVariables = nullptr;
             if (pActor->formID == 0x14)
                 pFirstPersonVariables = pManager->animationGraphs.Get(1)->behaviorGraph->animationVariables;
@@ -210,7 +211,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
-                auto idx = pDescriptor->BooleanLookUpTable[i];
+                const auto idx = pDescriptor->BooleanLookUpTable[i];
 
 #if TP_FALLOUT4
                 if (pActor->formID == 0x14)
@@ -240,10 +241,6 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                     auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
                     if (!firstPersonIdx)
                     {
-                        // TODO: find a way to not modify it at all instead of setting it to 0
-                        // For example: on save, check if remote player, and if so, check if index
-                        // maybe make it a member var map instead of a switch static func?
-                        // maybe send a var with the variables indicating first or third person?
                         aVariables.Floats[i] = 0.f;
                         continue;
                     }
@@ -454,7 +451,6 @@ void TESObjectREFR::PayGold(int32_t aAmount) noexcept
 #endif
 }
 
-// TODO: ft
 void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept
 {
 #if TP_SKYRIM64

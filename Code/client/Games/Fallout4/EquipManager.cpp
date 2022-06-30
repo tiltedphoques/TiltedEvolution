@@ -25,8 +25,8 @@ struct ObjectEquipParams
     bool bExtraWasDeleted;
 };
 
-TP_THIS_FUNCTION(TEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams);
-TP_THIS_FUNCTION(TUnEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams);
+TP_THIS_FUNCTION(TEquip, void*, EquipManager, Actor* apActor, BGSObjectInstance* apItem, ObjectEquipParams& arParams);
+TP_THIS_FUNCTION(TUnEquip, void*, EquipManager, Actor* apActor, BGSObjectInstance* apItem, ObjectEquipParams& arParams);
 
 TEquip* RealEquip = nullptr;
 TUnEquip* RealUnEquip = nullptr;
@@ -41,6 +41,8 @@ EquipManager* EquipManager::Get() noexcept
 
 bool EquipManager::EquipObject(Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked)
 {
+    spdlog::warn("EquipObject {:X}", arObject.pObject->formID);
+
     TP_THIS_FUNCTION(TEquipObject, bool, EquipManager, Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked);
     POINTER_FALLOUT4(TEquipObject, equipObject, 988030);
 
@@ -64,7 +66,7 @@ bool EquipManager::UnequipObject(Actor* apActor, BGSObjectInstance& arObject, ui
     return ThisCall(unequipObject, this, apActor, arObject, auiNumber, apSlot, auiStackID, abQueueEquip, abForceEquip, abPlaySounds, abApplyNow, apSlotBeingReplaced);
 }
 
-void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams)
+void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, BGSObjectInstance* apItem, ObjectEquipParams& arParams)
 {
     if (!apActor)
         return nullptr;
@@ -72,7 +74,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
     {
-        spdlog::info("Actor[{:X}]::Equip(), item form id: {:X}", apActor->formID, apItem->formID);
+        spdlog::info("Actor[{:X}]::Equip(), item form id: {:X}", apActor->formID, apItem->pObject->formID);
         return nullptr;
     }
 
@@ -81,7 +83,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = arParams.uiNumber;
-        evt.ItemId = apItem->formID;
+        evt.ItemId = apItem->pObject->formID;
         // TODO: equip slot stuff
         //evt.EquipSlotId
 
@@ -93,7 +95,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     return ThisCall(RealEquip, apThis, apActor, apItem, arParams);
 }
 
-void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, ObjectEquipParams& arParams)
+void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, BGSObjectInstance* apItem, ObjectEquipParams& arParams)
 {
     if (!apActor)
         return nullptr;
@@ -107,7 +109,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = arParams.uiNumber;
-        evt.ItemId = apItem->formID;
+        evt.ItemId = apItem->pObject->formID;
         evt.Unequip = true;
         // TODO: equip slot stuff
         //evt.EquipSlotId
