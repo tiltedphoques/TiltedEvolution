@@ -122,10 +122,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
-    // TODO: ft
-#if TP_SKYRIM64
     request.CurrentInventory = pActor->GetEquipment();
-#endif
 
     m_transport.Send(request);
 }
@@ -143,28 +140,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
         ScopedInventoryOverride _;
 
-        // TODO: ft
-    #if TP_SKYRIM64
-        ExtraDataList* pExtraData = pActor->GetExtraDataFromItem(acMessage.Item);
-    #else
-        ExtraDataList* pExtraData = nullptr;
-    #endif
-        ModSystem& modSystem = World::Get().GetModSystem();
-
-        uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
-        TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
-        if (!pObject)
-        {
-            spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
-                         acMessage.Item.BaseId.BaseId);
-            return;
-        }
-
-        // TODO: ft
-    #if TP_SKYRIM64
-        if (acMessage.Item.Count < 0)
-            pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
-    #endif
+        pActor->DropOrPickUpObject(acMessage.Item, nullptr, nullptr);
     }
     else
     {
@@ -174,10 +150,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
         ScopedInventoryOverride _;
 
-        // TODO: ft
-    #if TP_SKYRIM64
         pObject->AddOrRemoveItem(acMessage.Item);
-    #endif
     }
 }
 

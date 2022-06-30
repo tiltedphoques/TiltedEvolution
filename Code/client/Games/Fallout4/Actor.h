@@ -99,6 +99,7 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     Inventory GetActorInventory() const noexcept;
+    Inventory GetEquipment() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
     float GetActorValue(uint32_t aId) const noexcept;
@@ -134,6 +135,8 @@ struct Actor : TESObjectREFR
     void Respawn() noexcept;
     void SpeakSound(const char* pFile);
     void ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState = false, bool abSilent = true) noexcept;
+    void DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
 
     enum ActorFlags
     {

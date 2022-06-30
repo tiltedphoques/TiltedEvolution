@@ -156,6 +156,13 @@ Inventory Actor::GetActorInventory() const noexcept
     return GetInventory();
 }
 
+Inventory Actor::GetEquipment() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    return inventory;
+}
+
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
 {
     ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
@@ -272,6 +279,36 @@ void Actor::ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState, b
     TP_THIS_FUNCTION(TProcessScriptedEquip, void, Actor, TESBoundObject*, bool, bool);
     POINTER_FALLOUT4(TProcessScriptedEquip, processScriptedEquip, 868003);
     ThisCall(processScriptedEquip, this, apObj, abEquipLockState, abSilent);
+}
+
+void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept
+{
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!pObject)
+    {
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
+        return;
+    }
+
+    if (arEntry.Count < 0)
+        DropObject(pObject, -arEntry.Count, apPoint, apRotate);
+    // TODO: pick up
+}
+
+void Actor::DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoint, NiPoint3* apRotate) noexcept
+{
+    BGSObjectInstance object(apObject, nullptr);
+
+    TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*,
+                     BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3);
+    POINTER_FALLOUT4(TDropObject, dropObject, 1482294);
+
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(dropObject, this, &result, apObject, nullptr, aCount, apPoint, apRotate);
 }
 
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
