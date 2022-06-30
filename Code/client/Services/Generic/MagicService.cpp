@@ -365,7 +365,6 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
-#if 1
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
     {
@@ -438,7 +437,6 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     pActor->magicTarget.AddTarget(data);
 
     spdlog::debug("Applied remote magic effect");
-#endif
 }
 
 void MagicService::ApplyQueuedEffects() noexcept

@@ -35,7 +35,7 @@ Actor* MagicTarget::GetTargetAsActor()
     return ThisCall(getTargetAsActor, this);
 }
 
-// TODO: ft
+// TODO: ft (verify)
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     Actor* pTargetActor = apThis->GetTargetAsActor();

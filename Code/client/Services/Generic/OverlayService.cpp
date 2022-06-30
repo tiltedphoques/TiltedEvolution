@@ -150,7 +150,10 @@ void OverlayService::Render() noexcept
     static bool s_bi = false;
     if (!s_bi)
     {
+        // TODO: ft, this crashes fallout sometimes
+#if TP_SKYRIM64
         m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
+#endif
 
         s_bi = true;
     }
