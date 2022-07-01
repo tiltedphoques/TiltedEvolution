@@ -203,7 +203,8 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+            const Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
         }
     }
     else
