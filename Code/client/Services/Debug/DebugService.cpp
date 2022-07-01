@@ -143,6 +143,9 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     moveData.position = acEvent.Position;
 }
 
+// TODO: replace with TP_PUBLIC or whatever
+#define TP_PRIVATE_DEBUGGERS 0
+
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
@@ -158,6 +161,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     static std::atomic<bool> s_f7Pressed = false;
     static std::atomic<bool> s_f6Pressed = false;
 
+    if (GetAsyncKeyState(VK_F3) & 0x01)
+    {
+        m_showDebugStuff = !m_showDebugStuff;
+    }
+
+#if TP_PRIVATE_DEBUGGERS
     if (GetAsyncKeyState(VK_F6))
     {
         if (!s_f6Pressed)
@@ -190,11 +199,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f7Pressed = false;
 
-    if (GetAsyncKeyState(VK_F3) & 0x01)
-    {
-        m_showDebugStuff = !m_showDebugStuff;
-    }
-
     if (GetAsyncKeyState(VK_F8) & 0x01)
     {
         if (!s_f8Pressed)
@@ -206,6 +210,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     }
     else
         s_f8Pressed = false;
+#endif
 }
 
 static bool g_enableServerWindow{false};
@@ -221,9 +226,6 @@ static bool g_enableActorValuesWindow{false};
 static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
-
-// TODO: replace with TP_PUBLIC or whatever
-#define TP_PRIVATE_DEBUGGERS 1
 
 void DebugService::DrawServerView() noexcept
 {

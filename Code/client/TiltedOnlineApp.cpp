@@ -22,8 +22,6 @@ using TiltedPhoques::Debug;
 
 TiltedOnlineApp::TiltedOnlineApp()
 {
-    Debug::CreateConsole();
-
     auto logPath = TiltedPhoques::GetPath() / "logs";
 
     std::error_code ec;
