@@ -235,7 +235,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunLocalUpdates();
     RunFactionsUpdates();
     RunRemoteUpdates();
-    //RunExperienceUpdates(); // Disabled XP sync for now, there are some bugs with this system.
+    RunExperienceUpdates();
     ApplyCachedWeaponDraws(acUpdateEvent);
 }
 
