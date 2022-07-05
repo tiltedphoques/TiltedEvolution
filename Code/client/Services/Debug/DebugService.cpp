@@ -142,7 +142,7 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
 }
 
 // TODO: replace with TP_PUBLIC or whatever
-#define TP_PRIVATE_DEBUGGERS 0
+#define TP_PRIVATE_DEBUGGERS 1
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
@@ -203,9 +203,23 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            m_world.GetOverlayService().Reload();
+            void* pVM = (void*)0x142FC2A90;
+            using TProcessEvent = void(void*, TESTopicInfoEvent*);
+            POINTER_SKYRIMSE(TProcessEvent, processEvent, 53997);
+
+            TESTopicInfoEvent topicEvent{};
+            topicEvent.unk0 = 0;
+            topicEvent.pSpeaker = Cast<TESObjectREFR>(TESForm::GetById(0x1A67F));
+            topicEvent.topicId1 = 0xD39AE;
+            topicEvent.eType = TESTopicInfoEvent::TopicInfoEventType::TOPIC_BEGIN;
+            topicEvent.topicId2 = 0xD39AE;
+            topicEvent.unk1C = 0;
+
+            processEvent.Get()(pVM, &topicEvent);
 
             /*
+            m_world.GetOverlayService().Reload();
+
             auto pArguments = CefListValue::Create();
 
             auto pPlayerIds = CefListValue::Create();

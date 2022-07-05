@@ -36,6 +36,8 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
     m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
+
+    EventDispatcherManager::Get()->topicInfoEvent.RegisterSink(this);
 }
 
 bool knockdownStart = false;
@@ -254,4 +256,12 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
+}
+
+BSTEventResult PlayerService::OnEvent(const TESTopicInfoEvent* apEvent, const EventDispatcher<TESTopicInfoEvent>*)
+{
+    spdlog::warn("unk0: {:X}, speaker id: {:X}, topic id 1: {:X}, unk14: {:X}, topic id 2: {:X}, unk1C: {:X}",
+                 apEvent->unk0, apEvent->pSpeaker ? apEvent->pSpeaker->formID : 0, apEvent->topicId1, (uint32_t)apEvent->eType, apEvent->topicId2, apEvent->unk1C);
+
+    return BSTEventResult::kOk;
 }

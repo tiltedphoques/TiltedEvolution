@@ -265,11 +265,18 @@ struct TESPlayerBowShotEvent
 
 struct TESTopicInfoEvent
 {
-    TESObjectREFR* hSpeakerRef;
-    void* pCallback;
-    uint32_t uiTopicInfoFormID;
-    int32_t eType;
-    uint16_t usStage;
+    enum TopicInfoEventType
+    {
+        TOPIC_BEGIN = 0,
+        TOPIC_END = 1
+    };
+
+    uint64_t unk0;
+    TESObjectREFR* pSpeaker;
+    uint32_t topicId1;
+    TopicInfoEventType eType;
+    uint32_t topicId2;
+    uint32_t unk1C;
 };
 
 struct TESTrackedStatsEvent

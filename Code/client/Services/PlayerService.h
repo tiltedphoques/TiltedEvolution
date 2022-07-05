@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Events/EventDispatcher.h>
+#include <Games/Events.h>
+
 struct World;
 struct TransportService;
 
@@ -17,6 +20,7 @@ struct NotifyPlayerRespawn;
 * @brief Handles logic related to the local player.
 */
 struct PlayerService
+    : public BSTEventSink<TESTopicInfoEvent>
 {
     PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~PlayerService() noexcept = default;
@@ -46,6 +50,8 @@ private:
     */
     void RunDifficultyUpdates() const noexcept;
     void RunLevelUpdates() const noexcept;
+
+    BSTEventResult OnEvent(const TESTopicInfoEvent*, const EventDispatcher<TESTopicInfoEvent>*) override;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
