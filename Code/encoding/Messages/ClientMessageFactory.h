@@ -51,6 +51,7 @@
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/TeleportRequest.h>
 #include <Messages/RequestPlayerHealthUpdate.h>
+#include <Messages/TopicRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -72,7 +73,7 @@ struct ClientMessageFactory
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,
                                  RequestRespawn, SyncExperienceRequest, RequestEquipmentChanges, SendChatMessageRequest,
                                  TeleportCommandRequest, PlayerRespawnRequest, DialogueRequest, SubtitleRequest, PlayerDialogueRequest,
-                                 PlayerLevelRequest, TeleportRequest, RequestPlayerHealthUpdate>;
+                                 PlayerLevelRequest, TeleportRequest, RequestPlayerHealthUpdate, TopicRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

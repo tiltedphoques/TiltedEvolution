@@ -59,6 +59,9 @@
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
 #include <Games/Skyrim/Interface/UI.h>
+
+#include <Forms/TESTopic.h>
+#include <Misc/DialogueItem.h>
 #endif
 
 #include <imgui.h>
@@ -203,17 +206,33 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+#if 0
+            using TSetSayToTopic = void(TESObjectREFR*, TESTopic*);
+            POINTER_SKYRIMSE(TSetSayToTopic, setSayToTopic, 20207);
+            using TCreateDialogueItem = DialogueItem*(TESTopic*, TESObjectREFR*, Actor*, void*, void*, void*);
+            POINTER_SKYRIMSE(TCreateDialogueItem, createDialogueItem, 25541);
+            using TSetSayToTopicInfo = void(TESObjectREFR*, DialogueItem*);
+            POINTER_SKYRIMSE(TSetSayToTopicInfo, setSayToTopicInfo, 20206);
+
+            TESObjectREFR* pSpeaker = Cast<TESObjectREFR>(TESForm::GetById(0x1A67F));
+            TESTopic* pTopic = Cast<TESTopic>(TESForm::GetById(0xD398D));
+
+            setSayToTopic.Get()(pSpeaker, pTopic);
+            DialogueItem* pItem = createDialogueItem.Get()(pTopic, pSpeaker, PlayerCharacter::Get(), nullptr, nullptr, nullptr);
+            setSayToTopicInfo.Get()(pSpeaker, pItem);
+#endif
+
             void* pVM = (void*)0x142FC2A90;
             using TProcessEvent = void(void*, TESTopicInfoEvent*);
             POINTER_SKYRIMSE(TProcessEvent, processEvent, 53997);
 
             TESTopicInfoEvent topicEvent{};
-            topicEvent.unk0 = 0;
+            topicEvent.pCallback = nullptr;
             topicEvent.pSpeaker = Cast<TESObjectREFR>(TESForm::GetById(0x1A67F));
             topicEvent.topicId1 = 0xD39AE;
-            topicEvent.eType = TESTopicInfoEvent::TopicInfoEventType::TOPIC_BEGIN;
+            topicEvent.eType = TESTopicInfoEvent::TopicInfoEventType::TOPIC_END;
             topicEvent.topicId2 = 0xD39AE;
-            topicEvent.unk1C = 0;
+            topicEvent.pad1C = 0;
 
             processEvent.Get()(pVM, &topicEvent);
 

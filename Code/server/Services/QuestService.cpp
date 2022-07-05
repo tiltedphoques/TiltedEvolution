@@ -6,11 +6,14 @@
 
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
+#include <Messages/TopicRequest.h>
+#include <Messages/NotifyTopic.h>
 
 QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_questUpdateConnection = aDispatcher.sink<PacketEvent<RequestQuestUpdate>>().connect<&QuestService::OnQuestChanges>(this);
+    m_topicConnection = aDispatcher.sink<PacketEvent<TopicRequest>>().connect<&QuestService::OnTopicRequest>(this);
 }
 
 void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessage) noexcept
@@ -77,5 +80,19 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     if (!partyComponent.JoinedPartyId.has_value())
         return;
 
+    GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
+}
+
+void QuestService::OnTopicRequest(const PacketEvent<TopicRequest>& acMessage) noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyTopic notify{};
+    notify.SpeakerID = message.SpeakerID;
+    notify.Type = message.Type;
+    notify.TopicID1 = message.TopicID1;
+    notify.TopicID2 = message.TopicID2;
+
+    const auto& partyComponent = acMessage.pPlayer->GetParty();
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }

@@ -6,6 +6,7 @@
 struct World;
 struct UpdateEvent;
 struct RequestQuestUpdate;
+struct TopicRequest;
 
 /**
 * @brief Dispatch quest sync messages.
@@ -20,10 +21,10 @@ public:
 private:
 
     void OnQuestChanges(const PacketEvent<RequestQuestUpdate>& aChanges) noexcept;
+    void OnTopicRequest(const PacketEvent<TopicRequest>& acRequest) noexcept;
 
     World& m_world;
 
     entt::scoped_connection m_questUpdateConnection;
-    entt::scoped_connection m_updateConnection;
-    entt::scoped_connection m_joinConnection;
+    entt::scoped_connection m_topicConnection;
 };

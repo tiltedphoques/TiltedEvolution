@@ -454,7 +454,7 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
-        spdlog::warn("Part does not exist, canceling broadcast.");
+        spdlog::warn("Party does not exist, canceling broadcast.");
         return;
     }
 

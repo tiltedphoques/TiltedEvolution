@@ -271,12 +271,12 @@ struct TESTopicInfoEvent
         TOPIC_END = 1
     };
 
-    uint64_t unk0;
+    void* pCallback; // This callback only seems to be there for progressing the UI, no need to sync
     TESObjectREFR* pSpeaker;
     uint32_t topicId1;
-    TopicInfoEventType eType;
+    uint32_t eType;
     uint32_t topicId2;
-    uint32_t unk1C;
+    uint32_t pad1C;
 };
 
 struct TESTrackedStatsEvent

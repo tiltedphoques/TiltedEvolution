@@ -2,7 +2,10 @@
 
 #include <Services/PapyrusService.h>
 
+#include <Events/TopicEvent.h>
+
 #include <Games/Overrides.h>
+#include <Games/ActorExtension.h>
 
 TESObjectREFR* TESQuest::GetAliasedRef(uint32_t aAliasID) noexcept
 {
@@ -116,7 +119,34 @@ void TESQuest::SetStopped()
     MarkChanged(2);
 }
 
-static TiltedPhoques::Initializer s_questInitHooks([]() {
-    // kill quest init in cold blood
-    //TiltedPhoques::Write<uint8_t>(25003, 0xC3);
+using TProcessTopicEvent = void(void*, TESTopicInfoEvent*);
+static TProcessTopicEvent* RealProcessTopicEvent = nullptr;
+
+void TESQuest::ExecuteDialogueFragment(TESTopicInfoEvent* aEvent) noexcept
+{
+    void* pVM = (void*)0x142FC2A90;
+    ThisCall(RealProcessTopicEvent, pVM, aEvent);
+}
+
+void TP_MAKE_THISCALL(HookProcessTopicEvent, void, TESTopicInfoEvent* apEvent)
+{
+    if (apEvent->pSpeaker && apEvent->pSpeaker->formID != 0x14)
+    {
+        if (Actor* pActor = Cast<Actor>(apEvent->pSpeaker))
+        {
+            auto* pExtension = pActor->GetExtension();
+            if (pExtension->IsLocal())
+                World::Get().GetDispatcher().trigger(TopicEvent(pActor->formID, apEvent->topicId1, apEvent->eType, apEvent->topicId2));
+        }
+    }
+
+    return ThisCall(RealProcessTopicEvent, apThis, apEvent);
+}
+
+static TiltedPhoques::Initializer s_questInitHooks([]() { 
+    POINTER_SKYRIMSE(TProcessTopicEvent, processEvent, 53997);
+
+    RealProcessTopicEvent = processEvent.Get();
+
+    TP_HOOK(&RealProcessTopicEvent, HookProcessTopicEvent);
 });

@@ -5,6 +5,8 @@
 #include <Components/TESFullName.h>
 #include <Forms/BGSStoryManagerTree.h>
 
+#include <Games/Events.h>
+
 struct BGSScene : TESForm
 {
     GameArray<void*> phases;
@@ -13,6 +15,8 @@ struct BGSScene : TESForm
 
 struct TESQuest : BGSStoryManagerTreeForm
 {
+    static void ExecuteDialogueFragment(TESTopicInfoEvent* aEvent) noexcept;
+
     enum class State : uint8_t
     {
         WaitingPromotion,

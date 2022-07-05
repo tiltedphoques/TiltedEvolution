@@ -1,6 +1,7 @@
 #include <TiltedOnlinePCH.h>
 
 #include <Events/ConnectedEvent.h>
+#include <Events/TopicEvent.h>
 
 #include <Services/QuestService.h>
 #include <Services/ImguiService.h>
@@ -15,6 +16,8 @@
 
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
+#include <Messages/TopicRequest.h>
+#include <Messages/NotifyTopic.h>
 
 static TESQuest* FindQuestByNameId(const String &name)
 {
@@ -32,6 +35,8 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
 {
     m_joinedConnection = aDispatcher.sink<ConnectedEvent>().connect<&QuestService::OnConnected>(this);
     m_questUpdateConnection = aDispatcher.sink<NotifyQuestUpdate>().connect<&QuestService::OnQuestUpdate>(this);
+    m_topicConnection = aDispatcher.sink<TopicEvent>().connect<&QuestService::OnTopicEvent>(this);
+    m_topicNotifyConnection = aDispatcher.sink<NotifyTopic>().connect<&QuestService::OnNotifyTopic>(this);
 
     // A note about the Gameevents:
     // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds immediately.
@@ -59,6 +64,80 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
             pQuest->SetActive(false);
     }
     */
+}
+
+void QuestService::OnTopicEvent(const TopicEvent& acEvent) noexcept
+{
+    if (!m_world.GetPartyService().IsLeader())
+        return;
+
+    auto& modSystem = m_world.GetModSystem();
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.SpeakerID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto serverIdRes = Utils::GetServerId(*entityIt);
+    if (!serverIdRes)
+    {
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.SpeakerID);
+        return;
+    }
+
+    TopicRequest request{};
+    request.SpeakerID = *serverIdRes;
+    request.Type = acEvent.Type;
+
+    modSystem.GetServerModId(acEvent.TopicID1, request.TopicID1);
+
+    // Weird edge case where it's 0 or 0xFFFFFFFF
+    if (acEvent.TopicID2 == 0 || acEvent.TopicID2 == 0xFFFFFFFF)
+        request.TopicID2.BaseId = acEvent.TopicID2;
+    else
+        modSystem.GetServerModId(acEvent.TopicID2, request.TopicID2);
+
+    m_world.GetTransport().Send(request);
+}
+
+void QuestService::OnNotifyTopic(const NotifyTopic& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.SpeakerID](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for topic with remote id {:X} not found.", acMessage.SpeakerID);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    TESObjectREFR* pSpeaker = Cast<TESObjectREFR>(pForm);
+
+    if (!pSpeaker)
+        return;
+
+    TESTopicInfoEvent topicEvent{};
+    topicEvent.pSpeaker = pSpeaker;
+    topicEvent.eType = acMessage.Type;
+
+    auto& modSystem = m_world.GetModSystem();
+
+    topicEvent.topicId1 = modSystem.GetGameId(acMessage.TopicID1);
+
+    if (acMessage.TopicID2.BaseId == 0 || acMessage.TopicID2.BaseId == 0xFFFFFFFF)
+        topicEvent.topicId2 = acMessage.TopicID2.BaseId;
+    else
+        topicEvent.topicId2 = modSystem.GetGameId(acMessage.TopicID2);
+
+    TESQuest::ExecuteDialogueFragment(&topicEvent);
 }
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)

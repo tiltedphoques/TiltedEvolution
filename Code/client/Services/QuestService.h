@@ -4,7 +4,10 @@
 #include <Events/EventDispatcher.h>
 #include <Games/Events.h>
 
+struct TopicEvent;
+
 struct NotifyQuestUpdate;
+struct NotifyTopic;
 
 struct TESQuest;
 
@@ -27,18 +30,20 @@ public:
     static bool StopQuest(uint32_t aformId);
 
 private:
-    friend struct QuestEventHandler;
-
     void OnConnected(const ConnectedEvent&) noexcept;
+    void OnTopicEvent(const TopicEvent&) noexcept;
 
     BSTEventResult OnEvent(const TESQuestStartStopEvent*, const EventDispatcher<TESQuestStartStopEvent>*) override;
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;
 
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
+    void OnNotifyTopic(const NotifyTopic&) noexcept;
 
     World& m_world;
 
     entt::scoped_connection m_joinedConnection;
     entt::scoped_connection m_leftConnection;
     entt::scoped_connection m_questUpdateConnection;
+    entt::scoped_connection m_topicConnection;
+    entt::scoped_connection m_topicNotifyConnection;
 };

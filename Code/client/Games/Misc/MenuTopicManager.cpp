@@ -18,15 +18,20 @@ bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
     {
         int i = 0;
         const char* pText = nullptr;
+        MenuTopicManager::DialogueOption* pOption = nullptr;
         for (auto option : *apThis->pOptions)
         {
             if (i == aIndex)
             {
                 pText = option->text;
+                pOption = option;
                 break;
             }
             i++;
         }
+
+        auto* pSpeaker = TESObjectREFR::GetByHandle(apThis->hSpeaker);
+        spdlog::critical("Speaker: {:X}, topic: {:X}", pSpeaker->formID, pOption->pTopic->formID);
 
         if (pText != nullptr)
             World::Get().GetRunner().Trigger(PlayerDialogueEvent(pText));

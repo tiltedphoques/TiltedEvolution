@@ -260,8 +260,8 @@ void PlayerService::RunLevelUpdates() const noexcept
 
 BSTEventResult PlayerService::OnEvent(const TESTopicInfoEvent* apEvent, const EventDispatcher<TESTopicInfoEvent>*)
 {
-    spdlog::warn("unk0: {:X}, speaker id: {:X}, topic id 1: {:X}, unk14: {:X}, topic id 2: {:X}, unk1C: {:X}",
-                 apEvent->unk0, apEvent->pSpeaker ? apEvent->pSpeaker->formID : 0, apEvent->topicId1, (uint32_t)apEvent->eType, apEvent->topicId2, apEvent->unk1C);
+    spdlog::warn("speaker id: {:X}, topic id 1: {:X}, type: {:X}, topic id 2: {:X}",
+                 apEvent->pSpeaker ? apEvent->pSpeaker->formID : 0, apEvent->topicId1, apEvent->eType, apEvent->topicId2);
 
     return BSTEventResult::kOk;
 }
