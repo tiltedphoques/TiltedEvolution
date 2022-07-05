@@ -15,6 +15,7 @@ Check out the [build guide](https://wiki.tiltedphoques.com/tilted-online/technic
 Have some experience in C++, and want to help advance the project faster? Contribute!
 - Check the issues, it's a good place to start when you don't know what to do.
 - Fork the repository and create pull requests to this repository.
+- Create pull requests to the "dev" branch, not to master or prerel.
 - Try to keep your code clean, following the code guidelines.
 
 ## Main project source tree
