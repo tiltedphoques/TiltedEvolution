@@ -28,10 +28,6 @@ Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server 
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                    "Dedicated Together Server"};
-Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
-                                   "Hello there!"};
-Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
-Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
@@ -76,7 +72,8 @@ constexpr char kBypassMoPoWarning[]{
 
 constexpr char kMopoRecordsMissing[]{
     "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
-    "to join! Please install Mods into the /data/ directory."};
+    "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
+    "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
 } // namespace
 
@@ -250,17 +247,10 @@ void GameServer::UpdateInfo()
 {
     // Update Info fields from user facing CVARS.
     m_info.name = sServerName.c_str();
-    m_info.desc = sServerDesc.c_str();
-    m_info.icon_url = sServerIconURL.c_str();
+    m_info.desc = "";
+    m_info.icon_url = "";
+    m_info.tagList = "";
     m_info.tick_rate = GetUserTickRate();
-
-    if (std::strlen(sTagList.c_str()) > 512)
-    {
-        m_info.tagList = "";
-        spdlog::warn("TagList limit exceeded (512 characters). Ignoring tags.");
-    }
-    else
-        m_info.tagList = sTagList.c_str();
 }
 
 void GameServer::OnUpdate()

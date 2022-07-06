@@ -7,16 +7,16 @@
 Tilted Online  is a framework created to enable multiplayer in Bethesda games, currently supporting **Skyrim Special Edition** and eventually **Fallout 4**.
 
 ## Getting started
-To play Tilted Online, grab the latest released binaries from the [releases page](https://github.com/tiltedphoques/TiltedOnline/releases).
+To play Tilted Online, go to the [nexus page](https://www.nexusmods.com/skyrimspecialedition/mods/69993).
 
-Check out the [build guide](https://wiki.tiltedphoques.com/tilted-online/coding/build-guide) for setup and development info on the project. When writing code, check the [code guidelines](https://wiki.tiltedphoques.com/tilted-online/coding/code-guidelines)
- and make sure to run clang-format!
+Check out the [build guide](https://wiki.tiltedphoques.com/tilted-online/technical-documentation/build-guide) for setup and development info on the project. When writing code, check the CODE_GUIDELINES.md and make sure to run clang-format!
 
 ## Contributing
 Have some experience in C++, and want to help advance the project faster? Contribute!
 - Check the issues, it's a good place to start when you don't know what to do.
 - Fork the repository and create pull requests to this repository.
-- Try to keep your code clean, following the [code guidelines](https://wiki.tiltedphoques.com/tilted-online/coding/code-guidelines).
+- Create pull requests to the "dev" branch, not to master or prerel.
+- Try to keep your code clean, following the code guidelines.
 
 ## Main project source tree
 
