@@ -77,7 +77,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
     
     this.serverListService.getServerList()
       .pipe(
-        switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
+        //switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
         map((list) => this.markFavoritedServers(list)),
       )
       .subscribe((list) => {
