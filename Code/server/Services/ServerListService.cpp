@@ -55,20 +55,17 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    // TODO: list pw protected servers on server list
-    if (GameServer::Get()->IsPasswordProtected())
-        return;
-
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
     auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
-                        pServer->GetPort(), cInfo.tick_rate, pc, kPlayerMaxCap, cInfo.tagList, bAnnounceServer);
+                        pServer->GetPort(), cInfo.tick_rate, pc, kPlayerMaxCap, cInfo.tagList, bAnnounceServer,
+                        GameServer::Get()->IsPasswordProtected());
 }
 
 void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
-                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept
+                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic, bool aPassword) noexcept
 {
     const std::string kVersion{BUILD_COMMIT};
     const httplib::Params params{
@@ -82,13 +79,14 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         {"max_player_count", std::to_string(aPlayerMaxCount)},
         {"tags", std::string(acTagList.c_str(), acTagList.size())},
         {"public", aPublic ? "true" : "false" },
+        {"pass", aPassword ? "true" : "false" },
     };
 
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
     const auto response = client.Post("/announce", params);
 
-    // If we send a 203 it means we banned this server
+    // If we send a 403 it means we banned this server
     if (response)
     {
         if (response->status == 403)
