@@ -15,6 +15,7 @@
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
 #include <Events/MoveActorEvent.h>
+#include <Events/ConnectionErrorEvent.h>
 
 #include <Games/References.h>
 
@@ -323,17 +324,23 @@ void DebugService::OnDraw() noexcept
 
         ImGui::EndMenu();
     }
-#if TP_PRIVATE_DEBUGGERS
     if (ImGui::BeginMenu("Misc"))
     {
         if (ImGui::Button("Crash Client"))
         {
+#if TP_PRIVATE_DEBUGGERS
             int* m = 0;
             *m = 1338;
+#else
+            ConnectionErrorEvent errorEvent{};
+            errorEvent.ErrorDetail =
+                "Skyrim Together never crashes ;)  With love, Yamashi, Force, Dragonisser, Cosideci.";
+             
+            m_world.GetRunner().Trigger(errorEvent);
+#endif
         }
         ImGui::EndMenu();
     }
-#endif
     ImGui::EndMainMenuBar();
 
     if (g_enableQuestWindow)
