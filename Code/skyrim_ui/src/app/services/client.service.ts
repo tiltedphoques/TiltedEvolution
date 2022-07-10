@@ -1,13 +1,12 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-
-import { BehaviorSubject, ReplaySubject, AsyncSubject, Subject } from 'rxjs';
-
+import { AsyncSubject, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
-import { Player } from '../models/player';
 import { PartyInfo } from '../models/party-info';
+import { Player } from '../models/player';
 import { ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
+
 
 /** Message. */
 export interface Message {
@@ -33,7 +32,7 @@ export class ClientService implements OnDestroy {
   public inGameStateChange = new BehaviorSubject(!environment.game);
 
   /** Opening/close menu change. */
-  public openingMenuChange = new BehaviorSubject(false);
+  public openingMenuChange = new BehaviorSubject(true);
 
   /** Message reception. */
   public messageReception = new ReplaySubject<Message>();
@@ -62,7 +61,7 @@ export class ClientService implements OnDestroy {
   public partyInfoChange = new Subject<PartyInfo>();
 
   /** Connect party info change. */
-  public partyLeftChange = new Subject();
+  public partyLeftChange = new Subject<void>();
 
   /** Connect party invite received. */
   public partyInviteReceivedChange = new Subject<number>();
@@ -88,12 +87,12 @@ export class ClientService implements OnDestroy {
   public triggerError = new BehaviorSubject('');
 
   /** Used purely for debugging. */
-  public debugChange = new Subject();
+  public debugChange = new Subject<void>();
 
   // The below emitters are used in the mocking service
 
   /** Used for when a party leader changed. */
-  public partyLaunchedChange = new Subject();
+  public partyLaunchedChange = new Subject<void>();
 
   /** Used for when a party invite is sent. */
   public partyInviteChange = new Subject<number>();
@@ -119,10 +118,12 @@ export class ClientService implements OnDestroy {
 
   /**
    * Instantiate.
-   *
-   * @param zone Angular Zone.
    */
-  public constructor(private zone: NgZone, private errorService: ErrorService, private loadingService: LoadingService) {
+  public constructor(
+    private zone: NgZone,
+    private errorService: ErrorService,
+    private loadingService: LoadingService,
+  ) {
     if (environment.game) {
       skyrimtogether.on('init', this.onInit.bind(this));
       skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -202,15 +203,14 @@ export class ClientService implements OnDestroy {
    * @param host IP address or hostname.
    * @param port Port.
    */
-  public connect(host: string, port: number, token = ""): void {
+  public connect(host: string, port: number, token = ''): void {
     if (environment.game) {
       skyrimtogether.connect(host, port, token);
       this.isConnectionInProgressChange.next(true);
       this._host = host;
       this._port = port;
       this._token = token;
-    }
-    else {
+    } else {
       this.connectionStateChange.next(true);
       this.isConnectionInProgressChange.next(false);
     }
@@ -223,8 +223,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.disconnect();
       this._remainingReconnectionAttempt = 0;
-    }
-    else {
+    } else {
       this.connectionStateChange.next(false);
     }
   }
@@ -237,81 +236,74 @@ export class ClientService implements OnDestroy {
   public sendMessage(message: string): void {
     if (environment.game) {
       skyrimtogether.sendMessage(message);
-    }
-    else {
+    } else {
       this.messageReception.next({ name: this.nameChange.value, content: message });
     }
   }
-  
+
   /**
    * Launch a party.
    */
   public launchParty(): void {
     if (environment.game) {
       skyrimtogether.launchParty();
-    }
-    else {
+    } else {
       this.partyLaunchedChange.next();
       this.onPartyCreated();
     }
   }
-  
+
   /**
    * Create a party invite.
    */
   public createPartyInvite(playerId: number): void {
     if (environment.game) {
       skyrimtogether.createPartyInvite(playerId);
-    }
-    else {
+    } else {
       this.partyInviteChange.next(playerId);
     }
   }
-  
+
   /**
    * Accept a party invite.
    */
   public acceptPartyInvite(inviterId: number): void {
     if (environment.game) {
       skyrimtogether.acceptPartyInvite(inviterId);
-    }
-    else {
+    } else {
       this.partyJoinedChange.next(inviterId);
     }
   }
-  
+
   /**
    * As a party leader, kick a player from the party.
    */
   public kickPartyMember(playerId: number): void {
     if (environment.game) {
       skyrimtogether.kickPartyMember(playerId);
-    }
-    else {
+    } else {
       this.memberKickedChange.next(playerId);
     }
   }
-  
+
   /**
    * Leave a party.
    */
   public leaveParty(): void {
     if (environment.game) {
       skyrimtogether.leaveParty();
-    }
-    else {
+    } else {
       this.onPartyLeft();
     }
   }
-  
+
   /**
    * As a party leader, make someone else the leader.
    */
   public changePartyLeader(playerId: number): void {
     if (environment.game) {
       skyrimtogether.changePartyLeader(playerId);
-    }
-    else {
+    } else {
       this.partyLeaderChange.next(playerId);
     }
   }
@@ -322,8 +314,7 @@ export class ClientService implements OnDestroy {
   public deactivate(): void {
     if (environment.game) {
       skyrimtogether.deactivate();
-    }
-    else {
+    } else {
       this.activationStateChange.next(this.activationStateChange.value);
     }
   }
@@ -341,9 +332,8 @@ export class ClientService implements OnDestroy {
   public teleportToPlayer(playerId: number): void {
     if (environment.game) {
       skyrimtogether.teleportToPlayer(playerId);
-    }
-    else {
-      this.messageReception.next({ content: "Simulating teleport" });
+    } else {
+      this.messageReception.next({ content: 'Simulating teleport' });
     }
   }
 
@@ -433,10 +423,10 @@ export class ClientService implements OnDestroy {
    * @param name Sender's name.
    * @param message Message content.
    */
-   private onDialogueMessage(name: string, message: string): void {
+  private onDialogueMessage(name: string, message: string): void {
     let dialogue = true;
     this.zone.run(() => {
-      this.messageReception.next({ name, content: message, dialogue: dialogue});
+      this.messageReception.next({ name, content: message, dialogue: dialogue });
     });
   }
 
@@ -462,7 +452,7 @@ export class ClientService implements OnDestroy {
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        this.messageReception.next({ content: `Connection lost, trying to reconnect. ${this._remainingReconnectionAttempt} attempts left.` })
+        this.messageReception.next({ content: `Connection lost, trying to reconnect. ${ this._remainingReconnectionAttempt } attempts left.` });
         this.connect(this._host, this._port, this._token);
       }
     });
@@ -505,12 +495,12 @@ export class ClientService implements OnDestroy {
     RTT: number,
     packetLoss: number,
     sentBandwidth: number,
-    receivedBandwidth: number
+    receivedBandwidth: number,
   ): void {
     this.zone.run(() => {
       this.debugDataChange.next(new Debug(
         numPacketsSent, numPacketsReceived, RTT, packetLoss, sentBandwidth,
-        receivedBandwidth
+        receivedBandwidth,
       ));
     });
   }
@@ -523,8 +513,8 @@ export class ClientService implements OnDestroy {
           id: playerId,
           connected: true,
           level: level,
-          cellName: cellName
-        }
+          cellName: cellName,
+        },
       ));
     });
   }
@@ -535,8 +525,8 @@ export class ClientService implements OnDestroy {
         {
           name: username,
           id: playerId,
-          connected: false
-        }
+          connected: false,
+        },
       ));
     });
   }
@@ -550,44 +540,44 @@ export class ClientService implements OnDestroy {
   private onSetLevel(playerId: number, level: number) {
     this.zone.run(() => {
       this.levelChange.next(new Player({ id: playerId, level: level }));
-    })
+    });
   }
 
   private onSetCell(playerId: number, cellName: string) {
     this.zone.run(() => {
       this.cellChange.next(new Player({ id: playerId, cellName: cellName }));
-    })
+    });
   }
 
   private onSetPlayer3dLoaded(playerId: number, health: number) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({id: playerId, isLoaded: true, health: health}));
-    })
+      this.isLoadedChange.next(new Player({ id: playerId, isLoaded: true, health: health }));
+    });
   }
 
   private onSetPlayer3dUnloaded(playerId: number) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({id: playerId, isLoaded: false}));
-    })
+      this.isLoadedChange.next(new Player({ id: playerId, isLoaded: false }));
+    });
   }
 
   private onSetLocalPlayerId(playerId: number) {
     this.zone.run(() => {
       this.localPlayerId = playerId;
-    })
+    });
   }
 
   private onProtocolMismatch() {
     this.zone.run(() => {
       this.protocolMismatchChange.next(true);
-    })
+    });
   }
 
   private onTriggerError(error: string) {
     this.zone.run(() => {
       this.triggerError.next(error);
       this.errorService.error(error);
-    })
+    });
   }
 
   private onDummyData(data: Array<number>) {
@@ -599,7 +589,7 @@ export class ClientService implements OnDestroy {
       }
       console.log(data);
       */
-    })
+    });
   }
 
   public onPartyInfo(playerIds: Array<number>, leaderId: number) {
@@ -607,10 +597,10 @@ export class ClientService implements OnDestroy {
       this.partyInfoChange.next(new PartyInfo(
         {
           playerIds: playerIds,
-          leaderId: leaderId
-        }
+          leaderId: leaderId,
+        },
       ));
-    })
+    });
   }
 
   private onPartyCreated() {
@@ -619,21 +609,21 @@ export class ClientService implements OnDestroy {
       this.partyInfoChange.next(new PartyInfo(
         {
           playerIds: [this.localPlayerId],
-          leaderId: this.localPlayerId
-        }
+          leaderId: this.localPlayerId,
+        },
       ));
-    })
+    });
   }
 
   private onPartyLeft() {
     this.zone.run(() => {
       this.partyLeftChange.next();
-    })
+    });
   }
 
   private onPartyInviteReceived(inviterId: number) {
     this.zone.run(() => {
       this.partyInviteReceivedChange.next(inviterId);
-    })
+    });
   }
 }

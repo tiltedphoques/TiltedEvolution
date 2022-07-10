@@ -1,15 +1,16 @@
-import { Component, OnInit, ViewEncapsulation, Output, EventEmitter, HostListener, OnDestroy } from '@angular/core';
-import { ErrorService } from '../../services/error.service';
-import { ServerListService } from '../../services/server-list.service';
-import { ClientService } from '../../services/client.service';
-import { SoundService, Sound } from '../../services/sound.service';
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { forkJoin, interval, Observable, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
-import { StoreService } from '../../services/store.service';
-import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
 import { Server } from '../../models/server';
+import { ClientService } from '../../services/client.service';
+import { ErrorService } from '../../services/error.service';
+import { ServerListService } from '../../services/server-list.service';
+import { Sound, SoundService } from '../../services/sound.service';
+import { StoreService } from '../../services/store.service';
+
 
 @Component({
   selector: 'app-server-list',
@@ -20,7 +21,7 @@ import { Server } from '../../models/server';
 export class ServerListComponent implements OnInit, OnDestroy {
 
   @Output()
-  public done = new EventEmitter();
+  public done = new EventEmitter<void>();
   @Output()
   public setView = new EventEmitter<string>();
 
@@ -41,14 +42,18 @@ export class ServerListComponent implements OnInit, OnDestroy {
   private searchSubscription: Subscription;
   private autoRefreshSubscription: Subscription;
 
-  constructor(private errorService: ErrorService, private serverListService: ServerListService,
+  constructor(
+    private errorService: ErrorService,
+    private serverListService: ServerListService,
     private clientService: ClientService,
     private soundService: SoundService,
-    private storeService: StoreService) { }
+    private storeService: StoreService,
+  ) {
+  }
 
   ngOnInit() {
     this.updateServerList();
-    this.onSearchSubscription()
+    this.onSearchSubscription();
     this.onAutoRefreshSubcription();
   }
 
@@ -59,7 +64,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public cancel(): void {
-    this.setView.next("connect");
+    this.setView.next('connect');
   }
 
   public updateServerList() {
@@ -74,7 +79,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
         return;
       }
     });
-    
+
     this.serverListService.getServerList()
       .pipe(
         /**
@@ -102,7 +107,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   private getLocationDataByIp(servers: Server[]): Array<Observable<Server>> {
     return servers.map((server) => {
       return this.serverListService.getInformationForIp(server.ip).pipe(
-        map((data) => ({ ...server, countryCode: data.countryCode.toLowerCase(), continent: data.continent, country: data.country }))
+        map((data) => ({ ...server, countryCode: data.countryCode.toLowerCase(), continent: data.continent, country: data.country })),
       );
     });
   }
@@ -112,15 +117,14 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   private markFavoritedServers(servers: Server[]): Server[] {
-    const favoriteServerList = JSON.parse(this.storeService.get('favoriteServerList', "[]"));
+    const favoriteServerList = JSON.parse(this.storeService.get('favoriteServerList', '[]'));
 
     if (favoriteServerList.length > 0) {
       servers.map((server: Server) => {
         favoriteServerList.forEach(favServer => {
           if (server.ip === favServer.ip && server.port === favServer.port) {
             server.isFavorite = true;
-          }
-          else if (server.name === favServer.name) {
+          } else if (server.name === favServer.name) {
             server.isFavorite = true;
           }
         });
@@ -141,7 +145,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
     this.autoRefreshSubscription = interval(60000 * minutes)
       .subscribe((value) => {
         this.updateServerList();
-      })
+      });
   }
 
 
@@ -163,17 +167,16 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
 
-
   public onSearchSubscription() {
     this.searchSubscription = this.formSearch.valueChanges
       .pipe(
         debounceTime(400),
-        distinctUntilChanged()
+        distinctUntilChanged(),
       )
       .subscribe((value) => {
         this.filterNameServer(value);
         this.filterCountryServer(value);
-      })
+      });
   }
 
   public sortPlayers(isIncreasingOrder: boolean) {
@@ -217,7 +220,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   private filterNameServer(search: string): void {
-    if (search || search === "") {
+    if (search || search === '') {
       search = search.toLowerCase();
 
       this.serverList = this._serverList.filter((server: Server) => {
@@ -245,7 +248,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   public getFavoriteServers(): Server[] {
     return this._serverList.filter(value => {
       return value.isFavorite;
-    })
+    });
   }
 
   public getFavoriteIcon(server: Server) {
@@ -253,11 +256,11 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   public getClientVersion() {
-    return this.clientService.versionSet.value.split("-")[0];
+    return this.clientService.versionSet.value.split('-')[0];
   }
 
   public getServerVersion(server: Server) {
-    return server.version.split("-")[0];
+    return server.version.split('-')[0];
   }
 
   public isCompatibleToClient(server: Server) {
@@ -267,8 +270,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   private close() {
     if (this.errorService.error$.value) {
       this.errorService.removeError();
-    }
-    else {
+    } else {
       this.done.next();
     }
   }
@@ -284,8 +286,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   static sortDescendingCountryCount(a: Server, b: Server) {
     if (a.country > b.country) {
       return -1;
-    }
-    else if (a.country < b.country) {
+    } else if (a.country < b.country) {
       return 1;
     }
     return 0;
@@ -294,8 +295,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   static sortIncreasingCountryCount(a: Server, b: Server) {
     if (a.country > b.country) {
       return 1;
-    }
-    else if (a.country < b.country) {
+    } else if (a.country < b.country) {
       return -1;
     }
     return 0;
@@ -304,8 +304,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   static sortDescendingNameCount(a: Server, b: Server) {
     if (a.name > b.name) {
       return -1;
-    }
-    else if (a.name < b.name) {
+    } else if (a.name < b.name) {
       return 1;
     }
     return 0;
@@ -314,8 +313,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
   static sortIncreasingNameCount(a: Server, b: Server) {
     if (a.name > b.name) {
       return 1;
-    }
-    else if (a.name < b.name) {
+    } else if (a.name < b.name) {
       return -1;
     }
     return 0;

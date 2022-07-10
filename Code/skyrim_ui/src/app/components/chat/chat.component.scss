@@ -20,7 +20,7 @@ app-chat {
   p {
     margin: 0;
     line-height: $-size-line;
-    padding: ($-size-gap / 5) ($-size-gap / 2);
+    padding: ($-size-gap * 0.2) ($-size-gap * 0.5);
     text-align: left;
 
     &[data-odd=true] {
@@ -30,7 +30,7 @@ app-chat {
     &[data-system=true] {
       .app-chat-date,
       .app-chat-message {
-        color: #99F;
+        color: #9999ff;
       }
     }
     &[data-dialogue=true] {

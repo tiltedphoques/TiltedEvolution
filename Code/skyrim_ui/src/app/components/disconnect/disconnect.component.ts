@@ -1,21 +1,21 @@
-import {
-  Component, ViewEncapsulation, Output, EventEmitter, HostListener
-} from '@angular/core';
-
-import { SoundService, Sound } from '../../services/sound.service';
+import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
 import { ClientService } from '../../services/client.service';
+import { Sound, SoundService } from '../../services/sound.service';
+
 
 @Component({
   selector: 'app-disconnect',
   templateUrl: './disconnect.component.html',
-  styleUrls: [ './disconnect.component.scss' ],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./disconnect.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class DisconnectComponent {
-  @Output()
-  public done = new EventEmitter();
 
-  public constructor(private client: ClientService, private sound: SoundService) {}
+  @Output()
+  public done = new EventEmitter<void>();
+
+  public constructor(private client: ClientService, private sound: SoundService) {
+  }
 
   public disconnect(): void {
     this.client.disconnect();
@@ -28,7 +28,7 @@ export class DisconnectComponent {
     this.done.next();
   }
 
-  @HostListener('window:keydown.escape', [ '$event' ])
+  @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
     this.done.next();

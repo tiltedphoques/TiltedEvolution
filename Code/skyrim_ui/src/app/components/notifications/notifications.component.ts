@@ -1,10 +1,7 @@
-import {
-  Component, ViewEncapsulation, OnDestroy
-} from '@angular/core';
-
+import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Subscription } from 'rxjs';
-
 import { ClientService } from '../../services/client.service';
+
 
 interface Notification {
   content: string;
@@ -14,8 +11,8 @@ interface Notification {
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
-  styleUrls: [ './notifications.component.scss' ],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./notifications.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class NotificationsComponent implements OnDestroy {
   public notifications = [] as Notification[];
@@ -23,10 +20,10 @@ export class NotificationsComponent implements OnDestroy {
   public constructor(private client: ClientService) {
     this.messageSubscription = this.client.messageReception.subscribe(message => {
       this.notifications.push({
-        content: `${message.name ? `Message from ${message.name}: ` : ''}${message.content}`,
+        content: `${ message.name ? `Message from ${ message.name }: ` : '' }${ message.content }`,
         timer: setTimeout(() => {
           this.notifications.shift();
-        }, 5000)
+        }, 5000),
       });
 
       if (this.notifications.length > 5) {
@@ -34,7 +31,7 @@ export class NotificationsComponent implements OnDestroy {
           clearTimeout(notification.timer);
         }
       }
-    })
+    });
   }
 
   public ngOnDestroy(): void {
