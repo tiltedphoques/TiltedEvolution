@@ -1,11 +1,25 @@
-<mat-tab-group mat-stretch-tabs mat-align-tabs="start" animationDuration="0ms">
-    <mat-tab label="Player List">
-        <app-player-list></app-player-list>
-    </mat-tab>
-    <mat-tab label="Party Menu">
-        <app-party-menu></app-party-menu>
-    </mat-tab>
-</mat-tab-group>
-<div class="buttons">
-    <button class="btnCancel" (click)="cancel()">Back</button>
+<div class="tab-buttons">
+  <button
+    data-style-ornament="inverted"
+    [attr.data-style-active]="(activeTab | async) === PlayerManagerTab.PLAYER_LIST"
+    (click)="switchTab(PlayerManagerTab.PLAYER_LIST)"
+  >
+    Player List
+  </button>
+  <button
+    data-style-ornament="inverted"
+    [attr.data-style-active]="(activeTab | async) === PlayerManagerTab.PARTY_MENU"
+    (click)="switchTab(PlayerManagerTab.PARTY_MENU)"
+  >
+    Party Menu
+  </button>
+</div>
+
+<ng-container [ngSwitch]="activeTab | async">
+  <app-player-list *ngSwitchCase="PlayerManagerTab.PLAYER_LIST"></app-player-list>
+  <app-party-menu *ngSwitchCase="PlayerManagerTab.PARTY_MENU"></app-party-menu>
+</ng-container>
+
+<div class="actions">
+  <button data-style-ornament="simple" class="btnCancel" (click)="close()">Back</button>
 </div>

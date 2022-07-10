@@ -5,8 +5,8 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --disable-host-check --configuration=browser",
     "build": "ng build",
-    "deploy:nightly": "ng build --prod --output-hashing none --configuration=nightly --base-href ./ --resources-output-path ./assets/",
-    "deploy:production": "ng build --prod --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
+    "deploy:nightly": "ng build --output-hashing none --configuration=nightly --base-href ./ --resources-output-path ./assets/",
+    "deploy:production": "ng build --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -19,7 +19,6 @@
     "@angular/compiler": "^14.0.5",
     "@angular/core": "^14.0.5",
     "@angular/forms": "^14.0.5",
-    "@angular/material": "^14.0.4",
     "@angular/platform-browser": "^14.0.5",
     "@angular/platform-browser-dynamic": "^14.0.5",
     "@angular/router": "^14.0.5",
@@ -27,6 +26,8 @@
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@ngneat/loadoff": "^2.1.0",
+    "@ngneat/reactive-forms": "^5.0.0",
     "rxjs": "~7.5.5",
     "tslib": "^2.4.0",
     "zone.js": "~0.11.6"

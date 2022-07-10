@@ -1,46 +1,49 @@
-import { Component, ViewEncapsulation, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { animation as popupsAnimation } from '../root/popups.animation';
-import { animation as popupTestAnimation } from '../popup/popup.animation';
-import { Subscription } from 'rxjs';
-import { PopupNotificationService } from '../../services/popup-notification.service';
-import { PopupNotification, NotificationType } from '../../models/popup-notification';
-import { GroupService } from '../../services/group.service';
+import { Component, HostListener, OnInit, ViewEncapsulation } from '@angular/core';
+import { takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Player } from '../../models/player';
+import { NotificationType, PopupNotification } from '../../models/popup-notification';
+import { DestroyService } from '../../services/asset/destroy.service';
+import { GroupService } from '../../services/group.service';
+import { PopupNotificationService } from '../../services/popup-notification.service';
+import { animation as popupTestAnimation } from '../popup/popup.animation';
+import { animation as popupsAnimation } from '../root/popups.animation';
+
 
 @Component({
   selector: 'app-notification-popup',
   templateUrl: './notification-popup.component.html',
   styleUrls: ['./notification-popup.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  animations: [ popupsAnimation, popupTestAnimation ]
+  animations: [popupsAnimation, popupTestAnimation],
+  providers: [DestroyService],
 })
-export class NotificationPopupComponent implements OnDestroy, OnInit {
+export class NotificationPopupComponent implements OnInit {
 
-  public isActive = false;
-  public notification: PopupNotification;
+  isActive = false;
+  notification: PopupNotification;
 
-  private notificationSubscription: Subscription;
-
-  constructor(private groupService: GroupService,
-              private popupNotificationService: PopupNotificationService) {}
+  constructor(
+    private readonly destroy$: DestroyService,
+    private readonly groupService: GroupService,
+    private readonly popupNotificationService: PopupNotificationService,
+  ) {
+  }
 
   ngOnInit() {
-    this.notificationSubscription = this.popupNotificationService.message.subscribe((notification: PopupNotification) => {
-      this.notification = notification;
-      this.isActive = (notification.message !== "");
-    });
+    this.popupNotificationService.message
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((notification: PopupNotification) => {
+        this.notification = notification;
+        this.isActive = (notification.message !== '');
+      });
   }
 
-  ngOnDestroy() {
-    this.notificationSubscription.unsubscribe();
-  }
-
-  public get isConnected(): boolean {
+  get isConnected(): boolean {
     return this.notification.type === NotificationType.Connection;
   }
 
-  public clickNotif() {
+  clickNotification() {
     this.isActive = false;
     if (this.notification.type === NotificationType.Invitation) {
       if (this.notification.player) {
@@ -51,21 +54,22 @@ export class NotificationPopupComponent implements OnDestroy, OnInit {
     }
   }
 
-  @HostListener('window:keydown.n', [ '$event' ])
+  @HostListener('window:keydown.n', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
     // Just for deskop
     if (!environment.game) {
       this.notification = {
-        message: "test notif",
+        message: 'test notif',
         player: new Player({
-          name: "Dumbeldor",
+          name: 'Dumbeldor',
           online: true,
-          avatar: "https://skyrim-together.com/images/float/avatars/random3.jpg"}),
-        type: NotificationType.Connection};
+          avatar: 'https://skyrim-together.com/images/float/avatars/random3.jpg',
+        }),
+        type: NotificationType.Connection,
+      };
       this.isActive = !this.isActive;
     }
   }
-
 
 }

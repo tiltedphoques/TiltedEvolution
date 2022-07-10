@@ -1,11 +1,19 @@
-<div id="notInParty" *ngIf="!group.isEnabled ; else inParty">
-  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled()">Launch party</button>
-  <button *ngFor="let player of invitees | keyvalue" class="party-menu-button"
-    (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
-  
+<div *ngIf="!(group$ | async)?.isEnabled ; else inParty">
+  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled$ | async">Launch party</button>
+  <button
+    *ngFor="let player of invitations$ | async"
+    class="party-menu-button"
+    (click)="acceptPartyInvite(player.id)"
+  >
+    Accept invite from {{ player.name }}
+  </button>
+
   <hr class="solid">
-  
-  <p style="padding-top: 0.5rem; line-height: 1.3;">For an optimal questing experience, make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:</p>
+
+  <p style="padding-top: 0.5rem; line-height: 1.3;">
+    For an optimal questing experience, make sure to read the playguide on our wiki, which you can
+    find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:
+  </p>
   <ul>
     <li style="line-height: 1.3em; height: auto;">By creating a party, you sort of become the "host", aka the party leader.</li>
     <li style="line-height: 1.3em; height: auto;">Only the party leader can talk to quest NPCs to progress quests.</li>
@@ -16,36 +24,46 @@
 </div>
 
 <ng-template #inParty>
-  <div style="margin-bottom: 1.0rem;" id="noPlayers" *ngIf="getMembersLength === 0 ; else notEmpty">
+  <div style="margin-bottom: 1.0rem;" class="no-players" *ngIf="(memberCount$ | async) === 0 ; else notEmpty">
     <span>There is nobody in your party yet. Invite them through the player list!</span>
   </div>
 
   <ng-template #notEmpty>
-    <div class="containerList">
-      <table cellspacing="5" cellpadding="5" class="playerListTable">
-        <thead class="listHeader">
+    <div class="container-list">
+      <table cellspacing="5" cellpadding="5" class="player-list-table">
+        <thead class="list-header">
           <tr>
-            <th></th>
+            <th>Lv.</th>
             <th>Name</th>
             <th>Location</th>
             <th></th>
-            <th></th>
-            <!--<th></th>-->
           </tr>
         </thead>
-        <tbody class="listBody">
-          <tr *ngFor="let player of members | keyvalue">
-            <td>{{ player.value.level }}</td>
-            <td>{{ player.value.name }}</td>
-            <td>{{ player.value.cellName }}</td>
-            <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-            <td><button (click)="kickMember(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn"
-                [ngClass]="!isPartyLeader ? 'hidden' : ''">Kick</button></td>
-            <!--
-            <td><button (click)="changeLeader(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn"
-                [ngClass]="!isPartyLeader ? 'hidden' : ''">Make
-                leader</button></td>
-            -->
+        <tbody>
+          <tr *ngFor="let player of members$ | async">
+            <td>{{ player.level }}</td>
+            <td>{{ player.name }}</td>
+            <td>{{ player.cellName }}</td>
+            <td>
+              <button class="user-action-button" (click)="teleportToPlayer(player.id)">Teleport</button>
+              <button
+                (click)="kickMember(player.id)"
+                [disabled]="!(isPartyLeader$ | async)" class="user-action-button"
+                [ngClass]="!(isPartyLeader$ | async) ? 'hidden' : ''"
+              >
+                Kick
+              </button>
+              <!--
+              <button
+                [disabled]="!isPartyLeader"
+                class="user-action-button"
+                [ngClass]="!isPartyLeader ? 'hidden' : ''"
+                (click)="changeLeader(player.id)"
+              >
+                Make leader
+              </button>
+              -->
+            </td>
           </tr>
         </tbody>
       </table>

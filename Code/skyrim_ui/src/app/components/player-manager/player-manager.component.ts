@@ -1,5 +1,12 @@
-import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { Sound, SoundService } from '../../services/sound.service';
 
+
+export enum PlayerManagerTab {
+  PLAYER_LIST,
+  PARTY_MENU
+}
 
 @Component({
   selector: 'app-player-manager',
@@ -7,26 +14,28 @@ import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewE
   styleUrls: ['./player-manager.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PlayerManagerComponent implements OnInit, OnDestroy {
+export class PlayerManagerComponent {
 
-  @Output()
-  public done = new EventEmitter<void>();
+  /* ### ENUMS ### */
+  readonly PlayerManagerTab = PlayerManagerTab;
 
-  constructor() {
+  activeTab = new BehaviorSubject(PlayerManagerTab.PLAYER_LIST);
+
+  @Output() public done = new EventEmitter<void>();
+
+  constructor(
+    private readonly sound: SoundService,
+  ) {
   }
 
-  ngOnInit(): void {
+  switchTab(tab: PlayerManagerTab) {
+    this.activeTab.next(tab);
+    this.sound.play(Sound.Focus);
   }
 
-  ngOnDestroy(): void {
-  }
-
-  public cancel(): void {
+  close() {
     this.done.next();
-  }
-
-  private close() {
-    this.done.next();
+    this.sound.play(Sound.Ok);
   }
 
   @HostListener('window:keydown.escape', ['$event'])

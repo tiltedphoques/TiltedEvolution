@@ -1,74 +1,93 @@
+@import "env";
+
+@import "functions/rem";
+
 app-settings {
-    position: relative;
-    display: block;
+  position: relative;
+  display: block;
 
-    .container {
-        overflow: auto;
-        max-height: 60vh;
-        margin-top: 1rem;
+  .container {
+    overflow: auto;
+    max-height: 60vh;
+    margin-top: 1rem;
+    padding-right: 15px;
 
-        .settings {
-            display: flex;
-            justify-content: space-between;
-            flex-direction: column;
+    .settings {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
 
-            .flex-item {
-                position: relative;
+      .section {
+        padding-bottom: 15px;
+        margin-bottom: rem($-size-font, 2px);
+        border-bottom: rem($-size-font, 2px) solid;
+        border-image: url("../../../assets/images/separator/single.svg") 3;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
 
-                .radioBtn {
-                    float: right;
+        &:not(:first-child) {
+          margin-top: 15px;
+        }
+      }
 
-                    input {
-                        float: none;
-                        display: inline-block;
-                    
-                        &:not(:last-child) {
-                            margin-right: 0.5em;
-                        }
-                    }
+      .flex-item {
+        position: relative;
 
-                    label {
-                        float: none;
-                        position: unset;
-                        display: inline-block;
-                    }
-                }
+        .radioBtn {
+          float: right;
 
+          input {
+            float: none;
+            display: inline-block;
 
-                input {
-                    float: right;
-
-                    &.volumeSlider {
-                        padding: 0;
-                        border: none;
-                    }
-
-                }
-
-                label {
-                    float: left;
-                    position: absolute;
-                    bottom: 0;
-                }
+            &:not(:last-child) {
+              margin-right: 0.5em;
             }
+          }
 
-            div:not(:last-child) {
-                margin-bottom: 0.5rem;
-            }
-
-            hr {
-                width: 100%;
-            }
-
-            h2:first-child {
-                margin-top: 0;
-            }
+          label {
+            float: none;
+            position: unset;
+            display: inline-block;
+          }
         }
 
-        .buttons {
-            margin-top: 1rem;
-            display: flex;
-            justify-content: center;
+
+        input {
+          float: right;
+
+          &.volumeSlider {
+            padding: 0;
+            border: none;
+          }
+
         }
+
+        label {
+          float: left;
+          position: absolute;
+          bottom: 0;
+        }
+      }
+
+      div:not(:last-child) {
+        margin-bottom: 0.5rem;
+      }
+
+      hr {
+        width: 100%;
+      }
+
+      h2:first-child {
+        margin-top: 0;
+      }
     }
+  }
+
+  .actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+  }
 }

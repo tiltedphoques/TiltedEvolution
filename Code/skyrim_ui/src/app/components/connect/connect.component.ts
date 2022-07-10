@@ -3,6 +3,8 @@ import { Subscription } from 'rxjs';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { Sound, SoundService } from '../../services/sound.service';
+import { StoreService } from '../../services/store.service';
+import { RootView } from '../root/root.component';
 
 
 @Component({
@@ -13,20 +15,20 @@ import { Sound, SoundService } from '../../services/sound.service';
 })
 export class ConnectComponent implements OnDestroy, AfterViewInit {
 
-  @Output()
-  public done = new EventEmitter<void>();
-  @Output()
-  public setView = new EventEmitter<string>();
-
   public address = '';
   public token = '';
+  public savePassword = false;
 
   public connecting = false;
 
+  @Output() public done = new EventEmitter<void>();
+  @Output() public setView = new EventEmitter<RootView>();
+
   public constructor(
-    private client: ClientService,
-    private sound: SoundService,
-    private errorService: ErrorService,
+    private readonly client: ClientService,
+    private readonly sound: SoundService,
+    private readonly errorService: ErrorService,
+    private readonly storeService: StoreService,
   ) {
     this.connectionSubscription = this.client.connectionStateChange.subscribe(state => {
       if (this.connecting) {
@@ -52,6 +54,10 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         this.errorService.error('You cannot connect to the server because it does not have the same version of Skyrim Together as you.');
       }
     });
+
+    this.address = this.storeService.get('last_connected_address', '');
+    this.token = this.storeService.get('last_connected_token', '');
+    this.savePassword = !!this.storeService.get('last_connected_token', null);
   }
 
   public ngAfterViewInit(): void {
@@ -76,6 +82,13 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
 
     this.connecting = true;
 
+    this.storeService.set('last_connected_address', this.address);
+    if (this.savePassword) {
+      this.storeService.set('last_connected_token', this.token);
+    } else {
+      this.storeService.remove('last_connected_token');
+    }
+
     this.sound.play(Sound.Ok);
     this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.token);
   }
@@ -86,7 +99,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   }
 
   public openServerList(): void {
-    this.setView.next('serverList');
+    this.setView.next(RootView.SERVER_LIST);
   }
 
   @ViewChild('input')
@@ -99,7 +112,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
-    if (this.errorService.error$.value) {
+    if (this.errorService.error$.getValue()) {
       this.errorService.removeError();
     } else {
       this.done.next();

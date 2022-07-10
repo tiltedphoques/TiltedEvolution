@@ -11,10 +11,12 @@ import { Sound, SoundService } from '../../services/sound.service';
 })
 export class DisconnectComponent {
 
-  @Output()
-  public done = new EventEmitter<void>();
+  @Output() public done = new EventEmitter<void>();
 
-  public constructor(private client: ClientService, private sound: SoundService) {
+  public constructor(
+    private readonly client: ClientService,
+    private readonly sound: SoundService,
+  ) {
   }
 
   public disconnect(): void {
@@ -32,6 +34,7 @@ export class DisconnectComponent {
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
     this.done.next();
+    this.sound.play(Sound.Cancel);
 
     event.stopPropagation();
     event.preventDefault();

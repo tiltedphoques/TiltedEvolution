@@ -16,7 +16,6 @@ specifiers:
   '@angular/compiler-cli': ^14.0.5
   '@angular/core': ^14.0.5
   '@angular/forms': ^14.0.5
-  '@angular/material': ^14.0.4
   '@angular/platform-browser': ^14.0.5
   '@angular/platform-browser-dynamic': ^14.0.5
   '@angular/router': ^14.0.5
@@ -24,6 +23,8 @@ specifiers:
   '@fortawesome/fontawesome-svg-core': ^6.1.1
   '@fortawesome/free-regular-svg-icons': ^6.1.1
   '@fortawesome/free-solid-svg-icons': ^6.1.1
+  '@ngneat/loadoff': ^2.1.0
+  '@ngneat/reactive-forms': ^5.0.0
   '@types/jasmine': ^3.6.4
   '@types/jasminewd2': ^2.0.10
   '@types/node': 16.x.x
@@ -54,7 +55,6 @@ dependencies:
   '@angular/compiler': 14.0.5_@angular+core@14.0.5
   '@angular/core': 14.0.5_rxjs@7.5.5+zone.js@0.11.6
   '@angular/forms': 14.0.5_wyhyq3insgmltow5sqaabp6jgu
-  '@angular/material': 14.0.4_zuqzc5vo5mwbumqhimhjyhwdfa
   '@angular/platform-browser': 14.0.5_iw6whprzu3c6qqw5ps72nnedmu
   '@angular/platform-browser-dynamic': 14.0.5_zivgksezxddppse4yo6zg2q33u
   '@angular/router': 14.0.5_wyhyq3insgmltow5sqaabp6jgu
@@ -62,6 +62,8 @@ dependencies:
   '@fortawesome/fontawesome-svg-core': 6.1.1
   '@fortawesome/free-regular-svg-icons': 6.1.1
   '@fortawesome/free-solid-svg-icons': 6.1.1
+  '@ngneat/loadoff': 2.1.0
+  '@ngneat/reactive-forms': 5.0.0_@angular+forms@14.0.5
   rxjs: 7.5.5
   tslib: 2.4.0
   zone.js: 0.11.6
@@ -453,27 +455,6 @@ packages:
     dependencies:
       '@angular/common': 14.0.5_dzujbj7drp6g2oxeynnik3virq
       '@angular/core': 14.0.5_rxjs@7.5.5+zone.js@0.11.6
-      '@angular/platform-browser': 14.0.5_iw6whprzu3c6qqw5ps72nnedmu
-      rxjs: 7.5.5
-      tslib: 2.4.0
-    dev: false
-
-  /@angular/material/14.0.4_zuqzc5vo5mwbumqhimhjyhwdfa:
-    resolution: { integrity: sha512-Ysz6oPbpLH7CvRR6oxQwpUImSbFqxL4+eiH0LPc7vkaOSrvGdZ/7cWhAfT6hVnw3bEY+eq5qBSMgyVUB44z4eg== }
-    peerDependencies:
-      '@angular/animations': ^14.0.0 || ^15.0.0
-      '@angular/cdk': 14.0.4
-      '@angular/common': ^14.0.0 || ^15.0.0
-      '@angular/core': ^14.0.0 || ^15.0.0
-      '@angular/forms': ^14.0.0 || ^15.0.0
-      '@angular/platform-browser': ^14.0.0 || ^15.0.0
-      rxjs: ^6.5.3 || ^7.4.0
-    dependencies:
-      '@angular/animations': 14.0.5_@angular+core@14.0.5
-      '@angular/cdk': 14.0.4_up4ahvy7h7pludtfht5f75kszu
-      '@angular/common': 14.0.5_dzujbj7drp6g2oxeynnik3virq
-      '@angular/core': 14.0.5_rxjs@7.5.5+zone.js@0.11.6
-      '@angular/forms': 14.0.5_wyhyq3insgmltow5sqaabp6jgu
       '@angular/platform-browser': 14.0.5_iw6whprzu3c6qqw5ps72nnedmu
       rxjs: 7.5.5
       tslib: 2.4.0
@@ -2000,6 +1981,21 @@ packages:
   /@leichtgewicht/ip-codec/2.0.4:
     resolution: { integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A== }
     dev: true
+
+  /@ngneat/loadoff/2.1.0:
+    resolution: { integrity: sha512-N2Kfu7LaDu5t94nSNJU1T6/Uq4k2EAm5I0GHmglFR4dZRQAFGg1WNLT/t6zivcZiqN5wtNBZJS+FLvYKRuZGeA== }
+    dependencies:
+      tslib: 2.4.0
+    dev: false
+
+  /@ngneat/reactive-forms/5.0.0_@angular+forms@14.0.5:
+    resolution: { integrity: sha512-1duAEvwC0gS8NVICuDOpGjyahAWoMgD084b5OfmJT7pRqlgD2EhkeloFmGAUjR+wNbtXK32t52bUjK6oE3HMbg== }
+    peerDependencies:
+      '@angular/forms': '>= 14.0.0'
+    dependencies:
+      '@angular/forms': 14.0.5_wyhyq3insgmltow5sqaabp6jgu
+      tslib: 2.4.0
+    dev: false
 
   /@ngtools/webpack/14.0.5_ptzhxof3x65ohorlrlcmzjacqi:
     resolution: { integrity: sha512-fOHtOYfuQhMTcqOfASuH5z8LwEmIG8323yPTP528w9RM9bUr3JaoK1RNcVuLKSvAGRTvTfeykK3/Eri/YW1DvQ== }

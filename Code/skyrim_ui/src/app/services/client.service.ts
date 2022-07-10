@@ -20,7 +20,9 @@ export interface Message {
 }
 
 /** Client game service. */
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ClientService implements OnDestroy {
   /** Initialization done. */
   public initDone = new AsyncSubject<undefined>();
@@ -32,7 +34,7 @@ export class ClientService implements OnDestroy {
   public inGameStateChange = new BehaviorSubject(!environment.game);
 
   /** Opening/close menu change. */
-  public openingMenuChange = new BehaviorSubject(true);
+  public openingMenuChange = new BehaviorSubject(false);
 
   /** Message reception. */
   public messageReception = new ReplaySubject<Message>();
@@ -237,7 +239,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.sendMessage(message);
     } else {
-      this.messageReception.next({ name: this.nameChange.value, content: message });
+      this.messageReception.next({ name: this.nameChange.getValue(), content: message });
     }
   }
 
@@ -315,7 +317,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.deactivate();
     } else {
-      this.activationStateChange.next(this.activationStateChange.value);
+      this.activationStateChange.next(this.activationStateChange.getValue());
     }
   }
 

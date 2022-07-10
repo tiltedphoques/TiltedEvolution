@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { PartyInfo } from '../models/party-info';
 import { ClientService } from './client.service';
 
+
 // TODO: this is bad. We shouldn't take different paths to accommodate for
 // mock testing. Instead, the skyrimtogether global should be mockable.
 @Injectable({
@@ -21,7 +22,7 @@ export class MockClientService implements OnDestroy {
   private partyLeaderSubscription: Subscription;
 
   constructor(
-    private clientService: ClientService,
+    private readonly clientService: ClientService,
   ) {
     this.partyInfo = new PartyInfo({
       playerIds: [],
@@ -95,4 +96,5 @@ export class MockClientService implements OnDestroy {
       this.clientService.onPartyInfo(this.partyInfo.playerIds, this.partyInfo.leaderId);
     });
   }
+
 }

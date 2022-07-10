@@ -3,13 +3,18 @@
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
+import { Provider } from '@angular/core';
+
+
 export const environment = {
   production: false,
   nightlyBuild: false,
   game: true,
-  urlProtocol: "https",
-  url: "skyrim-reborn-list.skyrim-together.com",
+  urlProtocol: 'https',
+  url: 'skyrim-reborn-list.skyrim-together.com',
   intervalPingWebSocket: 5, // seconds
   chatMessageLengthLimit: 512,
-  nbReconnectionAttempts: 5
+  nbReconnectionAttempts: 5,
+
+  providers: [] as Provider[],
 };

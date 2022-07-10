@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StoreService {
-
-  constructor() { }
 
   public get(key: string, valueIfNull: any): any {
     const value = localStorage.getItem(key);
 
     if (value !== null) {
       if (!environment.game || environment.nightlyBuild) {
-        console.log(`Value : ${key} : ${value}`);
+        console.log(`Value : ${ key } : ${ value }`);
       }
       return value;
     }
@@ -24,4 +23,9 @@ export class StoreService {
   public set(key: string, value: any): void {
     localStorage.setItem(key, value);
   }
+
+  public remove(key: string): void {
+    localStorage.removeItem(key);
+  }
+
 }
