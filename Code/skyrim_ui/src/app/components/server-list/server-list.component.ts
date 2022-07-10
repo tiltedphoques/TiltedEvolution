@@ -78,6 +78,8 @@ export class ServerListComponent implements OnInit, OnDestroy {
     this.serverListService.getServerList()
       .pipe(
         /**
+         * Removed due performance and ratelimit issue
+         * 
          * Temp fix
          * https://github.com/tiltedphoques/TiltedEvolution/pull/226
          * 
