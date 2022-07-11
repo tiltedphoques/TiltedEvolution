@@ -1,5 +1,4 @@
 import { Component, HostListener, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { faCogs } from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject, takeUntil } from 'rxjs';
 import { PartyInfo } from 'src/app/models/party-info';
 import { environment } from '../../../environments/environment';
@@ -36,10 +35,6 @@ export class RootComponent implements OnInit {
   /* ### ENUMS ### */
   readonly RootView = RootView;
 
-  /* ### ICONS ### */
-  readonly faCogs = faCogs;
-
-  showAppWindow = environment.production || environment.nightlyBuild;
   view = new BehaviorSubject<RootView | undefined>(undefined);
 
   connected$ = this.client.connectionStateChange.asObservable();

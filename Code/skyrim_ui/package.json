@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --disable-host-check --configuration=browser",
     "build": "ng build",
-    "deploy:nightly": "ng build --output-hashing none --configuration=nightly --base-href ./ --resources-output-path ./assets/",
+    "deploy:develop": "ng build --output-hashing none --configuration=develop --base-href ./ --resources-output-path ./assets/",
     "deploy:production": "ng build --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
     "test": "ng test",
     "lint": "ng lint",

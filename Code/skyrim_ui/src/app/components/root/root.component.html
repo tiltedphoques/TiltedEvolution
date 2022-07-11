@@ -10,7 +10,7 @@
 
   <app-notifications [@notifications]="!(active$ | async)"></app-notifications>
   <div [@controls]="(active$ | async)" [ngClass]="(connected$ | async) ? 'app-root-controls-wide' : 'app-root-controls'">
-    <app-window *ngIf="showAppWindow || (connected$ | async)" border="strip" class="app-root-menu">
+    <app-window border="strip" class="app-root-menu">
       <button
         *ngIf="!(connected$ | async) && !(connectionInProgress$ | async)"
         data-style-ornament="inverted"

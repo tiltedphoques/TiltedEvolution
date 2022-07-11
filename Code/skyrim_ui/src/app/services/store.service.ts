@@ -11,7 +11,7 @@ export class StoreService {
     const value = localStorage.getItem(key);
 
     if (value !== null) {
-      if (!environment.game || environment.nightlyBuild) {
+      if (!environment.game || !environment.production) {
         console.log(`Value : ${ key } : ${ value }`);
       }
       return value;
