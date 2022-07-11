@@ -7,7 +7,7 @@ services:
     volumes:
      - ./build/config:/home/server/config
      - ./build/logs:/home/server/logs
-     - ./build/data:/home/server/data
+     - ./build/Data:/home/server/Data
     ports:
     - 10578:10578/udp
     
