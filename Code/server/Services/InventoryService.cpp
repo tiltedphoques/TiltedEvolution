@@ -10,6 +10,13 @@
 #include <Messages/RequestEquipmentChanges.h>
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
+#include <client/World.cpp>
+#include <console/ConsoleRegistry.h>
+
+namespace
+{
+Console::Setting bEnableItemDrops{"Gameplay:bEnableItemDrops", "Syncs dropped items by players", true};
+}
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
@@ -36,7 +43,11 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     NotifyInventoryChanges notify;
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;
-    notify.Drop = message.Drop;
+
+    if (World::Get().GetServerSettings().areDropsEnabled == true)
+        notify.Drop = message.Drop;
+    else
+        notify.Drop = false;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
