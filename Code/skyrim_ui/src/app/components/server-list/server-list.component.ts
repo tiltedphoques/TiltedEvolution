@@ -77,7 +77,16 @@ export class ServerListComponent implements OnInit, OnDestroy {
     
     this.serverListService.getServerList()
       .pipe(
-        switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
+        /**
+         * Removed due performance and ratelimit issue
+         * 
+         * Temp fix
+         * https://github.com/tiltedphoques/TiltedEvolution/pull/226
+         * 
+         * Long term fix
+         * https://github.com/tiltedphoques/TiltedEvolution/issues/247
+         */
+        //switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
         map((list) => this.markFavoritedServers(list)),
       )
       .subscribe((list) => {
