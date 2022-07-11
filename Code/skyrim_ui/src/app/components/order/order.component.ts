@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewEncapsulation, Input, Output, EventEmitter } from '@angular/core';
-import { faCaretUp, faCaretDown} from "@fortawesome/free-solid-svg-icons";
+import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
+
 
 @Component({
   selector: 'app-order',
@@ -7,20 +8,14 @@ import { faCaretUp, faCaretDown} from "@fortawesome/free-solid-svg-icons";
   styleUrls: ['./order.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class OrderComponent implements OnInit {
+export class OrderComponent {
 
-  @Input()
-  public isIncreasingOrder: boolean;
+  /* ### ICONS ### */
+  readonly faCaretDown = faCaretDown;
+  readonly faCaretUp = faCaretUp;
 
-  @Output()
-  public sorted = new EventEmitter<boolean>();
-  public faCaretDown = faCaretDown;
-  public faCaretUp = faCaretUp;
-
-  constructor() { }
-
-  ngOnInit() {
-  }
+  @Input() public isIncreasingOrder: boolean;
+  @Output() public sorted = new EventEmitter<boolean>();
 
   public sort() {
     this.sorted.emit(!this.isIncreasingOrder);

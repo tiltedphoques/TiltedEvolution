@@ -15,7 +15,7 @@ app-notifications {
 
 .app-notifications-icon {
   flex: 0 0 1rem;
-  margin-right: $-size-gap / 2;
+  margin-right: $-size-gap * 0.5;
   background: url(../../../assets/images/arrow/east.svg) center / contain no-repeat;
 }
 

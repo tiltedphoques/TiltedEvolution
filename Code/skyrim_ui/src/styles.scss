@@ -50,11 +50,11 @@ input:not([type=checkbox]),
 textarea,
 select {
   display: block;
-  padding: $-size-gap / 2;
+  padding: $-size-gap * 0.5;
   background: transparent;
   color: mod($-color-background, 1);
   border: rem($-size-font, 2px) solid;
-  border-image: url('assets/images/separator/single.svg') 3;
+  border-image: url("assets/images/separator/single.svg") 3;
 }
 
 input:not([type=checkbox]),
@@ -72,7 +72,7 @@ button {
   font-size: 1rem;
   text-transform: uppercase;
   background: transparent;
-  padding: $-size-gap / 2;
+  padding: $-size-gap * 0.5;
   color: mod($-color-background, 1);
 
   &:hover:not([disabled]),
@@ -127,16 +127,16 @@ button {
       opacity: 0;
       width: 1em;
       height: 1em;
-      content: '';
+      content: "";
       background: center / contain no-repeat;
     }
 
     &::before {
-      margin-right: $-size-gap / 2;
+      margin-right: $-size-gap * 0.5;
     }
 
     &::after {
-      margin-left: $-size-gap / 2;
+      margin-left: $-size-gap * 0.5;
     }
   }
 
@@ -189,7 +189,7 @@ $scrollbar: rem($-size-font, 16px);
 
 ::-webkit-scrollbar-track {
   border: rem($-size-font, 3px) solid;
-  border-image: url('assets/images/scrollbar/track.svg') 4 fill;
+  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -210,7 +210,7 @@ input[type=checkbox] {
 }
 
 ::-webkit-slider-runnable-track {
-  border-image: url('assets/images/scrollbar/track.svg') 4 fill;
+  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
 }
 
 ::-webkit-slider-thumb {
@@ -249,6 +249,5 @@ body {
 
 body {
   margin: 0;
-  font-family: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS', 'Tahoma', 'Geneva',
-    'Verdana', 'sans-serif';
+  font-family: $-font-default;
 }

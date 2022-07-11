@@ -1,61 +1,61 @@
 app-player-list {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    margin-top: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
 
-    #notInParty {
-        overflow: hidden;
-    }
+  #notInParty {
+    overflow: hidden;
+  }
 
-    #noPlayers {
-        overflow: hidden;
-    }
+  #noPlayers {
+    overflow: hidden;
+  }
 
-    .hidden {
-        opacity: 0;
-    }
+  .hidden {
+    opacity: 0;
+  }
 
-    .containerList {
-        overflow: auto;
-        max-height: 60vh;
+  .container-list {
+    overflow: auto;
+    max-height: 60vh;
 
-        .playerListTable {
-            width: 100%;
-            border-collapse: collapse;
+    .player-list-table {
+      width: 100%;
+      border-collapse: collapse;
 
-            .listHeader {
-                position: sticky;
-                top: 0px;
-                background-color: #151515;
-                z-index: 1;
-            }
+      .list-header {
+        position: sticky;
+        top: 0px;
+        background-color: #151515;
+        z-index: 1;
+      }
 
-            th {
-                text-align: left;
-                border-bottom: 1px solid grey;
-                border-collapse: separate;
+      th {
+        text-align: left;
+        border-bottom: 1px solid grey;
+        border-collapse: separate;
 
-                button {
-                    padding: 0 0.5rem;
-                }
-            }
-
-            tr:not(:last-child) {
-                border-bottom: 1px solid grey;
-                padding: 15px;
-            }
-
-            #noserv {
-                margin-top: 3%;
-            }
-
-            .teleBtn {
-                padding: 0.25vw;
-                background-color: #292929;
-                border-radius: 2px;
-                margin-left: 5%;
-            }
+        button {
+          padding: 0 0.5rem;
         }
+      }
+
+      tr:not(:last-child) {
+        border-bottom: 1px solid grey;
+        padding: 15px;
+      }
+
+      #noserv {
+        margin-top: 3%;
+      }
+
+      .user-action-button {
+        padding: 0.25vw;
+        background-color: #292929;
+        border-radius: 2px;
+        margin-left: 5%;
+      }
     }
+  }
 }

@@ -1,12 +1,28 @@
 <div #log (scroll)="onLogScroll()" class="app-chat-messages" [style.padding-top.px]="padding">
-  <p *ngFor="let message of messages" #entry [attr.data-system]="!message.name" [attr.data-odd]="message.odd" [attr.data-dialogue]="message.dialogue">
-    <span class="app-chat-date">[{{message.date | date: 'HH:mm:ss'}}] </span>
-    <span class="app-chat-name" *ngIf="message.name">{{message.name}}: </span>
-    <span class="app-chat-message" style="user-select: text;" >{{message.content}}</span>
+  <p
+    #entry
+    *ngFor="let message of messages"
+    [attr.data-system]="!message.name"
+    [attr.data-odd]="message.odd"
+    [attr.data-dialogue]="message.dialogue"
+  >
+    <span class="app-chat-date">[{{ message.date | date: 'HH:mm:ss' }}] </span>
+    <span class="app-chat-name" *ngIf="message.name">{{ message.name }}: </span>
+    <span class="app-chat-message" style="user-select: text;">{{ message.content }}</span>
   </p>
 </div>
 <div class="app-chat-input">
-  <input #input (keydown.enter)="sendMessage()" [(ngModel)]="message" placeholder="Message"
-  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-  <button (click)="sendMessage()">Send</button>
+  <input
+    #input
+    [placeholder]="'COMPONENT.CHAT.MESSAGE' | transloco"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    [(ngModel)]="message"
+    (keydown.enter)="sendMessage()"
+  >
+  <button (click)="sendMessage()">
+    {{ 'COMPONENT.CHAT.SEND' | transloco }}
+  </button>
 </div>
