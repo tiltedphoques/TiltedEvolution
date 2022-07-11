@@ -538,9 +538,14 @@ void Actor::Kill() noexcept
     if (pExtension->IsPlayer())
         return;
 
-    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
+    // TODO: these args are kind of bogus of course
+    KillImpl(nullptr, 100.f, true, true);
 
+    // Papyrus kill will not go through if it is queued by a kill move
+    /*
+    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
     s_pKill(this, NULL);
+    */
 }
 
 void Actor::Reset() noexcept
