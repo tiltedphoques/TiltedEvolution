@@ -142,9 +142,6 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     moveData.position = acEvent.Position;
 }
 
-// TODO: replace with TP_PUBLIC or whatever
-#define TP_PRIVATE_DEBUGGERS 0
-
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
@@ -165,7 +162,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         m_showDebugStuff = !m_showDebugStuff;
     }
 
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
     if (GetAsyncKeyState(VK_F6))
     {
         if (!s_f6Pressed)
@@ -277,7 +274,7 @@ void DebugService::OnDraw() noexcept
         }
         ImGui::EndMenu();
     }
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
@@ -310,7 +307,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
 
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
         ImGui::MenuItem("Forms", nullptr, &g_enableFormsWindow);
         ImGui::MenuItem("Inventory", nullptr, &g_enableInventoryWindow);
@@ -328,7 +325,7 @@ void DebugService::OnDraw() noexcept
     {
         if (ImGui::Button("Crash Client"))
         {
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
             int* m = 0;
             *m = 1338;
 #else
@@ -350,7 +347,7 @@ void DebugService::OnDraw() noexcept
     if (g_enableServerWindow)
         DrawServerView();
 
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
     if (g_enableNetworkWindow)
         DrawNetworkView();
     if (g_enableFormsWindow)
