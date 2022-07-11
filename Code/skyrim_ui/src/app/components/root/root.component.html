@@ -17,7 +17,7 @@
         [attr.data-style-active]="(view | async) === RootView.CONNECT"
         (click)="setView(RootView.CONNECT)"
       >
-        Connect
+        {{ 'COMPONENT.ROOT.CONNECT' | transloco }}
       </button>
       <ng-container *ngIf="(connected$ | async)">
         <button
@@ -25,7 +25,7 @@
           [attr.data-style-active]="(view | async) === RootView.DISCONNECT"
           (click)="setView(RootView.DISCONNECT)"
         >
-          Disconnect
+          {{ 'COMPONENT.ROOT.DISCONNECT' | transloco }}
         </button>
         <!--
         <button
@@ -33,7 +33,7 @@
           [attr.data-style-active]="(view | async) === RootView.RECONNECT"
           (click)="reconnect()"
         >
-          Reconnect
+          {{ 'COMPONENT.ROOT.RECONNECT' | transloco }}
         </button>
         -->
         <button
@@ -41,7 +41,7 @@
           [attr.data-style-active]="(view | async) === RootView.PLAYER_MANAGER"
           (click)="setView(RootView.PLAYER_MANAGER)"
         >
-          Player Manager
+          {{ 'COMPONENT.ROOT.PLAYER_MANAGER' | transloco }}
         </button>
       </ng-container>
       <button
@@ -49,7 +49,7 @@
         [attr.data-style-active]="(view | async) === RootView.SETTINGS"
         (click)="setView(RootView.SETTINGS)"
       >
-        Settings
+        {{ 'COMPONENT.ROOT.SETTINGS' | transloco }}
       </button>
       <button
         *ngIf="connectionInProgress$ | async"
@@ -57,7 +57,7 @@
         [attr.data-style-active]="(view | async) === RootView.DISCONNECT"
         (click)="setView(RootView.DISCONNECT)"
       >
-        Connection in progress
+        {{ 'COMPONENT.ROOT.CONNECTION_IN_PROGRESS' | transloco }}
       </button>
     </app-window>
     <app-window class="app-root-chat">

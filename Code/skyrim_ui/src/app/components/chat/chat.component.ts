@@ -1,8 +1,9 @@
 import { AfterViewChecked, Component, ElementRef, QueryList, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
-import { takeUntil } from 'rxjs';
+import { TranslocoService } from '@ngneat/transloco';
+import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { DestroyService } from '../../services/asset/destroy.service';
 import { ClientService, Message } from '../../services/client.service';
+import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 
 
@@ -42,6 +43,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly destroy$: DestroyService,
     private readonly client: ClientService,
     private readonly sound: SoundService,
+    private readonly translocoService: TranslocoService,
   ) {
     client.messageReception
       .pipe(takeUntil(this.destroy$))
@@ -95,10 +97,16 @@ export class ChatComponent implements AfterViewChecked {
     }
   }
 
-  public sendMessage(): void {
+  async sendMessage(): Promise<void> {
     if (this.message) {
       if (this.message.length > environment.chatMessageLengthLimit) {
-        this.client.messageReception.next({ content: `You cannot send a message longer than ${ environment.chatMessageLengthLimit } characters.` });
+        const content = await firstValueFrom(
+          this.translocoService.selectTranslate<string>(
+            'COMPONENT.CHAT.MESSAGE_TOO_LONG',
+            { chatMessageLengthLimit: environment.chatMessageLengthLimit },
+          ),
+        );
+        this.client.messageReception.next({ content });
         return;
       }
 

@@ -28,6 +28,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@ngneat/loadoff": "^2.1.0",
     "@ngneat/reactive-forms": "^5.0.0",
+    "@ngneat/transloco": "4.1.0",
     "rxjs": "~7.5.5",
     "tslib": "^2.4.0",
     "zone.js": "~0.11.6"

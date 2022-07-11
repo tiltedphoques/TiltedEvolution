@@ -3,7 +3,7 @@ import { takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Player } from '../../models/player';
 import { NotificationType, PopupNotification } from '../../models/popup-notification';
-import { DestroyService } from '../../services/asset/destroy.service';
+import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
 import { PopupNotificationService } from '../../services/popup-notification.service';
 import { animation as popupTestAnimation } from '../popup/popup.animation';
@@ -43,11 +43,11 @@ export class NotificationPopupComponent implements OnInit {
     return this.notification.type === NotificationType.Connection;
   }
 
-  clickNotification() {
+  async clickNotification() {
     this.isActive = false;
     if (this.notification.type === NotificationType.Invitation) {
       if (this.notification.player) {
-        this.groupService.accept(this.notification.player.id);
+        await this.groupService.accept(this.notification.player.id);
 
         this.popupNotificationService.clearMessage();
       }

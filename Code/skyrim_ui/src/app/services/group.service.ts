@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, of, pluck, Subscription } from 'rxjs';
+import { TranslocoService } from '@ngneat/transloco';
+import { BehaviorSubject, firstValueFrom, Observable, of, pluck, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { Group } from '../models/group';
 import { PartyInfo } from '../models/party-info';
@@ -36,6 +37,7 @@ export class GroupService implements OnDestroy {
     private readonly clientService: ClientService,
     private readonly playerListService: PlayerListService,
     private readonly loadingService: LoadingService,
+    private readonly translocoService: TranslocoService,
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -159,7 +161,7 @@ export class GroupService implements OnDestroy {
   }
 
   private onLevelChange() {
-    this.levelSubscription = this.clientService.levelChange.subscribe((player: Player) => {
+    this.levelSubscription = this.clientService.levelChange.subscribe(async (player: Player) => {
       const group = this.createGroup(this.group.getValue());
 
       if (group) {
@@ -167,7 +169,10 @@ export class GroupService implements OnDestroy {
         if (p) {
           p.level = player.level;
 
-          this.clientService.messageReception.next({ content: `${ p.name } has reached level ${ player.level }.` });
+          const content = await firstValueFrom(
+            this.translocoService.selectTranslate<string>('SERVICE.GROUP.LEVEL_UP', { name: p.name, level: player.level }),
+          );
+          this.clientService.messageReception.next({ content });
         }
       }
     });
@@ -238,12 +243,15 @@ export class GroupService implements OnDestroy {
     this.clientService.createPartyInvite(playerId);
   }
 
-  public accept(inviterId: number) {
+  async accept(inviterId: number) {
     const group = this.createGroup(this.group.getValue());
 
     if (group) {
       if (group.owner || group.members.length > 0) {
-        this.errorService.error('You are already in a group. To join another group, please leave your current group.');
+        const message = await firstValueFrom(
+          this.translocoService.selectTranslate<string>('SERVICE.GROUP.ALREADY_IN_GROUP'),
+        );
+        this.errorService.error(message);
         return;
       }
 
@@ -253,12 +261,15 @@ export class GroupService implements OnDestroy {
     }
   }
 
-  public kick(playerId: number) {
+  async kick(playerId: number) {
     const group = this.createGroup(this.group.getValue());
 
     if (group) {
       if (group.owner !== this.clientService.localPlayerId) {
-        this.errorService.error('You cannot kick other members as you are not the party leader.');
+        const message = await firstValueFrom(
+          this.translocoService.selectTranslate<string>('SERVICE.GROUP.KICK_NO_PARTY_LEADER'),
+        );
+        this.errorService.error(message);
         return;
       }
 
@@ -268,12 +279,15 @@ export class GroupService implements OnDestroy {
     }
   }
 
-  public changeLeader(playerId: number) {
+  async changeLeader(playerId: number) {
     const group = this.createGroup(this.group.getValue());
 
     if (group) {
       if (group.owner !== this.clientService.localPlayerId) {
-        this.errorService.error('You cannot make another member the leader as you are not the party leader.');
+        const message = await firstValueFrom(
+          this.translocoService.selectTranslate<string>('SERVICE.GROUP.MAKE_LEADER_NO_PARTY_LEADER'),
+        );
+        this.errorService.error(message);
         return;
       }
 

@@ -1,5 +1,6 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { AsyncSubject, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { TranslocoService } from '@ngneat/transloco';
+import { AsyncSubject, BehaviorSubject, firstValueFrom, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
@@ -122,9 +123,10 @@ export class ClientService implements OnDestroy {
    * Instantiate.
    */
   public constructor(
-    private zone: NgZone,
-    private errorService: ErrorService,
-    private loadingService: LoadingService,
+    private readonly zone: NgZone,
+    private readonly errorService: ErrorService,
+    private readonly loadingService: LoadingService,
+    private readonly translocoService: TranslocoService,
   ) {
     if (environment.game) {
       skyrimtogether.on('init', this.onInit.bind(this));
@@ -204,6 +206,7 @@ export class ClientService implements OnDestroy {
    *
    * @param host IP address or hostname.
    * @param port Port.
+   * @param token Password or admin password
    */
   public connect(host: string, port: number, token = ''): void {
     if (environment.game) {
@@ -447,14 +450,20 @@ export class ClientService implements OnDestroy {
    * Called when a connection is terminated.
    */
   private onDisconnect(isError: boolean): void {
-    this.zone.run(() => {
+    void this.zone.run(async () => {
       this.localPlayerId = undefined;
       this.connectionStateChange.next(false);
       this.isConnectionInProgressChange.next(false);
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        this.messageReception.next({ content: `Connection lost, trying to reconnect. ${ this._remainingReconnectionAttempt } attempts left.` });
+        const content = await firstValueFrom(
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.CLIENT.CONNECTION_LOST',
+            { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
+          ),
+        );
+        this.messageReception.next({ content });
         this.connect(this._host, this._port, this._token);
       }
     });
@@ -628,4 +637,5 @@ export class ClientService implements OnDestroy {
       this.partyInviteReceivedChange.next(inviterId);
     });
   }
+
 }

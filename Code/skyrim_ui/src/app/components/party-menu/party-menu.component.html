@@ -5,27 +5,24 @@
     class="party-menu-button"
     (click)="acceptPartyInvite(player.id)"
   >
-    Accept invite from {{ player.name }}
+    {{ 'COMPONENT.PARTY_MENU.ACCEPT_INVITE' | transloco:{ name: player.name } }}
   </button>
 
   <hr class="solid">
 
-  <p style="padding-top: 0.5rem; line-height: 1.3;">
-    For an optimal questing experience, make sure to read the playguide on our wiki, which you can
-    find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:
-  </p>
+  <p style="padding-top: 0.5rem; line-height: 1.3;" [innerHtml]="'COMPONENT.PARTY_MENU.EXPERIENCE_WARNING' | transloco"></p>
   <ul>
-    <li style="line-height: 1.3em; height: auto;">By creating a party, you sort of become the "host", aka the party leader.</li>
-    <li style="line-height: 1.3em; height: auto;">Only the party leader can talk to quest NPCs to progress quests.</li>
-    <li style="line-height: 1.3em; height: auto;">Only the party leader can loot quest items.</li>
-    <li style="line-height: 1.3em; height: auto;">Stick to one party leader per playthrough.</li>
-    <li style="line-height: 1.3em; height: auto;">Stick to one party per server.</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY_LEADER_TALK' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY_LEADER_LOOT_QUESTITEMS' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.KEEP_PARTY_LEADER' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.ONE_PARTY_PER_SERVER' | transloco }}</li>
   </ul>
 </div>
 
 <ng-template #inParty>
-  <div style="margin-bottom: 1.0rem;" class="no-players" *ngIf="(memberCount$ | async) === 0 ; else notEmpty">
-    <span>There is nobody in your party yet. Invite them through the player list!</span>
+  <div *ngIf="(memberCount$ | async) === 0 ; else notEmpty" style="margin-bottom: 1.0rem;" class="no-players">
+    <span>{{ 'COMPONENT.PARTY_MENU.NO_PLAYERS_IN_PARTY' | transloco }}</span>
   </div>
 
   <ng-template #notEmpty>
@@ -33,9 +30,9 @@
       <table cellspacing="5" cellpadding="5" class="player-list-table">
         <thead class="list-header">
           <tr>
-            <th>Lv.</th>
-            <th>Name</th>
-            <th>Location</th>
+            <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.LEVEL' | transloco }}</th>
+            <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.NAME' | transloco }}</th>
+            <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.LOCATION' | transloco }}</th>
             <th></th>
           </tr>
         </thead>
@@ -45,13 +42,15 @@
             <td>{{ player.name }}</td>
             <td>{{ player.cellName }}</td>
             <td>
-              <button class="user-action-button" (click)="teleportToPlayer(player.id)">Teleport</button>
+              <button class="user-action-button" (click)="teleportToPlayer(player.id)">
+                {{ 'COMPONENT.PARTY_MENU.ACTIONS.TELEPORT' | transloco }}
+              </button>
               <button
                 (click)="kickMember(player.id)"
                 [disabled]="!(isPartyLeader$ | async)" class="user-action-button"
                 [ngClass]="!(isPartyLeader$ | async) ? 'hidden' : ''"
               >
-                Kick
+                {{ 'COMPONENT.PARTY_MENU.ACTIONS.KICK' | transloco }}
               </button>
               <!--
               <button
@@ -60,7 +59,7 @@
                 [ngClass]="!isPartyLeader ? 'hidden' : ''"
                 (click)="changeLeader(player.id)"
               >
-                Make leader
+                {{ 'COMPONENT.PARTY_MENU.ACTIONS.MAKE_LEADER' | transloco }}
               </button>
               -->
             </td>
@@ -70,5 +69,7 @@
     </div>
   </ng-template>
 
-  <button class="party-menu-button btn" (click)="leave()">Leave party</button>
+  <button class="party-menu-button btn" (click)="leave()">
+    {{ 'COMPONENT.PARTY_MENU.LEAVE_PARTY' | transloco }}
+  </button>
 </ng-template>

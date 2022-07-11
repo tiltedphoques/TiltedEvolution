@@ -35,6 +35,7 @@ import { PlayerListService } from './services/player-list.service';
 import { SettingService } from './services/setting.service';
 import { SoundService } from './services/sound.service';
 import { StoreService } from './services/store.service';
+import { TranslocoRootModule } from './transloco-root.module';
 
 
 @NgModule({
@@ -70,6 +71,7 @@ import { StoreService } from './services/store.service';
     ReactiveFormsModule,
     FontAwesomeModule,
     ScrollingModule,
+    TranslocoRootModule,
   ],
   providers: [
     ClientService,

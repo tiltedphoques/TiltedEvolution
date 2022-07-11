@@ -31,12 +31,16 @@
             "aot": true,
             "assets": [
               "src/favicon.ico",
-              "src/assets/sounds/"
+              "src/assets/sounds/",
+              "src/assets/i18n/"
             ],
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "flat"
+            ]
           },
           "configurations": {
             "production": {
@@ -153,6 +157,11 @@
           }
         }
       }
-    }},
-  "defaultProject": "skyrim-together-ui"
+    }
+  },
+  "defaultProject": "skyrim-together-ui",
+  "cli": {
+    "packageManager": "pnpm",
+    "analytics": false
+  }
 }

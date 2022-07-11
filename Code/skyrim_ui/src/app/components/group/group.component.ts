@@ -4,8 +4,8 @@ import { map } from 'rxjs/operators';
 import { SettingService } from 'src/app/services/setting.service';
 import { Group } from '../../models/group';
 import { Player } from '../../models/player';
-import { DestroyService } from '../../services/asset/destroy.service';
 import { ClientService } from '../../services/client.service';
+import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
 import { animation as popupsAnimation } from '../root/popups.animation';
 
@@ -157,15 +157,15 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   public accept(inviterId: number) {
-    this.groupService.accept(inviterId);
+    return this.groupService.accept(inviterId);
   }
 
   public kick(playerId: number) {
-    this.groupService.kick(playerId);
+    return this.groupService.kick(playerId);
   }
 
   public changeLeader(playerId: number) {
-    this.groupService.changeLeader(playerId);
+    return this.groupService.changeLeader(playerId);
   }
 
 }

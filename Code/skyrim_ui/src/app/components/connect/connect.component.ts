@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { TranslocoService } from '@ngneat/transloco';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { Sound, SoundService } from '../../services/sound.service';
@@ -29,8 +30,9 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     private readonly sound: SoundService,
     private readonly errorService: ErrorService,
     private readonly storeService: StoreService,
+    private readonly translocoService: TranslocoService,
   ) {
-    this.connectionSubscription = this.client.connectionStateChange.subscribe(state => {
+    this.connectionSubscription = this.client.connectionStateChange.subscribe(async state => {
       if (this.connecting) {
         this.connecting = false;
 
@@ -40,18 +42,21 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         } else {
           this.sound.play(Sound.Fail);
 
-          this.errorService.error(
-            'Could not connect to the specified server. Please make sure you\'ve entered the ' +
-            'correct address and that you\'re not experiencing network issues.',
+          const message = await firstValueFrom(
+            this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.CONNECTION'),
           );
+          this.errorService.error(message);
         }
       }
     });
 
-    this.protocolMismatchSubscription = this.client.protocolMismatchChange.subscribe(state => {
+    this.protocolMismatchSubscription = this.client.protocolMismatchChange.subscribe(async state => {
       if (state) {
         this.connecting = false;
-        this.errorService.error('You cannot connect to the server because it does not have the same version of Skyrim Together as you.');
+        const message = await firstValueFrom(
+          this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.VERSION_MISMATCH'),
+        );
+        this.errorService.error(message);
       }
     });
 
@@ -71,12 +76,15 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     this.protocolMismatchSubscription.unsubscribe();
   }
 
-  public connect(): void {
+  async connect(): Promise<void> {
     const address = this.address.trim().match(/^(.+?)(?::([0-9]+))?$/);
 
     if (!address) {
       this.sound.play(Sound.Fail);
-      this.errorService.error('The address is of invalid format.');
+      const message = await firstValueFrom(
+        this.translocoService.selectTranslate('COMPONENT.CONNECT.ERROR.INVALID_ADDRESS'),
+      );
+      this.errorService.error(message);
       return;
     }
 

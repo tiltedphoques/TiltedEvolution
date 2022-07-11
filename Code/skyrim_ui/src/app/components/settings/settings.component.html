@@ -2,13 +2,13 @@
   <div class="settings">
 
     <div class="section">
-      <h2>Audio</h2>
+      <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
-        <label for="muted">Mute UI</label>
+        <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
         <input id="muted" type="checkbox" [value]="muted" [checked]="muted" (change)="onMutedChange($event)">
       </div>
       <div class="flex-item">
-        <label for="volume">UI Volume</label>
+        <label for="volume">{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
         <input id="volume" class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [value]="volume"
                (change)="onVolumeChange($event)"
         >
@@ -16,31 +16,31 @@
     </div>
 
     <div class="section">
-      <h2>Party</h2>
+      <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
       <div class="flex-item">
-        <label for="showParty">Show Party</label>
+        <label for="showParty">{{ 'COMPONENT.SETTINGS.SHOW_PARTY' | transloco }}</label>
         <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty" [disabled]="autoHideParty"
                (change)="onShowPartyChange($event)"
         >
       </div>
       <div class="flex-item">
-        <label for="autoHideParty">Auto Hide Party</label>
+        <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
         <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty"
                (change)="onAutoHidePartyChange($event)"
         >
       </div>
       <div class="flex-item">
-        <label>Auto Hide Timer Length</label>
+        <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
         <div class="radioBtn">
-          <label for="autoHideTime1">1s</label>
+          <label for="autoHideTime1">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
           <input id="autoHideTime1" type="radio" value="1" name="autoHideTime" [checked]="autoHideTimeSelected(1)"
                  (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
           >
-          <label for="autoHideTime3">3s</label>
+          <label for="autoHideTime3">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
           <input id="autoHideTime3" type="radio" value="3" name="autoHideTime" [checked]="autoHideTimeSelected(3)"
                  (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
           >
-          <label for="autoHideTime5">5s</label>
+          <label for="autoHideTime5">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
           <input id="autoHideTime5" type="radio" value="5" name="autoHideTime" [checked]="autoHideTimeSelected(5)"
                  (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
           >
@@ -49,9 +49,9 @@
     </div>
 
     <div class="section">
-      <h2>Debug</h2>
+      <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
       <div class="flex-item">
-        <label for="showDebug">Show Debug Information</label>
+        <label for="showDebug">{{ 'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco }}</label>
         <input id="showDebug" type="checkbox" [value]="showDebug" [checked]="showDebug"
                (change)="onShowDebugChange($event)"
         >
@@ -61,5 +61,7 @@
 </div>
 
 <div class="actions">
-  <button data-style-ornament="simple" class="btnCancel" (click)="close()">Back</button>
+  <button data-style-ornament="simple" class="btnCancel" (click)="close()">
+    {{ 'COMPONENT.SETTINGS.BACK' | transloco }}
+  </button>
 </div>
