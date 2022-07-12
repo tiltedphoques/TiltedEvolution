@@ -9,6 +9,8 @@ Tilted Online is a framework created to enable multiplayer in Bethesda games, cu
 ## Getting started
 To play Tilted Online, go to the [nexus page](https://www.nexusmods.com/skyrimspecialedition/mods/69993).
 
+To see the Tilted Online wiki, go to [wiki](https://wiki.tiltedphoques.com/tilted-online/).
+
 Check out the [build guide](https://wiki.tiltedphoques.com/tilted-online/technical-documentation/build-guide) for setup and development info on the project. When writing code, check the CODE_GUIDELINES.md and make sure to run clang-format!
 
 ## Reporting bugs
