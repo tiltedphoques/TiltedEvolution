@@ -7,6 +7,7 @@ import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { ChatComponent } from '../chat/chat.component';
+import { GroupComponent } from '../group/group.component';
 import { animation as controlsAnimation } from './controls.animation';
 import { animation as notificationsAnimation } from './notifications.animation';
 import { animation as popupsAnimation } from './popups.animation';
@@ -43,8 +44,8 @@ export class RootComponent implements OnInit {
   active$ = this.client.activationStateChange.asObservable();
   connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
 
-  @ViewChild('chat')
-  private chatComp!: ChatComponent;
+  @ViewChild('chat') private chatComp!: ChatComponent;
+  @ViewChild(GroupComponent) private groupComponent: GroupComponent;
 
   public constructor(
     private readonly destroy$: DestroyService,
@@ -222,5 +223,9 @@ export class RootComponent implements OnInit {
     }
     event.stopPropagation();
     event.preventDefault();
+  }
+
+  updateGroupPosition() {
+    this.groupComponent?.updatePosition();
   }
 }

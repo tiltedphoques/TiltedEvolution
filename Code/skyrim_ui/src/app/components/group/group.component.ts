@@ -8,7 +8,15 @@ import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
 import { animation as popupsAnimation } from '../root/popups.animation';
+import { PartyAnchor } from '../settings/settings.component';
 
+
+interface GroupPosition {
+  top?: string;
+  right?: string;
+  bottom?: string;
+  left?: string;
+}
 
 @Component({
   selector: 'app-group',
@@ -28,6 +36,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   public isAutoHide = new BehaviorSubject(true);
   public isShown = new BehaviorSubject(true);
   public waitLaunch = new BehaviorSubject(false);
+  public positionStyle = new BehaviorSubject<GroupPosition>({ top: '0%', left: '0%' });
 
   constructor(
     private readonly destroy$: DestroyService,
@@ -62,6 +71,8 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.onPartyInfo();
     this.onConnectionState();
     this.subscribeActivation();
+
+    this.updatePosition();
   }
 
   private subscribeActivation() {
@@ -168,4 +179,26 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.groupService.changeLeader(playerId);
   }
 
+  updatePosition() {
+    const newPosition: GroupPosition = {};
+    switch (this.settings.getPartyAnchor()) {
+      case PartyAnchor.TOP_LEFT:
+        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
+        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        break;
+      case PartyAnchor.TOP_RIGHT:
+        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
+        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        break;
+      case PartyAnchor.BOTTOM_RIGHT:
+        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
+        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        break;
+      case PartyAnchor.BOTTOM_LEFT:
+        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
+        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        break;
+    }
+    this.positionStyle.next(newPosition);
+  }
 }

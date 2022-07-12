@@ -107,6 +107,15 @@
       "SHOW_PARTY": "Show Party",
       "AUTO_HIDE_PARTY": "Auto Hide Party",
       "AUTO_HIDE_PARTY_LENGTH": "Auto Hide Timer Length",
+      "PARTY_ANCHOR": "Position",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Top left",
+        "TOP_RIGHT": "Top right",
+        "BOTTOM_RIGHT": "Bottom right",
+        "BOTTOM_LEFT": "Bottom left"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Horizontal Offset",
+      "PARTY_ANCHOR_OFFSET_Y": "Vertical Offset",
       "LENGTH": "{{length}}s",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Show Debug Information",
