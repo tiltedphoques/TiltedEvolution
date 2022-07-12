@@ -21,7 +21,6 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/BGSEncounterZone.h>
-#include <Forms/LoadedCellData.h>
 
 #include <inttypes.h>
 
