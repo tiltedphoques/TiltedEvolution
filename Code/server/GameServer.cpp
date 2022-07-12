@@ -668,8 +668,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 */
     else
     {
-        spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);
-        Kick(aConnectionId);
+        spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
+        sendKick(RT::kWrongPassword);
     }
 }
 

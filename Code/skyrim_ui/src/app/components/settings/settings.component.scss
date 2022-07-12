@@ -33,41 +33,12 @@ app-settings {
 
       .flex-item {
         position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
 
-        .radioBtn {
-          float: right;
-
-          input {
-            float: none;
-            display: inline-block;
-
-            &:not(:last-child) {
-              margin-right: 0.5em;
-            }
-          }
-
-          label {
-            float: none;
-            position: unset;
-            display: inline-block;
-          }
-        }
-
-
-        input {
-          float: right;
-
-          &.volumeSlider {
-            padding: 0;
-            border: none;
-          }
-
-        }
-
-        label {
-          float: left;
-          position: absolute;
-          bottom: 0;
+        .radio-group {
+          display: flex;
         }
       }
 

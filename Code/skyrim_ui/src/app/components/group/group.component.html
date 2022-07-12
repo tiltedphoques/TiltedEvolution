@@ -1,5 +1,5 @@
-<div [@popups]="isShown | async">
-  <div id="app-group-container" *ngIf="group$ | async">
+<div [@popups]="isShown | async" class="app-group-container-wrapper">
+  <div id="app-group-container" *ngIf="group$ | async" [ngStyle]="positionStyle | async">
     <div
       *ngFor="let player of groupMembers$ | async"
       [title]="player.cellName"

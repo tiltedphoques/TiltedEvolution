@@ -1,7 +1,7 @@
-@import 'functions/mod';
-@import 'functions/rem';
+@import "functions/mod";
+@import "functions/rem";
 
-@import 'env';
+@import "env";
 
 
 input {
@@ -55,6 +55,11 @@ select {
   color: mod($-color-background, 1);
   border: rem($-size-font, 2px) solid;
   border-image: url("assets/images/separator/single.svg") 3;
+}
+
+input[type=range] {
+  border: 0;
+  padding: 0;
 }
 
 input:not([type=checkbox]),
@@ -175,7 +180,6 @@ button {
 }
 
 $scrollbar: rem($-size-font, 16px);
-
 
 
 ::-webkit-scrollbar {

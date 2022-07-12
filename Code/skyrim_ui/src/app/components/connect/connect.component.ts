@@ -17,7 +17,7 @@ import { RootView } from '../root/root.component';
 export class ConnectComponent implements OnDestroy, AfterViewInit {
 
   public address = '';
-  public token = '';
+  public password = '';
   public savePassword = false;
 
   public connecting = false;
@@ -39,13 +39,11 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         if (state) {
           this.sound.play(Sound.Success);
           this.done.next();
-        } else {
-          this.sound.play(Sound.Fail);
-
+        } else if (this.errorService.getError() === '') { // show connection error when there is no more specific error
           const message = await firstValueFrom(
             this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.CONNECTION'),
           );
-          this.errorService.error(message);
+          await this.errorService.setError(message);
         }
       }
     });
@@ -56,13 +54,13 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.VERSION_MISMATCH'),
         );
-        this.errorService.error(message);
+        await this.errorService.setError(message);
       }
     });
 
     this.address = this.storeService.get('last_connected_address', '');
-    this.token = this.storeService.get('last_connected_token', '');
-    this.savePassword = !!this.storeService.get('last_connected_token', null);
+    this.password = this.storeService.get('last_connected_password', '');
+    this.savePassword = this.password !== '';
   }
 
   public ngAfterViewInit(): void {
@@ -84,7 +82,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
       const message = await firstValueFrom(
         this.translocoService.selectTranslate('COMPONENT.CONNECT.ERROR.INVALID_ADDRESS'),
       );
-      this.errorService.error(message);
+      await this.errorService.setError(message);
       return;
     }
 
@@ -92,13 +90,13 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
 
     this.storeService.set('last_connected_address', this.address);
     if (this.savePassword) {
-      this.storeService.set('last_connected_token', this.token);
+      this.storeService.set('last_connected_password', this.password);
     } else {
-      this.storeService.remove('last_connected_token');
+      this.storeService.remove('last_connected_password');
     }
 
     this.sound.play(Sound.Ok);
-    this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.token);
+    this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.password);
   }
 
   public cancel(): void {
@@ -120,7 +118,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
-    if (this.errorService.error$.getValue()) {
+    if (this.errorService.getError()) {
       this.errorService.removeError();
     } else {
       this.done.next();
@@ -129,4 +127,5 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     event.stopPropagation();
     event.preventDefault();
   }
+
 }

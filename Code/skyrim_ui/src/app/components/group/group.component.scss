@@ -1,27 +1,33 @@
 #app-group-container {
+  position: absolute;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   justify-content: flex-start;
-  margin-left: 1.6%;
-  width: 20%;
-  padding-top: 1rem;
+  padding: 1vw;
+  width: 16vw;
 
   .command {
-    span+button {
+    span + button {
       margin-left: 25%;
     }
   }
 }
 
+.app-group-container-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
 @font-face {
-  font-family: 'futura-condensed-medium';
+  font-family: "futura-condensed-medium";
   src: url(../../../assets/fonts/futura-condensed/futura-condensed-medium.otf);
 }
 
 .app-group-member {
-  font-family: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS', 'Tahoma', 'Geneva',
-    'Verdana', 'sans-serif';
+  font-family: "futura-condensed-medium", "Roboto Condensed", "Trebutchet MS", "Tahoma", "Geneva",
+  "Verdana", "sans-serif";
   font-size: 1.50em;
   color: rgb(192, 192, 192);
 }
@@ -74,5 +80,5 @@
 }
 
 .app-group-button:hover {
-  box-shadow: 0px 0px 5px #646464;
+  box-shadow: 0 0 5px #646464;
 }

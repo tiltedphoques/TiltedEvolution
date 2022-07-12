@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
@@ -11,6 +11,7 @@ import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
+import { SortOrder } from '../order/order.component';
 import { RootView } from '../root/root.component';
 
 
@@ -19,6 +20,7 @@ import { RootView } from '../root/root.component';
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerListComponent {
 
@@ -30,22 +32,18 @@ export class ServerListComponent {
   refreshServerlist = new BehaviorSubject<void>(undefined);
   sortFunction = new BehaviorSubject<(a: Server, b: Server) => number>(undefined);
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
+  playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
+  countryOrdering = new BehaviorSubject(SortOrder.NONE);
+  serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
+  favoriteOrdering = new BehaviorSubject(SortOrder.NONE);
   serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string })[]>;
   filteredServerlist$: typeof this.serverlist$;
   clientVersion$: Observable<string>;
 
   formSearch = new FormControl<string>('');
 
-  // Server list with search / filter
-  public isIncreasingPlayerOrder = true;
-  public isIncreasingCountryOrder = true;
-  public isIncreasingNameOrder = true;
-  public isIncreasingFavoriteOrder = true;
-
-  @Output()
-  public done = new EventEmitter<void>();
-  @Output()
-  public setView = new EventEmitter<RootView>();
+  @Output() public done = new EventEmitter<void>();
+  @Output() public setView = new EventEmitter<RootView>();
 
   constructor(
     private errorService: ErrorService,
@@ -105,7 +103,7 @@ export class ServerListComponent {
             });
           }
           if (sortFunction) {
-            servers = servers.sort(sortFunction);
+            servers = [...servers].sort(sortFunction);
           }
           return servers;
         }),
@@ -158,44 +156,40 @@ export class ServerListComponent {
     await this.saveFavoriteServerList();
   }
 
-  public sortPlayers(isIncreasingOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingPlayerCount;
-    if (isIncreasingOrder) {
-      sort = ServerListComponent.sortIncreasingPlayerCount;
-    }
-
+  public sortPlayerCount(sortOrder: SortOrder) {
+    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortPlayerCountAsc, ServerListComponent.sortPlayerCountDesc);
     this.sortFunction.next(sort);
-    this.isIncreasingPlayerOrder = isIncreasingOrder;
+    this.playerCountOrdering.next(sortOrder);
+    this.countryOrdering.next(null);
+    this.serverNameOrdering.next(null);
+    this.favoriteOrdering.next(null);
   }
 
-  public sortCountry(isIncreasingCountryOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingCountryCount;
-    if (isIncreasingCountryOrder) {
-      sort = ServerListComponent.sortIncreasingCountryCount;
-    }
-
+  public sortCountry(sortOrder: SortOrder) {
+    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortCountryAsc, ServerListComponent.sortCountryDesc);
     this.sortFunction.next(sort);
-    this.isIncreasingCountryOrder = isIncreasingCountryOrder;
+    this.playerCountOrdering.next(SortOrder.NONE);
+    this.countryOrdering.next(sortOrder);
+    this.serverNameOrdering.next(SortOrder.NONE);
+    this.favoriteOrdering.next(SortOrder.NONE);
   }
 
-  public sortName(isIncreasingNameOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingNameCount;
-    if (isIncreasingNameOrder) {
-      sort = ServerListComponent.sortIncreasingNameCount;
-    }
-
+  public sortName(sortOrder: SortOrder) {
+    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortNameAsc, ServerListComponent.sortNameDesc);
     this.sortFunction.next(sort);
-    this.isIncreasingNameOrder = isIncreasingNameOrder;
+    this.playerCountOrdering.next(SortOrder.NONE);
+    this.countryOrdering.next(SortOrder.NONE);
+    this.serverNameOrdering.next(sortOrder);
+    this.favoriteOrdering.next(SortOrder.NONE);
   }
 
-  public sortFavorite(isIncreasingFavoriteOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingFavoriteCount;
-    if (isIncreasingFavoriteOrder) {
-      sort = ServerListComponent.sortIncreasingFavoriteCount;
-    }
-
+  public sortFavorite(sortOrder: SortOrder) {
+    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortFavoriteAsc, ServerListComponent.sortFavoriteDesc);
     this.sortFunction.next(sort);
-    this.isIncreasingFavoriteOrder = isIncreasingFavoriteOrder;
+    this.playerCountOrdering.next(SortOrder.NONE);
+    this.countryOrdering.next(SortOrder.NONE);
+    this.serverNameOrdering.next(SortOrder.NONE);
+    this.favoriteOrdering.next(sortOrder);
   }
 
   // private filterCountryServer(search: string): void {
@@ -219,26 +213,35 @@ export class ServerListComponent {
   }
 
   private close() {
-    if (this.errorService.error$.getValue()) {
+    if (this.errorService.getError()) {
       this.errorService.removeError();
     } else {
       this.done.next();
     }
   }
 
-  static sortDescendingPlayerCount(a: Server, b: Server) {
+  private static getSortingFn(ordering: SortOrder, asc: (a: Server, b: Server) => number, desc: (a: Server, b: Server) => number) {
+    if (ordering === SortOrder.ASC) {
+      return asc;
+    } else if (ordering === SortOrder.DESC) {
+      return desc;
+    }
+    return null;
+  }
+
+  static sortPlayerCountDesc(a: Server, b: Server) {
     return b.player_count - a.player_count;
   }
 
-  static sortIncreasingPlayerCount(a: Server, b: Server) {
+  static sortPlayerCountAsc(a: Server, b: Server) {
     return a.player_count - b.player_count;
   }
 
-  static sortDescendingCountryCount(a: Server, b: Server) {
-    return ServerListComponent.sortIncreasingCountryCount(a, b) * -1;
+  static sortCountryDesc(a: Server, b: Server) {
+    return ServerListComponent.sortCountryAsc(a, b) * -1;
   }
 
-  static sortIncreasingCountryCount(a: Server, b: Server) {
+  static sortCountryAsc(a: Server, b: Server) {
     if (a.country > b.country) {
       return 1;
     } else if (a.country < b.country) {
@@ -247,19 +250,19 @@ export class ServerListComponent {
     return 0;
   }
 
-  static sortDescendingNameCount(a: Server, b: Server) {
-    return ServerListComponent.sortIncreasingNameCount(a, b) * -1;
+  static sortNameDesc(a: Server, b: Server) {
+    return ServerListComponent.sortNameAsc(a, b) * -1;
   }
 
-  static sortIncreasingNameCount(a: Server, b: Server) {
+  static sortNameAsc(a: Server, b: Server) {
     return a.name.localeCompare(b.name);
   }
 
-  static sortDescendingFavoriteCount(a: Server, b: Server) {
-    return ServerListComponent.sortIncreasingFavoriteCount(a, b) * -1;
+  static sortFavoriteDesc(a: Server, b: Server) {
+    return ServerListComponent.sortFavoriteAsc(a, b) * -1;
   }
 
-  static sortIncreasingFavoriteCount(a: Server, b: Server) {
+  static sortFavoriteAsc(a: Server, b: Server) {
     return (b.isFavorite === a.isFavorite) ? 0 : b.isFavorite ? -1 : 1;
   }
 

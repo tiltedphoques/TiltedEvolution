@@ -78,7 +78,7 @@
         <app-server-list (done)="setView(undefined)" (setView)="setView($event)"></app-server-list>
       </app-popup>
       <app-popup *ngSwitchCase="RootView.SETTINGS" data-popup="settings">
-        <app-settings (done)="setView(undefined)" (setView)="setView($event)"></app-settings>
+        <app-settings (done)="setView(undefined)" (setView)="setView($event)" (settingsUpdated)="updateGroupPosition()"></app-settings>
       </app-popup>
       <app-popup *ngSwitchCase="RootView.PLAYER_MANAGER" data-popup="playerManager">
         <app-player-manager (done)="setView(undefined)"></app-player-manager>
