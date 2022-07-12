@@ -43,6 +43,11 @@
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
+namespace
+{
+Console::Setting bEnableXpSync{"Gameplay:fGoldLossFactor", "Syncs combat XP within the party", true};
+}
+
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
@@ -574,15 +579,13 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
 
 void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept
 {
+    if (!bEnableXpSync)
+        return;
+
     NotifySyncExperience notify;
     notify.Experience = acMessage.Packet.Experience;
 
     const auto& partyComponent = acMessage.pPlayer->GetParty();
-
-    if (!partyComponent.JoinedPartyId.has_value())
-        return;
-
-    spdlog::debug("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
 
