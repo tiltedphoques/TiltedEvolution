@@ -3,6 +3,12 @@ import { faCaretDown, faCaretUp, faSort } from '@fortawesome/free-solid-svg-icon
 import { BehaviorSubject } from 'rxjs';
 
 
+export enum SortOrder {
+  NONE,
+  ASC,
+  DESC
+}
+
 @Component({
   selector: 'app-order',
   templateUrl: './order.component.html',
@@ -16,26 +22,26 @@ export class OrderComponent {
   readonly faCaretUp = faCaretUp;
   readonly faSort = faSort;
 
-  order = new BehaviorSubject<boolean | null>(null);
+  order = new BehaviorSubject<SortOrder>(SortOrder.NONE);
 
-  @Input('isIncreasingOrder')
-  public set isIncreasingOrderInput(value: boolean | null) {
+  @Input()
+  public set sortingOrder(value: SortOrder) {
     this.order.next(value);
   }
 
-  @Output() public sorted = new EventEmitter<boolean>();
+  @Output() public sorted = new EventEmitter<SortOrder>();
 
   public sort() {
-    let newValue: boolean | null;
+    let newValue: SortOrder;
     switch (this.order.getValue()) {
-      case true:
-        newValue = false;
+      case SortOrder.ASC:
+        newValue = SortOrder.DESC;
         break;
-      case false:
-        newValue = null;
+      case SortOrder.DESC:
+        newValue = SortOrder.NONE;
         break;
       default:
-        newValue = true;
+        newValue = SortOrder.ASC;
         break;
     }
     this.sorted.emit(newValue);
