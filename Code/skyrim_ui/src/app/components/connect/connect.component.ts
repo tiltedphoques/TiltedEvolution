@@ -17,7 +17,7 @@ import { RootView } from '../root/root.component';
 export class ConnectComponent implements OnDestroy, AfterViewInit {
 
   public address = '';
-  public token = '';
+  public password = '';
   public savePassword = false;
 
   public connecting = false;
@@ -59,8 +59,8 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     });
 
     this.address = this.storeService.get('last_connected_address', '');
-    this.token = this.storeService.get('last_connected_token', '');
-    this.savePassword = !!this.storeService.get('last_connected_token', null);
+    this.password = this.storeService.get('last_connected_password', '');
+    this.savePassword = this.password !== '';
   }
 
   public ngAfterViewInit(): void {
@@ -90,13 +90,13 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
 
     this.storeService.set('last_connected_address', this.address);
     if (this.savePassword) {
-      this.storeService.set('last_connected_token', this.token);
+      this.storeService.set('last_connected_password', this.password);
     } else {
-      this.storeService.remove('last_connected_token');
+      this.storeService.remove('last_connected_password');
     }
 
     this.sound.play(Sound.Ok);
-    this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.token);
+    this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.password);
   }
 
   public cancel(): void {

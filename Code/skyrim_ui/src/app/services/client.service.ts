@@ -115,7 +115,7 @@ export class ClientService implements OnDestroy {
 
   private _port: number;
 
-  private _token: string;
+  private _password: string;
 
   private _remainingReconnectionAttempt = environment.nbReconnectionAttempts;
 
@@ -206,15 +206,15 @@ export class ClientService implements OnDestroy {
    *
    * @param host IP address or hostname.
    * @param port Port.
-   * @param token Password or admin password
+   * @param password Password or admin password
    */
-  public connect(host: string, port: number, token = ''): void {
+  public connect(host: string, port: number, password = ''): void {
     if (environment.game) {
-      skyrimtogether.connect(host, port, token);
+      skyrimtogether.connect(host, port, password);
       this.isConnectionInProgressChange.next(true);
       this._host = host;
       this._port = port;
-      this._token = token;
+      this._password = password;
     } else {
       this.connectionStateChange.next(true);
       this.isConnectionInProgressChange.next(false);
@@ -464,7 +464,7 @@ export class ClientService implements OnDestroy {
           ),
         );
         this.messageReception.next({ content });
-        this.connect(this._host, this._port, this._token);
+        this.connect(this._host, this._port, this._password);
       }
     });
   }
