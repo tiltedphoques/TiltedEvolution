@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
@@ -19,6 +19,7 @@ import { RootView } from '../root/root.component';
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerListComponent {
 
@@ -30,22 +31,18 @@ export class ServerListComponent {
   refreshServerlist = new BehaviorSubject<void>(undefined);
   sortFunction = new BehaviorSubject<(a: Server, b: Server) => number>(undefined);
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
+  isIncreasingPlayerOrder = new BehaviorSubject<boolean | null>(null);
+  isIncreasingCountryOrder = new BehaviorSubject<boolean | null>(null);
+  isIncreasingNameOrder = new BehaviorSubject<boolean | null>(null);
+  isIncreasingFavoriteOrder = new BehaviorSubject<boolean | null>(null);
   serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string })[]>;
   filteredServerlist$: typeof this.serverlist$;
   clientVersion$: Observable<string>;
 
   formSearch = new FormControl<string>('');
 
-  // Server list with search / filter
-  public isIncreasingPlayerOrder = true;
-  public isIncreasingCountryOrder = true;
-  public isIncreasingNameOrder = true;
-  public isIncreasingFavoriteOrder = true;
-
-  @Output()
-  public done = new EventEmitter<void>();
-  @Output()
-  public setView = new EventEmitter<RootView>();
+  @Output() public done = new EventEmitter<void>();
+  @Output() public setView = new EventEmitter<RootView>();
 
   constructor(
     private errorService: ErrorService,
@@ -105,7 +102,7 @@ export class ServerListComponent {
             });
           }
           if (sortFunction) {
-            servers = servers.sort(sortFunction);
+            servers = [...servers].sort(sortFunction);
           }
           return servers;
         }),
@@ -158,44 +155,60 @@ export class ServerListComponent {
     await this.saveFavoriteServerList();
   }
 
-  public sortPlayers(isIncreasingOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingPlayerCount;
-    if (isIncreasingOrder) {
+  public sortPlayerCount(isIncreasingOrder: boolean) {
+    let sort = null;
+    if (isIncreasingOrder === true) {
       sort = ServerListComponent.sortIncreasingPlayerCount;
+    } else if (isIncreasingOrder === false) {
+      sort = ServerListComponent.sortDescendingPlayerCount;
     }
-
     this.sortFunction.next(sort);
-    this.isIncreasingPlayerOrder = isIncreasingOrder;
+    this.isIncreasingPlayerOrder.next(isIncreasingOrder);
+    this.isIncreasingCountryOrder.next(null);
+    this.isIncreasingNameOrder.next(null);
+    this.isIncreasingFavoriteOrder.next(null);
   }
 
   public sortCountry(isIncreasingCountryOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingCountryCount;
-    if (isIncreasingCountryOrder) {
-      sort = ServerListComponent.sortIncreasingCountryCount;
+    let sort = null;
+    if (isIncreasingCountryOrder === true) {
+      sort = ServerListComponent.sortIncreasingCountry;
+    } else if (isIncreasingCountryOrder === false) {
+      sort = ServerListComponent.sortDescendingCountry;
     }
-
     this.sortFunction.next(sort);
-    this.isIncreasingCountryOrder = isIncreasingCountryOrder;
+    this.isIncreasingPlayerOrder.next(null);
+    this.isIncreasingCountryOrder.next(isIncreasingCountryOrder);
+    this.isIncreasingNameOrder.next(null);
+    this.isIncreasingFavoriteOrder.next(null);
   }
 
   public sortName(isIncreasingNameOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingNameCount;
-    if (isIncreasingNameOrder) {
-      sort = ServerListComponent.sortIncreasingNameCount;
+    let sort = null;
+    if (isIncreasingNameOrder === true) {
+      sort = ServerListComponent.sortIncreasingName;
+    } else if (isIncreasingNameOrder === false) {
+      sort = ServerListComponent.sortDescendingName;
     }
-
     this.sortFunction.next(sort);
-    this.isIncreasingNameOrder = isIncreasingNameOrder;
+    this.isIncreasingPlayerOrder.next(null);
+    this.isIncreasingCountryOrder.next(null);
+    this.isIncreasingNameOrder.next(isIncreasingNameOrder);
+    this.isIncreasingFavoriteOrder.next(null);
   }
 
   public sortFavorite(isIncreasingFavoriteOrder: boolean) {
-    let sort = ServerListComponent.sortDescendingFavoriteCount;
-    if (isIncreasingFavoriteOrder) {
-      sort = ServerListComponent.sortIncreasingFavoriteCount;
+    let sort = null;
+    if (isIncreasingFavoriteOrder === true) {
+      sort = ServerListComponent.sortIncreasingFavorite;
+    } else if (isIncreasingFavoriteOrder === false) {
+      sort = ServerListComponent.sortDescendingFavorite;
     }
-
     this.sortFunction.next(sort);
-    this.isIncreasingFavoriteOrder = isIncreasingFavoriteOrder;
+    this.isIncreasingPlayerOrder.next(null);
+    this.isIncreasingCountryOrder.next(null);
+    this.isIncreasingNameOrder.next(null);
+    this.isIncreasingFavoriteOrder.next(isIncreasingFavoriteOrder);
   }
 
   // private filterCountryServer(search: string): void {
@@ -234,11 +247,11 @@ export class ServerListComponent {
     return a.player_count - b.player_count;
   }
 
-  static sortDescendingCountryCount(a: Server, b: Server) {
-    return ServerListComponent.sortIncreasingCountryCount(a, b) * -1;
+  static sortDescendingCountry(a: Server, b: Server) {
+    return ServerListComponent.sortIncreasingCountry(a, b) * -1;
   }
 
-  static sortIncreasingCountryCount(a: Server, b: Server) {
+  static sortIncreasingCountry(a: Server, b: Server) {
     if (a.country > b.country) {
       return 1;
     } else if (a.country < b.country) {
@@ -247,19 +260,19 @@ export class ServerListComponent {
     return 0;
   }
 
-  static sortDescendingNameCount(a: Server, b: Server) {
-    return ServerListComponent.sortIncreasingNameCount(a, b) * -1;
+  static sortDescendingName(a: Server, b: Server) {
+    return ServerListComponent.sortIncreasingName(a, b) * -1;
   }
 
-  static sortIncreasingNameCount(a: Server, b: Server) {
+  static sortIncreasingName(a: Server, b: Server) {
     return a.name.localeCompare(b.name);
   }
 
-  static sortDescendingFavoriteCount(a: Server, b: Server) {
-    return ServerListComponent.sortIncreasingFavoriteCount(a, b) * -1;
+  static sortDescendingFavorite(a: Server, b: Server) {
+    return ServerListComponent.sortIncreasingFavorite(a, b) * -1;
   }
 
-  static sortIncreasingFavoriteCount(a: Server, b: Server) {
+  static sortIncreasingFavorite(a: Server, b: Server) {
     return (b.isFavorite === a.isFavorite) ? 0 : b.isFavorite ? -1 : 1;
   }
 

@@ -36,21 +36,21 @@
             <div class="row header">
               <div>
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
-                <app-order [isIncreasingOrder]="isIncreasingNameOrder" (sorted)="sortName($event)"></app-order>
+                <app-order [isIncreasingOrder]="isIncreasingNameOrder | async" (sorted)="sortName($event)"></app-order>
               </div>
               <div style="width: 6em">
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.PLAYERS' | transloco }}
-                <app-order [isIncreasingOrder]="isIncreasingPlayerOrder" (sorted)="sortPlayers($event)"></app-order>
+                <app-order [isIncreasingOrder]="isIncreasingPlayerOrder | async" (sorted)="sortPlayerCount($event)"></app-order>
               </div>
               <div style="width: 6em">
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.COUNTRY' | transloco }}
-                <app-order [isIncreasingOrder]="isIncreasingCountryOrder" (sorted)="sortCountry($event)"></app-order>
+                <app-order [isIncreasingOrder]="isIncreasingCountryOrder | async" (sorted)="sortCountry($event)"></app-order>
               </div>
               <div style="width: 5em">{{ clientVersion$ | async }}</div>
               <div style="width: 6em;">
                 <!-- Pls not automatic fav on top, make it sortable like other titles, thanks! -->
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.FAVORITE' | transloco }}
-                <app-order [isIncreasingOrder]="isIncreasingFavoriteOrder" (sorted)="sortFavorite($event)"></app-order>
+                <app-order [isIncreasingOrder]="isIncreasingFavoriteOrder | async" (sorted)="sortFavorite($event)"></app-order>
               </div>
               <div style="width: 4em;"></div>
             </div>
