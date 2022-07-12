@@ -35,15 +35,15 @@
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
         <div class="radio-group">
           <label for="autoHideTime1">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
-          <input id="autoHideTime1" type="radio" [value]="1" name="autoHideTime" [ngModel]="autoHideTimeSelected(1)"
+          <input id="autoHideTime1" type="radio" [value]="1" [ngModel]="autoHideTime"
                  (ngModelChange)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
           >
           <label for="autoHideTime3">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
-          <input id="autoHideTime3" type="radio" [value]="3" name="autoHideTime" [ngModel]="autoHideTimeSelected(3)"
+          <input id="autoHideTime3" type="radio" [value]="3" [ngModel]="autoHideTime"
                  (ngModelChange)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
           >
           <label for="autoHideTime5">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
-          <input id="autoHideTime5" type="radio" [value]="5" name="autoHideTime" [ngModel]="autoHideTimeSelected(5)"
+          <input id="autoHideTime5" type="radio" [value]="5" [ngModel]="autoHideTime"
                  (ngModelChange)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
           >
         </div>
