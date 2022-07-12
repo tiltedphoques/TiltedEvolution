@@ -49,20 +49,21 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
 {
 
-    spdlog::warn("We at encounter zone {:X}", pCell->loadedCellData->encounterZone->formID);
-    spdlog::warn("Our physical location is {:X}", pCell->formID);
-
-    // Only return true if cell has the NoResetZone encounter zone
-    if (pCell->loadedCellData->encounterZone->formID == 0xf90b1)
+    if (pCell->loadedCellData->encounterZone)
     {
-        switch (pCell->formID)
+        // Only return true if cell has the NoResetZone encounter zone
+        if (pCell->loadedCellData->encounterZone->formID == 0xf90b1)
         {
-        case 0xeec55: // one known exception: Sinderion's Field Lab
-            return false;
-        default:
-            return true;
+            switch (pCell->formID)
+            {
+            case 0xeec55: // one known exception: Sinderion's Field Lab
+                return false;
+            default:
+                return true;
+            }
         }
     }
+
     return false;
 }
 
