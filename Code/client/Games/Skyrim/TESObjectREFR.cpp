@@ -196,7 +196,9 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
             }
 
             uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
-            arEntry.EnchantData.IsWeapon = TESForm::GetById(objectId)->formType == FormType::Weapon;
+            TESForm* pObject = TESForm::GetById(objectId);
+            if (pObject)
+                arEntry.EnchantData.IsWeapon = pObject->formType == FormType::Weapon;
         }
 
         arEntry.ExtraEnchantCharge = pExtraEnchantment->usCharge;
