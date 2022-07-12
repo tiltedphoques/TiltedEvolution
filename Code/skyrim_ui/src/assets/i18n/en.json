@@ -122,6 +122,17 @@
       "ALREADY_IN_GROUP": "You are already in a group. To join another group, please leave your current group.",
       "KICK_NO_PARTY_LEADER": "You cannot kick other members as you are not the party leader.",
       "MAKE_LEADER_NO_PARTY_LEADER": "You cannot make another member the leader as you are not the party leader."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "This server expects version {{expectedVersion}} but you are on version {{version}}.",
+        "MODS_MISMATCH": "This server has ModPolicy enabled.{{mods}}",
+        "MODS_MISMATCH_REMOVE": "Please remove the following mods to join:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Please install the following mods to join:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "This server disallows {{mods}}. Please remove them to join.",
+        "WRONG_PASSWORD": "The password you entered is incorrect.",
+        "NO_REASON": "The server refused connection without reason."
+      }
     }
   }
 }

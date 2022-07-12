@@ -39,13 +39,11 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         if (state) {
           this.sound.play(Sound.Success);
           this.done.next();
-        } else {
-          this.sound.play(Sound.Fail);
-
+        } else if (this.errorService.getError() === '') { // show connection error when there is no more specific error
           const message = await firstValueFrom(
             this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.CONNECTION'),
           );
-          this.errorService.error(message);
+          await this.errorService.setError(message);
         }
       }
     });
@@ -56,7 +54,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.VERSION_MISMATCH'),
         );
-        this.errorService.error(message);
+        await this.errorService.setError(message);
       }
     });
 
@@ -84,7 +82,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
       const message = await firstValueFrom(
         this.translocoService.selectTranslate('COMPONENT.CONNECT.ERROR.INVALID_ADDRESS'),
       );
-      this.errorService.error(message);
+      await this.errorService.setError(message);
       return;
     }
 
@@ -120,7 +118,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
-    if (this.errorService.error$.getValue()) {
+    if (this.errorService.getError()) {
       this.errorService.removeError();
     } else {
       this.done.next();
@@ -129,4 +127,5 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     event.stopPropagation();
     event.preventDefault();
   }
+
 }

@@ -232,7 +232,7 @@ export class ServerListComponent {
   }
 
   private close() {
-    if (this.errorService.error$.getValue()) {
+    if (this.errorService.getError()) {
       this.errorService.removeError();
     } else {
       this.done.next();

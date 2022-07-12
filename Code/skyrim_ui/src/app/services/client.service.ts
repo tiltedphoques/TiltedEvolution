@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
-import { ErrorService } from './error.service';
+import { ErrorEvents, ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
 
 
@@ -87,7 +87,7 @@ export class ClientService implements OnDestroy {
   public protocolMismatchChange = new BehaviorSubject(false);
 
   /** Receive error from core */
-  public triggerError = new BehaviorSubject('');
+  public triggerError = new ReplaySubject<ErrorEvents>(1);
 
   /** Used purely for debugging. */
   public debugChange = new Subject<void>();
@@ -584,10 +584,11 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  private onTriggerError(error: string) {
+  private onTriggerError(rawError: string) {
     this.zone.run(() => {
+      const error = JSON.parse(rawError) as ErrorEvents;
       this.triggerError.next(error);
-      this.errorService.error(error);
+      void this.errorService.setError(error);
     });
   }
 
