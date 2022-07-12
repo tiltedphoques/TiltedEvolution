@@ -1,5 +1,5 @@
 # Tilted Online
-![Build status](https://github.com/tiltedphoques/TiltedEvolution/workflows/Build windows/badge.svg?branch=master) [![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
+![Build status](https://github.com/tiltedphoques/TiltedEvolution/workflows/Build%20windows/badge.svg?branch=master) [![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
 
 <img src="https://avatars.githubusercontent.com/u/52131158?s=200&v=4" align="right"
      alt="Size Limit logo by Anton Lovchikov" width="110" height="100">
