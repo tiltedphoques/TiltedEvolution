@@ -481,11 +481,11 @@ void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
     for (const Inventory::Entry& entry : aInventory.Entries)
     {
         if (entry.Count != 0)
-            AddOrRemoveItem(entry);
+            AddOrRemoveItem(entry, true);
     }
 }
 
-void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
+void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory) noexcept
 {
     ModSystem& modSystem = World::Get().GetModSystem();
 
@@ -526,7 +526,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept
 
     // TODO(cosideci): this is still flawed. Adding the refr to the quest leader is hard.
     // It is still recommended that the quest leader loots all quest items.
-    if (arEntry.IsQuestItem && arEntry.Count > 0)
+    if (arEntry.IsQuestItem && arEntry.Count > 0 && !aIsSettingInventory)
     {
         PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
