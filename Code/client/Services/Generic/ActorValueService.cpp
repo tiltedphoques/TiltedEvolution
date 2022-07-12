@@ -247,8 +247,8 @@ void ActorValueService::RunDeathStateUpdates() noexcept
 
     lastSendTimePoint = now;
 
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-
+    // Safe-guard against actors not dying due to kill cams
+    auto view = m_world.view<FormIdComponent>();
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
@@ -256,7 +256,19 @@ void ActorValueService::RunDeathStateUpdates() noexcept
         if (!pActor)
             continue;
 
-        auto& localComponent = view.get<LocalComponent>(entity);
+        if (pActor->GetActorValue(ActorValueInfo::kHealth) <= 0.f && !pActor->IsDead())
+            pActor->Kill();
+    }
+
+    auto localView = m_world.view<FormIdComponent, LocalComponent>();
+    for (auto entity : localView)
+    {
+        const auto& formIdComponent = localView.get<FormIdComponent>(entity);
+        Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+            continue;
+
+        auto& localComponent = localView.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
         if (isDead != localComponent.IsDead)
