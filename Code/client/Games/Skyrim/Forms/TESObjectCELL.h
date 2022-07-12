@@ -51,7 +51,17 @@ struct TESObjectCELL : TESForm
     BSRecursiveLock lock;
 
     TESWorldSpace* worldspace;
+
+    struct LoadedCellData
+    {
+        uint8_t pad0[0x160];
+        BGSEncounterZone* encounterZone;
+    };
+
+    static_assert(offsetof(LoadedCellData, encounterZone) == 0x160);
+
     LoadedCellData* loadedCellData;
+
 
     bool IsValid() const
     {

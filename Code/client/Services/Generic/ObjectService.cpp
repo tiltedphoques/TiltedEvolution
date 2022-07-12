@@ -49,7 +49,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
 {
 
-    if (pCell->loadedCellData->encounterZone)
+    if (pCell && pCell->loadedCellData && pCell->loadedCellData->encounterZone)
     {
         // Only return true if cell has the NoResetZone encounter zone
         if (pCell->loadedCellData->encounterZone->formID == 0xf90b1)
