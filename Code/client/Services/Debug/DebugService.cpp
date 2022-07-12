@@ -52,6 +52,8 @@
 #include <Camera/PlayerCamera.h>
 #include <OverlayApp.hpp>
 
+#include <BranchInfo.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>

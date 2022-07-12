@@ -65,7 +65,6 @@ extern void* RipAllocateN(size_t blockLength);
 #include <fstream>
 
 #include <BuildInfo.h>
-#include <BranchInfo.h>
 #include <Games/Primitives.h>
 
 using TiltedPhoques::AutoPtr;
