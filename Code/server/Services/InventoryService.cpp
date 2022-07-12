@@ -10,8 +10,6 @@
 #include <Messages/RequestEquipmentChanges.h>
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
-#include <client/World.cpp>
-#include <console/ConsoleRegistry.h>
 
 namespace
 {
@@ -34,6 +32,8 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
 
+    bool areDropsEnabled = bEnableItemDrops;
+
     if (it != view.end())
     {
         auto& inventoryComponent = view.get<InventoryComponent>(*it);
@@ -44,7 +44,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;
 
-    if (World::Get().GetServerSettings().areDropsEnabled == true)
+    if (areDropsEnabled == true)
         notify.Drop = message.Drop;
     else
         notify.Drop = false;

@@ -19,7 +19,6 @@
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
-#include <Services/InventoryService.cpp>
 
 
 namespace
@@ -624,7 +623,6 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
         serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
         serverResponse.Settings.PvpEnabled = bEnablePvp;
-        serverResponse.Settings.areDropsEnabled = bEnableItemDrops;
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
