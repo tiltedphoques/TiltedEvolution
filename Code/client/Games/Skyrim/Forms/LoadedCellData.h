@@ -4,7 +4,7 @@
 
 struct LoadedCellData
 {
-    uint8_t someStuff[0x160]; // Offset
+    uint8_t pad160[0x160]; // Offset
     BGSEncounterZone* encounterZone;
 };
 
