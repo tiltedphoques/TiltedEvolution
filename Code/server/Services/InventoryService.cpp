@@ -32,8 +32,6 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
     const auto it = view.find(static_cast<entt::entity>(message.ServerId));
 
-    bool areDropsEnabled = bEnableItemDrops;
-
     if (it != view.end())
     {
         auto& inventoryComponent = view.get<InventoryComponent>(*it);
@@ -44,7 +42,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;
 
-    if (areDropsEnabled == true)
+    if (bEnableItemDrops)
         notify.Drop = message.Drop;
     else
         notify.Drop = false;
