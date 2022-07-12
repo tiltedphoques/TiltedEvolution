@@ -20,6 +20,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#include <Forms/BGSEncounterZone.h>
 
 #include <inttypes.h>
 
@@ -44,19 +45,25 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 #endif
 }
 
-bool IsVanillaHome(const uint32_t acCellId) noexcept
+bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
 {
-    switch (acCellId)
+
+    if (pCell && pCell->loadedCellData && pCell->loadedCellData->encounterZone)
     {
-    case 0x165a8:
-    case 0x16778:
-    case 0x16bdd:
-    case 0x16a06:
-    case 0x16dfa:
-        return true;
-    default:
-        return false;
+        // Only return true if cell has the NoResetZone encounter zone
+        if (pCell->loadedCellData->encounterZone->formID == 0xf90b1)
+        {
+            switch (pCell->formID)
+            {
+            case 0xeec55: // one known exception: Sinderion's Field Lab
+                return false;
+            default:
+                return true;
+            }
+        }
     }
+
+    return false;
 }
 
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
@@ -72,10 +79,10 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     TESObjectCELL* pCell = pPlayer->parentCell;
 
-    // Vanilla homes should not be synced, so that chest contents,
+    // Player homes should not be synced, so that chest contents,
     // which are often used as storage, are never accidentally wiped.
 #if TP_SKYRIM64
-    if (IsVanillaHome(pCell->formID))
+    if (IsPlayerHome(pCell))
         return;
 #endif
 

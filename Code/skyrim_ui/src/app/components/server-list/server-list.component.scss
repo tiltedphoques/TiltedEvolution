@@ -1,9 +1,28 @@
+@import "functions/rem";
+
+@import "env";
+
 app-server-list {
   position: relative;
   display: block;
 
+  .scrollbar-offset {
+    margin-right: rem($-size-font, 16px);
+    //overflow-y: scroll;
+  }
 
-  .searchListServer {
+  .serverlist-alternative {
+    margin: 3%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .virtual-viewport {
+    height: calc(60vh - 38px);
+    width: 100%;
+  }
+
+  .search-list-server {
     display: inline-block;
     background-color: rgba($color: #292929, $alpha: 0.60);
     font-size: 0.85rem;
@@ -14,7 +33,7 @@ app-server-list {
     margin-bottom: 1%;
   }
 
-  .buttonsServerList {
+  .buttons-server-list {
     float: right;
     padding: 0.25vw;
     background-color: #292929;
@@ -22,21 +41,44 @@ app-server-list {
     margin-left: 5%;
   }
 
-  .containerList {
+  .container-list {
     overflow: auto;
     max-height: 60vh;
     margin-top: 1rem;
 
 
-    .serverslisttable {
+    .servers-list-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
 
-      .listHeader {
-        position: sticky;
-        top: 0px;
-        background-color: #151515;
-        z-index: 1;
+      .row {
+        height: 38px;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-bottom: 1px solid grey;
+        border-collapse: separate;
+
+        :first-child {
+          flex: 1 1 auto;
+        }
+
+        > div {
+          padding: 5px;
+        }
+
+        &.header {
+
+        }
+      }
+
+      td {
+        padding: 5px;
+      }
+
+      tr {
+        display: flex;
       }
 
       th {
@@ -55,7 +97,7 @@ app-server-list {
       }
 
       .offline {
-        background-color: #FF9494
+        background-color: #ff9494
       }
 
       .server-compatible {
@@ -66,11 +108,7 @@ app-server-list {
         color: red;
       }
 
-      #noserv {
-        margin-top: 3%;
-      }
-
-      .joinbutton {
+      .join-button {
         padding: 0.25vw;
         background-color: #292929;
         border-radius: 2px;
@@ -87,7 +125,7 @@ app-server-list {
         }
       }
 
-      .app-server-list-notfavorite {
+      .app-server-list-not-favorite {
         text-align: center;
         color: grey;
 
@@ -97,6 +135,4 @@ app-server-list {
       }
     }
   }
-
-
 }

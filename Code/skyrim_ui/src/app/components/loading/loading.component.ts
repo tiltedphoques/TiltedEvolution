@@ -1,26 +1,22 @@
-import { Component, OnInit, ViewEncapsulation, OnDestroy } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
+import { Observable } from 'rxjs';
 import { LoadingService } from '../../services/loading.service';
-import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-loading',
   templateUrl: './loading.component.html',
   styleUrls: ['./loading.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
-export class LoadingComponent implements OnInit, OnDestroy {
-  private isLoading$: Subscription;
-  public isLoading = false;
+export class LoadingComponent {
 
-  constructor(private loadingService: LoadingService) { }
+  isLoading$: Observable<boolean>;
 
-  ngOnInit() {
-    this.isLoading$ = this.loadingService.getLoading().subscribe((isLoading: boolean) => {
-      this.isLoading = isLoading;
-    })
+  constructor(
+    private readonly loadingService: LoadingService,
+  ) {
+    this.isLoading$ = this.loadingService.getLoading();
   }
 
-  ngOnDestroy() {
-    this.isLoading$.unsubscribe;
-  }
 }

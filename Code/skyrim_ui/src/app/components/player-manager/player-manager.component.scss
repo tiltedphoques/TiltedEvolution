@@ -1,11 +1,29 @@
-app-player-manager {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+@import "env";
 
-    .buttons {
-        margin-top: 1rem;
-        display: flex;
-        justify-content: center;
+@import "functions/rem";
+
+app-player-manager {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .tab-buttons {
+    display: flex;
+    padding-bottom: 10px;
+    margin-bottom: rem($-size-font, 2px);
+    border-bottom: rem($-size-font, 2px) solid;
+    border-image: url("../../../assets/images/separator/single.svg") 3;
+
+    button {
+      flex: 1 1 auto;
+      display: flex;
+      justify-content: center;
     }
+  }
+
+  .actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+  }
 }

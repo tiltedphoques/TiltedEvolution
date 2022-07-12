@@ -1,14 +1,40 @@
 <div class="app-connect">
-  <p>Connect to a server using its full address. Use the format <strong>address:port</strong>. The port defaults to <strong>10578</strong>.</p>
-  <p style="color:rgb(247, 54, 54);">Do NOT connect to any server if you are still in the Helgen intro sequence. Make sure you just escaped Helgen first.</p>
+  <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
+  <p style="color:rgb(247, 54, 54);">
+    {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
+  </p>
 
-  <input #input type="text" placeholder="Address" (keydown.enter)="connect()" [(ngModel)]="address" spellcheck="false">
-  <input type="text" placeholder="Password" (keydown.enter)="connect()" [(ngModel)]="token" spellcheck="false">
+  <input
+    #input
+    type="text"
+    [placeholder]="'COMPONENT.CONNECT.ADDRESS' | transloco"
+    (keydown.enter)="connect()"
+    [(ngModel)]="address"
+    spellcheck="false"
+  >
+  <input
+    type="text"
+    [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco"
+    spellcheck="false"
+    [(ngModel)]="token"
+    (keydown.enter)="connect()"
+  >
+  <span class="save-password">
+    <label for="savePassword">{{ 'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco }}</label>
+    <input id="savePassword" type="checkbox" [(ngModel)]="savePassword" (keydown.enter)="connect()">
+  </span>
+
 
   <app-popup-buttons>
-    <button [disabled]="connecting" (click)="connect()" data-style-ornament="simple">Connect</button>
-    <button [disabled]="connecting" (click)="cancel()" data-style-ornament="simple">Cancel</button>
+    <button [disabled]="connecting" (click)="connect()" data-style-ornament="simple">
+      {{ 'COMPONENT.CONNECT.CONNECT' | transloco }}
+    </button>
+    <button [disabled]="connecting" (click)="cancel()" data-style-ornament="simple">
+      {{ 'COMPONENT.CONNECT.CANCEL' | transloco }}
+    </button>
   </app-popup-buttons>
-<hr>
-  <button (click)="openServerList()" data-style-ornament="simple">Public servers</button>
+  <hr>
+  <button (click)="openServerList()" data-style-ornament="simple">
+    {{ 'COMPONENT.CONNECT.PUBLIC_SERVERS' | transloco }}
+  </button>
 </div>

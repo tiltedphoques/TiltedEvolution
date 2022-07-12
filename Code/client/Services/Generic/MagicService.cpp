@@ -68,7 +68,8 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     // only sync concentration spells through spell cast sync, the rest through projectile sync for accuracy
     if (SpellItem* pSpell = Cast<SpellItem>(TESForm::GetById(acEvent.SpellId)))
     {
-        if (pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION &&
+        if ((pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION ||
+             pSpell->IsHealingSpell()) &&
             !pSpell->IsWardSpell() &&
             !pSpell->IsInvisibilitySpell())
         {
@@ -311,7 +312,8 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     // These effects are applied through spell cast sync
     if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
     {
-        if (pSpellItem->eCastingType == MagicSystem::CastingType::CONCENTRATION || 
+        if ((pSpellItem->eCastingType == MagicSystem::CastingType::CONCENTRATION && 
+             !pSpellItem->IsHealingSpell()) || 
             pSpellItem->IsWardSpell() ||
             pSpellItem->IsInvisibilitySpell())
         {

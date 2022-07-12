@@ -3,10 +3,10 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
 import { ClientService } from './client.service';
-import { MockClientService } from './mock-client.service';
+
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PlayerListService {
 
@@ -16,20 +16,20 @@ export class PlayerListService {
   private connectionSubscription: Subscription;
   private playerConnectedSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
+  private memberKickedSubscription: Subscription;
   private cellSubscription: Subscription;
   private partyInviteReceivedSubscription: Subscription;
 
   private isConnect = false;
 
-  constructor(private clientService: ClientService,
-              // WARNING: do not remove this service dependency.
-              // Due to angular lazy loading, it needs to be instantiated somewhere.
-              // There is surely a better solution, so if you know any, please do refactor.
-              private mockClientService: MockClientService) {
+  constructor(
+    private clientService: ClientService,
+  ) {
     this.onDebug();
     this.onConnectionStateChanged();
     this.onPlayerConnected();
     this.onPlayerDisconnected();
+    this.onMemberKicked();
     this.onCellChange();
     this.onPartyInviteReceived();
   }
@@ -71,7 +71,7 @@ export class PlayerListService {
 
         this.playerList.next(playerList);
       }
-    })
+    });
   }
 
   private onPlayerDisconnected() {
@@ -87,6 +87,14 @@ export class PlayerListService {
     });
   }
 
+  private onMemberKicked() {
+    this.memberKickedSubscription = this.clientService.memberKickedChange.subscribe((playerId: number) => {
+      const playerList = this.getPlayerList();
+      const players = playerList.players.find(player => player.id !== playerId);
+      players.hasBeenInvited = false;
+    });
+  }
+
   private onCellChange() {
     this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
       const playerList = this.getPlayerList();
@@ -97,7 +105,7 @@ export class PlayerListService {
           p.cellName = player.cellName;
         }
       }
-    })
+    });
   }
 
   private onPartyInviteReceived() {
@@ -109,9 +117,7 @@ export class PlayerListService {
 
         this.playerList.next(playerList);
       }
-
-      
-    })
+    });
   }
 
   public getLocalPlayer(): Player {
@@ -120,7 +126,7 @@ export class PlayerListService {
   }
 
   public getPlayerList() {
-    return this.createPlayerList(this.playerList.value);
+    return this.createPlayerList(this.playerList.getValue());
   }
 
   public getListLength(): number {
@@ -132,11 +138,11 @@ export class PlayerListService {
       playerList = new PlayerList();
       this.playerList.next(playerList);
     }
-    return this.playerList.value;
+    return this.playerList.getValue();
   }
 
   public updatePlayerList() {
-    this.playerList.next(this.playerList.value);
+    this.playerList.next(this.playerList.getValue());
   }
 
   public sendPartyInvite(inviteeId: number) {
@@ -163,7 +169,7 @@ export class PlayerListService {
     }
   }
 
-  public getPlayerById(playerId: number) : Player {
+  public getPlayerById(playerId: number): Player {
     return this.getPlayerList().players.find(player => player.id === playerId);
   }
 
@@ -178,4 +184,5 @@ export class PlayerListService {
       this.updatePlayerList();
     }
   }
+
 }

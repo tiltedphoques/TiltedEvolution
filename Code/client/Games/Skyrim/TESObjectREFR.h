@@ -194,7 +194,7 @@ struct TESObjectREFR : TESForm
     bool IsItemInInventory(uint32_t aFormID) const noexcept;
 
     void SetInventory(const Inventory& acContainer) noexcept;
-    void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
+    void AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory = false) noexcept;
     void UpdateItemList(TESForm* pUnkForm) noexcept;
 
     BSHandleRefObject handleRefObject;

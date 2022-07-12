@@ -28,7 +28,7 @@ Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server 
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                    "Dedicated Together Server"};
-Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+//Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
 // Gameplay
@@ -656,6 +656,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
+/*
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
         AdminSessionOpen response;
@@ -664,6 +665,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         m_adminSessions.insert(aConnectionId);
         spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
     }
+*/
     else
     {
         spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);

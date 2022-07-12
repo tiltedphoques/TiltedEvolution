@@ -1,61 +1,68 @@
-import {
-  Component, ViewEncapsulation, Output, EventEmitter,
-  OnDestroy, HostListener, ViewChild, ElementRef, AfterViewInit
-} from '@angular/core';
-
-import { Subscription } from 'rxjs';
-
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { ClientService } from '../../services/client.service';
-import { SoundService, Sound } from '../../services/sound.service';
 import { ErrorService } from '../../services/error.service';
+import { Sound, SoundService } from '../../services/sound.service';
+import { StoreService } from '../../services/store.service';
+import { RootView } from '../root/root.component';
+
 
 @Component({
   selector: 'app-connect',
   templateUrl: './connect.component.html',
-  styleUrls: [ './connect.component.scss' ],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./connect.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class ConnectComponent implements OnDestroy, AfterViewInit {
-  @Output()
-  public done = new EventEmitter();
-  @Output()
-  public setView = new EventEmitter<string>();
 
   public address = '';
   public token = '';
+  public savePassword = false;
 
   public connecting = false;
 
+  @Output() public done = new EventEmitter<void>();
+  @Output() public setView = new EventEmitter<RootView>();
+
   public constructor(
-    private client: ClientService,
-    private sound: SoundService,
-    private errorService: ErrorService
+    private readonly client: ClientService,
+    private readonly sound: SoundService,
+    private readonly errorService: ErrorService,
+    private readonly storeService: StoreService,
+    private readonly translocoService: TranslocoService,
   ) {
-    this.connectionSubscription = this.client.connectionStateChange.subscribe(state => {
+    this.connectionSubscription = this.client.connectionStateChange.subscribe(async state => {
       if (this.connecting) {
         this.connecting = false;
 
         if (state) {
           this.sound.play(Sound.Success);
           this.done.next();
-        }
-        else {
+        } else {
           this.sound.play(Sound.Fail);
 
-          this.errorService.error(
-            'Could not connect to the specified server. Please make sure you\'ve entered the ' +
-            'correct address and that you\'re not experiencing network issues.'
+          const message = await firstValueFrom(
+            this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.CONNECTION'),
           );
+          this.errorService.error(message);
         }
       }
     });
 
-    this.protocolMismatchSubscription = this.client.protocolMismatchChange.subscribe(state => {
+    this.protocolMismatchSubscription = this.client.protocolMismatchChange.subscribe(async state => {
       if (state) {
         this.connecting = false;
-        this.errorService.error("You cannot connect to the server because it does not have the same version of Skyrim Together as you.");
+        const message = await firstValueFrom(
+          this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.VERSION_MISMATCH'),
+        );
+        this.errorService.error(message);
       }
-    })
+    });
+
+    this.address = this.storeService.get('last_connected_address', '');
+    this.token = this.storeService.get('last_connected_token', '');
+    this.savePassword = !!this.storeService.get('last_connected_token', null);
   }
 
   public ngAfterViewInit(): void {
@@ -69,16 +76,26 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     this.protocolMismatchSubscription.unsubscribe();
   }
 
-  public connect(): void {
+  async connect(): Promise<void> {
     const address = this.address.trim().match(/^(.+?)(?::([0-9]+))?$/);
 
     if (!address) {
       this.sound.play(Sound.Fail);
-      this.errorService.error('The address is of invalid format.');
+      const message = await firstValueFrom(
+        this.translocoService.selectTranslate('COMPONENT.CONNECT.ERROR.INVALID_ADDRESS'),
+      );
+      this.errorService.error(message);
       return;
     }
 
     this.connecting = true;
+
+    this.storeService.set('last_connected_address', this.address);
+    if (this.savePassword) {
+      this.storeService.set('last_connected_token', this.token);
+    } else {
+      this.storeService.remove('last_connected_token');
+    }
 
     this.sound.play(Sound.Ok);
     this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.token);
@@ -90,7 +107,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   }
 
   public openServerList(): void {
-    this.setView.next("serverList");
+    this.setView.next(RootView.SERVER_LIST);
   }
 
   @ViewChild('input')
@@ -100,13 +117,12 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
 
   private protocolMismatchSubscription: Subscription;
 
-  @HostListener('window:keydown.escape', [ '$event' ])
+  @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
-    if (this.errorService.error$.value) {
+    if (this.errorService.error$.getValue()) {
       this.errorService.removeError();
-    }
-    else {
+    } else {
       this.done.next();
     }
 

@@ -1,25 +1,25 @@
-import {
-  Component, ViewEncapsulation, HostListener, ViewChild,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
-
-import { Subscription } from 'rxjs';
-
+import { Component, HostListener, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { BehaviorSubject, takeUntil } from 'rxjs';
+import { PartyInfo } from 'src/app/models/party-info';
+import { environment } from '../../../environments/environment';
+import { Player } from '../../models/player';
 import { ClientService } from '../../services/client.service';
-import { SoundService, Sound } from '../../services/sound.service';
-
+import { DestroyService } from '../../services/destroy.service';
+import { Sound, SoundService } from '../../services/sound.service';
 import { ChatComponent } from '../chat/chat.component';
-
 import { animation as controlsAnimation } from './controls.animation';
 import { animation as notificationsAnimation } from './notifications.animation';
 import { animation as popupsAnimation } from './popups.animation';
 
-import { environment } from '../../../environments/environment';
-import { Player } from '../../models/player';
 
-import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { PartyInfo } from 'src/app/models/party-info';
+export enum RootView {
+  CONNECT,
+  DISCONNECT,
+  RECONNECT,
+  SERVER_LIST,
+  SETTINGS,
+  PLAYER_MANAGER,
+}
 
 @Component({
   selector: 'app-root',
@@ -27,23 +27,29 @@ import { PartyInfo } from 'src/app/models/party-info';
   styleUrls: ['./root.component.scss'],
   encapsulation: ViewEncapsulation.None,
   animations: [controlsAnimation, notificationsAnimation, popupsAnimation],
-  host: { 'data-app-root-game': environment.game.toString() }
+  host: { 'data-app-root-game': environment.game.toString() },
+  providers: [DestroyService],
 })
-export class RootComponent implements OnInit, OnDestroy {
+export class RootComponent implements OnInit {
 
-  faCogs: IconDefinition = faCogs;
+  /* ### ENUMS ### */
+  readonly RootView = RootView;
+
+  view = new BehaviorSubject<RootView | undefined>(undefined);
+
+  connected$ = this.client.connectionStateChange.asObservable();
+  menuOpen$ = this.client.openingMenuChange.asObservable();
+  inGame$ = this.client.inGameStateChange.asObservable();
+  active$ = this.client.activationStateChange.asObservable();
+  connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
 
   @ViewChild('chat')
   private chatComp!: ChatComponent;
 
-  private _view?: string;
-
-  private activationSubscription: Subscription;
-  private gameSubscription: Subscription;
-
   public constructor(
-    private client: ClientService,
-    private sound: SoundService
+    private readonly destroy$: DestroyService,
+    private readonly client: ClientService,
+    private readonly sound: SoundService,
   ) {
   }
 
@@ -53,74 +59,36 @@ export class RootComponent implements OnInit, OnDestroy {
   }
 
   public onInGameStateSubscription() {
-    this.gameSubscription = this.client.inGameStateChange.subscribe(state => {
-      if (!state) {
-        this.view = undefined;
-      }
-    });
+    this.client.inGameStateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        if (!state) {
+          this.setView(undefined);
+        }
+      });
   }
 
   public onActivationStateSubscription() {
-    this.activationSubscription = this.client.activationStateChange.subscribe(state => {
-      if (this.inGame && state && !this.view) {
-        setTimeout(() => this.chatComp.focus(), 100);
-      }
-      if (!state) {
-        this.view = undefined;
-      }
-    });
+    this.client.activationStateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        if (this.client.inGameStateChange.getValue() && state && !this.view.getValue()) {
+          setTimeout(() => this.chatComp.focus(), 100);
+        }
+        if (!state) {
+          this.setView(undefined);
+        }
+      });
   }
 
-  public ngOnDestroy(): void {
-    this.gameSubscription.unsubscribe();
-    this.activationSubscription.unsubscribe();
-  }
-
-  public get openingMenu(): boolean {
-    return this.client.openingMenuChange.value;
-  }
-
-  public get connected(): boolean {
-    return this.client.connectionStateChange.value;
-  }
-
-  public get active(): boolean {
-    return this.client.activationStateChange.value;
-  }
-
-  public get version(): string {
-    return this.client.versionSet.value;
-  }
-
-  public get inGame(): boolean {
-    return this.client.inGameStateChange.value;
-  }
-
-  public get isConnectionInProgress(): boolean {
-    return this.client.isConnectionInProgressChange.value;
-  }
-
-  public set view(view: string | undefined) {
-    this._view = view;
+  public setView(view: RootView | undefined) {
+    this.view.next(view);
 
     if (view) {
       this.sound.play(Sound.Focus);
-    }
-    else if (this.chatComp) {
+    } else if (this.chatComp) {
       this.chatComp.focus();
     }
-  }
-
-  public get view(): string | undefined {
-    return this._view;
-  }
-
-  public get isProduction(): boolean {
-    return environment.production;
-  }
-
-  public get isnightly(): boolean {
-    return environment.nightlyBuild;
   }
 
   public reconnect(): void {
@@ -130,13 +98,14 @@ export class RootComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown.escape', ['$event'])
   // @ts-ignore
   private activate(event: KeyboardEvent): void {
-    if (!this.view) {
+    if (!this.view.getValue()) {
       if (environment.game) {
         this.client.deactivate();
       } else {
-        this.client.activationStateChange.next(!this.active);
+        const active = this.client.activationStateChange.getValue();
+        this.client.activationStateChange.next(!active);
 
-        if (!this.connected) {
+        if (!this.client.connectionStateChange.getValue()) {
 
           this.client.connectionStateChange.next(true);
 
@@ -148,8 +117,8 @@ export class RootComponent implements OnInit, OnDestroy {
               connected: true,
               level: 10,
               cellName: 'Falkreath',
-              hasInvitedLocalPlayer: true
-            }
+              hasInvitedLocalPlayer: true,
+            },
           ));
           this.client.playerConnectedChange.next(new Player(
             {
@@ -158,8 +127,8 @@ export class RootComponent implements OnInit, OnDestroy {
               online: true,
               connected: true,
               level: 12,
-              cellName: 'Whiterun'
-            }
+              cellName: 'Whiterun',
+            },
           ));
           this.client.playerConnectedChange.next(new Player(
             {
@@ -168,45 +137,45 @@ export class RootComponent implements OnInit, OnDestroy {
               online: true,
               connected: true,
               level: 69,
-              cellName: 'Whiterun'
-            }
+              cellName: 'Whiterun',
+            },
           ));
           this.client.isLoadedChange.next(new Player(
             {
               id: 1,
               isLoaded: true,
-              health: 50
-            }
+              health: 50,
+            },
           ));
           this.client.isLoadedChange.next(new Player(
             {
               id: 2,
               isLoaded: true,
-              health: 75
-            }
+              health: 75,
+            },
           ));
           this.client.isLoadedChange.next(new Player(
             {
               id: 3,
               isLoaded: true,
-              health: 0
-            }
+              health: 0,
+            },
           ));
 
           this.client.partyInfoChange.next(new PartyInfo(
             {
-              playerIds: [1,2],
-              leaderId: 0
-            }
+              playerIds: [1, 2],
+              leaderId: 0,
+            },
           ));
 
           this.client.localPlayerId = 0;
 
-          let name = "Banana";
-          let message = "Hello Guys";
+          let name = 'Banana';
+          let message = 'Hello Guys';
           let dialogue = true;
 
-          this.client.messageReception.next({ name, content: message, dialogue: dialogue })
+          this.client.messageReception.next({ name, content: message, dialogue: dialogue });
         }
       }
     }
@@ -219,15 +188,15 @@ export class RootComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown.f3', ['$event'])
   // @ts-ignore
   private testGroup(event: KeyboardEvent): void {
-    if (!this.view) {
+    if (!this.view.getValue()) {
       if (environment.game) {
         this.client.deactivate();
       } else {
         this.client.partyInfoChange.next(new PartyInfo(
           {
             playerIds: [1],
-            leaderId: 1
-          }
+            leaderId: 1,
+          },
         ));
       }
     }
@@ -238,7 +207,7 @@ export class RootComponent implements OnInit, OnDestroy {
   @HostListener('window:keydown.f4', ['$event'])
   // @ts-ignore
   private testUnload(event: KeyboardEvent): void {
-    if (!this.view) {
+    if (!this.view.getValue()) {
       if (environment.game) {
         this.client.deactivate();
       } else {
@@ -246,8 +215,8 @@ export class RootComponent implements OnInit, OnDestroy {
           {
             id: 2,
             isLoaded: false,
-            health: 50
-          }
+            health: 50,
+          },
         ));
       }
     }

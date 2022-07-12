@@ -5,7 +5,7 @@ app-loading {
   margin-top: -17px;
   margin-left: -17px;
 
-  .app-loading-gif {
+  > div {
     background-image: url("../../../assets/images/loading.gif");
     width: 34px;
     height: 34px;

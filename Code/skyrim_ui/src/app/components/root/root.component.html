@@ -1,58 +1,89 @@
-<ng-container *ngIf="inGame">
+<ng-container *ngIf="inGame$ | async">
 
-  <ng-container *ngIf="!openingMenu">
+  <ng-container *ngIf="!(menuOpen$ | async)">
     <app-debug></app-debug>
 
     <app-group></app-group>
   </ng-container>
 
-  <app-notification-popup class="app-notification-popup" border="strip">
+  <app-notification-popup class="app-notification-popup" border="strip"></app-notification-popup>
 
-  </app-notification-popup>
-
-  <app-notifications [@notifications]="!active"></app-notifications>
-  <div [@controls]="active" [ngClass]="connected ? 'app-root-controls-wide' : 'app-root-controls'">
-    <app-window *ngIf="isProduction || isnightly || connected || currentUser" border="strip" class="app-root-menu">
-      <button *ngIf="!connected && !isConnectionInProgress" (click)="view = 'connect'" data-style-ornament="inverted"
-        [attr.data-style-active]="view === 'connect'">Connect</button>
-      <ng-container *ngIf="connected">
-        <button (click)="view = 'disconnect'" data-style-ornament="inverted"
-          [attr.data-style-active]="view === 'disconnect'">Disconnect</button>
+  <app-notifications [@notifications]="!(active$ | async)"></app-notifications>
+  <div [@controls]="(active$ | async)" [ngClass]="(connected$ | async) ? 'app-root-controls-wide' : 'app-root-controls'">
+    <app-window border="strip" class="app-root-menu">
+      <button
+        *ngIf="!(connected$ | async) && !(connectionInProgress$ | async)"
+        data-style-ornament="inverted"
+        [attr.data-style-active]="(view | async) === RootView.CONNECT"
+        (click)="setView(RootView.CONNECT)"
+      >
+        {{ 'COMPONENT.ROOT.CONNECT' | transloco }}
+      </button>
+      <ng-container *ngIf="(connected$ | async)">
+        <button
+          data-style-ornament="inverted"
+          [attr.data-style-active]="(view | async) === RootView.DISCONNECT"
+          (click)="setView(RootView.DISCONNECT)"
+        >
+          {{ 'COMPONENT.ROOT.DISCONNECT' | transloco }}
+        </button>
         <!--
-          <button (click)="reconnect()" data-style-ornament="inverted"
-          [attr.data-style-active]="view === 'reconnect'">Reconnect</button>
+        <button
+          data-style-ornament="inverted"
+          [attr.data-style-active]="(view | async) === RootView.RECONNECT"
+          (click)="reconnect()"
+        >
+          {{ 'COMPONENT.ROOT.RECONNECT' | transloco }}
+        </button>
         -->
-        <button (click)="view = 'playerManager'" data-style-ornament="inverted" [attr.data-style-active]="view === 'playerManager'">
-          Player Manager
+        <button
+          data-style-ornament="inverted"
+          [attr.data-style-active]="(view | async) === RootView.PLAYER_MANAGER"
+          (click)="setView(RootView.PLAYER_MANAGER)"
+        >
+          {{ 'COMPONENT.ROOT.PLAYER_MANAGER' | transloco }}
         </button>
       </ng-container>
-      <button (click)="view = 'settings'" data-style-ornament="inverted" [attr.data-style-active]="view === 'settings'">
-        Settings
+      <button
+        data-style-ornament="inverted"
+        [attr.data-style-active]="(view | async) === RootView.SETTINGS"
+        (click)="setView(RootView.SETTINGS)"
+      >
+        {{ 'COMPONENT.ROOT.SETTINGS' | transloco }}
       </button>
-      <button *ngIf="isConnectionInProgress" (click)="view = 'disconnect'" data-style-ornament="inverted"
-        [attr.data-style-active]="view === 'disconnect'">Connection in progress</button>
+      <button
+        *ngIf="connectionInProgress$ | async"
+        data-style-ornament="inverted"
+        [attr.data-style-active]="(view | async) === RootView.DISCONNECT"
+        (click)="setView(RootView.DISCONNECT)"
+      >
+        {{ 'COMPONENT.ROOT.CONNECTION_IN_PROGRESS' | transloco }}
+      </button>
     </app-window>
     <app-window class="app-root-chat">
       <app-chat #chat></app-chat>
     </app-window>
   </div>
-  <div [@popups]="active" class="app-root-popups">
+  <div [@popups]="(active$ | async)" class="app-root-popups">
     <app-loading></app-loading>
-    <app-popup *ngIf="view === 'connect'">
-      <app-connect (done)="view = undefined" (setView)="view = $event"></app-connect>
-    </app-popup>
-    <app-popup *ngIf="view === 'disconnect'">
-      <app-disconnect (done)="view = undefined"></app-disconnect>
-    </app-popup>
-    <app-popup *ngIf="view === 'serverList'" data-popup="server">
-      <app-server-list (done)="view = undefined" (setView)="view = $event"></app-server-list>
-    </app-popup>
-    <app-popup *ngIf="view === 'settings'" data-popup="settings">
-      <app-settings (done)="view = undefined" (setView)="view = $event"></app-settings>
-    </app-popup>
-    <app-popup *ngIf="view === 'playerManager'" data-popup="playerManager">
-      <app-player-manager (done)="view = undefined"></app-player-manager>
-    </app-popup>
+
+    <ng-container [ngSwitch]="view | async">
+      <app-popup *ngSwitchCase="RootView.CONNECT">
+        <app-connect (done)="setView(undefined)" (setView)="setView($event)"></app-connect>
+      </app-popup>
+      <app-popup *ngSwitchCase="RootView.DISCONNECT">
+        <app-disconnect (done)="setView(undefined)"></app-disconnect>
+      </app-popup>
+      <app-popup *ngSwitchCase="RootView.SERVER_LIST" data-popup="server">
+        <app-server-list (done)="setView(undefined)" (setView)="setView($event)"></app-server-list>
+      </app-popup>
+      <app-popup *ngSwitchCase="RootView.SETTINGS" data-popup="settings">
+        <app-settings (done)="setView(undefined)" (setView)="setView($event)"></app-settings>
+      </app-popup>
+      <app-popup *ngSwitchCase="RootView.PLAYER_MANAGER" data-popup="playerManager">
+        <app-player-manager (done)="setView(undefined)"></app-player-manager>
+      </app-popup>
+    </ng-container>
 
     <app-error></app-error>
   </div>

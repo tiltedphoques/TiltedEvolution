@@ -1,20 +1,22 @@
 import { Component, ViewEncapsulation } from '@angular/core';
+import { Observable } from 'rxjs';
 import { ErrorService } from '../../services/error.service';
+
 
 @Component({
   selector: 'app-error',
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class ErrorComponent {
 
-  constructor(private errorService: ErrorService)
-  {
-  }
+  error$: Observable<string>;
 
-  public get error(): string {
-    return this.errorService.error$.value;
+  constructor(
+    private readonly errorService: ErrorService,
+  ) {
+    this.error$ = this.errorService.error$.asObservable();
   }
 
   removeError() {

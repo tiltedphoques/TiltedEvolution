@@ -1,15 +1,18 @@
-import { Component, OnInit, ViewEncapsulation, Output, EventEmitter, HostListener, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
+import { loadingFor } from '@ngneat/loadoff';
+import { FormControl } from '@ngneat/reactive-forms';
+import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, throttleTime } from 'rxjs';
+import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { Server } from '../../models/server';
+import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
-import { ClientService } from '../../services/client.service';
-import { SoundService, Sound } from '../../services/sound.service';
-import { FormControl } from '@angular/forms';
-import { forkJoin, interval, Observable, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
-import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
-import { Server } from '../../models/server';
+import { RootView } from '../root/root.component';
+
 
 @Component({
   selector: 'app-server-list',
@@ -17,154 +20,142 @@ import { Server } from '../../models/server';
   styleUrls: ['./server-list.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class ServerListComponent implements OnInit, OnDestroy {
+export class ServerListComponent {
 
-  @Output()
-  public done = new EventEmitter();
-  @Output()
-  public setView = new EventEmitter<string>();
+  /* ### ICONS ### */
+  readonly fasStar = fasStar;
+  readonly farStar = farStar;
+
+  loader = loadingFor('serverlist');
+  refreshServerlist = new BehaviorSubject<void>(undefined);
+  sortFunction = new BehaviorSubject<(a: Server, b: Server) => number>(undefined);
+  favoriteServers = new BehaviorSubject<Record<string, Server>>({});
+  serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string })[]>;
+  filteredServerlist$: typeof this.serverlist$;
+  clientVersion$: Observable<string>;
+
+  formSearch = new FormControl<string>('');
 
   // Server list with search / filter
-  public serverList: Server[] = [];
-  public formSearch = new FormControl('');
   public isIncreasingPlayerOrder = true;
   public isIncreasingCountryOrder = true;
   public isIncreasingNameOrder = true;
   public isIncreasingFavoriteOrder = true;
-  public farStar = farStar;
-  public fasStar = fasStar;
 
-  public isLoading = true;
+  @Output()
+  public done = new EventEmitter<void>();
+  @Output()
+  public setView = new EventEmitter<RootView>();
 
-  // All serverList data
-  private _serverList: Server[] = [];
-  private searchSubscription: Subscription;
-  private autoRefreshSubscription: Subscription;
-
-  constructor(private errorService: ErrorService, private serverListService: ServerListService,
+  constructor(
+    private errorService: ErrorService,
+    private serverListService: ServerListService,
     private clientService: ClientService,
     private soundService: SoundService,
-    private storeService: StoreService) { }
+    private storeService: StoreService,
+  ) {
+    this.serverlist$ = this.refreshServerlist
+      .pipe(
+        switchMap(() => this.serverListService
+          .getServerList()
+          .pipe(
+            /**
+             * Removed due performance and ratelimit issue
+             *
+             * Temp fix
+             * https://github.com/tiltedphoques/TiltedEvolution/pull/226
+             *
+             * Long term fix
+             * https://github.com/tiltedphoques/TiltedEvolution/issues/247
+             */
+            //switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
+            this.loader.serverlist.track(),
+          ),
+        ),
+        combineLatestWith(this.favoriteServers),
+        map(([servers, favorites]) => {
+          const clientVersion = this.clientService.versionSet.getValue();
+          return servers.map(server => {
+            const shortVersion = this.getServerVersion(server);
+            return {
+              ...server,
+              isFavorite: !!favorites[`${ server.ip }:${ server.port }`],
+              shortVersion,
+              isCompatible: shortVersion === clientVersion,
+            };
+          });
+        }),
+        share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
+      );
 
-  ngOnInit() {
-    this.updateServerList();
-    this.onSearchSubscription()
-    this.onAutoRefreshSubcription();
-  }
+    this.filteredServerlist$ = this.serverlist$
+      .pipe(
+        combineLatestWith(
+          this.formSearch.value$.pipe(
+            map(searchPhrase => searchPhrase?.toLowerCase()),
+            distinctUntilChanged(),
+            throttleTime(300),
+          ),
+          this.sortFunction,
+        ),
+        map(([servers, searchPhrase, sortFunction]) => {
+          if (searchPhrase) {
+            servers = servers.filter((server: Server) => {
+              return server.name.toLowerCase().includes(searchPhrase) || server.desc.toLowerCase().includes(searchPhrase);
+            });
+          }
+          if (sortFunction) {
+            servers = servers.sort(sortFunction);
+          }
+          return servers;
+        }),
+        share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
+      );
 
-  ngOnDestroy() {
-    this.searchSubscription.unsubscribe();
-    this.autoRefreshSubscription.unsubscribe();
-    this.saveFavoriteServerList();
+    this.clientVersion$ = this.clientService.versionSet.pipe(map(version => version.split('-')[0]));
+
+    // load favorite servers
+    const favoriteServerList = JSON.parse(this.storeService.get('favoriteServerList', '[]'));
+    const favoriteServers: Record<string, Server> = {};
+    for (const favoriteServer of favoriteServerList) {
+      favoriteServers[`${ favoriteServer.ip }:${ favoriteServer.port }`] = favoriteServer;
+    }
+    this.favoriteServers.next(favoriteServers);
   }
 
   public cancel(): void {
-    this.setView.next("connect");
+    this.setView.next(RootView.CONNECT);
   }
 
-  public updateServerList() {
-
-    if (!this.isLoading) {
-      this.saveFavoriteServerList();
-    }
-
-    this.serverListService.getServerList().subscribe((list) => {
-      if (list.length === 0) {
-        this.isLoading = false;
-        return;
-      }
-    });
-    
-    this.serverListService.getServerList()
-      .pipe(
-        switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
-        map((list) => this.markFavoritedServers(list)),
-      )
-      .subscribe((list) => {
-        this._serverList = list;
-        this.filterServerList();
-        this.sortPlayers(false);
-        this.sortFavorite(false);
-        this.sortCountry(false);
-        this.isLoading = false;
-      });
+  async updateServerList() {
+    this.refreshServerlist.next();
   }
 
   private getLocationDataByIp(servers: Server[]): Array<Observable<Server>> {
     return servers.map((server) => {
       return this.serverListService.getInformationForIp(server.ip).pipe(
-        map((data) => ({ ...server, countryCode: data.countryCode.toLowerCase(), continent: data.continent, country: data.country }))
+        map((data) => ({ ...server, countryCode: data.countryCode.toLowerCase(), continent: data.continent, country: data.country })),
       );
     });
   }
 
-  public saveFavoriteServerList() {
-    this.storeService.set('favoriteServerList', JSON.stringify(this.getFavoriteServers()));
+  async saveFavoriteServerList() {
+    const favorites = Object.values(this.favoriteServers.getValue());
+    this.storeService.set('favoriteServerList', JSON.stringify(favorites));
   }
 
-  private markFavoritedServers(servers: Server[]): Server[] {
-    const favoriteServerList = JSON.parse(this.storeService.get('favoriteServerList', "[]"));
-
-    if (favoriteServerList.length > 0) {
-      servers.map((server: Server) => {
-        favoriteServerList.forEach(favServer => {
-          if (server.ip === favServer.ip && server.port === favServer.port) {
-            server.isFavorite = true;
-          }
-          else if (server.name === favServer.name) {
-            server.isFavorite = true;
-          }
-        });
-      });
+  async toggleServerFavorite(server: Server) {
+    let favorites = this.favoriteServers.getValue();
+    favorites = { ...favorites };
+    if (favorites[`${ server.ip }:${ server.port }`]) {
+      delete favorites[`${ server.ip }:${ server.port }`];
+    } else {
+      favorites[`${ server.ip }:${ server.port }`] = { ...server };
     }
+    this.favoriteServers.next(favorites);
 
-    return servers;
-  }
-
-  public toggleServerFavorite(server: Server) {
     server.isFavorite = !server.isFavorite;
-    this.saveFavoriteServerList();
-    this.filterServerList();
-  }
-
-  private onAutoRefreshSubcription() {
-    let minutes = 5;
-    this.autoRefreshSubscription = interval(60000 * minutes)
-      .subscribe((value) => {
-        this.updateServerList();
-      })
-  }
-
-
-  private filterServerList() {
-    const search = this.formSearch.value;
-
-    const maybeSearch = search !== '' ? search.toLowerCase() : undefined;
-
-    this.serverList = this._serverList.filter((server: Server) => {
-      if (maybeSearch && !server.name.toLowerCase().includes(maybeSearch) && !server.desc.toLowerCase().includes(maybeSearch)) {
-        return false;
-      }
-      return true;
-    });
-
-    this.sortPlayers(false);
-    this.sortFavorite(false);
-    this.sortCountry(false);
-  }
-
-
-
-  public onSearchSubscription() {
-    this.searchSubscription = this.formSearch.valueChanges
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe((value) => {
-        this.filterNameServer(value);
-        this.filterCountryServer(value);
-      })
+    await this.saveFavoriteServerList();
   }
 
   public sortPlayers(isIncreasingOrder: boolean) {
@@ -173,7 +164,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
       sort = ServerListComponent.sortIncreasingPlayerCount;
     }
 
-    this.serverList.sort(sort);
+    this.sortFunction.next(sort);
     this.isIncreasingPlayerOrder = isIncreasingOrder;
   }
 
@@ -183,7 +174,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
       sort = ServerListComponent.sortIncreasingCountryCount;
     }
 
-    this.serverList.sort(sort);
+    this.sortFunction.next(sort);
     this.isIncreasingCountryOrder = isIncreasingCountryOrder;
   }
 
@@ -193,7 +184,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
       sort = ServerListComponent.sortIncreasingNameCount;
     }
 
-    this.serverList.sort(sort);
+    this.sortFunction.next(sort);
     this.isIncreasingNameOrder = isIncreasingNameOrder;
   }
 
@@ -203,29 +194,19 @@ export class ServerListComponent implements OnInit, OnDestroy {
       sort = ServerListComponent.sortIncreasingFavoriteCount;
     }
 
-    this.serverList.sort(sort);
+    this.sortFunction.next(sort);
     this.isIncreasingFavoriteOrder = isIncreasingFavoriteOrder;
   }
 
-  private filterNameServer(search: string): void {
-    if (search || search === "") {
-      search = search.toLowerCase();
-
-      this.serverList = this._serverList.filter((server: Server) => {
-        return server.name.toLowerCase().includes(search);
-      });
-    }
-  }
-
-  private filterCountryServer(search: string): void {
-    if (search) {
-      search = search.toLowerCase();
-
-      this.serverList = this.serverList.concat(this._serverList.filter((server: Server) => {
-        return server.country.toLowerCase().includes(search);
-      }));
-    }
-  }
+  // private filterCountryServer(search: string): void {
+  //   if (search) {
+  //     search = search.toLowerCase();
+  //
+  //     this.serverList = this.serverList.concat(this._serverList.filter((server: Server) => {
+  //       return server.country.toLowerCase().includes(search);
+  //     }));
+  //   }
+  // }
 
   public connect(server: Server) {
     this.clientService.connect(server.ip, server.port ? server.port : 10578);
@@ -233,33 +214,14 @@ export class ServerListComponent implements OnInit, OnDestroy {
     this.close();
   }
 
-  public getFavoriteServers(): Server[] {
-    return this._serverList.filter(value => {
-      return value.isFavorite;
-    })
-  }
-
-  public getFavoriteIcon(server: Server) {
-    return server.isFavorite ? fasStar : farStar;
-  }
-
-  public getClientVersion() {
-    return this.clientService.versionSet.value.split("-")[0];
-  }
-
   public getServerVersion(server: Server) {
-    return server.version.split("-")[0];
-  }
-
-  public isCompatibleToClient(server: Server) {
-    return this.getServerVersion(server) === this.getClientVersion();
+    return server.version.split('-')[0];
   }
 
   private close() {
-    if (this.errorService.error$.value) {
+    if (this.errorService.error$.getValue()) {
       this.errorService.removeError();
-    }
-    else {
+    } else {
       this.done.next();
     }
   }
@@ -273,47 +235,28 @@ export class ServerListComponent implements OnInit, OnDestroy {
   }
 
   static sortDescendingCountryCount(a: Server, b: Server) {
-    if (a.country > b.country) {
-      return -1;
-    }
-    else if (a.country < b.country) {
-      return 1;
-    }
-    return 0;
+    return ServerListComponent.sortIncreasingCountryCount(a, b) * -1;
   }
 
   static sortIncreasingCountryCount(a: Server, b: Server) {
     if (a.country > b.country) {
       return 1;
-    }
-    else if (a.country < b.country) {
+    } else if (a.country < b.country) {
       return -1;
     }
     return 0;
   }
 
   static sortDescendingNameCount(a: Server, b: Server) {
-    if (a.name > b.name) {
-      return -1;
-    }
-    else if (a.name < b.name) {
-      return 1;
-    }
-    return 0;
+    return ServerListComponent.sortIncreasingNameCount(a, b) * -1;
   }
 
   static sortIncreasingNameCount(a: Server, b: Server) {
-    if (a.name > b.name) {
-      return 1;
-    }
-    else if (a.name < b.name) {
-      return -1;
-    }
-    return 0;
+    return a.name.localeCompare(b.name);
   }
 
   static sortDescendingFavoriteCount(a: Server, b: Server) {
-    return (a.isFavorite === b.isFavorite) ? 0 : a.isFavorite ? -1 : 1;
+    return ServerListComponent.sortIncreasingFavoriteCount(a, b) * -1;
   }
 
   static sortIncreasingFavoriteCount(a: Server, b: Server) {

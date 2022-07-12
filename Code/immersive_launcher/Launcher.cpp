@@ -1,5 +1,6 @@
 
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
+#include <BranchInfo.h>
 
 #include "TargetConfig.h"
 #include "launcher.h"
@@ -59,7 +60,7 @@ int StartUp(int argc, char** argv)
     g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
 
 #if (!IS_MASTER)
-    //TiltedPhoques::Debug::CreateConsole();
+    TiltedPhoques::Debug::CreateConsole();
 #endif
 
     if (!EarlyInstallSucceeded())
