@@ -24,7 +24,7 @@ Have some experience in C++, and want to help advance the project faster? Contri
 ## Main project source tree
 
 * [**client/**](./Code/client): Sources for the SkyrimSE and FO4 clients.
-* [**launcher/**](./Code/launcher): Game starter/updater.
+* [**immersive_launcher/**](./Code/immersive_launcher): Game starter/updater.
 * [**common/**](./Code/common): Common code shared between plugin and server.
 * [**encoding/**](./Code/encoding): Net-message definitions.
 * [**server/**](./Code/server): GameServer implementation.
