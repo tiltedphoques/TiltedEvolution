@@ -1,4 +1,4 @@
-app-party-menu {
+:host {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -20,7 +20,7 @@ app-party-menu {
     margin-bottom: 0.5rem;
   }
 
-  .container-list {
+  .server-list {
     overflow: auto;
     max-height: 60vh;
     margin-bottom: 1.0rem;
@@ -49,10 +49,6 @@ app-party-menu {
       tr:not(:last-child) {
         border-bottom: 1px solid grey;
         padding: 15px;
-      }
-
-      #noserv {
-        margin-top: 3%;
       }
 
       .user-action-button {

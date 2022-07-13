@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { ClientService } from '../../services/client.service';
 import { Sound, SoundService } from '../../services/sound.service';
 
@@ -7,7 +7,6 @@ import { Sound, SoundService } from '../../services/sound.service';
   selector: 'app-disconnect',
   templateUrl: './disconnect.component.html',
   styleUrls: ['./disconnect.component.scss'],
-  encapsulation: ViewEncapsulation.None,
 })
 export class DisconnectComponent {
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { combineLatest, Observable, pluck, ReplaySubject, share } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ClientService } from 'src/app/services/client.service';
@@ -11,7 +11,6 @@ import { Player } from '../../models/player';
   selector: 'app-player-list',
   templateUrl: './player-list.component.html',
   styleUrls: ['./player-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerListComponent {

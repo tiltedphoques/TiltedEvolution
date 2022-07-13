@@ -25,14 +25,14 @@
   </span>
 
 
-  <app-popup-buttons>
+  <app-action-buttons>
     <button [disabled]="connecting" (click)="connect()" data-style-ornament="simple">
       {{ 'COMPONENT.CONNECT.CONNECT' | transloco }}
     </button>
     <button [disabled]="connecting" (click)="cancel()" data-style-ornament="simple">
       {{ 'COMPONENT.CONNECT.CANCEL' | transloco }}
     </button>
-  </app-popup-buttons>
+  </app-action-buttons>
   <hr>
   <button (click)="openServerList()" data-style-ornament="simple">
     {{ 'COMPONENT.CONNECT.PUBLIC_SERVERS' | transloco }}

@@ -2,7 +2,7 @@
 
 @import "functions/rem";
 
-app-player-manager {
+:host {
   position: relative;
   display: flex;
   flex-direction: column;

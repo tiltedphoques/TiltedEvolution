@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Sound, SoundService } from '../../services/sound.service';
 
@@ -12,7 +12,7 @@ export enum PlayerManagerTab {
   selector: 'app-player-manager',
   templateUrl: './player-manager.component.html',
   styleUrls: ['./player-manager.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerManagerComponent {
 

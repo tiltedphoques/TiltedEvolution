@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable, pluck } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { Player } from 'src/app/models/player';
@@ -12,7 +12,6 @@ import { PlayerListService } from 'src/app/services/player-list.service';
   selector: 'app-party-menu',
   templateUrl: './party-menu.component.html',
   styleUrls: ['./party-menu.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PartyMenuComponent {

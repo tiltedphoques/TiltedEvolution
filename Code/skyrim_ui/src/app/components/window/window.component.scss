@@ -2,20 +2,20 @@
 
 @import 'functions/rem';
 
-app-window {
+:host {
   border: rem($-size-font, 5px) solid;
-  border-image: url('../../../assets/images/frame/simple.svg') 5 fill;
+  border-image: url("../../../assets/images/frame/simple.svg") 5 fill;
 
   display: block;
 
   &[data-app-window-border=fancy] {
     border: rem($-size-font, 26px) solid;
-    border-image: url('../../../assets/images/frame/fancy.svg') 26 fill;
+    border-image: url("../../../assets/images/frame/fancy.svg") 26 fill;
   }
 
   &[data-app-window-border=strip] {
     border: solid;
     border-width: rem($-size-font, 7px) rem($-size-font, 39px);
-    border-image: url('../../../assets/images/frame/strip.svg') 7 39 fill;
+    border-image: url("../../../assets/images/frame/strip.svg") 7 39 fill;
   }
 }

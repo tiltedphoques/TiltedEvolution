@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { faCaretDown, faCaretUp, faSort } from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject } from 'rxjs';
 
@@ -13,9 +13,12 @@ export enum SortOrder {
   selector: 'app-order',
   templateUrl: './order.component.html',
   styleUrls: ['./order.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderComponent {
+
+  /* ### ENUMS ### */
+  readonly SortOrder = SortOrder;
 
   /* ### ICONS ### */
   readonly faCaretDown = faCaretDown;

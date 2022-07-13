@@ -34,36 +34,60 @@
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
         <div class="radio-group">
-          <label for="autoHideTime1">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
-          <input id="autoHideTime1" type="radio" [value]="1" [ngModel]="autoHideTime"
-                 (ngModelChange)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
+          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
+          <input
+            type="radio"
+            [value]="1"
+            [disabled]="!autoHideParty"
+            [ngModel]="autoHideTime"
+            (ngModelChange)="onAutoHideTimeChange($event)"
           >
-          <label for="autoHideTime3">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
-          <input id="autoHideTime3" type="radio" [value]="3" [ngModel]="autoHideTime"
-                 (ngModelChange)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
+          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
+          <input
+            type="radio"
+            [value]="3"
+            [disabled]="!autoHideParty"
+            [ngModel]="autoHideTime"
+            (ngModelChange)="onAutoHideTimeChange($event)"
           >
-          <label for="autoHideTime5">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
-          <input id="autoHideTime5" type="radio" [value]="5" [ngModel]="autoHideTime"
-                 (ngModelChange)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
+          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
+          <input
+            type="radio"
+            [value]="5"
+            [disabled]="!autoHideParty"
+            [ngModel]="autoHideTime"
+            (ngModelChange)="onAutoHideTimeChange($event)"
           >
         </div>
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
-        <select [ngModel]="partyAnchor" (ngModelChange)="onPartyAnchorChange($event)">
-          <option [value]="PartyAnchor.TOP_LEFT">
-            {{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco }}
-          </option>
-          <option [value]="PartyAnchor.TOP_RIGHT">
-            {{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco }}
-          </option>
-          <option [value]="PartyAnchor.BOTTOM_RIGHT">
-            {{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco }}
-          </option>
-          <option [value]="PartyAnchor.BOTTOM_LEFT">
-            {{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco }}
-          </option>
-        </select>
+        <div class="anchor-radios">
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.TOP_LEFT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.TOP_RIGHT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.BOTTOM_RIGHT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.BOTTOM_LEFT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+        </div>
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_X' | transloco }}</label>

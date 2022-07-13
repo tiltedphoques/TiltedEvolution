@@ -1,20 +1,20 @@
-<div [@popups]="isShown | async" class="app-group-container-wrapper">
-  <div id="app-group-container" *ngIf="group$ | async" [ngStyle]="positionStyle | async">
+<div [@fadeInOut]="isShown | async" class="group-container-wrapper">
+  <div *ngIf="group$ | async" class="group-container" [ngStyle]="positionStyle | async">
     <div
       *ngFor="let player of groupMembers$ | async"
       [title]="player.cellName"
-      [ngClass]="player.isLoaded ? 'app-group-member' : 'app-group-member not-loaded'"
+      class="group-member"
+      [class.not-loaded]="!player.isLoaded"
     >
-      <b class="app-group-member-level">{{ player.level }} </b>
-      <div *ngIf="player.health === 0" class="app-group-member-dead">
-      </div>
-      <div *ngIf="player.isOwner" id="app-group-member-leader"></div>
+      <b class="group-member-level">{{ player.level }} </b>
+      <div *ngIf="player.health === 0" class="group-member-dead"></div>
+      <div *ngIf="player.isOwner" class="group-member-leader"></div>
       {{ player.name }}
       <div
         *ngIf="(player.health !== undefined) && player.isLoaded"
-        class="app-group-member-health"
+        class="group-member-health"
       >
-        <div class="app-group-member-health-value" [app-health]="player.health">
+        <div class="group-member-health-value" [app-health]="player.health">
         </div>
       </div>
     </div>

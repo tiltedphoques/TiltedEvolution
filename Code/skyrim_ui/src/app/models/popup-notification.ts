@@ -1,4 +1,5 @@
-import { Player } from "./player";
+import { Player } from './player';
+
 
 export enum NotificationType {
   Connection = 1,

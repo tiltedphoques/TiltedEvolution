@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
@@ -15,11 +15,15 @@ import { SortOrder } from '../order/order.component';
 import { RootView } from '../root/root.component';
 
 
+interface SortFunction {
+  fn: ((a: Server, b: Server) => number);
+  priority: number;
+}
+
 @Component({
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerListComponent {
@@ -30,8 +34,9 @@ export class ServerListComponent {
 
   loader = loadingFor('serverlist');
   refreshServerlist = new BehaviorSubject<void>(undefined);
-  sortFunction = new BehaviorSubject<(a: Server, b: Server) => number>(undefined);
+  sortFunctions = new BehaviorSubject<SortFunction[]>([]);
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
+  hideVersionMismatchedServers = new BehaviorSubject(true);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
@@ -52,6 +57,8 @@ export class ServerListComponent {
     private soundService: SoundService,
     private storeService: StoreService,
   ) {
+    this.sortFavorite(SortOrder.DESC);
+    this.sortPlayerCount(SortOrder.DESC);
     this.serverlist$ = this.refreshServerlist
       .pipe(
         switchMap(() => this.serverListService
@@ -94,16 +101,20 @@ export class ServerListComponent {
             distinctUntilChanged(),
             throttleTime(300),
           ),
-          this.sortFunction,
+          this.hideVersionMismatchedServers,
+          this.sortFunctions,
         ),
-        map(([servers, searchPhrase, sortFunction]) => {
+        map(([servers, searchPhrase, hideVersionMismatchedServers, sortFunction]) => {
+          if (hideVersionMismatchedServers) {
+            servers = servers.filter(server => server.isCompatible);
+          }
           if (searchPhrase) {
             servers = servers.filter((server: Server) => {
               return server.name.toLowerCase().includes(searchPhrase) || server.desc.toLowerCase().includes(searchPhrase);
             });
           }
-          if (sortFunction) {
-            servers = [...servers].sort(sortFunction);
+          if (sortFunction.length > 0) {
+            servers = [...servers].sort(this.sortElementsFn());
           }
           return servers;
         }),
@@ -157,38 +168,22 @@ export class ServerListComponent {
   }
 
   public sortPlayerCount(sortOrder: SortOrder) {
-    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortPlayerCountAsc, ServerListComponent.sortPlayerCountDesc);
-    this.sortFunction.next(sort);
+    this.setSortingFn(3, sortOrder, ServerListComponent.sortPlayerCountAsc, ServerListComponent.sortPlayerCountDesc);
     this.playerCountOrdering.next(sortOrder);
-    this.countryOrdering.next(null);
-    this.serverNameOrdering.next(null);
-    this.favoriteOrdering.next(null);
   }
 
   public sortCountry(sortOrder: SortOrder) {
-    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortCountryAsc, ServerListComponent.sortCountryDesc);
-    this.sortFunction.next(sort);
-    this.playerCountOrdering.next(SortOrder.NONE);
+    this.setSortingFn(2, sortOrder, ServerListComponent.sortCountryAsc, ServerListComponent.sortCountryDesc);
     this.countryOrdering.next(sortOrder);
-    this.serverNameOrdering.next(SortOrder.NONE);
-    this.favoriteOrdering.next(SortOrder.NONE);
   }
 
-  public sortName(sortOrder: SortOrder) {
-    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortNameAsc, ServerListComponent.sortNameDesc);
-    this.sortFunction.next(sort);
-    this.playerCountOrdering.next(SortOrder.NONE);
-    this.countryOrdering.next(SortOrder.NONE);
+  public sortServerName(sortOrder: SortOrder) {
     this.serverNameOrdering.next(sortOrder);
-    this.favoriteOrdering.next(SortOrder.NONE);
+    this.setSortingFn(1, sortOrder, ServerListComponent.sortNameAsc, ServerListComponent.sortNameDesc);
   }
 
   public sortFavorite(sortOrder: SortOrder) {
-    const sort = ServerListComponent.getSortingFn(sortOrder, ServerListComponent.sortFavoriteAsc, ServerListComponent.sortFavoriteDesc);
-    this.sortFunction.next(sort);
-    this.playerCountOrdering.next(SortOrder.NONE);
-    this.countryOrdering.next(SortOrder.NONE);
-    this.serverNameOrdering.next(SortOrder.NONE);
+    this.setSortingFn(0, sortOrder, ServerListComponent.sortFavoriteAsc, ServerListComponent.sortFavoriteDesc);
     this.favoriteOrdering.next(sortOrder);
   }
 
@@ -220,13 +215,29 @@ export class ServerListComponent {
     }
   }
 
-  private static getSortingFn(ordering: SortOrder, asc: (a: Server, b: Server) => number, desc: (a: Server, b: Server) => number) {
+  private setSortingFn(priority: number, ordering: SortOrder, asc: (a: Server, b: Server) => number, desc: (a: Server, b: Server) => number) {
+    const sortFns = [...this.sortFunctions.getValue()];
     if (ordering === SortOrder.ASC) {
-      return asc;
+      sortFns.push({ fn: asc, priority });
     } else if (ordering === SortOrder.DESC) {
-      return desc;
+      const index = sortFns.findIndex(sortFn => sortFn.fn === asc);
+      sortFns.splice(index, 1, { fn: desc, priority });
+    } else {
+      const index = sortFns.findIndex(sortFn => sortFn.fn === desc);
+      sortFns.splice(index, 1);
     }
-    return null;
+    this.sortFunctions.next(sortFns);
+  }
+
+  sortElementsFn() {
+    const fns = [...this.sortFunctions.getValue()].sort((a, b) => a.priority - b.priority);
+    return (a: Server, b: Server) => {
+      let result = 0;
+      for (const fn of fns) {
+        result ||= fn.fn(a, b);
+      }
+      return result;
+    };
   }
 
   static sortPlayerCountDesc(a: Server, b: Server) {
