@@ -410,18 +410,6 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
             SetFactionRank(pFaction, entry.Rank);
         }
     }
-
-    if (GetExtension()->IsPlayer())
-    {
-        auto pPotentialFollower = Cast<TESFaction>(TESForm::GetById(0x5C84D));
-        SetFactionRank(pPotentialFollower, 1);
-
-        auto pCurrentFollower = Cast<TESFaction>(TESForm::GetById(0x5C84E));
-        SetFactionRank(pCurrentFollower, 1);
-
-        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
-        SetFactionRank(pPlayerFaction, 1);
-    }
 }
 
 void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
@@ -445,7 +433,14 @@ void Actor::SetPlayerRespawnMode() noexcept
     SetEssentialEx(true);
     // Makes the player go in an unrecoverable bleedout state
     SetNoBleedoutRecovery(true);
-    SetPlayerTeammate(true);
+
+    if (formID != 0x14)
+    {
+        SetPlayerTeammate(true);
+
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
 }
 
 void Actor::SetPlayerTeammate(bool aSet) noexcept
