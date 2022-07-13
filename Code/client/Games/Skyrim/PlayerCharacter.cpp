@@ -131,7 +131,7 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
             ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
         }
-     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 
     ScopedInventoryOverride _;
