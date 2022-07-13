@@ -3,16 +3,13 @@
 
 using TiltedPhoques::Serialization;
 
-GameId::GameId(uint32_t aModId, uint32_t aBaseId) noexcept
-    : ModId(aModId)
-    , BaseId(aBaseId)
+GameId::GameId(uint32_t aModId, uint32_t aBaseId) noexcept : ModId(aModId), BaseId(aBaseId)
 {
 }
 
 bool GameId::operator==(const GameId& acRhs) const noexcept
 {
-    return BaseId == acRhs.BaseId &&
-        ModId == acRhs.ModId;
+    return BaseId == acRhs.BaseId && ModId == acRhs.ModId;
 }
 
 bool GameId::operator!=(const GameId& acRhs) const noexcept
@@ -35,4 +32,17 @@ void GameId::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     BaseId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     ModId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+}
+
+uint32_t GameId::ToUint32() const noexcept
+{
+    return ModId * 0x01000000 + BaseId;
+}
+
+GameId GameId::FromUint32(uint32_t aValue) noexcept
+{
+    GameId result;
+    result.ModId = aValue / 0x01000000;
+    result.BaseId = aValue % 0x01000000;
+    return result;
 }

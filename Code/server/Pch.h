@@ -35,6 +35,7 @@
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
+#include <sol/sol.hpp>
 #include <BuildInfo.h>
 
 #include <StringCache.h>
