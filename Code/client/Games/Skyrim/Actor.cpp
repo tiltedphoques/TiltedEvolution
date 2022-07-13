@@ -433,6 +433,21 @@ void Actor::SetPlayerRespawnMode() noexcept
     SetEssentialEx(true);
     // Makes the player go in an unrecoverable bleedout state
     SetNoBleedoutRecovery(true);
+
+    if (formID != 0x14)
+    {
+        SetPlayerTeammate(true);
+
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
+}
+
+void Actor::SetPlayerTeammate(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetPlayerTeammate, void, Actor, bool aSet, bool abCanDoFavor);
+    POINTER_SKYRIMSE(TSetPlayerTeammate, setPlayerTeammate, 37717);
+    return ThisCall(setPlayerTeammate, this, aSet, true);
 }
 
 void Actor::UnEquipAll() noexcept
@@ -538,9 +553,14 @@ void Actor::Kill() noexcept
     if (pExtension->IsPlayer())
         return;
 
-    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
+    // TODO: these args are kind of bogus of course
+    KillImpl(nullptr, 100.f, true, true);
 
+    // Papyrus kill will not go through if it is queued by a kill move
+    /*
+    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
     s_pKill(this, NULL);
+    */
 }
 
 void Actor::Reset() noexcept

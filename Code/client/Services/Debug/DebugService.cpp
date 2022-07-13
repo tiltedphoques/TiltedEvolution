@@ -52,6 +52,8 @@
 #include <Camera/PlayerCamera.h>
 #include <OverlayApp.hpp>
 
+#include <BranchInfo.h>
+
 #if TP_SKYRIM64
 #include <EquipManager.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
@@ -142,9 +144,6 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     moveData.position = acEvent.Position;
 }
 
-// TODO: replace with TP_PUBLIC or whatever
-#define TP_PRIVATE_DEBUGGERS 0
-
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
@@ -165,7 +164,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         m_showDebugStuff = !m_showDebugStuff;
     }
 
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
     if (GetAsyncKeyState(VK_F6))
     {
         if (!s_f6Pressed)
@@ -244,8 +243,10 @@ void DebugService::DrawServerView() noexcept
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Server");
 
-    static char s_address[256] = "127.0.0.1:10578";
+    static char s_address[1024] = "127.0.0.1:10578";
+    static char s_password[1024] = "";
     ImGui::InputText("Address", s_address, std::size(s_address));
+    ImGui::InputText("Password", s_password, std::size(s_password));
 
     if (m_transport.IsOnline())
     {
@@ -255,7 +256,10 @@ void DebugService::DrawServerView() noexcept
     else
     {
         if (ImGui::Button("Connect"))
+        {
+            m_transport.SetServerPassword(s_password);
             m_transport.Connect(s_address);
+        }
     }
 
     ImGui::End();
@@ -277,7 +281,7 @@ void DebugService::OnDraw() noexcept
         }
         ImGui::EndMenu();
     }
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
@@ -309,15 +313,15 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
         ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
+        ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
 
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
         ImGui::MenuItem("Forms", nullptr, &g_enableFormsWindow);
         ImGui::MenuItem("Inventory", nullptr, &g_enableInventoryWindow);
         ImGui::MenuItem("Animations", nullptr, &g_enableAnimWindow);
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
-        ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
 #endif
@@ -328,7 +332,7 @@ void DebugService::OnDraw() noexcept
     {
         if (ImGui::Button("Crash Client"))
         {
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
             int* m = 0;
             *m = 1338;
 #else
@@ -349,8 +353,10 @@ void DebugService::OnDraw() noexcept
         DrawEntitiesView();
     if (g_enableServerWindow)
         DrawServerView();
+    if (g_enablePartyWindow)
+        DrawPartyView();
 
-#if TP_PRIVATE_DEBUGGERS
+#if (!IS_MASTER)
     if (g_enableNetworkWindow)
         DrawNetworkView();
     if (g_enableFormsWindow)
@@ -363,8 +369,6 @@ void DebugService::OnDraw() noexcept
         DrawPlayerDebugView();
     if (g_enableSkillsWindow)
         DrawSkillView();
-    if (g_enablePartyWindow)
-        DrawPartyView();
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
     if (g_enableCellWindow)

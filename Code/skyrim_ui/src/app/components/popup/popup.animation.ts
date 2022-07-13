@@ -1,10 +1,11 @@
-import { trigger, state, animate, style, transition, query, group } from '@angular/animations';
+import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
+
 
 export const animation = trigger('popup', [
   state('void', style({
     'visibility': 'hidden',
     'opacity': '0',
-    'pointer-events': 'none'
+    'pointer-events': 'none',
   })),
   transition('void => *', [
     query('app-window', style({

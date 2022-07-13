@@ -1,74 +1,75 @@
-app-settings {
-    position: relative;
-    display: block;
+@import "env";
 
-    .container {
-        overflow: auto;
-        max-height: 60vh;
-        margin-top: 1rem;
+@import "functions/rem";
 
-        .settings {
-            display: flex;
-            justify-content: space-between;
-            flex-direction: column;
+:host {
+  position: relative;
+  display: block;
+}
 
-            .flex-item {
-                position: relative;
+.container {
+  overflow: auto;
+  max-height: 60vh;
+  margin-top: 1rem;
+  padding-right: 15px;
 
-                .radioBtn {
-                    float: right;
+  .settings {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
 
-                    input {
-                        float: none;
-                        display: inline-block;
-                    
-                        &:not(:last-child) {
-                            margin-right: 0.5em;
-                        }
-                    }
+    .section {
+      padding-bottom: 15px;
+      margin-bottom: rem($-size-font, 2px);
+      border-bottom: rem($-size-font, 2px) solid;
+      border-image: url("../../../assets/images/separator/single.svg") 3;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
 
-                    label {
-                        float: none;
-                        position: unset;
-                        display: inline-block;
-                    }
-                }
-
-
-                input {
-                    float: right;
-
-                    &.volumeSlider {
-                        padding: 0;
-                        border: none;
-                    }
-
-                }
-
-                label {
-                    float: left;
-                    position: absolute;
-                    bottom: 0;
-                }
-            }
-
-            div:not(:last-child) {
-                margin-bottom: 0.5rem;
-            }
-
-            hr {
-                width: 100%;
-            }
-
-            h2:first-child {
-                margin-top: 0;
-            }
-        }
-
-        .buttons {
-            margin-top: 1rem;
-            display: flex;
-            justify-content: center;
-        }
+      &:not(:first-child) {
+        margin-top: 15px;
+      }
     }
+
+    .flex-item {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .radio-group {
+        display: flex;
+      }
+
+      .anchor-radios {
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+
+        > div {
+          display: flex;
+          justify-content: space-between;
+        }
+      }
+    }
+
+    div:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    hr {
+      width: 100%;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
 }

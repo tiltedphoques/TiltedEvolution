@@ -97,6 +97,30 @@ bool IsToggleKey(int aKey) noexcept
     return aKey == VK_RCONTROL || aKey == VK_F2;
 }
 
+bool IsDisableKey(int aKey) noexcept
+{
+    return aKey == VK_ESCAPE;
+}
+
+void SetUIActive(auto& overlay, auto pRenderer, bool active)
+{
+#if defined(TP_SKYRIM)
+     TiltedPhoques::DInputHook::Get().SetEnabled(!active);
+     overlay.SetActive(!active);
+#else
+     pRenderer->SetVisible(!active);
+#endif
+
+    // Ensures the game is actually loaded, in case the initial event was sent too early
+    overlay.GetOverlayApp()->ExecuteAsync("enterGame");
+
+    pRenderer->SetCursorVisible(!active);
+
+    // This is to disable the Windows cursor
+    while (ShowCursor(FALSE) >= 0)
+        ;
+}
+
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
     if (aType != KEYEVENT_CHAR)
@@ -203,12 +227,16 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pRenderer)
         return;
 
-    const auto active = overlay.GetActive();
+    auto active = overlay.GetActive();
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    if (IsToggleKey(aKey))
+    if (IsToggleKey(aKey) || IsDisableKey(aKey))
     {
+        if (active && IsDisableKey(aKey))
+        {
+            active = true;
+        }
         if (!overlay.GetInGame())
         {
             TiltedPhoques::DInputHook::Get().SetEnabled(false);
@@ -216,21 +244,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
         // This is really hacky, but when the input hook is enabled initially, it does not propogate the KEYDOWN event
         else if (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active))
         {
-#if defined(TP_SKYRIM)
-            TiltedPhoques::DInputHook::Get().SetEnabled(!active);
-            overlay.SetActive(!active);
-#else
-            pRenderer->SetVisible(!active);
-#endif
-
-            // Ensures the game is actually loaded, in case the initial event was sent too early
-            overlay.GetOverlayApp()->ExecuteAsync("enterGame");
-
-            pRenderer->SetCursorVisible(!active);
-
-            // This is to disable the Windows cursor
-            while (ShowCursor(FALSE) >= 0)
-                ;
+            SetUIActive(overlay, pRenderer, active);
         }
     }
     else if (active)

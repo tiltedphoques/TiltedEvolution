@@ -1,66 +1,62 @@
-app-party-menu {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    margin-top: 1rem;
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
 
-    #noPlayers {
-        overflow: hidden;
-    }
+  .no-players {
+    overflow: hidden;
+  }
 
-    .hidden {
-        display: none;
-    }
- 
-    .party-menu-button {
+  .hidden {
+    display: none;
+  }
+
+  .party-menu-button {
+    padding: 0.25vw;
+    background-color: #292929;
+    border-radius: 2px;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .server-list {
+    overflow: auto;
+    max-height: 60vh;
+    margin-bottom: 1.0rem;
+
+    .player-list-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      .list-header {
+        position: sticky;
+        top: 0;
+        background-color: #151515;
+        z-index: 1;
+      }
+
+      th {
+        text-align: left;
+        border-bottom: 1px solid grey;
+        border-collapse: separate;
+
+        button {
+          padding: 0 0.5rem;
+        }
+      }
+
+      tr:not(:last-child) {
+        border-bottom: 1px solid grey;
+        padding: 15px;
+      }
+
+      .user-action-button {
         padding: 0.25vw;
         background-color: #292929;
         border-radius: 2px;
-        width: 100%;
-        margin-bottom: 0.5rem;
+        margin-left: 5%;
+      }
     }
-
-    .containerList {
-        overflow: auto;
-        max-height: 60vh;
-        margin-bottom: 1.0rem;
-
-        .playerListTable {
-            width: 100%;
-            border-collapse: collapse;
-
-            .listHeader {
-                position: sticky;
-                top: 0px;
-                background-color: #151515;
-                z-index: 1;
-            }
-
-            th {
-                text-align: left;
-                border-bottom: 1px solid grey;
-                border-collapse: separate;
-
-                button {
-                    padding: 0 0.5rem;
-                }
-            }
-
-            tr:not(:last-child) {
-                border-bottom: 1px solid grey;
-                padding: 15px;
-            }
-
-            #noserv {
-                margin-top: 3%;
-            }
-
-            .teleBtn {
-                padding: 0.25vw;
-                background-color: #292929;
-                border-radius: 2px;
-                margin-left: 5%;
-            }
-        }
-    }
+  }
 }

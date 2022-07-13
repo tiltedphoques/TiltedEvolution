@@ -4,6 +4,7 @@ struct World;
 struct TransportService;
 
 struct UpdateEvent;
+struct ConnectedEvent;
 struct DisconnectedEvent;
 struct ServerSettings;
 struct GridCellChangeEvent;
@@ -26,6 +27,7 @@ struct PlayerService
 protected:
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnConnected(const ConnectedEvent& acEvent) noexcept;
     void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
     void OnServerSettingsReceived(const ServerSettings& acSettings) noexcept;
     void OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept;
@@ -56,6 +58,7 @@ private:
     int32_t m_previousDifficulty = 6;
 
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_settingsConnection;
     entt::scoped_connection m_notifyRespawnConnection;

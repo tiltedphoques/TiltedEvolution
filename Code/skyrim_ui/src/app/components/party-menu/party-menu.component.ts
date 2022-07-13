@@ -1,91 +1,74 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { Subscription } from "rxjs";
-import { GroupService } from "src/app/services/group.service";
-import { LoadingService } from "src/app/services/loading.service";
-import { Player } from "src/app/models/player";
-import { PlayerList } from "src/app/models/player-list";
-import { PlayerListService } from "src/app/services/player-list.service";
-import { Group } from "src/app/models/group";
-import { ClientService } from "src/app/services/client.service";
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Observable, pluck } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { Player } from 'src/app/models/player';
+import { ClientService } from 'src/app/services/client.service';
+import { GroupService } from 'src/app/services/group.service';
+import { LoadingService } from 'src/app/services/loading.service';
+import { PlayerListService } from 'src/app/services/player-list.service';
+
 
 @Component({
-    selector: 'app-party-menu',
-    templateUrl: './party-menu.component.html',
-    styleUrls: ['./party-menu.component.scss'],
-    encapsulation: ViewEncapsulation.None
+  selector: 'app-party-menu',
+  templateUrl: './party-menu.component.html',
+  styleUrls: ['./party-menu.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PartyMenuComponent implements OnInit, OnDestroy {
+export class PartyMenuComponent {
 
-    public waitLaunch = false;
+  isLoading$ = this.loadingService.getLoading();
+  members$ = this.groupService.selectMembers();
+  memberCount$ = this.groupService.selectMembersLength(true);
+  group$ = this.groupService.group.asObservable();
+  isLaunchPartyDisabled$: Observable<boolean>;
+  invitations$: Observable<Player[]>;
+  isPartyLeader$: Observable<boolean>;
 
-    private isLoading: Subscription;
+  constructor(
+    private readonly groupService: GroupService,
+    private readonly loadingService: LoadingService,
+    private readonly playerListService: PlayerListService,
+    private readonly clientService: ClientService,
+  ) {
+    this.invitations$ = this.playerListService.playerList
+      .asObservable()
+      .pipe(
+        filter(playerlist => !!playerlist),
+        pluck('players'),
+        map(players => players.filter(player => player.hasInvitedLocalPlayer)),
+      );
+    this.isPartyLeader$ = this.groupService.group
+      .asObservable()
+      .pipe(
+        map(group => group.isEnabled && group.owner == this.clientService.localPlayerId),
+      );
+    this.isLaunchPartyDisabled$ = this.groupService.selectMembersLength(false).pipe(
+      map(count => count > 1),
+    );
+  }
 
-    constructor(public groupService: GroupService, 
-                private loadingService: LoadingService,
-                private playerListService: PlayerListService,
-                private clientService: ClientService) 
-            { }
+  public launchParty() {
+    this.groupService.launch();
+  }
 
-    ngOnInit(): void {
+  public leave() {
+    this.groupService.leave();
+  }
 
-        this.isLoading = this.loadingService.getLoading().subscribe((isLoading: boolean) => {
-            this.waitLaunch = isLoading;
-        })
-    }
+  public teleportToPlayer(playerId: number) {
+    this.clientService.teleportToPlayer(playerId);
+  }
 
-    ngOnDestroy(): void {
-        this.isLoading.unsubscribe();
-    }
+  public acceptPartyInvite(inviterId: number) {
+    this.playerListService.acceptPartyInvite(inviterId);
+  }
 
-    public get playerList(): PlayerList | undefined {
-        return this.playerListService.playerList.value;
-    }
+  public kickMember(playerId: number) {
+    this.clientService.kickPartyMember(playerId);
+  }
 
-    public get invitees(): Array<Player> | undefined {
-        return this.playerListService.playerList.value.players.filter(player => player.hasInvitedLocalPlayer);
-    }
+  public changeLeader(playerId: number) {
+    this.clientService.changePartyLeader(playerId);
+  }
 
-    public get group(): Group | undefined {
-        return this.groupService.group.value;
-    }
-
-    public get members(): Array<Player> | undefined {
-        return this.groupService.getMembers();
-    }
-
-    public get isPartyLeader(): boolean {
-        return this.groupService.group.value.isEnabled && this.groupService.group.value.owner == this.clientService.localPlayerId;
-    }
-
-    public get getMembersLength(): number {
-        return this.groupService.getMembersLength(true);
-    }
-
-    isLaunchPartyDisabled(): boolean {
-        return this.groupService.getMembersLength(false) > 1;
-    }
-
-    public launchParty() {
-        this.groupService.launch();
-    }
-
-    public leave() {
-        this.groupService.leave();
-    }
-
-    public teleportToPlayer(playerId: number) {
-        this.clientService.teleportToPlayer(playerId);
-    }
-
-    public acceptPartyInvite(inviterId: number) {
-      this.playerListService.acceptPartyInvite(inviterId);
-    }
-
-    public kickMember(playerId: number) {
-      this.clientService.kickPartyMember(playerId);
-    }
-
-    public changeLeader(playerId: number) {
-      this.clientService.changePartyLeader(playerId);
-    }
 }

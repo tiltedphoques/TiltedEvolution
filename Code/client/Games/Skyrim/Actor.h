@@ -146,7 +146,7 @@ struct Actor : TESObjectREFR
     virtual void sub_10B();
     virtual void sub_10C();
     virtual void sub_10D();
-    virtual void sub_10E();
+    virtual void KillImpl(Actor* apAttacker, float aDamage, bool aSendEvent, bool aRagdollInstant);
     virtual void sub_10F();
     virtual void sub_110();
     virtual void sub_111();
@@ -215,6 +215,7 @@ struct Actor : TESObjectREFR
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
     void SetPlayerRespawnMode() noexcept;
+    void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
