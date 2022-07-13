@@ -56,6 +56,8 @@ export class ServerListComponent {
     private soundService: SoundService,
     private storeService: StoreService,
   ) {
+    this.sortFavorite(SortOrder.DESC);
+    this.sortPlayerCount(SortOrder.DESC);
     this.serverlist$ = this.refreshServerlist
       .pipe(
         switchMap(() => this.serverListService
