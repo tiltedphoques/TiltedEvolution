@@ -66,6 +66,21 @@ bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
     return false;
 }
 
+bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
+{
+    if (!apObject)
+        return false;
+
+    switch (apObject->formID)
+    {
+        // Don't sync the chest in the "Diplomatic Immunity" quest
+    case 0x39CF1:
+        return false;
+    default:
+        return true;
+    }
+}
+
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // TODO(cosideci): clear object components
@@ -108,6 +123,11 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     for (TESObjectREFR* pObject : objects)
     {
+        if (!ShouldSyncObject(pObject))
+        {
+            spdlog::warn("Excluding sync for {:X}", pObject->formID);
+            continue;
+        }
 
         ObjectData objectData{};
         objectData.CellId = cellId;
