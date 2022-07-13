@@ -59,7 +59,7 @@
 
         <cdk-virtual-scroll-viewport itemSize="38" class="virtual-viewport">
           <div class="servers-list-table">
-            <div *cdkVirtualFor="let server of serverlist" class="row">
+            <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
               <div>{{ server.name }}</div>
               <div style="width: 6em">{{ server.player_count }}</div>
               <!-- <div style="width: 6em">{{ server.country }}</div>-->
