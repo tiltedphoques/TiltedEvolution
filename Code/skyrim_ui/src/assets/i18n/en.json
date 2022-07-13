@@ -81,7 +81,7 @@
       "CONNECT": "Connect",
       "DISCONNECT": "Disconnect",
       "RECONNECT": "Reconnect",
-      "PLAYER_MANAGER": "Player Manger",
+      "PLAYER_MANAGER": "Player Manager",
       "SETTINGS": "Settings",
       "CONNECTION_IN_PROGRESS": "Connection in progress"
     },
