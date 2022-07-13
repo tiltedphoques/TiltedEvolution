@@ -74,18 +74,6 @@
   bottom: $-size-gap;
 }
 
-.app-root-controls-wide {
-  @include gapped-vertical($-size-gap);
-
-  position: absolute;
-  left: $-size-gap;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  width: 35vw;
-  bottom: $-size-gap;
-}
-
 .app-root-menu,
 .app-root-chat {
   flex: 0 0 auto;
