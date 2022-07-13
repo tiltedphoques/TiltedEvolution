@@ -34,6 +34,10 @@
   }
 }
 
+.background-element {
+  opacity: 30%;
+}
+
 ::ng-deep {
   .app-root-popups {
     > app-popup > app-window {

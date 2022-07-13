@@ -14,7 +14,7 @@ import { animation as notificationsAnimation } from './notifications.animation';
 
 
 export enum RootView {
-  CONNECT,
+  CONNECT = 1,
   DISCONNECT,
   RECONNECT,
   SERVER_LIST,
