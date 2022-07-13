@@ -1,102 +1,147 @@
-app-server-list {
+@import "functions/rem";
+@import "functions/mod";
+
+@import "env";
+
+:host {
   position: relative;
   display: block;
+  width: 70vw;
+}
 
+.server-list-action-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1%;
 
-  .searchListServer {
-    display: inline-block;
-    background-color: rgba($color: #292929, $alpha: 0.60);
-    font-size: 0.85rem;
-    border-radius: 7px;
-    height: 1.5rem;
-    width: 8vw;
-    border: none;
-    margin-bottom: 1%;
-  }
+  .server-list-filters {
+    display: flex;
+    align-items: center;
+    gap: 4em;
 
-  .buttonsServerList {
-    float: right;
-    padding: 0.25vw;
-    background-color: #292929;
-    border-radius: 2px;
-    margin-left: 5%;
-  }
-
-  .containerList {
-    overflow: auto;
-    max-height: 60vh;
-    margin-top: 1rem;
-
-
-    .serverslisttable {
-      width: 100%;
-      border-collapse: collapse;
-
-      .listHeader {
-        position: sticky;
-        top: 0px;
-        background-color: #151515;
-        z-index: 1;
-      }
-
-      th {
-        text-align: left;
-        border-bottom: 1px solid grey;
-        border-collapse: separate;
-
-        button {
-          padding: 0 0.5rem;
-        }
-      }
-
-      tr:not(:last-child) {
-        border-bottom: 1px solid grey;
-        padding: 15px;
-      }
-
-      .offline {
-        background-color: #FF9494
-      }
-
-      .server-compatible {
-        color: green;
-      }
-
-      .server-incompatible {
-        color: red;
-      }
-
-      #noserv {
-        margin-top: 3%;
-      }
-
-      .joinbutton {
-        padding: 0.25vw;
-        background-color: #292929;
-        border-radius: 2px;
-        margin-left: 5%;
-        float: right;
-      }
-
-      .app-server-list-favorite {
-        text-align: center;
-        color: grey;
-
-        &:hover {
-          color: white;
-        }
-      }
-
-      .app-server-list-notfavorite {
-        text-align: center;
-        color: grey;
-
-        &:hover {
-          color: white;
-        }
-      }
+    .hide-mismatched-servers-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
     }
   }
 
+  .server-list-actions {
+    display: flex;
+    justify-content: end;
+    align-items: center;
 
+    button {
+      padding: 0.25vw;
+      background-color: #292929;
+      border-radius: 2px;
+      margin-left: 5%;
+    }
+  }
 }
+
+.scrollbar-offset {
+  margin-right: rem($-size-font, 16px);
+  //overflow-y: scroll;
+}
+
+.serverlist-alternative {
+  margin: 3%;
+  display: flex;
+  justify-content: center;
+}
+
+.virtual-viewport {
+  height: calc(60vh - 38px);
+  width: 100%;
+}
+
+.search-list-server {
+  display: inline-block;
+  background-color: rgba($color: #292929, $alpha: 0.60);
+  font-size: 0.85rem;
+  border-radius: 7px;
+  height: 1.5rem;
+  width: 8vw;
+  border: none;
+}
+
+.server-list {
+  overflow: auto;
+  max-height: 60vh;
+  margin-top: 1rem;
+
+
+  .server-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    .row {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border-bottom: 1px solid grey;
+      border-collapse: separate;
+
+      &.odd {
+        background: transparentize(mod($-color-background, 1), 0.95);
+      }
+
+      :first-child {
+        flex: 1 1 auto;
+      }
+
+      > div {
+        padding: 5px;
+      }
+
+      &.header {
+        & > div {
+          display: flex;
+          align-items: center;
+        }
+      }
+    }
+
+    .offline {
+      background-color: #ff9494
+    }
+
+    .server-compatible {
+      color: green;
+    }
+
+    .server-incompatible {
+      color: red;
+    }
+
+    .join-button {
+      padding: 0.25vw;
+      background-color: #292929;
+      border-radius: 2px;
+      margin-left: 5%;
+      float: right;
+    }
+
+    .server-list-favorite {
+      text-align: center;
+      color: grey;
+
+      &:hover {
+        color: white;
+      }
+    }
+
+    .server-list-not-favorite {
+      text-align: center;
+      color: grey;
+
+      &:hover {
+        color: white;
+      }
+    }
+  }
+}
+

@@ -1,5 +1,5 @@
-<p>Are you sure you want to disconnect?</p>
-<app-popup-buttons>
-  <button (click)="disconnect()" data-style-ornament="simple">Proceed</button>
-  <button (click)="cancel()" data-style-ornament="simple">Cancel</button>
-</app-popup-buttons>
+<p>{{ 'COMPONENT.DISCONNECT.PROMPT' | transloco }}</p>
+<app-action-buttons>
+  <button (click)="disconnect()" data-style-ornament="simple">{{ 'COMPONENT.DISCONNECT.PROCEED' | transloco }}</button>
+  <button (click)="cancel()" data-style-ornament="simple">{{ 'COMPONENT.DISCONNECT.CANCEL' | transloco }}</button>
+</app-action-buttons>

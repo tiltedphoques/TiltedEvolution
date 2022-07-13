@@ -57,7 +57,7 @@ declare namespace SkyrimTogetherTypes {
     receivedBandwidth: number
   ) => void;
 
-  type UserDataSetCallback = (token: string, username: string) => void;
+  type UserDataSetCallback = (password: string, username: string) => void;
 
   type PlayerConnectedCallback = (playerId: number, username: string, level: number, cellName: string) => void;
 
@@ -261,8 +261,9 @@ interface SkyrimTogether {
    *
    * @param host IP address or hostname.
    * @param port Port.
+   * @param password Server password.
    */
-  connect(host: string, port: number, token: string): void;
+  connect(host: string, port: number, password: string): void;
 
   /**
    * Disconnect from server or cancel connection.
@@ -283,51 +284,51 @@ interface SkyrimTogether {
 
   /**
    * Teleport to given player
-   * 
+   *
    * @param playerId Id of the player to which the requester should be teleported to
    */
   teleportToPlayer(playerId: number): void;
 
-   /** 
+  /**
    * Reconnect the client.
    */
   reconnect(): void;
 
-  /** 
-  * Launch a party.
-  */
+  /**
+   * Launch a party.
+   */
   launchParty(): void;
-  
-  /** 
-  * Send a party invite to player with player id.
-  * 
-  * @param playerId Id of the player to which the invite should be sent.
-  */
+
+  /**
+   * Send a party invite to player with player id.
+   *
+   * @param playerId Id of the player to which the invite should be sent.
+   */
   createPartyInvite(playerId: number): void;
-  
-  /** 
-  * Accept a party invite.
-  * 
-  * @param inviterId Id of the player who sent the invite.
-  */
+
+  /**
+   * Accept a party invite.
+   *
+   * @param inviterId Id of the player who sent the invite.
+   */
   acceptPartyInvite(inviterId: number): void;
-  
-  /** 
-  * As a party leader, kick a member from the party.
-  * 
-  * @param playerId Id of the player who gets kicked.
-  */
+
+  /**
+   * As a party leader, kick a member from the party.
+   *
+   * @param playerId Id of the player who gets kicked.
+   */
   kickPartyMember(playerId: number): void;
-  
-  /** 
-  * Leave the currently joined party.
-  */
+
+  /**
+   * Leave the currently joined party.
+   */
   leaveParty(): void;
-  
-  /** 
-  * As a party leader, make someone else the leader.
-  * 
-  * @param playerId Id of the new leader.
-  */
+
+  /**
+   * As a party leader, make someone else the leader.
+   *
+   * @param playerId Id of the new leader.
+   */
   changePartyLeader(playerId: number): void;
 }

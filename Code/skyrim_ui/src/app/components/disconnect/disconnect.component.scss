@@ -1,16 +1,15 @@
-@import 'env';
+@import "mixins/gapped-vertical";
 
-@import 'mixins/gapped-vertical';
+@import "env";
 
-app-disconnect {
+:host {
   @include gapped-vertical($-size-gap);
 
   display: flex;
   flex-direction: column;
   align-items: center;
+}
 
-  p {
-    line-height: $-size-line;
-    text-align: justify;
-  }
+p {
+  line-height: $-size-line;
 }

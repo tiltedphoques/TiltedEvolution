@@ -247,16 +247,16 @@ void ActorValueService::RunDeathStateUpdates() noexcept
 
     lastSendTimePoint = now;
 
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    auto localView = m_world.view<FormIdComponent, LocalComponent>();
 
-    for (auto entity : view)
+    for (auto entity : localView)
     {
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        const auto& formIdComponent = localView.get<FormIdComponent>(entity);
         Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (!pActor)
             continue;
 
-        auto& localComponent = view.get<LocalComponent>(entity);
+        auto& localComponent = localView.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
         if (isDead != localComponent.IsDead)

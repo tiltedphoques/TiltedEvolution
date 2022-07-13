@@ -1,10 +1,11 @@
-import { trigger, state, animate, style, transition, query, group } from '@angular/animations';
+import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
+
 
 export const animation = trigger('controls', [
   state('false', style({
     'visibility': 'hidden',
     'opacity': '0',
-    'transform': 'translateY(1rem)'
+    'transform': 'translateY(1rem)',
   })),
   transition('false => true', [
     query('.app-root-menu', style({
