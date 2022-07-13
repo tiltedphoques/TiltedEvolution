@@ -3,7 +3,7 @@
 @import 'functions/mod';
 @import 'functions/rem';
 
-app-chat {
+:host {
   display: contents;
   flex-direction: column;
 }
@@ -14,7 +14,6 @@ app-chat {
   overflow-y: scroll;
   overflow-wrap: break-word;
   padding-right: rem($-size-font, 2px);
-  font-family: $-font-default;
   font-size: 1rem;
 
   p {

@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { takeUntil, withLatestFrom } from 'rxjs';
 import { ClientService } from '../../services/client.service';
@@ -14,7 +14,6 @@ interface Notification {
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   providers: [DestroyService],
 })
 export class NotificationsComponent {

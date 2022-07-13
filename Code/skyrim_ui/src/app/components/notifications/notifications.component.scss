@@ -1,16 +1,17 @@
-@import 'env';
+@import "env";
 
-@import 'functions/mod';
-@import 'mixins/gapped-vertical';
+@import "functions/mod";
+@import "mixins/gapped-vertical";
 
-app-notifications {
+
+:host {
   @include gapped-vertical($-size-gap);
+}
 
-  p {
-    color: mod($-color-background, 1);
-    font-weight: 700;
-    display: flex;
-  }
+p {
+  color: mod($-color-background, 1);
+  font-weight: 700;
+  display: flex;
 }
 
 .app-notifications-icon {

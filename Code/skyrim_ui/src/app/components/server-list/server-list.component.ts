@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
@@ -19,7 +19,6 @@ import { RootView } from '../root/root.component';
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerListComponent {

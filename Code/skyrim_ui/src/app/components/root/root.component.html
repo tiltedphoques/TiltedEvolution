@@ -64,7 +64,7 @@
       <app-chat #chat></app-chat>
     </app-window>
   </div>
-  <div [@popups]="(active$ | async)" class="app-root-popups">
+  <div [@fadeInOut]="(active$ | async)" class="app-root-popups">
     <app-loading></app-loading>
 
     <ng-container [ngSwitch]="view | async">

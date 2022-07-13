@@ -1,16 +1,16 @@
-@import 'env';
+@import "env";
 
-@import 'functions/mod';
-@import 'mixins/gapped-vertical';
-.notification-popup
-{
-  width:100%;
-  height:100%;
+@import "functions/mod";
+@import "mixins/gapped-vertical";
+
+.notification-popup {
+  width: 100%;
+  height: 100%;
   background-color: rgba($color: #000000, $alpha: 0.7)
 }
-.friendavatar
-{
-  position:absolute;
+
+.friendavatar {
+  position: absolute;
   top: 50%;
   left: 13%;
   transform: translateX(-50%) translateY(-50%);
@@ -19,9 +19,9 @@
   height: 2vw;
   background-size: contain;
 }
-.text-connection-popup
-{
-  position:absolute;
+
+.text-connection-popup {
+  position: absolute;
   top: 50%;
   left: 56%;
   width: 64%;
@@ -30,24 +30,22 @@
   white-space: normal;
 }
 
-.text-invite-popup
-{
+.text-invite-popup {
   left: 60%;
   width: 73%;
 }
 
-.friendstatus
-{
+.friendstatus {
   position: absolute;
   top: 50%;
   left: 90.5%;
   transform: translateX(-50%) translateY(-50%);
   width: 0.5em;
   height: 0.5em;
-  background: #933;
+  background: #993333;
   border-radius: 50%;
 }
-.online
-{
-  background: #393;
+
+.online {
+  background: #339933;
 }

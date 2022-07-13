@@ -1,7 +1,5 @@
-<button (click)="sort()">
-  <ng-container [ngSwitch]="order | async">
-    <fa-icon *ngSwitchCase="true" class="sorting-icon" [icon]="faCaretDown"></fa-icon>
-    <fa-icon *ngSwitchCase="false" class="sorting-icon" [icon]="faCaretUp"></fa-icon>
-    <fa-icon *ngSwitchDefault class="sorting-icon" [icon]="faSort"></fa-icon>
-  </ng-container>
+<button class="sorting-button" (click)="sort()" [ngSwitch]="order | async">
+  <fa-icon *ngSwitchCase="SortOrder.ASC" class="sorting-icon" [icon]="faCaretDown"></fa-icon>
+  <fa-icon *ngSwitchCase="SortOrder.DESC" class="sorting-icon" [icon]="faCaretUp"></fa-icon>
+  <fa-icon *ngSwitchCase="SortOrder.NONE" class="sorting-icon" [icon]="faSort"></fa-icon>
 </button>

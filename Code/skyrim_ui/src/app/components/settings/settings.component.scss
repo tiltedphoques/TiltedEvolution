@@ -2,63 +2,63 @@
 
 @import "functions/rem";
 
-app-settings {
+:host {
   position: relative;
   display: block;
+}
 
-  .container {
-    overflow: auto;
-    max-height: 60vh;
-    margin-top: 1rem;
-    padding-right: 15px;
+.container {
+  overflow: auto;
+  max-height: 60vh;
+  margin-top: 1rem;
+  padding-right: 15px;
 
-    .settings {
+  .settings {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+
+    .section {
+      padding-bottom: 15px;
+      margin-bottom: rem($-size-font, 2px);
+      border-bottom: rem($-size-font, 2px) solid;
+      border-image: url("../../../assets/images/separator/single.svg") 3;
       display: flex;
       justify-content: space-between;
       flex-direction: column;
 
-      .section {
-        padding-bottom: 15px;
-        margin-bottom: rem($-size-font, 2px);
-        border-bottom: rem($-size-font, 2px) solid;
-        border-image: url("../../../assets/images/separator/single.svg") 3;
-        display: flex;
-        justify-content: space-between;
-        flex-direction: column;
-
-        &:not(:first-child) {
-          margin-top: 15px;
-        }
-      }
-
-      .flex-item {
-        position: relative;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .radio-group {
-          display: flex;
-        }
-      }
-
-      div:not(:last-child) {
-        margin-bottom: 0.5rem;
-      }
-
-      hr {
-        width: 100%;
-      }
-
-      h2:first-child {
-        margin-top: 0;
+      &:not(:first-child) {
+        margin-top: 15px;
       }
     }
-  }
 
-  .actions {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: center;
+    .flex-item {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .radio-group {
+        display: flex;
+      }
+    }
+
+    div:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    hr {
+      width: 100%;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
   }
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
 }

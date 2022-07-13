@@ -30,9 +30,9 @@
     </div>
 
     <ng-template #notEmpty>
-      <div class="container-list">
+      <div class="server-list">
         <div class="scrollbar-offset">
-          <div class="servers-list-table">
+          <div class="server-list-table">
             <div class="row header">
               <div>
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
@@ -58,13 +58,13 @@
         </div>
 
         <cdk-virtual-scroll-viewport itemSize="38" class="virtual-viewport">
-          <div class="servers-list-table">
+          <div class="server-list-table">
             <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
               <div>{{ server.name }}</div>
               <div style="width: 6em">{{ server.player_count }}</div>
               <!-- <div style="width: 6em">{{ server.country }}</div>-->
               <div style="width: 5em" [ngClass]="server.isCompatible ? 'server-compatible' : 'server-incompatible'">{{ server.shortVersion }}</div>
-              <div style="width: 6em;" (click)="toggleServerFavorite(server)" class="app-server-list-not-favorite">
+              <div style="width: 6em;" (click)="toggleServerFavorite(server)" class="server-list-not-favorite">
                 <fa-icon [icon]="server.isFavorite ? fasStar : farStar"></fa-icon>
               </div>
               <div style="width: 4em;">

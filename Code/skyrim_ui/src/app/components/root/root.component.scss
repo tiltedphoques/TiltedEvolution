@@ -1,10 +1,10 @@
-@import 'env';
+@import "env";
 
-@import 'mixins/gapped-vertical';
-@import 'functions/mod';
-@import 'functions/rem';
+@import "mixins/gapped-vertical";
+@import "functions/mod";
+@import "functions/rem";
 
-app-root {
+:host {
   display: block;
 
   &[data-app-root-game=false] {
@@ -12,17 +12,17 @@ app-root {
     $lines: mod($background, 0.1);
 
     background: repeating-linear-gradient(
-      to right,
-      transparent,
-      transparent #{$-size-gap},
-      $lines #{$-size-gap},
-      $lines calc(#{$-size-gap} + 1px)
+        to right,
+        transparent,
+        transparent #{$-size-gap},
+        $lines #{$-size-gap},
+        $lines calc(#{$-size-gap} + 1px)
     ), repeating-linear-gradient(
-      to bottom,
-      transparent,
-      transparent #{$-size-gap},
-      $lines #{$-size-gap},
-      $lines calc(#{$-size-gap} + 1px)
+        to bottom,
+        transparent,
+        transparent #{$-size-gap},
+        $lines #{$-size-gap},
+        $lines calc(#{$-size-gap} + 1px)
     ) $background;
   }
 
@@ -34,25 +34,27 @@ app-root {
   }
 }
 
-.app-root-popups {
-  > app-popup > app-window {
-    max-width: 30vw;
-    min-width: 20vw;
-  }
+::ng-deep {
+  .app-root-popups {
+    > app-popup > app-window {
+      max-width: 30vw;
+      min-width: 20vw;
+    }
 
-  > app-popup[data-popup=server] > app-window {
-    max-width: 50vw;
-    min-width: 40vw;
-  }
+    > app-popup[data-popup=server] > app-window {
+      max-width: 50vw;
+      min-width: 40vw;
+    }
 
-  > app-popup[data-popup=settings] > app-window {
-    max-width: 30vw;
-    min-width: 25vw;
-  }
+    > app-popup[data-popup=settings] > app-window {
+      max-width: 30vw;
+      min-width: 25vw;
+    }
 
-  > app-popup[data-popup=playerManager] > app-window {
-    max-width: 30vw;
-    min-width: 25vw;
+    > app-popup[data-popup=playerManager] > app-window {
+      max-width: 30vw;
+      min-width: 25vw;
+    }
   }
 }
 
@@ -108,20 +110,10 @@ app-root {
   }
 }
 
-.app-error {
-  app-window {
-    @include gapped-vertical($-size-gap);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
 .app-notification-popup {
   position: fixed;
   bottom: $-size-gap;
-  right: 0%;
+  right: 0;
   height: 6%;
   width: 12%;
 }

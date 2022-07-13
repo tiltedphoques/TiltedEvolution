@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { ClientService } from '../../services/client.service';
@@ -12,7 +12,6 @@ import { RootView } from '../root/root.component';
   selector: 'app-connect',
   templateUrl: './connect.component.html',
   styleUrls: ['./connect.component.scss'],
-  encapsulation: ViewEncapsulation.None,
 })
 export class ConnectComponent implements OnDestroy, AfterViewInit {
 

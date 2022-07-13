@@ -3,141 +3,122 @@
 
 @import "env";
 
-app-server-list {
+:host {
   position: relative;
   display: block;
+}
 
-  .scrollbar-offset {
-    margin-right: rem($-size-font, 16px);
-    //overflow-y: scroll;
-  }
+.scrollbar-offset {
+  margin-right: rem($-size-font, 16px);
+  //overflow-y: scroll;
+}
 
-  .serverlist-alternative {
-    margin: 3%;
-    display: flex;
-    justify-content: center;
-  }
+.serverlist-alternative {
+  margin: 3%;
+  display: flex;
+  justify-content: center;
+}
 
-  .virtual-viewport {
-    height: calc(60vh - 38px);
+.virtual-viewport {
+  height: calc(60vh - 38px);
+  width: 100%;
+}
+
+.search-list-server {
+  display: inline-block;
+  background-color: rgba($color: #292929, $alpha: 0.60);
+  font-size: 0.85rem;
+  border-radius: 7px;
+  height: 1.5rem;
+  width: 8vw;
+  border: none;
+  margin-bottom: 1%;
+}
+
+.buttons-server-list {
+  float: right;
+  padding: 0.25vw;
+  background-color: #292929;
+  border-radius: 2px;
+  margin-left: 5%;
+}
+
+.server-list {
+  overflow: auto;
+  max-height: 60vh;
+  margin-top: 1rem;
+
+
+  .server-list-table {
     width: 100%;
-  }
+    border-collapse: collapse;
+    table-layout: fixed;
 
-  .search-list-server {
-    display: inline-block;
-    background-color: rgba($color: #292929, $alpha: 0.60);
-    font-size: 0.85rem;
-    border-radius: 7px;
-    height: 1.5rem;
-    width: 8vw;
-    border: none;
-    margin-bottom: 1%;
-  }
-
-  .buttons-server-list {
-    float: right;
-    padding: 0.25vw;
-    background-color: #292929;
-    border-radius: 2px;
-    margin-left: 5%;
-  }
-
-  .container-list {
-    overflow: auto;
-    max-height: 60vh;
-    margin-top: 1rem;
-
-
-    .servers-list-table {
+    .row {
+      height: 38px;
+      display: flex;
+      align-items: center;
       width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
+      border-bottom: 1px solid grey;
+      border-collapse: separate;
 
-      .row {
-        height: 38px;
-        display: flex;
-        align-items: center;
-        width: 100%;
-        border-bottom: 1px solid grey;
-        border-collapse: separate;
-
-        &.odd {
-          background: transparentize(mod($-color-background, 1), 0.95);
-        }
-
-        :first-child {
-          flex: 1 1 auto;
-        }
-
-        > div {
-          padding: 5px;
-        }
-
-        &.header {
-
-        }
+      &.odd {
+        background: transparentize(mod($-color-background, 1), 0.95);
       }
 
-      td {
+      :first-child {
+        flex: 1 1 auto;
+      }
+
+      > div {
         padding: 5px;
       }
 
-      tr {
-        display: flex;
-      }
-
-      th {
-        text-align: left;
-        border-bottom: 1px solid grey;
-        border-collapse: separate;
-
-        button {
-          padding: 0 0.5rem;
+      &.header {
+        & > div {
+          display: flex;
+          align-items: center;
         }
       }
+    }
 
-      tr:not(:last-child) {
-        border-bottom: 1px solid grey;
-        padding: 15px;
+    .offline {
+      background-color: #ff9494
+    }
+
+    .server-compatible {
+      color: green;
+    }
+
+    .server-incompatible {
+      color: red;
+    }
+
+    .join-button {
+      padding: 0.25vw;
+      background-color: #292929;
+      border-radius: 2px;
+      margin-left: 5%;
+      float: right;
+    }
+
+    .server-list-favorite {
+      text-align: center;
+      color: grey;
+
+      &:hover {
+        color: white;
       }
+    }
 
-      .offline {
-        background-color: #ff9494
-      }
+    .server-list-not-favorite {
+      text-align: center;
+      color: grey;
 
-      .server-compatible {
-        color: green;
-      }
-
-      .server-incompatible {
-        color: red;
-      }
-
-      .join-button {
-        padding: 0.25vw;
-        background-color: #292929;
-        border-radius: 2px;
-        margin-left: 5%;
-        float: right;
-      }
-
-      .app-server-list-favorite {
-        text-align: center;
-        color: grey;
-
-        &:hover {
-          color: white;
-        }
-      }
-
-      .app-server-list-not-favorite {
-        text-align: center;
-        color: grey;
-
-        &:hover {
-          color: white;
-        }
+      &:hover {
+        color: white;
       }
     }
   }
 }
+
