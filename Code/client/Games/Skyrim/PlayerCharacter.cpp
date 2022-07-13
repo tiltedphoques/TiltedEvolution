@@ -121,7 +121,6 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
     if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
     {
         auto& modSystem = World::Get().GetModSystem();
-
         Inventory::Entry item{};
         modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
         item.Count = aCount;
@@ -130,8 +129,8 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
         {
             ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
-            World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
         }
+     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 
     ScopedInventoryOverride _;
