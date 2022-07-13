@@ -36,6 +36,7 @@ export class ServerListComponent {
   refreshServerlist = new BehaviorSubject<void>(undefined);
   sortFunctions = new BehaviorSubject<SortFunction[]>([]);
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
+  hideVersionMismatchedServers = new BehaviorSubject(true);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
@@ -100,9 +101,13 @@ export class ServerListComponent {
             distinctUntilChanged(),
             throttleTime(300),
           ),
+          this.hideVersionMismatchedServers,
           this.sortFunctions,
         ),
-        map(([servers, searchPhrase, sortFunction]) => {
+        map(([servers, searchPhrase, hideVersionMismatchedServers, sortFunction]) => {
+          if (hideVersionMismatchedServers) {
+            servers = servers.filter(server => server.isCompatible);
+          }
           if (searchPhrase) {
             servers = servers.filter((server: Server) => {
               return server.name.toLowerCase().includes(searchPhrase) || server.desc.toLowerCase().includes(searchPhrase);

@@ -9,6 +9,37 @@
   width: 70vw;
 }
 
+.server-list-action-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1%;
+
+  .server-list-filters {
+    display: flex;
+    align-items: center;
+    gap: 4em;
+
+    .hide-mismatched-servers-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+  }
+
+  .server-list-actions {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+
+    button {
+      padding: 0.25vw;
+      background-color: #292929;
+      border-radius: 2px;
+      margin-left: 5%;
+    }
+  }
+}
+
 .scrollbar-offset {
   margin-right: rem($-size-font, 16px);
   //overflow-y: scroll;
@@ -33,15 +64,6 @@
   height: 1.5rem;
   width: 8vw;
   border: none;
-  margin-bottom: 1%;
-}
-
-.buttons-server-list {
-  float: right;
-  padding: 0.25vw;
-  background-color: #292929;
-  border-radius: 2px;
-  margin-left: 5%;
 }
 
 .server-list {

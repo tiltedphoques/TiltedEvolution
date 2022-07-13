@@ -1,22 +1,35 @@
 <!-- Please do further testing with a ton of servers in the list and names that are too long/contain symbols -->
 
-<input
-  class="search-list-server"
-  [formControl]="formSearch"
-  type="text"
-  [placeholder]="'COMPONENT.SERVER_LIST.SEARCH' | transloco"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="off"
-  spellcheck="false"
-/>
+<div class="server-list-action-bar">
+  <div class="server-list-filters">
+    <input
+      class="search-list-server"
+      [formControl]="formSearch"
+      type="text"
+      [placeholder]="'COMPONENT.SERVER_LIST.SEARCH' | transloco"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    />
 
-<button class="buttons-server-list" [disabled]="loader.serverlist.inProgress$ | async" (click)="updateServerList()">
-  {{ 'COMPONENT.SERVER_LIST.REFRESH' | transloco }}
-</button>
-<button class="buttons-server-list" (click)="cancel()">
-  {{ 'COMPONENT.SERVER_LIST.BACK' | transloco }}
-</button>
+    <div class="hide-mismatched-servers-checkbox">
+      <input id="hideMismatchedServer" type="checkbox" [ngModel]="hideVersionMismatchedServers | async"
+             (ngModelChange)="hideVersionMismatchedServers.next($event)"
+      >
+      <label for="hideMismatchedServer">{{ 'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVER' | transloco }}</label>
+    </div>
+  </div>
+
+  <div class="server-list-actions">
+    <button [disabled]="loader.serverlist.inProgress$ | async" (click)="updateServerList()">
+      {{ 'COMPONENT.SERVER_LIST.REFRESH' | transloco }}
+    </button>
+    <button (click)="cancel()">
+      {{ 'COMPONENT.SERVER_LIST.BACK' | transloco }}
+    </button>
+  </div>
+</div>
 
 
 <ng-container *ngIf="filteredServerlist$ | async as serverlist">
