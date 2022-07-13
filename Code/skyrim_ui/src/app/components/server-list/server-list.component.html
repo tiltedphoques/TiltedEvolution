@@ -36,7 +36,7 @@
             <div class="row header">
               <div>
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
-                <app-order [sortingOrder]="serverNameOrdering | async" (sorted)="sortName($event)"></app-order>
+                <app-order [sortingOrder]="serverNameOrdering | async" (sorted)="sortServerName($event)"></app-order>
               </div>
               <div style="width: 6em">
                 {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.PLAYERS' | transloco }}
