@@ -41,6 +41,17 @@
       .radio-group {
         display: flex;
       }
+
+      .anchor-radios {
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+
+        > div {
+          display: flex;
+          justify-content: space-between;
+        }
+      }
     }
 
     div:not(:last-child) {
