@@ -18,13 +18,14 @@ struct LuaService
     TP_NOCOPYMOVE(LuaService);
 
   private:
-    void OnPlayerJoin(const PlayerJoinEvent& acMessage) const noexcept;
-    void OnPlayerLeave(const PlayerLeaveEvent& acMessage) const noexcept;
-    void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) const noexcept;
+    void OnPlayerJoin(const PlayerJoinEvent& acMessage) noexcept;
+    void OnPlayerLeave(const PlayerLeaveEvent& acMessage) noexcept;
+    void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept;
 
     void InitializeCETLikeScripting() noexcept;
 
-    std::optional<sol::function> GetFunction(const char* aEventName) const noexcept;
+    std::optional<sol::function> GetFunction(const char* aEventName) noexcept;
+    void HandleCallResult(const sol::protected_function_result& aResult) noexcept;
 
     World& m_world;
 
@@ -33,4 +34,5 @@ struct LuaService
     entt::scoped_connection m_notifyInventoryChangesConnection;
 
     sol::state m_lua;
+    std::string m_previousFileContents;
 };
