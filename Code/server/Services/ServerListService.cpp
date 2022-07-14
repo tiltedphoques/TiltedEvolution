@@ -21,12 +21,15 @@ static constexpr char kMasterServerEndpoint[] =
 static constexpr uint16_t kPlayerMaxCap = 1000;
 
 static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
-                                        "Whether to announce the server to the tilted server list", true};
+                                        "Whether to list the server on the public server list", false};
 
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this)),
       m_nextAnnounce(std::chrono::seconds(0))
 {
+    if (!bAnnounceServer)
+        spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
+                     "If you are just playing with friends, this is probably what you want.");
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept

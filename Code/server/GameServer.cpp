@@ -146,7 +146,10 @@ void GameServer::Kill()
 bool GameServer::CheckMoPo()
 {
     if (!bEnableModCheck)
-        spdlog::warn(kBypassMoPoWarning);
+    {
+        // TODO: re-enable this warning when mopo has good ui and the line endings problem is fixed
+        //spdlog::warn(kBypassMoPoWarning);
+    }
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
     {
