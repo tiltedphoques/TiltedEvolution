@@ -30,6 +30,13 @@ ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatche
     if (!bAnnounceServer)
         spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
                      "If you are just playing with friends, this is probably what you want.");
+
+    // TODO: list pw protected servers on server list
+    if (GameServer::Get()->IsPasswordProtected())
+    {
+        spdlog::warn("Your server will not show up on the server list because this server has a password.");
+        bAnnounceServer = false;
+    }
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -58,10 +65,6 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    // TODO: list pw protected servers on server list
-    if (GameServer::Get()->IsPasswordProtected())
-        return;
-
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
