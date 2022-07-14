@@ -21,12 +21,22 @@ static constexpr char kMasterServerEndpoint[] =
 static constexpr uint16_t kPlayerMaxCap = 1000;
 
 static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
-                                        "Whether to announce the server to the tilted server list", true};
+                                        "Whether to list the server on the public server list", false};
 
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this)),
       m_nextAnnounce(std::chrono::seconds(0))
 {
+    if (!bAnnounceServer)
+        spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
+                     "If you are just playing with friends, this is probably what you want.");
+
+    // TODO: list pw protected servers on server list
+    if (GameServer::Get()->IsPasswordProtected())
+    {
+        spdlog::warn("Your server will not show up on the server list because this server has a password.");
+        bAnnounceServer = false;
+    }
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -55,10 +65,6 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() const noexcept
 {
-    // TODO: list pw protected servers on server list
-    if (GameServer::Get()->IsPasswordProtected())
-        return;
-
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
