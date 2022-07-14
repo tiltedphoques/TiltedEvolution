@@ -126,9 +126,11 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
         modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
         item.Count = aCount;
 
-        if (apObject->GetExtraDataList())
+        if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())
+        {
+            ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
-
+        }
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 
