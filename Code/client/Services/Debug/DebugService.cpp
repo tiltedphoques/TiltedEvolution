@@ -205,6 +205,22 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
             m_world.GetOverlayService().Reload();
 
+            Actor* pActor = Cast<Actor>(TESForm::GetById(m_formId));
+            if (pActor)
+            {
+                TESNPC* pBase = Cast<TESNPC>(pActor->baseForm);
+                TESNPC* pTemplate = pBase->npcTemplate;
+                while (pTemplate && pTemplate->IsTemporary())
+                {
+                    //spdlog::info("Template: {:X}", pTemplate->formID);
+                    pTemplate = pTemplate->npcTemplate;
+                }
+
+                TESNPC* pNpc = Cast<TESNPC>(pTemplate);
+                auto pNewActor = Actor::Create(pNpc);
+                pNewActor->SetActorInventory(pActor->GetActorInventory());
+            }
+
             /*
             auto pArguments = CefListValue::Create();
 
