@@ -209,30 +209,10 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             if (pActor)
             {
                 TESNPC* pBase = Cast<TESNPC>(pActor->baseForm);
-                TESNPC* pTemplate = pBase->npcTemplate;
-                while (pTemplate && pTemplate->IsTemporary())
-                {
-                    //spdlog::info("Template: {:X}", pTemplate->formID);
-                    pTemplate = pTemplate->npcTemplate;
-                }
-
-                TESNPC* pNpc = Cast<TESNPC>(pTemplate);
-                auto pNewActor = Actor::Create(pNpc);
+                TESNPC* pTemplate = pBase->GetTemplateBase();
+                auto pNewActor = Actor::Create(pTemplate);
                 pNewActor->SetActorInventory(pActor->GetActorInventory());
             }
-
-            /*
-            auto pArguments = CefListValue::Create();
-
-            auto pPlayerIds = CefListValue::Create();
-            for (int i = 0; i < 5; i++)
-                pPlayerIds->SetInt(i, i);
-            pPlayerIds->SetString(5, "hello");
-
-            pArguments->SetList(0, pPlayerIds);
-
-            m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("dummyData", pArguments);
-            */
         }
     }
     else

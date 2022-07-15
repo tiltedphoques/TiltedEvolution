@@ -20,6 +20,16 @@ struct TESNPC : TESActorBase
 
     static TESNPC* Create(const String& acBuffer, uint32_t aChangeFlags) noexcept;
 
+    TESNPC* GetTemplateBase() const noexcept
+    {
+        TESNPC* pTemplate = npcTemplate;
+
+        while (pTemplate && pTemplate->IsTemporary())
+            pTemplate = pTemplate->npcTemplate;
+
+        return pTemplate;
+    }
+
     struct FaceMorphs
     {
         float option[19];

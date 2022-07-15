@@ -421,7 +421,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         {
             // Players and npcs with temporary ref ids and base ids (usually random events)
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
-            // TODO(cosideci): facegen for fully temporary NPCs
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
@@ -1314,7 +1313,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     if (!pActor)
         return;
 
-    auto* const pNpc = Cast<TESNPC>(pActor->baseForm);
+    TESNPC* pNpc = Cast<TESNPC>(pActor->baseForm);
     if (!pNpc)
         return;
 
@@ -1347,16 +1346,15 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
-    const auto isNpcTemporary = pNpc->formID >= 0xFF000000;
 
-    if(isPlayer)
+    if (isPlayer)
     {
         pNpc->MarkChanged(0x2000800);
     }
 
     const auto changeFlags = pNpc->GetChangeFlags();
 
-    if (isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
+    if (isPlayer || changeFlags != 0)
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
@@ -1420,7 +1418,10 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
 
-    if (isTemporary /* && !isNpcTemporary */)
+    if (pNpc->IsTemporary())
+        pNpc = pNpc->GetTemplateBase();
+
+    if (isTemporary)
     {
         if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
