@@ -2,7 +2,6 @@ import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/
 import { ClientService } from 'src/app/services/client.service';
 import { SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
-import { RootView } from '../root/root.component';
 
 
 export enum PartyAnchor {
@@ -33,7 +32,6 @@ export class SettingsComponent implements OnInit {
   public partyAnchorOffsetY: number;
 
   @Output() public done = new EventEmitter<void>();
-  @Output() public setView = new EventEmitter<RootView>();
   @Output() public settingsUpdated = new EventEmitter<void>();
 
   constructor(

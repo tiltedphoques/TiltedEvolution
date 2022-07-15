@@ -1,4 +1,4 @@
-<div [@fadeInOut]="isShown | async" class="group-container-wrapper">
+<div [@fadeInOutActive]="isShown | async" class="group-container-wrapper">
   <div *ngIf="group$ | async" class="group-container" [ngStyle]="positionStyle | async">
     <div
       *ngFor="let player of groupMembers$ | async"

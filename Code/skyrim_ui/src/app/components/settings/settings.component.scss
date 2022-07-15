@@ -20,9 +20,6 @@
 
     .section {
       padding-bottom: 15px;
-      margin-bottom: rem($-size-font, 2px);
-      border-bottom: rem($-size-font, 2px) solid;
-      border-image: url("../../../assets/images/separator/single.svg") 3;
       display: flex;
       justify-content: space-between;
       flex-direction: column;

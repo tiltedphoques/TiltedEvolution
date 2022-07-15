@@ -14,6 +14,7 @@ import { DisconnectComponent } from './components/disconnect/disconnect.componen
 import { ErrorComponent } from './components/error/error.component';
 import { GroupComponent } from './components/group/group.component';
 import { LoadingComponent } from './components/loading/loading.component';
+import { NotificationPopupContainerComponent } from './components/notification-popup-container/notification-popup-container.component';
 import { NotificationPopupComponent } from './components/notification-popup/notification-popup.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { OrderComponent } from './components/order/order.component';
@@ -48,6 +49,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     GroupComponent,
     LoadingComponent,
     NotificationPopupComponent,
+    NotificationPopupContainerComponent,
     NotificationsComponent,
     OrderComponent,
     PartyMenuComponent,

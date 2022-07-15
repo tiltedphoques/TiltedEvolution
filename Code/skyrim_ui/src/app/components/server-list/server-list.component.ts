@@ -6,13 +6,14 @@ import { FormControl } from '@ngneat/reactive-forms';
 import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, throttleTime } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Server } from '../../models/server';
+import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
+import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
-import { RootView } from '../root/root.component';
 
 
 interface SortFunction {
@@ -48,14 +49,14 @@ export class ServerListComponent {
   formSearch = new FormControl<string>('');
 
   @Output() public done = new EventEmitter<void>();
-  @Output() public setView = new EventEmitter<RootView>();
 
   constructor(
-    private errorService: ErrorService,
-    private serverListService: ServerListService,
-    private clientService: ClientService,
-    private soundService: SoundService,
-    private storeService: StoreService,
+    private readonly errorService: ErrorService,
+    private readonly serverListService: ServerListService,
+    private readonly clientService: ClientService,
+    private readonly soundService: SoundService,
+    private readonly storeService: StoreService,
+    private readonly uiRepository: UiRepository,
   ) {
     this.sortFavorite(SortOrder.DESC);
     this.sortPlayerCount(SortOrder.DESC);
@@ -132,7 +133,7 @@ export class ServerListComponent {
   }
 
   public cancel(): void {
-    this.setView.next(RootView.CONNECT);
+    this.uiRepository.openView(View.CONNECT);
   }
 
   async updateServerList() {

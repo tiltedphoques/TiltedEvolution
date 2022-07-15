@@ -23,6 +23,9 @@ specifiers:
   '@fortawesome/fontawesome-svg-core': ^6.1.1
   '@fortawesome/free-regular-svg-icons': ^6.1.1
   '@fortawesome/free-solid-svg-icons': ^6.1.1
+  '@ngneat/elf': ^2.1.0
+  '@ngneat/elf-devtools': ^1.2.1
+  '@ngneat/elf-entities': ^4.3.1
   '@ngneat/loadoff': ^2.1.0
   '@ngneat/reactive-forms': ^5.0.0
   '@ngneat/transloco': 4.1.0
@@ -63,6 +66,9 @@ dependencies:
   '@fortawesome/fontawesome-svg-core': 6.1.1
   '@fortawesome/free-regular-svg-icons': 6.1.1
   '@fortawesome/free-solid-svg-icons': 6.1.1
+  '@ngneat/elf': 2.1.0_typescript@4.7.4
+  '@ngneat/elf-devtools': 1.2.1
+  '@ngneat/elf-entities': 4.3.1
   '@ngneat/loadoff': 2.1.0
   '@ngneat/reactive-forms': 5.0.0_@angular+forms@14.0.5
   '@ngneat/transloco': 4.1.0_dzujbj7drp6g2oxeynnik3virq
@@ -1980,6 +1986,22 @@ packages:
   /@leichtgewicht/ip-codec/2.0.4:
     resolution: { integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A== }
     dev: true
+
+  /@ngneat/elf-devtools/1.2.1:
+    resolution: { integrity: sha512-emoTCmOxzFI3H04HGpagfaMY9OzmoCvTLoKGvTtN0Fx+JHLhj/HXzSzirAxrkWUwmNTAhCcOmbPPNjAeL1QAuA== }
+    dev: false
+
+  /@ngneat/elf-entities/4.3.1:
+    resolution: { integrity: sha512-CoCWgO8XsHN9bJOQHC517ZbYEEmRQrPEgMMoVrV210U9Q43/yfyEeRoyt2AOvw1PB8d5/I+/VqwHKVxJkuRFBA== }
+    dev: false
+
+  /@ngneat/elf/2.1.0_typescript@4.7.4:
+    resolution: { integrity: sha512-R5BeYoBQ9DgtjlWAE8eqaYyDI5zgRmND7mbgDdbG1JUisaOopcxLMDKZYI9+HWSHcfKPk+XHgFlKQfAl470lNw== }
+    peerDependencies:
+      typescript: '>= 4.1.2'
+    dependencies:
+      typescript: 4.7.4
+    dev: false
 
   /@ngneat/loadoff/2.1.0:
     resolution: { integrity: sha512-N2Kfu7LaDu5t94nSNJU1T6/Uq4k2EAm5I0GHmglFR4dZRQAFGg1WNLT/t6zivcZiqN5wtNBZJS+FLvYKRuZGeA== }
@@ -8231,7 +8253,6 @@ packages:
     resolution: { integrity: sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ== }
     engines: { node: '>=4.2.0' }
     hasBin: true
-    dev: true
 
   /ua-parser-js/0.7.25:
     resolution: { integrity: sha512-8NFExdfI24Ny8R3Vc6+uUytP/I7dpqk3JERlvxPWlrtx5YboqCgxAXYKPAifbPLV2zKbgmmPL53ufW7mUC/VOQ== }
