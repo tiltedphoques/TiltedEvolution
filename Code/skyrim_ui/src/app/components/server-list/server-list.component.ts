@@ -77,9 +77,8 @@ export class ServerListComponent {
             this.loader.serverlist.track(),
           ),
         ),
-        combineLatestWith(this.favoriteServers),
-        map(([servers, favorites]) => {
-          const clientVersion = this.clientService.versionSet.getValue();
+        combineLatestWith(this.favoriteServers, this.clientService.versionSet),
+        map(([servers, favorites, clientVersion]) => {
           return servers.map(server => {
             const shortVersion = this.getServerVersion(server);
             return {
