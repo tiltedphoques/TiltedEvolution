@@ -16,9 +16,12 @@
     {{ 'COMPONENT.PARTY_MENU.INVITES' | transloco }}
   </div>
 
-  <div>
+  <div *ngIf="invitations$ | async as invites">
+    <div *ngIf="invites.length === 0" class="no-invites">
+      {{ 'COMPONENT.PARTY_MENU.NO_INVITES' | transloco }}
+    </div>
     <button
-      *ngFor="let player of invitations$ | async"
+      *ngFor="let player of invites"
       class="party-menu-button"
       (click)="acceptPartyInvite(player.id)"
     >
