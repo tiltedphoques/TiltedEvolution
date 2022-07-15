@@ -204,15 +204,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             m_world.GetOverlayService().Reload();
-
-            Actor* pActor = Cast<Actor>(TESForm::GetById(m_formId));
-            if (pActor)
-            {
-                TESNPC* pBase = Cast<TESNPC>(pActor->baseForm);
-                TESNPC* pTemplate = pBase->GetTemplateBase();
-                auto pNewActor = Actor::Create(pTemplate);
-                pNewActor->SetActorInventory(pActor->GetActorInventory());
-            }
         }
     }
     else

@@ -151,10 +151,10 @@ void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
     spdlog::debug("[PartyService]: Left party");
 
     // TODO: this can be done a bit prettier
-    if (!World::Get().GetTransport().IsConnected())
+    if (World::Get().GetTransport().IsConnected())
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-        pWorldEncountersEnabled->f = 1.f;
+        pWorldEncountersEnabled->f = 0.f;
     }
 
     m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
