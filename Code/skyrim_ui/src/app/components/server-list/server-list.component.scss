@@ -72,6 +72,10 @@
   max-height: 60vh;
   margin-top: 1rem;
 
+  cdk-virtual-scroll-viewport {
+    overflow-y: scroll;
+  }
+
 
   .server-list-table {
     width: 100%;
@@ -123,24 +127,23 @@
       background-color: #292929;
       border-radius: 2px;
       margin-left: 5%;
+      margin-right: 5%;
       float: right;
     }
 
     .server-list-favorite {
-      text-align: center;
-      color: grey;
+      color: white;
 
       &:hover {
-        color: white;
+        color: gray;
       }
-    }
 
-    .server-list-not-favorite {
-      text-align: center;
-      color: grey;
+      &.not {
+        color: gray;
 
-      &:hover {
-        color: white;
+        &:hover {
+          color: white;
+        }
       }
     }
   }
