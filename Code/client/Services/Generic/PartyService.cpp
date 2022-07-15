@@ -19,6 +19,8 @@
 
 #include <OverlayApp.hpp>
 
+#include <Forms/TESGlobal.h>
+
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
     : m_world(aWorld), m_transport(aTransportService)
 {
@@ -113,6 +115,13 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         m_leaderPlayerId = acPartyInfo.LeaderPlayerId;
         m_partyMembers = acPartyInfo.PlayerIds;
 
+        // TODO: this can be done a bit prettier
+        if (m_isLeader)
+        {
+            TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+            pWorldEncountersEnabled->f = 1.f;
+        }
+
         auto pArguments = CefListValue::Create();
 
         auto pPlayerIds = CefListValue::Create();
@@ -141,6 +150,13 @@ void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
 {
     spdlog::debug("[PartyService]: Left party");
 
+    // TODO: this can be done a bit prettier
+    if (World::Get().GetTransport().IsConnected())
+    {
+        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+        pWorldEncountersEnabled->f = 0.f;
+    }
+
     m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
 
     DestroyParty();
@@ -154,6 +170,13 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
     m_isLeader = acPartyJoined.IsLeader;
     m_leaderPlayerId = acPartyJoined.LeaderPlayerId;
     m_partyMembers = acPartyJoined.PlayerIds;
+
+    // TODO: this can be done a bit prettier
+    if (m_isLeader)
+    {
+        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+        pWorldEncountersEnabled->f = 1.f;
+    }
 
     // Takes ownership of all actors
     if (m_isLeader)

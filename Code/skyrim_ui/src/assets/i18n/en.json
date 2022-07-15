@@ -42,6 +42,7 @@
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accept invite from {{name}}",
+      "LAUNCH_PARTY" : "Launch party",
       "EXPERIENCE_WARNING": "For an optimal questing experience, make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:",
       "GUIDELINES": {
         "PARTY": "By creating a party, you sort of become the \"host\", aka the party leader.",
