@@ -173,6 +173,12 @@ export class PlayerListService {
     return this.getPlayerList().players.find(player => player.id === playerId);
   }
 
+  public getPlayerByName(playerName: string): Player | undefined {
+    // will match a player named "stål" if you type "stal".
+    const isNameSimilar = (name: string) => playerName.localeCompare(name, "en", {sensitivity: "base"}) === 0
+    return this.getPlayerList().players.find((player) => isNameSimilar(player.name))
+  }
+
   public resetHasBeenInvitedFlags() {
     const playerList = this.getPlayerList();
 

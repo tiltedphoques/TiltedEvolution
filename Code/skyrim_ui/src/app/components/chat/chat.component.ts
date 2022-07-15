@@ -1,6 +1,7 @@
 import { AfterViewChecked, Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
+import { PlayerListService } from 'src/app/services/player-list.service';
 import { environment } from '../../../environments/environment';
 import { ClientService, Message } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
@@ -44,6 +45,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
+    private readonly playerListService: PlayerListService,
   ) {
     client.messageReception
       .pipe(takeUntil(this.destroy$))
@@ -98,24 +100,47 @@ export class ChatComponent implements AfterViewChecked {
   }
 
   async sendMessage(): Promise<void> {
-    if (this.message) {
-      if (this.message.length > environment.chatMessageLengthLimit) {
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'COMPONENT.CHAT.MESSAGE_TOO_LONG',
-            { chatMessageLengthLimit: environment.chatMessageLengthLimit },
-          ),
-        );
-        this.client.messageReception.next({ content });
-        return;
+    const printToChat = (msg: Message) => this.client.messageReception.next(msg)
+    try {
+      if (this.message) {
+      
+        if (this.message.length > environment.chatMessageLengthLimit) {
+          const content = await firstValueFrom(
+            this.translocoService.selectTranslate<string>(
+              'COMPONENT.CHAT.MESSAGE_TOO_LONG',
+              { chatMessageLengthLimit: environment.chatMessageLengthLimit },
+            ),
+          );
+          printToChat({ content });
+          return;
+        }
+  
+        if (this.message.startsWith("/teleport")) {
+          const [_command, ...args] = this.message.split(" ")
+          const target_player_name = args.join(" ")
+          const target_player = this.playerListService.getPlayerByName(target_player_name)
+
+          if (target_player) {
+            printToChat({ content: "Attempting to teleport you..." });
+            this.client.teleportToPlayer(target_player.id)
+          } else {
+            printToChat({ content: `Could not find any players with the name "${target_player_name}"` });
+          }
+          
+          
+        } else {
+          this.client.sendMessage(this.message);
+        }
+  
+        this.sound.play(Sound.Focus);
+        this.message = '';
       }
-
-      this.client.sendMessage(this.message);
-      this.sound.play(Sound.Focus);
-      this.message = '';
+  
+      this.focusMessage();
+    } catch (err) {
+      printToChat({name: "ERROR", content: err });
     }
-
-    this.focusMessage();
+    
   }
 
   public onLogScroll(): void {
