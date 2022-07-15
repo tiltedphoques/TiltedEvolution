@@ -26,6 +26,7 @@ namespace
 // -- Cvars --
 Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                    "Dedicated Together Server"};
 //Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
@@ -36,6 +37,7 @@ Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
+Console::Setting bSyncPlayerHomes{"GameServer:bSyncPlayerHomes", "Sync player homes and other NoResetZones", false};
 
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -626,6 +628,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
         serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
         serverResponse.Settings.PvpEnabled = bEnablePvp;
+        serverResponse.Settings.SyncPlayerHomes = bSyncPlayerHomes;
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
