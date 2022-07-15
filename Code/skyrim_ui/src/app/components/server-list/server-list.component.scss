@@ -32,10 +32,11 @@
     align-items: center;
 
     button {
-      padding: 0.25vw;
+      min-width: 4em;
+      padding: 0.5em;
       background-color: #292929;
       border-radius: 2px;
-      margin-left: 5%;
+      margin-left: 1em;
     }
   }
 }
