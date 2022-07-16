@@ -1438,7 +1438,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     if (isTemporary)
     {
-        if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        if (pNpc && !m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
             spdlog::error("Server NPC form id not found for form id {:X}", pNpc->formID);
             return;

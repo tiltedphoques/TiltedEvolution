@@ -28,7 +28,8 @@ void SubtitleManager::ShowSubtitle(TESObjectREFR* apSpeaker, const char* apSubti
 #if TP_SKYRIM64
     ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, aUnk1);
 #elif TP_FALLOUT4
-    ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, apTopicInfo, aUnk1);
+    // TODO: these args are wrong, crashes while copying BSString, apSubtitleText is probably not just a raw ptr
+    //ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, apTopicInfo, aUnk1);
 #endif
 }
 
