@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -31,6 +31,9 @@ export class ChatComponent implements AfterViewChecked {
 
   private scrollBack = 0;
 
+  private history: string[] = [];
+  private currentHistoryIndex = 0;
+
   private get maxScroll(): number {
     return this.logRef.nativeElement.scrollHeight - this.logRef.nativeElement.clientHeight;
   }
@@ -44,6 +47,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
+
   ) {
     client.messageReception
       .pipe(takeUntil(this.destroy$))
@@ -112,6 +116,12 @@ export class ChatComponent implements AfterViewChecked {
 
       this.client.sendMessage(this.message);
       this.sound.play(Sound.Focus);
+
+      if (this.message !== this.history[this.currentHistoryIndex]) {
+        this.history.push(this.message);
+        this.currentHistoryIndex += 1;
+      }
+
       this.message = '';
     }
 
@@ -136,6 +146,31 @@ export class ChatComponent implements AfterViewChecked {
 
   private focusMessage(): void {
     this.inputRef.nativeElement.focus();
+  }
+
+  @HostListener('keydown.ArrowUp', ['$event'])
+  private onArrowUp(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.currentHistoryIndex !== 0) {
+      this.currentHistoryIndex -= 1;
+      this.message = this.history[this.currentHistoryIndex];
+    }   
+  }
+
+  @HostListener('keydown.ArrowDown', ['$event'])
+  private onArrowDown(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.currentHistoryIndex === this.history.length) {
+      this.message = ''
+      
+    } else if (this.currentHistoryIndex <= this.history.length) {
+      this.currentHistoryIndex += 1;
+      this.message = this.history[this.currentHistoryIndex];
+    }
   }
 
 }
