@@ -38,7 +38,8 @@
       "OK": "Ok"
     },
     "NOTIFICATIONS": {
-      "MESSAGE_FROM": "Message from"
+      "MESSAGE_FROM": "Message from",
+      "INVITE": "{{name}} has invited you to a party"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accept invite from {{name}}",

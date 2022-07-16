@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, Subscription, timer } from 'rxjs';
+import { TranslocoService } from '@ngneat/transloco';
+import { firstValueFrom, Observable, Subject, Subscription, timer } from 'rxjs';
 import { Player } from '../models/player';
 import { NotificationType, PopupNotification } from '../models/popup-notification';
 import { Sound, SoundService } from './sound.service';
@@ -15,6 +16,7 @@ export class PopupNotificationService implements OnDestroy {
 
   constructor(
     private readonly soundService: SoundService,
+    private readonly translocoService: TranslocoService
   ) {
   }
 
@@ -26,6 +28,14 @@ export class PopupNotificationService implements OnDestroy {
 
   public get message(): Observable<PopupNotification> {
     return this.messageSubject.asObservable();
+  }
+
+  public async setPartyInviteMessage(invitingPlayer: Player) {
+    const msg = await firstValueFrom(
+      this.translocoService.selectTranslate<string>('COMPONENT.NOTIFICATIONS.INVITE', 
+      { name: invitingPlayer.name}),
+    );
+    this.setMessage(msg, NotificationType.Invitation, invitingPlayer);
   }
 
   public setMessage(msg: string, typeNotification: NotificationType, player?: Player) {
