@@ -235,6 +235,15 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
         {
             PlayerCharacter::SetGodMode(false);
 
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            
+            // A little punishment for dying to prevent respawn rushing
+            // Should this multiplier be a server var?
+            float spawnHealth = pPlayer->GetActorPermanentValue(ActorValueInfo::kHealth) * 0.1f;
+            float spawnMagicka = pPlayer->GetActorPermanentValue(ActorValueInfo::kMagicka) * 0.1f;
+            pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, spawnHealth);
+            pPlayer->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kMagicka, spawnMagicka);
+
             godmodeStart = false;
         }
     }
