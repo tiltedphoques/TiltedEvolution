@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
+import { NotificationType } from '../models/popup-notification';
 import { ClientService } from './client.service';
+import { PopupNotificationService } from './popup-notification.service';
 
 
 @Injectable({
@@ -24,6 +26,7 @@ export class PlayerListService {
 
   constructor(
     private clientService: ClientService,
+    private notificationService: PopupNotificationService
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -109,11 +112,14 @@ export class PlayerListService {
   }
 
   private onPartyInviteReceived() {
-    this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe((inviterId: number) => {
+   this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe((inviterId: number) => {
       const playerList = this.getPlayerList();
 
       if (playerList) {
-        this.getPlayerById(inviterId).hasInvitedLocalPlayer = true;
+        const invitingPlayer = this.getPlayerById(inviterId)
+        invitingPlayer.hasInvitedLocalPlayer = true;
+        
+        this.notificationService.setMessage(`${invitingPlayer.name} has invited you to a party.`, NotificationType.Invitation, invitingPlayer)
 
         this.playerList.next(playerList);
       }
