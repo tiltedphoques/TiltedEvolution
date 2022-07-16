@@ -116,7 +116,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
         spdlog::warn("Health and Magicka respawn factor is invalid (should be from 0.1 to 1, current value is {}), setting to {}.",
                      healthAndMagickaOnRespawnFactor, newFactor);
 
-        fHealthAndMagickaOnRespawnFactor = healthAndMagickaOnRespawnFactor;
+        fHealthAndMagickaOnRespawnFactor = newFactor;
     }
 
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
