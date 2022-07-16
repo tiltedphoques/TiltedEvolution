@@ -20,7 +20,9 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#if TP_SKYRIM64
 #include <Forms/BGSEncounterZone.h>
+#endif
 
 #include <inttypes.h>
 
@@ -45,9 +47,9 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 #endif
 }
 
+#if TP_SKYRIM64
 bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
 {
-
     if (pCell && pCell->loadedCellData && pCell->loadedCellData->encounterZone)
     {
         // Only return true if cell has the NoResetZone encounter zone
@@ -80,6 +82,7 @@ bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
         return true;
     }
 }
+#endif
 
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
@@ -127,11 +130,13 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     for (TESObjectREFR* pObject : objects)
     {
+#if TP_SKYRIM64
         if (!ShouldSyncObject(pObject))
         {
             spdlog::warn("Excluding sync for {:X}", pObject->formID);
             continue;
         }
+#endif
 
         ObjectData objectData{};
         objectData.CellId = cellId;

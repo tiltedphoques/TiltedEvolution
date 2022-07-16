@@ -102,6 +102,7 @@ bool IsDisableKey(int aKey) noexcept
     return aKey == VK_ESCAPE;
 }
 
+#if TP_SKYRIM64
 void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
 {
 #if defined(TP_SKYRIM)
@@ -121,6 +122,7 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
     while (ShowCursor(FALSE) >= 0)
         ;
 }
+#endif
 
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
