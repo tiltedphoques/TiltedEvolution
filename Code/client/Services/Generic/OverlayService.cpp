@@ -102,8 +102,6 @@ float CalculateHealthPercentage(Actor* apActor) noexcept
     float percentage = health / maxHealth * 100.f;
     if (percentage < 0.f)
         percentage = 0.f;
-	if (percentage > 100.f)
-		percentage = 100.f;
 
     return percentage;
 }
