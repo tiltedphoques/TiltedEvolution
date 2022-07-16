@@ -146,7 +146,10 @@ void GameServer::Kill()
 bool GameServer::CheckMoPo()
 {
     if (!bEnableModCheck)
-        spdlog::warn(kBypassMoPoWarning);
+    {
+        // TODO: re-enable this warning when mopo has good ui and the line endings problem is fixed
+        //spdlog::warn(kBypassMoPoWarning);
+    }
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
     {
@@ -668,8 +671,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 */
     else
     {
-        spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);
-        Kick(aConnectionId);
+        spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
+        sendKick(RT::kWrongPassword);
     }
 }
 

@@ -1,21 +1,20 @@
-import { Component, HostListener, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { Player } from '../../models/player';
 import { NotificationType, PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
 import { PopupNotificationService } from '../../services/popup-notification.service';
 import { animation as popupTestAnimation } from '../popup/popup.animation';
-import { animation as popupsAnimation } from '../root/popups.animation';
 
 
 @Component({
   selector: 'app-notification-popup',
   templateUrl: './notification-popup.component.html',
   styleUrls: ['./notification-popup.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [popupsAnimation, popupTestAnimation],
+  animations: [fadeInOutAnimation, popupTestAnimation],
   providers: [DestroyService],
 })
 export class NotificationPopupComponent implements OnInit {

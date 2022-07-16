@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, QueryList, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -16,10 +16,10 @@ interface ChatMessage extends Message {
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
-  encapsulation: ViewEncapsulation.None,
   providers: [DestroyService],
 })
 export class ChatComponent implements AfterViewChecked {
+
   public padding = 0;
 
   public message = '';

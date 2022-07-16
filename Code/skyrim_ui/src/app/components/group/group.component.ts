@@ -1,21 +1,28 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, combineLatestWith, Observable, Subscription, takeUntil, timer } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SettingService } from 'src/app/services/setting.service';
+import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { Group } from '../../models/group';
 import { Player } from '../../models/player';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
-import { animation as popupsAnimation } from '../root/popups.animation';
+import { PartyAnchor } from '../settings/settings.component';
 
+
+interface GroupPosition {
+  top?: string;
+  right?: string;
+  bottom?: string;
+  left?: string;
+}
 
 @Component({
   selector: 'app-group',
   templateUrl: './group.component.html',
   styleUrls: ['./group.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [popupsAnimation],
+  animations: [fadeInOutAnimation],
   providers: [DestroyService],
 })
 export class GroupComponent implements OnInit, OnDestroy {
@@ -28,6 +35,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   public isAutoHide = new BehaviorSubject(true);
   public isShown = new BehaviorSubject(true);
   public waitLaunch = new BehaviorSubject(false);
+  public positionStyle = new BehaviorSubject<GroupPosition>({ top: '0%', left: '0%' });
 
   constructor(
     private readonly destroy$: DestroyService,
@@ -62,6 +70,8 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.onPartyInfo();
     this.onConnectionState();
     this.subscribeActivation();
+
+    this.updatePosition();
   }
 
   private subscribeActivation() {
@@ -168,4 +178,26 @@ export class GroupComponent implements OnInit, OnDestroy {
     return this.groupService.changeLeader(playerId);
   }
 
+  updatePosition() {
+    const newPosition: GroupPosition = {};
+    switch (this.settings.getPartyAnchor()) {
+      case PartyAnchor.TOP_LEFT:
+        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
+        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        break;
+      case PartyAnchor.TOP_RIGHT:
+        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
+        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        break;
+      case PartyAnchor.BOTTOM_RIGHT:
+        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
+        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        break;
+      case PartyAnchor.BOTTOM_LEFT:
+        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
+        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        break;
+    }
+    this.positionStyle.next(newPosition);
+  }
 }

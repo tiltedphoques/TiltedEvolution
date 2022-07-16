@@ -203,8 +203,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
-            const Inventory inventory = PlayerCharacter::Get()->GetActorInventory();
+            m_world.GetOverlayService().Reload();
         }
     }
     else
@@ -231,8 +230,10 @@ void DebugService::DrawServerView() noexcept
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Server");
 
-    static char s_address[256] = "127.0.0.1:10578";
+    static char s_address[1024] = "127.0.0.1:10578";
+    static char s_password[1024] = "";
     ImGui::InputText("Address", s_address, std::size(s_address));
+    ImGui::InputText("Password", s_password, std::size(s_password));
 
     if (m_transport.IsOnline())
     {
@@ -242,7 +243,10 @@ void DebugService::DrawServerView() noexcept
     else
     {
         if (ImGui::Button("Connect"))
+        {
+            m_transport.SetServerPassword(s_password);
             m_transport.Connect(s_address);
+        }
     }
 
     ImGui::End();
@@ -300,6 +304,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
         ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
+        ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
 
 #if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
@@ -308,7 +313,6 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Animations", nullptr, &g_enableAnimWindow);
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
-        ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
 #endif
@@ -340,6 +344,8 @@ void DebugService::OnDraw() noexcept
         DrawEntitiesView();
     if (g_enableServerWindow)
         DrawServerView();
+    if (g_enablePartyWindow)
+        DrawPartyView();
 
 #if (!IS_MASTER)
     if (g_enableNetworkWindow)
@@ -354,8 +360,6 @@ void DebugService::OnDraw() noexcept
         DrawPlayerDebugView();
     if (g_enableSkillsWindow)
         DrawSkillView();
-    if (g_enablePartyWindow)
-        DrawPartyView();
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
     if (g_enableCellWindow)

@@ -406,6 +406,35 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
 
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
+
+    if (formID != 0x14)
+    {
+        SetPlayerTeammate(true);
+
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
+}
+
+void Actor::SetPlayerTeammate(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetPlayerTeammate, void, Actor, bool aSet, bool abCanDoFavor);
+    POINTER_SKYRIMSE(TSetPlayerTeammate, setPlayerTeammate, 37717);
+    return ThisCall(setPlayerTeammate, this, aSet, true);
+}
+
 void Actor::UnEquipAll() noexcept
 {
     // For each change 

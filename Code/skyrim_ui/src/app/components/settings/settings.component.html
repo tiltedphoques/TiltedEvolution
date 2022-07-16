@@ -5,12 +5,14 @@
       <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
         <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
-        <input id="muted" type="checkbox" [value]="muted" [checked]="muted" (change)="onMutedChange($event)">
+        <input id="muted" type="checkbox" [ngModel]="muted"
+               (ngModelChange)="onMutedChange($event)"
+        >
       </div>
       <div class="flex-item">
-        <label for="volume">{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
-        <input id="volume" class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [value]="volume"
-               (change)="onVolumeChange($event)"
+        <label>{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
+        <input class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [ngModel]="volume"
+               (ngModelChange)="onVolumeChange($event)"
         >
       </div>
     </div>
@@ -19,32 +21,85 @@
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
       <div class="flex-item">
         <label for="showParty">{{ 'COMPONENT.SETTINGS.SHOW_PARTY' | transloco }}</label>
-        <input id="showParty" type="checkbox" [value]="showParty" [checked]="showParty" [disabled]="autoHideParty"
-               (change)="onShowPartyChange($event)"
+        <input id="showParty" type="checkbox" [ngModel]="showParty" [disabled]="autoHideParty"
+               (ngModelChange)="onShowPartyChange($event)"
         >
       </div>
       <div class="flex-item">
         <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
-        <input id="autoHideParty" type="checkbox" [value]="autoHideParty" [checked]="autoHideParty"
-               (change)="onAutoHidePartyChange($event)"
+        <input id="autoHideParty" type="checkbox" [ngModel]="autoHideParty"
+               (ngModelChange)="onAutoHidePartyChange($event)"
         >
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
-        <div class="radioBtn">
-          <label for="autoHideTime1">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
-          <input id="autoHideTime1" type="radio" value="1" name="autoHideTime" [checked]="autoHideTimeSelected(1)"
-                 (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
+        <div class="radio-group">
+          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
+          <input
+            type="radio"
+            [value]="1"
+            [disabled]="!autoHideParty"
+            [ngModel]="autoHideTime"
+            (ngModelChange)="onAutoHideTimeChange($event)"
           >
-          <label for="autoHideTime3">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
-          <input id="autoHideTime3" type="radio" value="3" name="autoHideTime" [checked]="autoHideTimeSelected(3)"
-                 (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
+          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
+          <input
+            type="radio"
+            [value]="3"
+            [disabled]="!autoHideParty"
+            [ngModel]="autoHideTime"
+            (ngModelChange)="onAutoHideTimeChange($event)"
           >
-          <label for="autoHideTime5">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
-          <input id="autoHideTime5" type="radio" value="5" name="autoHideTime" [checked]="autoHideTimeSelected(5)"
-                 (change)="onAutoHideTimeChange($event)" [disabled]="!autoHideParty"
+          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
+          <input
+            type="radio"
+            [value]="5"
+            [disabled]="!autoHideParty"
+            [ngModel]="autoHideTime"
+            (ngModelChange)="onAutoHideTimeChange($event)"
           >
         </div>
+      </div>
+      <div class="flex-item">
+        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
+        <div class="anchor-radios">
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.TOP_LEFT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.TOP_RIGHT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.BOTTOM_RIGHT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+          <div class="radio-group">
+            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco }}</label>
+            <input type="radio" [value]="PartyAnchor.BOTTOM_LEFT" [ngModel]="partyAnchor"
+                   (ngModelChange)="onPartyAnchorChange($event)"
+            >
+          </div>
+        </div>
+      </div>
+      <div class="flex-item">
+        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_X' | transloco }}</label>
+        <input type="range" min="0" max="84" step="1" [ngModel]="partyAnchorOffsetX"
+               (ngModelChange)="onPartyAnchorChangeOffsetX($event)"
+        >
+      </div>
+      <div class="flex-item">
+        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_Y' | transloco }}</label>
+        <input type="range" min="2" max="50" step="1" [ngModel]="partyAnchorOffsetY"
+               (ngModelChange)="onPartyAnchorChangeOffsetY($event)"
+        >
       </div>
     </div>
 
@@ -52,8 +107,8 @@
       <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
       <div class="flex-item">
         <label for="showDebug">{{ 'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco }}</label>
-        <input id="showDebug" type="checkbox" [value]="showDebug" [checked]="showDebug"
-               (change)="onShowDebugChange($event)"
+        <input id="showDebug" type="checkbox" [ngModel]="showDebug"
+               (ngModelChange)="onShowDebugChange($event)"
         >
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { PartyAnchor } from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
 
@@ -64,5 +65,29 @@ export class SettingService {
 
   public getAutoHideTime(): number {
     return JSON.parse(this.storeService.get('party_autoHideTime', 3));
+  }
+
+  public setPartyAnchor(anchor: PartyAnchor) {
+    this.storeService.set('party_anchor', anchor);
+  }
+
+  public getPartyAnchor(): PartyAnchor {
+    return JSON.parse(this.storeService.get('party_anchor', PartyAnchor.TOP_LEFT));
+  }
+
+  public setPartyAnchorOffsetX(offset: number) {
+    this.storeService.set('party_anchor_offset_x', offset);
+  }
+
+  public getPartyAnchorOffsetX(): number {
+    return JSON.parse(this.storeService.get('party_anchor_offset_x', 0));
+  }
+
+  public setPartyAnchorOffsetY(offset: number) {
+    this.storeService.set('party_anchor_offset_y', offset);
+  }
+
+  public getPartyAnchorOffsetY(): number {
+    return JSON.parse(this.storeService.get('party_anchor_offset_y', 3));
   }
 }

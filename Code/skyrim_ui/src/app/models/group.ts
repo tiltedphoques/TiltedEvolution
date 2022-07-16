@@ -1,5 +1,3 @@
-import { Player } from "./player";
-
 export class Group {
   isEnabled: boolean;
   owner: number;

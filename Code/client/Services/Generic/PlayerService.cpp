@@ -57,9 +57,16 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
+#if TP_SKYRIM64
     // TODO: SkyrimTogether.esm
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 0.f;
+
+    TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+    pWorldEncountersEnabled->f = 0.f;
+#elif TP_FALLOUT4
+    // TODO(ft): disable world encounters
+#endif
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
@@ -74,8 +81,12 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 1.f;
+
+    TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+    pWorldEncountersEnabled->f = 1.f;
 #elif TP_FALLOUT4
     *greetDistance = 175.f;
+    // TODO(ft): enable world encounters
 #endif
 }
 

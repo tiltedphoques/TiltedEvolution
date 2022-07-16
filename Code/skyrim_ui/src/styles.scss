@@ -1,8 +1,16 @@
-@import 'functions/mod';
-@import 'functions/rem';
+@import "functions/mod";
+@import "functions/rem";
 
-@import 'env';
+@import "env";
 
+@font-face {
+  font-family: "futura-condensed-medium";
+  src: url(assets/fonts/futura-condensed/futura-condensed-medium.otf);
+}
+
+* {
+  font-family: $-font-default;
+}
 
 input {
   font-size: 1rem;
@@ -11,7 +19,6 @@ input {
 input::placeholder {
   font-size: 1rem !important;
 }
-
 
 ::selection {
   color: $-color-background;
@@ -38,14 +45,6 @@ select {
   line-height: 1em;
 }
 
-button,
-input:not([type=checkbox]),
-textarea,
-optgroup,
-select {
-  font-family: $-font-default;
-}
-
 input:not([type=checkbox]),
 textarea,
 select {
@@ -55,6 +54,11 @@ select {
   color: mod($-color-background, 1);
   border: rem($-size-font, 2px) solid;
   border-image: url("assets/images/separator/single.svg") 3;
+}
+
+input[type=range] {
+  border: 0;
+  padding: 0;
 }
 
 input:not([type=checkbox]),
@@ -174,10 +178,6 @@ button {
   font-size: calc(16 * 100vw / 1920);
 }
 
-$scrollbar: rem($-size-font, 16px);
-
-
-
 ::-webkit-scrollbar {
   width: $scrollbar;
   height: $scrollbar;
@@ -225,11 +225,6 @@ input[type=checkbox] {
   }
 }
 
-html {
-  font-family: $-font-default;
-  //text-shadow: 0.1rem 0.1rem 0.05rem #000;
-}
-
 body {
   margin: 0;
   cursor: default;
@@ -245,9 +240,5 @@ app-root {
 html,
 body {
   height: 100%;
-}
-
-body {
   margin: 0;
-  font-family: $-font-default;
 }

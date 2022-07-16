@@ -6,6 +6,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { environment } from '../environments/environment';
+import { ActionButtonsComponent } from './components/action-buttons/action-buttons.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { ConnectComponent } from './components/connect/connect.component';
 import { DebugComponent } from './components/debug/debug.component';
@@ -26,7 +27,6 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ToggleComponent } from './components/toggle/toggle.component';
 import { WindowComponent } from './components/window/window.component';
 import { HealthDirective } from './directives/health.directive';
-import { PopupButtonsDirective } from './directives/popup-buttons.directive';
 import { AssetService } from './services/asset.service';
 import { ClientService } from './services/client.service';
 import { ErrorService } from './services/error.service';
@@ -53,6 +53,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     PartyMenuComponent,
     PlayerListComponent,
     PlayerManagerComponent,
+    ActionButtonsComponent,
     PopupComponent,
     RootComponent,
     ServerListComponent,
@@ -61,7 +62,6 @@ import { TranslocoRootModule } from './transloco-root.module';
     WindowComponent,
 
     HealthDirective,
-    PopupButtonsDirective,
   ],
   imports: [
     BrowserModule,

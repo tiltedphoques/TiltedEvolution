@@ -102,19 +102,20 @@ bool IsDisableKey(int aKey) noexcept
     return aKey == VK_ESCAPE;
 }
 
-void SetUIActive(auto& overlay, auto pRenderer, bool active)
+void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
 {
 #if defined(TP_SKYRIM)
-     TiltedPhoques::DInputHook::Get().SetEnabled(!active);
-     overlay.SetActive(!active);
+     TiltedPhoques::DInputHook::Get().SetEnabled(!aActive);
+     aOverlay.SetActive(!aActive);
 #else
-     pRenderer->SetVisible(!active);
+     pRenderer->SetVisible(!aActive);
 #endif
 
     // Ensures the game is actually loaded, in case the initial event was sent too early
-    overlay.GetOverlayApp()->ExecuteAsync("enterGame");
+    aOverlay.SetVersion(BUILD_COMMIT);
+    aOverlay.GetOverlayApp()->ExecuteAsync("enterGame");
 
-    pRenderer->SetCursorVisible(!active);
+    apRenderer->SetCursorVisible(!aActive);
 
     // This is to disable the Windows cursor
     while (ShowCursor(FALSE) >= 0)

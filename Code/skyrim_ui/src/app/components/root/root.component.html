@@ -9,7 +9,11 @@
   <app-notification-popup class="app-notification-popup" border="strip"></app-notification-popup>
 
   <app-notifications [@notifications]="!(active$ | async)"></app-notifications>
-  <div [@controls]="(active$ | async)" [ngClass]="(connected$ | async) ? 'app-root-controls-wide' : 'app-root-controls'">
+  <div
+    [@controls]="(active$ | async)"
+    class="app-root-controls"
+    [class.background-element]="view | async"
+  >
     <app-window border="strip" class="app-root-menu">
       <button
         *ngIf="!(connected$ | async) && !(connectionInProgress$ | async)"
@@ -64,7 +68,7 @@
       <app-chat #chat></app-chat>
     </app-window>
   </div>
-  <div [@popups]="(active$ | async)" class="app-root-popups">
+  <div [@fadeInOut]="(active$ | async)" class="app-root-popups">
     <app-loading></app-loading>
 
     <ng-container [ngSwitch]="view | async">
@@ -78,7 +82,7 @@
         <app-server-list (done)="setView(undefined)" (setView)="setView($event)"></app-server-list>
       </app-popup>
       <app-popup *ngSwitchCase="RootView.SETTINGS" data-popup="settings">
-        <app-settings (done)="setView(undefined)" (setView)="setView($event)"></app-settings>
+        <app-settings (done)="setView(undefined)" (setView)="setView($event)" (settingsUpdated)="updateGroupPosition()"></app-settings>
       </app-popup>
       <app-popup *ngSwitchCase="RootView.PLAYER_MANAGER" data-popup="playerManager">
         <app-player-manager (done)="setView(undefined)"></app-player-manager>

@@ -1,5 +1,5 @@
 <div *ngIf="!(group$ | async)?.isEnabled ; else inParty">
-  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled$ | async">Launch party</button>
+  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled$ | async">{{ 'COMPONENT.PARTY_MENU.LAUNCH_PARTY' | transloco }}</button>
   <button
     *ngFor="let player of invitations$ | async"
     class="party-menu-button"
@@ -26,7 +26,7 @@
   </div>
 
   <ng-template #notEmpty>
-    <div class="container-list">
+    <div class="server-list">
       <table cellspacing="5" cellpadding="5" class="player-list-table">
         <thead class="list-header">
           <tr>

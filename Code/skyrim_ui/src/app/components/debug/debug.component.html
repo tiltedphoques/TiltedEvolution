@@ -1,5 +1,5 @@
-<div *ngIf="isShown$ | async" id="app-debug">
-  <div *ngIf="(debugData$ | async) as debugData" id="app-debug-ping">
+<div *ngIf="isShown$ | async" class="app-debug">
+  <div *ngIf="(debugData$ | async) as debugData">
     <span>
       <fa-icon [icon]="faWifi"></fa-icon>
       <b>{{ debugData.RTT }}</b> ms, <b>{{ debugData.packetLoss }}%</b> Loss&nbsp;

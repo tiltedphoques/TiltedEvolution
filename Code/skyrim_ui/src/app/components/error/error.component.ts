@@ -1,5 +1,7 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, SecurityContext } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ErrorService } from '../../services/error.service';
 
 
@@ -7,16 +9,20 @@ import { ErrorService } from '../../services/error.service';
   selector: 'app-error',
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
-  encapsulation: ViewEncapsulation.None,
 })
 export class ErrorComponent {
 
-  error$: Observable<string>;
+  error$: Observable<SafeHtml>;
 
   constructor(
     private readonly errorService: ErrorService,
+    private readonly domSanitizer: DomSanitizer,
   ) {
-    this.error$ = this.errorService.error$.asObservable();
+    this.error$ = this.errorService.error$.pipe(
+      map(error => this.domSanitizer.sanitize(SecurityContext.HTML, error)),
+      map(error => error.replace(/&#10;/g, '<br>')),
+      map(error => error !== '' ? this.domSanitizer.bypassSecurityTrustHtml(error) : null),
+    );
   }
 
   removeError() {

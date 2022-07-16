@@ -1,19 +1,20 @@
-import { Component, HostListener, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, takeUntil } from 'rxjs';
 import { PartyInfo } from 'src/app/models/party-info';
 import { environment } from '../../../environments/environment';
+import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { Player } from '../../models/player';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { ChatComponent } from '../chat/chat.component';
+import { GroupComponent } from '../group/group.component';
 import { animation as controlsAnimation } from './controls.animation';
 import { animation as notificationsAnimation } from './notifications.animation';
-import { animation as popupsAnimation } from './popups.animation';
 
 
 export enum RootView {
-  CONNECT,
+  CONNECT = 1,
   DISCONNECT,
   RECONNECT,
   SERVER_LIST,
@@ -25,8 +26,7 @@ export enum RootView {
   selector: 'app-root',
   templateUrl: './root.component.html',
   styleUrls: ['./root.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [controlsAnimation, notificationsAnimation, popupsAnimation],
+  animations: [controlsAnimation, notificationsAnimation, fadeInOutAnimation],
   host: { 'data-app-root-game': environment.game.toString() },
   providers: [DestroyService],
 })
@@ -43,8 +43,8 @@ export class RootComponent implements OnInit {
   active$ = this.client.activationStateChange.asObservable();
   connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
 
-  @ViewChild('chat')
-  private chatComp!: ChatComponent;
+  @ViewChild('chat') private chatComp!: ChatComponent;
+  @ViewChild(GroupComponent) private groupComponent: GroupComponent;
 
   public constructor(
     private readonly destroy$: DestroyService,
@@ -222,5 +222,9 @@ export class RootComponent implements OnInit {
     }
     event.stopPropagation();
     event.preventDefault();
+  }
+
+  updateGroupPosition() {
+    this.groupComponent?.updatePosition();
   }
 }

@@ -251,7 +251,7 @@ export class GroupService implements OnDestroy {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>('SERVICE.GROUP.ALREADY_IN_GROUP'),
         );
-        this.errorService.error(message);
+        await this.errorService.setError(message);
         return;
       }
 
@@ -269,7 +269,7 @@ export class GroupService implements OnDestroy {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>('SERVICE.GROUP.KICK_NO_PARTY_LEADER'),
         );
-        this.errorService.error(message);
+        await this.errorService.setError(message);
         return;
       }
 
@@ -287,7 +287,7 @@ export class GroupService implements OnDestroy {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>('SERVICE.GROUP.MAKE_LEADER_NO_PARTY_LEADER'),
         );
-        this.errorService.error(message);
+        await this.errorService.setError(message);
         return;
       }
 
