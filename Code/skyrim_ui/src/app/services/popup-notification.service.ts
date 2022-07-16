@@ -40,12 +40,12 @@ export class PopupNotificationService implements OnDestroy {
     const source = timer(3000);
 
     this.timerSubscription = source.subscribe(() => {
-      this.messageSubject.next({ message: '', type: NotificationType.Connection, player: undefined });
+      this.clearMessage();
     });
   }
 
   public clearMessage() {
-    this.messageSubject.next({ message: '' });
+    this.messageSubject.next({ message: '', type: NotificationType.Connection, player: undefined });
   }
 
 }

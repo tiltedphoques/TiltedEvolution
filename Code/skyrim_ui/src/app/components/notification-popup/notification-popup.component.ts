@@ -58,16 +58,11 @@ export class NotificationPopupComponent implements OnInit {
   private activate(event: KeyboardEvent): void {
     // Just for deskop
     if (!environment.game) {
-      this.notification = {
-        message: 'test notif',
-        player: new Player({
-          name: 'Dumbeldor',
-          online: true,
-          avatar: 'https://skyrim-together.com/images/float/avatars/random3.jpg',
-        }),
-        type: NotificationType.Connection,
-      };
-      this.isActive = !this.isActive;
+      this.popupNotificationService.setMessage('test notif', NotificationType.Connection, new Player({
+        name: 'Dumbeldor',
+        online: true,
+        avatar: 'https://avatars.dicebear.com/api/adventurer/john-skyrim.svg',
+      }));
     }
   }
 
