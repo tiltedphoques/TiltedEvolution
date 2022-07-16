@@ -36,6 +36,7 @@ Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
+Console::Setting fHealthAndMagickaOnRespawnFactor{"Gameplay:fHealthAndMagickaOnRespawnFactor", "Percentage of max health and magicka on player respawn", 1.0f};
 
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -106,6 +107,16 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
                      uDifficulty.value_as<uint8_t>());
 
         uDifficulty = 4;
+    }
+
+    float healthAndMagickaOnRespawnFactor = fHealthAndMagickaOnRespawnFactor.as_float();
+    if (healthAndMagickaOnRespawnFactor < 0.1f || healthAndMagickaOnRespawnFactor > 1.0f)
+    {
+        float newFactor = std::clamp(healthAndMagickaOnRespawnFactor, 0.1f, 1.0f);
+        spdlog::warn("Health and Magicka respawn factor is invalid (should be from 0.1 to 1, current value is {}), setting to {}.",
+                     healthAndMagickaOnRespawnFactor, newFactor);
+
+        fHealthAndMagickaOnRespawnFactor = healthAndMagickaOnRespawnFactor;
     }
 
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
@@ -626,6 +637,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
         serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
         serverResponse.Settings.PvpEnabled = bEnablePvp;
+        serverResponse.Settings.HealthAndMagickaOnRespawnFactor = fHealthAndMagickaOnRespawnFactor.as_float();
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
