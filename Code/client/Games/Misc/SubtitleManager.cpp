@@ -18,7 +18,7 @@ SubtitleManager* SubtitleManager::Get() noexcept
 TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText,
                  bool aIsInDialogue);
 #elif TP_FALLOUT4
-TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText,
+TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, BSFixedString* apSubtitleText,
                  TESTopicInfo* apTopicInfo, bool aIsInDialogue);
 #endif
 static TShowSubtitle* RealShowSubtitle = nullptr;
@@ -28,8 +28,9 @@ void SubtitleManager::ShowSubtitle(TESObjectREFR* apSpeaker, const char* apSubti
 #if TP_SKYRIM64
     ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, aUnk1);
 #elif TP_FALLOUT4
-    // TODO: these args are wrong, crashes while copying BSString, apSubtitleText is probably not just a raw ptr
-    //ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, apTopicInfo, aUnk1);
+    BSFixedString subtitleText(apSubtitleText);
+    ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, apTopicInfo, aUnk1);
+    subtitleText.Release();
 #endif
 }
 
@@ -42,12 +43,11 @@ void* SubtitleManager::HideSubtitle(TESObjectREFR* apSpeaker) noexcept
     return ThisCall(s_hideSubtitle, this, apSpeaker);
 }
 
-// TODO: ft (verify)
 #if TP_SKYRIM64
 void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText,
                       bool aIsInDialogue)
 #elif TP_FALLOUT4
-void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText,
+void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, BSFixedString* apSubtitleText,
                       TESTopicInfo* apTopicInfo, bool aIsInDialogue)
 #endif
 {
@@ -58,7 +58,7 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
 #if TP_SKYRIM64
         World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
 #elif TP_FALLOUT4
-        World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
+        World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText->AsAscii()));
 #endif
 
 
@@ -71,7 +71,6 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
 
 TiltedPhoques::Initializer s_subtitleHooks([]()
 {
-    // TODO: ft (verify)
     POINTER_SKYRIMSE(TShowSubtitle, s_showSubtitle, 52626);
     POINTER_FALLOUT4(TShowSubtitle, s_showSubtitle, 875509);
 
