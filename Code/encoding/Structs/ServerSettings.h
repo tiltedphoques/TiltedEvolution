@@ -15,4 +15,5 @@ struct ServerSettings
     uint32_t Difficulty{};
     bool GreetingsEnabled{};
     bool PvpEnabled{};
+    bool SyncPlayerHomes{};
 };
