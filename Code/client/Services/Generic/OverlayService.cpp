@@ -94,12 +94,13 @@ String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 float CalculateHealthPercentage(Actor* apActor) noexcept
 {
     const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
+    const float tempModHealth = apActor->healthModifiers.temporaryModifier;
+
     if (maxHealth == 0.f)
         return 0.f;
-
     const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
 
-    float percentage = health / maxHealth * 100.f;
+    float percentage = health / (maxHealth + tempModHealth) * 100.f;
     if (percentage < 0.f)
         percentage = 0.f;
 
