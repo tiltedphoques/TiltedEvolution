@@ -10,6 +10,9 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 
+
+extern Console::Setting<uint16_t> uMaxPlayerCount;
+
 static constexpr char kMasterServerEndpoint[] =
 #if TP_SKYRIM
     //"http://127.0.0.1:8000";
@@ -17,8 +20,6 @@ static constexpr char kMasterServerEndpoint[] =
 #elif TP_FALLOUT
     "https://fallout-reborn-list.skyrim-together.com";
 #endif
-
-static constexpr uint16_t kPlayerMaxCap = 1000;
 
 static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
                                         "Whether to list the server on the public server list", false};
@@ -69,8 +70,8 @@ void ServerListService::Announce() const noexcept
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
-                        pServer->GetPort(), cInfo.tick_rate, pc, kPlayerMaxCap, cInfo.tagList, bAnnounceServer);
+    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(),
+                   cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
 }
 
 void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
