@@ -3,15 +3,23 @@ export class MessageHistory {
   
   private stack: string[] = [];
   private offset = 0;
+  /** When the history exeeds this number, the first item will be removed */
+  private maxHistoryLength: number;
 
-  constructor() {
+  constructor({maxHistoryLength}) {
+    this.maxHistoryLength = maxHistoryLength;
   }
 
   public push(newMsg: string) {
     const isNewMessageDifferent = newMsg != this.stack[this.offset];
 
     if (isNewMessageDifferent) {
-      this.stack.push(newMsg);  
+      const stackExceedsMaxLength = this.stack.length > this.maxHistoryLength;
+      if (stackExceedsMaxLength) {
+        this.stack.shift();
+      }
+
+      this.stack.push(newMsg);
     }
 
     this.offset = this.stack.length;

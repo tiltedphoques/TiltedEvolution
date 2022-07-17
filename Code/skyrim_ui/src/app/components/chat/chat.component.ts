@@ -31,7 +31,7 @@ export class ChatComponent implements AfterViewChecked {
 
   private scrollBack = 0;
 
-  private history = new MessageHistory();
+  private history = new MessageHistory({maxHistoryLength: 50});
 
   private get maxScroll(): number {
     return this.logRef.nativeElement.scrollHeight - this.logRef.nativeElement.clientHeight;
