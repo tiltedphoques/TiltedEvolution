@@ -96,7 +96,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     // Player homes should not be synced, so that chest contents,
     // which are often used as storage, are never accidentally wiped.
-    if (IsPlayerHome(pCell))
+    if (!World::Get().GetServerSettings().SyncPlayerHomes && IsPlayerHome(pCell))
         return;
 
     GameId cellId{};
