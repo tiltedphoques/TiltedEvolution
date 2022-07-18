@@ -6,6 +6,7 @@
 #include <Games/ActorExtension.h>
 
 #include <Forms/TESTopicInfo.h>
+#include <Misc/BSFixedString.h>
 
 SubtitleManager* SubtitleManager::Get() noexcept
 {
@@ -29,7 +30,7 @@ void SubtitleManager::ShowSubtitle(TESObjectREFR* apSpeaker, const char* apSubti
     ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, aUnk1);
 #elif TP_FALLOUT4
     BSFixedString subtitleText(apSubtitleText);
-    ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, apTopicInfo, aUnk1);
+    ThisCall(RealShowSubtitle, this, apSpeaker, &subtitleText, apTopicInfo, aUnk1);
     subtitleText.Release();
 #endif
 }
@@ -51,7 +52,7 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
                       TESTopicInfo* apTopicInfo, bool aIsInDialogue)
 #endif
 {
-    spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
+    //spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
 
     Actor* pActor = Cast<Actor>(apSpeaker);
     if (pActor && pActor->GetExtension()->IsLocal() && !pActor->GetExtension()->IsPlayer())

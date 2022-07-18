@@ -145,6 +145,13 @@ struct Actor : TESObjectREFR
         IS_ESSENTIAL = 1 << 18,
     };
 
+    struct ActorValueModifiers
+    {
+        float permanentModifier;
+        float temporaryModifier;
+        float damageModifier;
+    };
+
     // TODO: ft verify, fallout has no mounts? unlikely, but maybe this flag is reused for something else?
     // those helicopters maybe?
     bool IsMount() const noexcept
@@ -182,7 +189,9 @@ struct Actor : TESObjectREFR
     TESForm* magicItems[4];
     uint8_t pad408[0x43C - 0x408];
     uint32_t flags2;
-    uint8_t padActorEnd[0x490 - 0x440];
+    uint8_t pad440[0x4];
+    ActorValueModifiers healthModifiers;
+    uint8_t padActorEnd[0x490 - 0x450];
 };
 
 static_assert(sizeof(Actor) == 0x490);
