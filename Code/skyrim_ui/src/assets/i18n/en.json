@@ -121,6 +121,8 @@
       "LENGTH": "{{length}}s",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Show Debug Information",
+      "FONT": "Font",
+      "FONT_SIZE": "Font size",
       "BACK": "Back"
     }
   },

@@ -31,6 +31,7 @@ export class SettingsComponent implements OnInit {
   public partyAnchor: PartyAnchor;
   public partyAnchorOffsetX: number;
   public partyAnchorOffsetY: number;
+  public fontSize: number;
 
   @Output() public done = new EventEmitter<void>();
   @Output() public setView = new EventEmitter<RootView>();
@@ -53,6 +54,7 @@ export class SettingsComponent implements OnInit {
     this.partyAnchor = this.settings.getPartyAnchor();
     this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
     this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
+    this.fontSize = this.settings.getFontSize();
   }
 
   onMutedChange(checked: boolean) {
@@ -116,6 +118,13 @@ export class SettingsComponent implements OnInit {
     this.settingsUpdated.next();
   }
 
+  onFontSizeChange(px: number) {
+    console.log("font", px)
+    this.settings.setFontSize(px);
+    this.fontSize = px;
+    this.settingsUpdated.next();
+  }
+  
   public autoHideTimeSelected(number: number): boolean {
     return this.settings.getAutoHideTime() === number;
   }

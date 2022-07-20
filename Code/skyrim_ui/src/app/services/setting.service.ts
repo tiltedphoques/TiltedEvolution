@@ -90,4 +90,14 @@ export class SettingService {
   public getPartyAnchorOffsetY(): number {
     return JSON.parse(this.storeService.get('party_anchor_offset_y', 3));
   }
+
+  public setFontSize(size: number) {
+    document.documentElement.setAttribute('style', `font-size: ${size}px;`)
+    this.storeService.set('font_size', size);
+  }
+
+  public getFontSize(): number {
+    return JSON.parse(this.storeService.get('font_size', 16));
+  }
+
 }
