@@ -81,7 +81,7 @@
 
 .app-root-menu {
   display: flex;
-  height: rem($-size-font, 64px);
+  height: 4rem;
 
   > button {
     flex: 0 0 auto;
@@ -97,7 +97,7 @@
   flex-direction: column;
 
   > app-chat {
-    margin: rem($-size-font, 2px);
+    margin: 0.1rem;
     flex: 1 1 auto;
   }
 }

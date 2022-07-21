@@ -10,8 +10,8 @@
   .tab-buttons {
     display: flex;
     padding-bottom: 10px;
-    margin-bottom: rem($-size-font, 2px);
-    border-bottom: rem($-size-font, 2px) solid;
+    margin-bottom: 0.1rem;
+    border-bottom: 3px solid;
     border-image: url("../../../assets/images/separator/single.svg") 3;
 
     button {
