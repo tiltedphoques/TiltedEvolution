@@ -34,7 +34,8 @@ private:
         uint16_t aPlayerCount, 
         uint16_t aPlayerMaxCount, 
         String acTagList,
-        bool aPublic) noexcept;
+        bool aPublic,
+        bool aPassword) noexcept;
 
     World& m_world;
 
