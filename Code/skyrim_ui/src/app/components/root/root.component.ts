@@ -58,7 +58,7 @@ export class RootComponent implements OnInit {
   public ngOnInit(): void {
     this.onInGameStateSubscription();
     this.onActivationStateSubscription();
-    this.onFontSizeSubscription()
+    this.onFontSizeSubscription();
   }
 
   public onInGameStateSubscription() {
@@ -86,7 +86,7 @@ export class RootComponent implements OnInit {
 
   public onFontSizeSubscription() {
     this.settings.fontSizeChange.subscribe( size => {
-      document.documentElement.setAttribute('style', `font-size: ${size}px;`)
+      document.documentElement.setAttribute('style', `font-size: ${size}px;`);
     }) 
   }
 
