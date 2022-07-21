@@ -85,7 +85,9 @@ export class RootComponent implements OnInit {
   }
 
   public onFontSizeSubscription() {
-    this.settings.fontSizeChange.subscribe( size => {
+    this.settings.fontSizeChange
+    .pipe(takeUntil(this.destroy$))
+    .subscribe( size => {
       document.documentElement.setAttribute('style', `font-size: ${size}px;`);
     }) 
   }
