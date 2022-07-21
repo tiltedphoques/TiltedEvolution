@@ -123,7 +123,6 @@ export class SettingsComponent implements OnInit {
 
   onFontSizeChange(size: number) {
     if (size >= this.minFontSize && size <= this.maxFontSize) {
-      console.log("set")
       this.settings.setFontSize(size);
       this.fontSize = size;
       this.settingsUpdated.next();
