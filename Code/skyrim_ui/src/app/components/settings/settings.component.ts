@@ -33,6 +33,9 @@ export class SettingsComponent implements OnInit {
   public partyAnchorOffsetY: number;
   public fontSize: number;
 
+  public maxFontSize = 20;
+  public minFontSize = 10;
+
   @Output() public done = new EventEmitter<void>();
   @Output() public setView = new EventEmitter<RootView>();
   @Output() public settingsUpdated = new EventEmitter<void>();
@@ -118,11 +121,21 @@ export class SettingsComponent implements OnInit {
     this.settingsUpdated.next();
   }
 
-  onFontSizeChange(px: number) {
-    console.log("font", px)
-    this.settings.setFontSize(px);
-    this.fontSize = px;
-    this.settingsUpdated.next();
+  onFontSizeChange(size: number) {
+    if (size >= this.minFontSize && size <= this.maxFontSize) {
+      console.log("set")
+      this.settings.setFontSize(size);
+      this.fontSize = size;
+      this.settingsUpdated.next();
+    }
+  }
+
+  onFontSizeUp() {
+    this.onFontSizeChange(this.fontSize + 1)
+  }
+
+  onFontSizeDown() {
+    this.onFontSizeChange(this.fontSize - 1)
   }
   
   public autoHideTimeSelected(number: number): boolean {

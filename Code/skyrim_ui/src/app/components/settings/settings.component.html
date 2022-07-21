@@ -116,10 +116,14 @@
       <h2>{{ 'COMPONENT.SETTINGS.FONT' | transloco }}</h2>
       <div class="flex-item">
         <label for="font-size">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
-        <input id="font-size" type="number" min=10 value={{fontSize}} max=20 step=1 [ngModel]="fontSize" 
-              (ngModelChange)="onFontSizeChange($event)"
-        />
-        </div>
+        <span class="fontsize">
+          <button id="decrement" (click)="onFontSizeDown()"></button>
+            <input id="font-size" type="number" min=10 value={{fontSize}} max=20 step=1 [ngModel]="fontSize" 
+                  (ngModelChange)="onFontSizeChange($event)"
+            />
+          <button id="increment"(click)="onFontSizeUp()"></button>
+        </span> 
+      </div>
     </div>
   </div>
 </div>

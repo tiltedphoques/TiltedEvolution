@@ -46,7 +46,7 @@
         flex-direction: column;
         justify-content: end;
 
-        > div {
+        >div {
           display: flex;
           justify-content: space-between;
         }
@@ -71,4 +71,33 @@
   margin-top: 1rem;
   display: flex;
   justify-content: center;
+}
+
+.fontsize {
+  display: flex;
+  align-items: center;
+
+  input {
+    border: none;
+    background: none;
+    text-align: center;
+
+    width: 3rem;
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  button {
+    width: 1rem;
+    height: 1rem;
+    background-image: url('../../../assets/images/arrow/west.svg')
+  }
+
+  button#increment {
+    background-image: url('../../../assets/images/arrow/east.svg')
+  }
 }
