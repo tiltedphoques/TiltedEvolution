@@ -11,6 +11,7 @@ export class SettingService {
 
   public partyShownChange = new BehaviorSubject(this.isPartyShown());
   public partyAutoHideChange = new BehaviorSubject(this.isPartyAutoHidden());
+  public fontSizeChange = new BehaviorSubject(this.getFontSize())
 
   constructor(
     private readonly storeService: StoreService,
@@ -92,7 +93,7 @@ export class SettingService {
   }
 
   public setFontSize(size: number) {
-    document.documentElement.setAttribute('style', `font-size: ${size}px;`)
+    this.fontSizeChange.next(size)
     this.storeService.set('font_size', size);
   }
 

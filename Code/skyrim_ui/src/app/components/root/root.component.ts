@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, takeUntil } from 'rxjs';
 import { PartyInfo } from 'src/app/models/party-info';
+import { SettingService } from 'src/app/services/setting.service';
 import { environment } from '../../../environments/environment';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { Player } from '../../models/player';
@@ -50,12 +51,14 @@ export class RootComponent implements OnInit {
     private readonly destroy$: DestroyService,
     private readonly client: ClientService,
     private readonly sound: SoundService,
+    private readonly settings: SettingService
   ) {
   }
 
   public ngOnInit(): void {
     this.onInGameStateSubscription();
     this.onActivationStateSubscription();
+    this.onFontSizeSubscription()
   }
 
   public onInGameStateSubscription() {
@@ -79,6 +82,12 @@ export class RootComponent implements OnInit {
           this.setView(undefined);
         }
       });
+  }
+
+  public onFontSizeSubscription() {
+    this.settings.fontSizeChange.subscribe( size => {
+      document.documentElement.setAttribute('style', `font-size: ${size}px;`)
+    }) 
   }
 
   public setView(view: RootView | undefined) {
