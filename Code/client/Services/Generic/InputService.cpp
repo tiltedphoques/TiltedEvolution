@@ -105,17 +105,17 @@ bool IsDisableKey(int aKey) noexcept
 void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
 {
 #if defined(TP_SKYRIM)
-     TiltedPhoques::DInputHook::Get().SetEnabled(!aActive);
-     aOverlay.SetActive(!aActive);
+    TiltedPhoques::DInputHook::Get().SetEnabled(aActive);
+    aOverlay.SetActive(aActive);
 #else
-     pRenderer->SetVisible(!aActive);
+    pRenderer->SetVisible(aActive);
 #endif
 
     // Ensures the game is actually loaded, in case the initial event was sent too early
     aOverlay.SetVersion(BUILD_COMMIT);
     aOverlay.GetOverlayApp()->ExecuteAsync("enterGame");
 
-    apRenderer->SetCursorVisible(!aActive);
+    apRenderer->SetCursorVisible(aActive);
 
     // This is to disable the Windows cursor
     while (ShowCursor(FALSE) >= 0)
@@ -228,24 +228,19 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pRenderer)
         return;
 
-    auto active = overlay.GetActive();
+    const auto active = overlay.GetActive();
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    if (IsToggleKey(aKey) || IsDisableKey(aKey))
+    if (IsToggleKey(aKey) || (IsDisableKey(aKey) && active))
     {
-        if (active && IsDisableKey(aKey))
-        {
-            active = true;
-        }
         if (!overlay.GetInGame())
         {
             TiltedPhoques::DInputHook::Get().SetEnabled(false);
         }
-        // This is really hacky, but when the input hook is enabled initially, it does not propogate the KEYDOWN event
-        else if (aType == KEYEVENT_KEYDOWN || (aType == KEYEVENT_KEYUP && !active))
+        else if (aType == KEYEVENT_KEYUP)
         {
-            SetUIActive(overlay, pRenderer, active);
+            SetUIActive(overlay, pRenderer, !active);
         }
     }
     else if (active)
