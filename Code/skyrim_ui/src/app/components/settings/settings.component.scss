@@ -73,22 +73,13 @@
   justify-content: center;
 }
 
-.fontsize {
+.fontsize-controls {
   display: flex;
   align-items: center;
 
-  input {
-    border: none;
-    background: none;
+  #fontSize {
     text-align: center;
-
-    width: 3rem;
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+    width: 5rem;
   }
 
   button {
