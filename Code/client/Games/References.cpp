@@ -617,6 +617,30 @@ void Actor::SetPackage(TESPackage* apPackage) noexcept
     s_execInitPackage = false;
 }
 
+bool Actor::IsInCombat() noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, IsInCombat);
+    return s_pIsInCombat(this);
+}
+
+Actor* Actor::GetCombatTarget() noexcept
+{
+    PAPYRUS_FUNCTION(Actor*, Actor, GetCombatTarget);
+    return s_pGetCombatTarget(this);
+}
+
+void Actor::StartCombat(Actor* apTarget) noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*);
+    s_pStartCombat(this, apTarget);
+}
+
+void Actor::StopCombat() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, StopCombat);
+    s_pStopCombat(this);
+}
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
