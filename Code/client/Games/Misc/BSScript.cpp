@@ -10,9 +10,11 @@
 #include <Games/ActorExtension.h>
 
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
+TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine);
 TP_THIS_FUNCTION(TCompareVariables, int64_t, void, BSScript::Variable*, BSScript::Variable*);
 
 TRegisterPapyrusFunction* RealRegisterPapyrusFunction = nullptr;
+TBindEverythingToScript* RealBindEverythingToScript = nullptr;
 TCompareVariables* RealCompareVariables = nullptr;
 
 void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, NativeFunction* apFunction)
@@ -24,6 +26,13 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
     runner.Trigger(std::move(event));
 
     ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
+}
+
+void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine)
+{
+
+
+    ThisCall(RealBindEverythingToScript, apThis);
 }
 
 // This is a neat hack, but it has been disabled since it messes up other things like beastform.
