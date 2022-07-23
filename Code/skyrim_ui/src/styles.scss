@@ -12,12 +12,8 @@
   font-family: $-font-default;
 }
 
-input {
+input, input::placeholder {
   font-size: 1rem;
-}
-
-input::placeholder {
-  font-size: 1rem !important;
 }
 
 ::selection {

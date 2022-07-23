@@ -5,7 +5,7 @@
 
 :host {
   display: block;
-  font-size: 1.25rem;
+  font-size: var(--font-size) + .25rem;
 }
 
 .app-connect {
@@ -21,10 +21,6 @@
     display: flex;
     justify-items: start;
     align-items: center;
-
-    label {
-      font-size: 0.8em;
-    }
 
     input {
       margin-left: 0.7em;

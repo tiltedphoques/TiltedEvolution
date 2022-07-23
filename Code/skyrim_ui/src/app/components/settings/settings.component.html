@@ -118,9 +118,9 @@
         <label for="fontSize">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
         <span class="fontsize-controls">
           <button id="decrement" (click)="onFontSizeDown()"></button>
-            <span id="fontSize">{{fontSize}}</span>
+            <span id="fontSize">{{('COMPONENT.SETTINGS.FONT_SIZES.' + fontSize.toUpperCase()) | transloco}}</span>
           <button id="increment"(click)="onFontSizeUp()"></button>
-        </span> 
+        </span>
       </div>
     </div>
   </div>

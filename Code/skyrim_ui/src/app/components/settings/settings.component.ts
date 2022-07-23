@@ -4,6 +4,13 @@ import { SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { RootView } from '../root/root.component';
 
+export enum FontSize {
+  XS = 'xs',
+  S = 's',
+  M = 'm',
+  L = 'l',
+  XL = 'xl'
+}
 
 export enum PartyAnchor {
   TOP_LEFT,
@@ -31,10 +38,11 @@ export class SettingsComponent implements OnInit {
   public partyAnchor: PartyAnchor;
   public partyAnchorOffsetX: number;
   public partyAnchorOffsetY: number;
-  public fontSize: number;
+  public fontSize: FontSize;
+  private _fontSize: number;
 
-  public maxFontSize = 20;
-  public minFontSize = 10;
+  public maxFontSize = Object.values(FontSize).length - 1;
+  public minFontSize = 0;
 
   @Output() public done = new EventEmitter<void>();
   @Output() public setView = new EventEmitter<RootView>();
@@ -58,6 +66,7 @@ export class SettingsComponent implements OnInit {
     this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
     this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
     this.fontSize = this.settings.getFontSize();
+    this._fontSize = Object.values(FontSize).indexOf(this.fontSize);
   }
 
   onMutedChange(checked: boolean) {
@@ -123,20 +132,22 @@ export class SettingsComponent implements OnInit {
 
   onFontSizeChange(size: number) {
     if (size >= this.minFontSize && size <= this.maxFontSize) {
-      this.settings.setFontSize(size);
-      this.fontSize = size;
+      const fontSize = Object.values(FontSize)[size];
+      this.settings.setFontSize(fontSize);
+      this.fontSize = fontSize;
+      this._fontSize = size;
       this.settingsUpdated.next();
     }
   }
 
   onFontSizeUp() {
-    this.onFontSizeChange(this.fontSize + 1)
+    this.onFontSizeChange(this._fontSize + 1)
   }
 
   onFontSizeDown() {
-    this.onFontSizeChange(this.fontSize - 1)
+    this.onFontSizeChange(this._fontSize - 1)
   }
-  
+
   public autoHideTimeSelected(number: number): boolean {
     return this.settings.getAutoHideTime() === number;
   }

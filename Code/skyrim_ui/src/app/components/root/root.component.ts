@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import {Component, HostBinding, HostListener, OnInit, ViewChild} from '@angular/core';
 import { BehaviorSubject, takeUntil } from 'rxjs';
 import { PartyInfo } from 'src/app/models/party-info';
 import { SettingService } from 'src/app/services/setting.service';
@@ -44,6 +44,8 @@ export class RootComponent implements OnInit {
   active$ = this.client.activationStateChange.asObservable();
   connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
 
+  @HostBinding('class') fontSizeClass = 'font-size-m';
+
   @ViewChild('chat') private chatComp!: ChatComponent;
   @ViewChild(GroupComponent) private groupComponent: GroupComponent;
 
@@ -88,8 +90,8 @@ export class RootComponent implements OnInit {
     this.settings.fontSizeChange
     .pipe(takeUntil(this.destroy$))
     .subscribe( size => {
-      document.documentElement.setAttribute('style', `font-size: ${size}px;`);
-    }) 
+      this.fontSizeClass = 'font-size-' + size;
+    })
   }
 
   public setView(view: RootView | undefined) {

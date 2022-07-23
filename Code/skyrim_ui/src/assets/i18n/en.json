@@ -123,6 +123,13 @@
       "SHOW_DEBUG_INFO": "Show Debug Information",
       "FONT": "Font",
       "FONT_SIZE": "Font size",
+      "FONT_SIZES": {
+        "XS": "Extra small",
+        "S": "Small",
+        "M": "Medium",
+        "L": "Large",
+        "XL": "Extra Large"
+      },
       "BACK": "Back"
     }
   },
