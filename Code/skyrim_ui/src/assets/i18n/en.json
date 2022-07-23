@@ -144,7 +144,8 @@
         "MODS_MISMATCH_INSTALL": "Please install the following mods to join:\n{{mods}}",
         "CLIENT_MODS_DISALLOWED": "This server disallows {{mods}}. Please remove them to join.",
         "WRONG_PASSWORD": "The password you entered is incorrect.",
-        "NO_REASON": "The server refused connection without reason."
+        "NO_REASON": "The server refused connection without reason.",
+        "SERVER_FULL" : "This server is full."
       }
     }
   }
