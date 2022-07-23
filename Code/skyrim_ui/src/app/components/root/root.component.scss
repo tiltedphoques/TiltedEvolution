@@ -4,29 +4,8 @@
 @import "functions/mod";
 @import "functions/rem";
 
-:host(.font-size-xs) {
-  --font-size: .5rem;
-}
-
-:host(.font-size-s) {
-  --font-size: .8rem;
-}
-
-:host(.font-size-m) {
-  --font-size: 1rem;
-}
-
-:host(.font-size-l) {
-  --font-size: 1.2rem;
-}
-
-:host(.font-size-xl) {
-  --font-size: 1.5rem;
-}
-
 :host {
   display: block;
-  font-size: var(--font-size, 1rem);
 
   &[data-app-root-game=false] {
     $background: mod($-color-background, 0.1);
@@ -80,14 +59,6 @@
       max-width: 30vw;
       min-width: 25vw;
     }
-  }
-
-  button, input, input::placeholder {
-    font-size: var(--font-size);
-  }
-
-  label {
-    font-size: var(--font-size) - 0.2rem;
   }
 }
 

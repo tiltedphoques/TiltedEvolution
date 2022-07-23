@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import {FontSize, PartyAnchor} from '../components/settings/settings.component';
+import {FontSize, fontSizeToPixels, PartyAnchor} from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
 
@@ -93,7 +93,7 @@ export class SettingService {
   }
 
   public setFontSize(size: FontSize) {
-    this.fontSizeChange.next(size)
+    this.fontSizeChange.next(size);
     this.storeService.set('font_size', size);
   }
 

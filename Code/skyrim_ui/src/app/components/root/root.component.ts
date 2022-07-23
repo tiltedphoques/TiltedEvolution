@@ -1,4 +1,4 @@
-import {Component, HostBinding, HostListener, OnInit, ViewChild} from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, takeUntil } from 'rxjs';
 import { PartyInfo } from 'src/app/models/party-info';
 import { SettingService } from 'src/app/services/setting.service';
@@ -12,6 +12,8 @@ import { ChatComponent } from '../chat/chat.component';
 import { GroupComponent } from '../group/group.component';
 import { animation as controlsAnimation } from './controls.animation';
 import { animation as notificationsAnimation } from './notifications.animation';
+import {map} from 'rxjs/operators';
+import {fontSizeToPixels} from '../settings/settings.component';
 
 
 export enum RootView {
@@ -43,8 +45,6 @@ export class RootComponent implements OnInit {
   inGame$ = this.client.inGameStateChange.asObservable();
   active$ = this.client.activationStateChange.asObservable();
   connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
-
-  @HostBinding('class') fontSizeClass = 'font-size-m';
 
   @ViewChild('chat') private chatComp!: ChatComponent;
   @ViewChild(GroupComponent) private groupComponent: GroupComponent;
@@ -88,9 +88,9 @@ export class RootComponent implements OnInit {
 
   public onFontSizeSubscription() {
     this.settings.fontSizeChange
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
     .subscribe( size => {
-      this.fontSizeClass = 'font-size-' + size;
+      document.documentElement.setAttribute('style', `font-size: ${size};`);
     })
   }
 

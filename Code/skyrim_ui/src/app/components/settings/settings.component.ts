@@ -12,6 +12,14 @@ export enum FontSize {
   XL = 'xl'
 }
 
+export const fontSizeToPixels = {
+  [FontSize.XS]: '10px',
+  [FontSize.S]: '12px',
+  [FontSize.M]: '16px',
+  [FontSize.L]: '18px',
+  [FontSize.XL]: '20px',
+}
+
 export enum PartyAnchor {
   TOP_LEFT,
   TOP_RIGHT,
