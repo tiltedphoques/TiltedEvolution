@@ -71,6 +71,14 @@ float* GetGreetDistance() noexcept
     POINTER_FALLOUT4(float, s_greetDistance, 855966);
     return s_greetDistance.Get();
 }
+
+#if TP_FALLOUT4
+float* GetVATSSelectTargetTimeMultiplier() noexcept
+{
+    POINTER_FALLOUT4(float, s_vatsSelectTargetMult, 302827);
+    return s_vatsSelectTargetMult.Get();
+}
+#endif
 }
 
 namespace GameplayFormulas

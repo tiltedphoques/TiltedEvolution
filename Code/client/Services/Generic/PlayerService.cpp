@@ -57,14 +57,18 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
-#if TP_SKYRIM64
     // TODO: SkyrimTogether.esm
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 0.f;
 
+#if TP_SKYRIM64
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 0.f;
 #elif TP_FALLOUT4
+    // Makes it so that VATS doesn't slow down time
+    float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
+    *vatsTargetingMult = 0.f;
+
     // TODO(ft): disable world encounters
 #endif
 }
@@ -74,18 +78,23 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
+    TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
+    pKillMove->f = 1.f;
+
     // Restore to the default value (150 in skyrim, 175 in fallout 4)
     float* greetDistance = Settings::GetGreetDistance();
 #if TP_SKYRIM64
     *greetDistance = 150.f;
 
-    TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
-    pKillMove->f = 1.f;
-
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 1.f;
 #elif TP_FALLOUT4
     *greetDistance = 175.f;
+
+    // Restore VATS slow time (default is 0.04)
+    float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
+    *vatsTargetingMult = 0.04f;
+
     // TODO(ft): enable world encounters
 #endif
 }
