@@ -12,6 +12,8 @@ import { ChatComponent } from '../chat/chat.component';
 import { GroupComponent } from '../group/group.component';
 import { animation as controlsAnimation } from './controls.animation';
 import { animation as notificationsAnimation } from './notifications.animation';
+import {map} from 'rxjs/operators';
+import {fontSizeToPixels} from '../settings/settings.component';
 
 
 export enum RootView {
@@ -86,10 +88,10 @@ export class RootComponent implements OnInit {
 
   public onFontSizeSubscription() {
     this.settings.fontSizeChange
-    .pipe(takeUntil(this.destroy$))
+    .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
     .subscribe( size => {
-      document.documentElement.setAttribute('style', `font-size: ${size}px;`);
-    }) 
+      document.documentElement.setAttribute('style', `font-size: ${size};`);
+    })
   }
 
   public setView(view: RootView | undefined) {

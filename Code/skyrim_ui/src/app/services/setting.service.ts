@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { PartyAnchor } from '../components/settings/settings.component';
+import {FontSize, fontSizeToPixels, PartyAnchor} from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
 
@@ -92,13 +92,13 @@ export class SettingService {
     return JSON.parse(this.storeService.get('party_anchor_offset_y', 3));
   }
 
-  public setFontSize(size: number) {
-    this.fontSizeChange.next(size)
+  public setFontSize(size: FontSize) {
+    this.fontSizeChange.next(size);
     this.storeService.set('font_size', size);
   }
 
-  public getFontSize(): number {
-    return JSON.parse(this.storeService.get('font_size', 16));
+  public getFontSize(): FontSize {
+    return this.storeService.get('font_size', FontSize.M);
   }
 
 }
