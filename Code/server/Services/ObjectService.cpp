@@ -4,7 +4,8 @@
 #include <World.h>
 #include <Components.h>
 
-#include <Events/PlayerLeaveCellEvent.h>
+#include <Events/ObjectAddedEvent.h>
+#include <Events/ObjectUpdatedEvent.h>
 
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
@@ -15,44 +16,16 @@
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
 
-ObjectService::ObjectService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
+ObjectService::ObjectService(World &aWorld, entt::dispatcher &aDispatcher) 
+    : m_world(aWorld)
+    , m_dispatcher(aDispatcher)
 {
-    m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&ObjectService::OnPlayerLeaveCellEvent>(this);
     m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&ObjectService::OnAssignObjectsRequest>(this);
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&ObjectService::OnActivate>(this);
     m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&ObjectService::OnLockChange>(this);
     m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&ObjectService::OnScriptAnimationRequest>(this);
 }
 
-// TODO(cosideci): the cell handling of objects need to be revamped.
-// We already store the location and worldspace of the mod through CellIdComponent.
-// Clients need a message saying the entity was destroyed.
-void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
-{
-    for (Player* pPlayer : m_world.GetPlayerManager())
-    {
-        if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
-            return;
-    }
-
-    auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
-    Vector<entt::entity> toDestroy;
-
-    for (auto entity : objectView)
-    {
-        const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
-
-        if (cellIdComponent.Cell != acEvent.OldCell)
-            continue;
-
-        toDestroy.push_back(entity);
-    }
-
-    for (auto& entity : toDestroy)
-    {
-        m_world.destroy(entity);
-    }
-}
 
 // NOTE: this whole system kinda relies on all objects in a cell being static.
 // This is fine for containers and doors, but if this system is expanded, think of temporaries.
@@ -87,6 +60,8 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
             objectData.IsSenderFirst = false;
 
             response.Objects.push_back(objectData);
+
+            m_dispatcher.trigger(ObjectUpdatedEvent(*iter));
         }
         else
         {
@@ -107,6 +82,8 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
             objectData.IsSenderFirst = true;
 
             response.Objects.push_back(objectData);
+
+            m_dispatcher.trigger(ObjectUpdatedEvent(cEntity));
         }
     }
 

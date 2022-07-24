@@ -9,6 +9,12 @@ GameId::GameId(uint32_t aModId, uint32_t aBaseId) noexcept
 {
 }
 
+GameId::GameId(uint64_t aSerializedId) noexcept
+{
+    BaseId = aSerializedId & 0xFFFFFFFF;
+    ModId = aSerializedId >> 32;
+}
+
 bool GameId::operator==(const GameId& acRhs) const noexcept
 {
     return BaseId == acRhs.BaseId &&
@@ -18,6 +24,13 @@ bool GameId::operator==(const GameId& acRhs) const noexcept
 bool GameId::operator!=(const GameId& acRhs) const noexcept
 {
     return !this->operator==(acRhs);
+}
+
+uint64_t GameId::AsUint64() const noexcept
+{
+    uint64_t res = ModId;
+    res = (res << 32) | BaseId;
+    return res;
 }
 
 GameId::operator bool() const noexcept

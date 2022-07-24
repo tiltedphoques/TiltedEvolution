@@ -22,7 +22,8 @@ local function build_server()
         "CrashHandler",
         "BaseLib",
         "AdminProtocol",
-        "TiltedConnect"
+        "TiltedConnect",
+        "async-cpp-db"
     )
     add_packages(
         "gamenetworkingsockets",

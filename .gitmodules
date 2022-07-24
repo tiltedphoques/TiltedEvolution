@@ -16,3 +16,6 @@
 [submodule "Libraries/cpp-httplib"]
 	path = Libraries/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "Libraries/async-cpp-db"]
+	path = Libraries/async-cpp-db
+	url = https://github.com/yamashi/async-cpp-db.git
