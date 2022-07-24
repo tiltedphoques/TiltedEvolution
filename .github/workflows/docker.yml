@@ -26,9 +26,9 @@ jobs:
           images: |
             tiltedphoques/st-reborn-server
           flavor: |
+            latest=false
             suffix=-${{ matrix.targets.arch }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=semver,pattern={{version}}
 
@@ -70,8 +70,9 @@ jobs:
         with:
           images: |
             tiltedphoques/st-reborn-server
+          flavor: |
+            latest=false
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=semver,pattern={{version}}
 
