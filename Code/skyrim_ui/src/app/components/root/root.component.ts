@@ -11,15 +11,15 @@ import { Sound, SoundService } from '../../services/sound.service';
 import { UiRepository } from '../../store/ui.repository';
 import { ChatComponent } from '../chat/chat.component';
 import { GroupComponent } from '../group/group.component';
-import { animation as controlsAnimation } from './controls.animation';
-import { animation as notificationsAnimation } from './notifications.animation';
+import { controlsAnimation } from './controls.animation';
+import { notificationsAnimation } from './notifications.animation';
 
 
 @Component({
   selector: 'app-root',
   templateUrl: './root.component.html',
   styleUrls: ['./root.component.scss'],
-  animations: [controlsAnimation, notificationsAnimation, fadeInOutActiveAnimation],
+  animations: [controlsAnimation, fadeInOutActiveAnimation, notificationsAnimation],
   host: { 'data-app-root-game': environment.game.toString() },
   providers: [DestroyService],
 })
