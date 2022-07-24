@@ -2,6 +2,18 @@
   <div class="settings">
 
     <div class="section">
+      <h2>{{ 'COMPONENT.SETTINGS.FONT' | transloco }}</h2>
+      <div class="flex-item">
+        <label for="fontSize">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
+        <span class="fontsize-controls">
+          <button (click)="onFontSizeDown()"></button>
+            <span id="fontSize">{{('COMPONENT.SETTINGS.FONT_SIZES.' + fontSize.toUpperCase()) | transloco}}</span>
+          <button id="increment"(click)="onFontSizeUp()"></button>
+        </span>
+      </div>
+    </div>
+
+    <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
         <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
@@ -110,17 +122,6 @@
         <input id="showDebug" type="checkbox" [ngModel]="showDebug"
                (ngModelChange)="onShowDebugChange($event)"
         >
-      </div>
-    </div>
-    <div class="section">
-      <h2>{{ 'COMPONENT.SETTINGS.FONT' | transloco }}</h2>
-      <div class="flex-item">
-        <label for="fontSize">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
-        <span class="fontsize-controls">
-          <button (click)="onFontSizeDown()"></button>
-            <span id="fontSize">{{('COMPONENT.SETTINGS.FONT_SIZES.' + fontSize.toUpperCase()) | transloco}}</span>
-          <button id="increment"(click)="onFontSizeUp()"></button>
-        </span>
       </div>
     </div>
   </div>
