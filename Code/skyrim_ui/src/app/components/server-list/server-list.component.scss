@@ -7,6 +7,7 @@
   position: relative;
   display: block;
   width: 70vw;
+  --server-list-row-height: calc(16 * 100vw / 1920 * 2);
 }
 
 .server-list-action-bar {
@@ -53,7 +54,7 @@
 }
 
 .virtual-viewport {
-  height: calc(60vh - 38px);
+  height: calc(60vh - var(--server-list-row-height) - 1px);
   width: 100%;
 }
 
@@ -83,7 +84,8 @@
     table-layout: fixed;
 
     .row {
-      height: 38px;
+      height: var(--server-list-row-height);
+      line-height: var(--server-list-row-height);
       display: flex;
       align-items: center;
       width: 100%;
@@ -99,7 +101,8 @@
       }
 
       > div {
-        padding: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
       }
 
       &.header {

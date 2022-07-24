@@ -70,7 +70,7 @@
           </div>
         </div>
 
-        <cdk-virtual-scroll-viewport itemSize="38" class="virtual-viewport">
+        <cdk-virtual-scroll-viewport [itemSize]="rowHeight" class="virtual-viewport">
           <div class="server-list-table">
             <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
               <div>{{ server.name }}</div>
