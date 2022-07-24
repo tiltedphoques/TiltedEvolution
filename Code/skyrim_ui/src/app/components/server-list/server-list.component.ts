@@ -185,8 +185,8 @@ export class ServerListComponent {
   }
 
   public sortServerName(sortOrder: SortOrder) {
-    this.serverNameOrdering.next(sortOrder);
     this.setSortingFn(1, sortOrder, ServerListComponent.sortNameAsc, ServerListComponent.sortNameDesc);
+    this.serverNameOrdering.next(sortOrder);
   }
 
   public sortFavorite(sortOrder: SortOrder) {
@@ -224,14 +224,18 @@ export class ServerListComponent {
 
   private setSortingFn(priority: number, ordering: SortOrder, asc: (a: Server, b: Server) => number, desc: (a: Server, b: Server) => number) {
     const sortFns = [...this.sortFunctions.getValue()];
+    let index = sortFns.findIndex(sortFn => sortFn.fn === asc);
+    if (index !== -1) {
+      sortFns.splice(index, 1);
+    }
+    index = sortFns.findIndex(sortFn => sortFn.fn === desc);
+    if (index !== -1) {
+      sortFns.splice(index, 1);
+    }
     if (ordering === SortOrder.ASC) {
       sortFns.push({ fn: asc, priority });
     } else if (ordering === SortOrder.DESC) {
-      const index = sortFns.findIndex(sortFn => sortFn.fn === asc);
-      sortFns.splice(index, 1, { fn: desc, priority });
-    } else {
-      const index = sortFns.findIndex(sortFn => sortFn.fn === desc);
-      sortFns.splice(index, 1);
+      sortFns.push({ fn: desc, priority });
     }
     this.sortFunctions.next(sortFns);
   }
