@@ -94,10 +94,11 @@
       "BACK": "Back",
       "LOADING": "Loading...",
       "NO_SERVERS": "No public server available",
-      "HIDE_MISMATCHED_SERVER": "Hide servers with incompatible version",
+      "HIDE_MISMATCHED_SERVERS": "Hide servers with incompatible version",
+      "HIDE_FULL_SERVERS": "Hide full servers",
       "TABLE_HEADERS": {
         "NAME": "Server Name",
-        "PLAYERS": "Players",
+        "PLAYERS": "Players / Max.",
         "COUNTRY": "Country",
         "FAVORITE": "Favorite"
       },

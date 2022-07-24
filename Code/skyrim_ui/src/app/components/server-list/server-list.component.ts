@@ -38,11 +38,12 @@ export class ServerListComponent {
   sortFunctions = new BehaviorSubject<SortFunction[]>([]);
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
   hideVersionMismatchedServers = new BehaviorSubject(true);
+  hideFullServers = new BehaviorSubject(true);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
   favoriteOrdering = new BehaviorSubject(SortOrder.NONE);
-  serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string })[]>;
+  serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string; isFull: boolean })[]>;
   filteredServerlist$: typeof this.serverlist$;
   clientVersion$: Observable<string>;
 
@@ -86,6 +87,7 @@ export class ServerListComponent {
             return {
               ...server,
               isFavorite: !!favorites[`${ server.ip }:${ server.port }`],
+              isFull: server.player_count >= server.max_player_count,
               shortVersion,
               isCompatible: shortVersion === clientVersion,
             };
@@ -103,11 +105,15 @@ export class ServerListComponent {
             throttleTime(300),
           ),
           this.hideVersionMismatchedServers,
+          this.hideFullServers,
           this.sortFunctions,
         ),
-        map(([servers, searchPhrase, hideVersionMismatchedServers, sortFunction]) => {
+        map(([servers, searchPhrase, hideVersionMismatchedServers, hideFullServers, sortFunction]) => {
           if (hideVersionMismatchedServers) {
             servers = servers.filter(server => server.isCompatible);
+          }
+          if (hideFullServers) {
+            servers = servers.filter(server => !server.isFull);
           }
           if (searchPhrase) {
             servers = servers.filter((server: Server) => {

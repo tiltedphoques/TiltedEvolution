@@ -13,11 +13,24 @@
       spellcheck="false"
     />
 
-    <div class="hide-mismatched-servers-checkbox">
-      <input id="hideMismatchedServer" type="checkbox" [ngModel]="hideVersionMismatchedServers | async"
-             (ngModelChange)="hideVersionMismatchedServers.next($event)"
+    <div class="filter-checkbox">
+      <input
+        id="hide-version-mismatched-servers-checkbox"
+        type="checkbox"
+        [ngModel]="hideVersionMismatchedServers | async"
+        (ngModelChange)="hideVersionMismatchedServers.next($event)"
       >
-      <label for="hideMismatchedServer">{{ 'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVER' | transloco }}</label>
+      <label for="hide-version-mismatched-servers-checkbox">{{ 'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVERS' | transloco }}</label>
+    </div>
+
+    <div class="filter-checkbox">
+      <input
+        id="hide-full-servers-checkbox"
+        type="checkbox"
+        [ngModel]="hideFullServers | async"
+        (ngModelChange)="hideFullServers.next($event)"
+      >
+      <label for="hide-full-servers-checkbox">{{ 'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco }}</label>
     </div>
   </div>
 
@@ -70,15 +83,15 @@
           </div>
         </div>
 
-        <cdk-virtual-scroll-viewport [itemSize]="rowHeight" class="virtual-viewport">
-          <div class="server-list-table">
-            <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
-              <div>{{ server.name }}</div>
-              <div style="width: 6em">{{ server.player_count }}</div>
-              <!-- <div style="width: 6em">{{ server.country }}</div>-->
-              <div style="width: 5em" [ngClass]="server.isCompatible ? 'server-compatible' : 'server-incompatible'">{{ server.shortVersion }}</div>
-              <div style="width: 6em;"
-                   class="server-list-favorite"
+      <cdk-virtual-scroll-viewport [itemSize]="rowHeight" class="virtual-viewport">
+        <div class="server-list-table">
+          <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
+            <div>{{ server.name }}</div>
+            <div style="width: 6em">{{ server.player_count }} / {{ server.max_player_count }}</div>
+            <!-- <div style="width: 6em">{{ server.country }}</div>-->
+            <div style="width: 5em" [ngClass]="server.isCompatible ? 'server-compatible' : 'server-incompatible'">{{ server.shortVersion }}</div>
+            <div style="width: 6em;"
+                 class="server-list-favorite"
                    [class.not]="!server.isFavorite"
                    (click)="toggleServerFavorite(server)"
               >
