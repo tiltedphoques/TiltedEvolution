@@ -67,6 +67,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &.serverlist-loading {
+    flex: 1 1 auto;
+    height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .virtual-viewport {

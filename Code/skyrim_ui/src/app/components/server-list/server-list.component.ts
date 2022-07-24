@@ -3,7 +3,7 @@ import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
 import { FormControl } from '@ngneat/reactive-forms';
-import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, throttleTime } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, startWith, throttleTime } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Server } from '../../models/server';
 import { View } from '../../models/view.enum';
@@ -125,6 +125,7 @@ export class ServerListComponent {
           }
           return servers;
         }),
+        startWith([]),
         share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
       );
 

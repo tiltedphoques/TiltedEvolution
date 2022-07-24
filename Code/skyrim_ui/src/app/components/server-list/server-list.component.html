@@ -58,7 +58,7 @@
 
 
 <ng-container *ngIf="filteredServerlist$ | async as serverlist">
-  <div *ngIf="loader.serverlist.inProgress$ | async; else notLoading" class="serverlist-alternative">
+  <div *ngIf="loader.serverlist.inProgress$ | async; else notLoading" class="serverlist-alternative serverlist-loading">
     {{ 'COMPONENT.SERVER_LIST.LOADING' | transloco }}
   </div>
 
