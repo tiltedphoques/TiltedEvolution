@@ -54,6 +54,7 @@
         margin-top: 1%;
 
         .group-member-health-value {
+          transition: width 0.8s ease-in-out;
           height: 0.79vw;
           position: relative;
           overflow: hidden;
