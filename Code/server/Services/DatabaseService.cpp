@@ -68,8 +68,7 @@ void DatabaseService::OnObjectUpdatedEvent(const ObjectUpdatedEvent& acEvent) no
     auto query = fmt::format("UPDATE objects SET is_locked = {}, lock_level = {} WHERE game_id = {}", objectComponent.CurrentLockData.IsLocked ? 1 : 0,
                              (uint32_t)objectComponent.CurrentLockData.LockLevel, formIdComponent.Id.AsUint64());
 
-    // Discard future
-    m_db.Execute(query);
+    m_db.ExecuteAndForget(query);
 }
 
 void DatabaseService::OnObjectAddedEvent(const ObjectAddedEvent& acEvent) noexcept
@@ -93,6 +92,5 @@ void DatabaseService::OnObjectAddedEvent(const ObjectAddedEvent& acEvent) noexce
         cellIdComponent.CenterCoords.X,
         cellIdComponent.CenterCoords.Y);
 
-    // Discard future
-    m_db.Execute(query);
+    m_db.ExecuteAndForget(query);
 }
