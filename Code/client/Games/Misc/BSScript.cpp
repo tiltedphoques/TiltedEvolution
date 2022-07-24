@@ -8,9 +8,10 @@
 #include <Actor.h>
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
+#include <Games/PapyrusFunctions.h>
 
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
-TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine);
+TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
 TP_THIS_FUNCTION(TCompareVariables, int64_t, void, BSScript::Variable*, BSScript::Variable*);
 
 TRegisterPapyrusFunction* RealRegisterPapyrusFunction = nullptr;
@@ -28,9 +29,10 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
     ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
 }
 
-void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine)
+void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine*)
 {
-
+    (*apThis)->BindNativeMethod(new BSScript::IsRemotePlayerFunc(
+             "IsRemotePlayer", "Actor", PapyrusFunctions::IsRemotePlayer, BSScript::Variable::kBoolean));
 
     ThisCall(RealBindEverythingToScript, apThis);
 }
@@ -88,11 +90,15 @@ static TiltedPhoques::Initializer s_vmHooks([]()
     POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 104788);
     POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x1427338A0 - 0x140000000);
 
+    POINTER_SKYRIMSE(TBindEverythingToScript, s_bindEverythingToScript, 55739);
+
     //POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
 
     RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();
+    RealBindEverythingToScript = s_bindEverythingToScript.Get();
     //RealCompareVariables = s_compareVariables.Get();
 
     TP_HOOK(&RealRegisterPapyrusFunction, HookRegisterPapyrusFunction);
+    TP_HOOK(&RealBindEverythingToScript, HookBindEverythingToScript);
     //TP_HOOK(&RealCompareVariables, HookCompareVariables);
 });

@@ -1,4 +1,5 @@
 #include <Misc/BSScript.h>
+#include <Misc/GameVM.h>
 
 uint64_t BSScript::Object::GetHandle()
 {
@@ -82,15 +83,160 @@ BSScript::Object* BSScript::Variable::GetObject() const noexcept
 void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::IFunctionArguments::Statement, uint32_t aCount);
-
     POINTER_SKYRIMSE(TSetSize, s_setSize, 53915);
-
     ThisCall(s_setSize, this, aCount);
 }
 
 BSScript::IObjectHandlePolicy* BSScript::IObjectHandlePolicy::Get() noexcept
 {
     POINTER_SKYRIMSE(BSScript::IObjectHandlePolicy*, s_policy, 414391);
-
     return *s_policy.Get();
+}
+
+BSFixedString& BSScript::NativeFunctionBase::GetName()
+{
+    return name;
+}
+
+BSFixedString& BSScript::NativeFunctionBase::GetObjectTypeName()
+{
+    return objectName;
+}
+
+BSFixedString& BSScript::NativeFunctionBase::GetStateName()
+{
+    return stateName;
+}
+
+BSScript::Variable::Type BSScript::NativeFunctionBase::GetReturnType()
+{
+    return returnType;
+}
+
+uint32_t BSScript::NativeFunctionBase::GetParamCount()
+{
+    return parameters.capacity;
+}
+
+void BSScript::NativeFunctionBase::GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& aTypeOut)
+{
+    if (aIndex < parameters.size) {
+        auto& elem = parameters.data[aIndex];
+        apNameOut = elem.name;
+        aTypeOut = elem.type;
+    } else {
+        apNameOut = "";
+        aTypeOut = Variable::Type::kEmpty;
+    }
+}
+
+uint32_t BSScript::NativeFunctionBase::GetStackFrameSize()
+{
+    return parameters.capacity;
+}
+
+bool BSScript::NativeFunctionBase::GetIsNative()
+{
+    return true;
+}
+
+bool BSScript::NativeFunctionBase::GetIsStatic()
+{
+    return isStatic;
+}
+
+bool BSScript::NativeFunctionBase::GetIsEmpty()
+{
+    return false;
+}
+
+auto BSScript::NativeFunctionBase::GetFunctionType()
+    -> FunctionType
+{
+    return FunctionType::kNormal;
+}
+
+uint32_t BSScript::NativeFunctionBase::GetUserFlags()
+{
+    return flags;
+}
+
+BSFixedString& BSScript::NativeFunctionBase::GetDocString()
+{
+    return documentation;
+}
+
+void BSScript::NativeFunctionBase::InsertLocals(StackFrame*)
+{
+    return;
+}
+
+BSScript::CallResult BSScript::NativeFunctionBase::Call(Stack* apStack, void* apLogger, IVirtualMachine* apVm, bool aArg4)
+{
+    TP_THIS_FUNCTION(TCall, CallResult, NativeFunctionBase, Stack*, void*, IVirtualMachine*, bool);
+    POINTER_SKYRIMSE(TCall, s_call, 104651);
+    return ThisCall(s_call, this, apStack, apLogger, apVm, aArg4);
+}
+
+BSFixedString& BSScript::NativeFunctionBase::GetSourceFilename()
+{
+    static BSFixedString native("<native>");
+    return native;
+}
+
+bool BSScript::NativeFunctionBase::TranslateIPToLineNumber(uint32_t, uint32_t& aLineNumberOut)
+{
+    aLineNumberOut = 0;
+    return false;
+}
+
+bool BSScript::NativeFunctionBase::GetVarNameForStackIndex(std::uint32_t aIndex, BSFixedString& aNameOut)
+{
+    if (aIndex < parameters.capacity) {
+        aNameOut = parameters.data[aIndex].name;
+        return true;
+    } else {
+        aNameOut = "";
+        return false;
+    }
+}
+
+bool BSScript::NativeFunctionBase::CanBeCalledFromTasklets()
+{
+    return isCallableFromTask;
+}
+
+void BSScript::NativeFunctionBase::SetCallableFromTasklets(bool aCallable)
+{
+    isCallableFromTask = aCallable;
+}
+
+bool BSScript::IsRemotePlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)
+{
+    spdlog::warn("dispatch");
+    uint32_t page = apStackFrame->GetPageForFrame();
+
+    BSScript::Variable* pArg1 = apStackFrame->GetStackFrameVariable(0, page);
+
+    // TODO: move all this stuff into one function
+    auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
+    BSScript::Object* pBaseObject = pArg1->GetObject();
+
+    if (!pBaseObject && !pPolicy)
+        return false;
+
+    uint64_t handle = pBaseObject->GetHandle();
+
+    if (!pPolicy->HandleIsType((uint32_t)Actor::Type, handle) || !pPolicy->IsHandleObjectAvailable(handle))
+        return false;
+
+    Actor* pActor = pPolicy->GetObjectForHandle<Actor>(handle);
+    if (!pActor)
+        return false;
+
+    bool result = ((FunctionType*)pFunction)(pActor);
+
+    apResult->Set<bool>(result);
+
+    return true;
 }
