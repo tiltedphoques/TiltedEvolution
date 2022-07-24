@@ -128,7 +128,7 @@
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "Connection lost, trying to reconnect. {{remainingReconnectionAttempt } attempts left.",
+      "CONNECTION_LOST": "Connection lost, trying to reconnect. {{remainingReconnectionAttempt}} attempts left.",
       "CONNECTED": "Successfully connected to server.",
       "DISCONNECTED": "Disconnected from server."
     },
