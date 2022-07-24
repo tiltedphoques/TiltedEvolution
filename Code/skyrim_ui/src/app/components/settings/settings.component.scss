@@ -9,12 +9,12 @@
 
 .container {
   overflow: auto;
-  margin-top: 1rem;
   max-height: 80vh;
   padding-right: 15px;
 
   .settings {
     display: flex;
+    margin-top: 1rem;
     justify-content: space-between;
     flex-direction: column;
 
