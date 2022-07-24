@@ -10,6 +10,7 @@
 .container {
   overflow: auto;
   margin-top: 1rem;
+  max-height: 80vh;
   padding-right: 15px;
 
   .settings {
