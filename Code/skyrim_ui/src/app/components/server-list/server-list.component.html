@@ -1,6 +1,18 @@
 <!-- Please do further testing with a ton of servers in the list and names that are too long/contain symbols -->
 
 <div class="server-list-action-bar">
+
+  <div class="server-list-actions">
+    <button (click)="cancel()">
+      {{ 'COMPONENT.SERVER_LIST.BACK' | transloco }}
+    </button>
+    <button [disabled]="loader.serverlist.inProgress$ | async" (click)="updateServerList()">
+      {{ 'COMPONENT.SERVER_LIST.REFRESH' | transloco }}
+    </button>
+  </div>
+
+  <hr>
+
   <div class="server-list-filters">
     <input
       class="search-list-server"
@@ -34,13 +46,13 @@
     </div>
   </div>
 
-  <div class="server-list-actions">
-    <button [disabled]="loader.serverlist.inProgress$ | async" (click)="updateServerList()">
-      {{ 'COMPONENT.SERVER_LIST.REFRESH' | transloco }}
-    </button>
-    <button (click)="cancel()">
-      {{ 'COMPONENT.SERVER_LIST.BACK' | transloco }}
-    </button>
+  <div class="server-count">
+    {{ 'COMPONENT.SERVER_LIST.SERVER_COUNT' | transloco:
+    {
+      filteredCount: (filteredServerlist$ | async)?.length ?? 0,
+      count: (serverlist$ | async)?.length ?? 0
+    }
+    }}
   </div>
 </div>
 
@@ -51,61 +63,59 @@
   </div>
 
   <ng-template #notLoading>
-    <div class="serverlist-alternative" *ngIf="serverlist.length === 0; else notEmpty">
-      {{ 'COMPONENT.SERVER_LIST.NO_SERVERS' | transloco }}
-    </div>
 
-    <ng-template #notEmpty>
-      <div class="server-list">
-        <div class="scrollbar-offset">
-          <div class="server-list-table">
-            <div class="row header">
-              <div>
-                {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
-                <app-order [sortingOrder]="serverNameOrdering | async" (sorted)="sortServerName($event)"></app-order>
-              </div>
-              <div style="width: 6em">
-                {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.PLAYERS' | transloco }}
-                <app-order [sortingOrder]="playerCountOrdering | async" (sorted)="sortPlayerCount($event)"></app-order>
-              </div>
-              <!-- <div style="width: 6em">-->
-              <!--   {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.COUNTRY' | transloco }}-->
-              <!--   <app-order [isIncreasingOrder]="countryOrdering | async" (sorted)="sortCountry($event)"></app-order>-->
-              <!-- </div>-->
-              <div style="width: 5em">{{ clientVersion$ | async }}</div>
-              <div style="width: 6em;">
-                <!-- Pls not automatic fav on top, make it sortable like other titles, thanks! -->
-                {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.FAVORITE' | transloco }}
-                <app-order [sortingOrder]="favoriteOrdering | async" (sorted)="sortFavorite($event)"></app-order>
-              </div>
-              <div style="width: 4em;"></div>
+    <div class="server-list">
+      <div class="scrollbar-offset">
+        <div class="server-list-table">
+          <div class="row header">
+            <div>
+              {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
+              <app-order [sortingOrder]="serverNameOrdering | async" (sorted)="sortServerName($event)"></app-order>
             </div>
+            <div style="width: 7em">
+              {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.PLAYERS' | transloco }}
+              <app-order [sortingOrder]="playerCountOrdering | async" (sorted)="sortPlayerCount($event)"></app-order>
+            </div>
+            <!-- <div style="width: 6em">-->
+            <!--   {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.COUNTRY' | transloco }}-->
+            <!--   <app-order [isIncreasingOrder]="countryOrdering | async" (sorted)="sortCountry($event)"></app-order>-->
+            <!-- </div>-->
+            <div style="width: 5em">{{ clientVersion$ | async }}</div>
+            <div style="width: 6em;">
+              {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.FAVORITE' | transloco }}
+              <app-order [sortingOrder]="favoriteOrdering | async" (sorted)="sortFavorite($event)"></app-order>
+            </div>
+            <div style="width: 4em;"></div>
           </div>
         </div>
+      </div>
 
-      <cdk-virtual-scroll-viewport [itemSize]="rowHeight" class="virtual-viewport">
+      <div class="serverlist-alternative" *ngIf="serverlist.length === 0">
+        {{ 'COMPONENT.SERVER_LIST.NO_SERVERS' | transloco }}
+      </div>
+
+      <cdk-virtual-scroll-viewport *ngIf="serverlist.length !== 0" [itemSize]="rowHeight" class="virtual-viewport">
         <div class="server-list-table">
           <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
             <div>{{ server.name }}</div>
-            <div style="width: 6em">{{ server.player_count }} / {{ server.max_player_count }}</div>
+            <div style="width: 7em">{{ server.player_count }} / {{ server.max_player_count }}</div>
             <!-- <div style="width: 6em">{{ server.country }}</div>-->
             <div style="width: 5em" [ngClass]="server.isCompatible ? 'server-compatible' : 'server-incompatible'">{{ server.shortVersion }}</div>
             <div style="width: 6em;"
                  class="server-list-favorite"
-                   [class.not]="!server.isFavorite"
-                   (click)="toggleServerFavorite(server)"
-              >
-                <fa-icon [icon]="server.isFavorite ? fasStar : farStar"></fa-icon>
-              </div>
-              <div style="width: 4em;">
-                <button (click)="connect(server)" class="join-button" [disabled]="!server.isCompatible">
-                  {{ 'COMPONENT.SERVER_LIST.JOIN' | transloco }}
-                </button>
-              </div>
+                 [class.not]="!server.isFavorite"
+                 (click)="toggleServerFavorite(server)"
+            >
+              <fa-icon [icon]="server.isFavorite ? fasStar : farStar"></fa-icon>
+            </div>
+            <div style="width: 4em;">
+              <button (click)="connect(server)" class="join-button" [disabled]="!server.isCompatible">
+                {{ 'COMPONENT.SERVER_LIST.JOIN' | transloco }}
+              </button>
             </div>
           </div>
-        </cdk-virtual-scroll-viewport>
-      </div>
-    </ng-template>
+        </div>
+      </cdk-virtual-scroll-viewport>
+    </div>
   </ng-template>
 </ng-container>

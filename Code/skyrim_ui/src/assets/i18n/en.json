@@ -96,6 +96,7 @@
       "NO_SERVERS": "No public server available",
       "HIDE_MISMATCHED_SERVERS": "Hide servers with incompatible version",
       "HIDE_FULL_SERVERS": "Hide full servers",
+      "SERVER_COUNT": "Showing {{filteredCount}} of {{count}} servers",
       "TABLE_HEADERS": {
         "NAME": "Server Name",
         "PLAYERS": "Players / Max.",
