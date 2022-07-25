@@ -1,11 +1,11 @@
-import { AfterViewChecked, Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ClientService, Message } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
-
+import { MessageHistory } from './message-history';
 
 interface ChatMessage extends Message {
   date: number;
@@ -31,6 +31,8 @@ export class ChatComponent implements AfterViewChecked {
 
   private scrollBack = 0;
 
+  private history = new MessageHistory({maxHistoryLength: 50});
+
   private get maxScroll(): number {
     return this.logRef.nativeElement.scrollHeight - this.logRef.nativeElement.clientHeight;
   }
@@ -44,6 +46,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
+
   ) {
     client.messageReception
       .pipe(takeUntil(this.destroy$))
@@ -112,6 +115,9 @@ export class ChatComponent implements AfterViewChecked {
 
       this.client.sendMessage(this.message);
       this.sound.play(Sound.Focus);
+
+      this.history.push(this.message)
+
       this.message = '';
     }
 
@@ -136,6 +142,22 @@ export class ChatComponent implements AfterViewChecked {
 
   private focusMessage(): void {
     this.inputRef.nativeElement.focus();
+  }
+
+  @HostListener('keydown.ArrowUp', ['$event'])
+  private onArrowUp(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.message = this.history.prev(this.message)
+  }
+
+  @HostListener('keydown.ArrowDown', ['$event'])
+  private onArrowDown(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.message = this.history.next()
   }
 
 }
