@@ -228,7 +228,50 @@ BSScript::IsRemotePlayerFunc::IsRemotePlayerFunc(const char* apFunctionName, con
 
 bool BSScript::IsRemotePlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)
 {
-    spdlog::warn("dispatch");
+    uint32_t page = apStackFrame->GetPageForFrame();
+
+    BSScript::Variable* pArg1 = apStackFrame->GetStackFrameVariable(0, page);
+
+    // TODO: move all this stuff into one function
+    auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
+    BSScript::Object* pBaseObject = pArg1->GetObject();
+
+    if (!pBaseObject && !pPolicy)
+        return false;
+
+    uint64_t handle = pBaseObject->GetHandle();
+
+    if (!pPolicy->HandleIsType((uint32_t)Actor::Type, handle) || !pPolicy->IsHandleObjectAvailable(handle))
+        return false;
+
+    Actor* pActor = pPolicy->GetObjectForHandle<Actor>(handle);
+    if (!pActor)
+        return false;
+
+    bool result = ((FunctionType*)pFunction)(pActor);
+
+    apResult->Set<bool>(result);
+
+    return true;
+}
+
+BSScript::IsPlayerFunc::IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType) 
+    : NativeFunction(apFunctionName, apClassName, true, 1)
+{
+    pFunction = reinterpret_cast<void*>(aFunction);
+
+    returnType = aType;
+
+    BSFixedString arg1Name("Actor");
+    uint64_t* ptr = nullptr;
+
+    GameVM::Get()->virtualMachine->GetScriptObjectType1(&arg1Name, &ptr);
+
+    parameters.data[0].pType = (void*)ptr;
+}
+
+bool BSScript::IsPlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)
+{
     uint32_t page = apStackFrame->GetPageForFrame();
 
     BSScript::Variable* pArg1 = apStackFrame->GetStackFrameVariable(0, page);

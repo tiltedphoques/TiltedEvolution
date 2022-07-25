@@ -16,4 +16,15 @@ bool IsRemotePlayer(Actor* apActor)
     return pExtension->IsRemotePlayer();
 }
 
+bool IsPlayer(Actor* apActor)
+{
+    spdlog::info("Calling IsPlayer");
+
+    auto* pExtension = apActor->GetExtension();
+    if (!pExtension)
+        return false;
+
+    return pExtension->IsPlayer();
+}
+
 }

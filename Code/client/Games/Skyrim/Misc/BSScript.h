@@ -321,6 +321,17 @@ struct BSScript
                                  StackFrame* apStackFrame) override;
     };
 
+    struct IsPlayerFunc : NativeFunction
+    {
+        using FunctionType = bool(Actor* pBase);
+
+        IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction,
+                           Variable::Type aType);
+
+        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult,
+                                 StackFrame* apStackFrame) override;
+    };
+
     template <class... T> struct EventArguments : IFunctionArguments
     {
         using Tuple = std::tuple<EventArguments...>;
