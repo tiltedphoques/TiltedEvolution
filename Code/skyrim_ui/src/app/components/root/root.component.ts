@@ -1,4 +1,5 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
 import { takeUntil } from 'rxjs';
 import { PartyInfo } from 'src/app/models/party-info';
 import { environment } from '../../../environments/environment';
@@ -7,6 +8,7 @@ import { Player } from '../../models/player';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
+import { SettingService } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { UiRepository } from '../../store/ui.repository';
 import { ChatComponent } from '../chat/chat.component';
@@ -44,7 +46,10 @@ export class RootComponent implements OnInit {
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly uiRepository: UiRepository,
+    private readonly translocoService: TranslocoService,
+    private readonly settingService: SettingService,
   ) {
+    this.translocoService.setActiveLang(this.settingService.getLanguage());
   }
 
   public ngOnInit(): void {

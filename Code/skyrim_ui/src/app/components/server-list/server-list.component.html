@@ -26,22 +26,20 @@
     />
 
     <div class="filter-checkbox">
-      <input
+      <app-checkbox
         id="hide-version-mismatched-servers-checkbox"
-        type="checkbox"
         [ngModel]="hideVersionMismatchedServers | async"
         (ngModelChange)="hideVersionMismatchedServers.next($event)"
-      >
+      ></app-checkbox>
       <label for="hide-version-mismatched-servers-checkbox">{{ 'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVERS' | transloco }}</label>
     </div>
 
     <div class="filter-checkbox">
-      <input
+      <app-checkbox
         id="hide-full-servers-checkbox"
-        type="checkbox"
         [ngModel]="hideFullServers | async"
         (ngModelChange)="hideFullServers.next($event)"
-      >
+      ></app-checkbox>
       <label for="hide-full-servers-checkbox">{{ 'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco }}</label>
     </div>
   </div>
