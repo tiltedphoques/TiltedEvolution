@@ -21,10 +21,9 @@
 #include <console/ConsoleRegistry.h>
 
 
-namespace
-{
 // -- Cvars --
-Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting<uint16_t> uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting<uint16_t> uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
@@ -77,7 +76,6 @@ constexpr char kMopoRecordsMissing[]{
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
-} // namespace
 
 static uint16_t GetUserTickRate()
 {
@@ -113,7 +111,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
 
     UpdateInfo();
-    spdlog::info("Server started on port {}", GetPort());
+    spdlog::info("Server {} started on port {}", BUILD_COMMIT, GetPort());
     UpdateTitle();
 
     m_pWorld = MakeUnique<World>();
@@ -512,6 +510,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         return;
     }
 #endif
+
+    if (m_pWorld->GetPlayerManager().Count() >=  uMaxPlayerCount.value_as<uint32_t>())
+    {
+        sendKick(RT::kServerFull);
+        return;
+    }
 
     bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
     bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;
