@@ -11,9 +11,7 @@ export class MessageHistory {
   }
 
   public push(newMsg: string) {
-    const isNewMessageDifferent = newMsg != this.stack[this.offset];
-
-    if (isNewMessageDifferent) {
+    if (newMsg != this.stack[this.offset]) {
       const stackExceedsMaxLength = this.stack.length > this.maxHistoryLength;
       if (stackExceedsMaxLength) {
         this.stack.shift();
