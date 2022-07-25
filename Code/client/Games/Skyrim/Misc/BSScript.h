@@ -77,7 +77,7 @@ struct BSScript
         virtual BSFixedString& GetName() = 0;
         virtual BSFixedString& GetObjectTypeName() = 0;
         virtual BSFixedString& GetStateName() = 0;
-        virtual Variable::Type GetReturnType() = 0;
+        virtual Variable::Type& GetReturnType() = 0;
         virtual uint32_t GetParamCount() = 0;
         virtual void GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& apTypeOut) = 0;
         virtual uint32_t GetStackFrameSize() = 0;
@@ -179,7 +179,7 @@ struct BSScript
         virtual void sub_06();
         virtual void sub_07();
         virtual void sub_08();
-        virtual void sub_09();
+        virtual void GetScriptObjectType1(BSFixedString* apClassName, uint64_t** apOutTypeInfoPtr);
         virtual void sub_0A();
         virtual void sub_0B();
         virtual void sub_0C();
@@ -223,7 +223,7 @@ struct BSScript
         BSFixedString& GetName() override;
         BSFixedString& GetObjectTypeName() override;
         BSFixedString& GetStateName() override;
-        Variable::Type GetReturnType() override;
+        Variable::Type& GetReturnType() override;
         std::uint32_t GetParamCount() override;
         void GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& a_typeOut) override;
         uint32_t GetStackFrameSize() override;
@@ -256,7 +256,11 @@ struct BSScript
             struct Entry
             {
                 const char* name;
-                Variable::Type type;
+                union
+                {
+                    Variable::Type type;
+                    void* pType;
+                };
             };
 
             Entry* data;
@@ -310,15 +314,8 @@ struct BSScript
     {
         using FunctionType = bool(Actor* pBase);
 
-        IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType) 
-            : NativeFunction(apFunctionName, apClassName, true, 1)
-        {
-            pFunction = reinterpret_cast<void*>(aFunction);
-
-            returnType = aType;
-
-            parameters.data[0].type = Variable::Type::kObject;
-        }
+        IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction,
+                           Variable::Type aType);
 
         bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult,
                                  StackFrame* apStackFrame) override;

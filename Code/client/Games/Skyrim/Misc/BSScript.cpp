@@ -108,7 +108,7 @@ BSFixedString& BSScript::NativeFunctionBase::GetStateName()
     return stateName;
 }
 
-BSScript::Variable::Type BSScript::NativeFunctionBase::GetReturnType()
+BSScript::Variable::Type& BSScript::NativeFunctionBase::GetReturnType()
 {
     return returnType;
 }
@@ -209,6 +209,21 @@ bool BSScript::NativeFunctionBase::CanBeCalledFromTasklets()
 void BSScript::NativeFunctionBase::SetCallableFromTasklets(bool aCallable)
 {
     isCallableFromTask = aCallable;
+}
+
+BSScript::IsRemotePlayerFunc::IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType) 
+    : NativeFunction(apFunctionName, apClassName, true, 1)
+{
+    pFunction = reinterpret_cast<void*>(aFunction);
+
+    returnType = aType;
+
+    BSFixedString arg1Name("Actor");
+    uint64_t* ptr = nullptr;
+
+    GameVM::Get()->virtualMachine->GetScriptObjectType1(&arg1Name, &ptr);
+
+    parameters.data[0].pType = (void*)ptr;
 }
 
 bool BSScript::IsRemotePlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)

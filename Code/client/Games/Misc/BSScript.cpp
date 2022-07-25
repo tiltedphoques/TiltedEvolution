@@ -12,10 +12,12 @@
 
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
 TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
+TP_THIS_FUNCTION(TSignaturesMatch, bool, BSScript::NativeFunction, BSScript::NativeFunction*);
 TP_THIS_FUNCTION(TCompareVariables, int64_t, void, BSScript::Variable*, BSScript::Variable*);
 
 TRegisterPapyrusFunction* RealRegisterPapyrusFunction = nullptr;
 TBindEverythingToScript* RealBindEverythingToScript = nullptr;
+TSignaturesMatch* RealSignaturesMatch = nullptr;
 TCompareVariables* RealCompareVariables = nullptr;
 
 void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, NativeFunction* apFunction)
@@ -32,9 +34,19 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
 void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine*)
 {
     (*apThis)->BindNativeMethod(new BSScript::IsRemotePlayerFunc(
-             "IsRemotePlayer", "Actor", PapyrusFunctions::IsRemotePlayer, BSScript::Variable::kBoolean));
+             "IsRemotePlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsRemotePlayer, BSScript::Variable::kBoolean));
 
     ThisCall(RealBindEverythingToScript, apThis);
+}
+
+bool TP_MAKE_THISCALL(HookSignaturesMatch, BSScript::NativeFunction, BSScript::NativeFunction* apOther)
+{
+    /*
+    if (!strcmp(apThis->GetName().AsAscii(), "IsRemotePlayer"))
+        DebugBreak();
+    */
+
+    return ThisCall(RealSignaturesMatch, apThis, apOther);
 }
 
 // This is a neat hack, but it has been disabled since it messes up other things like beastform.
@@ -91,14 +103,17 @@ static TiltedPhoques::Initializer s_vmHooks([]()
     POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x1427338A0 - 0x140000000);
 
     POINTER_SKYRIMSE(TBindEverythingToScript, s_bindEverythingToScript, 55739);
+    POINTER_SKYRIMSE(TSignaturesMatch, s_signaturesMatch, 104359);
 
     //POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
 
     RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();
     RealBindEverythingToScript = s_bindEverythingToScript.Get();
+    RealSignaturesMatch = s_signaturesMatch.Get();
     //RealCompareVariables = s_compareVariables.Get();
 
     TP_HOOK(&RealRegisterPapyrusFunction, HookRegisterPapyrusFunction);
     TP_HOOK(&RealBindEverythingToScript, HookBindEverythingToScript);
+    TP_HOOK(&RealSignaturesMatch, HookSignaturesMatch);
     //TP_HOOK(&RealCompareVariables, HookCompareVariables);
 });
