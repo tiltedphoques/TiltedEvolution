@@ -13,6 +13,14 @@ constexpr wchar_t kScriptExtenderName[] =
 #endif
     ;
 
+constexpr char kScriptExtenderEntrypoint[] =
+#if TP_SKYRIM
+"StartSKSE"
+#elif TP_FALLOUT
+"StartF4SE"
+#endif
+    ;
+
 constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeof(wchar_t) - 1;
 
 // AE+ only
@@ -142,7 +150,8 @@ void LoadScriptExender()
 
     if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
     {
-        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, "StartSKSE")))
+        if (auto* pStartSKSE =
+                reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, kScriptExtenderEntrypoint)))
         {
             spdlog::info(
                 "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "
