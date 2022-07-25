@@ -24,6 +24,8 @@ struct BSScript
             //static_assert(false);
         }
 
+        template <class T> T* ExtractComplexType() noexcept;
+
         enum Type : uint64_t
         {
             kEmpty,
@@ -179,7 +181,7 @@ struct BSScript
         virtual void sub_06();
         virtual void sub_07();
         virtual void sub_08();
-        virtual void GetScriptObjectType1(BSFixedString* apClassName, uint64_t** apOutTypeInfoPtr);
+        virtual void GetScriptObjectType1(BSFixedString* apClassName, void** apOutTypeInfoPtr);
         virtual void sub_0A();
         virtual void sub_0B();
         virtual void sub_0C();

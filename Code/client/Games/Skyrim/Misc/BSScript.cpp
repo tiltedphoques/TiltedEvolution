@@ -80,6 +80,23 @@ BSScript::Object* BSScript::Variable::GetObject() const noexcept
     return data.pObj;
 }
 
+template <class T>
+T* BSScript::Variable::ExtractComplexType() noexcept
+{
+    auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
+    BSScript::Object* pBaseObject = GetObject();
+
+    if (!pBaseObject && !pPolicy)
+        return nullptr;
+
+    uint64_t handle = pBaseObject->GetHandle();
+
+    if (!pPolicy->HandleIsType((uint32_t)T::Type, handle) || !pPolicy->IsHandleObjectAvailable(handle))
+        return nullptr;
+
+    return pPolicy->GetObjectForHandle<T>(handle);
+}
+
 void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::IFunctionArguments::Statement, uint32_t aCount);
@@ -219,11 +236,9 @@ BSScript::IsRemotePlayerFunc::IsRemotePlayerFunc(const char* apFunctionName, con
     returnType = aType;
 
     BSFixedString arg1Name("Actor");
-    uint64_t* ptr = nullptr;
-
+    void* ptr = nullptr;
     GameVM::Get()->virtualMachine->GetScriptObjectType1(&arg1Name, &ptr);
-
-    parameters.data[0].pType = (void*)ptr;
+    parameters.data[0].pType = ptr;
 }
 
 bool BSScript::IsRemotePlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)
@@ -231,20 +246,7 @@ bool BSScript::IsRemotePlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVir
     uint32_t page = apStackFrame->GetPageForFrame();
 
     BSScript::Variable* pArg1 = apStackFrame->GetStackFrameVariable(0, page);
-
-    // TODO: move all this stuff into one function
-    auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
-    BSScript::Object* pBaseObject = pArg1->GetObject();
-
-    if (!pBaseObject && !pPolicy)
-        return false;
-
-    uint64_t handle = pBaseObject->GetHandle();
-
-    if (!pPolicy->HandleIsType((uint32_t)Actor::Type, handle) || !pPolicy->IsHandleObjectAvailable(handle))
-        return false;
-
-    Actor* pActor = pPolicy->GetObjectForHandle<Actor>(handle);
+    Actor* pActor = pArg1->ExtractComplexType<Actor>();
     if (!pActor)
         return false;
 
@@ -263,11 +265,9 @@ BSScript::IsPlayerFunc::IsPlayerFunc(const char* apFunctionName, const char* apC
     returnType = aType;
 
     BSFixedString arg1Name("Actor");
-    uint64_t* ptr = nullptr;
-
+    void* ptr = nullptr;
     GameVM::Get()->virtualMachine->GetScriptObjectType1(&arg1Name, &ptr);
-
-    parameters.data[0].pType = (void*)ptr;
+    parameters.data[0].pType = ptr;
 }
 
 bool BSScript::IsPlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)
@@ -275,20 +275,7 @@ bool BSScript::IsPlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMa
     uint32_t page = apStackFrame->GetPageForFrame();
 
     BSScript::Variable* pArg1 = apStackFrame->GetStackFrameVariable(0, page);
-
-    // TODO: move all this stuff into one function
-    auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
-    BSScript::Object* pBaseObject = pArg1->GetObject();
-
-    if (!pBaseObject && !pPolicy)
-        return false;
-
-    uint64_t handle = pBaseObject->GetHandle();
-
-    if (!pPolicy->HandleIsType((uint32_t)Actor::Type, handle) || !pPolicy->IsHandleObjectAvailable(handle))
-        return false;
-
-    Actor* pActor = pPolicy->GetObjectForHandle<Actor>(handle);
+    Actor* pActor = pArg1->ExtractComplexType<Actor>();
     if (!pActor)
         return false;
 
