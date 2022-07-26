@@ -77,6 +77,7 @@ private:
 
     uint32_t SubActorID = 0;
     String SubtitleText = "";
+    uint32_t TopicID = 0;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;

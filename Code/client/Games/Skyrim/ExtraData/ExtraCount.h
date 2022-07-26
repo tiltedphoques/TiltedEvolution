@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct ExtraCount : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Count;
+    inline static constexpr auto eExtraData = ExtraDataType::Count;
 
     int16_t count;
 };

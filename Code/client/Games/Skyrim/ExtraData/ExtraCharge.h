@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct ExtraCharge : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Charge;
+    inline static constexpr auto eExtraData = ExtraDataType::Charge;
 
     float fCharge{};
 };
