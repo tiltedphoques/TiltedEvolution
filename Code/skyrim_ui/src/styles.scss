@@ -268,8 +268,8 @@ hr {
     margin-left: 0.5em;
     display: inline-block;
     vertical-align: middle;
-    margin-bottom: rem($-size-font, 2px);
-    border-bottom: rem($-size-font, 2px) solid;
+    margin-bottom: 0.1rem;
+    border-bottom: 0.1rem solid;
     border-image: url(./assets/images/separator/single.svg) 3;
   }
 
