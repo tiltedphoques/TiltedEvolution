@@ -1,16 +1,5 @@
 <div *ngIf="!(group$ | async)?.isEnabled ; else inParty">
-  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled$ | async">{{ 'COMPONENT.PARTY_MENU.LAUNCH_PARTY' | transloco }}</button>
-  <button
-    *ngFor="let player of invitations$ | async"
-    class="party-menu-button"
-    (click)="acceptPartyInvite(player.id)"
-  >
-    {{ 'COMPONENT.PARTY_MENU.ACCEPT_INVITE' | transloco:{ name: player.name } }}
-  </button>
-
-  <hr class="solid">
-
-  <p style="padding-top: 0.5rem; line-height: 1.3;" [innerHtml]="'COMPONENT.PARTY_MENU.EXPERIENCE_WARNING' | transloco"></p>
+  <p class="optional-info" [innerHtml]="'COMPONENT.PARTY_MENU.EXPERIENCE_WARNING' | transloco"></p>
   <ul>
     <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY' | transloco }}</li>
     <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY_LEADER_TALK' | transloco }}</li>
@@ -18,6 +7,27 @@
     <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.KEEP_PARTY_LEADER' | transloco }}</li>
     <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.ONE_PARTY_PER_SERVER' | transloco }}</li>
   </ul>
+
+  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled$ | async">
+    {{ 'COMPONENT.PARTY_MENU.LAUNCH_PARTY' | transloco }}
+  </button>
+
+  <div class="separator">
+    {{ 'COMPONENT.PARTY_MENU.INVITES' | transloco }}
+  </div>
+
+  <div *ngIf="invitations$ | async as invites">
+    <div *ngIf="invites.length === 0" class="no-invites">
+      {{ 'COMPONENT.PARTY_MENU.NO_INVITES' | transloco }}
+    </div>
+    <button
+      *ngFor="let player of invites"
+      class="party-menu-button"
+      (click)="acceptPartyInvite(player.id)"
+    >
+      {{ 'COMPONENT.PARTY_MENU.ACCEPT_INVITE' | transloco:{ name: player.name } }}
+    </button>
+  </div>
 </div>
 
 <ng-template #inParty>

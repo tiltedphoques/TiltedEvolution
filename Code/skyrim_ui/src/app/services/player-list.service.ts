@@ -1,14 +1,20 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
+import { BehaviorSubject, firstValueFrom, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
+import { PlayerManagerTab } from '../models/player-manager-tab.enum';
+import { NotificationType } from '../models/popup-notification';
+import { View } from '../models/view.enum';
+import { UiRepository } from '../store/ui.repository';
 import { ClientService } from './client.service';
+import { PopupNotificationService } from './popup-notification.service';
 
 
 @Injectable({
   providedIn: 'root',
 })
-export class PlayerListService {
+export class PlayerListService implements OnDestroy {
 
   public playerList = new BehaviorSubject<PlayerList | undefined>(undefined);
 
@@ -23,7 +29,10 @@ export class PlayerListService {
   private isConnect = false;
 
   constructor(
-    private clientService: ClientService,
+    private readonly clientService: ClientService,
+    private readonly popupNotificationService: PopupNotificationService,
+    private readonly uiRepository: UiRepository,
+    private readonly translocoService: TranslocoService,
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -109,13 +118,29 @@ export class PlayerListService {
   }
 
   private onPartyInviteReceived() {
-    this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe((inviterId: number) => {
+    this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe(async (inviterId: number) => {
       const playerList = this.getPlayerList();
 
       if (playerList) {
-        this.getPlayerById(inviterId).hasInvitedLocalPlayer = true;
-
+        const invitingPlayer = this.getPlayerById(inviterId);
+        invitingPlayer.hasInvitedLocalPlayer = true;
         this.playerList.next(playerList);
+        const inviteMessage = await firstValueFrom(
+          this.translocoService.selectTranslate('SERVICE.PLAYER_LIST.PARTY_INVITE', { from: invitingPlayer.name }),
+        );
+        const message = this.popupNotificationService
+          .addMessage(inviteMessage, {
+            type: NotificationType.Invitation,
+            player: invitingPlayer,
+            duration: 10000,
+          });
+        firstValueFrom(message.onClose)
+          .then(clicked => {
+            if (clicked) {
+              this.uiRepository.openView(View.PLAYER_MANAGER);
+              this.uiRepository.openPlayerManagerTab(PlayerManagerTab.PARTY_MENU);
+            }
+          });
       }
     });
   }

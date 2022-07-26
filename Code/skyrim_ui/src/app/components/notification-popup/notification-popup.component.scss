@@ -3,49 +3,51 @@
 @import "functions/mod";
 @import "mixins/gapped-vertical";
 
+:host {
+  display: block;
+  min-width: 10vw;
+  min-height: 2vw;
+  margin-right: 2em;
+  margin-bottom: 0.5em;
+
+  &:last-child {
+    margin-bottom: 1em;
+  }
+}
+
 .notification-popup {
   width: 100%;
   height: 100%;
-  background-color: rgba($color: #000000, $alpha: 0.7)
+  display: flex;
+  align-items: center;
+  background-color: rgba($color: #000000, $alpha: 0.7);
 }
 
 .friendavatar {
-  position: absolute;
-  top: 50%;
-  left: 13%;
-  transform: translateX(-50%) translateY(-50%);
-  overflow: hidden;
+  margin-left: 1em;
+  margin-right: 1em;
   width: 2vw;
   height: 2vw;
   background-size: contain;
 }
 
 .text-connection-popup {
-  position: absolute;
-  top: 50%;
-  left: 56%;
-  width: 64%;
-  transform: translateX(-50%) translateY(-50%);
-  overflow: hidden;
+  color: white;
   white-space: normal;
-}
-
-.text-invite-popup {
-  left: 60%;
-  width: 73%;
+  flex: 1 1 auto;
 }
 
 .friendstatus {
-  position: absolute;
-  top: 50%;
-  left: 90.5%;
-  transform: translateX(-50%) translateY(-50%);
   width: 0.5em;
   height: 0.5em;
+  margin-right: 1em;
+  margin-left: 1em;
   background: #993333;
   border-radius: 50%;
+
+  &.online {
+    background: #339933;
+  }
 }
 
-.online {
-  background: #339933;
-}
+

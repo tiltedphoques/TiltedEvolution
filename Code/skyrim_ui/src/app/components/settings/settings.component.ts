@@ -1,8 +1,8 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
 import { ClientService } from 'src/app/services/client.service';
 import { SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
-import { RootView } from '../root/root.component';
 
 
 export enum PartyAnchor {
@@ -22,6 +22,8 @@ export class SettingsComponent implements OnInit {
   /* ### ENUMS ### */
   readonly PartyAnchor = PartyAnchor;
 
+  readonly availableLanguages = this.translocoService.getAvailableLangs();
+
   public volume: number;
   public muted: boolean;
   public showDebug: boolean;
@@ -31,15 +33,16 @@ export class SettingsComponent implements OnInit {
   public partyAnchor: PartyAnchor;
   public partyAnchorOffsetX: number;
   public partyAnchorOffsetY: number;
+  public language: string;
 
   @Output() public done = new EventEmitter<void>();
-  @Output() public setView = new EventEmitter<RootView>();
   @Output() public settingsUpdated = new EventEmitter<void>();
 
   constructor(
     private readonly settings: SettingService,
     private readonly client: ClientService,
     private readonly sound: SoundService,
+    private readonly translocoService: TranslocoService,
   ) {
   }
 
@@ -53,6 +56,7 @@ export class SettingsComponent implements OnInit {
     this.partyAnchor = this.settings.getPartyAnchor();
     this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
     this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
+    this.language = this.settings.getLanguage();
   }
 
   onMutedChange(checked: boolean) {
@@ -104,16 +108,23 @@ export class SettingsComponent implements OnInit {
     this.settingsUpdated.next();
   }
 
-  onPartyAnchorChangeOffsetX(offset: number) {
+  onPartyAnchorOffsetXChange(offset: number) {
     this.settings.setPartyAnchorOffsetX(offset);
     this.partyAnchorOffsetX = offset;
     this.settingsUpdated.next();
   }
 
-  onPartyAnchorChangeOffsetY(offset: number) {
+  onPartyAnchorOffsetYChange(offset: number) {
     this.settings.setPartyAnchorOffsetY(offset);
     this.partyAnchorOffsetY = offset;
     this.settingsUpdated.next();
+  }
+
+  onLanguageChange(language: string) {
+    this.settings.setLanguage(language);
+    this.language = language;
+    this.settingsUpdated.next();
+    this.translocoService.setActiveLang(language);
   }
 
   public autoHideTimeSelected(number: number): boolean {
