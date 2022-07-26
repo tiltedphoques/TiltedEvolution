@@ -6,7 +6,7 @@ struct TESFaction;
 
 struct ExtraFactionChanges : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Faction;
+    inline static constexpr auto eExtraData = ExtraDataType::Faction;
 
     virtual ~ExtraFactionChanges();
 

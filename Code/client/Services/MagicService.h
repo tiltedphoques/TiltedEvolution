@@ -26,7 +26,7 @@ struct NotifyAddTarget;
 * 
 * Contact cosideci for more info.
 */
-struct MagicService : BSTEventSink<TESMagicEffectApplyEvent>, BSTEventSink<TESActiveEffectApplyRemove>
+struct MagicService
 {
     MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~MagicService() noexcept = default;
@@ -65,9 +65,6 @@ protected:
     void OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept;
 
 private:
-
-    BSTEventResult OnEvent(const TESMagicEffectApplyEvent*, const EventDispatcher<TESMagicEffectApplyEvent>*) override;
-    BSTEventResult OnEvent(const TESActiveEffectApplyRemove*, const EventDispatcher<TESActiveEffectApplyRemove>*) override;
 
     /**
     * Sometimes, certain magic effects are applied on actors that do not yet exist

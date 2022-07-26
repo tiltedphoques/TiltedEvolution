@@ -47,7 +47,11 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     OverlayRenderHandler* Create() override
     {
         auto* pHandler = new OverlayRenderHandlerD3D11(this);
+    #if TP_SKYRIM64
         pHandler->SetVisible(true);
+    #else
+        pHandler->SetVisible(false);
+    #endif
 
         return pHandler;
     }
@@ -147,7 +151,10 @@ void OverlayService::Render() noexcept
     static bool s_bi = false;
     if (!s_bi)
     {
+        // TODO: ft, this crashes fallout sometimes
+#if TP_SKYRIM64
         m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
+#endif
 
         s_bi = true;
     }
