@@ -245,11 +245,11 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 
-    m_commands.RegisterCommand<uint16_t, uint16_t>("SetTime", "Set ingame hours and minutes", [&](Console::ArgStack& aStack) {
+    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hours and minutes", [&](Console::ArgStack& aStack) {
         auto out = spdlog::get("ConOut");
 
-        auto hour = aStack.Pop<uint16_t>();
-        auto minute = aStack.Pop<uint16_t>();
+        auto hour = aStack.Pop<int64_t>();
+        auto minute = aStack.Pop<int64_t>();
 
         bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, 1.f);
 
