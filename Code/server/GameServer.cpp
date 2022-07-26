@@ -259,7 +259,7 @@ void GameServer::BindServerCommands()
         }
         else
         {
-            out->error("Hours must between 0-24 and minutes must be between 0-60");
+            out->error("Hours must between 0-23 and minutes must be between 0-59");
         }
     });
 }
