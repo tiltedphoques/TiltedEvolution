@@ -244,6 +244,23 @@ void GameServer::BindServerCommands()
     });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
+
+    m_commands.RegisterCommand<>("SetTime", "Set ingame time", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        uint16_t hour = 18;
+        uint16_t minute = 14;
+
+        bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, 1.f);
+
+        if (time_set_successfully)
+        {
+            out->info("Time set to {}:{}", hour, minute);
+        }
+        else
+        {
+            out->error("Hours must between 0-24 and minutes must be between 0-60");
+        }
+    });
 }
 
 void GameServer::UpdateInfo()
