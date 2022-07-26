@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, combineLatestWith, Observable, Subscription, takeUntil, timer } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SettingService } from 'src/app/services/setting.service';
-import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
+import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
 import { Group } from '../../models/group';
 import { Player } from '../../models/player';
 import { ClientService } from '../../services/client.service';
@@ -22,7 +22,7 @@ interface GroupPosition {
   selector: 'app-group',
   templateUrl: './group.component.html',
   styleUrls: ['./group.component.scss'],
-  animations: [fadeInOutAnimation],
+  animations: [fadeInOutActiveAnimation],
   providers: [DestroyService],
 })
 export class GroupComponent implements OnInit, OnDestroy {

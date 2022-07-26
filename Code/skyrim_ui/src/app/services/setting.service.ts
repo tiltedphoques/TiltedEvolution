@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject } from 'rxjs';
 import {FontSize, fontSizeToPixels, PartyAnchor} from '../components/settings/settings.component';
 import { StoreService } from './store.service';
@@ -15,6 +16,7 @@ export class SettingService {
 
   constructor(
     private readonly storeService: StoreService,
+    private readonly translocoService: TranslocoService,
   ) {
   }
 
@@ -101,4 +103,17 @@ export class SettingService {
     return this.storeService.get('font_size', FontSize.M);
   }
 
+  public getLanguage(): string {
+    const language = this.storeService.get('language', 'en');
+    const isValid = !!(this.translocoService.getAvailableLangs() as any[])
+      .find(lang => lang === language || lang.id === language);
+    if (isValid) {
+      return language;
+    }
+    return this.translocoService.getDefaultLang();
+  }
+
+  public setLanguage(language: string) {
+    this.storeService.set('language', language);
+  }
 }

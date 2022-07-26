@@ -32,6 +32,10 @@
       }
     }
 
+    .section > div:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
     .flex-item {
       position: relative;
       display: flex;
@@ -40,22 +44,26 @@
 
       .radio-group {
         display: flex;
-      }
+        justify-content: space-between;
+        width: 40%;
 
-      .anchor-radios {
-        display: flex;
-        flex-direction: column;
-        justify-content: end;
-
-        >div {
+        div {
           display: flex;
-          justify-content: space-between;
+          align-items: center;
         }
       }
     }
 
-    div:not(:last-child) {
-      margin-bottom: 0.5rem;
+    .flex-item > label {
+      width: 55%;
+    }
+
+    .flex-item > input {
+      width: 40%;
+    }
+
+    .settings-dropdown {
+      width: 40%;
     }
 
     hr {

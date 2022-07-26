@@ -13,13 +13,15 @@ struct NotifySubtitle final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifySubtitle& achRhs) const noexcept
+    bool operator==(const NotifySubtitle& acRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() &&
-               ServerId == achRhs.ServerId &&
-               Text == achRhs.Text;
+        return GetOpcode() == acRhs.GetOpcode() &&
+               ServerId == acRhs.ServerId &&
+               Text == acRhs.Text &&
+               TopicFormId == acRhs.TopicFormId;
     }
 
     uint32_t ServerId{};
     TiltedPhoques::String Text{};
+    uint32_t TopicFormId{};
 };

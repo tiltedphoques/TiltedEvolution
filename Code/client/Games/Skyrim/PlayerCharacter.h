@@ -146,7 +146,8 @@ struct PlayerCharacter : Actor
 
     const GameArray<TintMask*>& GetTints() const noexcept;
 
-    void SetDifficulty(const int32_t aDifficulty) noexcept;
+    // TODO: there's an in game function for this in fallout 4, maybe also for skyrim?
+    void SetDifficulty(const int32_t aDifficulty, bool aForceUpdate = true, bool aExpectGameDataLoaded = true) noexcept;
 
     void AddSkillExperience(int32_t aSkill, float aExperience) noexcept;
     float GetSkillExperience(Skills::Skill aSkill) const noexcept

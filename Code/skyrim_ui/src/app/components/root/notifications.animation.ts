@@ -1,7 +1,7 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 
-export const animation = trigger('notifications', [
+export const notificationsAnimation = trigger('notifications', [
   state('false', style({
     'visibility': 'hidden',
     'opacity': '0',
@@ -11,7 +11,7 @@ export const animation = trigger('notifications', [
     animate('200ms ease-out', style({
       'visibility': '*',
       'opacity': '*',
-      'transform': '*'
+      'transform': '*',
     }))
   ]),
   transition('true => false', [

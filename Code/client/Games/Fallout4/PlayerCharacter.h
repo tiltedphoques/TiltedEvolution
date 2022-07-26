@@ -8,6 +8,15 @@ struct PlayerCharacter : Actor
 {
     static PlayerCharacter* Get() noexcept;
 
+    static void SetGodMode(bool aSet) noexcept;
+
+    static int32_t LastUsedCombatSkill;
+
+    void SetDifficulty(const int32_t aDifficulty, bool aForceUpdate = true, bool aExpectGameDataLoaded = true) noexcept;
+
+    void PayCrimeGoldToAllFactions() noexcept;
+    NiPoint3 RespawnPlayer() noexcept;
+
     struct Objective
     {
         uint64_t pad0;

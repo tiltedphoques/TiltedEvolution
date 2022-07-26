@@ -8,12 +8,16 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { environment } from '../environments/environment';
 import { ActionButtonsComponent } from './components/action-buttons/action-buttons.component';
 import { ChatComponent } from './components/chat/chat.component';
+import { CheckboxComponent } from './components/checkbox/checkbox.component';
 import { ConnectComponent } from './components/connect/connect.component';
 import { DebugComponent } from './components/debug/debug.component';
 import { DisconnectComponent } from './components/disconnect/disconnect.component';
+import { DropdownOptionComponent } from './components/dropdown/dropdown-option.component';
+import { DropdownComponent } from './components/dropdown/dropdown.component';
 import { ErrorComponent } from './components/error/error.component';
 import { GroupComponent } from './components/group/group.component';
 import { LoadingComponent } from './components/loading/loading.component';
+import { NotificationPopupContainerComponent } from './components/notification-popup-container/notification-popup-container.component';
 import { NotificationPopupComponent } from './components/notification-popup/notification-popup.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { OrderComponent } from './components/order/order.component';
@@ -41,13 +45,17 @@ import { TranslocoRootModule } from './transloco-root.module';
 @NgModule({
   declarations: [
     ChatComponent,
+    CheckboxComponent,
     ConnectComponent,
     DebugComponent,
     DisconnectComponent,
+    DropdownComponent,
+    DropdownOptionComponent,
     ErrorComponent,
     GroupComponent,
     LoadingComponent,
     NotificationPopupComponent,
+    NotificationPopupContainerComponent,
     NotificationsComponent,
     OrderComponent,
     PartyMenuComponent,
@@ -64,12 +72,12 @@ import { TranslocoRootModule } from './transloco-root.module';
     HealthDirective,
   ],
   imports: [
-    BrowserModule,
     BrowserAnimationsModule,
+    BrowserModule,
+    FontAwesomeModule,
     FormsModule,
     HttpClientModule,
     ReactiveFormsModule,
-    FontAwesomeModule,
     ScrollingModule,
     TranslocoRootModule,
   ],

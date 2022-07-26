@@ -64,16 +64,41 @@ struct TESLoadGameEvent
 {
 };
 
-#define DECLARE_DISPATCHER(name, address) \
+struct BGSInventoryListEvent
+{
+    enum Type : int16_t
+    {
+        AddStack = 0x0,
+        ChangedStack = 0x1,
+        AddNewItem = 0x2,
+        RemoveItem = 0x3,
+        Clear = 0x4,
+        UpdateWeight = 0x5,
+    };
+
+    struct Event
+    {
+        Type ChangeType;
+        BSPointerHandle<TESObjectREFR> hOwner;
+        TESBoundObject* pObjAffected;
+        uint32_t uiCount;
+        uint32_t uiStackId;
+    };
+};
+
+// TODO: idk why, but it can't find POINTER_FALLOUT4
+#define POINTER_FALLOUT4(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
+
+#define DECLARE_DISPATCHER(name, id) \
 inline EventDispatcher<name>* GetEventDispatcher_##name() \
     { \
     using TGetDispatcher = EventDispatcher<name>*(); \
-    POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, address - 0x140000000); \
+    POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, id); \
     return s_getEventDispatcher.Get()(); \
 }; \
 
-DECLARE_DISPATCHER(TESQuestStartStopEvent, 0x1404438B0);
-DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 0x140443810);
-DECLARE_DISPATCHER(TESQuestStageEvent, 0x140443770);
-DECLARE_DISPATCHER(TESActivateEvent, 0x140441C90);
-DECLARE_DISPATCHER(TESLoadGameEvent, 0x140442EB0);
+DECLARE_DISPATCHER(TESQuestStartStopEvent, 1404316);
+DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 181652);
+DECLARE_DISPATCHER(TESQuestStageEvent, 540906);
+DECLARE_DISPATCHER(TESActivateEvent, 166231);
+DECLARE_DISPATCHER(TESLoadGameEvent, 823571);

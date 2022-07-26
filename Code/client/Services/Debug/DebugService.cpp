@@ -40,28 +40,29 @@
 #include <Games/TES.h>
 
 #include <AI/AIProcess.h>
-#include <AI/Movement/PlayerControls.h>
 
 #include <Messages/RequestRespawn.h>
 
-#include <Interface/UI.h>
-#include <Interface/IMenu.h>
-
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
-#include <Camera/PlayerCamera.h>
 #include <OverlayApp.hpp>
 
 #include <BranchInfo.h>
 
-#if TP_SKYRIM64
 #include <EquipManager.h>
-#include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
-#include <Games/Skyrim/DefaultObjectManager.h>
-#include <Games/Skyrim/Forms/TESAmmo.h>
-#include <Games/Skyrim/Misc/InventoryEntry.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Interface/UI.h>
+#include <Forms/TESAmmo.h>
+#include <BSGraphics/BSGraphicsRenderer.h>
+#include <Interface/UI.h>
+
+// TODO: ft
+#if TP_SKYRIM64
+#include <Camera/PlayerCamera.h>
+#include <AI/Movement/PlayerControls.h>
+#include <Interface/IMenu.h>
+#include <Camera/PlayerCamera.h>
+#include <DefaultObjectManager.h>
+#include <Misc/InventoryEntry.h>
+#include <Misc/MiddleProcess.h>
 #endif
 
 #include <imgui.h>
@@ -71,13 +72,11 @@ extern thread_local bool g_overrideFormId;
 constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
 static void DrawBuildTag()
 {
-#ifndef TP_FALLOUT
     auto* pWindow = BSGraphics::GetMainWindow();
     const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
     ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
                                             ImColor::ImColor(255.f, 0.f, 0.f),
                                             kBuildTag);
-#endif
 }
 
 void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
@@ -119,6 +118,7 @@ void DebugService::OnSubtitle(const SubtitleEvent& acEvent) noexcept
         return;
     SubActorID = acEvent.SpeakerID;
     SubtitleText = acEvent.Text;
+    TopicID = acEvent.TopicFormID;
 }
 
 // TODO: yeah, i'm aware of how dumb this looks, but things crash if
@@ -261,11 +261,13 @@ void DebugService::OnDraw() noexcept
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Helpers"))
     {
+#if TP_SKYRIM64
         if (ImGui::Button("Unstuck player"))
         {
             auto* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
         }
+#endif
         ImGui::EndMenu();
     }
 #if (!IS_MASTER)
@@ -287,10 +289,12 @@ void DebugService::OnDraw() noexcept
             }
         }
 
+#if TP_SKYRIM64
         if (ImGui::Button("Close all menus"))
         {
             UI::Get()->CloseAllMenus();
         }
+#endif
 
         ImGui::EndMenu();
     }

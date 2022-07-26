@@ -15,6 +15,7 @@ struct AuthenticationResponse final : ServerMessage
         kModsMismatch,
         kClientModsDisallowed,
         kWrongPassword,
+        kServerFull
     };
 
     AuthenticationResponse() : ServerMessage(Opcode)

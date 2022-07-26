@@ -1,7 +1,5 @@
-<div class="notification-popup" [@fadeInOut]="isActive" (click)="clickNotification()">
-  <div *ngIf="notification && notification.message">
-    <div class="friendavatar" [ngStyle]="{ 'background-image': 'url(' + notification.player.avatar + ')' }"></div>
-    <div *ngIf="isConnected" class="friendstatus" [class.online]="notification.player && notification.player!.online"></div>
-    <div class="text-connection-popup">{{notification.message}}</div>
-  </div>
+<div class="notification-popup" (click)="clickNotification()" (mouseenter)="onEnter()" (mouseleave)="onLeave()">
+  <div *ngIf="notification.player?.avatar" class="friendavatar" [ngStyle]="{ 'background-image': 'url(' + notification.player.avatar + ')' }"></div>
+  <div class="text-connection-popup">{{ notification.message }}</div>
+  <div *ngIf="isConnected" class="friendstatus" [class.online]="notification.player?.online"></div>
 </div>
