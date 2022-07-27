@@ -24,7 +24,7 @@ export class SettingsComponent implements OnInit {
 
   readonly availableLanguages = this.translocoService.getAvailableLangs();
 
-  public volume: number;
+  public settings = this.settingService.settings;
   public muted: boolean;
   public showDebug: boolean;
   public autoHideParty: boolean;
@@ -39,7 +39,7 @@ export class SettingsComponent implements OnInit {
   @Output() public settingsUpdated = new EventEmitter<void>();
 
   constructor(
-    private readonly settings: SettingService,
+    private readonly settingService: SettingService,
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
@@ -47,88 +47,82 @@ export class SettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.volume = this.settings.getVolume();
-    this.muted = this.settings.isAudioMuted();
-    this.showDebug = this.settings.isDebugShown();
-    this.autoHideParty = this.settings.isPartyAutoHidden();
-    this.showParty = this.settings.isPartyShown();
-    this.autoHideTime = this.settings.getAutoHideTime();
-    this.partyAnchor = this.settings.getPartyAnchor();
-    this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
-    this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
-    this.language = this.settings.getLanguage();
+    this.muted = this.settingService.isAudioMuted();
+    this.showDebug = this.settingService.isDebugShown();
+    this.autoHideParty = this.settingService.isPartyAutoHidden();
+    this.showParty = this.settingService.isPartyShown();
+    this.autoHideTime = this.settingService.getAutoHideTime();
+    this.partyAnchor = this.settingService.getPartyAnchor();
+    this.partyAnchorOffsetX = this.settingService.getPartyAnchorOffsetX();
+    this.partyAnchorOffsetY = this.settingService.getPartyAnchorOffsetY();
+    this.language = this.settingService.getLanguage();
   }
 
   onMutedChange(checked: boolean) {
     if (checked) {
       this.sound.play(Sound.Check);
     }
-    this.settings.muteAudio(checked);
+    this.settingService.muteAudio(checked);
     if (!checked) {
       this.sound.play(Sound.Uncheck);
     }
     this.settingsUpdated.next();
   }
 
-  onVolumeChange(volume: number) {
-    this.settings.setVolume(volume);
-    this.settingsUpdated.next();
-  }
-
   onShowDebugChange(checked: boolean) {
-    this.settings.setDebugShown(checked);
+    this.settingService.setDebugShown(checked);
     this.client.debugStateChange.next(checked);
     this.sound.play(checked ? Sound.Check : Sound.Uncheck);
     this.settingsUpdated.next();
   }
 
   onShowPartyChange(checked: boolean) {
-    this.settings.showParty(checked);
+    this.settingService.showParty(checked);
     this.sound.play(checked ? Sound.Check : Sound.Uncheck);
     this.settingsUpdated.next();
   }
 
   onAutoHidePartyChange(checked: boolean) {
-    this.settings.autoHideParty(checked);
+    this.settingService.autoHideParty(checked);
     this.autoHideParty = checked;
     this.sound.play(checked ? Sound.Check : Sound.Uncheck);
     this.settingsUpdated.next();
   }
 
   onAutoHideTimeChange(time: number) {
-    this.settings.setAutoHideTime(time);
+    this.settingService.setAutoHideTime(time);
     this.autoHideTime = time;
     this.sound.play(Sound.Check);
     this.settingsUpdated.next();
   }
 
   onPartyAnchorChange(anchor: PartyAnchor) {
-    this.settings.setPartyAnchor(anchor);
+    this.settingService.setPartyAnchor(anchor);
     this.partyAnchor = anchor;
     this.settingsUpdated.next();
   }
 
   onPartyAnchorOffsetXChange(offset: number) {
-    this.settings.setPartyAnchorOffsetX(offset);
+    this.settingService.setPartyAnchorOffsetX(offset);
     this.partyAnchorOffsetX = offset;
     this.settingsUpdated.next();
   }
 
   onPartyAnchorOffsetYChange(offset: number) {
-    this.settings.setPartyAnchorOffsetY(offset);
+    this.settingService.setPartyAnchorOffsetY(offset);
     this.partyAnchorOffsetY = offset;
     this.settingsUpdated.next();
   }
 
   onLanguageChange(language: string) {
-    this.settings.setLanguage(language);
+    this.settingService.setLanguage(language);
     this.language = language;
     this.settingsUpdated.next();
     this.translocoService.setActiveLang(language);
   }
 
   public autoHideTimeSelected(number: number): boolean {
-    return this.settings.getAutoHideTime() === number;
+    return this.settingService.getAutoHideTime() === number;
   }
 
   close() {

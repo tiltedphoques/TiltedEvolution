@@ -13,8 +13,8 @@
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
-        <input class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [ngModel]="volume"
-               (ngModelChange)="onVolumeChange($event)"
+        <input class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [ngModel]="settings.volume | async"
+               (ngModelChange)="settings.volume.next($event)"
         >
       </div>
     </div>
