@@ -89,7 +89,6 @@ export class SettingsComponent implements OnInit {
   onAutoHideTimeChange(time: number) {
     this.settings.setAutoHideTime(time);
     this.autoHideTime = time;
-    this.sound.play(Sound.Check);
     this.settingsUpdated.next();
   }
 
