@@ -31,6 +31,7 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ToggleComponent } from './components/toggle/toggle.component';
 import { WindowComponent } from './components/window/window.component';
 import { HealthDirective } from './directives/health.directive';
+import { SliderDirective } from './directives/slider.directive';
 import { AssetService } from './services/asset.service';
 import { ClientService } from './services/client.service';
 import { ErrorService } from './services/error.service';
@@ -70,6 +71,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     WindowComponent,
 
     HealthDirective,
+    SliderDirective
   ],
   imports: [
     BrowserAnimationsModule,
