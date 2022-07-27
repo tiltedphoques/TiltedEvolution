@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { PartyAnchor } from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
+function makeSetting<T>(storeService: StoreService, storeKey: string, defaultValue: T): BehaviorSubject<T> {
+  const inital_value: T = storeService.get(storeKey, defaultValue);
+  const subject = new BehaviorSubject(inital_value);
+  subject.subscribe((newValue) => {storeService.set(storeKey, newValue)});
+  return subject;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -13,18 +19,14 @@ export class SettingService {
   public partyShownChange = new BehaviorSubject(this.isPartyShown());
   public partyAutoHideChange = new BehaviorSubject(this.isPartyAutoHidden());
 
+  public settings = {
+    volume: makeSetting(this.storeService, "audio_volume", 0.5),
+  }
+
   constructor(
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
   ) {
-  }
-
-  public setVolume(volume: number) {
-    this.storeService.set('audio_volume', volume);
-  }
-
-  public getVolume(): number {
-    return JSON.parse(this.storeService.get('audio_volume', 0.5));
   }
 
   public muteAudio(muted: boolean) {
