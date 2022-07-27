@@ -23,7 +23,11 @@ export class TranslocoHttpLoader implements TranslocoLoader {
     {
       provide: TRANSLOCO_CONFIG,
       useValue: translocoConfig({
-        availableLangs: ['en', 'overwrite'],
+        availableLangs: [
+			{ id: 'en', label: 'English'},
+			{ id: 'zh-CN', label: '中文（中国）'},
+			{ id: 'overwrite', label: 'Custom'},
+		],
         defaultLang: 'overwrite',
         fallbackLang: 'en',
         missingHandler: {
