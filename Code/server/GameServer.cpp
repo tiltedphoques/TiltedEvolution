@@ -250,8 +250,9 @@ void GameServer::BindServerCommands()
 
         auto hour = aStack.Pop<int64_t>();
         auto minute = aStack.Pop<int64_t>();
+        auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
 
-        bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, 1.f);
+        bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
 
         if (time_set_successfully)
         {
