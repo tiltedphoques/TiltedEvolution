@@ -15,6 +15,7 @@
 #include <Services/TransportService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
+#include <Messages/NotifyPlayerPartyLeft.h>
 #include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
@@ -123,6 +124,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
     m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
     m_playerHealthConnection = aDispatcher.sink<NotifyPlayerHealthUpdate>().connect<&OverlayService::OnNotifyPlayerHealthUpdate>(this);
+    m_playerPartyLeftConnection = aDispatcher.sink<NotifyPlayerPartyLeft>().connect<&OverlayService::OnPlayerPartyLeft>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -431,6 +433,13 @@ void OverlayService::OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& 
     pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
+}
+
+void OverlayService::OnPlayerPartyLeft(const NotifyPlayerPartyLeft& acMessage) noexcept
+{
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.LeavingPlayerId);
+    m_pOverlay->ExecuteAsync("otherPlayerLeftParty", pArguments);
 }
 
 void OverlayService::RunDebugDataUpdates() noexcept

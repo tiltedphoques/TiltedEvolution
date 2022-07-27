@@ -109,6 +109,9 @@ export class ClientService implements OnDestroy {
   /** Used for when a party leader changed. */
   public partyLeaderChange = new Subject<number>();
 
+  /** Used for when another player leaves their party */
+  public otherPlayerLeftPartyChange = new Subject<number>();
+
   public localPlayerId = undefined;
 
   private _host: string;
@@ -159,6 +162,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
       skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
       skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
+      skyrimtogether.on('otherPlayerLeftParty', this.onOtherPlayerLeftParty.bind(this));
     }
   }
 
@@ -198,6 +202,7 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('partyCreated');
       skyrimtogether.off('partyLeft');
       skyrimtogether.off('partyInviteReceived');
+      skyrimtogether.off('otherPlayerLeftParty');
     }
   }
 
@@ -497,6 +502,12 @@ export class ClientService implements OnDestroy {
   private onDebug(isDebug: boolean): void {
     this.zone.run(() => {
       this.debugStateChange.next(isDebug);
+    });
+  }
+
+  private onOtherPlayerLeftParty(leavingPlayerId: number): void {
+    this.zone.run(() => {
+      this.otherPlayerLeftPartyChange.next(leavingPlayerId);
     });
   }
 

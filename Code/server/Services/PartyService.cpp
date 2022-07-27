@@ -14,6 +14,7 @@
 #include <Messages/PartyLeaveRequest.h>
 #include <Messages/NotifyPartyJoined.h>
 #include <Messages/NotifyPartyLeft.h>
+#include <Messages/NotifyPlayerPartyLeft.h>
 #include <Messages/PartyCreateRequest.h>
 #include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyKickRequest.h>
@@ -326,6 +327,11 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
         spdlog::debug("[PartyService]: Sending party left event to player.");
         NotifyPartyLeft leftMessage;
         apPlayer->Send(leftMessage);
+
+        spdlog::debug("[PartyService]: Sending leaving player id to other players.");
+        NotifyPlayerPartyLeft notify;
+        notify.LeavingPlayerId = apPlayer->GetId();
+        GameServer::Get()->SendToPlayers(notify, apPlayer);
     }
 }
 

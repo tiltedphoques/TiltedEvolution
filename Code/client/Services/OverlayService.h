@@ -26,6 +26,7 @@ struct NotifyPlayerLevel;
 struct NotifyPlayerCellChanged;
 struct NotifyTeleport;
 struct NotifyPlayerHealthUpdate;
+struct NotifyPlayerPartyLeft;
 
 
 using TiltedPhoques::OverlayApp;
@@ -80,6 +81,7 @@ struct OverlayService
     void OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessage) const noexcept;
     void OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept;
     void OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& acMessage) noexcept;
+    void OnPlayerPartyLeft(const NotifyPlayerPartyLeft& acMessage) noexcept;
 
   private:
     void RunDebugDataUpdates() noexcept;
@@ -109,4 +111,5 @@ struct OverlayService
     entt::scoped_connection m_cellChangedConnection;
     entt::scoped_connection m_teleportConnection;
     entt::scoped_connection m_playerHealthConnection;
+    entt::scoped_connection m_playerPartyLeftConnection;
 };

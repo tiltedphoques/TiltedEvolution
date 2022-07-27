@@ -28,6 +28,7 @@ export class GroupService implements OnDestroy {
   private levelSubscription: Subscription;
   private cellSubscription: Subscription;
   private loadedSubscription: Subscription;
+  private otherPlayerLeftPartySubscription: Subscription;
 
   private isConnect = false;
 
@@ -48,6 +49,7 @@ export class GroupService implements OnDestroy {
     this.onLevelChange();
     this.onCellChange();
     this.onLoadedChange();
+    this.onOtherPlayerLeftParty();
   }
 
   ngOnDestroy() {
@@ -205,6 +207,18 @@ export class GroupService implements OnDestroy {
     });
   }
 
+  private onOtherPlayerLeftParty() {
+    this.otherPlayerLeftPartySubscription = this.clientService.otherPlayerLeftPartyChange.subscribe((leavingPlayerId: number) => {
+      const player = this.playerListService.getPlayerById(leavingPlayerId);
+
+      if (player) {
+        player.hasBeenInvited = false;
+
+        this.updateGroup();
+        this.playerListService.updatePlayerList();
+      }
+    });
+  }
 
   public launch() {
     const group = this.createGroup(this.group.getValue());
