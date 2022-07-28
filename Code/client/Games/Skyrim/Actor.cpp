@@ -421,7 +421,7 @@ void Actor::SetPlayerRespawnMode() noexcept
 
     if (formID != 0x14)
     {
-        SetPlayerTeammate(true);
+        //SetPlayerTeammate(true);
 
         auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
         SetFactionRank(pPlayerFaction, 1);
