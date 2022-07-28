@@ -243,7 +243,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.sendMessage(message);
     } else {
-      this.messageReception.next({ name: this.nameChange.getValue(), content: message, type: MessageType.SYSTEM_MESSAGE });
+      this.messageReception.next({ name: this.nameChange.getValue(), content: message, type: MessageType.GLOBAL_CHAT });
     }
   }
 
