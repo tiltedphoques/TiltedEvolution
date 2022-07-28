@@ -72,7 +72,7 @@ constexpr char kBypassMoPoWarning[]{
     "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players won't be able "
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
