@@ -84,3 +84,19 @@ CalendarService::TDate CalendarService::GetDate() const noexcept
 {
     return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
 }
+
+bool CalendarService::SetTimeScale(float aScale) noexcept
+{
+    if (aScale >= 0.f && aScale <= 1000.f)
+    {
+        m_timeModel.TimeScale = aScale;
+
+        ServerTimeSettings timeMsg;
+        timeMsg.TimeScale = m_timeModel.TimeScale;
+        timeMsg.Time = m_timeModel.Time;
+        GameServer::Get()->SendToLoaded(timeMsg);
+        return true;
+    }
+
+    return false;
+}
