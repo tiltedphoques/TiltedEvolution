@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
 import { Player } from '../../models/player';
 import { View } from '../../models/view.enum';
-import { ClientService } from '../../services/client.service';
+import { ClientService, MessageType } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { SettingService } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
@@ -176,9 +176,8 @@ export class RootComponent implements OnInit {
 
           let name = 'Banana';
           let message = 'Hello Guys';
-          let dialogue = true;
 
-          this.client.messageReception.next({ name, content: message, dialogue: dialogue });
+          this.client.messageReception.next({ name, content: message, type: MessageType.GLOBAL_CHAT  });
         }
       }
     }

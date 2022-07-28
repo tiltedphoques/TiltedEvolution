@@ -2,7 +2,7 @@ import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewC
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ClientService, Message } from '../../services/client.service';
+import { ClientService, Message, MessageType } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { MessageHistory } from './message-history';
@@ -10,6 +10,20 @@ import { MessageHistory } from './message-history';
 interface ChatMessage extends Message {
   date: number;
   odd: boolean;
+  typeClass: string;
+}
+
+function messagegeTypeToClassName(type: MessageType): string {
+  switch (type) {
+    case MessageType.SYSTEM_MESSAGE:
+      return "system";
+    
+    case MessageType.PLAYER_DIALOGUE:
+      return "dialogue";
+
+    default:
+      return "global";
+  }
 }
 
 @Component({
@@ -37,6 +51,8 @@ export class ChatComponent implements AfterViewChecked {
     return this.logRef.nativeElement.scrollHeight - this.logRef.nativeElement.clientHeight;
   }
 
+  
+
   @ViewChild('input') private inputRef!: ElementRef;
   @ViewChildren('entry') private entryRefQuery!: QueryList<ElementRef>;
   @ViewChild('log') private logRef!: ElementRef;
@@ -51,7 +67,8 @@ export class ChatComponent implements AfterViewChecked {
     client.messageReception
       .pipe(takeUntil(this.destroy$))
       .subscribe(message => {
-        this.messages.push({ ...message, date: Date.now(), odd: this.odd });
+        const typeClass = messagegeTypeToClassName(message.type);
+        this.messages.push({ ...message, date: Date.now(), odd: this.odd, typeClass });
 
         if (this.messages.length > 100) {
           if (this.entryRefQuery && this.entryRefQuery.first) {
@@ -109,7 +126,7 @@ export class ChatComponent implements AfterViewChecked {
             { chatMessageLengthLimit: environment.chatMessageLengthLimit },
           ),
         );
-        this.client.messageReception.next({ content });
+        this.client.messageReception.next({ content, type: MessageType.GLOBAL_CHAT  });
         return;
       }
 

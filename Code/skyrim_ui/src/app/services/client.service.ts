@@ -14,10 +14,15 @@ export interface Message {
   /** Player name. Unset if it's a system message. */
   name?: string;
 
-  /** Message content. */
   content: string;
 
-  dialogue?: boolean;
+  type: MessageType;
+}
+
+export enum MessageType {
+  SYSTEM_MESSAGE = 0,
+  GLOBAL_CHAT = 1,
+  PLAYER_DIALOGUE = 2
 }
 
 /** Client game service. */
@@ -136,8 +141,6 @@ export class ClientService implements OnDestroy {
       skyrimtogether.on('exitGame', this.onExitGame.bind(this));
       skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
       skyrimtogether.on('message', this.onMessage.bind(this));
-      skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
-      skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
       skyrimtogether.on('connect', this.onConnect.bind(this));
       skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
       skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
@@ -174,8 +177,6 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('exitGame');
       skyrimtogether.off('openingMenu');
       skyrimtogether.off('message');
-      skyrimtogether.off('systemMessage');
-      skyrimtogether.off('dialogueMessage');
       skyrimtogether.off('connect');
       skyrimtogether.off('disconnect');
       skyrimtogether.off('setName');
@@ -242,7 +243,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.sendMessage(message);
     } else {
-      this.messageReception.next({ name: this.nameChange.getValue(), content: message });
+      this.messageReception.next({ name: this.nameChange.getValue(), content: message, type: MessageType.SYSTEM_MESSAGE });
     }
   }
 
@@ -338,7 +339,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.teleportToPlayer(playerId);
     } else {
-      this.messageReception.next({ content: 'Simulating teleport' });
+      this.messageReception.next({ content: 'Simulating teleport', type: MessageType.SYSTEM_MESSAGE });
     }
   }
 
@@ -403,35 +404,11 @@ export class ClientService implements OnDestroy {
    * Called when a message is received.
    *
    * @param name Sender's name.
-   * @param message Message content.
+   * @param content Message content.
    */
-  private onMessage(name: string, message: string): void {
+  private onMessage(type: MessageType, content: string, name: string = undefined): void {
     this.zone.run(() => {
-      this.messageReception.next({ name, content: message });
-    });
-  }
-
-  /**
-   * Called when a system message is received.
-   *
-   * @param message Message content.
-   */
-  private onSystemMessage(message: string): void {
-    this.zone.run(() => {
-      this.messageReception.next({ content: message });
-    });
-  }
-
-  /**
-   * Called when a dialogue message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onDialogueMessage(name: string, message: string): void {
-    let dialogue = true;
-    this.zone.run(() => {
-      this.messageReception.next({ name, content: message, dialogue: dialogue });
+      this.messageReception.next({ type, content, name });
     });
   }
 
@@ -449,7 +426,7 @@ export class ClientService implements OnDestroy {
           'SERVICE.CLIENT.CONNECTED'
         )
       );
-      this.messageReception.next({ content });
+      this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
     });
   }
 
@@ -470,7 +447,7 @@ export class ClientService implements OnDestroy {
             { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
           ),
         );
-        this.messageReception.next({ content });
+        this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
         this.connect(this._host, this._port, this._password);
       } else {
         const content = await firstValueFrom(
@@ -478,7 +455,7 @@ export class ClientService implements OnDestroy {
             'SERVICE.CLIENT.DISCONNECTED'
           )
         );
-        this.messageReception.next({ content });
+        this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
       }
     });
   }
