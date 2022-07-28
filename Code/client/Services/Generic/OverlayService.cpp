@@ -111,6 +111,26 @@ float CalculateHealthPercentage(Actor* apActor) noexcept
     return percentage;
 }
 
+enum ChatMessageType : unsigned char
+{
+    kSystemMessage = 0,
+    kGlobalMessage,
+    kPlayerDialogue,
+    // whisper, local chat etc
+};
+
+void SendChatMessage(OverlayApp* apOverlay, ChatMessageType aMsgType, CefString aContent, CefString aSender = "") noexcept
+{
+    if (!apOverlay)
+        return;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, aMsgType);
+    pArguments->SetString(1, aContent);
+    pArguments->SetString(2, aSender);
+    apOverlay->ExecuteAsync("message", pArguments);
+}
+
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_transport(transport)
 {
@@ -248,8 +268,10 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage);
-    m_pOverlay->ExecuteAsync("systemMessage", pArguments);
+    pArguments->SetInt(0, kSystemMessage);
+    pArguments->SetString(1, acMessage);
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
@@ -341,8 +363,10 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.PlayerName.c_str());
+    pArguments->SetInt(0, kGlobalMessage);
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
+    pArguments->SetString(2, acMessage.PlayerName.c_str());
+
     m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
@@ -352,9 +376,11 @@ void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noe
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.Name.c_str());
+    pArguments->SetInt(0, kPlayerDialogue);
     pArguments->SetString(1, acMessage.Text.c_str());
-    m_pOverlay->ExecuteAsync("dialogueMessage", pArguments);
+    pArguments->SetString(2, acMessage.Name.c_str());
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept
