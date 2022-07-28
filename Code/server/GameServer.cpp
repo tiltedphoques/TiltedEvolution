@@ -21,14 +21,14 @@
 #include <console/ConsoleRegistry.h>
 
 
-namespace
-{
 // -- Cvars --
-Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting<uint16_t> uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting<uint16_t> uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                    "Dedicated Together Server"};
-Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+//Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
 // Gameplay
@@ -36,6 +36,7 @@ Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
+Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
 
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -75,7 +76,6 @@ constexpr char kMopoRecordsMissing[]{
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
-} // namespace
 
 static uint16_t GetUserTickRate()
 {
@@ -111,7 +111,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
 
     UpdateInfo();
-    spdlog::info("Server started on port {}", GetPort());
+    spdlog::info("Server {} started on port {}", BUILD_COMMIT, GetPort());
     UpdateTitle();
 
     m_pWorld = MakeUnique<World>();
@@ -146,7 +146,10 @@ void GameServer::Kill()
 bool GameServer::CheckMoPo()
 {
     if (!bEnableModCheck)
-        spdlog::warn(kBypassMoPoWarning);
+    {
+        // TODO: re-enable this warning when mopo has good ui and the line endings problem is fixed
+        //spdlog::warn(kBypassMoPoWarning);
+    }
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
     {
@@ -241,6 +244,25 @@ void GameServer::BindServerCommands()
     });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
+
+    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hours and minutes", [&](Console::ArgStack& aStack) {
+        auto out = spdlog::get("ConOut");
+
+        auto hour = aStack.Pop<int64_t>();
+        auto minute = aStack.Pop<int64_t>();
+        auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
+
+        bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
+
+        if (time_set_successfully)
+        {
+            out->info("Time set to {}:{}", hour, minute);
+        }
+        else
+        {
+            out->error("Hours must between 0-23 and minutes must be between 0-59");
+        }
+    });
 }
 
 void GameServer::UpdateInfo()
@@ -508,6 +530,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 #endif
 
+    if (m_pWorld->GetPlayerManager().Count() >=  uMaxPlayerCount.value_as<uint32_t>())
+    {
+        sendKick(RT::kServerFull);
+        return;
+    }
+
     bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
     bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;
 
@@ -623,6 +651,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
         serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
         serverResponse.Settings.PvpEnabled = bEnablePvp;
+        serverResponse.Settings.SyncPlayerHomes = bSyncPlayerHomes;
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
@@ -656,6 +685,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
+/*
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
         AdminSessionOpen response;
@@ -664,10 +694,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         m_adminSessions.insert(aConnectionId);
         spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
     }
+*/
     else
     {
-        spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);
-        Kick(aConnectionId);
+        spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
+        sendKick(RT::kWrongPassword);
     }
 }
 

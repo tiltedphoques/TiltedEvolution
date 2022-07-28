@@ -1,11 +1,31 @@
-app-player-manager {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+@import "env";
 
-    .buttons {
-        margin-top: 1rem;
-        display: flex;
-        justify-content: center;
-    }
+@import "functions/rem";
+
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
+
+hr {
+  width: 100%;
+}
+
+.tab-buttons {
+  display: flex;
+  padding-bottom: 10px;
+
+  button {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+

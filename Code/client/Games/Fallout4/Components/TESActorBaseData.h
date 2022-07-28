@@ -17,6 +17,25 @@ struct TESActorBaseData : BaseFormComponent
         int8_t rank;
     };
 
+    enum BaseFlags
+    {
+        IS_ESSENTIAL = 1 << 1,
+    };
+
+    // TODO: ft
+    // idk if this is correct
+    bool IsEssential() const noexcept
+    {
+        return flags & BaseFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSet) noexcept
+    {
+        if (aSet)
+            flags |= BaseFlags::IS_ESSENTIAL;
+        else
+            flags &= ~BaseFlags::IS_ESSENTIAL;
+    }
+
     uint64_t flags;
     uint8_t unk10[0x28 - 0x10];
     BGSVoiceType* voiceType;

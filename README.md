@@ -1,5 +1,5 @@
 # Tilted Online
-![Build status](https://github.com/tiltedphoques/TiltedEvolution/workflows/CI/badge.svg?branch=master) [![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
+![Build status](https://github.com/tiltedphoques/TiltedEvolution/workflows/Build%20windows/badge.svg?branch=master) [![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
 
 <img src="https://avatars.githubusercontent.com/u/52131158?s=200&v=4" align="right"
      alt="Size Limit logo by Anton Lovchikov" width="110" height="100">
@@ -9,10 +9,12 @@ Tilted Online is a framework created to enable multiplayer in Bethesda games, cu
 ## Getting started
 To play Tilted Online, go to the [nexus page](https://www.nexusmods.com/skyrimspecialedition/mods/69993).
 
+For general information, go to the [Tilted Online Wiki](https://wiki.tiltedphoques.com/tilted-online/).
+
 Check out the [build guide](https://wiki.tiltedphoques.com/tilted-online/technical-documentation/build-guide) for setup and development info on the project. When writing code, check the CODE_GUIDELINES.md and make sure to run clang-format!
 
 ## Reporting bugs
-If you would like to report a bug please report them in [bug-feature-reports](https://github.com/tiltedphoques/bug-feature-reports). Detailed and reproducible bug reports are of great importance for the development of the project.
+If you would like to report a bug please report them in the "Issues" tab on this page. Detailed and reproducible bug reports are of great importance for the development of the project.
 
 ## Contributing
 Have some experience in C++, and want to help advance the project faster? Contribute!
@@ -24,7 +26,7 @@ Have some experience in C++, and want to help advance the project faster? Contri
 ## Main project source tree
 
 * [**client/**](./Code/client): Sources for the SkyrimSE and FO4 clients.
-* [**launcher/**](./Code/launcher): Game starter/updater.
+* [**immersive_launcher/**](./Code/immersive_launcher): Game starter/updater.
 * [**common/**](./Code/common): Common code shared between plugin and server.
 * [**encoding/**](./Code/encoding): Net-message definitions.
 * [**server/**](./Code/server): GameServer implementation.

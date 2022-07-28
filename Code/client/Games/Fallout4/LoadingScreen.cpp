@@ -35,7 +35,7 @@ void RequestLoadingText(ScaleFormContext* apContext)
 
 static TiltedPhoques::Initializer s_loadingScreenHooks([]()
     {
-        POINTER_FALLOUT4(TRequestLoadingText, s_requestLoadingText, 0x1412985D0 - 0x140000000);
+        POINTER_FALLOUT4(TRequestLoadingText, s_requestLoadingText, 277977);
 
         RealRequestLoadingText = s_requestLoadingText.Get();
 

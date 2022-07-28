@@ -1,0 +1,144 @@
+{
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Senden",
+      "MESSAGE": "Nachricht",
+      "MESSAGE_TOO_LONG": "Du kannst keine Nachricht senden, die mehr als {{chatMessageLengthLimit}} Zeichen hat."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Verbinden dich mit einem Server über dessen vollständige Adresse. Verwende das Format  <strong>addresse:port</strong>. Standardwert für den Port ist <strong>10578</strong>.",
+        "HELGEN": "Stelle KEINE Verbindung zu einem Server her, wenn du dich noch in der Helgen-Intro-Sequenz befinden. Vergewissere dich, dass du bereits aus Helgen entkommen bist."
+      },
+      "ADDRESS": "Adresse",
+      "PASSWORD": "Passwort",
+      "SAVE_PASSWORD": "Passwort speichern?",
+      "CONNECT": "Verbinden",
+      "CANCEL": "Abbrechen",
+      "PUBLIC_SERVERS": "Öffentliche Server",
+      "ERROR": {
+        "CONNECTION": "Es konnte keine Verbindung mit dem angegebenen Server hergestellt werden. Bitte vergewissere dich, dass du die richtige Adresse eingegeben hast und dass keine Netzwerkprobleme vorliegen.",
+        "VERSION_MISMATCH": "Es konnte keine Verbindung mit dem Server hergestellt werden, weil dieser eine andere Version von Skyrim Together verwendet.",
+        "INVALID_ADDRESS": "Die Adresse hat ein ungültiges Format."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Bist du sicher, dass du die Verbindung trennen willst?",
+      "PROCEED": "Fortsetzen",
+      "CANCEL": "Abbrechen"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Nachricht von"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Einladung von {{name}} akzeptieren",
+      "LAUNCH_PARTY": "Gruppe erstellen",
+      "EXPERIENCE_WARNING": "Für ein optimales Questerlebnis solltet ihr unbedingt den Spielleitfaden in unserem Wiki lesen, den ihr auf unserer Website <b>skyrim-together.com</b> finden könnt. Hier ist eine kurze Zusammenfassung des Leitfadens:",
+      "GUIDELINES": {
+        "PARTY": "Wenn du eine Gruppe erstellst, wirst du der \"Host\", also der Gruppenleiter.",
+        "PARTY_LEADER_TALK": "Nur der Gruppenleiter kann mit Quest-NPCs sprechen, um Quests voranzutreiben.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Nur der Gruppenleiter kann Questgegenstände an sich nehmen.",
+        "KEEP_PARTY_LEADER": "Bleibt bei einem Gruppenleiter pro Spieldurchgang.",
+        "ONE_PARTY_PER_SERVER": "Beschränkt euch auf eine Gruppe pro Server."
+      },
+      "NO_PLAYERS_IN_PARTY": "Es ist noch niemand in deiner Gruppe. Lade andere Spieler über die Spielerliste ein!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Name",
+        "LOCATION": "Standort"
+      },
+      "ACTIONS": {
+        "KICK": "Rauswerfen",
+        "TELEPORT": "Teleportieren",
+        "MAKE_LEADER": "Zum Anführer befördern"
+      },
+      "LEAVE_PARTY": "Gruppe verlassen"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Hm... keiner da. Mist.",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Name",
+        "LOCATION": "Standort"
+      },
+      "INVITE": "Einladen"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Spielerliste",
+      "PARTY_MENU": "Gruppenmenü",
+      "BACK": "Zurück"
+    },
+    "ROOT": {
+      "CONNECT": "Verbinden",
+      "DISCONNECT": "Verbindung trennen",
+      "RECONNECT": "Neuverbinden",
+      "PLAYER_MANAGER": "Spielerverwaltung",
+      "SETTINGS": "Einstellungen",
+      "CONNECTION_IN_PROGRESS": "Verbindungsaufbau läuft..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Suche...",
+      "REFRESH": "Neuladen",
+      "BACK": "Zurück",
+      "LOADING": "Lädt...",
+      "NO_SERVERS": "Keine öffentlichen Server verfügbar",
+      "HIDE_MISMATCHED_SERVER": "Server mit inkompatiblen Versionen verstecken",
+      "TABLE_HEADERS": {
+        "NAME": "Servername",
+        "PLAYERS": "Spieler",
+        "COUNTRY": "Land",
+        "FAVORITE": "Favoriten"
+      },
+      "JOIN": "Beitreten"
+    },
+    "SETTINGS": {
+      "AUDIO": "Audio",
+      "MUTE_UI": "UI Stummschalten",
+      "UI_VOLUME": "UI Lautstärke",
+      "PARTY": "Gruppe",
+      "SHOW_PARTY": "Gruppe anzeigen",
+      "AUTO_HIDE_PARTY": "Gruppe automatisch verstecken",
+      "AUTO_HIDE_PARTY_LENGTH": "Dauer bis zum automatischen Ausblenden",
+      "PARTY_ANCHOR": "Position",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Oben links",
+        "TOP_RIGHT": "Oben rechts",
+        "BOTTOM_RIGHT": "Unten rechts",
+        "BOTTOM_LEFT": "Unten links"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Horizontaler Versatz",
+      "PARTY_ANCHOR_OFFSET_Y": "Vertikaler Versatz",
+      "LENGTH": "{{length}}s",
+      "UI": "Oberfläche",
+      "LANGUAGE": "Sprache",
+      "DEBUG": "Debug",
+      "SHOW_DEBUG_INFO": "Debug Informationen anzeigen",
+      "BACK": "Zurück"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Verbindung verloren, versuche erneut zu verbinden. {{remainingReconnectionAttempt } Versuche verbleibend."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} hat Level {{level}} erreicht.",
+      "ALREADY_IN_GROUP": "Du bist bereits in einer Gruppe. Um einer anderen Gruppe beizutreten, musst du deine zuerst aktuelle Gruppe verlassen.",
+      "KICK_NO_PARTY_LEADER": "Wenn du nicht der Gruppenleiter bist, kannst du keine anderen Gruppenmitglieder rauswerfen.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Wenn du nicht der Gruppenleiter bist, kannst du niemand anderen zum Gruppenleiter machen."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "Dieser Server setzt die Version {{expectedVersion}} voraus, du benutzt aber Version {{version}}.",
+        "MODS_MISMATCH": "Dieser Server hat ModPolicy aktiviert.{{mods}}",
+        "MODS_MISMATCH_REMOVE": "Bitte entferne folgende Mods, um dem Server beitreten zu können:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Bitte installiere folgende Mods, um dem Server beitreten zu können:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "Dieser Server verbietet folgende Mods {{mods}}. Bitte entferne diese, um beitreten zu können.",
+        "WRONG_PASSWORD": "Das eingegebene Passwort ist falsch.",
+        "NO_REASON": "Der Server hat die Verbindung ohne Angabe von Gründen verweigert."
+      }
+    }
+  }
+}

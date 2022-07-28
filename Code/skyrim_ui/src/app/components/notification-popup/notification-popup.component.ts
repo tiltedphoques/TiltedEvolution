@@ -1,71 +1,66 @@
-import { Component, ViewEncapsulation, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { animation as popupsAnimation } from '../root/popups.animation';
-import { animation as popupTestAnimation } from '../popup/popup.animation';
-import { Subscription } from 'rxjs';
-import { PopupNotificationService } from '../../services/popup-notification.service';
-import { PopupNotification, NotificationType } from '../../models/popup-notification';
-import { GroupService } from '../../services/group.service';
-import { environment } from '../../../environments/environment';
-import { Player } from '../../models/player';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { NotificationType, PopupNotification } from '../../models/popup-notification';
+import { DestroyService } from '../../services/destroy.service';
+
 
 @Component({
   selector: 'app-notification-popup',
   templateUrl: './notification-popup.component.html',
   styleUrls: ['./notification-popup.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [ popupsAnimation, popupTestAnimation ]
+  providers: [DestroyService],
 })
-export class NotificationPopupComponent implements OnDestroy, OnInit {
+export class NotificationPopupComponent implements OnInit, OnDestroy {
 
-  public isActive = false;
-  public notification: PopupNotification;
+  eraseTimer: number | null = null;
+  eraseTimingStart?: number;
+  eraseTTL: number;
 
-  private notificationSubscription: Subscription;
-
-  constructor(private groupService: GroupService,
-              private popupNotificationService: PopupNotificationService) {}
+  @Input() notification: PopupNotification;
+  @Output() remove = new EventEmitter<boolean>();
 
   ngOnInit() {
-    this.notificationSubscription = this.popupNotificationService.message.subscribe((notification: PopupNotification) => {
-      this.notification = notification;
-      this.isActive = (notification.message !== "");
-    });
+    this.eraseTTL = this.notification.duration ?? 5000;
+    if (this.eraseTTL !== 0) {
+      this.startTimer();
+    }
   }
 
   ngOnDestroy() {
-    this.notificationSubscription.unsubscribe();
+    this.stopTimer();
   }
 
-  public get isConnected(): boolean {
+  onEnter() {
+    if (this.eraseTTL !== 0) {
+      this.eraseTTL -= Date.now() - this.eraseTimingStart!;
+      this.stopTimer();
+    }
+  }
+
+  onLeave() {
+    if (this.eraseTTL !== 0) {
+      this.startTimer();
+    }
+  }
+
+  startTimer() {
+    this.stopTimer();
+    this.eraseTimer = setTimeout(() => this.remove.emit(false), this.eraseTTL);
+    this.eraseTimingStart = Date.now();
+  }
+
+  private stopTimer(): void {
+    if (this.eraseTimer !== null) {
+      clearTimeout(this.eraseTimer);
+      this.eraseTimer = null;
+    }
+  }
+
+  get isConnected(): boolean {
     return this.notification.type === NotificationType.Connection;
   }
 
-  public clickNotif() {
-    this.isActive = false;
-    if (this.notification.type === NotificationType.Invitation) {
-      if (this.notification.player) {
-        this.groupService.accept(this.notification.player.id);
-
-        this.popupNotificationService.clearMessage();
-      }
-    }
+  async clickNotification() {
+    this.remove.emit(true);
   }
-
-  @HostListener('window:keydown.n', [ '$event' ])
-  // @ts-ignore
-  private activate(event: KeyboardEvent): void {
-    // Just for deskop
-    if (!environment.game) {
-      this.notification = {
-        message: "test notif",
-        player: new Player({
-          name: "Dumbeldor",
-          online: true,
-          avatar: "https://skyrim-together.com/images/float/avatars/random3.jpg"}),
-        type: NotificationType.Connection};
-      this.isActive = !this.isActive;
-    }
-  }
-
 
 }

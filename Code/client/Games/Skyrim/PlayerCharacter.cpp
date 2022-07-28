@@ -36,9 +36,9 @@ void PlayerCharacter::SetGodMode(bool aSet) noexcept
     *bGodMode.Get() = aSet;
 }
 
-void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
+void PlayerCharacter::SetDifficulty(const int32_t aDifficulty, bool aForceUpdate, bool aExpectGameDataLoaded) noexcept
 {
-    if (aDifficulty > 5)
+    if (aDifficulty > 5 || aDifficulty < 0)
         return;
 
     int32_t* difficultySetting = Settings::GetDifficulty();
@@ -65,7 +65,7 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
     // Make bleedout state recoverable
     SetNoBleedoutRecovery(false);
 
-    DispellAllSpells();
+    DispelAllSpells();
 
     // Reset health to max
     // TODO(cosideci): there's a cleaner way to do this
@@ -126,9 +126,11 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
         modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
         item.Count = aCount;
 
-        if (apObject->GetExtraDataList())
+        if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())
+        {
+            ScopedExtraDataOverride _;
             apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
-
+        }
         World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
     }
 

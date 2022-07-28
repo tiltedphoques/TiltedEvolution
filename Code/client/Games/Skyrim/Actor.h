@@ -146,7 +146,7 @@ struct Actor : TESObjectREFR
     virtual void sub_10B();
     virtual void sub_10C();
     virtual void sub_10D();
-    virtual void sub_10E();
+    virtual void KillImpl(Actor* apAttacker, float aDamage, bool aSendEvent, bool aRagdollInstant);
     virtual void sub_10F();
     virtual void sub_110();
     virtual void sub_111();
@@ -215,6 +215,7 @@ struct Actor : TESObjectREFR
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
     void SetPlayerRespawnMode() noexcept;
+    void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
@@ -222,7 +223,7 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
-    void DispellAllSpells() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
 
     bool IsDead() noexcept;
     bool IsDragon() noexcept;
@@ -231,6 +232,7 @@ struct Actor : TESObjectREFR
     void Respawn() noexcept;
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void SpeakSound(const char* pFile);
 
     enum ActorFlags

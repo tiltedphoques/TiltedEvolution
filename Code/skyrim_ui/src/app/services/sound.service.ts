@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
+import { AssetService, AudioAsset, Kind } from './asset.service';
 
-import { AssetService, Kind, AudioAsset } from './asset.service';
 
 export enum Sound {
   /** Cancellation. */
@@ -32,16 +32,20 @@ export enum Sound {
 }
 
 /** Sound player service. */
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class SoundService {
   /**
    * Instantiate.
    *
    * @param asset Asset service.
    */
-  public constructor(private asset: AssetService) {
-    this.sounds = new Map(Object.entries(Sound).map((entry): [ string, Symbol ] => {
-      return [ entry[1], asset.load(Kind.Audio, `assets/sounds/${entry[1]}.wav`) ];
+  public constructor(
+    private readonly asset: AssetService,
+  ) {
+    this.sounds = new Map(Object.entries(Sound).map((entry): [string, Symbol] => {
+      return [entry[1], asset.load(Kind.Audio, `assets/sounds/${ entry[1] }.wav`)];
     }));
   }
 
@@ -50,7 +54,7 @@ export class SoundService {
    *
    * @param sound Audio file to play.
    */
-  public play(sound: string): void {
+  public play(sound: string | Sound): void {
     this.asset.get<AudioAsset>(this.sounds.get(sound)!).subscribe(asset => asset.play());
   }
 

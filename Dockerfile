@@ -9,30 +9,34 @@ WORKDIR /home/server
 RUN apt update && \
 apt install cmake -y
 
+RUN apt install -y sudo
+
+# switch to ruki user
+RUN groupadd -r ruki && useradd -r -g ruki ruki
+RUN mkdir /home/ruki
+RUN chown -R ruki:ruki /home
+RUN echo "root:0000" | chpasswd
+RUN echo "ruki:0000" | chpasswd
+RUN echo "ruki ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+USER ruki
+
+# install xmake
+RUN cd /tmp/ && git clone --depth=1 "https://github.com/xmake-io/xmake.git" --recursive xmake && cd xmake && ./scripts/get.sh __local__
+RUN rm -rf /tmp/xmake
+
 COPY ./modules ./modules
 COPY ./Libraries ./Libraries
 COPY xmake.lua xmake.lua
 COPY ./.git ./.git
 COPY ./Code ./Code
 
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
-apt update && \
-apt install cmake -y && \
-xmake config -y && \
-xmake -j`nproc`
+RUN ~/.local/bin/xmake f -y -vD
+RUN ~/.local/bin/xmake -j`nproc` -vD
 
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
-objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug && \
-objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
+RUN objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug
+RUN objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
 
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
-xmake install -o package
+RUN ~/.local/bin/xmake install -o package
 
 FROM ubuntu:20.04 AS skyrim
 

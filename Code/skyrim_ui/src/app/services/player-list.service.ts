@@ -1,14 +1,20 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
+import { BehaviorSubject, firstValueFrom, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
+import { PlayerManagerTab } from '../models/player-manager-tab.enum';
+import { NotificationType } from '../models/popup-notification';
+import { View } from '../models/view.enum';
+import { UiRepository } from '../store/ui.repository';
 import { ClientService } from './client.service';
-import { MockClientService } from './mock-client.service';
+import { PopupNotificationService } from './popup-notification.service';
+
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class PlayerListService {
+export class PlayerListService implements OnDestroy {
 
   public playerList = new BehaviorSubject<PlayerList | undefined>(undefined);
 
@@ -16,20 +22,23 @@ export class PlayerListService {
   private connectionSubscription: Subscription;
   private playerConnectedSubscription: Subscription;
   private playerDisconnectedSubscription: Subscription;
+  private memberKickedSubscription: Subscription;
   private cellSubscription: Subscription;
   private partyInviteReceivedSubscription: Subscription;
 
   private isConnect = false;
 
-  constructor(private clientService: ClientService,
-              // WARNING: do not remove this service dependency.
-              // Due to angular lazy loading, it needs to be instantiated somewhere.
-              // There is surely a better solution, so if you know any, please do refactor.
-              private mockClientService: MockClientService) {
+  constructor(
+    private readonly clientService: ClientService,
+    private readonly popupNotificationService: PopupNotificationService,
+    private readonly uiRepository: UiRepository,
+    private readonly translocoService: TranslocoService,
+  ) {
     this.onDebug();
     this.onConnectionStateChanged();
     this.onPlayerConnected();
     this.onPlayerDisconnected();
+    this.onMemberKicked();
     this.onCellChange();
     this.onPartyInviteReceived();
   }
@@ -71,7 +80,7 @@ export class PlayerListService {
 
         this.playerList.next(playerList);
       }
-    })
+    });
   }
 
   private onPlayerDisconnected() {
@@ -87,6 +96,14 @@ export class PlayerListService {
     });
   }
 
+  private onMemberKicked() {
+    this.memberKickedSubscription = this.clientService.memberKickedChange.subscribe((playerId: number) => {
+      const playerList = this.getPlayerList();
+      const players = playerList.players.find(player => player.id !== playerId);
+      players.hasBeenInvited = false;
+    });
+  }
+
   private onCellChange() {
     this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
       const playerList = this.getPlayerList();
@@ -97,21 +114,35 @@ export class PlayerListService {
           p.cellName = player.cellName;
         }
       }
-    })
+    });
   }
 
   private onPartyInviteReceived() {
-    this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe((inviterId: number) => {
+    this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe(async (inviterId: number) => {
       const playerList = this.getPlayerList();
 
       if (playerList) {
-        this.getPlayerById(inviterId).hasInvitedLocalPlayer = true;
-
+        const invitingPlayer = this.getPlayerById(inviterId);
+        invitingPlayer.hasInvitedLocalPlayer = true;
         this.playerList.next(playerList);
+        const inviteMessage = await firstValueFrom(
+          this.translocoService.selectTranslate('SERVICE.PLAYER_LIST.PARTY_INVITE', { from: invitingPlayer.name }),
+        );
+        const message = this.popupNotificationService
+          .addMessage(inviteMessage, {
+            type: NotificationType.Invitation,
+            player: invitingPlayer,
+            duration: 10000,
+          });
+        firstValueFrom(message.onClose)
+          .then(clicked => {
+            if (clicked) {
+              this.uiRepository.openView(View.PLAYER_MANAGER);
+              this.uiRepository.openPlayerManagerTab(PlayerManagerTab.PARTY_MENU);
+            }
+          });
       }
-
-      
-    })
+    });
   }
 
   public getLocalPlayer(): Player {
@@ -120,7 +151,7 @@ export class PlayerListService {
   }
 
   public getPlayerList() {
-    return this.createPlayerList(this.playerList.value);
+    return this.createPlayerList(this.playerList.getValue());
   }
 
   public getListLength(): number {
@@ -132,11 +163,11 @@ export class PlayerListService {
       playerList = new PlayerList();
       this.playerList.next(playerList);
     }
-    return this.playerList.value;
+    return this.playerList.getValue();
   }
 
   public updatePlayerList() {
-    this.playerList.next(this.playerList.value);
+    this.playerList.next(this.playerList.getValue());
   }
 
   public sendPartyInvite(inviteeId: number) {
@@ -163,7 +194,7 @@ export class PlayerListService {
     }
   }
 
-  public getPlayerById(playerId: number) : Player {
+  public getPlayerById(playerId: number): Player {
     return this.getPlayerList().players.find(player => player.id === playerId);
   }
 
@@ -178,4 +209,5 @@ export class PlayerListService {
       this.updatePlayerList();
     }
   }
+
 }

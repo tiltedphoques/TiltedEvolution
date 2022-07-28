@@ -1,56 +1,85 @@
-<div id="notInParty" *ngIf="!group.isEnabled ; else inParty">
-  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled()">Launch party</button>
-  <button *ngFor="let player of invitees | keyvalue" class="party-menu-button"
-    (click)="acceptPartyInvite(player.value.id)">Accept invite from {{ player.value.name }}</button>
-  
-  <hr class="solid">
-  
-  <p style="padding-top: 0.5rem; line-height: 1.3;">For an optimal questing experience, make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:</p>
+<div *ngIf="!(group$ | async)?.isEnabled ; else inParty">
+  <p class="optional-info" [innerHtml]="'COMPONENT.PARTY_MENU.EXPERIENCE_WARNING' | transloco"></p>
   <ul>
-    <li style="line-height: 1.3em; height: auto;">By creating a party, you sort of become the "host", aka the party leader.</li>
-    <li style="line-height: 1.3em; height: auto;">Only the party leader can talk to quest NPCs to progress quests.</li>
-    <li style="line-height: 1.3em; height: auto;">Only the party leader can loot quest items.</li>
-    <li style="line-height: 1.3em; height: auto;">Stick to one party leader per playthrough.</li>
-    <li style="line-height: 1.3em; height: auto;">Stick to one party per server.</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY_LEADER_TALK' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY_LEADER_LOOT_QUESTITEMS' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.KEEP_PARTY_LEADER' | transloco }}</li>
+    <li style="line-height: 1.3em; height: auto;">{{ 'COMPONENT.PARTY_MENU.GUIDELINES.ONE_PARTY_PER_SERVER' | transloco }}</li>
   </ul>
+
+  <button class="party-menu-button" (click)="launchParty()" [disabled]="isLaunchPartyDisabled$ | async">
+    {{ 'COMPONENT.PARTY_MENU.LAUNCH_PARTY' | transloco }}
+  </button>
+
+  <div class="separator">
+    {{ 'COMPONENT.PARTY_MENU.INVITES' | transloco }}
+  </div>
+
+  <div *ngIf="invitations$ | async as invites">
+    <div *ngIf="invites.length === 0" class="no-invites">
+      {{ 'COMPONENT.PARTY_MENU.NO_INVITES' | transloco }}
+    </div>
+    <button
+      *ngFor="let player of invites"
+      class="party-menu-button"
+      (click)="acceptPartyInvite(player.id)"
+    >
+      {{ 'COMPONENT.PARTY_MENU.ACCEPT_INVITE' | transloco:{ name: player.name } }}
+    </button>
+  </div>
 </div>
 
 <ng-template #inParty>
-  <div style="margin-bottom: 1.0rem;" id="noPlayers" *ngIf="getMembersLength === 0 ; else notEmpty">
-    <span>There is nobody in your party yet. Invite them through the player list!</span>
+  <div *ngIf="(memberCount$ | async) === 0 ; else notEmpty" style="margin-bottom: 1.0rem;" class="no-players">
+    <span>{{ 'COMPONENT.PARTY_MENU.NO_PLAYERS_IN_PARTY' | transloco }}</span>
   </div>
 
   <ng-template #notEmpty>
-    <div class="containerList">
-      <table cellspacing="5" cellpadding="5" class="playerListTable">
-        <thead class="listHeader">
+    <div class="server-list">
+      <table cellspacing="5" cellpadding="5" class="player-list-table">
+        <thead class="list-header">
           <tr>
+            <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.LEVEL' | transloco }}</th>
+            <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.NAME' | transloco }}</th>
+            <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.LOCATION' | transloco }}</th>
             <th></th>
-            <th>Name</th>
-            <th>Location</th>
-            <th></th>
-            <th></th>
-            <!--<th></th>-->
           </tr>
         </thead>
-        <tbody class="listBody">
-          <tr *ngFor="let player of members | keyvalue">
-            <td>{{ player.value.level }}</td>
-            <td>{{ player.value.name }}</td>
-            <td>{{ player.value.cellName }}</td>
-            <td><button (click)="teleportToPlayer(player.value.id)" class="teleBtn">Teleport</button></td>
-            <td><button (click)="kickMember(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn"
-                [ngClass]="!isPartyLeader ? 'hidden' : ''">Kick</button></td>
-            <!--
-            <td><button (click)="changeLeader(player.value.id)" [disabled]="!isPartyLeader" class="teleBtn"
-                [ngClass]="!isPartyLeader ? 'hidden' : ''">Make
-                leader</button></td>
-            -->
+        <tbody>
+          <tr *ngFor="let player of members$ | async">
+            <td>{{ player.level }}</td>
+            <td>{{ player.name }}</td>
+            <td>{{ player.cellName }}</td>
+            <td>
+              <button class="user-action-button" (click)="teleportToPlayer(player.id)">
+                {{ 'COMPONENT.PARTY_MENU.ACTIONS.TELEPORT' | transloco }}
+              </button>
+              <button
+                (click)="kickMember(player.id)"
+                [disabled]="!(isPartyLeader$ | async)" class="user-action-button"
+                [ngClass]="!(isPartyLeader$ | async) ? 'hidden' : ''"
+              >
+                {{ 'COMPONENT.PARTY_MENU.ACTIONS.KICK' | transloco }}
+              </button>
+              <!--
+              <button
+                [disabled]="!isPartyLeader"
+                class="user-action-button"
+                [ngClass]="!isPartyLeader ? 'hidden' : ''"
+                (click)="changeLeader(player.id)"
+              >
+                {{ 'COMPONENT.PARTY_MENU.ACTIONS.MAKE_LEADER' | transloco }}
+              </button>
+              -->
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
   </ng-template>
 
-  <button class="party-menu-button btn" (click)="leave()">Leave party</button>
+  <button class="party-menu-button btn" (click)="leave()">
+    {{ 'COMPONENT.PARTY_MENU.LEAVE_PARTY' | transloco }}
+  </button>
 </ng-template>

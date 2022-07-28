@@ -1,30 +1,38 @@
-import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { PlayerManagerTab } from '../../models/player-manager-tab.enum';
+import { Sound, SoundService } from '../../services/sound.service';
+import { UiRepository } from '../../store/ui.repository';
+
 
 @Component({
   selector: 'app-player-manager',
   templateUrl: './player-manager.component.html',
   styleUrls: ['./player-manager.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PlayerManagerComponent implements OnInit, OnDestroy {
+export class PlayerManagerComponent {
 
-  @Output()
-  public done = new EventEmitter();
+  /* ### ENUMS ### */
+  readonly PlayerManagerTab = PlayerManagerTab;
 
-  constructor() { }
+  activeTab$ = this.uiRepository.playerManagerTab$;
 
-  ngOnInit(): void {
+  @Output() public done = new EventEmitter<void>();
+
+  constructor(
+    private readonly sound: SoundService,
+    private readonly uiRepository: UiRepository,
+  ) {
   }
 
-  ngOnDestroy(): void {
+  switchTab(tab: PlayerManagerTab) {
+    this.uiRepository.openPlayerManagerTab(tab);
+    this.sound.play(Sound.Focus);
   }
 
-  public cancel(): void {
+  close() {
     this.done.next();
-  }
-
-  private close() {
-      this.done.next();
+    this.sound.play(Sound.Ok);
   }
 
   @HostListener('window:keydown.escape', ['$event'])

@@ -2,6 +2,6 @@
 
 #include "TESBoundObject.h"
 
-struct TESAmmo : TESBoundObject
+struct TESAmmo : TESBoundObject, TESFullName
 {
 };

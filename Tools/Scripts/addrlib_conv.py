@@ -10,14 +10,14 @@ import glob
 import re
 
 def handle_file(filename):
-    if filename == 'Utils.h':
+    if filename == 'Utils.h' or filename == "EventDispatcher.h":
         return
 
     with open(filename, 'r') as file :
         filedata = file.read()
 
     replace = {}
-    pointers = [m.start() for m in re.finditer('POINTER_SKYRIMSE', filedata)]
+    pointers = [m.start() for m in re.finditer('POINTER_FALLOUT4', filedata)]
     if len(pointers) > 0:
         for p in pointers:
             start_loc = filedata.find('0x', p)

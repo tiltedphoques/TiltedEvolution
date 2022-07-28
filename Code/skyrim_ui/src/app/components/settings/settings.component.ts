@@ -1,83 +1,146 @@
-import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { ClientService } from "src/app/services/client.service";
-import { SettingService } from "src/app/services/setting.service";
+import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
+import { ClientService } from 'src/app/services/client.service';
+import { SettingService } from 'src/app/services/setting.service';
+import { Sound, SoundService } from '../../services/sound.service';
+
+
+export enum PartyAnchor {
+  TOP_LEFT,
+  TOP_RIGHT,
+  BOTTOM_RIGHT,
+  BOTTOM_LEFT,
+}
 
 @Component({
-    selector: 'app-settings',
-    templateUrl: './settings.component.html',
-    styleUrls: ['./settings.component.scss'],
-    encapsulation: ViewEncapsulation.None,
+  selector: 'app-settings',
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.scss'],
 })
-export class SettingsComponent implements OnInit, OnDestroy {
+export class SettingsComponent implements OnInit {
 
-    @Output()
-    public done = new EventEmitter();
-    @Output()
-    public setView = new EventEmitter<string>();
+  /* ### ENUMS ### */
+  readonly PartyAnchor = PartyAnchor;
 
-    public volume: number;
-    public muted: boolean;
-    public showDebug: boolean;
-    public autoHideParty: boolean;
-    public showParty: boolean;
-    public autoHideTime: number;
+  readonly availableLanguages = this.translocoService.getAvailableLangs();
 
-    constructor(private settings: SettingService, private client: ClientService) {
+  public volume: number;
+  public muted: boolean;
+  public showDebug: boolean;
+  public autoHideParty: boolean;
+  public showParty: boolean;
+  public autoHideTime: number;
+  public partyAnchor: PartyAnchor;
+  public partyAnchorOffsetX: number;
+  public partyAnchorOffsetY: number;
+  public language: string;
 
-    }
-    ngOnDestroy(): void {
+  @Output() public done = new EventEmitter<void>();
+  @Output() public settingsUpdated = new EventEmitter<void>();
 
-    }
-    ngOnInit(): void {
-        this.volume = this.settings.getVolume();
-        this.muted = this.settings.isAudioMuted();
-        this.showDebug = this.settings.isDebugShown();
-        this.autoHideParty = this.settings.isPartyAutoHidden();
-        this.showParty = this.settings.isPartyShown();
-        this.autoHideTime = this.settings.getAutoHideTime();
-    }
+  constructor(
+    private readonly settings: SettingService,
+    private readonly client: ClientService,
+    private readonly sound: SoundService,
+    private readonly translocoService: TranslocoService,
+  ) {
+  }
 
-    public cancel(): void {
-        this.done.next();
-    }
+  ngOnInit(): void {
+    this.volume = this.settings.getVolume();
+    this.muted = this.settings.isAudioMuted();
+    this.showDebug = this.settings.isDebugShown();
+    this.autoHideParty = this.settings.isPartyAutoHidden();
+    this.showParty = this.settings.isPartyShown();
+    this.autoHideTime = this.settings.getAutoHideTime();
+    this.partyAnchor = this.settings.getPartyAnchor();
+    this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
+    this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
+    this.language = this.settings.getLanguage();
+  }
 
-    onMutedChange(event: any) {
-        this.settings.muteAudio(event.target.checked);
+  onMutedChange(checked: boolean) {
+    if (checked) {
+      this.sound.play(Sound.Check);
     }
-    onVolumeChange(event: any) {
-        this.settings.setVolume(event.target.value);
+    this.settings.muteAudio(checked);
+    if (!checked) {
+      this.sound.play(Sound.Uncheck);
     }
+    this.settingsUpdated.next();
+  }
 
-    onShowDebugChange(event: any) {
-        this.settings.setDebugShown(event.target.checked);
-        this.client.debugStateChange.next(event.target.checked);
-    }
+  onVolumeChange(volume: number) {
+    this.settings.setVolume(volume);
+    this.settingsUpdated.next();
+  }
 
-    onShowPartyChange(event: any) {
-        this.settings.showParty(event.target.checked);
-    }
-    onAutoHidePartyChange(event: any) {
-        this.settings.autoHideParty(event.target.checked);
-        this.autoHideParty = event.target.checked;
-    }
-    onAutoHideTimeChange(event: any) {
-        this.settings.setAutoHideTime(event.target.value);
-        this.autoHideTime = event.target.value;
-    }
+  onShowDebugChange(checked: boolean) {
+    this.settings.setDebugShown(checked);
+    this.client.debugStateChange.next(checked);
+    this.sound.play(checked ? Sound.Check : Sound.Uncheck);
+    this.settingsUpdated.next();
+  }
 
-    public autoHideTimeSelected(number: number): boolean {
-        return this.settings.getAutoHideTime() === number;
-    }
+  onShowPartyChange(checked: boolean) {
+    this.settings.showParty(checked);
+    this.sound.play(checked ? Sound.Check : Sound.Uncheck);
+    this.settingsUpdated.next();
+  }
 
-    private close() {
-        this.done.next();
-    }
+  onAutoHidePartyChange(checked: boolean) {
+    this.settings.autoHideParty(checked);
+    this.autoHideParty = checked;
+    this.sound.play(checked ? Sound.Check : Sound.Uncheck);
+    this.settingsUpdated.next();
+  }
 
-    @HostListener('window:keydown.escape', ['$event'])
-    // @ts-ignore
-    private activate(event: KeyboardEvent): void {
-        this.close();
-        event.stopPropagation();
-        event.preventDefault();
-    }
+  onAutoHideTimeChange(time: number) {
+    this.settings.setAutoHideTime(time);
+    this.autoHideTime = time;
+    this.sound.play(Sound.Check);
+    this.settingsUpdated.next();
+  }
+
+  onPartyAnchorChange(anchor: PartyAnchor) {
+    this.settings.setPartyAnchor(anchor);
+    this.partyAnchor = anchor;
+    this.settingsUpdated.next();
+  }
+
+  onPartyAnchorOffsetXChange(offset: number) {
+    this.settings.setPartyAnchorOffsetX(offset);
+    this.partyAnchorOffsetX = offset;
+    this.settingsUpdated.next();
+  }
+
+  onPartyAnchorOffsetYChange(offset: number) {
+    this.settings.setPartyAnchorOffsetY(offset);
+    this.partyAnchorOffsetY = offset;
+    this.settingsUpdated.next();
+  }
+
+  onLanguageChange(language: string) {
+    this.settings.setLanguage(language);
+    this.language = language;
+    this.settingsUpdated.next();
+    this.translocoService.setActiveLang(language);
+  }
+
+  public autoHideTimeSelected(number: number): boolean {
+    return this.settings.getAutoHideTime() === number;
+  }
+
+  close() {
+    this.done.next();
+    this.sound.play(Sound.Ok);
+  }
+
+  @HostListener('window:keydown.escape', ['$event'])
+  // @ts-ignore
+  private activate(event: KeyboardEvent): void {
+    this.close();
+    event.stopPropagation();
+    event.preventDefault();
+  }
 }

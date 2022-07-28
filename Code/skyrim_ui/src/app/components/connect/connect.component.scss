@@ -1,22 +1,11 @@
-@import 'env';
+@import "env";
 
-@import 'functions/mod';
-@import 'mixins/gapped-vertical';
+@import "functions/mod";
+@import "mixins/gapped-vertical";
 
-app-connect {
+:host {
   display: block;
   font-size: 1.25rem;
-  font-family: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS', 'Tahoma', 'Geneva',
-  'Verdana', 'sans-serif';
-
-
-  app-window {
-    @include gapped-vertical($-size-gap);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
 }
 
 .app-connect {
@@ -26,13 +15,32 @@ app-connect {
   flex-direction: column;
   align-items: center;
 
+  .save-password {
+    margin-top: 0.2em;
+    width: 100%;
+    display: flex;
+    justify-items: start;
+    align-items: center;
+
+    label {
+      font-size: 0.8em;
+    }
+
+    app-checkbox {
+      margin-right: 0.3em;
+      width: unset;
+    }
+  }
+
   p {
     line-height: $-size-line;
     text-align: justify;
   }
 
-  strong {
-    color: mod($-color-background, 1);
+  ::ng-deep {
+    strong {
+      color: mod($-color-background, 1);
+    }
   }
 
   input {
@@ -41,10 +49,10 @@ app-connect {
 
   hr {
     border: 0;
-    clear:both;
-    display:block;
+    clear: both;
+    display: block;
     width: 80%;
-    background-color:grey;
+    background-color: grey;
     height: 1px;
   }
 }

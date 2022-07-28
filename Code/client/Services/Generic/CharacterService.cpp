@@ -71,6 +71,7 @@
 #include <Projectiles/Projectile.h>
 #include <Forms/TESObjectWEAP.h>
 #include <Forms/TESAmmo.h>
+#include <Forms/TESTopicInfo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -421,7 +422,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         {
             // Players and npcs with temporary ref ids and base ids (usually random events)
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
-            // TODO(cosideci): facegen for fully temporary NPCs
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
         }
 
@@ -1059,7 +1059,10 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
+    // TODO: ft
+#if TP_SKYRIM64
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
+#endif
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
@@ -1089,6 +1092,8 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
+// TODO: ft (verify)
+// deal with player voice lines in fallout 4
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1137,8 +1142,37 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     SubtitleRequest request{};
     request.ServerId = serverIdRes.value();
     request.Text = acEvent.Text;
+    request.TopicFormId = acEvent.TopicFormID;
 
     m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    // This is only for fallout 4
+    TESTopicInfo* pInfo = nullptr;
+    pInfo = Cast<TESTopicInfo>(TESForm::GetById(acMessage.TopicFormId));
+
+    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str(), pInfo);
 }
 
 void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept
@@ -1185,30 +1219,6 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
     }
 
     spdlog::error("Did not find actor to relinquish control of, server id {:X}", acMessage.ServerId);
-}
-
-void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
-{
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = Cast<Actor>(pForm);
-
-    if (!pActor)
-        return;
-
-    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
 void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept
@@ -1279,6 +1289,7 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
+        // TODO: ft (verify)
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
@@ -1314,7 +1325,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     if (!pActor)
         return;
 
-    auto* const pNpc = Cast<TESNPC>(pActor->baseForm);
+    TESNPC* pNpc = Cast<TESNPC>(pActor->baseForm);
     if (!pNpc)
         return;
 
@@ -1347,16 +1358,15 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     // Serialize the base form
     const auto isPlayer = (formIdComponent.Id == 0x14);
     const auto isTemporary = pActor->formID >= 0xFF000000;
-    const auto isNpcTemporary = pNpc->formID >= 0xFF000000;
 
-    if(isPlayer)
+    if (isPlayer)
     {
         pNpc->MarkChanged(0x2000800);
     }
 
     const auto changeFlags = pNpc->GetChangeFlags();
 
-    if (isPlayer || pNpc->formID >= 0xFF000000 || changeFlags != 0)
+    if (isPlayer || changeFlags != 0)
     {
         message.ChangeFlags = changeFlags;
         pNpc->Serialize(&message.AppearanceBuffer);
@@ -1416,13 +1426,19 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    // TODO: ft, fallout probably uses skycells for those choppers
+#if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
+#endif
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
 
-    if (isTemporary /* && !isNpcTemporary */)
+    if (pNpc->IsTemporary())
+        pNpc = pNpc->GetTemplateBase();
+
+    if (isTemporary)
     {
-        if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        if (pNpc && !m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
             spdlog::error("Server NPC form id not found for form id {:X}", pNpc->formID);
             return;
@@ -1491,6 +1507,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
+            // TODO: ft (verify)
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();

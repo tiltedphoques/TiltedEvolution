@@ -14,6 +14,8 @@ struct AuthenticationResponse final : ServerMessage
         kWrongVersion,
         kModsMismatch,
         kClientModsDisallowed,
+        kWrongPassword,
+        kServerFull
     };
 
     AuthenticationResponse() : ServerMessage(Opcode)
@@ -31,7 +33,7 @@ struct AuthenticationResponse final : ServerMessage
 
     ResponseType Type;
     bool SKSEActive{false};
-    bool MO2Active{false}; 
+    bool MO2Active{false};
     String Version;
     Mods UserMods{};
     ServerSettings Settings{};

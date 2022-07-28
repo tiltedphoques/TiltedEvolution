@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct ExtraWorn : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Worn;
+    inline static constexpr auto eExtraData = ExtraDataType::Worn;
 };
 
 static_assert(sizeof(ExtraWorn) == 0x10);

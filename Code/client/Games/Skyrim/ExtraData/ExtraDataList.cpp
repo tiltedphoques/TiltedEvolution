@@ -12,7 +12,7 @@ ExtraDataList* ExtraDataList::New() noexcept
     return pExtraDataList;
 }
 
-bool ExtraDataList::Contains(ExtraData aType) const
+bool ExtraDataList::Contains(ExtraDataType aType) const
 {
     if(bitfield)
     {
@@ -27,7 +27,7 @@ bool ExtraDataList::Contains(ExtraData aType) const
     return false;
 }
 
-BSExtraData* ExtraDataList::GetByType(ExtraData aType) const
+BSExtraData* ExtraDataList::GetByType(ExtraDataType aType) const
 {
     if (!ScopedExtraDataOverride::IsOverriden())
         lock.Lock();
@@ -55,7 +55,7 @@ BSExtraData* ExtraDataList::GetByType(ExtraData aType) const
     return pEntry;
 }
 
-bool ExtraDataList::Add(ExtraData aType, BSExtraData* apNewData)
+bool ExtraDataList::Add(ExtraDataType aType, BSExtraData* apNewData)
 {
     if (Contains(aType))
         return false;
@@ -84,7 +84,7 @@ uint32_t ExtraDataList::GetCount() const
     return count;
 }
 
-void ExtraDataList::SetType(ExtraData aType, bool aClear)
+void ExtraDataList::SetType(ExtraDataType aType, bool aClear)
 {
     uint32_t index = static_cast<uint8_t>(aType) >> 3;
     uint8_t bitmask = 1 << (static_cast<uint8_t>(aType) % 8);
