@@ -10,7 +10,7 @@
 
 ModManager* ModManager::Get() noexcept
 {
-    POINTER_FALLOUT4(ModManager*, modManager, 0x1458CF080 - 0x140000000);
+    POINTER_FALLOUT4(ModManager*, modManager, 711559);
     POINTER_SKYRIMSE(ModManager*, modManager, 400269);
     
     return *modManager.Get();
@@ -99,14 +99,14 @@ TESObjectCELL* ModManager::GetCellFromCoordinates(int32_t aX, int32_t aY, TESWor
 {
     TP_THIS_FUNCTION(TModManager, TESObjectCELL*, ModManager, int32_t, int32_t, TESWorldSpace*, bool);
     POINTER_SKYRIMSE(TModManager, getCell, 13718);
-    POINTER_FALLOUT4(TModManager, getCell, 0x140113480 - 0x140000000);
+    POINTER_FALLOUT4(TModManager, getCell, 385618);
 
     return ThisCall(getCell, this, aX, aY, aWorldSpace, aSpawnCell);
 }
 
 static TiltedPhoques::Initializer s_tesHooks([]()
 {
-    POINTER_FALLOUT4(TSpawnNewREFR, s_realSpawnNewREFR, 0x1401140B0 - 0x140000000);
+    POINTER_FALLOUT4(TSpawnNewREFR, s_realSpawnNewREFR, 500305);
     POINTER_SKYRIMSE(TSpawnNewREFR, s_realSpawnNewREFR, 13723);
 
     RealSpawnNewREFR = s_realSpawnNewREFR.Get();

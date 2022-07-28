@@ -1,7 +1,7 @@
 #include <Forms/TESObjectCELL.h>
 #include <TESObjectREFR.h>
 
-Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>& aFormTypes) noexcept
+Vector<TESObjectREFR*> TESObjectCELL::GetRefsByFormTypes(const Vector<FormType>& aFormTypes) const noexcept
 {
     Vector<TESObjectREFR*> references{};
 

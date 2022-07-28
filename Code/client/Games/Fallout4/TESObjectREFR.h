@@ -1,11 +1,12 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include <ExtraData/ExtraData.h>
 #include <Forms/TESForm.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Forms/ActorValueInfo.h>
 #include <Misc/ActorValueOwner.h>
 #include <Games/Misc/Lock.h>
+#include <Forms/BGSInventoryList.h>
 
 struct NiNode;
 struct BSFaceGenNiNode;
@@ -13,11 +14,33 @@ struct TESObjectCELL;
 struct AnimationVariables;
 struct TESBoundObject;
 struct BGSEquipSlot;
+struct ExtraDataList;
 
 struct TESObjectREFR : TESForm
 {
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
     static uint32_t* GetNullHandle() noexcept;
+
+    enum ITEM_REMOVE_REASON : int32_t
+    {
+        IRR_NONE = 0x0,
+        IRR_STEALING = 0x1,
+        IRR_SELLING = 0x2,
+        IRR_DROPPING = 0x3,
+        IRR_STORE_IN_CONTAINER = 0x4,
+        IRR_STORE_IN_TEAMMATE = 0x5,
+    };
+
+    struct RemoveItemData
+    {
+        uint8_t stackData[0x20]{};
+        TESBoundObject* pObject{};
+        int32_t iNumber{};
+        ITEM_REMOVE_REASON eReason{};
+        TESObjectREFR* pOtherContainer{};
+        NiPoint3* pDropLoc{};
+        NiPoint3* pRotate{};
+    };
 
     virtual void sub_48();
     virtual void sub_49();
@@ -44,7 +67,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_5E();
     virtual void sub_5F();
     virtual void sub_60();
-    virtual void sub_61();
+    virtual void StopCurrentDialogue(bool aForce);
     virtual void sub_62();
     virtual void sub_63();
     virtual void sub_64();
@@ -56,7 +79,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_6A();
     virtual void sub_6B();
     virtual void sub_6C();
-    virtual void sub_6D();
+    virtual BSPointerHandle<TESObjectREFR> RemoveItem(RemoveItemData* arData);
     virtual void sub_6E();
     virtual void sub_6F();
     virtual void sub_70();
@@ -69,7 +92,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_77();
     virtual void sub_78();
     virtual void sub_79();
-    virtual void sub_7A();
+    virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
     virtual void sub_7B();
     virtual void sub_7C();
     virtual void sub_7D();
@@ -154,18 +177,15 @@ struct TESObjectREFR : TESForm
     const BGSEquipSlot* GetEquipSlot(uint32_t uiIndex) const noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
-    void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
-    String SerializeInventory() const noexcept;
-
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
-    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
-    void DeserializeInventory(const String& acData) noexcept;
 
     void RemoveAllItems() noexcept;
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
+    void PayGold(int32_t aAmount) noexcept;
+    void PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept;
 
     void Activate(TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping) noexcept;
 
@@ -173,7 +193,12 @@ struct TESObjectREFR : TESForm
     void LockChange() noexcept;
 
     const float GetHeight() noexcept;
- public:
+
+    Inventory GetInventory() const noexcept;
+    void SetInventory(const Inventory& acContainer) noexcept;
+    void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
+
+public:
 
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
@@ -190,7 +215,7 @@ struct TESObjectREFR : TESForm
     TESForm* baseForm;
     void* unkE8;
     void* loadState;
-    void* inventory;
+    BGSInventoryList* pInventoryList;
     ExtraDataList* extraData;
     uint64_t unk108;
 };
@@ -200,6 +225,6 @@ static_assert(offsetof(TESObjectREFR, baseForm) == 0xE0);
 static_assert(offsetof(TESObjectREFR, position) == 0xD0);
 static_assert(offsetof(TESObjectREFR, rotation) == 0xC0);
 static_assert(offsetof(TESObjectREFR, parentCell) == 0xB8);
-static_assert(offsetof(TESObjectREFR, inventory) == 0xF8);
+static_assert(offsetof(TESObjectREFR, pInventoryList) == 0xF8);
 static_assert(offsetof(TESObjectREFR, extraData) == 0x100);
 static_assert(sizeof(TESObjectREFR) == 0x110);

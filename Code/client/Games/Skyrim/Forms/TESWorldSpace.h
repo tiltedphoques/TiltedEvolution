@@ -6,5 +6,8 @@
 
 struct TESWorldSpace : TESForm
 {
+    // aX and aY are coordinates, not positions
+    TESObjectCELL* LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept;
+
     TESFullName fullName;
 };

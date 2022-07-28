@@ -44,6 +44,8 @@ struct MagicTarget
     {
         bool CheckAddEffect(void* arArgs, float afResistance);
 
+        bool ShouldSync();
+
         Actor* pCaster;
         MagicItem* pSpell;
         EffectItem* pEffectItem;
@@ -60,9 +62,12 @@ struct MagicTarget
 
     virtual ~MagicTarget();
 
+    Actor* GetTargetAsActor();
+
     bool AddTarget(AddTargetData& arData) noexcept;
     // this function actually adds the effect
     bool CheckAddEffect(AddTargetData& arData) noexcept;
+    void DispelAllSpells(bool aNow) noexcept;
 
     void* unk04;
     void* unk08;

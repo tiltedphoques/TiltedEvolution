@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Message.h"
-#include <TiltedCore/Buffer.hpp>
+
 #include <Structs/Inventory.h>
 
 struct NotifyObjectInventoryChanges final : ServerMessage

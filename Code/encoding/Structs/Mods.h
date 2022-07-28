@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <TiltedCore/Stl.hpp>
-#include <TiltedCore/Buffer.hpp>
 
 using TiltedPhoques::String;
 using TiltedPhoques::Vector;
@@ -13,15 +11,11 @@ struct Mods
     {
         String Filename;
         uint16_t Id;
-
-        inline bool IsLite() const noexcept
-        {
-            return Id & (1 << 15);
-        }
+        bool IsLite;
 
         bool operator==(const Entry& acRhs) const noexcept
         {
-            return Filename == acRhs.Filename && Id == acRhs.Id;
+            return Filename == acRhs.Filename && Id == acRhs.Id && IsLite == acRhs.IsLite;
         }
 
         bool operator!=(const Entry& acRhs) const noexcept

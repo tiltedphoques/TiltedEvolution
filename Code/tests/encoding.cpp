@@ -1,3 +1,15 @@
+#include <TiltedCore/Stl.hpp>
+#include <TiltedCore/Allocator.hpp>
+#include <TiltedCore/Buffer.hpp>
+#include <TiltedCore/Serialization.hpp>
+
+#include <optional>
+
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
+#include "StringCache.h"
+#include "Messages/StringCacheUpdate.h"
 
 #include <catch2/catch.hpp>
 
@@ -6,6 +18,7 @@
 #include <Structs/Vector2_NetQuantize.h>
  
 #include <TiltedCore/Math.hpp>
+#include <TiltedCore/Platform.hpp>
 
 using namespace TiltedPhoques;
 
@@ -54,63 +67,6 @@ TEST_CASE("Encoding factory", "[encoding.factory]")
 
 TEST_CASE("Static structures", "[encoding.static]")
 {
-    GIVEN("FullObjects")
-    {
-        FullObjects sendObjects, recvObjects;
-        sendObjects.Data.push_back(42);
-        sendObjects.Data.push_back(13);
-
-        {
-            Buffer buff(1000);
-            Buffer::Writer writer(&buff);
-
-            sendObjects.Serialize(writer);
-
-            Buffer::Reader reader(&buff);
-            recvObjects.Deserialize(reader);
-
-            REQUIRE(sendObjects == recvObjects);
-        }
-    }
-
-    GIVEN("Objects")
-    {
-        Objects sendObjects, recvObjects;
-        sendObjects.Data.push_back(42);
-        sendObjects.Data.push_back(13);
-
-        {
-            Buffer buff(1000);
-            Buffer::Writer writer(&buff);
-
-            sendObjects.Serialize(writer);
-
-            Buffer::Reader reader(&buff);
-            recvObjects.Deserialize(reader);
-
-            REQUIRE(sendObjects == recvObjects);
-        }
-    }
-
-    GIVEN("Scripts")
-    {
-        Scripts sendObjects, recvObjects;
-        sendObjects.Data.push_back(42);
-        sendObjects.Data.push_back(13);
-
-        {
-            Buffer buff(1000);
-            Buffer::Writer writer(&buff);
-
-            sendObjects.Serialize(writer);
-
-            Buffer::Reader reader(&buff);
-            recvObjects.Deserialize(reader);
-
-            REQUIRE(sendObjects == recvObjects);
-        }
-    }
-
     GIVEN("GameId")
     {
         GameId sendObjects, recvObjects;
@@ -214,6 +170,50 @@ TEST_CASE("Differential structures", "[encoding.differential]")
     GIVEN("Full ActionEvent")
     {
         ActionEvent sendAction, recvAction;
+
+        sendAction.ActionId = 42;
+        sendAction.State1 = 6547;
+        sendAction.Tick = 48;
+        sendAction.ActorId = 12345678;
+        sendAction.EventName = "test";
+        sendAction.IdleId = 87964;
+        sendAction.State2 = 8963;
+        sendAction.TargetEventName = "toast";
+        sendAction.TargetId = 963741;
+        sendAction.Type = 4;
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendAction.GenerateDifferential(recvAction, writer);
+
+            Buffer::Reader reader(&buff);
+            recvAction.ApplyDifferential(reader);
+
+            REQUIRE(sendAction == recvAction);
+        }
+
+        {
+            Buffer buff(1000);
+            Buffer::Writer writer(&buff);
+
+            sendAction.EventName = "Plot twist !";
+
+            sendAction.GenerateDifferential(recvAction, writer);
+
+            Buffer::Reader reader(&buff);
+            recvAction.ApplyDifferential(reader);
+
+            REQUIRE(sendAction == recvAction);
+        }
+    }
+
+    GIVEN("A single cached event name")
+    {
+        ActionEvent sendAction, recvAction;
+
+        TP_UNUSED(StringCache::Get().Add("test"))
 
         sendAction.ActionId = 42;
         sendAction.State1 = 6547;
@@ -474,5 +474,29 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         REQUIRE(recvMessage.Updates[1].UpdatedMovement == sendMessage.Updates[1].UpdatedMovement);
         
+    }
+}
+
+TEST_CASE("StringCache", "[encoding.string_cache]")
+{
+    SECTION("Messages")
+    {
+        StringCacheUpdate update;
+        update.Values[0] = "Hello";
+        update.Values[1] = "Bye";
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        update.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        StringCacheUpdate recvUpdate;
+        recvUpdate.DeserializeRaw(reader);
+
+        REQUIRE(update == recvUpdate);
     }
 }

@@ -8,7 +8,6 @@ enum ClientOpcode : unsigned char
     kClientReferencesMoveRequest,
     kEnterExteriorCellRequest,
     kEnterInteriorCellRequest,
-    kClientRpcCalls,
     kRequestFactionsChanges,
     kRequestQuestUpdate,
     kPartyInviteRequest,
@@ -43,6 +42,13 @@ enum ClientOpcode : unsigned char
     kRequestEquipmentChanges,
     kSendChatMessageRequest,
     kTeleportCommandRequest,
+    kPlayerRespawnRequest,
+    kDialogueRequest,
+    kSubtitleRequest,
+    kPlayerDialogueRequest,
+    kPlayerLevelRequest,
+    kTeleportRequest,
+    kRequestPlayerHealthUpdate,
     kClientOpcodeMax
 };
 
@@ -51,7 +57,6 @@ enum ServerOpcode : unsigned char
     kAuthenticationResponse = 0,
     kAssignCharacterResponse,
     kServerReferencesMoveRequest,
-    kServerScriptUpdate,
     kServerTimeSettings,
     kCharacterSpawnRequest,
     kNotifyFactionsChanges,
@@ -86,5 +91,18 @@ enum ServerOpcode : unsigned char
     kNotifyEquipmentChanges,
     kNotifyChatMessageBroadcast,
     kTeleportCommandResponse,
+    kStringCacheUpdate,
+    kNotifyPlayerRespawn,
+    kNotifyDialogue,
+    kNotifySubtitle,
+    kNotifyPlayerDialogue,
+    kNotifyActorTeleport,
+    kNotifyRelinquishControl,
+    kNotifyPlayerLeft,
+    kNotifyPlayerJoined,
+    kNotifyPlayerLevel,
+    kNotifyPlayerCellChanged,
+    kNotifyTeleport,
+    kNotifyPlayerHealthUpdate,
     kServerOpcodeMax
 };

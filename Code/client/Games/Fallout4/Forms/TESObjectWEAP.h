@@ -2,6 +2,6 @@
 
 #include "TESBoundObject.h"
 
-struct TESObjectWEAP : TESBoundObject
+struct TESObjectWEAP : TESBoundObject, TESFullName
 {
 };

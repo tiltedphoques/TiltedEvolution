@@ -1,5 +1,3 @@
-#include <stdafx.h>
-
 #include <Services/CharacterService.h>
 #include <Components.h>
 #include <GameServer.h>
@@ -12,7 +10,6 @@
 #include <Events/UpdateEvent.h>
 #include <Events/CharacterRemoveEvent.h>
 #include <Events/OwnershipTransferEvent.h>
-#include <Scripts/Npc.h>
 
 #include <Game/OwnerView.h>
 
@@ -39,6 +36,17 @@
 #include <Messages/NotifyRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/NotifySyncExperience.h>
+#include <Messages/DialogueRequest.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/SubtitleRequest.h>
+#include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyActorTeleport.h>
+#include <Messages/NotifyRelinquishControl.h>
+
+namespace
+{
+Console::Setting bEnableXpSync{"Gameplay:bEnableXpSync", "Syncs combat XP within the party", true};
+}
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -59,10 +67,12 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
     , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
+    , m_dialogueConnection(aDispatcher.sink<PacketEvent<DialogueRequest>>().connect<&CharacterService::OnDialogueRequest>(this))
+    , m_subtitleConnection(aDispatcher.sink<PacketEvent<SubtitleRequest>>().connect<&CharacterService::OnSubtitleRequest>(this))
 {
 }
 
-void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
+void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept
 {
     const auto& characterComponent = aRegistry.get<CharacterComponent>(aEntity);
 
@@ -71,9 +81,10 @@ void CharacterService::Serialize(const World& aRegistry, entt::entity aEntity, C
     apSpawnRequest->ChangeFlags = characterComponent.ChangeFlags;
     apSpawnRequest->FaceTints = characterComponent.FaceTints;
     apSpawnRequest->FactionsContent = characterComponent.FactionsContent;
-    apSpawnRequest->IsDead = characterComponent.IsDead;
-    apSpawnRequest->IsPlayer = characterComponent.IsPlayer;
-    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+    apSpawnRequest->IsDead = characterComponent.IsDead();
+    apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
+    apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+    apSpawnRequest->PlayerId = characterComponent.PlayerId;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
     if (pFormIdComponent)
@@ -137,12 +148,12 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
 
         if (pPlayer->GetCellComponent().WorldSpaceId != acEvent.WorldSpaceId ||
             pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords))
+                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(removeMessage);
         }
         else if (pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords))
+                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(spawnMessage);
         }
@@ -181,7 +192,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
     if (!isCustom)
     {
         // Look for the character
-        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent>();
+        auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent, OwnerComponent, InventoryComponent>();
 
         const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
             {
@@ -193,26 +204,48 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
         if (itor != std::end(view))
         {
             // This entity already has an owner
-            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
-
-            const auto* pServer = GameServer::Get();
+            spdlog::debug("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
+            auto& inventoryComponent = view.get<InventoryComponent>(*itor);
             auto& characterComponent = view.get<CharacterComponent>(*itor);
             auto& movementComponent = view.get<MovementComponent>(*itor);
             auto& cellIdComponent = view.get<CellIdComponent>(*itor);
+            auto& ownerComponent = view.get<OwnerComponent>(*itor);
 
-            AssignCharacterResponse response;
+            auto& partyService = m_world.GetPartyService();
+
+            bool isOwner = false;
+
+            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer)
+                && !characterComponent.IsMount())
+            {
+                PartyService::Party* pParty = partyService.GetPlayerParty(acMessage.pPlayer);
+                Player* pOwningPlayer = view.get<OwnerComponent>(*itor).GetOwner();
+
+                // Transfer ownership if owning player is in the same party as the owner
+                if (std::find(pParty->Members.begin(), pParty->Members.end(), pOwningPlayer) != pParty->Members.end())
+                {
+                    TransferOwnership(acMessage.pPlayer, World::ToInteger(*itor));
+                    isOwner = true;
+                }
+            }
+
+            AssignCharacterResponse response{};
             response.Cookie = message.Cookie;
             response.ServerId = World::ToInteger(*itor);
-            response.Owner = false;
+            response.Owner = isOwner;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
-            response.IsDead = characterComponent.IsDead;
-            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn;
+            response.CurrentInventory = inventoryComponent.Content;
+            response.IsDead = characterComponent.IsDead();
+            response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+            response.PlayerId = characterComponent.PlayerId;
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
+            response.WorldSpaceId = cellIdComponent.WorldSpaceId;
 
             acMessage.pPlayer->Send(response);
+
             return;
         }
     }
@@ -225,27 +258,49 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 {
     auto& message = acMessage.Packet;
 
-    OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
 
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
+    if (!m_world.valid(cEntity))
     {
-        spdlog::warn("Client {:X} requested travel of an entity that doesn't exist !", acMessage.pPlayer->GetConnectionId());
+        spdlog::warn("Client {:X} requested ownership transfer of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
     }
 
-    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+    if (message.WorldSpaceId || message.CellId)
+    {
+        auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
+
+        NotifyActorTeleport notify{};
+        notify.FormId = formIdComponent.Id;
+        notify.WorldSpaceId = message.WorldSpaceId;
+        notify.CellId = message.CellId;
+        notify.Position = message.Position;
+
+        auto& cellIdComponent = m_world.get<CellIdComponent>(cEntity);
+        cellIdComponent.WorldSpaceId = message.WorldSpaceId;
+        cellIdComponent.Cell = message.CellId;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
+
+        auto& movementComponent = m_world.get<MovementComponent>(cEntity);
+        movementComponent.Position = message.Position;
+        movementComponent.Sent = true;
+
+        GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
+    }
+
+    auto& characterOwnerComponent = m_world.get<OwnerComponent>(cEntity);
     characterOwnerComponent.InvalidOwners.push_back(acMessage.pPlayer);
 
-    m_world.GetDispatcher().trigger(OwnershipTransferEvent(*it));
+    m_world.GetDispatcher().trigger(OwnershipTransferEvent(cEntity));
 }
 
 void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& acEvent) const noexcept
 {
     const auto view = m_world.view<OwnerComponent, CharacterComponent, CellIdComponent>();
 
-    auto& characterOwnerComponent = view.get<OwnerComponent>(acEvent.Entity);
-    auto& characterCellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
+    auto& characterComponent = view.get<CharacterComponent>(acEvent.Entity);
+    auto& ownerComponent = view.get<OwnerComponent>(acEvent.Entity);
+    auto& cellIdComponent = view.get<CellIdComponent>(acEvent.Entity);
 
     NotifyOwnershipTransfer response;
     response.ServerId = World::ToInteger(acEvent.Entity);
@@ -253,11 +308,11 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
     bool foundOwner = false;
     for (auto pPlayer : m_world.GetPlayerManager())
     {
-        if (characterOwnerComponent.GetOwner() == pPlayer)
+        if (ownerComponent.GetOwner() == pPlayer)
             continue;
 
         bool isPlayerInvalid = false;
-        for (const auto invalidOwner : characterOwnerComponent.InvalidOwners)
+        for (const auto invalidOwner : ownerComponent.InvalidOwners)
         {
             isPlayerInvalid = invalidOwner == pPlayer;
             if (isPlayerInvalid)
@@ -267,10 +322,10 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
         if (isPlayerInvalid)
             continue;
 
-        if (!pPlayer->GetCellComponent().IsInRange(characterCellIdComponent))
+        if (!pPlayer->GetCellComponent().IsInRange(cellIdComponent, characterComponent.IsDragon()))
             continue;
 
-        characterOwnerComponent.SetOwner(pPlayer);
+        ownerComponent.SetOwner(pPlayer);
 
         pPlayer->Send(response);
 
@@ -300,28 +355,12 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     }
 
     m_world.destroy(*it);
-    spdlog::info("Character destroyed {:X}", acEvent.ServerId);
+    spdlog::debug("Character destroyed {:X}", acEvent.ServerId);
 }
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
 {
-    auto& message = acMessage.Packet;
-
-    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
-    auto view = m_world.view<OwnerComponent>();
-    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
-    if (it == view.end())
-    {
-        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", acMessage.pPlayer->GetConnectionId(), message.ServerId);
-        return;
-    }
-
-    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
-
-    characterOwnerComponent.SetOwner(acMessage.pPlayer);
-    characterOwnerComponent.InvalidOwners.clear();
-
-    spdlog::info("\tOwnership claimed {:X}", message.ServerId);
+    TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
@@ -362,8 +401,8 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
         const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*it);
         if (pCharacterComponent)
         {
-            notifySpawnData.IsDead = pCharacterComponent->IsDead;
-            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn;
+            notifySpawnData.IsDead = pCharacterComponent->IsDead();
+            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
         }
 
         acMessage.pPlayer->Send(notifySpawnData);
@@ -385,8 +424,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
             continue;
         }
 
-        Script::Npc npc(*itor, m_world);
-
         auto& movementComponent = view.get<MovementComponent>(*itor);
         auto& cellIdComponent = view.get<CellIdComponent>(*itor);
         auto& animationComponent = view.get<AnimationComponent>(*itor);
@@ -406,13 +443,6 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         cellIdComponent.Cell = movement.CellId;
         cellIdComponent.WorldSpaceId = movement.WorldSpaceId;
         cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
-
-        auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
-
-        if (canceled)
-        {
-            movementComponent = movementCopy;
-        }
 
         for (auto& action : update.ActionEvents)
         {
@@ -443,7 +473,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
         auto& characterComponent = view.get<CharacterComponent>(*it);
         characterComponent.FactionsContent = factions;
-        characterComponent.DirtyFactions = true;
+        characterComponent.SetDirtyFactions(true);
     }
 }
 
@@ -549,16 +579,38 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
 
 void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept
 {
+    if (!bEnableXpSync)
+        return;
+
     NotifySyncExperience notify;
     notify.Experience = acMessage.Packet.Experience;
 
     const auto& partyComponent = acMessage.pPlayer->GetParty();
-
-    if (!partyComponent.JoinedPartyId.has_value())
-        return;
-
-    spdlog::info("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
+}
+
+void CharacterService::OnDialogueRequest(const PacketEvent<DialogueRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifyDialogue notify{};
+    notify.ServerId = message.ServerId;
+    notify.SoundFilename = message.SoundFilename;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+}
+
+void CharacterService::OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept
+{
+    auto& message = acMessage.Packet;
+
+    NotifySubtitle notify{};
+    notify.ServerId = message.ServerId;
+    notify.Text = message.Text;
+
+    const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
+    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
@@ -593,8 +645,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     if (message.WorldSpaceId != GameId{})
     {
         cellIdComponent.WorldSpaceId = message.WorldSpaceId;
-        auto coords = GridCellCoords::CalculateGridCellCoords(message.Position.x, message.Position.y);
-        cellIdComponent.CenterCoords = coords;
+        cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(message.Position);
     }
 
     auto& characterComponent = m_world.emplace<CharacterComponent>(cEntity);
@@ -603,9 +654,11 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
-    characterComponent.IsDead = message.IsDead;
-    characterComponent.IsPlayer = isPlayer;
-    characterComponent.IsWeaponDrawn = message.IsWeaponDrawn;
+    characterComponent.SetDead(message.IsDead);
+    characterComponent.SetPlayer(isPlayer);
+    characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
+    characterComponent.SetDragon(message.IsDragon);
+    characterComponent.SetMount(message.IsMount);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -613,7 +666,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
     actorValuesComponent.CurrentActorValues = message.AllActorValues;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
+    spdlog::debug("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
 
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
@@ -631,16 +684,17 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
         pPlayer->SetCharacter(cEntity);
         pPlayer->GetQuestLogComponent().QuestContent = message.QuestContent;
+        characterComponent.PlayerId = pPlayer->GetId();
 
         auto& dispatcher = m_world.GetDispatcher();
         dispatcher.trigger(PlayerEnterWorldEvent(pPlayer));
     }
 
-    AssignCharacterResponse response;
+    AssignCharacterResponse response{};
     response.Cookie = message.Cookie;
     response.ServerId = World::ToInteger(cEntity);
+    response.PlayerId = characterComponent.PlayerId;
     response.Owner = true;
-    response.AllActorValues = message.AllActorValues;
 
     pServer->Send(acMessage.pPlayer->GetConnectionId(), response);
 
@@ -648,6 +702,31 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
 }
 
+void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept
+{
+    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    auto view = m_world.view<OwnerComponent>();
+    const auto it = view.find(static_cast<entt::entity>(acServerId));
+    if (it == view.end())
+    {
+        spdlog::warn("Client {:X} requested ownership of an entity that doesn't exist ({:X})!", apPlayer->GetConnectionId(), acServerId);
+        return;
+    }
+
+    auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
+
+    if (characterOwnerComponent.GetOwner() != apPlayer)
+    {
+        NotifyRelinquishControl notify;
+        notify.ServerId = acServerId;
+        characterOwnerComponent.pOwner->Send(notify);
+    }
+
+    characterOwnerComponent.SetOwner(apPlayer);
+    characterOwnerComponent.InvalidOwners.clear();
+
+    spdlog::debug("\tOwnership claimed {:X}", acServerId);
+}
 
 void CharacterService::ProcessFactionsChanges() const noexcept
 {
@@ -671,7 +750,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
 
         // If we have nothing new to send skip this
-        if (characterComponent.DirtyFactions == false)
+        if (characterComponent.IsDirtyFactions())
             continue;
 
         for (auto pPlayer : m_world.GetPlayerManager())
@@ -679,7 +758,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
             auto& message = messages[pPlayer];
@@ -688,7 +767,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
             change = characterComponent.FactionsContent;
         }
 
-        characterComponent.DirtyFactions = false;
+        characterComponent.SetDirtyFactions(false);
     }
 
     for (auto [pPlayer, message] : messages)
@@ -709,7 +788,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     lastSendTimePoint = now;
 
-    const auto characterView = m_world.view < CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent >();
+    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>();
 
     TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
 
@@ -722,6 +801,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     for (auto entity : characterView)
     {
+        auto& characterComponent = characterView.get<CharacterComponent>(entity);
         auto& movementComponent = characterView.get<MovementComponent>(entity);
         auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
@@ -736,7 +816,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
             if (pPlayer == ownerComponent.GetOwner())
                 continue;
 
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent()))
+            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
             auto& message = messages[pPlayer];

@@ -1,17 +1,22 @@
 #pragma once
 
+struct World;
 struct ImguiService;
 struct TransportService;
+struct UpdateEvent;
+struct DisconnectedEvent;
 struct NotifyPlayerList;
 struct NotifyPartyInfo;
 struct NotifyPartyInvite;
-struct UpdateEvent;
 struct NotifyPartyJoined;
 struct NotifyPartyLeft;
 
+/**
+* @brief Manages the party of the local player.
+*/
 struct PartyService
 {
-    PartyService(entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept;
+    PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept;
     ~PartyService() = default;
 
     TP_NOCOPYMOVE(PartyService);
@@ -42,9 +47,17 @@ struct PartyService
         return m_invitations;
     }
 
+    void CreateParty() const noexcept;
+    void LeaveParty() const noexcept;
+    void CreateInvite(const uint32_t aPlayerId) const noexcept;
+    void AcceptInvite(const uint32_t aInviterId) const noexcept;
+    void KickPartyMember(const uint32_t aPlayerId) const noexcept;
+    void ChangePartyLeader(const uint32_t aPlayerId) const noexcept;
+
 protected:
 
-    void OnUpdate(const UpdateEvent& acPlayerList) noexcept;
+    void OnUpdate(const UpdateEvent& acEvent) noexcept;
+    void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
     void OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept;
     void OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept;
     void OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcept;
@@ -52,6 +65,9 @@ protected:
     void OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept;
 
 private:
+
+    void DestroyParty() noexcept;
+
     Map<uint32_t, String> m_players;
     Map<uint32_t, uint64_t> m_invitations;
     uint64_t m_nextUpdate{0};
@@ -61,9 +77,11 @@ private:
     uint32_t m_leaderPlayerId;
     Vector<uint32_t> m_partyMembers;
 
-    TransportService& m_transportService;
+    World& m_world;
+    TransportService& m_transport;
 
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_disconnectConnection;
     entt::scoped_connection m_playerListConnection;
     entt::scoped_connection m_partyInfoConnection;
     entt::scoped_connection m_partyInviteConnection;

@@ -1,28 +1,22 @@
+#include <Services/DebugService.h>
 
 #include <imgui.h>
 #include <inttypes.h>
 #include <Games/TES.h>
 
-#if (TP_SKYRIM64)
-#include <Games/Skyrim/PlayerCharacter.h>
-#include <Games/Skyrim/Forms/TESObjectCELL.h>
-#include <Games/Skyrim/Forms/TESWorldSpace.h>
-#else
-#include <Games/Fallout4/PlayerCharacter.h>
-#include <Games/Fallout4/Forms/TESObjectCELL.h>
-#include <Games/Fallout4/Forms/TESWorldSpace.h>
-#endif
+#include <PlayerCharacter.h>
+#include <Forms/TESObjectCELL.h>
+#include <Forms/TESWorldSpace.h>
 
-#include <Services/TestService.h>
-
-void TestService::DrawPlayerDebugView()
+void DebugService::DrawPlayerDebugView()
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer)
     {
-        // TODO: maybe draw somethin?
         return;
     }
+
+    ImGui::Begin("Player");
 
     auto pLeftWeapon = pPlayer->GetEquippedWeapon(0);
     auto pRightWeapon = pPlayer->GetEquippedWeapon(1);
@@ -100,4 +94,23 @@ void TestService::DrawPlayerDebugView()
         ImGui::InputInt2("Player grid", playerGrid, ImGuiInputTextFlags_ReadOnly);
         ImGui::InputInt2("Center grid", centerGrid, ImGuiInputTextFlags_ReadOnly);
     }
+
+    auto& modSystem = m_world.GetModSystem();
+
+    // TODO: ft
+#if TP_SKYRIM64
+    if (ImGui::CollapsingHeader("Worn armor"))
+    {
+        Inventory wornArmor{};
+        wornArmor = pPlayer->GetWornArmor();
+        for (const auto& armor : wornArmor.Entries)
+        {
+            const uint32_t armorId = armor.BaseId.BaseId;
+            ImGui::InputScalar("Item id", ImGuiDataType_U32, (void*)&armorId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+    }
+
+    ImGui::End();
+#endif
 }

@@ -1,12 +1,12 @@
 #include "CrashHandler.h"
-#include <Windows.h>
 #include <DbgHelp.h>
-#include <strsafe.h>
-#include <filesystem>
-#include <sstream>
+#include <Windows.h>
 #include <chrono>
-#include <iostream>
+#include <filesystem>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <strsafe.h>
 
 using time_point = std::chrono::system_clock::time_point;
 
@@ -32,8 +32,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
         M.ClientPointers = 0;
 
         std::ostringstream oss;
-        oss << "crash_" << SerializeTimePoint(std::chrono::system_clock::now(), "UTC_%Y-%m-%d_%H-%M-%S") 
-            << ".dmp";
+        oss << "crash_" << SerializeTimePoint(std::chrono::system_clock::now(), "UTC_%Y-%m-%d_%H-%M-%S") << ".dmp";
 
         GetModuleFileNameA(NULL, dumpPath, sizeof(dumpPath));
         std::filesystem::path modulePath(dumpPath);
@@ -43,12 +42,11 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 
         subPath /= oss.str();
 
-        auto hDumpFile = CreateFileA(subPath.string().c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        auto hDumpFile =
+            CreateFileA(subPath.string().c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
         // baseline settings from https://stackoverflow.com/a/63123214/5273909
-        auto dumpSettings = MiniDumpWithDataSegs |
-                            MiniDumpWithProcessThreadData |
-                            MiniDumpWithHandleData |
+        auto dumpSettings = MiniDumpWithDataSegs | MiniDumpWithProcessThreadData | MiniDumpWithHandleData |
                             MiniDumpWithThreadInfo |
                             /*
                             //MiniDumpWithPrivateReadWriteMemory | // this one gens bad dump
@@ -70,7 +68,6 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-
 CrashHandler::CrashHandler()
 {
     AddVectoredExceptionHandler(1, &VectoredExceptionHandler);
@@ -78,7 +75,6 @@ CrashHandler::CrashHandler()
 
 CrashHandler::~CrashHandler()
 {
-
 }
 
 void CrashHandler::RemovePreviousDump(std::filesystem::path path)
@@ -88,9 +84,6 @@ void CrashHandler::RemovePreviousDump(std::filesystem::path path)
         if (entry.path().string().find("crash") != std::string::npos)
         {
             DeleteFileA(entry.path().string().c_str());
-            break;
         }
     }
 }
-
-

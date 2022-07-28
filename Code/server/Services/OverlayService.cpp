@@ -1,58 +1,83 @@
-#include <Components.h>
 #include <GameServer.h>
 
-#include <Scripts/Player.h>
 #include <Services/OverlayService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/SendChatMessageRequest.h>
+#include <Messages/PlayerDialogueRequest.h>
+#include <Messages/NotifyPlayerDialogue.h>
+#include <Messages/TeleportRequest.h>
+#include <Messages/NotifyTeleport.h>
+#include <Messages/RequestPlayerHealthUpdate.h>
+#include <Messages/NotifyPlayerHealthUpdate.h>
 
-#include <Events/PlayerEnterWorldEvent.h>
+#include "Game/Player.h"
 
 #include <regex>
 
 OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
-    : m_world(aWorld),
-      m_chatMessageConnection(
-          aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this))
+    : m_world(aWorld)
 {
-}
-
-void OverlayService::BroadcastMessage(const std::string aMessage)
-{
-    NotifyChatMessageBroadcast notifyMessage;
-    notifyMessage.PlayerName = "";
-    notifyMessage.ChatMessage = aMessage;
-
-    GameServer::Get()->SendToPlayers(notifyMessage);
+    m_chatMessageConnection = aDispatcher.sink<PacketEvent<SendChatMessageRequest>>().connect<&OverlayService::HandleChatMessage>(this);
+    m_playerDialogueConnection = aDispatcher.sink<PacketEvent<PlayerDialogueRequest>>().connect<&OverlayService::OnPlayerDialogue>(this);
+    m_teleportConnection = aDispatcher.sink<PacketEvent<TeleportRequest>>().connect<&OverlayService::OnTeleport>(this);
+    m_playerHealthConnection = aDispatcher.sink<PacketEvent<RequestPlayerHealthUpdate>>().connect<&OverlayService::OnPlayerHealthUpdate>(this);
 }
 
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
-    NotifyChatMessageBroadcast notifyMessage;
-    notifyMessage.PlayerName = acMessage.pPlayer->GetUsername();
+    NotifyChatMessageBroadcast notifyMessage{};
 
-    // TODO: std regex is slow
-    std::regex escapeHtml{"<[^>]+>\s+(?=<)|<[^>]+>"};
+    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+    notifyMessage.PlayerName = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
     GameServer::Get()->SendToPlayers(notifyMessage);
 }
 
-#if 0
-void OverlayService::HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept
+void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept
 {
-    const Script::Player cPlayer(acEvent.Entity, m_world);
+    auto& message = acMessage.Packet;
 
-    auto& playerComponent = m_world.get<PlayerComponent>(cPlayer.GetEntityHandle());
+    NotifyPlayerDialogue notify{};
 
-    spdlog::info("[SERVER] PlayerId: {} - ConnectionId: {}", cPlayer.GetId(), playerComponent.ConnectionId);
-    if (playerComponent.Character)
+    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+    notify.Name = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
+    notify.Text = std::regex_replace(message.Text, escapeHtml, "");
+
+    auto& party = acMessage.pPlayer->GetParty();
+    GameServer::Get()->SendToParty(notify, party);
+}
+
+void OverlayService::OnTeleport(const PacketEvent<TeleportRequest>& acMessage) const noexcept
+{
+    Player* pTargetPlayer = m_world.GetPlayerManager().GetById(acMessage.Packet.PlayerId);
+    if (!pTargetPlayer)
+        return;
+
+    NotifyTeleport response{};
+
+    auto character = pTargetPlayer->GetCharacter();
+    if (character)
     {
-        spdlog::info("[SERVER] CharacterId: {}", playerComponent.Character.value());
+        const auto* pMovementComponent = m_world.try_get<MovementComponent>(*character);
+        if (pMovementComponent)
+        {
+            const auto& cellComponent = pTargetPlayer->GetCellComponent();
+            response.CellId = cellComponent.Cell;
+            response.Position = pMovementComponent->Position;
+            response.WorldSpaceId = cellComponent.WorldSpaceId;
+        }
     }
 
-    //TODO 
-    //Send netid, username and default level to all client except to the one that just joined
+    acMessage.pPlayer->Send(response);
 }
-#endif
+
+void OverlayService::OnPlayerHealthUpdate(const PacketEvent<RequestPlayerHealthUpdate>& acMessage) const noexcept
+{
+    NotifyPlayerHealthUpdate notify{};
+    notify.PlayerId = acMessage.pPlayer->GetId();
+    notify.Percentage = acMessage.Packet.Percentage;
+
+    GameServer::Get()->SendToParty(notify, acMessage.pPlayer->GetParty(), acMessage.GetSender());
+}

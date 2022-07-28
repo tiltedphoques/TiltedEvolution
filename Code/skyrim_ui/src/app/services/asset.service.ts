@@ -1,15 +1,15 @@
+import { HttpClient, HttpEventType, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpRequest, HttpEventType } from '@angular/common/http';
-
-import { Observable, Subscription, of, AsyncSubject } from 'rxjs';
-import { filter, map, delay } from 'rxjs/operators';
-
+import { AsyncSubject, Observable, of, Subscription } from 'rxjs';
+import { delay, filter, map } from 'rxjs/operators';
 import { Asset } from './asset/asset';
-import { TextAsset } from './asset/assets/text.asset';
-import { AudioAsset } from './asset/assets/audio.asset';
 import { AssetDecoder } from './asset/asset-decoder';
-import { TextAssetDecoder } from './asset/asset-decoders/text.asset-decoder';
 import { AudioAssetDecoder } from './asset/asset-decoders/audio.asset-decoder';
+import { TextAssetDecoder } from './asset/asset-decoders/text.asset-decoder';
+import { AudioAsset } from './asset/assets/audio.asset';
+import { TextAsset } from './asset/assets/text.asset';
+import { SettingService } from './setting.service';
+
 
 export { TextAsset, AudioAsset };
 
@@ -71,16 +71,30 @@ interface StoredAsset<T extends Asset<any>> {
 }
 
 /** Asset manager service. */
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AssetService {
+
   public progress = new AsyncSubject<Progress>();
 
-  /**
-   * Instantiate.
-   *
-   * @param http HTTP service.
-   */
-  public constructor(private http: HttpClient) {}
+  /** Cached assets. */
+  private cache = new Map<string, Symbol>();
+
+  /** Stored assets. */
+  private assets = new Map<Symbol, StoredAsset<any>>();
+
+  /** Asset decoders. */
+  private decoders = new Map<Kind, AssetDecoder<any>>([
+    [Kind.Text, new TextAssetDecoder()],
+    [Kind.Audio, new AudioAssetDecoder(this.settingService)],
+  ]);
+
+  public constructor(
+    private readonly http: HttpClient,
+    private readonly settingService: SettingService,
+  ) {
+  }
 
   /**
    * Load and store a text file.
@@ -119,21 +133,19 @@ export class AssetService {
 
     const get = new HttpRequest('GET', href, {
       reportProgress: true,
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
     });
 
     const request = this.http.request<ArrayBuffer>(get).pipe(delay(0)).subscribe(event => {
       if (event.type === HttpEventType.Sent) {
         this.progress.next({ state: State.Requested, symbol });
-      }
-      else if (event.type === HttpEventType.DownloadProgress) {
+      } else if (event.type === HttpEventType.DownloadProgress) {
         this.progress.next({
           state: State.Loading,
           progress: event.total ? event.loaded / event.total : 0,
-          symbol
+          symbol,
         });
-      }
-      else if (event.type === HttpEventType.Response) {
+      } else if (event.type === HttpEventType.Response) {
         this.decoders.get(kind)!.decode(event.body!).subscribe(asset => {
           stored.asset = asset;
 
@@ -210,19 +222,8 @@ export class AssetService {
     return of(this.assets.get(symbol)).pipe(
       filter(stored => !!stored),
       map(stored => stored!.asset!),
-      filter<T>(asset => !!asset)
+      filter<T>(asset => !!asset),
     );
   }
 
-  /** Cached assets. */
-  private cache = new Map<string, Symbol>();
-
-  /** Stored assets. */
-  private assets = new Map<Symbol, StoredAsset<any>>();
-
-  /** Asset decoders. */
-  private decoders = new Map<Kind, AssetDecoder<any>>([
-    [ Kind.Text, new TextAssetDecoder() ],
-    [ Kind.Audio, new AudioAssetDecoder() ]
-  ]);
 }

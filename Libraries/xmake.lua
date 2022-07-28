@@ -2,27 +2,10 @@
 lib_dir = os.curdir()
 directx_dir = lib_dir .. "/DXSDK"
 
-add_requireconfs("cpp-httplib", {configs = {ssl = true}})
-add_requires(
-    "tiltedcore",
-	"cryptopp",
-    "spdlog 1.9",
-    "cpp-httplib",
-    "gtest",
-    "mem")
-
--- all libraries listed here are under frequent change, and are thus not quired via
--- the xmake package manager, we intend to change this in the future though.
-
 if is_plat("windows") then
-    add_requires(
-    "discord",
-    "imgui")
-
 	includes("./TiltedUI")
 	includes("./TiltedReverse")
 	includes("./TiltedHooks")
 end
 
-includes("./TiltedScript")
 includes("./TiltedConnect")

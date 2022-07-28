@@ -1,15 +1,17 @@
 #pragma once
 
 struct ActorMagicCaster;
-struct MagicItem;
 
+/**
+* @brief Dispatched when a spell has been cast locally.
+*/
 struct SpellCastEvent
 {
-    SpellCastEvent(ActorMagicCaster* apCaster, MagicItem* apSpell, uint32_t aDesiredTargetID) 
-        : pCaster(apCaster), pSpell(apSpell), DesiredTargetID(aDesiredTargetID)
+    SpellCastEvent(ActorMagicCaster* apCaster, uint32_t aSpellId, uint32_t aDesiredTargetID) 
+        : pCaster(apCaster), SpellId(aSpellId), DesiredTargetID(aDesiredTargetID)
     {}
 
     ActorMagicCaster* pCaster;
-    MagicItem* pSpell;
+    uint32_t SpellId;
     uint32_t DesiredTargetID;
 };

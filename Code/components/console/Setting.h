@@ -194,6 +194,11 @@ template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : 
         return static_cast<Tas>(data.as_uint64);
     }
 
+    float as_float() const
+    {
+        return data.as_float;
+    }
+
     operator bool()
     {
         static_assert(std::is_same_v<T, bool>, "Must be a boolean");

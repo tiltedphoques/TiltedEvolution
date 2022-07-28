@@ -1,25 +1,18 @@
-import { Component, OnInit, ViewEncapsulation, ChangeDetectionStrategy, Input, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+
 
 @Component({
   selector: 'app-toggle',
   templateUrl: './toggle.component.html',
   styleUrls: ['./toggle.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ToggleComponent implements OnInit {
-  @Input('isShow')
-  public isShow = false;
-  @Input('title')
-  public title: String;
+export class ToggleComponent {
 
-  @Output('toggleChange')
-  public toggleChange = new EventEmitter();
+  @Input('isShow') public isShow = false;
+  @Input('title') public title: String;
 
-  constructor() { }
-
-  ngOnInit() {
-  }
+  @Output('toggleChange') public toggleChange = new EventEmitter();
 
   public clickToggle() {
     this.isShow = !this.isShow;

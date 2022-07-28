@@ -3,7 +3,7 @@
 #include <World.h>
 #include <imgui.h>
 #include <inttypes.h>
-#include <services/TestService.h>
+#include <services/DebugService.h>
 
 #if (TP_SKYRIM64)
 #include <BSGraphics/BSGraphicsRenderer.h>
@@ -16,6 +16,8 @@
 #else
 #include <Games/Fallout4/Forms/TESForm.h>
 #endif
+
+// TODO: ft
 
 #if (TP_SKYRIM64)
 
@@ -95,104 +97,110 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 // Engine stuff.
 // Fix cursor.
 
-static TESForm* g_SelectedForm{nullptr};
-
-void TestService::DrawComponentDebugView()
+void DebugService::SetDebugId(const uint32_t aFormId) noexcept
 {
-    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Component view", &m_toggleComponentWindow);
+    m_formId = aFormId;
+}
 
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    Vector<entt::entity> entities(remoteView.begin(), remoteView.end());
+void DebugService::DrawComponentDebugView()
+{
+    auto view = m_world.view<FormIdComponent>();
 
-    static uint32_t s_selectedRemoteId = 0;
-    static uint32_t s_selectedRemote = 0;
-    static entt::entity s_selectedEnt{};
+    if (!m_formId)
+        return;
 
-    if (ImGui::Button("Reset Selection"))
+    auto entityIt = std::find_if(view.begin(), view.end(), [id = m_formId, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (entityIt == view.end())
+        return;
+
+    auto entity = *entityIt;
+
+    if (auto* pObject = Cast<TESObjectREFR>(TESForm::GetById(m_formId)))
     {
-        g_SelectedForm = nullptr;
-    }
-
-    int i = 0;
-    for (auto entity : entities)
-    {
-        auto& remoteComponent = remoteView.get<RemoteComponent>(entity);
-        auto& formComponent = remoteView.get<FormIdComponent>(entity);
-
-        char buffer[32];
-        if (ImGui::Selectable(itoa(remoteComponent.Id, buffer, 16), s_selectedRemoteId == remoteComponent.Id))
+        ImVec2 screenPos{};
+        if (DrawInWorldSpace(pObject, screenPos))
         {
-            s_selectedRemoteId = remoteComponent.Id;
-            g_SelectedForm = TESForm::GetById(formComponent.Id);
-            s_selectedEnt = entities[s_selectedRemote];
-        }
+            ImGui::SetNextWindowPos(screenPos);
+            ImGui::Begin("Component debug");
 
-        if (s_selectedRemoteId == remoteComponent.Id)
-            s_selectedRemote = i;
-
-        ++i;
-    }
-    ImGui::End();
-
-    if (m_drawComponentsInWorldSpace && g_SelectedForm)
-    {
-        if (auto* pObject = RTTI_CAST(g_SelectedForm, TESForm, TESObjectREFR))
-        {
-            ImVec2 screenPos{};
-            if (DrawInWorldSpace(pObject, screenPos))
+            if (auto serverIdRes = Utils::GetServerId(entity))
             {
-                ImGui::SetNextWindowPos(screenPos);
-                ImGui::Begin("Component debug");
-
-                auto& remote = remoteView.get<RemoteComponent>(s_selectedEnt);
-                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &remote.Id, 0, 0, "%" PRIx32,
+                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32,
                                    ImGuiInputTextFlags_CharsHexadecimal);
-                ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &remote.CachedRefId, 0, 0, "%" PRIx32,
-                                   ImGuiInputTextFlags_CharsHexadecimal);
+            }
 
+            if (auto* pComponent = m_world.try_get<LocalComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("LocalComponent"))
+                {
+                    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
+                                       ImGuiInputTextFlags_CharsHexadecimal);
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<LocalAnimationComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("LocalAnimationComponent"))
+                {
+                    int actions = int(pComponent->Actions.size());
+                    ImGui::InputInt("Number of actions", &actions, 0, 0, ImGuiInputTextFlags_ReadOnly);
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<RemoteComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("RemoteComponent"))
+                {
+                    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0,
+                                       "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+                }
+            }
+
+            if (auto* pComponent = m_world.try_get<InterpolationComponent>(entity))
+            {
                 if (ImGui::CollapsingHeader("InterpolationComponent"))
                 {
-                    if (auto* pComponent = m_world.try_get<InterpolationComponent>(s_selectedEnt))
-                    {
-                        ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y,
-                                    pComponent->Position.z);
-                    }
+                    ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y,
+                                pComponent->Position.z);
                 }
+            }
 
+            if (auto* pComponent = m_world.try_get<FaceGenComponent>(entity))
+            {
                 if (ImGui::CollapsingHeader("FaceGenComponent"))
                 {
-                    if (auto* pComponent = m_world.try_get<FaceGenComponent>(s_selectedEnt))
+                    for (auto x : pComponent->FaceTints.Entries)
                     {
-                        for (auto x : pComponent->FaceTints.Entries)
-                        {
-                            ImGui::Text("Alpha %f, Color %u, Type %u\n", x.Alpha, x.Color, x.Type);
-                        }
+                        ImGui::Text("Alpha %f, Color %u, Type %u\n", x.Alpha, x.Color, x.Type);
                     }
                 }
+            }
 
+            if (auto* pComponent = m_world.try_get<RemoteAnimationComponent>(entity))
+            {
                 if (ImGui::CollapsingHeader("RemoteAnimationComponent"))
                 {
-                    if (auto* pComponent = m_world.try_get<RemoteAnimationComponent>(s_selectedEnt))
-                    {
-                        ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
-                                    pComponent->LastRanAction.EventName.c_str(),
-                                    pComponent->LastRanAction.TargetEventName.c_str(), pComponent->LastRanAction.State1,
-                                    pComponent->LastRanAction.State2);
-                    }
-                    // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
-                    //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
+                    ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
+                                pComponent->LastRanAction.EventName.c_str(),
+                                pComponent->LastRanAction.TargetEventName.c_str(),
+                                pComponent->LastRanAction.State1,
+                                pComponent->LastRanAction.State2);
                 }
-
-                ImGui::End();
-
+                // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
+                //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
             }
+
+            ImGui::End();
+
         }
     }
 }
 
 #else
-void TestService::DrawComponentDebugView()
+void DebugService::DrawComponentDebugView()
 {
 }
 #endif

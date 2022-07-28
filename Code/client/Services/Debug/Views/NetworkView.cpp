@@ -1,9 +1,9 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <Services/TransportService.h>
 
 #include <imgui.h>
 
-void TestService::DrawNetworkView()
+void DebugService::DrawNetworkView()
 {
     if (m_transport.IsConnected())
     {

@@ -28,37 +28,40 @@ String ReadWString(Buffer::Reader& aReader) noexcept
 
 ESLoader::ESLoader()
 {
-    m_directory = "data\\";
+    m_directory = fs::current_path() / "Data"; //< Keep upper case to match Skyrim's file system
 }
 
 UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
 {
     if (!fs::is_directory(m_directory))
     {
-        spdlog::error("Data directory not found.");
+        //spdlog::warn("Data directory not found.");
         return nullptr;
     }
 
     if (!LoadLoadOrder())
     {
-        spdlog::error("Failed to load load order.");
         return nullptr;
     }
 
+    return MakeUnique<RecordCollection>();
+
+    /*
     auto recordCollection = LoadFiles();
     recordCollection->BuildReferences();
 
     return std::move(recordCollection);
+    */
 }
 
 bool ESLoader::LoadLoadOrder()
 {
     std::ifstream loadOrderFile;
-    String loadOrderPath = m_directory + "loadorder.txt";
+    auto loadOrderPath = m_directory / "loadorder.txt";
     loadOrderFile.open(loadOrderPath.c_str());
     if (loadOrderFile.fail())
     {
-        spdlog::error("Failed to open loadorder.txt");
+        spdlog::warn("Failed to open loadorder.txt");
         return false;
     }
 
@@ -75,7 +78,11 @@ bool ESLoader::LoadLoadOrder()
         PluginData plugin;
         plugin.m_filename = line;
 
+        // On Linux, the carriage return won't be taken into account
+        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+
         char extensionType = line.back();
+
         switch (extensionType)
         {
         case 'm':
@@ -109,7 +116,7 @@ UniquePtr<RecordCollection> ESLoader::LoadFiles()
         fs::path pluginPath = GetPath(plugin.m_filename);
         if (pluginPath.empty())
         {
-            spdlog::error("Path to plugin file not found: {}", plugin.m_filename);
+            spdlog::warn("Path to plugin file not found: {}", plugin.m_filename);
             continue;
         }
 

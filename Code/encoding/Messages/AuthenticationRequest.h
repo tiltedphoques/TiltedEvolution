@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Message.h"
-#include <TiltedCore/Buffer.hpp>
 #include <Structs/Mods.h>
+#include <TiltedCore/Buffer.hpp>
+#include <Structs/GameId.h>
 
 struct AuthenticationRequest final : ClientMessage
 {
@@ -19,17 +20,27 @@ struct AuthenticationRequest final : ClientMessage
 
     bool operator==(const AuthenticationRequest& achRhs) const noexcept
     {
-        return DiscordId == achRhs.DiscordId &&
+        return GetOpcode() == achRhs.GetOpcode() &&
+            DiscordId == achRhs.DiscordId && 
+            SKSEActive == achRhs.SKSEActive &&
+            MO2Active == achRhs.MO2Active &&
             Token == achRhs.Token &&
             Version == achRhs.Version &&
             UserMods == achRhs.UserMods && 
             Username == achRhs.Username &&
-            GetOpcode() == achRhs.GetOpcode();
+            WorldSpaceId == achRhs.WorldSpaceId &&
+            CellId == achRhs.CellId &&
+            Level == achRhs.Level;
     }
 
-    uint64_t DiscordId;
-    String Token;
-    String Version;
-    Mods UserMods;
-    String Username;
+    uint64_t DiscordId{};
+    bool SKSEActive{};
+    bool MO2Active{};
+    String Token{};
+    String Version{};
+    Mods UserMods{};
+    String Username{};
+    GameId WorldSpaceId{};
+    GameId CellId{};
+    uint16_t Level{};
 };

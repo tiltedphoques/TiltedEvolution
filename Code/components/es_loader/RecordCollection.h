@@ -10,11 +10,10 @@
 
 namespace ESLoader
 {
-class RecordCollection
+struct RecordCollection
 {
     friend class TESFile;
 
-  public:
     FormEnum GetFormType(uint32_t aFormId) const noexcept
     {
         auto record = m_allRecords.find(aFormId);
@@ -64,14 +63,14 @@ class RecordCollection
     void BuildReferences();
 
 private:
-    TiltedPhoques::Map<uint32_t, Record> m_allRecords{};
-    TiltedPhoques::Map<uint32_t, REFR> m_objectReferences{};
-    TiltedPhoques::Map<uint32_t, CLMT> m_climates{};
-    TiltedPhoques::Map<uint32_t, NPC> m_npcs{};
-    TiltedPhoques::Map<uint32_t, CONT> m_containers{};
-    TiltedPhoques::Map<uint32_t, GMST> m_gameSettings{};
-    TiltedPhoques::Map<uint32_t, WRLD> m_worlds{};
-    TiltedPhoques::Map<uint32_t, NAVM> m_navMeshes{};
+    Map<uint32_t, Record> m_allRecords{};
+    Map<uint32_t, REFR> m_objectReferences{};
+    Map<uint32_t, CLMT> m_climates{};
+    Map<uint32_t, NPC> m_npcs{};
+    Map<uint32_t, CONT> m_containers{};
+    Map<uint32_t, GMST> m_gameSettings{};
+    Map<uint32_t, WRLD> m_worlds{};
+    Map<uint32_t, NAVM> m_navMeshes{};
 };
 
 } // namespace ESLoader

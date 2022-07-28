@@ -9,12 +9,12 @@ bool MagicCaster::CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, 
     return ThisCall(s_castSpell, this, apSpell, apDesiredTarget, abLoadCast);
 }
 
-void MagicCaster::InterruptCast(bool abRefund) noexcept
+void MagicCaster::InterruptCast() noexcept
 {
-    TP_THIS_FUNCTION(TInterruptCast, void, MagicCaster, bool);
+    TP_THIS_FUNCTION(TInterruptCast, void, MagicCaster);
 
     POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34408);
 
-    ThisCall(s_interruptCast, this, abRefund);
+    ThisCall(s_interruptCast, this);
 }
 

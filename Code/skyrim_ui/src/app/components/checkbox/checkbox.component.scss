@@ -1,0 +1,23 @@
+@import "env";
+
+:host {
+  width: $scrollbar;
+  height: $scrollbar;
+}
+
+input[type=checkbox] {
+  display: none;
+}
+
+input[type=checkbox] + label {
+  background-image: url(../../../assets/images/checkbox/unchecked.svg);
+  background-size: contain;
+  width: $scrollbar;
+  height: $scrollbar;
+  display: inline-block;
+  padding: 0 0 0 0;
+}
+
+input[type=checkbox]:checked + label {
+  background-image: url(../../../assets/images/checkbox/checked.svg);
+}

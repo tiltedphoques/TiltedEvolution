@@ -1,94 +1,172 @@
-app-server-list {
+@import "functions/rem";
+@import "functions/mod";
+
+@import "env";
+
+:host {
   position: relative;
-  display: block;
+  display: flex;
+  gap: 1em;
+  width: 70vw;
+  --server-list-row-height: calc(16 * 100vw / 1920 * 2);
+}
 
+.server-list-action-bar {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1%;
 
-  .searchListServer {
-    display: inline-block;
-    background-color: rgba($color: #292929, $alpha: 0.60);
-    font-size: 0.85rem;
-    border-radius: 7px;
-    height: 1.5rem;
-    width: 8vw;
-    border: none;
-    margin-bottom: 1%;
+  hr {
+    width: 100%;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
   }
 
-  .buttonsServerList {
-    float: right;
-    padding: 0.25vw;
-    background-color: #292929;
-    border-radius: 2px;
-    margin-left: 5%;
+  .server-list-filters {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75em;
+
+    .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
   }
 
-  .containerList {
-    overflow: auto;
-    max-height: 60vh;
-    margin-top: 1rem;
+  .server-count {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex: 1 1 auto;
+  }
+
+  .server-list-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    button {
+      min-width: 4em;
+      padding: 0.5em;
+      background-color: #292929;
+      border-radius: 2px;
+    }
+  }
+}
+
+.scrollbar-offset {
+  margin-right: rem($-size-font, 16px);
+  //overflow-y: scroll;
+}
+
+.serverlist-alternative {
+  height: calc(60vh - var(--server-list-row-height) - 1px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &.serverlist-loading {
+    flex: 1 1 auto;
+    height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.virtual-viewport {
+  height: calc(60vh - var(--server-list-row-height) - 1px);
+  width: 100%;
+}
+
+.search-list-server {
+  display: inline-block;
+  background-color: rgba($color: #292929, $alpha: 0.60);
+  font-size: 0.85rem;
+  border-radius: 7px;
+  height: 1.5rem;
+  border: none;
+}
+
+.server-list {
+  flex: 1 1 auto;
+  overflow: auto;
+  max-height: 60vh;
+  height: 60vh;
+
+  cdk-virtual-scroll-viewport {
+    overflow-y: scroll;
+  }
 
 
-    .serverslisttable {
+  .server-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    .row {
+      height: var(--server-list-row-height);
+      line-height: var(--server-list-row-height);
+      display: flex;
+      align-items: center;
       width: 100%;
-      border-collapse: collapse;
+      border-bottom: 1px solid grey;
+      border-collapse: separate;
 
-      .listHeader {
-        position: sticky;
-        top: 0px;
-        background-color: #151515;
-        z-index: 1;
+      &.odd {
+        background: transparentize(mod($-color-background, 1), 0.95);
       }
 
-      th {
-        text-align: left;
-        border-bottom: 1px solid grey;
-        border-collapse: separate;
+      :first-child {
+        flex: 1 1 auto;
+      }
 
-        button {
-          padding: 0 0.5rem;
+      > div {
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+      &.header {
+        & > div {
+          display: flex;
+          align-items: center;
         }
       }
+    }
 
-      tr:not(:last-child) {
-        border-bottom: 1px solid grey;
-        padding: 15px;
+    .offline {
+      background-color: #ff9494
+    }
+
+    .server-compatible {
+      color: green;
+    }
+
+    .server-incompatible {
+      color: red;
+    }
+
+    .join-button {
+      padding: 0.25vw;
+      background-color: #292929;
+      border-radius: 2px;
+      margin-left: 5%;
+      margin-right: 5%;
+      float: right;
+    }
+
+    .server-list-favorite {
+      color: white;
+
+      &:hover {
+        color: gray;
       }
 
-      .offline {
-        background-color: #FF9494
-      }
-
-      .server-compatible {
-        color: green;
-      }
-
-      .server-incompatible {
-        color: red;
-      }
-
-      #noserv {
-        margin-top: 3%;
-      }
-
-      .joinbutton {
-        padding: 0.25vw;
-        background-color: #292929;
-        border-radius: 2px;
-        margin-left: 5%;
-      }
-
-      .app-server-list-favorite {
-        text-align: center;
-        color: grey;
-
-        &:hover {
-          color: white;
-        }
-      }
-
-      .app-server-list-notfavorite {
-        text-align: center;
-        color: grey;
+      &.not {
+        color: gray;
 
         &:hover {
           color: white;
@@ -96,6 +174,5 @@ app-server-list {
       }
     }
   }
-
-
 }
+

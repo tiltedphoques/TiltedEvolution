@@ -7,7 +7,7 @@
 #include <Components.h>
 
 #include <Events/UpdateEvent.h>
-#include <Events/ReferenceRemovedEvent.h>
+#include <Events/ActorRemovedEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/HealthChangeEvent.h>
@@ -30,7 +30,7 @@ ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatche
 {
     m_world.on_construct<LocalComponent>().connect<&ActorValueService::OnLocalComponentAdded>(this);
     m_dispatcher.sink<DisconnectedEvent>().connect<&ActorValueService::OnDisconnected>(this);
-    m_dispatcher.sink<ReferenceRemovedEvent>().connect<&ActorValueService::OnReferenceRemoved>(this);
+    m_dispatcher.sink<ActorRemovedEvent>().connect<&ActorValueService::OnActorRemoved>(this);
     m_dispatcher.sink<UpdateEvent>().connect<&ActorValueService::OnUpdate>(this);
     m_dispatcher.sink<NotifyActorValueChanges>().connect<&ActorValueService::OnActorValueChanges>(this);
     m_dispatcher.sink<NotifyActorMaxValueChanges>().connect<&ActorValueService::OnActorMaxValueChanges>(this);
@@ -41,7 +41,7 @@ ActorValueService::ActorValueService(World& aWorld, entt::dispatcher& aDispatche
 
 void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, Actor* apActor) noexcept
 {
-    auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(aEntity);
+    auto& actorValuesComponent = m_world.emplace_or_replace<ActorValuesComponent>(aEntity);
 
     for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
@@ -61,8 +61,7 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const entt::entity aEntity) noexcept
 {
     const auto& formIdComponent = aRegistry.get<FormIdComponent>(aEntity);
-    const auto* pForm = TESForm::GetById(formIdComponent.Id);
-    auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (pActor != NULL)
     {
@@ -79,7 +78,7 @@ void ActorValueService::OnDisconnected(const DisconnectedEvent& acEvent) noexcep
     m_world.clear<ActorValuesComponent>();
 }
 
-void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent) noexcept
+void ActorValueService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
         return;
@@ -95,9 +94,7 @@ void ActorValueService::OnReferenceRemoved(const ReferenceRemovedEvent& acEvent)
     });
 
     if (it != std::end(view))
-    {
         m_world.remove<ActorValuesComponent>(*it);
-    }
 }
 
 void ActorValueService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -118,7 +115,7 @@ void ActorValueService::BroadcastActorValues() noexcept
     {
         auto& formIdComponent = view.get<FormIdComponent>(entity);
         auto* pForm = TESForm::GetById(formIdComponent.Id);
-        auto* pActor = RTTI_CAST(pForm, TESForm, Actor);
+        auto* pActor = Cast<Actor>(pForm);
 
         if (!pActor)
             continue;
@@ -186,7 +183,10 @@ void ActorValueService::OnHealthChange(const HealthChangeEvent& acEvent) noexcep
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*hitteeIt);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error("{}: failed to find server id", __FUNCTION__);
         return;
+    }
 
     uint32_t serverId = serverIdRes.value();
 
@@ -247,13 +247,16 @@ void ActorValueService::RunDeathStateUpdates() noexcept
 
     lastSendTimePoint = now;
 
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    auto localView = m_world.view<FormIdComponent, LocalComponent>();
 
-    for (auto entity : view)
+    for (auto entity : localView)
     {
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
-        auto& localComponent = view.get<LocalComponent>(entity);
+        const auto& formIdComponent = localView.get<FormIdComponent>(entity);
+        Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+            continue;
+
+        auto& localComponent = localView.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
         if (isDead != localComponent.IsDead)
@@ -285,16 +288,30 @@ void ActorValueService::RunActorValuesUpdates() noexcept
 
 void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcast& acMessage) const noexcept
 {
-    Actor* pActor = GetByServerId(Actor, acMessage.Id);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.Id);
         return;
+    }
 
     const float newHealth = pActor->GetActorValue(ActorValueInfo::kHealth) + acMessage.DeltaHealth;
     pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
 
     const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
-    if (health <= 0.f)
-        pActor->Kill();
+    if (!pActor->IsDead() && health <= 0.f)
+    {
+        ActorExtension* pExtension = pActor->GetExtension();
+        // Players should never be killed
+        if (!pExtension->IsPlayer())
+            pActor->Kill();
+    }
+
+    // TODO(cosideci): find fix for player health sync so this can be used again
+    /*
+    if (pActor->GetExtension()->IsRemotePlayer())
+        World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor->formID);
+    */
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
@@ -310,7 +327,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*itor);
-    Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (!pActor)
         return;
@@ -347,7 +364,7 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*it);
-    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (!pActor)
         return;
@@ -377,9 +394,14 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
         return;
 
     auto& formIdComponent = view.get<FormIdComponent>(*it);
-    Actor* pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
 
     if (!pActor)
+        return;
+
+    ActorExtension* pExtension = pActor->GetExtension();
+    // Players should never be killed
+    if (pExtension->IsPlayer())
         return;
 
     if (pActor->IsDead() != acMessage.IsDead)

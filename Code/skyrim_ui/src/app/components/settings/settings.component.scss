@@ -1,0 +1,80 @@
+@import "env";
+
+@import "functions/rem";
+
+:host {
+  position: relative;
+  display: block;
+}
+
+.container {
+  overflow: auto;
+  max-height: 60vh;
+  margin-top: 1rem;
+  padding-right: 15px;
+
+  .settings {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+
+    .section {
+      padding-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: column;
+
+      &:not(:first-child) {
+        margin-top: 15px;
+      }
+    }
+
+    .section > div:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    .flex-item {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .radio-group {
+        display: flex;
+        justify-content: space-between;
+        width: 40%;
+
+        div {
+          display: flex;
+          align-items: center;
+        }
+      }
+    }
+
+    .flex-item > label {
+      width: 55%;
+    }
+
+    .flex-item > input {
+      width: 40%;
+    }
+
+    .settings-dropdown {
+      width: 40%;
+    }
+
+    hr {
+      width: 100%;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}

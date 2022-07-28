@@ -1,5 +1,3 @@
-#include <stdafx.h>
-
 #include <GameServer.h>
 #include <Components.h>
 
@@ -9,16 +7,13 @@
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
 
-#include <Scripts/Player.h>
-#include <Scripts/Quest.h>
-
-QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
+QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
 {
-    m_questUpdateConnection =
-        aDispatcher.sink<PacketEvent<RequestQuestUpdate>>().connect<&QuestService::HandleQuestChanges>(this);
+    m_questUpdateConnection = aDispatcher.sink<PacketEvent<RequestQuestUpdate>>().connect<&QuestService::OnQuestChanges>(this);
 }
 
-void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessage) noexcept
+void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessage) noexcept
 {
     const auto& message = acMessage.Packet;
 
@@ -31,6 +26,10 @@ void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acM
     { 
         return e.Id == message.Id;
     });
+
+    NotifyQuestUpdate notify{};
+    notify.Id = message.Id;
+    notify.Stage = message.Stage;
 
     if (message.Status == RequestQuestUpdate::Started || 
         message.Status == RequestQuestUpdate::StageUpdate)
@@ -46,59 +45,37 @@ void QuestService::HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& acM
 
             if (message.Status == RequestQuestUpdate::Started)
             {
-                spdlog::info("Started Quest: {:x}:{}", message.Id.BaseId, message.Id.ModId);
+                spdlog::debug("Started quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
-                //TODO: Scripting support
-                // we only trigger that on remote quest start
-                //const Script::Player scriptPlayer(acMessage.Entity, m_world);
-                //const Script::Quest scriptQuest(message.Id.BaseId, message.Stage, m_world);
-
-                //m_world.GetScriptService().HandleQuestStart(scriptPlayer, scriptQuest);
+                notify.Status = NotifyQuestUpdate::Started;
             }
         } 
         else 
         {
-            spdlog::info("Updated quest: {:x}:{}", message.Id.BaseId, message.Stage);
+            spdlog::debug("Updated quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
             auto& record = *questIt;
             record.Id = message.Id;
             record.Stage = message.Stage;
 
-            // TODO: Scripting support
-            //const Script::Player scriptPlayer(acMessage.Entity, m_world);
-            //const Script::Quest scriptQuest(message.Id.BaseId, message.Stage, m_world);
-
-            //m_world.GetScriptService().HandleQuestStage(scriptPlayer, scriptQuest);
+            notify.Status = NotifyQuestUpdate::StageUpdate;
         }
     }
     else if (message.Status == RequestQuestUpdate::Stopped)
     {
-        spdlog::info("Stopped quest: {:x}", message.Id.BaseId);
-
-        // TODO: Scripting support
-        //const Script::Player player(acMessage.Entity, m_world);
-        //m_world.GetScriptService().HandleQuestStop(player, message.Id.BaseId);
+        spdlog::debug("Stopped quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
         if (questIt != entries.end())
-        {
             entries.erase(questIt);
-        }
         else
-        {
-            spdlog::warn("Unable to delete quest object {:x}", message.Id.BaseId);
-        }
+            spdlog::warn("Unable to delete quest object {:X}:{:X}", message.Id.ModId, message.Id.BaseId);
+
+        notify.Status = NotifyQuestUpdate::Stopped;
     }
-}
-  
-// script wrapper
-bool QuestService::StartStopQuest(Player* apRecipient, GameId aGameId, bool aStop) noexcept
-{
-    NotifyQuestUpdate questMsg;
-    questMsg.Status = aStop ? NotifyQuestUpdate::Stopped : NotifyQuestUpdate::Started;
-    questMsg.Id = aGameId;
-    questMsg.Stage = 0;
 
-    apRecipient->Send(questMsg);
+    const auto& partyComponent = acMessage.pPlayer->GetParty();
+    if (!partyComponent.JoinedPartyId.has_value())
+        return;
 
-    return true;
+    GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }

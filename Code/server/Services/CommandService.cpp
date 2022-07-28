@@ -31,13 +31,13 @@ void CommandService::OnTeleportCommandRequest(const PacketEvent<TeleportCommandR
             const auto* pMovementComponent = m_world.try_get<MovementComponent>(*character);
             if (pMovementComponent)
             {
-                response.CellId = pTargetPlayer->GetCellComponent().Cell;
+                const auto& cellComponent = pTargetPlayer->GetCellComponent();
+                response.CellId = cellComponent.Cell;
                 response.Position = pMovementComponent->Position;
+                response.WorldSpaceId = cellComponent.WorldSpaceId;
             }
         }
     }
-
-    spdlog::info("TeleportCommandResponse: {:X}:{:X} at position {}, {}, {}", response.CellId.ModId, response.CellId.BaseId, response.Position.x, response.Position.y, response.Position.z);
 
     acMessage.pPlayer->Send(response);
 }

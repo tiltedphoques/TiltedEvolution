@@ -1,4 +1,4 @@
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 
 #include <Messages/PartyKickRequest.h>
 #include <Messages/PartyChangeLeaderRequest.h>
@@ -6,12 +6,13 @@
 #include <Messages/PartyAcceptInviteRequest.h>
 #include <Messages/PartyLeaveRequest.h>
 #include <Messages/PartyCreateRequest.h>
+#include <Messages/TeleportCommandRequest.h>
 
 #include <World.h>
 
 #include <imgui.h>
 
-void TestService::DrawPartyView()
+void DebugService::DrawPartyView()
 {
     if (!m_transport.IsConnected())
         return;
@@ -35,6 +36,8 @@ void TestService::DrawPartyView()
 
         for (auto& playerId : members)
         {
+            ImGui::PushID(playerId);
+
             auto playerEntry = players.find(playerId);
             if (playerEntry != players.end())
             {
@@ -44,9 +47,19 @@ void TestService::DrawPartyView()
                     playerName += " (Leader)";
                 }
                 ImGui::BulletText(playerName.c_str());
+
+                ImGui::SameLine(200);
+                if (ImGui::Button("Teleport"))
+                {
+                    TeleportCommandRequest request{};
+                    request.TargetPlayer = playerEntry.value();
+
+                    m_transport.Send(request);
+                }
+
                 if (partyService.IsLeader())
                 {
-                    ImGui::SameLine(100);
+                    ImGui::SameLine();
                     if (ImGui::Button("Kick"))
                     {
                         PartyKickRequest kickMessage;
@@ -54,7 +67,7 @@ void TestService::DrawPartyView()
                         m_transport.Send(kickMessage);
                     }
 
-                    ImGui::SameLine(150);
+                    ImGui::SameLine();
                     if (ImGui::Button("Make Leader"))
                     {
                         PartyChangeLeaderRequest changeMessage;
@@ -64,6 +77,7 @@ void TestService::DrawPartyView()
                 }
             }
             
+            ImGui::PopID();
         }
 
         if (partyService.IsLeader())

@@ -4,17 +4,17 @@
 #include <Client.hpp>
 
 struct ImguiService;
-struct GridCellChangeEvent;
-struct CellChangeEvent;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
-struct SendServerMessageEvent;
 
 struct World;
 
 using TiltedPhoques::Client;
 
+/**
+* @brief Handles communication with the server.
+*/
 struct TransportService : Client
 {
     TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -30,14 +30,15 @@ struct TransportService : Client
     void OnUpdate() override;
 
     [[nodiscard]] bool IsOnline() const noexcept { return m_connected; }
+    void SetServerPassword(const std::string& acPassword) noexcept
+    {
+        m_serverPassword = acPassword;
+    }
 
 protected:
 
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept;
-    void OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept;
-    void OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept;
 
     // Packet handlers
     void HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept;
@@ -47,10 +48,9 @@ private:
     World& m_world;
     entt::dispatcher& m_dispatcher;
     bool m_connected;
+    String m_serverPassword{};
 
     entt::scoped_connection m_updateConnection;
-    entt::scoped_connection m_gridCellChangeConnection;
-    entt::scoped_connection m_cellChangeConnection;
     entt::scoped_connection m_sendServerMessageConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };

@@ -2,11 +2,12 @@
 
 #include <Components/BaseFormComponent.h>
 
-enum FormType : uint8_t
+enum class FormType : uint8_t
 {
-    Door = 29,
+    Armor = 29,
     Book = 30,
     Container = 31,
+    Door = 32,
     Ammo = 44,
     Npc = 45,
     LeveledCharacter = 46,
@@ -112,6 +113,7 @@ struct TESForm : BaseFormComponent
         return;
     }
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
+    bool IsTemporary() const noexcept { return formID >= 0xFF000000; }
 
     uintptr_t unk8;
     uint32_t flags;

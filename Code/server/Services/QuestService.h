@@ -7,17 +7,23 @@ struct World;
 struct UpdateEvent;
 struct RequestQuestUpdate;
 
+/**
+* @brief Dispatch quest sync messages.
+* 
+* This service is currently not in use.
+*/
 class QuestService
 {
 public:
     QuestService(World& aWorld, entt::dispatcher& aDispatcher);
 
-    bool StartStopQuest(Player* apRecipient, GameId aGameId, bool aStop) noexcept;
 private:
-    void HandleQuestChanges(const PacketEvent<RequestQuestUpdate>& aChanges) noexcept;
+
+    void OnQuestChanges(const PacketEvent<RequestQuestUpdate>& aChanges) noexcept;
+
+    World& m_world;
 
     entt::scoped_connection m_questUpdateConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
-    World& m_world;
 };

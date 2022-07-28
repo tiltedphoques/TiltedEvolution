@@ -23,6 +23,11 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <EquipManager.h>
+
+#if TP_FALLOUT4
+#include <Forms/BGSObjectInstance.h>
+#endif
+
 #include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -59,7 +64,11 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error(__FUNCTION__ ": failed to find server id, target form id: {:X}, item id: {:X}, count: {}", 
+                      acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
         return;
+    }
 
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
@@ -89,9 +98,13 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
+    {
+        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, unequip: {}, slot: {:X}", 
+                      acEvent.ActorId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
         return;
+    }
 
-    Actor* pActor = RTTI_CAST(TESForm::GetById(acEvent.ActorId), TESForm, Actor);
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.ActorId));
     if (!pActor)
         return;
 
@@ -110,7 +123,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsSpell = acEvent.IsSpell;
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
-    request.CurrentInventory = pActor->GetEquippedItems();
+    request.CurrentInventory = pActor->GetEquipment();
 
     m_transport.Send(request);
 }
@@ -119,30 +132,20 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 {
     if (acMessage.Drop)
     {
-        Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+        Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
         if (!pActor)
-            return;
-
-        ScopedInventoryOverride _;
-
-        ExtraDataList* pExtraData = pActor->GetExtraDataFromItem(acMessage.Item);
-        ModSystem& modSystem = World::Get().GetModSystem();
-
-        uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
-        TESBoundObject* pObject = RTTI_CAST(TESForm::GetById(objectId), TESForm, TESBoundObject);
-        if (!pObject)
         {
-            spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
-                         acMessage.Item.BaseId.BaseId);
+            spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ServerId);
             return;
         }
 
-        if (acMessage.Item.Count < 0)
-            pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
+        ScopedInventoryOverride _;
+
+        pActor->DropOrPickUpObject(acMessage.Item, nullptr, nullptr);
     }
     else
     {
-        TESObjectREFR* pObject = GetByServerId(TESObjectREFR, acMessage.ServerId);
+        TESObjectREFR* pObject = Utils::GetByServerId<TESObjectREFR>(acMessage.ServerId);
         if (!pObject)
             return;
 
@@ -154,20 +157,30 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    Actor* pActor = GetByServerId(Actor, acMessage.ServerId);
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
+    {
+        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ServerId);
         return;
+    }
 
     auto& modSystem = World::Get().GetModSystem();
 
     uint32_t itemId = modSystem.GetGameId(acMessage.ItemId);
     TESForm* pItem = TESForm::GetById(itemId);
 
+    if (!pItem)
+    {
+        spdlog::error("Could not find inventory item {:X}:{:X}", acMessage.ItemId.ModId, acMessage.ItemId.BaseId);
+        return;
+    }
+
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
 
     auto* pEquipManager = EquipManager::Get();
 
+#if TP_SKYRIM64
     if (acMessage.IsSpell)
     {
         uint32_t spellSlotId = 0;
@@ -178,6 +191,8 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
         else
             pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
+
+        return;
     }
     else if (acMessage.IsShout)
     {
@@ -185,38 +200,55 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             pEquipManager->UnEquipShout(pActor, pItem);
         else
             pEquipManager->EquipShout(pActor, pItem);
+
+        return;
+    }
+#endif
+
+    auto* pObject = Cast<TESBoundObject>(pItem);
+
+    // TODO: ExtraData necessary? probably
+    if (acMessage.Unequip)
+    {
+#if TP_SKYRIM64
+        pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
+#elif TP_FALLOUT4
+        // TODO: this is flawed, little control over slots and extra data
+        if (pObject)
+            pActor->UnequipItem(pObject);
+#endif
     }
     else
     {
-        // TODO: ExtraData necessary? probably
-        if (acMessage.Unequip)
-            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
-        else
+        // Unequip all armor first, since the game won't auto unequip armor
+#if TP_SKYRIM64
+        Inventory wornArmor{};
+        if (pItem->formType == FormType::Armor)
         {
-            // Unequip all armor first, since the game won't auto unequip armor
-            Inventory wornArmor{};
-            if (pItem->formType == FormType::Armor)
-            {
-                wornArmor = pActor->GetWornArmor();
-                for (const auto& armor : wornArmor.Entries)
-                {
-                    uint32_t armorId = modSystem.GetGameId(armor.BaseId);
-                    TESForm* pArmor = TESForm::GetById(armorId);
-                    if (pArmor)
-                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
-                }
-            }
-
-            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
-
+            wornArmor = pActor->GetWornArmor();
             for (const auto& armor : wornArmor.Entries)
             {
                 uint32_t armorId = modSystem.GetGameId(armor.BaseId);
                 TESForm* pArmor = TESForm::GetById(armorId);
                 if (pArmor)
-                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+                    pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
             }
         }
+
+        pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+
+        for (const auto& armor : wornArmor.Entries)
+        {
+            uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+            TESForm* pArmor = TESForm::GetById(armorId);
+            if (pArmor)
+                pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+        }
+#elif TP_FALLOUT4
+        // TODO(cosideci): same armor trick required for fallout 4?
+        BGSObjectInstance object(pObject, nullptr);
+        EquipManager::Get()->EquipObject(pActor, object, 0, acMessage.Count, nullptr, false, true, false, false, false);
+#endif
     }
 }
 
@@ -239,7 +271,7 @@ void InventoryService::RunWeaponStateUpdates() noexcept
     for (auto entity : view)
     {
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
-        Actor* const pActor = RTTI_CAST(TESForm::GetById(formIdComponent.Id), TESForm, Actor);
+        Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         auto& localComponent = view.get<LocalComponent>(entity);
 
         bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();

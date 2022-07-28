@@ -5,6 +5,11 @@
 
 struct BSScript
 {
+    struct Object
+    {
+        uint64_t GetHandle();
+    };
+
     struct Variable
     {
         Variable();
@@ -12,20 +17,25 @@ struct BSScript
 
         void Reset() noexcept;
         void Clear() noexcept;
+        Object* GetObject() const noexcept;
 
         template<class T> void Set(T aValue) noexcept
         {
             //static_assert(false);
         }
 
+        template <class T> T* ExtractComplexType() noexcept;
+
         enum Type : uint64_t
         {
             kEmpty,
-            kHandle,
+            kObject,
             kString,
             kInteger,
             kFloat,
-            kBoolean
+            kBoolean,
+
+            kMax = 16
         };
 
         union Data 
@@ -34,10 +44,59 @@ struct BSScript
             const char* s;
             float f;
             bool b;
+            Object* pObj;
         };
 
         Type type;
         Data data;
+    };
+
+    // https://github.com/Ryan-rsm-McKenzie/CommonLibSSE/blob/master/include/RE/I/IFunction.h
+
+    enum class FunctionType
+    {
+        kNormal = 0,
+        kGetter = 1,
+        kSetter = 2
+    };
+
+    enum class CallResult
+    {
+        kCompleted = 0,
+        kSetupForVM = 1,
+        kInProgress = 2,
+        kFailedRetry = 3,
+        kFailedAbort = 4
+    };
+
+    struct StackFrame;
+    struct Stack;
+    struct IVirtualMachine;
+
+    struct IFunction : BSIntrusiveRefCounted
+    {
+        virtual ~IFunction() = default;
+        virtual BSFixedString& GetName() = 0;
+        virtual BSFixedString& GetObjectTypeName() = 0;
+        virtual BSFixedString& GetStateName() = 0;
+        virtual Variable::Type& GetReturnType() = 0;
+        virtual uint32_t GetParamCount() = 0;
+        virtual void GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& apTypeOut) = 0;
+        virtual uint32_t GetStackFrameSize() = 0;
+        virtual bool GetIsNative() = 0;
+        virtual bool GetIsStatic() = 0;
+        virtual bool GetIsEmpty() = 0;
+        virtual FunctionType GetFunctionType() = 0;
+        virtual uint32_t GetUserFlags() = 0;
+        virtual BSFixedString& GetDocString() = 0;
+        virtual void InsertLocals(StackFrame* apFrame) = 0;
+        // TODO: is actually GameVM
+        virtual CallResult Call(Stack* apStack, void* apLogger, IVirtualMachine* apVm, bool aArg4) = 0;
+        virtual BSFixedString& GetSourceFilename() = 0;
+        virtual bool TranslateIPToLineNumber(uint32_t aIndexPtr, uint32_t& aLineNumberOut) = 0;
+        virtual bool GetVarNameForStackIndex(uint32_t aIndex, BSFixedString& aNameOut) = 0;
+        virtual bool CanBeCalledFromTasklets() = 0;
+        virtual void SetCallableFromTasklets(bool aCallable) = 0;
     };
 
     struct IFunctionArguments
@@ -57,6 +116,59 @@ struct BSScript
         virtual void Prepare(Statement* apUnk) noexcept = 0;
     };
 
+    struct Stack
+    {
+        uint32_t GetPageForFrame(StackFrame* apFrame)
+        {
+            TP_THIS_FUNCTION(TGetPageForFrame, uint32_t, Stack, StackFrame*);
+            POINTER_SKYRIMSE(TGetPageForFrame, getPageForFrame, 104483);
+            return ThisCall(getPageForFrame, this, apFrame);
+        }
+
+        Variable* GetStackFrameVariable(StackFrame* apFrame, uint32_t aIndex, uint32_t aPageHint)
+        {
+            TP_THIS_FUNCTION(TGetStackFrameVariable, Variable*, Stack, StackFrame*, uint32_t, uint32_t);
+            POINTER_SKYRIMSE(TGetStackFrameVariable, getStackFrameVariable, 104484);
+            return ThisCall(getStackFrameVariable, this, apFrame, aIndex, aPageHint);
+        }
+    };
+
+    struct StackFrame
+    {
+        uint32_t GetPageForFrame()
+        {
+            return pParent->GetPageForFrame(this);
+        }
+
+        Variable* GetStackFrameVariable(uint32_t aIndex, uint32_t aPageHint)
+        {
+            return pParent->GetStackFrameVariable(this, aIndex, aPageHint);
+        }
+
+        Stack* pParent;
+    };
+
+    struct IObjectHandlePolicy
+    {
+        static IObjectHandlePolicy* Get() noexcept;
+
+        virtual ~IObjectHandlePolicy();
+        virtual bool HandleIsType(uint32_t aType, uint64_t aHandle);
+        virtual bool IsHandleObjectAvailable(uint64_t aHandle);
+        virtual void sub_03();
+        virtual void sub_04();
+        virtual void sub_05();
+        virtual void sub_06();
+        virtual void sub_07();
+        virtual void* GetObjectForHandle(uint32_t aType, uint64_t aHandle);
+
+        template <class T>
+        T* GetObjectForHandle(uint64_t aHandle)
+        {
+            return (T*)(BSScript::IObjectHandlePolicy::Get()->GetObjectForHandle((uint32_t)T::Type, aHandle));
+        }
+    };
+
     struct IVirtualMachine
     {
         virtual ~IVirtualMachine() = 0;
@@ -69,7 +181,7 @@ struct BSScript
         virtual void sub_06();
         virtual void sub_07();
         virtual void sub_08();
-        virtual void sub_09();
+        virtual void GetScriptObjectType1(BSFixedString* apClassName, void** apOutTypeInfoPtr);
         virtual void sub_0A();
         virtual void sub_0B();
         virtual void sub_0C();
@@ -84,7 +196,7 @@ struct BSScript
         virtual void sub_15();
         virtual void sub_16();
         virtual void sub_17();
-        virtual void sub_18();
+        virtual void BindNativeMethod(IFunction* apFunction);
         virtual void sub_19();
         virtual void sub_1A();
         virtual void sub_1B();
@@ -97,6 +209,129 @@ struct BSScript
         virtual void sub_22();
         virtual void sub_23();
         virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName, IFunctionArguments* apArgs) const noexcept;
+        virtual void sub_25();
+        virtual void sub_26();
+        virtual void sub_27();
+        virtual void sub_28();
+        virtual void sub_29();
+        virtual void sub_2A();
+        virtual void sub_2B();
+        virtual void sub_2C();
+        virtual IObjectHandlePolicy* GetObjectHandlePolicy();
+    };
+
+    struct NativeFunctionBase : IFunction
+    {
+        BSFixedString& GetName() override;
+        BSFixedString& GetObjectTypeName() override;
+        BSFixedString& GetStateName() override;
+        Variable::Type& GetReturnType() override;
+        std::uint32_t GetParamCount() override;
+        void GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& a_typeOut) override;
+        uint32_t GetStackFrameSize() override;
+        bool GetIsNative() override;
+        bool GetIsStatic() override;
+        bool GetIsEmpty() override;
+        FunctionType GetFunctionType() override;
+        std::uint32_t GetUserFlags() override;
+        BSFixedString& GetDocString() override;
+        void InsertLocals(StackFrame* apFrame) override;
+        CallResult Call(Stack* apStack, void* apLogger, IVirtualMachine* apVm, bool aArg4) override;
+        BSFixedString& GetSourceFilename() override;
+        bool TranslateIPToLineNumber(uint32_t aTaskletExecutionOffset, uint32_t& aLineNumberOut) override;
+        bool GetVarNameForStackIndex(uint32_t aIndex, BSFixedString& aNameOut) override;
+        bool CanBeCalledFromTasklets() override;
+        void SetCallableFromTasklets(bool aCallable) override;
+
+        virtual bool HasCallback()
+        {
+            return false;
+        }
+        virtual bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID,
+                                         Variable* apResult, StackFrame* apStackFrame)
+        {
+            return false;
+        }
+
+        struct Parameters
+        {
+            struct Entry
+            {
+                const char* name;
+                union
+                {
+                    Variable::Type type;
+                    void* pType;
+                };
+            };
+
+            Entry* data;
+            uint16_t size;
+            uint16_t capacity;
+        };
+
+        BSFixedString name;
+        BSFixedString objectName;
+        BSFixedString stateName;
+        Variable::Type returnType;
+        Parameters parameters;
+        bool isStatic;
+        bool isCallableFromTask;
+        bool isLatent;
+        uint8_t pad43;
+        uint32_t flags;
+        BSFixedString documentation;
+    };
+    static_assert(sizeof(NativeFunctionBase) == 0x50);
+
+    struct NativeFunction : NativeFunctionBase
+    {
+        virtual ~NativeFunction()
+        {
+            TP_THIS_FUNCTION(TNativeFunctionDtor, void, NativeFunction);
+            // TODO: not sure about this address
+            POINTER_SKYRIMSE(TNativeFunctionDtor, dtor, 104655);
+            ThisCall(dtor, this);
+        }
+
+        NativeFunction(const char* apFunctionName, const char* apClassName, bool aIsStatic, uint32_t aParameterCount)
+        {
+            TP_THIS_FUNCTION(TNativeFunctionCtor, void, NativeFunction, const char*, const char*, bool, uint32_t);
+            POINTER_SKYRIMSE(TNativeFunctionCtor, ctor, 104653);
+            ThisCall(ctor, this, apFunctionName, apClassName, aIsStatic, aParameterCount);
+        }
+
+        bool HasCallback() override
+        {
+            return pFunction != nullptr;
+        }
+
+        void* pFunction;
+    };
+
+    // TODO: template stuff for a cleaner implementation
+    // https://github.com/Ryan-rsm-McKenzie/CommonLibSSE/blob/master/include/RE/N/NativeFunction.h
+
+    struct IsRemotePlayerFunc : NativeFunction
+    {
+        using FunctionType = bool(Actor* pBase);
+
+        IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction,
+                           Variable::Type aType);
+
+        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult,
+                                 StackFrame* apStackFrame) override;
+    };
+
+    struct IsPlayerFunc : NativeFunction
+    {
+        using FunctionType = bool(Actor* pBase);
+
+        IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction,
+                           Variable::Type aType);
+
+        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult,
+                                 StackFrame* apStackFrame) override;
     };
 
     template <class... T> struct EventArguments : IFunctionArguments

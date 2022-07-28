@@ -7,6 +7,11 @@ struct World;
 struct UpdateEvent;
 struct AdminShutdownRequest;
 
+/**
+* @brief Handles communication from an admin client.
+* 
+* This service is currently not in use.
+*/
 class AdminService : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
 {
 public:

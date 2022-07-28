@@ -3,7 +3,7 @@
 @import 'functions/mod';
 @import 'functions/rem';
 
-app-chat {
+:host {
   display: contents;
   flex-direction: column;
 }
@@ -14,11 +14,12 @@ app-chat {
   overflow-y: scroll;
   overflow-wrap: break-word;
   padding-right: rem($-size-font, 2px);
+  font-size: 1rem;
 
   p {
     margin: 0;
     line-height: $-size-line;
-    padding: ($-size-gap / 5) ($-size-gap / 2);
+    padding: ($-size-gap * 0.2) ($-size-gap * 0.5);
     text-align: left;
 
     &[data-odd=true] {
@@ -28,7 +29,12 @@ app-chat {
     &[data-system=true] {
       .app-chat-date,
       .app-chat-message {
-        color: #99F;
+        color: #9999ff;
+      }
+    }
+    &[data-dialogue=true] {
+      .app-chat-message {
+        color: #00FF33;
       }
     }
   }

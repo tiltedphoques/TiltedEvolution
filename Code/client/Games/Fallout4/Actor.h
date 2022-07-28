@@ -21,7 +21,7 @@ struct TESPackage;
 
 struct Actor : TESObjectREFR
 {
-    static constexpr uint32_t Type = FormType::Character;
+    static constexpr FormType Type = FormType::Character;
 
     static GamePtr<Actor> New() noexcept;
     static GamePtr<Actor> Create(TESNPC* apNpc) noexcept;
@@ -98,35 +98,78 @@ struct Actor : TESObjectREFR
     // Getters
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
-    Inventory GetInventory() const noexcept;
+    Inventory GetActorInventory() const noexcept;
+    Inventory GetEquipment() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() noexcept;
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
+    uint16_t GetLevel() noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
     void SetLevelMod(uint32_t aLevel) noexcept;
-    void SetInventory(const Inventory& acInventory) noexcept;
+    void SetActorInventory(const Inventory& acInventory) noexcept;
     void SetActorValue(uint32_t aId, float aValue) noexcept;
-    void ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept;
+    void ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
+    void SetNoBleedoutRecovery(bool aSet) noexcept;
+    void SetEssentialEx(bool aSet) noexcept;
+    void SetPlayerRespawnMode() noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
     void QueueUpdate() noexcept;
     void RemoveFromAllFactions() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
 
     bool IsDead() noexcept;
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
+    void SpeakSound(const char* pFile);
+    void ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState = false, bool abSilent = true) noexcept;
+    void DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
+    void UnequipItem(TESBoundObject* apObject) noexcept;
+
+    enum ActorFlags
+    {
+        IS_A_MOUNT = 1 << 1,
+        IS_ESSENTIAL = 1 << 18,
+    };
+
+    struct ActorValueModifiers
+    {
+        float permanentModifier;
+        float temporaryModifier;
+        float damageModifier;
+    };
+
+    // TODO: ft verify, fallout has no mounts? unlikely, but maybe this flag is reused for something else?
+    // those helicopters maybe?
+    bool IsMount() const noexcept
+    {
+        return flags2 & ActorFlags::IS_A_MOUNT;
+    }
+
+    bool IsEssential() const noexcept
+    {
+        return flags2 & ActorFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSetEssential) noexcept
+    {
+        if (aSetEssential)
+            flags2 |= ActorFlags::IS_ESSENTIAL;
+        else
+            flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
 
     MagicTarget magicTarget;
     ActorState actorState;
@@ -144,7 +187,11 @@ struct Actor : TESObjectREFR
 
     uint8_t pad308[0x3E8 - 0x308];
     TESForm* magicItems[4];
-    uint8_t padActorEnd[0x490 - 0x408];
+    uint8_t pad408[0x43C - 0x408];
+    uint32_t flags2;
+    uint8_t pad440[0x4];
+    ActorValueModifiers healthModifiers;
+    uint8_t padActorEnd[0x490 - 0x450];
 };
 
 static_assert(sizeof(Actor) == 0x490);

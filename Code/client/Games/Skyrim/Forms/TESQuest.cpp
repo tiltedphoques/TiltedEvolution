@@ -1,6 +1,19 @@
-#include <TiltedOnlinePCH.h>
-
 #include <Forms/TESQuest.h>
+
+#include <Services/PapyrusService.h>
+
+#include <Games/Overrides.h>
+
+TESObjectREFR* TESQuest::GetAliasedRef(uint32_t aAliasID) noexcept
+{
+    TP_THIS_FUNCTION(TGetAliasedRef, BSPointerHandle<TESObjectREFR>*, TESQuest, BSPointerHandle<TESObjectREFR>*, uint32_t);
+    POINTER_SKYRIMSE(TGetAliasedRef, getAliasedRef, 25066);
+
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(getAliasedRef, this, &result, aAliasID);
+
+    return TESObjectREFR::GetByHandle(result.handle.iBits);
+}
 
 TESQuest::State TESQuest::getState()
 {
@@ -19,17 +32,15 @@ TESQuest::State TESQuest::getState()
 
 void TESQuest::SetCompleted(bool force)
 {
-    using TSetCompleted = void(TESQuest*, bool);
+    TP_THIS_FUNCTION(TSetCompleted, void, TESQuest, bool);
     POINTER_SKYRIMSE(TSetCompleted, SetCompleted, 24991);
-
     SetCompleted(this, force);
 }
 
 void TESQuest::CompleteAllObjectives()
 {
-    using TCompleteAllObjectives = void(TESQuest*);
+    TP_THIS_FUNCTION(TCompleteAllObjectives, void, TESQuest);
     POINTER_SKYRIMSE(TCompleteAllObjectives, CompleteAll, 23231);
-
     CompleteAll(this);
 }
 
@@ -43,7 +54,7 @@ void TESQuest::SetActive(bool toggle)
 
 bool TESQuest::IsStageDone(uint16_t stageIndex)
 {
-    for (auto* it : stages)
+    for (Stage* it : stages)
     {
         if (it->stageIndex == stageIndex)
             return it->IsDone();
@@ -60,7 +71,7 @@ bool TESQuest::Kill()
     if (flags & Flags::Enabled)
     {
         unkFlags = 0;
-        flags = Flags::Disabled;
+        flags = Flags::Completed;
         MarkChanged(2);
 
         //SetStopped(this, false);
@@ -70,20 +81,33 @@ bool TESQuest::Kill()
     return false;
 }
 
-bool TESQuest::UnkSetRunning(bool &success, bool force)
+bool TESQuest::EnsureQuestStarted(bool &success, bool force)
 {
-    using TSetRunning = bool(TESQuest*, bool*, bool);
+    TP_THIS_FUNCTION(TSetRunning, bool, TESQuest, bool*, bool);
     POINTER_SKYRIMSE(TSetRunning, SetRunning, 25003);
-
     return SetRunning(this, &success, force);
 }
 
 bool TESQuest::SetStage(uint16_t newStage)
 {
-    using TSetStage = bool(TESQuest*, uint16_t);
-    POINTER_SKYRIMSE(TSetStage, SetStage, 25004);
+    ScopedQuestOverride _;
 
+    TP_THIS_FUNCTION(TSetStage, bool, TESQuest, uint16_t);
+    POINTER_SKYRIMSE(TSetStage, SetStage, 25004);
     return SetStage(this, newStage);
+}
+
+void TESQuest::ScriptSetStage(uint16_t stageIndex)
+{
+    for (Stage* stage : stages)
+    {
+        if (stage->stageIndex == stageIndex && stage->IsDone())
+            return;
+    }
+
+    using Quest = TESQuest;
+    PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
+    s_pSetCurrentStageID(this, stageIndex);
 }
 
 void TESQuest::SetStopped()

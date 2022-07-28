@@ -87,6 +87,7 @@ ImGuiDriver::ImGuiDriver()
     ImGui::CreateContext();
 
     auto& io = ImGui::GetIO();
+
     InstallClipboardHandlers(io);
 
     // io.IniFilename = nullptr;

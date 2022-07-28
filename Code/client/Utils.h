@@ -2,6 +2,7 @@
 
 #include <optional>
 #include "VersionDb.h"
+#include "World.h"
 
 #if defined(TP_SKYRIM) && TP_PLATFORM_64
 #define POINTER_SKYRIMSE(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
@@ -13,7 +14,8 @@
 #endif
 
 #if defined(TP_FALLOUT) && TP_PLATFORM_64
-#define POINTER_FALLOUT4(className, variableName, ...) static AutoPtr<className> variableName(__VA_ARGS__)
+#define POINTER_FALLOUT4(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
+#define POINTER_FALLOUT4_LEGACY(className, variableName, ...) static AutoPtr<className> variableName(__VA_ARGS__)
 #else
 #define POINTER_FALLOUT4(className, variableName, ...) ;
 #endif
@@ -26,8 +28,6 @@
     }
 
 struct TESForm;
-struct TESObjectREFR;
-struct Actor;
 
 namespace Utils
 {
@@ -45,9 +45,36 @@ TiltedPhoques::WString RandomStringW(size_t aLength);
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 
-TESForm* GetFormByServerId(const uint32_t acServerId) noexcept;
-#define GetByServerId(formType, serverId) RTTI_CAST(Utils::GetFormByServerId(serverId), TESForm, formType);
+template<class T>
+T* GetByServerId(const uint32_t acServerId) noexcept
+{
+    auto view = World::Get().view<FormIdComponent>();
 
+    for (entt::entity entity : view)
+    {
+        std::optional<uint32_t> serverIdRes = GetServerId(entity);
+        if (!serverIdRes.has_value())
+            continue;
+
+        uint32_t serverId = serverIdRes.value();
+
+        if (serverId == acServerId)
+        {
+            const auto& formIdComponent = view.get<FormIdComponent>(entity);
+            TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+
+            if (pForm != nullptr)
+            {
+                return Cast<T>(pForm);
+            }
+        }
+    }
+
+    spdlog::warn("Form not found for server id {:X}", acServerId);
+    return nullptr;
+}
+
+void ShowHudMessage(const TiltedPhoques::String& acMessage);
 } // namespace Utils
 
 namespace TiltedPhoques

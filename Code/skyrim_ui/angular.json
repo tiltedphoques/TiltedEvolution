@@ -21,6 +21,12 @@
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true,
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src",
@@ -28,15 +34,18 @@
               ]
             },
             "tsConfig": "tsconfig.app.json",
-            "aot": true,
             "assets": [
               "src/favicon.ico",
-              "src/assets/sounds/"
+              "src/assets/sounds/",
+              "src/assets/i18n/"
             ],
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "flat"
+            ]
           },
           "configurations": {
             "production": {
@@ -49,7 +58,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -68,6 +76,7 @@
               ]
             },
             "browser": {
+              "sourceMap": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -75,11 +84,11 @@
                 }
               ]
             },
-            "nightly": {
+            "develop": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.nightly.ts"
+                  "with": "src/environments/environment.develop.ts"
                 }
               ]
             }
@@ -98,8 +107,8 @@
             "browser": {
               "browserTarget": "skyrim-together-ui:build:browser"
             },
-            "nightly": {
-              "browserTarget": "skyrim-together-ui:build:nightly"
+            "develop": {
+              "browserTarget": "skyrim-together-ui:build:develop"
             }
           }
         },
@@ -121,6 +130,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -152,6 +162,11 @@
           }
         }
       }
-    }},
-  "defaultProject": "skyrim-together-ui"
+    }
+  },
+  "defaultProject": "skyrim-together-ui",
+  "cli": {
+    "packageManager": "pnpm",
+    "analytics": false
+  }
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "Structs/Inventory.h"
 
+struct ActorAddedEvent;
+struct ActorRemovedEvent;
 struct UpdateEvent;
 struct ConnectedEvent;
 struct DisconnectedEvent;
@@ -31,11 +33,20 @@ struct NotifyRespawn;
 struct LeaveBeastFormEvent;
 struct AddExperienceEvent;
 struct NotifySyncExperience;
+struct DialogueEvent;
+struct NotifyDialogue;
+struct SubtitleEvent;
+struct NotifySubtitle;
+struct NotifyActorTeleport;
+struct NotifyRelinquishControl;
 
 struct Actor;
 struct World;
 struct TransportService;
 
+/**
+* @brief Handles actors and players.
+*/
 struct CharacterService
 {
     CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
@@ -43,8 +54,12 @@ struct CharacterService
 
     TP_NOCOPYMOVE(CharacterService);
 
-    void OnFormIdComponentAdded(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void OnFormIdComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
+    static void DeleteTempActor(const uint32_t aFormId) noexcept;
+
+    bool TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept;
+
+    void OnActorAdded(const ActorAddedEvent& acEvent) noexcept;
+    void OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept;
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
     void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
@@ -66,11 +81,23 @@ struct CharacterService
     void OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept;
     void OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept;
     void OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept;
+    void OnDialogueEvent(const DialogueEvent& acEvent) noexcept;
+    void OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept;
+    void OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept;
+    void OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept;
+    void OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept;
+    void OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept;
+
+    void ProcessNewEntity(entt::entity aEntity) const noexcept;
 
 private:
 
-    void RequestServerAssignment(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
-    void CancelServerAssignment(entt::registry& aRegistry, entt::entity aEntity, uint32_t aFormId) const noexcept;
+    void MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId,
+                   const Vector3_NetQuantize& acPosition) const noexcept;
+
+    void RequestServerAssignment(entt::entity aEntity) const noexcept;
+    void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
+    void DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 
@@ -79,7 +106,7 @@ private:
     void RunFactionsUpdates() const noexcept;
     void RunSpawnUpdates() const noexcept;
     void RunExperienceUpdates() noexcept;
-    void RunWeaponDrawUpdates(const UpdateEvent& acUpdateEvent) noexcept;
+    void ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -87,10 +114,22 @@ private:
 
     float m_cachedExperience = 0.f;
 
-    Map<uint32_t, std::pair<double, bool>> m_weaponDrawUpdates{};
+    struct WeaponDrawData
+    {
+        WeaponDrawData() = default;
+        WeaponDrawData(bool aDrawWeapon)
+            : m_drawWeapon(aDrawWeapon)
+        {}
 
-    entt::scoped_connection m_formIdAddedConnection;
-    entt::scoped_connection m_formIdRemovedConnection;
+        double m_timer = 0.0;
+        bool m_drawWeapon = false;
+        bool m_isFirstPass = true;
+    };
+
+    Map<uint32_t, WeaponDrawData> m_weaponDrawUpdates{};
+
+    entt::scoped_connection m_referenceAddedConnection;
+    entt::scoped_connection m_referenceRemovedConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_actionConnection;
     entt::scoped_connection m_factionsConnection;
@@ -112,4 +151,10 @@ private:
     entt::scoped_connection m_leaveBeastFormConnection;
     entt::scoped_connection m_addExperienceEventConnection;
     entt::scoped_connection m_syncExperienceConnection;
+    entt::scoped_connection m_dialogueEventConnection;
+    entt::scoped_connection m_dialogueSyncConnection;
+    entt::scoped_connection m_subtitleEventConnection;
+    entt::scoped_connection m_subtitleSyncConnection;
+    entt::scoped_connection m_actorTeleportConnection;
+    entt::scoped_connection m_relinquishConnection;
 };

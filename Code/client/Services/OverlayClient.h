@@ -9,6 +9,9 @@ namespace TiltedPhoques
 struct OverlayRenderHandler;
 }
 
+/**
+* @brief Renders the UI overlay.
+*/
 struct OverlayClient : TiltedPhoques::OverlayClient
 {
     OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler);
@@ -23,6 +26,8 @@ private:
     void ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessDisconnectMessage();
     void ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs);
+    void ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs);
+    void ProcessToggleDebugUI();
 
     TransportService& m_transport;
 };

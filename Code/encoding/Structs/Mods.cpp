@@ -21,7 +21,8 @@ void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
     for (auto& entry : ModList)
     {
-        aWriter.WriteBits(entry.Id, 12);
+        aWriter.WriteBits(entry.Id, 16);
+        Serialization::WriteBool(aWriter, entry.IsLite);
         Serialization::WriteString(aWriter, entry.Filename);
     }
 }
@@ -30,13 +31,14 @@ void Mods::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     uint64_t data = 0;
     aReader.ReadBits(data, 13);
-    
+
     const size_t modCount = data & 0xFFFF;
     ModList.resize(modCount);
     for (size_t i = 0; i < modCount; ++i)
     {
-        aReader.ReadBits(data, 12);
-        ModList[i].Id = data & 0xFFF;
+        aReader.ReadBits(data, 16);
+        ModList[i].Id = data & 0xFFFF;
+        ModList[i].IsLite = Serialization::ReadBool(aReader);
         ModList[i].Filename = Serialization::ReadString(aReader);
     }
 }

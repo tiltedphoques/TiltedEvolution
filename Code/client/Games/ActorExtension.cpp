@@ -42,4 +42,3 @@ void ActorExtension::SetPlayer(bool aSet) noexcept
     else
         onlineFlags &= ~kPlayer;
 }
-

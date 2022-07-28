@@ -29,6 +29,7 @@ local function build_launcher()
         "**.cpp",
         "launcher.rc")
     add_deps(
+        "ImmersiveElf",
         "TiltedReverse",
         "TiltedHooks",
         "TiltedUi",
@@ -64,8 +65,6 @@ local function build_launcher()
         "sentry-native")
 end
 
-add_requires("sentry-native")
-
 target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")
     add_defines(
@@ -75,7 +74,7 @@ target("SkyrimImmersiveLauncher")
     add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
     build_launcher()
 
---[[target("FalloutImmersiveLauncher")
+target("FalloutImmersiveLauncher")
     set_basename("FalloutTogether")
     add_defines(
         "TARGET_FT",
@@ -83,5 +82,5 @@ target("SkyrimImmersiveLauncher")
     add_deps("FalloutTogetherClient")
     add_ldflags("/WHOLEARCHIVE:FalloutTogetherClient", { force = true })
     build_launcher()
-    ]]--
+    
 

@@ -3,14 +3,14 @@
 #include <Games/Primitives.h>
 #include <Forms/TESForm.h>
 #include <NetImmerse/BSFaceGenNiNode.h>
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
 #include <Structs/Inventory.h>
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -75,7 +75,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_4C();
     virtual void sub_4D();
     virtual void sub_4E();
-    virtual void sub_4F();
+    virtual void StopCurrentDialogue(bool aForce);
     virtual void sub_50();
     virtual void sub_51();
     virtual void sub_52();
@@ -97,7 +97,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_62();
     virtual void sub_63();
     virtual void sub_64();
-    virtual void sub_65();
+    virtual void DetachHavok();
     virtual void sub_66();
     virtual void sub_67();
     virtual void sub_68();
@@ -162,20 +162,18 @@ struct TESObjectREFR : TESForm
     Lock* GetLock() noexcept;
     TESContainer* GetContainer() const noexcept;
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
+    TESObjectCELL* GetParentCellEx() const noexcept;
 
-    void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
-    String SerializeInventory() const noexcept;
-
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
-    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
-    void DeserializeInventory(const String& acData) noexcept;
-    
+
     void RemoveAllItems() noexcept;
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
+    void PayGold(int32_t aAmount) noexcept;
+    void PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept;
 
     void Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 
@@ -192,10 +190,12 @@ struct TESObjectREFR : TESForm
     Inventory GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept;
     Inventory GetArmor() const noexcept;
     Inventory GetWornArmor() const noexcept;
-    Inventory GetEquippedItems() const noexcept;
-    void SetInventory(const Inventory& acContainer) noexcept;
 
-    void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
+    bool IsItemInInventory(uint32_t aFormID) const noexcept;
+
+    void SetInventory(const Inventory& acContainer) noexcept;
+    void AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory = false) noexcept;
+    void UpdateItemList(TESForm* pUnkForm) noexcept;
 
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;

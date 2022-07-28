@@ -1,13 +1,13 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-
-import { BehaviorSubject, ReplaySubject, AsyncSubject, Subject } from 'rxjs';
-
+import { TranslocoService } from '@ngneat/transloco';
+import { AsyncSubject, BehaviorSubject, firstValueFrom, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
-import { UserService } from './user.service';
+import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
-import { take } from 'rxjs/operators';
-import { ErrorService } from './error.service';
+import { ErrorEvents, ErrorService } from './error.service';
+import { LoadingService } from './loading.service';
+
 
 /** Message. */
 export interface Message {
@@ -16,10 +16,14 @@ export interface Message {
 
   /** Message content. */
   content: string;
+
+  dialogue?: boolean;
 }
 
 /** Client game service. */
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ClientService implements OnDestroy {
   /** Initialization done. */
   public initDone = new AsyncSubject<undefined>();
@@ -56,6 +60,15 @@ export class ClientService implements OnDestroy {
   /** Connect player to server change. */
   public playerConnectedChange = new Subject<Player>();
 
+  /** Connect party info change. */
+  public partyInfoChange = new Subject<PartyInfo>();
+
+  /** Connect party info change. */
+  public partyLeftChange = new Subject<void>();
+
+  /** Connect party invite received. */
+  public partyInviteReceivedChange = new Subject<number>();
+
   /** Disconnect player to server change. */
   public playerDisconnectedChange = new Subject<Player>();
 
@@ -74,47 +87,78 @@ export class ClientService implements OnDestroy {
   public protocolMismatchChange = new BehaviorSubject(false);
 
   /** Receive error from core */
-  public triggerError = new BehaviorSubject('');
+  public triggerError = new ReplaySubject<ErrorEvents>(1);
+
+  /** Used purely for debugging. */
+  public debugChange = new Subject<void>();
+
+  // The below emitters are used in the mocking service
+
+  /** Used for when a party leader changed. */
+  public partyLaunchedChange = new Subject<void>();
+
+  /** Used for when a party invite is sent. */
+  public partyInviteChange = new Subject<number>();
+
+  /** Used for when a party invite was accepted by the local player. */
+  public partyJoinedChange = new Subject<number>();
+
+  /** Used for when a party member was kicked. */
+  public memberKickedChange = new Subject<number>();
+
+  /** Used for when a party leader changed. */
+  public partyLeaderChange = new Subject<number>();
+
+  public localPlayerId = undefined;
 
   private _host: string;
 
   private _port: number;
 
-  private _token: string;
+  private _password: string;
 
   private _remainingReconnectionAttempt = environment.nbReconnectionAttempts;
 
   /**
    * Instantiate.
-   *
-   * @param zone Angular Zone.
    */
-  public constructor(private zone: NgZone, private userService: UserService, private errorService: ErrorService) {
+  public constructor(
+    private readonly zone: NgZone,
+    private readonly errorService: ErrorService,
+    private readonly loadingService: LoadingService,
+    private readonly translocoService: TranslocoService,
+  ) {
     if (environment.game) {
       skyrimtogether.on('init', this.onInit.bind(this));
       skyrimtogether.on('activate', this.onActivate.bind(this));
       skyrimtogether.on('deactivate', this.onDeactivate.bind(this));
-      skyrimtogether.on('entergame', this.onEnterGame.bind(this));
-      skyrimtogether.on('exitgame', this.onExitGame.bind(this));
-      skyrimtogether.on('openingmenu', this.onOpeningMenu.bind(this));
+      skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
+      skyrimtogether.on('exitGame', this.onExitGame.bind(this));
+      skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
       skyrimtogether.on('message', this.onMessage.bind(this));
-      skyrimtogether.on('systemmessage', this.onSystemMessage.bind(this));
+      skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
+      skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
       skyrimtogether.on('connect', this.onConnect.bind(this));
       skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
-      skyrimtogether.on('namechange', this.onNameChange.bind(this));
-      skyrimtogether.on('versionset', this.onVersionSet.bind(this));
-      skyrimtogether.on('debug', this.onDebug.bind(this));
-      skyrimtogether.on('debugdata', this.onUpdateDebug.bind(this));
-      skyrimtogether.on('userdataset', this.onUserDataSet.bind(this));
-      skyrimtogether.on('playerconnected', this.onPlayerConnected.bind(this));
-      skyrimtogether.on('playerdisconnected', this.onPlayerDisconnected.bind(this));
-      skyrimtogether.on('healthset', this.onHealthSet.bind(this));
-      skyrimtogether.on('setlevel', this.onSetLevel.bind(this));
-      skyrimtogether.on('setcell', this.onSetCell.bind(this));
-      skyrimtogether.on('setplayer3Dloaded', this.onSetPlayer3DLoaded.bind(this));
-      skyrimtogether.on('serverid', this.onServerId.bind(this));
-      skyrimtogether.on('protocolmismatch', this.onProtocolMismatch.bind(this));
-      skyrimtogether.on('triggererror', this.onTriggerError.bind(this));
+      skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
+      skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
+      skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
+      skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
+      skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
+      skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
+      skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
+      skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
+      skyrimtogether.on('setCell', this.onSetCell.bind(this));
+      skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
+      skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
+      skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
+      skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
+      skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
+      skyrimtogether.on('dummyData', this.onDummyData.bind(this));
+      skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
+      skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
+      skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
+      skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
     }
   }
 
@@ -126,27 +170,34 @@ export class ClientService implements OnDestroy {
       skyrimtogether.off('init');
       skyrimtogether.off('activate');
       skyrimtogether.off('deactivate');
-      skyrimtogether.off('entergame');
-      skyrimtogether.off('exitgame');
-      skyrimtogether.off('openingmenu');
+      skyrimtogether.off('enterGame');
+      skyrimtogether.off('exitGame');
+      skyrimtogether.off('openingMenu');
       skyrimtogether.off('message');
-      skyrimtogether.off('systemmessage');
+      skyrimtogether.off('systemMessage');
+      skyrimtogether.off('dialogueMessage');
       skyrimtogether.off('connect');
       skyrimtogether.off('disconnect');
-      skyrimtogether.off('namechange');
-      skyrimtogether.off('versionset');
+      skyrimtogether.off('setName');
+      skyrimtogether.off('setVersion');
       skyrimtogether.off('debug');
-      skyrimtogether.off('debugdata');
-      skyrimtogether.off('userdataset');
-      skyrimtogether.off('playerconnected');
-      skyrimtogether.off('playerdisconnected');
-      skyrimtogether.off('healthset');
-      skyrimtogether.off('setlevel');
-      skyrimtogether.off('setcell');
-      skyrimtogether.off('setplayer3Dloaded');
-      skyrimtogether.off('serverid');
-      skyrimtogether.off('protocolmismatch');
-      skyrimtogether.off('triggererror');
+      skyrimtogether.off('debugData');
+      skyrimtogether.off('userDataSet');
+      skyrimtogether.off('playerConnected');
+      skyrimtogether.off('playerDisconnected');
+      skyrimtogether.off('setHealth');
+      skyrimtogether.off('setLevel');
+      skyrimtogether.off('setCell');
+      skyrimtogether.off('setPlayer3dLoaded');
+      skyrimtogether.off('setPlayer3dUnloaded');
+      skyrimtogether.off('setLocalPlayerId');
+      skyrimtogether.off('protocolMismatch');
+      skyrimtogether.off('triggerError');
+      skyrimtogether.off('dummyData');
+      skyrimtogether.off('partyInfo');
+      skyrimtogether.off('partyCreated');
+      skyrimtogether.off('partyLeft');
+      skyrimtogether.off('partyInviteReceived');
     }
   }
 
@@ -155,16 +206,16 @@ export class ClientService implements OnDestroy {
    *
    * @param host IP address or hostname.
    * @param port Port.
+   * @param password Password or admin password
    */
-  public connect(host: string, port: number, token = ""): void {
+  public connect(host: string, port: number, password = ''): void {
     if (environment.game) {
-      skyrimtogether.connect(host, port, token);
+      skyrimtogether.connect(host, port, password);
       this.isConnectionInProgressChange.next(true);
       this._host = host;
       this._port = port;
-      this._token = token;
-    }
-    else {
+      this._password = password;
+    } else {
       this.connectionStateChange.next(true);
       this.isConnectionInProgressChange.next(false);
     }
@@ -177,8 +228,7 @@ export class ClientService implements OnDestroy {
     if (environment.game) {
       skyrimtogether.disconnect();
       this._remainingReconnectionAttempt = 0;
-    }
-    else {
+    } else {
       this.connectionStateChange.next(false);
     }
   }
@@ -191,9 +241,75 @@ export class ClientService implements OnDestroy {
   public sendMessage(message: string): void {
     if (environment.game) {
       skyrimtogether.sendMessage(message);
+    } else {
+      this.messageReception.next({ name: this.nameChange.getValue(), content: message });
     }
-    else {
-      this.messageReception.next({ name: this.nameChange.value, content: message });
+  }
+
+  /**
+   * Launch a party.
+   */
+  public launchParty(): void {
+    if (environment.game) {
+      skyrimtogether.launchParty();
+    } else {
+      this.partyLaunchedChange.next();
+      this.onPartyCreated();
+    }
+  }
+
+  /**
+   * Create a party invite.
+   */
+  public createPartyInvite(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.createPartyInvite(playerId);
+    } else {
+      this.partyInviteChange.next(playerId);
+    }
+  }
+
+  /**
+   * Accept a party invite.
+   */
+  public acceptPartyInvite(inviterId: number): void {
+    if (environment.game) {
+      skyrimtogether.acceptPartyInvite(inviterId);
+    } else {
+      this.partyJoinedChange.next(inviterId);
+    }
+  }
+
+  /**
+   * As a party leader, kick a player from the party.
+   */
+  public kickPartyMember(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.kickPartyMember(playerId);
+    } else {
+      this.memberKickedChange.next(playerId);
+    }
+  }
+
+  /**
+   * Leave a party.
+   */
+  public leaveParty(): void {
+    if (environment.game) {
+      skyrimtogether.leaveParty();
+    } else {
+      this.onPartyLeft();
+    }
+  }
+
+  /**
+   * As a party leader, make someone else the leader.
+   */
+  public changePartyLeader(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.changePartyLeader(playerId);
+    } else {
+      this.partyLeaderChange.next(playerId);
     }
   }
 
@@ -203,9 +319,8 @@ export class ClientService implements OnDestroy {
   public deactivate(): void {
     if (environment.game) {
       skyrimtogether.deactivate();
-    }
-    else {
-      this.activationStateChange.next(this.activationStateChange.value);
+    } else {
+      this.activationStateChange.next(this.activationStateChange.getValue());
     }
   }
 
@@ -213,17 +328,24 @@ export class ClientService implements OnDestroy {
    * Reconnect
    */
   public reconnect(): void {
-    this.connectionStateChange.pipe(take(2)).subscribe((isState: boolean) => {
-      if (!isState) {
-        this.connect(this._host, this._port, this._token);
-      }
-    })
-    this.disconnect();
+    if (environment.game) {
+      skyrimtogether.reconnect();
+      this._remainingReconnectionAttempt = 0;
+    }
+  }
+
+  public teleportToPlayer(playerId: number): void {
+    if (environment.game) {
+      skyrimtogether.teleportToPlayer(playerId);
+    } else {
+      this.messageReception.next({ content: 'Simulating teleport' });
+    }
   }
 
   /**
    * Called when the UI is first initialized.
    */
+  // TODO: is this still used?
   private onInit(): void {
     this.zone.run(() => {
       this.initDone.next(undefined);
@@ -301,13 +423,33 @@ export class ClientService implements OnDestroy {
   }
 
   /**
+   * Called when a dialogue message is received.
+   *
+   * @param name Sender's name.
+   * @param message Message content.
+   */
+  private onDialogueMessage(name: string, message: string): void {
+    let dialogue = true;
+    this.zone.run(() => {
+      this.messageReception.next({ name, content: message, dialogue: dialogue });
+    });
+  }
+
+  /**
    * Called when a connection is made.
    */
   private onConnect(): void {
-    this.zone.run(() => {
+    this.zone.run(async () => {
       this._remainingReconnectionAttempt = environment.nbReconnectionAttempts;
       this.isConnectionInProgressChange.next(false);
       this.connectionStateChange.next(true);
+
+      const content = await firstValueFrom(
+        this.translocoService.selectTranslate<string>(
+          'SERVICE.CLIENT.CONNECTED'
+        )
+      );
+      this.messageReception.next({ content });
     });
   }
 
@@ -315,14 +457,28 @@ export class ClientService implements OnDestroy {
    * Called when a connection is terminated.
    */
   private onDisconnect(isError: boolean): void {
-    this.zone.run(() => {
+    void this.zone.run(async () => {
+      this.localPlayerId = undefined;
       this.connectionStateChange.next(false);
       this.isConnectionInProgressChange.next(false);
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        this.messageReception.next({content: `Connection lost, trying to reconnect. ${this._remainingReconnectionAttempt} attempts left.`})
-        this.connect(this._host, this._port, this._token);
+        const content = await firstValueFrom(
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.CLIENT.CONNECTION_LOST',
+            { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
+          ),
+        );
+        this.messageReception.next({ content });
+        this.connect(this._host, this._port, this._password);
+      } else {
+        const content = await firstValueFrom(
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.CLIENT.DISCONNECTED'
+          )
+        );
+        this.messageReception.next({ content });
       }
     });
   }
@@ -332,7 +488,7 @@ export class ClientService implements OnDestroy {
    *
    * @param name Player's name.
    */
-  private onNameChange(name: string): void {
+  private onSetName(name: string): void {
     this.zone.run(() => {
       this.nameChange.next(name);
     });
@@ -343,7 +499,7 @@ export class ClientService implements OnDestroy {
    *
    * @param version Game's version.
    */
-  private onVersionSet(version: string): void {
+  private onSetVersion(version: string): void {
     this.zone.run(() => {
       this.versionSet.next(version);
     });
@@ -364,86 +520,137 @@ export class ClientService implements OnDestroy {
     RTT: number,
     packetLoss: number,
     sentBandwidth: number,
-    receivedBandwidth: number
+    receivedBandwidth: number,
   ): void {
     this.zone.run(() => {
       this.debugDataChange.next(new Debug(
         numPacketsSent, numPacketsReceived, RTT, packetLoss, sentBandwidth,
-        receivedBandwidth
+        receivedBandwidth,
       ));
     });
   }
 
-  private onUserDataSet(token: string, username: string) {
-    this.userService.login(token, username);
-  }
-
-  private onPlayerConnected(serverId: number, username: string, level: number, cellName: string) {
+  private onPlayerConnected(playerId: number, username: string, level: number, cellName: string) {
     this.zone.run(() => {
       this.playerConnectedChange.next(new Player(
         {
           name: username,
-          serverId: serverId,
+          id: playerId,
           connected: true,
           level: level,
-          cellName: cellName
-        }
+          cellName: cellName,
+        },
       ));
     });
   }
 
-  private onPlayerDisconnected(serverId: number, username: string) {
+  private onPlayerDisconnected(playerId: number, username: string) {
     this.zone.run(() => {
       this.playerDisconnectedChange.next(new Player(
         {
           name: username,
-          serverId: serverId,
-          connected: false
-        }
+          id: playerId,
+          connected: false,
+        },
       ));
     });
   }
 
-  private onHealthSet(serverId: number, health: number) {
+  private onSetHealth(playerId: number, health: number) {
     this.zone.run(() => {
-      this.healthChange.next(new Player({serverId: serverId, health: health}));
+      this.healthChange.next(new Player({ id: playerId, health: health }));
     });
   }
 
-  private onSetLevel(serverId: number, level: number) {
+  private onSetLevel(playerId: number, level: number) {
     this.zone.run(() => {
-      this.levelChange.next(new Player({serverId: serverId, level: level}));
-    })
+      this.levelChange.next(new Player({ id: playerId, level: level }));
+    });
   }
 
-  private onSetCell(serverId: number, cellName: string) {
+  private onSetCell(playerId: number, cellName: string) {
     this.zone.run(() => {
-      this.cellChange.next(new Player({serverId: serverId, cellName: cellName}));
-    })
+      this.cellChange.next(new Player({ id: playerId, cellName: cellName }));
+    });
   }
 
-  private onSetPlayer3DLoaded(serverId: number, isLoaded: boolean) {
+  private onSetPlayer3dLoaded(playerId: number, health: number) {
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({serverId: serverId, isLoaded: isLoaded}));
-    })
+      this.isLoadedChange.next(new Player({ id: playerId, isLoaded: true, health: health }));
+    });
   }
 
-  private onServerId(serverId: number) {
+  private onSetPlayer3dUnloaded(playerId: number) {
     this.zone.run(() => {
-      this.userService.player.value.serverId = serverId;
-    })
+      this.isLoadedChange.next(new Player({ id: playerId, isLoaded: false }));
+    });
+  }
+
+  private onSetLocalPlayerId(playerId: number) {
+    this.zone.run(() => {
+      this.localPlayerId = playerId;
+    });
   }
 
   private onProtocolMismatch() {
     this.zone.run(() => {
       this.protocolMismatchChange.next(true);
-    })
+    });
   }
 
-  private onTriggerError(error: string) {
+  private onTriggerError(rawError: string) {
     this.zone.run(() => {
+      const error = JSON.parse(rawError) as ErrorEvents;
       this.triggerError.next(error);
-      this.errorService.error(error);
-    })
+      void this.errorService.setError(error);
+    });
   }
+
+  private onDummyData(data: Array<number>) {
+    this.zone.run(() => {
+      this.debugChange.next();
+      /*
+      for (const numb of data) {
+        console.log(numb);
+      }
+      console.log(data);
+      */
+    });
+  }
+
+  public onPartyInfo(playerIds: Array<number>, leaderId: number) {
+    this.zone.run(() => {
+      this.partyInfoChange.next(new PartyInfo(
+        {
+          playerIds: playerIds,
+          leaderId: leaderId,
+        },
+      ));
+    });
+  }
+
+  private onPartyCreated() {
+    this.zone.run(() => {
+      this.loadingService.setLoading(false);
+      this.partyInfoChange.next(new PartyInfo(
+        {
+          playerIds: [this.localPlayerId],
+          leaderId: this.localPlayerId,
+        },
+      ));
+    });
+  }
+
+  private onPartyLeft() {
+    this.zone.run(() => {
+      this.partyLeftChange.next();
+    });
+  }
+
+  private onPartyInviteReceived(inviterId: number) {
+    this.zone.run(() => {
+      this.partyInviteReceivedChange.next(inviterId);
+    });
+  }
+
 }

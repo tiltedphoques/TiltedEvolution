@@ -7,6 +7,11 @@ struct TESFaction;
 
 struct TESActorBaseData : BaseFormComponent
 {
+    enum BaseFlags
+    {
+        IS_ESSENTIAL = 1 << 1,
+    };
+
     uint32_t flags;
     uint16_t unk08;
     uint16_t unk0A;
@@ -28,6 +33,18 @@ struct TESActorBaseData : BaseFormComponent
         TESFaction* faction;
         int8_t rank;
     };
+
+    bool IsEssential() const noexcept
+    {
+        return flags & BaseFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSet) noexcept
+    {
+        if (aSet)
+            flags |= BaseFlags::IS_ESSENTIAL;
+        else
+            flags &= ~BaseFlags::IS_ESSENTIAL;
+    }
 
     GameArray<FactionInfo> factions;
 };

@@ -1,4 +1,3 @@
-#include <TiltedOnlinePCH.h>
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
 #include <AI/AIProcess.h>
@@ -14,6 +13,7 @@
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -26,7 +26,7 @@
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
 
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 #include <ExtraData/ExtraCharge.h>
 #include <ExtraData/ExtraCount.h>
 #include <ExtraData/ExtraEnchantment.h>
@@ -37,11 +37,17 @@
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
 
+#include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
+
 #include <Games/Overrides.h>
+#include <Games/Skyrim/BSAnimationGraphManager.h>
+#include <Havok/hkbStateMachine.h>
+#include <Havok/hkbBehaviorGraph.h>
 
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
+#include "Actor.h"
 
 void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 {
@@ -200,7 +206,7 @@ Factions Actor::GetFactions() const noexcept
 
     auto& modSystem = World::Get().GetModSystem();
 
-    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    auto* pNpc = Cast<TESNPC>(baseForm);
     if (pNpc)
     {
         auto& factions = pNpc->actorData.factions;
@@ -216,7 +222,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pChanges = RTTI_CAST(extraData.GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraDataType::Faction));
     if (pChanges)
     {
         for (auto i = 0u; i < pChanges->entries.length; ++i)
@@ -297,7 +303,22 @@ MagicEquipment Actor::GetMagicEquipment() const noexcept
     return equipment;
 }
 
-void Actor::SetActorInventory(Inventory& aInventory) noexcept
+Inventory Actor::GetEquipment() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    inventory.CurrentMagicEquipment = GetMagicEquipment();
+    return inventory;
+}
+
+int32_t Actor::GetGoldAmount() noexcept
+{
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
+    return ThisCall(s_getGoldAmount, this);
+}
+
+void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
 
@@ -315,18 +336,21 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
     if (acEquipment.LeftHandSpell)
     {
         uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
+        spdlog::debug("Setting left hand spell: {:X}", mainHandWeaponId);
         pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
     }
 
     if (acEquipment.RightHandSpell)
     {
         uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
+        spdlog::debug("Setting right hand spell: {:X}", secondaryHandWeaponId);
         pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
     }
 
     if (acEquipment.Shout)
     {
         uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
+        spdlog::debug("Setting shout: {:X}", shoutId);
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
     }
 }
@@ -354,8 +378,8 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.NpcFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -364,8 +388,8 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 
     for (auto& entry : acFactions.ExtraFactions)
     {
-        auto pForm = TESForm::GetById(modSystem.GetGameId(entry.Id));
-        auto pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto pForm = GetById(modSystem.GetGameId(entry.Id));
+        auto pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -380,6 +404,35 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     POINTER_SKYRIMSE(TSetFactionRankInternal, s_setFactionRankInternal, 37677);
 
     ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
+}
+
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
+
+    if (formID != 0x14)
+    {
+        //SetPlayerTeammate(true);
+
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
+}
+
+void Actor::SetPlayerTeammate(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetPlayerTeammate, void, Actor, bool aSet, bool abCanDoFavor);
+    POINTER_SKYRIMSE(TSetPlayerTeammate, setPlayerTeammate, 37717);
+    return ThisCall(setPlayerTeammate, this, aSet, true);
 }
 
 void Actor::UnEquipAll() noexcept
@@ -399,15 +452,15 @@ void Actor::UnEquipAll() noexcept
                     BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                     // Right slot
-                    if (pDataList->Contains(ExtraData::Worn))
+                    if (pDataList->Contains(ExtraDataType::Worn))
                     {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
                     }
 
                     // Left slot
-                    if (pDataList->Contains(ExtraData::WornLeft))
+                    if (pDataList->Contains(ExtraDataType::WornLeft))
                     {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, true, false, true, false, nullptr);
+                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false, nullptr);
                     }
                 }
             }
@@ -439,25 +492,12 @@ bool Actor::InitiateMountPackage(Actor* apMount) noexcept
 
 void Actor::GenerateMagicCasters() noexcept
 {
-    if (!leftHandCaster)
+    using CS = MagicSystem::CastingSource;
+
+    for (int i = 0; i < 4; i++)
     {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
-        leftHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
-    }
-    if (!rightHandCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
-        rightHandCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
-    }
-    if (!shoutCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::OTHER);
-        shoutCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
-    }
-    if (!instantCaster)
-    {
-        MagicCaster* pCaster = GetMagicCaster(MagicSystem::CastingSource::INSTANT);
-        instantCaster = RTTI_CAST(pCaster, MagicCaster, ActorMagicCaster);
+        if (casters[i] == nullptr)
+            casters[i] = Cast<ActorMagicCaster>(GetMagicCaster(static_cast<CS>(i)));
     }
 }
 
@@ -468,11 +508,37 @@ bool Actor::IsDead() noexcept
     return s_pIsDead(this);
 }
 
+bool Actor::IsDragon() noexcept
+{
+    // TODO: if anyone has a better way of doing this, please do tell.
+    BSAnimationGraphManager* pManager = nullptr;
+    animationGraphHolder.GetBSAnimationGraph(&pManager);
+
+    if (!pManager)
+        return false;
+
+    const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+    if (!pGraph)
+        return false;
+
+    return AnimationGraphDescriptor_BHR_Master::m_key == pManager->GetDescriptorKey();
+}
+
 void Actor::Kill() noexcept
 {
-    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
+    // Never kill players
+    ActorExtension* pExtension = GetExtension();
+    if (pExtension->IsPlayer())
+        return;
 
+    // TODO: these args are kind of bogus of course
+    KillImpl(nullptr, 100.f, true, true);
+
+    // Papyrus kill will not go through if it is queued by a kill move
+    /*
+    PAPYRUS_FUNCTION(void, Actor, Kill, void*);
     s_pKill(this, NULL);
+    */
 }
 
 void Actor::Reset() noexcept
@@ -496,7 +562,7 @@ static TForceState* RealForceState = nullptr;
 void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float aX, float aZ,
                       TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
 {
-    /*const auto pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    /*const auto pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
     {
         spdlog::info("For TESNPC: {}, spawn at {} {} {}", pNpc->fullName.value, apPosition->m_x, apPosition->m_y,
@@ -515,7 +581,7 @@ static TSpawnActorInWorld* RealSpawnActorInWorld = nullptr;
 // TODO: this isn't SpawnActorInWorld, this is TESObjectREFR::UpdateReference3D()
 bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 {
-    const auto* pNpc = RTTI_CAST(apThis->baseForm, TESForm, TESNPC);
+    const auto* pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
     {
         spdlog::info("Spawn Actor: {:X}, and NPC {}", apThis->formID, pNpc->fullName.value);
@@ -524,44 +590,56 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
     return ThisCall(RealSpawnActorInWorld, apThis);
 }
 
-TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
+TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter, bool aKillMove);
 static TDamageActor* RealDamageActor = nullptr;
 
-bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
+// TODO: this is flawed, since it does not account for invulnerable actors
+bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
-    const auto pExHittee = apThis->GetExtension();
+    float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);
+
+    float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
+    bool wouldKill = (currentHealth - realDamage) <= 0.f;
+
+    const auto* pExHittee = apThis->GetExtension();
     if (pExHittee->IsLocalPlayer())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        if (!World::Get().GetServerSettings().PvpEnabled)
+        {
+            if (apHitter && apHitter->GetExtension()->IsRemotePlayer())
+                return false;
+        }
+
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
     }
     else if (pExHittee->IsRemotePlayer())
     {
-        return false;
+        return wouldKill;
     }
 
     if (apHitter)
     {
-        const auto pExHitter = apHitter->GetExtension();
+        const auto* pExHitter = apHitter->GetExtension();
         if (pExHitter->IsLocalPlayer())
         {
-            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+            return ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
         }
         if (pExHitter->IsRemotePlayer())
         {
-            return false;
+            return wouldKill;
         }
     }
 
     if (pExHittee->IsLocal())
     {
-        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+        return ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
     }
     else
     {
-        return false;
+        return wouldKill;
     }
 }
 
@@ -570,7 +648,7 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, unsigned int unk1)
 {
-    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+    const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
     if (pValueModEffect)
     {
@@ -621,7 +699,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
         item.Count = aCount;
-        
+
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 
@@ -643,8 +721,7 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
             Inventory::Entry item{};
             modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
             item.Count = aCount;
-            
-            // TODO: not sure about this
+
             if (apObject->GetExtraDataList())
                 apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
@@ -678,11 +755,31 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
     return ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
 }
 
+void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+{
+    ExtraDataList* pExtraData = GetExtraDataFromItem(arEntry);
+
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!pObject)
+    {
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
+        return;
+    }
+
+    if (arEntry.Count < 0)
+        DropObject(pObject, pExtraData, -arEntry.Count, apLocation, apRotation);
+    // TODO: pick up
+}
+
 void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
     spdlog::debug("Dropping object, form id: {:X}, count: {}, actor: {:X}", apObject->formID, aCount, formID);
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(RealDropObject, this, &result, apObject, apExtraData, -aCount, apLocation, apRotation);
+    ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
@@ -695,13 +792,13 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
 
     if (pOwner && pTarget)
     {
-        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
-        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+        auto pTargetActor = Cast<Actor>(pTarget);
         if (pOwnerActor && pTargetActor)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
             {
-                spdlog::info("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
+                spdlog::debug("Cancelling detection from remote player to local player, owner: {:X}, target: {:X}", pOwner->formID, pTarget->formID);
                 return;
             }
         }
@@ -742,6 +839,27 @@ void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* ap
     ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
 }
 
+TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
+static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
+{
+    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
+                  (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+
+    if (apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+
+    return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+}
+
+void Actor::SpeakSound(const char* pFile)
+{
+    uint32_t handle[3]{};
+    handle[0] = -1;
+    ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
@@ -760,6 +878,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
     POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
+    POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -776,6 +895,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
     RealUnequipObject = s_unequipObject.Get();
+    RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -791,4 +911,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
     TP_HOOK(&RealUnequipObject, HookUnequipObject);
+    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
 });

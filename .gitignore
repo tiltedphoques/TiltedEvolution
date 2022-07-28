@@ -50,7 +50,8 @@ Code/ui/.vscode/*
 !Code/ui/.vscode/launch.json
 !Code/ui/.vscode/extensions.json
 
-Code/ui/npm-debug.log
+npm-debug.log
+.pnpm-debug.log
 
 Code/protocol/cpp/*.h
 Code/protocol/cpp/*.cc

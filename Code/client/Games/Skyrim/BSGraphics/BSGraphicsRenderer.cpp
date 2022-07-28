@@ -27,6 +27,11 @@ RendererWindow* GetMainWindow()
     return g_RenderWindow;
 }
 
+bool RendererWindow::IsForeground()
+{
+    return GetForegroundWindow() == hWnd;
+}
+
 void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*,
                       BSGraphics::RendererInitReturn*) = nullptr;
 
@@ -53,7 +58,7 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
 
     Renderer_Init(self, aOSData, aFBData, aOut);
 
-    g_sRs = &World::Get().ctx<RenderSystemD3D11>();
+    g_sRs = &World::Get().ctx().at<RenderSystemD3D11>();
     // This how the game does it too
     g_RenderWindow = &self->Data.RenderWindowA[0];
 

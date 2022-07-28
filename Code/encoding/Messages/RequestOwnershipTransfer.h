@@ -2,6 +2,9 @@
 
 #include "Message.h"
 
+#include <Structs/GameId.h>
+#include <Structs/Vector3_NetQuantize.h>
+
 struct RequestOwnershipTransfer final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kRequestOwnershipTransfer;
@@ -17,8 +20,15 @@ struct RequestOwnershipTransfer final : ClientMessage
 
     bool operator==(const RequestOwnershipTransfer& achRhs) const noexcept
     {
-        return ServerId == achRhs.ServerId && GetOpcode() == achRhs.GetOpcode();
+        return GetOpcode() == achRhs.GetOpcode() &&
+               ServerId == achRhs.ServerId &&
+               WorldSpaceId == achRhs.WorldSpaceId &&
+               CellId == achRhs.CellId &&
+               Position == achRhs.Position;
     }
 
-    uint32_t ServerId;
+    uint32_t ServerId{};
+    GameId WorldSpaceId{};
+    GameId CellId{};
+    Vector3_NetQuantize Position{};
 };

@@ -5,6 +5,9 @@
 struct RenderSystemD3D9;
 struct RenderSystemD3D11;
 
+/**
+* @brief Draws the ImGui UI.
+*/
 struct ImguiService
 {
     using TCallback = void();

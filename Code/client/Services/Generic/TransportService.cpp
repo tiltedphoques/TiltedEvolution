@@ -1,43 +1,38 @@
 
 #include <Services/TransportService.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
+#include <Events/ConnectionErrorEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/GridCellChangeEvent.h>
-#include <Events/CellChangeEvent.h>
-#include <Events/SendServerMessageEvent.h>
+#include <Events/UpdateEvent.h>
 
-#include <Games/TES.h>
 #include <Games/References.h>
+#include <Games/TES.h>
+#include <Forms/TESWorldSpace.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <Forms/TESNPC.h>
 #include <TiltedOnlinePCH.h>
 #include <World.h>
 
-#include <Packet.hpp>
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
-#include <Messages/ShiftGridCellRequest.h>
-#include <Messages/EnterExteriorCellRequest.h>
-#include <Messages/EnterInteriorCellRequest.h>
+#include <Packet.hpp>
 
-#include <Services/ImguiService.h>
+#include <ScriptExtender.h>
 #include <Services/DiscordService.h>
 
-#include <imgui.h>
+
 //#include <imgui_internal.h>
+
+static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
 
 using TiltedPhoques::Packet;
 
 TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
-    : m_world(aWorld)
-    , m_dispatcher(aDispatcher)
+    : m_world(aWorld), m_dispatcher(aDispatcher)
 {
-    m_sendServerMessageConnection = m_dispatcher.sink<SendServerMessageEvent>().connect<&TransportService::OnSendServerMessage>(this);
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
-    m_gridCellChangeConnection = m_dispatcher.sink<GridCellChangeEvent>().connect<&TransportService::OnGridCellChangeEvent>(this);
-    m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&TransportService::OnCellChangeEvent>(this);
 
     m_connected = false;
 
@@ -67,12 +62,15 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 
     struct ScopedReset
     {
-        ~ScopedReset() { s_allocator.Reset(); }
+        ~ScopedReset()
+        {
+            s_allocator.Reset();
+        }
     } allocatorGuard;
 
     if (IsConnected())
     {
-        ScopedAllocator _{ s_allocator };
+        ScopedAllocator _{s_allocator};
 
         Buffer buffer(1 << 16);
         Buffer::Writer writer(&buffer);
@@ -107,13 +105,20 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 
 void TransportService::OnConnected()
 {
-    AuthenticationRequest request;
+    AuthenticationRequest request{};
     request.Version = BUILD_COMMIT;
+    request.SKSEActive = IsScriptExtenderLoaded();
+    request.MO2Active = GetModuleHandleW(kMO2DllName);
+
+    request.Token = m_serverPassword;
+    m_serverPassword = "";
+
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
     // null if discord is not active
     // TODO: think about user opt out
-    request.DiscordId = m_world.ctx<DiscordService>().GetUser().id;
-    auto* pNpc = RTTI_CAST(PlayerCharacter::Get()->baseForm, TESForm, TESNPC);
+    request.DiscordId = m_world.ctx().at<DiscordService>().GetUser().id;
+    auto* pNpc = Cast<TESNPC>(pPlayer->baseForm);
     if (pNpc)
     {
         request.Username = pNpc->fullName.value.AsAscii();
@@ -132,18 +137,19 @@ void TransportService::OnConnected()
 
         auto& entry = request.UserMods.ModList.emplace_back();
         entry.Id = pMod->GetId();
+        entry.IsLite = pMod->IsLite();
         entry.Filename = pMod->filename;
     }
 
-    Send(request);
-}
+    auto& modSystem = m_world.GetModSystem();
+    if (pPlayer->GetWorldSpace())
+        modSystem.GetServerModId(pPlayer->GetWorldSpace()->formID, request.WorldSpaceId);
 
-void TransportService::OnSendServerMessage(const SendServerMessageEvent& acEvent) noexcept
-{
-    if (IsConnected())
-    {
-        Send(acEvent.Message);
-    }
+    modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
+
+    request.Level = pPlayer->GetLevel();
+
+    Send(request);
 }
 
 void TransportService::OnDisconnected(EDisconnectReason aReason)
@@ -164,70 +170,80 @@ void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
     Update();
 }
 
-void TransportService::OnGridCellChangeEvent(const GridCellChangeEvent& acEvent) const noexcept
-{
-    uint32_t baseId = 0;
-    uint32_t modId = 0;
-
-    if (m_world.GetModSystem().GetServerModId(acEvent.WorldSpaceId, modId, baseId))
-    {
-        ShiftGridCellRequest request;
-        request.WorldSpaceId = GameId(modId, baseId);
-        request.PlayerCell = acEvent.PlayerCell;
-        request.CenterCoords = acEvent.CenterCoords;
-        request.PlayerCoords = acEvent.PlayerCoords;
-        request.Cells = acEvent.Cells;
-
-        Send(request);
-    }
-}
-
-void TransportService::OnCellChangeEvent(const CellChangeEvent& acEvent) const noexcept
-{
-    if (acEvent.WorldSpaceId != GameId{})
-    {
-        EnterExteriorCellRequest message;
-        message.CellId = acEvent.CellId;
-        message.WorldSpaceId = acEvent.WorldSpaceId;
-        message.CurrentCoords = acEvent.CurrentCoords;
-
-        Send(message);
-    }
-    else
-    {
-        EnterInteriorCellRequest message;
-        message.CellId = acEvent.CellId;
-
-        Send(message);
-    }
-}
-
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {
-    switch (acMessage.Type)
-    {
-    case AuthenticationResponse::ResponseType::kAccepted: 
+    using AR = AuthenticationResponse::ResponseType;
+    if (acMessage.Type == AR::kAccepted)
     {
         m_connected = true;
+
+        m_world.SetServerSettings(acMessage.Settings);
+
         m_dispatcher.trigger(acMessage.UserMods);
-        m_dispatcher.trigger(ConnectedEvent());
-        break;
+        m_dispatcher.trigger(acMessage.Settings);
+        m_dispatcher.trigger(ConnectedEvent(acMessage.PlayerId));
+        return; // quit the function here.
     }
-    // TODO(Anyone): Handle this within the ui
-    case AuthenticationResponse::ResponseType::kWrongVersion:
-        spdlog::error("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
+
+    // error finding
+
+    TiltedPhoques::String ErrorInfo;
+
+    ErrorInfo = "{";
+
+    switch (acMessage.Type)
+    {
+    case AR::kWrongVersion:
+        ErrorInfo += "\"error\": \"wrong_version\", \"data\": {";
+        ErrorInfo +=
+            fmt::format("\"expectedVersion\": \"{}\", \"version\": \"{}\"", acMessage.Version, BUILD_COMMIT);
+        ErrorInfo += "}";
         break;
-    case AuthenticationResponse::ResponseType::kMissingMods: {
-        spdlog::error("This server has ModPolicy enabled. You were kicked because you have the following mods installed:");
+    case AR::kModsMismatch: {
+        ErrorInfo += "\"error\": \"mods_mismatch\", \"data\": {\"mods\": [";
+        bool first = true;
         for (const auto& m : acMessage.UserMods.ModList)
         {
-            spdlog::error("{}:{}", m.Filename.c_str(), m.Id);
+            if(!first)
+                ErrorInfo += ",";
+            ErrorInfo += fmt::format("[\"{}\",\"{}\"]", m.Filename.c_str(), m.Id);
+            first = false;
         }
-        spdlog::error("Please remove them to join");
+        ErrorInfo += "]}";
+        break;
+    }
+    case AR::kClientModsDisallowed: {
+        ErrorInfo += "\"error\": \"client_mods_disallowed\", \"data\": { \"mods\": [";
+        if (acMessage.SKSEActive)
+            ErrorInfo += "\"SKSE\"";
+        if (acMessage.MO2Active)
+            if (acMessage.SKSEActive)
+                ErrorInfo += ",";
+            ErrorInfo += "\"MO2\"";
+        ErrorInfo += "]}";
+        break;
+    }
+    case AR::kWrongPassword: {
+        ErrorInfo += "\"error\": \"wrong_password\"";
+        break;
+    }
+    case AR::kServerFull: {
+        ErrorInfo += "\"error\": \"server_full\"";
         break;
     }
     default:
-        spdlog::error("The server refused connection without reason.");
+        ErrorInfo += "\"error\": \"no_reason\"";
         break;
     }
+
+    ErrorInfo += "}";
+
+    ConnectionErrorEvent errorEvent;
+    if (!ErrorInfo.empty())
+    {
+        spdlog::error(ErrorInfo.c_str());
+        errorEvent.ErrorDetail = std::move(ErrorInfo);
+    }
+
+    m_dispatcher.trigger(errorEvent);
 }

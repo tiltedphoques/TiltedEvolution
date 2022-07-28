@@ -7,7 +7,6 @@
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
-#include <Messages/ServerScriptUpdate.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/NotifyInventoryChanges.h>
@@ -42,6 +41,19 @@
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/TeleportCommandResponse.h>
+#include <Messages/StringCacheUpdate.h>
+#include <Messages/NotifyPlayerRespawn.h>
+#include <Messages/NotifyDialogue.h>
+#include <Messages/NotifySubtitle.h>
+#include <Messages/NotifyPlayerDialogue.h>
+#include <Messages/NotifyActorTeleport.h>
+#include <Messages/NotifyRelinquishControl.h>
+#include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifyPlayerLevel.h>
+#include <Messages/NotifyPlayerCellChanged.h>
+#include <Messages/NotifyTeleport.h>
+#include <Messages/NotifyPlayerHealthUpdate.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -53,7 +65,7 @@ struct ServerMessageFactory
     {
         auto s_visitor =
             CreateMessageVisitor<AuthenticationResponse, AssignCharacterResponse, ServerReferencesMoveRequest,
-                                 ServerScriptUpdate, ServerTimeSettings, CharacterSpawnRequest, NotifyInventoryChanges,
+                                 ServerTimeSettings, CharacterSpawnRequest, NotifyInventoryChanges, StringCacheUpdate,
                                  NotifyFactionsChanges, NotifyRemoveCharacter, NotifyQuestUpdate, NotifyPlayerList,
                                  NotifyPartyInfo, NotifyPartyInvite, NotifyActorValueChanges, NotifyPartyJoined, NotifyPartyLeft,
                                  NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate,
@@ -61,7 +73,10 @@ struct ServerMessageFactory
                                  NotifyObjectInventoryChanges, NotifySpellCast, NotifyProjectileLaunch, NotifyInterruptCast,
                                  NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage,
                                  NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast,
-                                 TeleportCommandResponse>;
+                                 TeleportCommandResponse, NotifyPlayerRespawn, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue,
+                                 NotifyActorTeleport, NotifyRelinquishControl, NotifyPlayerLeft, NotifyPlayerJoined, 
+                                 NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyPlayerLevel, NotifyPlayerCellChanged,
+                                 NotifyTeleport, NotifyPlayerHealthUpdate>;
 
         return s_visitor(std::forward<T>(func));
     }

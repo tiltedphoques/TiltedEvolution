@@ -11,6 +11,8 @@
 
 #include <Events/AddTargetEvent.h>
 
+#include <Games/Overrides.h>
+
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
 TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount, TESBoundObject* apSource, char abLoadCast, char abAdjust);
@@ -29,21 +31,37 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
     return result;
 }
 
+bool MagicTarget::AddTargetData::ShouldSync()
+{
+    return !pEffectItem->IsSummonEffect() &&
+           !pSpell->IsInvisibilitySpell() &&
+           !pSpell->IsWardSpell();
+}
+
+Actor* MagicTarget::GetTargetAsActor()
+{
+    TP_THIS_FUNCTION(TGetTargetAsActor, Actor*, MagicTarget);
+    POINTER_SKYRIMSE(TGetTargetAsActor, getTargetAsActor, 34529);
+    return ThisCall(getTargetAsActor, this);
+}
+
 // If you want a detailed flowchart of what's happening here, ask cosi
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
-    // TODO: this can be fixed by properly implementing multiple inheritance
-    Actor* pTargetActor = (Actor*)((uint8_t*)apThis - 0x98);
-    ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
-
-    if (!pTargetActorEx)
+    Actor* pTargetActor = apThis->GetTargetAsActor();
+    if (!pTargetActor)
         return ThisCall(RealAddTarget, apThis, arData);
+
+    ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (arData.pEffectItem->IsWerewolfEffect())
         pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (arData.pEffectItem->IsVampireLordEffect())
         pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
+
+    if (ScopedSpellCastOverride::IsOverriden())
+        return ThisCall(RealAddTarget, apThis, arData);
 
     AddTargetEvent addTargetEvent{};
     addTargetEvent.TargetID = pTargetActor->formID;
@@ -56,11 +74,12 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (!arData.pCaster)
             return false;
 
-        ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-        if (!pCasterExtension->IsLocalPlayer())
+        if (!arData.pSpell->IsHealingSpell())
             return false;
 
-        if (!arData.pEffectItem->IsHealingEffect())
+        ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+        // TODO(cosideci): should be IsLocal() maybe to account for local npcs healing remote players?
+        if (!pCasterExtension->IsLocalPlayer())
             return false;
 
         bool result = ThisCall(RealAddTarget, apThis, arData);
@@ -73,13 +92,14 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     {
         if (arData.pCaster)
         {
+            // TODO: cancel if ishealing, or it gets applied twice?
             ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-            if (pCasterExtension->IsRemotePlayer())
+            if (pCasterExtension->IsRemotePlayer() && !World::Get().GetServerSettings().PvpEnabled)
                 return false;
         }
 
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && !arData.pEffectItem->IsSummonEffect())
+        if (result && arData.ShouldSync())
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
@@ -90,7 +110,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (pCasterExtension->IsLocalPlayer())
         {
             bool result = ThisCall(RealAddTarget, apThis, arData);
-            if (result && !arData.pEffectItem->IsSummonEffect())
+            if (result && arData.ShouldSync())
                 World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
         }
@@ -103,7 +123,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     if (pTargetActorEx->IsLocal())
     {
         bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && !arData.pEffectItem->IsSummonEffect())
+        if (result && arData.ShouldSync())
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }

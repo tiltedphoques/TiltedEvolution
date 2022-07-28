@@ -63,29 +63,38 @@ struct ProcessLists
 {
     static ProcessLists* Get() noexcept;
 
-#if TP_SKYRIM
-    uint8_t pad0[0x30];
-#else
-    uint8_t pad0[0x40];
+#if TP_SKYRIM64
+    uint8_t pad00[0x8];
+#elif TP_FALLOUT4
+    uint8_t pad00[0x32];
 #endif
 
-    GameArray<uint32_t> HighActorHandleArray;
-
-    // TODO: re-reverse stuff below
-#if TP_SKYRIM
-    uint8_t pad48[0x90 - 0x48];
-#else
-
+    bool bProcessHigh;
+    bool bProcessLow;
+    bool bProcessMHigh;
+    bool bProcessMLow;
+    bool bProcessSchedule;
+#if TP_SKYRIM64
+    uint8_t padD[0x3];
+    int32_t numberHighActors;
+    uint8_t pad14[0x30 - 0x14];
+#elif TP_FALLOUT4
+    uint8_t pad37[0x40 - 0x37];
 #endif
-
-    GameArray<uint32_t>* actorBuckets[4]; // 0 is HighActorHandleArray, others are not investigated
+    GameArray<uint32_t> highActorHandleArray;
+    GameArray<uint32_t> lowActorHandleArray;
+    GameArray<uint32_t> middleHighActorHandleArray;
+    GameArray<uint32_t> middleLowActorHandleArray;
+    GameArray<uint32_t>* actorBuckets[4];
 };
 
-#if TP_SKYRIM
-static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x30);
+#if TP_SKYRIM64
+static_assert(offsetof(ProcessLists, highActorHandleArray) == 0x30);
 static_assert(offsetof(ProcessLists, actorBuckets) == 0x90);
 #elif TP_FALLOUT4
-static_assert(offsetof(ProcessLists, HighActorHandleArray) == 0x40);
+static_assert(offsetof(ProcessLists, bProcessHigh) == 0x32);
+static_assert(offsetof(ProcessLists, bProcessSchedule) == 0x36);
+static_assert(offsetof(ProcessLists, highActorHandleArray) == 0x40);
 #endif
 
 struct Mod
@@ -152,10 +161,18 @@ struct ModManager
     Mod* GetByName(const char* acpName) const noexcept;
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 
-#if TP_FALLOUT4
-    uint8_t pad0[0xFB0];
-#elif TP_SKYRIM
-    uint8_t pad0[0xD60];
+#if TP_SKYRIM64
+    uint8_t pad0[0x748];
+#elif TP_FALLOUT4
+    uint8_t pad0[0x7E8];
+#endif
+
+    GameArray<TESQuest*> quests;
+
+#if TP_SKYRIM64
+    uint8_t pad760[0xD60 - 0x760];
+#elif TP_FALLOUT4
+    uint8_t pad800[0xFB0 - 0x800];
 #endif
 
     GameList<Mod> mods;

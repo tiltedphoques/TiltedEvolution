@@ -31,7 +31,7 @@ TEST(StringTokenizer, Tokinize)
     {
         StringTokenizer t("A Quick brown fox jumps over the fence");
 
-        std::vector<std::string> vec;
+        std::vector<TiltedPhoques::String> vec;
         while (t.HasMore())
             t.GetNext(vec.emplace_back());
 
@@ -41,7 +41,7 @@ TEST(StringTokenizer, Tokinize)
     {
         StringTokenizer t("A_Quick  brown fox_jumps over  the fence");
 
-        std::vector<std::string> vec;
+        std::vector<TiltedPhoques::String> vec;
         while (t.HasMore())
             t.GetNext(vec.emplace_back());
 
@@ -51,7 +51,7 @@ TEST(StringTokenizer, Tokinize)
     {
         StringTokenizer t("A Quick brown\nfox jumps\rover the fence");
 
-        std::vector<std::string> vec;
+        std::vector<TiltedPhoques::String> vec;
         while (t.HasMore())
             t.GetNext(vec.emplace_back());
 

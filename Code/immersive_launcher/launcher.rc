@@ -1,6 +1,5 @@
 #include "winres.h"
 #include "BuildInfo.h"
-#include "BranchInfo.h"
 
 VS_VERSION_INFO VERSIONINFO
 FILEFLAGSMASK 0x17L
@@ -18,7 +17,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Together Team"
-            VALUE "ProductName", "TiltedOnline"
+            VALUE "ProductName", "TogetherOnline"
             VALUE "FileDescription", "Multiplayer mod for Bethesda games"
             VALUE "OriginalFilename", "launcher.exe"
             VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
@@ -30,24 +29,10 @@ BEGIN
     END
 END
 
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "launcher.manifest"
-
-// THERE IS NO NICER WAY
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resources/launcher.manifest"
 
 #if defined(TARGET_ST)
-#if (IS_MASTER)
 102 ICON "resources/st.ico"
-#elif (IS_BRANCH_PREREL)
-102 ICON "resources/st_pre.ico"
-#else
-102 ICON "resources/st_dev.ico"
-#endif
 #elif defined(TARGET_FT)
-#if (IS_MASTER)
 102 ICON "resources/ft.ico"
-#elif (IS_BRANCH_PREREL)
-102 ICON "resources/ft_pre.ico"
-#else
-102 ICON "resources/ft_dev.ico"
-#endif
 #endif

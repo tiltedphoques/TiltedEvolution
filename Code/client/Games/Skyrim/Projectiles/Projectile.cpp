@@ -17,11 +17,21 @@ BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apR
     BSPointerHandle<Projectile>* result = ThisCall(RealLaunch, apResult, apLaunchData);
 
     TP_ASSERT(result, "No projectile handle returned.");
+    if (!result)
+    {
+        spdlog::error("No projectile handle returned.");
+        return nullptr;
+    }
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
-    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    Projectile* pProjectile = Cast<Projectile>(pObject);
     
     TP_ASSERT(pProjectile, "No projectile found.");
+    if (!pProjectile)
+    {
+        spdlog::error("No projectile found.");
+        return nullptr;
+    }
 
     pProjectile->fPower = apLaunchData.fPower;
 
@@ -33,7 +43,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
     // sync concentration spells through spell cast sync, the rest through projectile sync
     if (arData.pSpell)
     {
-        if (auto* pSpell = RTTI_CAST(arData.pSpell, MagicItem, SpellItem))
+        if (auto* pSpell = Cast<SpellItem>(arData.pSpell))
         {
             if (pSpell->eCastingType == MagicSystem::CastingType::CONCENTRATION)
             {
@@ -44,7 +54,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 
     if (arData.pShooter)
     {
-        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(arData.pShooter);
         if (pActor)
         {
             ActorExtension* pExtendedActor = pActor->GetExtension();
@@ -90,7 +100,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
     TP_ASSERT(result, "No projectile handle returned.");
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
-    Projectile* pProjectile = RTTI_CAST(pObject, TESObjectREFR, Projectile);
+    Projectile* pProjectile = Cast<Projectile>(pObject);
     
     TP_ASSERT(pProjectile, "No projectile found.");
 
@@ -108,11 +118,11 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
 
     TP_HOOK(&RealLaunch, HookLaunch);
 
-    static VersionDbPtr<void*> hookLoc(34452);
+    VersionDbPtr<uint8_t> hookLoc(34452);
 
     struct C : TiltedPhoques::CodeGenerator
     {
-        C()
+        C(uint8_t* apLoc)
         {
             // replicate
             mov(rbx, ptr[rsp + 0x50]);
@@ -121,7 +131,7 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
             cmp(rbx, 0);
             jz("exit");
             // jump back 
-            jmp_S(uintptr_t(hookLoc.Get()) + 0x379);
+            jmp_S(apLoc + 0x379);
 
             L("exit");
             // return false; scratch space from the registers
@@ -137,7 +147,7 @@ static TiltedPhoques::Initializer s_projectileHooks([]() {
             pop(rbp);
             ret();
         }
-    } gen;
-    TiltedPhoques::Jump(uintptr_t(hookLoc.Get()) + 0x374, gen.getCode());
+    } gen(hookLoc.Get());
+    TiltedPhoques::Jump(hookLoc.Get() + 0x374, gen.getCode());
 });
 

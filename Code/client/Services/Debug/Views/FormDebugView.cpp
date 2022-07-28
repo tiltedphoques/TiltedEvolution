@@ -6,16 +6,15 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 
-#include <Services/TestService.h>
+#include <Services/DebugService.h>
 #include <AI/AIProcess.h>
 #include <Misc/MiddleProcess.h>
 #include <Effects/ActiveEffect.h>
 
-void TestService::DrawFormDebugView()
+void DebugService::DrawFormDebugView()
 {
-    static TESObjectREFR* pRefr = nullptr;
     static TESForm* pFetchForm = nullptr;
-    static uint32_t formId = 0;
+    static TESObjectREFR* pRefr = nullptr;
 
     ImGui::Begin("Form");
 
@@ -24,25 +23,42 @@ void TestService::DrawFormDebugView()
 
     if (ImGui::Button("Look up"))
     {
-        if (formId)
+        if (m_formId)
         {
-            pFetchForm = TESForm::GetById(formId);
+            pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
-                pRefr = RTTI_CAST(pFetchForm, TESForm, TESObjectREFR);
+                pRefr = Cast<TESObjectREFR>(pFetchForm);
         }
+    }
+
+    if (pFetchForm)
+    {
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
+                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
     }
 
     if (pRefr)
     {
-        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        if (auto* pParentCell = pRefr->GetParentCell())
+        {
+            const uint32_t cellId = pParentCell->formID;
+            ImGui::InputScalar("GetParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
 
+        if (auto* pParentCell = pRefr->parentCell)
+        {
+            const uint32_t cellId = pParentCell->formID;
+            ImGui::InputScalar("parentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
+                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
+        /*
         char name[256];
         sprintf_s(name, std::size(name), "%s (%x)", pRefr->baseForm->GetName(), pRefr->formID);
         ImGui::InputText("Name", name, std::size(name), ImGuiInputTextFlags_ReadOnly);
 
-        /*
-        for (ActiveEffect* pEffect : *pActor->currentProcess->middleProcess->ActiveEffects)
+        for (ActiveEffect* pEffect : *pRefr->currentProcess->middleProcess->ActiveEffects)
         {
             if (!pEffect)
                 continue;
@@ -54,6 +70,9 @@ void TestService::DrawFormDebugView()
             ImGui::InputFloat("Duration", &pEffect->fDuration, 0, 0, "%.1f", ImGuiInputTextFlags_ReadOnly);
             ImGui::InputFloat("Magnitude", &pEffect->fMagnitude, 0, 0, "%.1f", ImGuiInputTextFlags_ReadOnly);
             ImGui::InputInt("Flags", (int*)&pEffect->uiFlags, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            if (ImGui::Button("Elapse time"))
+                m_world.GetRunner().Queue([pEffect]() { pEffect->fElapsedSeconds = pEffect->fDuration - 3.f; });
         }
         */
     }

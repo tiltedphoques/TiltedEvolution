@@ -1,9 +1,10 @@
 #pragma once
 
-#include <TiltedCore/Stl.hpp>
-
 using TiltedPhoques::String;
 
+/**
+* @brief Dispatched when the game code registers a Papyrus function internally.
+*/
 struct PapyrusFunctionRegisterEvent
 {
     explicit PapyrusFunctionRegisterEvent(const char* acpFunctionName, const char* acpNamespace, void* apFunctionAddress)

@@ -1,48 +1,24 @@
-@import 'functions/mod';
-@import 'functions/rem';
+@import "functions/mod";
+@import "functions/rem";
 
-@import 'env';
-
-
-//@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+@import "env";
 
 @font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 400;
-  font-style: normal;
-  src: url('assets/fonts/roboto-condensed/regular-normal.ttf');
-}
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 400;
-  font-style: italic;
-  src: url('assets/fonts/roboto-condensed/regular-italic.ttf');
-}
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 300;
-  font-style: normal;
-  src: url('assets/fonts/roboto-condensed/light-normal.ttf');
-}
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 300;
-  font-style: italic;
-  src: url('assets/fonts/roboto-condensed/light-italic.ttf');
-}
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 700;
-  font-style: normal;
-  src: url('assets/fonts/roboto-condensed/bold-normal.ttf');
-}
-@font-face {
-  font-family: 'Roboto Condensed';
-  font-weight: 700;
-  font-style: italic;
-  src: url('assets/fonts/roboto-condensed/bold-italic.ttf');
+  font-family: "futura-condensed-medium";
+  src: url(assets/fonts/futura-condensed/futura-condensed-medium.otf);
 }
 
+* {
+  font-family: $-font-default;
+}
+
+input {
+  font-size: 1rem;
+}
+
+input::placeholder {
+  font-size: 1rem !important;
+}
 
 ::selection {
   color: $-color-background;
@@ -69,23 +45,20 @@ select {
   line-height: 1em;
 }
 
-button,
-input:not([type=checkbox]),
-textarea,
-optgroup,
-select {
-  font-family: inherit;
-}
-
 input:not([type=checkbox]),
 textarea,
 select {
   display: block;
-  padding: $-size-gap / 2;
+  padding: $-size-gap * 0.5;
   background: transparent;
   color: mod($-color-background, 1);
   border: rem($-size-font, 2px) solid;
-  border-image: url('assets/images/separator/single.svg') 3;
+  border-image: url("assets/images/separator/single.svg") 3;
+}
+
+input[type=range] {
+  border: 0;
+  padding: 0;
 }
 
 input:not([type=checkbox]),
@@ -100,11 +73,10 @@ option {
 button {
   border: 0;
   opacity: 0.5;
-  font-weight: 700;
-  font-size: 0.9em;
+  font-size: 1rem;
   text-transform: uppercase;
   background: transparent;
-  padding: $-size-gap / 2;
+  padding: $-size-gap * 0.5;
   color: mod($-color-background, 1);
 
   &:hover:not([disabled]),
@@ -113,6 +85,7 @@ button {
   }
 
   &[data-style-active=true][data-style-ornament=inverted] {
+
     &::before,
     &::after {
       opacity: 1;
@@ -121,6 +94,7 @@ button {
   }
 
   &:hover:not([disabled])[data-style-ornament=simple] {
+
     &::before,
     &::after {
       opacity: 1 !important;
@@ -157,16 +131,16 @@ button {
       opacity: 0;
       width: 1em;
       height: 1em;
-      content: '';
+      content: "";
       background: center / contain no-repeat;
     }
 
     &::before {
-      margin-right: $-size-gap / 2;
+      margin-right: $-size-gap * 0.5;
     }
 
     &::after {
-      margin-left: $-size-gap / 2;
+      margin-left: $-size-gap * 0.5;
     }
   }
 
@@ -181,6 +155,7 @@ button {
   }
 
   &[data-style-ornament=inverted] {
+
     &::before,
     &::after {
       opacity: 0;
@@ -203,11 +178,8 @@ button {
   font-size: calc(16 * 100vw / 1920);
 }
 
-$scrollbar: rem($-size-font, 16px);
-
 ::-webkit-scrollbar {
   width: $scrollbar;
-  height: $scrollbar;
 }
 
 ::-webkit-scrollbar-button {
@@ -216,7 +188,7 @@ $scrollbar: rem($-size-font, 16px);
 
 ::-webkit-scrollbar-track {
   border: rem($-size-font, 3px) solid;
-  border-image: url('assets/images/scrollbar/track.svg') 4 fill;
+  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -227,9 +199,29 @@ $scrollbar: rem($-size-font, 16px);
   }
 }
 
-html {
-  font-family: $-font-default;
-  //text-shadow: 0.1rem 0.1rem 0.05rem #000;
+input[type=range] {
+  -webkit-appearance: none;
+}
+
+input[type=checkbox] {
+  width: $scrollbar;
+  height: $scrollbar;
+}
+
+::-webkit-slider-runnable-track {
+  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
+}
+
+::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: $scrollbar;
+  height: $scrollbar;
+
+  background-image: url(assets/images/scrollbar/thumb-inactive.svg);
+
+  &:hover {
+    background-image: url(assets/images/scrollbar/thumb-active.svg);
+  }
 }
 
 body {
@@ -242,4 +234,51 @@ body {
 
 app-root {
   height: 100vh;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+hr {
+  border-image: url(./assets/images/separator/single.svg) 3;
+}
+
+.separator {
+  text-align: center;
+  border: 0;
+  white-space: nowrap;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+
+  & > * {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  &:before, &:after {
+    content: "";
+    height: 2px;
+    width: 50%;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: rem($-size-font, 2px);
+    border-bottom: rem($-size-font, 2px) solid;
+    border-image: url(./assets/images/separator/single.svg) 3;
+  }
+
+  &:before {
+    margin-left: -100%;
+  }
+
+  &:after {
+    margin-right: -100%;
+  }
+
 }

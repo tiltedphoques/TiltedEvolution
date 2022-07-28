@@ -1,75 +1,66 @@
-#app-group-container
-{
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  margin-top: 1vw;
-  margin-left: 1.6%;
-  width: 20%;
-  .command {
-    span + button {
-      margin-left: 25%;
+.group-container-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  .group-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding: 1vw;
+    width: 16vw;
+
+    .group-member {
+      font-size: 1.50em;
+      color: rgb(192, 192, 192);
+
+      &.not-loaded {
+        opacity: 0.6;
+      }
+
+      .member-name {
+        text-shadow: 1px 1px 2px #000000;
+      }
+
+      .group-member-level {
+        text-align: center;
+        font-size: 1.2em;
+        color: rgb(221, 221, 221);
+        text-shadow: 1px 1px 2px #000000;
+      }
+
+      .group-member-leader {
+        display: inline-block;
+        background: url(../../../assets/images/group/crown.svg) right / cover no-repeat;
+        width: 1vw;
+        height: 1vw;
+      }
+
+      .group-member-dead {
+        display: inline-block;
+        background: url(../../../assets/images/group/skull.svg) right / cover no-repeat;
+        width: 1vw;
+        height: 1vw;
+      }
+
+      .group-member-health {
+        width: 14vw;
+        background: url(../../../assets/images/group/healthbar.svg) center / contain no-repeat;
+        padding-left: 1vw;
+        padding-right: 1vw;
+        margin-bottom: 5%;
+        margin-top: 1%;
+
+        .group-member-health-value {
+          transition: width 0.8s ease-in-out;
+          height: 0.79vw;
+          position: relative;
+          overflow: hidden;
+          background: url(../../../assets/images/group/healthamount.svg) center / cover no-repeat;
+        }
+      }
     }
   }
-}
-@font-face
-{
-   font-family: 'futura-condensed-medium';
-   src: url(../../../assets/fonts/futura-condensed/futura-condensed-medium.otf);
- }
-.app-group-member
-{
-  font-family: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS', 'Tahoma', 'Geneva',
-   'Verdana', 'sans-serif';
-  font-size: 1.50em;
-  color: rgb(192, 192, 192);
-}
-.app-group-member-level
-{
-  text-align: center;
-  font-size: 1.2em;
-  color: rgb(221, 221, 221)
-}
-#app-group-member-leader
-{
-  display:inline-block;
-  background: url(../../../assets/images/group/crown.svg) right / cover no-repeat;
-  width: 1vw;
-  height: 1vw;
-}
-.app-group-member-dead
-{
-  display:inline-block;
-  background: url(../../../assets/images/group/skull.svg) right / cover no-repeat;
-  width: 1vw;
-  height: 1vw;
-}
-.app-group-member-health
-{
-  width: 14vw;
-  background: url(../../../assets/images/group/healthbar.svg) center / contain no-repeat;
-  padding-left: 1vw;
-  padding-right: 1vw;
-  margin-bottom: 5%;
-  margin-top: 1%;
-}
-.app-group-member-health-value
-{
-  height: 0.79vw;
-  position:relative;
-  overflow: hidden;
-  background: url(../../../assets/images/group/healthamount.svg) center / cover no-repeat;
-}
-.not-loaded {
-  opacity: 0.6;
-}
-.app-group-button{
-  padding: 0.25vw;
-  background-color: #292929;
-  border-radius: 2px;
-  margin: 1%;
-}
-.app-group-button:hover {
-  box-shadow: 0px 0px 5px #646464;
 }

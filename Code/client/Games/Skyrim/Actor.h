@@ -62,7 +62,7 @@ struct Actor : TESObjectREFR
     virtual void sub_B8();
     virtual void sub_B9();
     virtual void sub_BA();
-    virtual void sub_BB();
+    virtual void PayFine(TESFaction* apFaction, bool aGoToJail, bool aRemoveStolenItems);
     virtual void sub_BC();
     virtual void sub_BD();
     virtual void sub_BE();
@@ -70,7 +70,7 @@ struct Actor : TESObjectREFR
     virtual void sub_C0();
     virtual void sub_C1();
     virtual void sub_C2();
-    virtual void sub_C3();
+    virtual void SetRefraction(bool aEnable, float aRefraction);
     virtual void sub_C4();
     virtual void sub_C5();
     virtual void sub_C6();
@@ -99,7 +99,7 @@ struct Actor : TESObjectREFR
     virtual void sub_DD();
     virtual void sub_DE();
     virtual void PutCreatedPackage(struct TESPackage*, bool = false, bool = true, bool = true); // 14069BBF0
-    virtual void sub_E0();
+    virtual void UpdateAlpha();
     virtual void sub_E1();
     virtual void sub_E2();
     virtual void sub_E3();
@@ -146,7 +146,7 @@ struct Actor : TESObjectREFR
     virtual void sub_10B();
     virtual void sub_10C();
     virtual void sub_10D();
-    virtual void sub_10E();
+    virtual void KillImpl(Actor* apAttacker, float aDamage, bool aSendEvent, bool aRagdollInstant);
     virtual void sub_10F();
     virtual void sub_110();
     virtual void sub_111();
@@ -192,6 +192,9 @@ struct Actor : TESObjectREFR
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
+    Inventory GetEquipment() const noexcept;
+    int32_t GetGoldAmount() noexcept;
+    uint16_t GetLevel() noexcept;
 
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
@@ -207,8 +210,12 @@ struct Actor : TESObjectREFR
     void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
-    void SetActorInventory(Inventory& aInventory) noexcept;
+    void SetActorInventory(const Inventory& aInventory) noexcept;
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
+    void SetEssentialEx(bool aSet) noexcept;
+    void SetNoBleedoutRecovery(bool aSet) noexcept;
+    void SetPlayerRespawnMode() noexcept;
+    void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
@@ -216,13 +223,40 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
 
     bool IsDead() noexcept;
+    bool IsDragon() noexcept;
     void Kill() noexcept;
     void Reset() noexcept;
     void Respawn() noexcept;
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
+    void SpeakSound(const char* pFile);
+
+    enum ActorFlags
+    {
+        IS_A_MOUNT = 1 << 1,
+        IS_ESSENTIAL = 1 << 18,
+    };
+
+    bool IsMount() const noexcept
+    {
+        return flags2 & ActorFlags::IS_A_MOUNT;
+    }
+
+    bool IsEssential() const noexcept
+    {
+        return flags2 & ActorFlags::IS_ESSENTIAL;
+    }
+    void SetEssential(bool aSetEssential) noexcept
+    {
+        if (aSetEssential)
+            flags2 |= ActorFlags::IS_ESSENTIAL;
+        else
+            flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
 
 public:
 
@@ -288,10 +322,7 @@ public:
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<void*> addedSpells;
-    ActorMagicCaster* leftHandCaster;
-    ActorMagicCaster* rightHandCaster;
-    ActorMagicCaster* shoutCaster;
-    ActorMagicCaster* instantCaster;
+    ActorMagicCaster* casters[4];
     MagicItem* magicItems[4];
     TESForm* equippedShout;
     uint32_t someRefrHandle;

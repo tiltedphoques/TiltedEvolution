@@ -3,6 +3,10 @@
 #include <Structs/GridCellCoords.h>
 
 struct Player;
+
+/**
+* @brief Dispatched when a player enters a new exterior cell.
+*/
 struct CharacterExteriorCellChangeEvent
 {
     CharacterExteriorCellChangeEvent(Player* apOwner, const entt::entity aEntity,

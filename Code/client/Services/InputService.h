@@ -2,6 +2,9 @@
 
 struct OverlayService;
 
+/**
+* @brief Handles input handling for the UI.
+*/
 struct InputService
 {
     InputService(OverlayService& aOverlay) noexcept;

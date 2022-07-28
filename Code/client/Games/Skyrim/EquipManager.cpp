@@ -139,14 +139,14 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote())
     {
-        spdlog::info("Actor[{:X}]::Equip(), item form id: {:X}", apActor->formID, apItem->formID);
+        spdlog::debug("Actor[{:X}]::Equip(), item form id: {:X}", apActor->formID, apItem->formID);
         if (!ScopedEquipOverride::IsOverriden())
             return nullptr;
     }
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
@@ -169,7 +169,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
     const auto pExtension = apActor->GetExtension();
     if (pExtension->IsRemote())
     {
-        spdlog::info("Actor[{:X}]::Unequip(), item form id: {:X}, IsOverridden, equip: {}, inventory: {}", apActor->formID, apItem->formID, ScopedEquipOverride::IsOverriden(), ScopedInventoryOverride::IsOverriden());
+        spdlog::debug("Actor[{:X}]::Unequip(), item form id: {:X}, IsOverridden, equip: {}, inventory: {}", apActor->formID, apItem->formID, ScopedEquipOverride::IsOverriden(), ScopedInventoryOverride::IsOverriden());
         // The ScopedInventoryOverride check is here to allow the item to be unequipped if it is removed
         // Without this check, the game will not accept null as a return, and it'll keep trying to unequip infinitely
         if (!ScopedEquipOverride::IsOverriden() && !ScopedInventoryOverride::IsOverriden())
@@ -178,7 +178,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
@@ -188,6 +188,8 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
         World::Get().GetRunner().Trigger(evt);
     }
+
+    spdlog::debug("UnEquipHook, actor: {:X}", apActor->formID);
 
     return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
 }
@@ -203,7 +205,7 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
         evt.EquipSlotId = apData->pEquipSlot->formID;
@@ -228,7 +230,7 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
         evt.EquipSlotId = apData->pEquipSlot->formID;
@@ -252,7 +254,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;
         evt.IsShout = true;
@@ -276,7 +278,7 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;
         evt.Unequip = true;
@@ -298,15 +300,15 @@ static TiltedPhoques::Initializer s_equipmentHooks([]()
     POINTER_SKYRIMSE(TEquipShout, s_equipShoutFunc, 38930);
     POINTER_SKYRIMSE(TUnEquipShout, s_unequipShoutFunc, 38935);
 
-    RealUnEquip = s_unequipFunc.Get();
     RealEquip = s_equipFunc.Get();
+    RealUnEquip = s_unequipFunc.Get();
     RealEquipSpell = s_equipSpellFunc.Get();
     RealUnEquipSpell = s_unequipSpellFunc.Get();
     RealEquipShout = s_equipShoutFunc.Get();
     RealUnEquipShout = s_unequipShoutFunc.Get();
 
-    TP_HOOK(&RealUnEquip, UnEquipHook);
     TP_HOOK(&RealEquip, EquipHook);
+    TP_HOOK(&RealUnEquip, UnEquipHook);
     TP_HOOK(&RealEquipSpell, EquipSpellHook);
     TP_HOOK(&RealUnEquipSpell, UnEquipSpellHook);
     TP_HOOK(&RealEquipShout, EquipShoutHook);

@@ -13,11 +13,21 @@ constexpr wchar_t kScriptExtenderName[] =
 #endif
     ;
 
+constexpr char kScriptExtenderEntrypoint[] =
+#if TP_SKYRIM
+"StartSKSE"
+#elif TP_FALLOUT
+"StartF4SE"
+#endif
+    ;
+
 constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeof(wchar_t) - 1;
 
 // AE+ only
 // Use this to raise the SKSE baseline
 constexpr int kSKSEMinBuild = 20100;
+
+HMODULE g_SKSEModuleHandle{nullptr};
 
 struct FileVersion
 {
@@ -29,7 +39,7 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
 {
     const auto filename = acFilePath.c_str();
 
-    DWORD dwHandle, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
+    DWORD dwHandle = 0, sz = GetFileVersionInfoSizeW(filename, &dwHandle);
     if (0 == sz)
     {
         return 1;
@@ -70,6 +80,11 @@ std::string GetSKSEStyleExeVersion()
     return exeBuild;
 }
 } // namespace
+
+bool IsScriptExtenderLoaded()
+{
+    return g_SKSEModuleHandle;
+}
 
 void LoadScriptExender()
 {
@@ -133,11 +148,22 @@ void LoadScriptExender()
     }
 #endif
 
-    if (LoadLibraryW(needle->c_str()))
+    if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
     {
-        spdlog::info("Successfully loaded {} {}", needle->string(), skseVersion);
-        spdlog::info("Be aware that messages that start without a colored [timestamp] prefix are logs from the "
-                     "Script Extender and its loaded mods.");
+        if (auto* pStartSKSE =
+                reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, kScriptExtenderEntrypoint)))
+        {
+            spdlog::info(
+                "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "
+                "logs from the "
+                "Script Extender and its loaded mods.",
+                skseVersion);
+
+            pStartSKSE();
+            spdlog::info("SKSE is active");
+        }
+        else
+            spdlog::warn("SKSE dll doesn't expose StartSKSE(), it may be outdated.");
     }
     else
     {

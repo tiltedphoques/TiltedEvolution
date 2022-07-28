@@ -39,11 +39,11 @@ target(name)
     add_deps(
         "UiProcess",
         "CommonLib",
+        "BaseLib",
         "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",
         "TiltedHooks",
-        "TiltedScript",
         "TiltedUi",
         {inherit = true}
     )
@@ -57,8 +57,6 @@ target(name)
         "discord",
         "imgui",
         "cef",
-        "lua",
-        "sol2",
         "minhook",
         "entt",
         "glm",
@@ -81,5 +79,7 @@ target(name)
         "kernel32")
 end
 
+add_requires("tiltedcore", {debug = true})
+
 build_client("SkyrimTogetherClient", "TP_SKYRIM=1")
---build_client("FalloutTogetherClient", "TP_FALLOUT=1")
+build_client("FalloutTogetherClient", "TP_FALLOUT=1")

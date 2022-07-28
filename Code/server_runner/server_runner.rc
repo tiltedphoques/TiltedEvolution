@@ -1,0 +1,38 @@
+#include "winres.h"
+#include "BuildInfo.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+FILEFLAGS 0x1L
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS 0x4L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Together Team"
+            VALUE "ProductName", "TogetherOnline"
+            VALUE "FileDescription", "Multiplayer Server for Bethesda games"
+            VALUE "OriginalFilename", "server.exe"
+            VALUE "ProductVersion",	BUILD_BRANCH "@" BUILD_COMMIT
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resources/server.manifest"
+
+#if defined(TARGET_ST)
+102 ICON "resources/st_srv.ico"
+#elif defined(TARGET_FT)
+102 ICON "resources/ft_srv.ico"
+#endif

@@ -4,10 +4,13 @@
 #error Include Components.h instead
 #endif
 
+#include <Messages/CharacterSpawnRequest.h>
+
 struct WaitingFor3D
 {
-    WaitingFor3D() = default;
+    WaitingFor3D(const CharacterSpawnRequest& aSpawnRequest)
+        : SpawnRequest(aSpawnRequest)
+    {}
 
-    // This rather hacky thing is here because entt components seemingly can't be empty
-    uint8_t Placeholder{};
+    CharacterSpawnRequest SpawnRequest{};
 };

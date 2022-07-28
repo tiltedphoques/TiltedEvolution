@@ -2,8 +2,7 @@
 
 #include "Message.h"
 #include <Structs/Mods.h>
-#include <Structs/Scripts.h>
-#include <Structs/FullObjects.h>
+#include <Structs/ServerSettings.h>
 
 struct AuthenticationResponse final : ServerMessage
 {
@@ -13,7 +12,10 @@ struct AuthenticationResponse final : ServerMessage
     {
         kAccepted,
         kWrongVersion,
-        kMissingMods,
+        kModsMismatch,
+        kClientModsDisallowed,
+        kWrongPassword,
+        kServerFull
     };
 
     AuthenticationResponse() : ServerMessage(Opcode)
@@ -25,10 +27,15 @@ struct AuthenticationResponse final : ServerMessage
 
     bool operator==(const AuthenticationResponse& achRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods;
+        return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods &&
+               Settings == achRhs.Settings && PlayerId == achRhs.PlayerId;
     }
 
     ResponseType Type;
+    bool SKSEActive{false};
+    bool MO2Active{false};
     String Version;
     Mods UserMods{};
+    ServerSettings Settings{};
+    uint32_t PlayerId{};
 };

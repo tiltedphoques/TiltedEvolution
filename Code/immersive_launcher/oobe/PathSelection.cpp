@@ -1,87 +1,122 @@
 // Copyright (C) 2021 TiltedPhoques SRL.
 // For licensing information see LICENSE at the root of this distribution.
 
-#include <optional>
 #include <Windows.h>
-#include <TiltedCore/Stl.hpp>
-#include <TiltedCore/Filesystem.hpp>
+
+#include <optional>
+#include <shobjidl.h>
 
 #include "TargetConfig.h"
-
-#include "utils/Registry.h"
 #include "launcher.h"
+
+#include "utils/ComUtils.h"
+#include "utils/Registry.h"
 
 namespace oobe
 {
 using namespace TiltedPhoques;
 
-constexpr wchar_t kRegistryPath[] = LR"(Software\TiltedPhoques\TiltedEvolution\)";
-
-static std::wstring SuggestTitlePath()
+namespace
 {
-    auto path = WString(LR"(Software\Wow6432Node\Bethesda Softworks\)") + CurrentTarget.shortGameName;
+constexpr wchar_t kBethesdaRegistryPath[] = LR"(Software\Wow6432Node\Bethesda Softworks\)" SHORT_NAME;
+constexpr wchar_t kTiltedRegistryPath[] = LR"(Software\TiltedPhoques\TiltedEvolution\)" SHORT_NAME;
 
-    const wchar_t* subName =
-#if defined(IS_SKYRIM_TYPE)
-        L"installed path";
-#else
-        L"Installed Path";
-#endif
-
-    return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, path.c_str(), subName);
+std::wstring SuggestTitlePath()
+{
+    return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, kBethesdaRegistryPath, L"installed path");
 }
 
-static std::optional<std::wstring> OpenPathSelectionDialog(const std::wstring &aSuggestion)
+std::optional<std::wstring> OpenPathSelectionDialog2(const std::wstring& aPathSuggestion)
 {
-    OPENFILENAMEW file{};
+    // in case some other stuff already tried to unregister the global instance
+    ComScope _;
 
-    std::wstring buffer;
-    buffer.resize(MAX_PATH);
-
-    file.lpstrFile = buffer.data();
-    file.lStructSize = sizeof(file);
-    file.nMaxFile = MAX_PATH;
-    file.lpstrFilter = L"Executables\0*.exe\0";
-    file.lpstrDefExt = L"EXE";
-    file.lpstrTitle = L"Please select your Game executable (*.exe)";
-    file.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_ENABLESIZING | OFN_EXPLORER;
-    file.lpstrInitialDir = aSuggestion.empty() ? buffer.data() : aSuggestion.data();
-
-    if (!GetOpenFileNameW(&file))
+    ComPtr<IFileOpenDialog> pFileDialog;
+    auto hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog,
+                               reinterpret_cast<void**>(pFileDialog.GetAddressOf()));
+    if (FAILED(hr))
         return std::nullopt;
 
-    return buffer;
+    pFileDialog->SetTitle(L"Select the game executable (" TARGET_NAME L".exe)");
+
+    static constinit COMDLG_FILTERSPEC rgSpec[] = {{L"Executables", L"*.exe"}};
+    pFileDialog->SetFileTypes(1, &rgSpec[0]);
+
+    // pre select suggested folder & exe
+    if (!aPathSuggestion.empty())
+    {
+        ComPtr<IShellItem> pItem;
+        if (SUCCEEDED(SHCreateItemFromParsingName(aPathSuggestion.c_str(), nullptr, IID_PPV_ARGS(&pItem))))
+        {
+            pFileDialog->SetFolder(pItem.Get());
+            pFileDialog->SetFileName(TARGET_NAME L".exe");
+        }
+    }
+
+    hr = pFileDialog->Show(nullptr);
+    if (FAILED(hr))
+        return std::nullopt;
+
+    ComPtr<IShellItem> pItem;
+    hr = pFileDialog->GetResult(pItem.GetAddressOf());
+    if (SUCCEEDED(hr))
+    {
+        PWSTR filePath;
+        hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &filePath);
+
+        if (SUCCEEDED(hr))
+        {
+            auto rval = filePath;
+            CoTaskMemFree(filePath);
+            return rval;
+        }
+    }
+
+    return std::nullopt;
 }
+} // namespace
 
 bool SelectInstall(bool aForceSelect)
 {
-    const WString regPath = WString(kRegistryPath) + CurrentTarget.shortGameName;
-
     // separate, so a custom executable can be chosen for TP
-    auto titlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, regPath.c_str(), L"TitlePath");
-    auto exePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, regPath.c_str(), L"TitleExe");
+    auto titlePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath");
+    auto exePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe");
 
     bool result = true;
-    if (!std::filesystem::exists(titlePath) || 
-        !std::filesystem::exists(exePath) || aForceSelect)
+    if (!std::filesystem::exists(titlePath) || !std::filesystem::exists(exePath) || aForceSelect)
     {
-        if (auto path = OpenPathSelectionDialog(SuggestTitlePath()))
+        constexpr int kSelectionAttempts = 3;
+
+        for (int i = 0; i < kSelectionAttempts; i++)
         {
-            size_t pos = path->find_last_of(L'\\');
-            if (pos == std::string::npos)
-                return false;
+            if (auto path = OpenPathSelectionDialog2(SuggestTitlePath()))
+            {
+                size_t pos = path->find_last_of(L'\\');
+                if (pos == std::string::npos)
+                    return false;
 
-            titlePath = path->substr(0, pos);
-            exePath = (*path);
+                titlePath = path->substr(0, pos);
+                exePath = (*path);
 
-            result = Registry::WriteString(HKEY_CURRENT_USER, regPath.c_str(), L"TitlePath", titlePath) &&
-                     Registry::WriteString(HKEY_CURRENT_USER, regPath.c_str(), L"TitleExe", exePath);
+                // game is installed into our directory, or otherwise.
+                if (titlePath == TiltedPhoques::GetPath())
+                {
+                    continue;
+                }
+
+                // if this fails, we try again
+                result = Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) &&
+                         Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
+
+                if (result)
+                    break;
+            }
+            else
+                break;
         }
-        else
-            result = false;
     }
 
-    if (result) 
+    if (result)
     {
         auto* apContext = launcher::GetLaunchContext();
         apContext->gamePath = titlePath;

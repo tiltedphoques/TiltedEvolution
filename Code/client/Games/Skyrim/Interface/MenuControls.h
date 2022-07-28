@@ -1,13 +1,12 @@
 #pragma once
 
-class MenuControls
+struct MenuControls
 {
-  public:
     static MenuControls* GetInstance();
 
     void SetToggle(bool);
 
-  private:
+private:
     char pad_0000[128]; // 0x0000
     bool isProcessing;  // 0x0080
     bool isBeastForm;   // 0x0081

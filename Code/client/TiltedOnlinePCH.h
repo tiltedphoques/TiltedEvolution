@@ -37,6 +37,7 @@
 #include <TiltedCore/TaskQueue.hpp>
 #include <TiltedCore/Buffer.hpp>
 #include <TiltedCore/Initializer.hpp>
+#include <TiltedCore/Serialization.hpp>
 
 // TiltedReverse
 #include <AutoPtr.hpp>
@@ -63,19 +64,8 @@ extern void* RipAllocateN(size_t blockLength);
 #include <filesystem>
 #include <fstream>
 
-#include <Utils.h>
 #include <BuildInfo.h>
 #include <Games/Primitives.h>
-
-
-extern "C"
-{
-#include <lua.h>
-#include <lsqlite3.h>
-}
-
-#define SOL_ALL_SAFETIES_ON 1
-#include <sol/sol.hpp>
 
 using TiltedPhoques::AutoPtr;
 using TiltedPhoques::Set;
@@ -98,5 +88,6 @@ using namespace std::chrono_literals;
 
 #include "Components.h"
 
+#include <Utils.h>
 #include <RTTI.h>
 

@@ -6,6 +6,11 @@ target(name)
     add_includedirs(".", "../", {public = true})
     add_headerfiles("**.h|Structs/Fallout4/**|Structs/Skyrim/**", {prefixdir = "Encoding"})
     add_files("**.cpp|Structs/Fallout4/**|Structs/Skyrim/**")
+    set_pcxxheader("EncodingPch.h")
+
+    if is_plat("linux") then
+        add_cxxflags("-fPIC")
+    end    
 
     if name == "SkyrimEncoding" then
         add_files("Structs/Skyrim/**.cpp")
@@ -22,4 +27,4 @@ target(name)
 end
 
 build_encoding("SkyrimEncoding", "TP_SKYRIM=1")
---build_encoding("FalloutEncoding", "TP_FALLOUT=1")
+build_encoding("FalloutEncoding", "TP_FALLOUT=1")

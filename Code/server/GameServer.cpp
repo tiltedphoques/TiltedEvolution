@@ -1,8 +1,6 @@
-
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
-#include <stdafx.h>
 
 #include <Events/AdminPacketEvent.h>
 #include <Events/CharacterRemoveEvent.h>
@@ -18,47 +16,66 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
+#include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
 
-#if TP_PLATFORM_WINDOWS
-#include <windows.h>
-#endif
 
-namespace
-{
 // -- Cvars --
-Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting<uint16_t> uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting<uint16_t> uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
+
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                    "Dedicated Together Server"};
-Console::StringSetting sServerDesc{"GameServer:sServerDesc", "Description that shows up in the server list",
-                                   "Hello there!"};
-Console::StringSetting sServerIconURL{"GameServer:sIconUrl", "URL to the image that shows up in the server list", ""};
-Console::StringSetting sTagList{"GameServer:sTagList", "List of tags, separated by a comma (,)", ""};
-Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
-Console::StringSetting sToken{"GameServer:sToken", "Admin token", ""};
-Console::Setting bBypassMoPo{"ModPolicy:bBypass", "Bypass the mod policy restrictions.", false,
-                             Console::SettingsFlags::kHidden | Console::SettingsFlags::kLocked};
+//Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
+
+// Gameplay
+// TODO: to make this easier for users, use game names for difficulty instead of int
+Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
+Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
+Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
+Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
+
+// ModPolicy Stuff
+Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
+                                 Console::SettingsFlags::kLocked};
+Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true,
+                            Console::SettingsFlags::kLocked};
+Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
+                           Console::SettingsFlags::kLocked};
+
 // -- Commands --
 Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
                                      [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
 
+Console::Command<bool> TogglePvp("TogglePvp", "Toggle pvp",
+                                     [](Console::ArgStack& aStack) { bEnablePvp = aStack.Pop<bool>(); });
+
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
-Console::Command<> ShowMoPoStatus("isMoPoActive", "Shows if the ModPolicy is active", [](Console::ArgStack&) {
-    spdlog::get("ConOut")->info("ModPolicy status: {}", bBypassMoPo ? "not active" : "active");
+Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
+    int* i = 0;
+    *i = 42;
+});
+Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
+    auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
+
+    spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
+                                formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
 });
 
 // -- Constants --
 constexpr char kBypassMoPoWarning[]{
-    "ModPolicy is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. No "
-    "support will be provided while this bypass is in place"};
+    "ModCheck is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
+    "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy is enabled, but no mods are installed. Players wont be able "
-    "to join! Please install Mods into the /data/ directory."};
+    "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
+    "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
+    "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
-} // namespace
 
 static uint16_t GetUserTickRate()
 {
@@ -67,10 +84,8 @@ static uint16_t GetUserTickRate()
 
 static bool IsMoPoActive()
 {
-    return !bBypassMoPo;
+    return bEnableModCheck;
 }
-
-GameServer* GameServer::s_pInstance = nullptr;
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
@@ -85,8 +100,18 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
         port++;
     }
 
+    if (uDifficulty.value_as<uint8_t>() > 5)
+    {
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).",
+                     uDifficulty.value_as<uint8_t>());
+
+        uDifficulty = 4;
+    }
+
+    m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
+
     UpdateInfo();
-    spdlog::info("Server started on port {}", GetPort());
+    spdlog::info("Server {} started on port {}", BUILD_COMMIT, GetPort());
     UpdateTitle();
 
     m_pWorld = MakeUnique<World>();
@@ -110,7 +135,6 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
-    m_pWorld->GetScriptService().Initialize();
 }
 
 void GameServer::Kill()
@@ -121,8 +145,11 @@ void GameServer::Kill()
 
 bool GameServer::CheckMoPo()
 {
-    if (bBypassMoPo)
-        spdlog::warn(kBypassMoPoWarning);
+    if (!bEnableModCheck)
+    {
+        // TODO: re-enable this warning when mopo has good ui and the line endings problem is fixed
+        //spdlog::warn(kBypassMoPoWarning);
+    }
     // Server is not aware of any installed mods.
     else if (!m_pWorld->GetRecordCollection())
     {
@@ -202,7 +229,7 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("mods", "List all installed mods on this server", [&](Console::ArgStack&) {
         auto out = spdlog::get("ConOut");
-        auto& mods = m_pWorld->ctx<ModsComponent>().GetServerMods();
+        auto& mods = m_pWorld->ctx().at<ModsComponent>().GetServerMods();
         if (mods.size() == 0)
         {
             out->warn("No mods installed");
@@ -217,23 +244,35 @@ void GameServer::BindServerCommands()
     });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
+
+    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hours and minutes", [&](Console::ArgStack& aStack) {
+        auto out = spdlog::get("ConOut");
+
+        auto hour = aStack.Pop<int64_t>();
+        auto minute = aStack.Pop<int64_t>();
+        auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
+
+        bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
+
+        if (time_set_successfully)
+        {
+            out->info("Time set to {}:{}", hour, minute);
+        }
+        else
+        {
+            out->error("Hours must between 0-23 and minutes must be between 0-59");
+        }
+    });
 }
 
 void GameServer::UpdateInfo()
 {
     // Update Info fields from user facing CVARS.
     m_info.name = sServerName.c_str();
-    m_info.desc = sServerDesc.c_str();
-    m_info.icon_url = sServerIconURL.c_str();
+    m_info.desc = "";
+    m_info.icon_url = "";
+    m_info.tagList = "";
     m_info.tick_rate = GetUserTickRate();
-
-    if (std::strlen(sTagList.c_str()) > 512)
-    {
-        m_info.tagList = "";
-        spdlog::warn("TagList limit exceeded (512 characters). Ignoring tags.");
-    }
-    else
-        m_info.tagList = sTagList.c_str();
 }
 
 void GameServer::OnUpdate()
@@ -297,8 +336,6 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
-    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
-
     if (pPlayer)
     {
         if (const auto& cell = pPlayer->GetCellComponent())
@@ -307,7 +344,13 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
             pPlayer->SetCellComponent(CellIdComponent{{}, {}, {}});
             m_pWorld->GetDispatcher().trigger(PlayerLeaveCellEvent(oldCell));
         }
+
         m_pWorld->GetDispatcher().trigger(PlayerLeaveEvent(pPlayer));
+
+        NotifyPlayerLeft notify{};
+        notify.PlayerId = pPlayer->GetId();
+        notify.Username = pPlayer->GetUsername();
+        SendToPlayers(notify);
 
         entt::entity playerCharacter = pPlayer->GetCharacter().value_or(static_cast<entt::entity>(0));
 
@@ -317,17 +360,18 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
         {
             if (entity == playerCharacter)
             {
-                auto& characterComponent = m_pWorld->get<CharacterComponent>(entity);
-                m_pWorld->GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(entity)));
+                m_pWorld->GetDispatcher().enqueue(CharacterRemoveEvent(World::ToInteger(entity)));
                 continue;
             }
 
             const auto& [ownerComponent] = ownerView.get(entity);
             if (ownerComponent.GetOwner() == pPlayer)
             {
-                m_pWorld->GetDispatcher().trigger(OwnershipTransferEvent(entity));
+                m_pWorld->GetDispatcher().enqueue(OwnershipTransferEvent(entity));
             }
         }
+
+        m_pWorld->GetDispatcher().update();
 
         m_pWorld->GetPlayerManager().Remove(pPlayer);
     }
@@ -339,9 +383,7 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
-    ScopedAllocator _(s_allocator);
-
-    Buffer buffer(1 << 16);
+    Buffer buffer(1 << 20);
     Buffer::Writer writer(&buffer);
     writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
 
@@ -357,9 +399,7 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 {
     static thread_local TiltedPhoques::ScratchAllocator s_allocator{1 << 18};
 
-    ScopedAllocator _(s_allocator);
-
-    Buffer buffer(1 << 16);
+    Buffer buffer(1 << 20);
     Buffer::Writer writer(&buffer);
     writer.WriteBits(0, 8); // Skip the first byte as it is used by packet
 
@@ -389,20 +429,34 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
     }
 }
 
+// NOTE: this doesn't check objects in range, only characters in range.
 void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
-    const auto* pCellComp = m_pWorld->try_get<CellIdComponent>(acOrigin);
+    if (!m_pWorld->valid(acOrigin))
+    {
+        spdlog::error("Entity is invalid: {:X}", World::ToInteger(acOrigin));
+        return;
+    }
 
-    if (!pCellComp)
+    const auto view = m_pWorld->view<CellIdComponent>();
+    const auto it = view.find(acOrigin);
+
+    if (it == view.end())
     {
         spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
         return;
     }
 
+    const auto& cellComponent = view.get<CellIdComponent>(*it);
+
+    bool isDragon = false;
+    if (const auto* characterComponent = m_pWorld->try_get<CharacterComponent>(acOrigin))
+        isDragon = characterComponent->IsDragon();
+
     for (Player* pPlayer : m_pWorld->GetPlayerManager())
     {
-        if (pCellComp->IsInRange(pPlayer->GetCellComponent()) && pPlayer != apExcludedPlayer)
+        if (cellComponent.IsInRange(pPlayer->GetCellComponent(), isDragon) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
 }
@@ -424,7 +478,6 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
         const auto& partyComponent = pPlayer->GetParty();
         if (partyComponent.JoinedPartyId == acPartyComponent.JoinedPartyId)
         {
-            spdlog::info("Sent to party member");
             pPlayer->Send(acServerMessage);
         }
     }
@@ -443,6 +496,11 @@ static String PrettyPrintModList(const Vector<Mods::Entry>& acMods)
     return text;
 }
 
+bool GameServer::ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest)
+{
+    return false;
+}
+
 void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                                              const UniquePtr<AuthenticationRequest>& acRequest)
 {
@@ -453,25 +511,56 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
     AuthenticationResponse serverResponse;
     serverResponse.Version = BUILD_COMMIT;
+
+    using RT = AuthenticationResponse::ResponseType;
+    auto sendKick = [&](const RT type) {
+        serverResponse.Type = type;
+        Send(aConnectionId, serverResponse);
+        // the previous message is a lingering kick, it still gets delivered.
+        Kick(aConnectionId);
+    };
 #if 1
     // to make our testing life a bit easier.
     if (acRequest->Version != BUILD_COMMIT)
     {
         spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
                      remoteAddress, acRequest->Version.c_str());
-
-        serverResponse.Type = AuthenticationResponse::ResponseType::kWrongVersion;
-        Send(aConnectionId, serverResponse);
-        Kick(aConnectionId);
+        sendKick(RT::kWrongVersion);
         return;
     }
 #endif
 
+    if (m_pWorld->GetPlayerManager().Count() >=  uMaxPlayerCount.value_as<uint32_t>())
+    {
+        sendKick(RT::kServerFull);
+        return;
+    }
+
+    bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
+    bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;
+
+    if (skseProblem || mo2Problem)
+    {
+        TiltedPhoques::String response;
+        if (skseProblem)
+            response += "SKSE ";
+        if (mo2Problem)
+            response += "MO2 ";
+
+        spdlog::info("New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId,
+                     remoteAddress, response.c_str(), skseProblem && mo2Problem ? "are" : "is");
+
+        serverResponse.SKSEActive = acRequest->SKSEActive;
+        serverResponse.MO2Active = acRequest->MO2Active;
+        sendKick(RT::kClientModsDisallowed);
+        return;
+    }
+
     // check if the proper server password was supplied.
-    if (acRequest->Token == sToken.value())
+    if (acRequest->Token == sPassword.value())
     {
         Mods& responseList = serverResponse.UserMods;
-        auto& modsComponent = m_pWorld->ctx<ModsComponent>();
+        auto& modsComponent = m_pWorld->ctx().at<ModsComponent>();
 
         if (IsMoPoActive())
         {
@@ -518,11 +607,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                     "ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}",
                     aConnectionId, text.c_str());
 
-                serverResponse.Type = AuthenticationResponse::ResponseType::kMissingMods;
                 serverResponse.UserMods.ModList = std::move(modsToRemove.ModList);
-                Send(aConnectionId, serverResponse);
-                // This is a lingering kick, so sending the response should still succeed.
-                Kick(aConnectionId);
+                sendKick(RT::kModsMismatch);
                 return;
             }
         }
@@ -536,11 +622,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         for (auto& mod : acRequest->UserMods.ModList)
         {
             const uint32_t id =
-                mod.IsLite() ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
+                mod.IsLite ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
 
             Mods::Entry entry;
             entry.Filename = mod.Filename;
             entry.Id = static_cast<uint16_t>(id);
+            entry.IsLite = mod.IsLite;
 
             playerMods.push_back(mod.Filename);
             playerModsIds.push_back(entry.Id);
@@ -553,15 +640,52 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetUsername(std::move(acRequest->Username));
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
+        pPlayer->SetLevel(acRequest->Level);
+
+        serverResponse.PlayerId = pPlayer->GetId();
 
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
         spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
+        serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
+        serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
+        serverResponse.Settings.PvpEnabled = bEnablePvp;
+        serverResponse.Settings.SyncPlayerHomes = bSyncPlayerHomes;
+
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer));
+
+        uint32_t startId = 0;
+        auto initStringCache = StringCache::Get().Serialize(startId);
+
+        pPlayer->SetStringCacheId(startId);
+
+        Send(aConnectionId, initStringCache);
+
+        for (auto* pOtherPlayer : m_pWorld->GetPlayerManager())
+        {
+            if (pOtherPlayer == pPlayer)
+                continue;
+
+            NotifyPlayerJoined notify{};
+            notify.PlayerId = pOtherPlayer->GetId();
+            notify.Username = pOtherPlayer->GetUsername();
+
+            auto& cellComponent = pOtherPlayer->GetCellComponent();
+            notify.WorldSpaceId = cellComponent.WorldSpaceId;
+            notify.CellId = cellComponent.Cell;
+
+            notify.Level = pOtherPlayer->GetLevel();
+
+            spdlog::debug("[GameServer] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
+
+            Send(pPlayer->GetConnectionId(), notify);
+        }
+
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
+/*
     else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
     {
         AdminSessionOpen response;
@@ -570,10 +694,11 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         m_adminSessions.insert(aConnectionId);
         spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
     }
+*/
     else
     {
-        spdlog::info("New player {:x} '{}' has a bad token, kicking.", aConnectionId, remoteAddress);
-        Kick(aConnectionId);
+        spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
+        sendKick(RT::kWrongPassword);
     }
 }
 
