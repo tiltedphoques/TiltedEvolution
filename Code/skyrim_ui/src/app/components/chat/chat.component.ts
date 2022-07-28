@@ -13,7 +13,7 @@ interface ChatMessage extends Message {
   typeClass: string;
 }
 
-function messagegeTypeToClassName(type: MessageType): string {
+function messageTypeToClassName(type: MessageType): string {
   switch (type) {
     case MessageType.SYSTEM_MESSAGE:
       return "system";
@@ -67,7 +67,7 @@ export class ChatComponent implements AfterViewChecked {
     client.messageReception
       .pipe(takeUntil(this.destroy$))
       .subscribe(message => {
-        const typeClass = messagegeTypeToClassName(message.type);
+        const typeClass = messageTypeToClassName(message.type);
         this.messages.push({ ...message, date: Date.now(), odd: this.odd, typeClass });
 
         if (this.messages.length > 100) {
