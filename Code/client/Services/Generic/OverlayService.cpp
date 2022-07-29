@@ -111,15 +111,8 @@ float CalculateHealthPercentage(Actor* apActor) noexcept
     return percentage;
 }
 
-enum ChatMessageType : unsigned char
-{
-    kSystemMessage = 0,
-    kGlobalMessage,
-    kPlayerDialogue,
-    // whisper, local chat etc
-};
 
-void SendChatMessage(OverlayApp* apOverlay, ChatMessageType aMsgType, CefString aContent, CefString aSender = "") noexcept
+void SendChatMessage(OverlayApp* apOverlay, ChatMessageTypes aMsgType, CefString aContent, CefString aSender = "") noexcept
 {
     if (!apOverlay)
         return;
@@ -363,7 +356,7 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, kGlobalMessage);
+    pArguments->SetInt(0, acMessage.MessageType);
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
     pArguments->SetString(2, acMessage.PlayerName.c_str());
 
