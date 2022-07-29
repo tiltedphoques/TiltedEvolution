@@ -24,15 +24,35 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
     m_playerHealthConnection = aDispatcher.sink<PacketEvent<RequestPlayerHealthUpdate>>().connect<&OverlayService::OnPlayerHealthUpdate>(this);
 }
 
+// maybe just gatther these into one method, which will sort out the targets
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
     NotifyChatMessageBroadcast notifyMessage{};
 
     std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+    notifyMessage.MessageType = acMessage.Packet.MessageType;
     notifyMessage.PlayerName = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
     notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
 
-    GameServer::Get()->SendToPlayers(notifyMessage);
+    switch (notifyMessage.MessageType)
+    {
+    case (kGlobalChat):
+        GameServer::Get()->SendToPlayers(notifyMessage);
+        break;
+
+    case (kSystemMessage):
+        spdlog::error("PlayerId {} attempted to send a System Message.", acMessage.pPlayer->GetId());
+        break;
+
+    case (kPlayerDialogue):
+        GameServer::Get()->SendToParty(notifyMessage, acMessage.pPlayer->GetParty(), acMessage.pPlayer);
+        break;
+
+    default:
+        spdlog::error("{} is not a known MessageType", static_cast<uint64_t>(notifyMessage.MessageType));
+        break;
+    }
+    
 }
 
 void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept
