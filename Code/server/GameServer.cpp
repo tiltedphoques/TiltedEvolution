@@ -264,11 +264,21 @@ void GameServer::BindServerCommands()
         }
     });
 }
-
+    /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
 {
-    // Update Info fields from user facing CVARS.
-    m_info.name = sServerName.c_str();
+    const String cServerName = sServerName.c_str();
+
+    if (cServerName.length() > cm_MaxServerNameLength) 
+    {
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", cm_MaxServerNameLength);
+        m_info.name = cServerName.substr(0U, cm_MaxServerNameLength);
+    }
+    else
+    {
+        m_info.name = cServerName;
+    }
+
     m_info.desc = "";
     m_info.icon_url = "";
     m_info.tagList = "";
