@@ -263,7 +263,7 @@ interface SkyrimTogether {
    *
    * @param message Message to send.
    */
-  sendMessage(message: string): void;
+  sendMessage(type: number, message: string): void;
 
   /**
    * Deactivate UI and release control.

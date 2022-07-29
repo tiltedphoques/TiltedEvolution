@@ -241,7 +241,7 @@ export class ClientService implements OnDestroy {
    */
   public sendMessage(message: string): void {
     if (environment.game) {
-      skyrimtogether.sendMessage(message);
+      skyrimtogether.sendMessage(MessageType.GLOBAL_CHAT, message);
     } else {
       this.messageReception.next({ name: this.nameChange.getValue(), content: message, type: MessageType.GLOBAL_CHAT });
     }
