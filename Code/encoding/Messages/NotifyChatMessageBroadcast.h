@@ -20,10 +20,12 @@ struct NotifyChatMessageBroadcast final : ServerMessage
     bool operator==(const NotifyChatMessageBroadcast& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
+               MessageType == acRhs.MessageType && 
                PlayerName == acRhs.PlayerName && 
                ChatMessage == acRhs.ChatMessage;
     }
 
+    ChatMessageType MessageType;
     TiltedPhoques::String PlayerName;
     TiltedPhoques::String ChatMessage;
 };
