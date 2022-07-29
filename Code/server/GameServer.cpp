@@ -536,8 +536,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     {
         spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
                      remoteAddress, acRequest->Version.c_str());
-        sendKick(RT::kWrongVersion);
-        return;
+        //sendKick(RT::kWrongVersion);
+        //return;
     }
 #endif
 

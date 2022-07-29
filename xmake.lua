@@ -41,7 +41,9 @@ add_requires(
     "mem", 
     "glm", 
     "sentry-native", 
-    "zlib")
+    "zlib",
+    "sol2",
+    "openrestry-luajit")
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
 add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
@@ -49,6 +51,8 @@ add_requireconfs("magnum", { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration",  { configs = { imgui = true }})
 add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration.imgui", { override = true })
+add_requireconfs("sol2", { configs = { includes_lua = false } })
+add_requireconfs("openrestry-luajit", { configs = { gc64 = true } })
 
 if is_plat("windows") then
     add_requires(

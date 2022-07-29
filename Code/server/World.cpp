@@ -1,16 +1,17 @@
-#include <World.h>
 #include <Components.h>
+#include <World.h>
 
-#include <Services/CharacterService.h>
-#include <Services/ObjectService.h>
-#include <Services/QuestService.h>
-#include <Services/ServerListService.h>
 #include <Services/ActorValueService.h>
 #include <Services/AdminService.h>
-#include <Services/InventoryService.h>
-#include <Services/MagicService.h>
-#include <Services/OverlayService.h>
+#include <Services/CharacterService.h>
 #include <Services/CommandService.h>
+#include <Services/InventoryService.h>
+#include <Services/LuaService.h>
+#include <Services/MagicService.h>
+#include <Services/ObjectService.h>
+#include <Services/OverlayService.h>
+#include <Services/QuestService.h>
+#include <Services/ServerListService.h>
 #include <Services/StringCacheService.h>
 
 #include <es_loader/ESLoader.h>
@@ -34,6 +35,7 @@ World::World()
     ctx().emplace<OverlayService>(*this, m_dispatcher);
     ctx().emplace<CommandService>(*this, m_dispatcher);
     ctx().emplace<StringCacheService>(*this, m_dispatcher);
+    ctx().emplace<LuaService>(*this, m_dispatcher);
 
     ESLoader::ESLoader loader;
     // emplace loaded mods into modscomponent.
