@@ -99,8 +99,6 @@ private:
     Info m_info{};
     UniquePtr<World> m_pWorld;
     Console::ConsoleRegistry& m_commands;
-    
-    const uint64_t cm_MaxServerNameLength = 100U;
 
     TiltedPhoques::Set<ConnectionId_t> m_adminSessions;
     TiltedPhoques::Map<ConnectionId_t, entt::entity> m_connectionToEntity;
