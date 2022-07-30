@@ -9,3 +9,4 @@ if is_plat("windows") then
 end
 
 includes("./TiltedConnect")
+includes("./async-cpp-db")

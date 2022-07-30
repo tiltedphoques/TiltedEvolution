@@ -22,7 +22,8 @@ local function build_server()
         "CrashHandler",
         "BaseLib",
         "AdminProtocol",
-        "TiltedConnect"
+        "TiltedConnect",
+        "async-cpp-db"
     )
     add_packages(
         "gamenetworkingsockets",
@@ -46,6 +47,7 @@ target("SkyrimTogetherServer")
         "TARGET_PREFIX=\"st\"")
     add_deps("SkyrimEncoding")
     build_server()
+
 
 target("FalloutTogetherServer")
     set_basename("FTServer")
