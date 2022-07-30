@@ -42,10 +42,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;
 
-    if (bEnableItemDrops)
-        notify.Drop = message.Drop;
-    else
-        notify.Drop = false;
+    notify.Drop = bEnableItemDrops ? message.Drop : false;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
