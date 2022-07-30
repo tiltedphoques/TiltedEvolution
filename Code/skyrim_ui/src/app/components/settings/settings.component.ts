@@ -4,6 +4,21 @@ import { ClientService } from 'src/app/services/client.service';
 import { SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 
+export enum FontSize {
+  XS = 'xs',
+  S = 's',
+  M = 'm',
+  L = 'l',
+  XL = 'xl'
+}
+
+export const fontSizeToPixels = {
+  [FontSize.XS]: '10px',
+  [FontSize.S]: '12px',
+  [FontSize.M]: '16px',
+  [FontSize.L]: '18px',
+  [FontSize.XL]: '20px',
+}
 
 export enum PartyAnchor {
   TOP_LEFT,
@@ -33,6 +48,10 @@ export class SettingsComponent implements OnInit {
   public partyAnchor: PartyAnchor;
   public partyAnchorOffsetX: number;
   public partyAnchorOffsetY: number;
+  public fontSize: FontSize;
+  private _fontSize: number;
+  public maxFontSize = Object.values(FontSize).length - 1;
+  public minFontSize = 0;
   public language: string;
 
   @Output() public done = new EventEmitter<void>();
@@ -56,6 +75,8 @@ export class SettingsComponent implements OnInit {
     this.partyAnchor = this.settings.getPartyAnchor();
     this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
     this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
+    this.fontSize = this.settings.getFontSize();
+    this._fontSize = Object.values(FontSize).indexOf(this.fontSize);
     this.language = this.settings.getLanguage();
   }
 
@@ -120,6 +141,23 @@ export class SettingsComponent implements OnInit {
     this.settingsUpdated.next();
   }
 
+  onFontSizeChange(size: number) {
+    if (size >= this.minFontSize && size <= this.maxFontSize) {
+      const fontSize = Object.values(FontSize)[size];
+      this.settings.setFontSize(fontSize);
+      this.fontSize = fontSize;
+      this._fontSize = size;
+      this.settingsUpdated.next();
+    }
+  }
+
+  onFontSizeUp() {
+    this.onFontSizeChange(this._fontSize + 1)
+  }
+
+  onFontSizeDown() {
+    this.onFontSizeChange(this._fontSize - 1)
+  }
   onLanguageChange(language: string) {
     this.settings.setLanguage(language);
     this.language = language;
