@@ -2,10 +2,12 @@
 
 #include "Services/MumbleService.h"
 
-#include "Events/UpdateEvent.h"
+#include <Events/UpdateEvent.h>
 
-#include "Games/Skyrim/PlayerCharacter.h"
+#include <PlayerCharacter.h>
+#if TP_SKYRIM64
 #include "Games/Skyrim/Camera/PlayerCamera.h"
+#endif
 
 #include "Services/TransportService.h"
 
