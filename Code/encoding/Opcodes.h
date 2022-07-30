@@ -67,6 +67,7 @@ enum ServerOpcode : unsigned char
     kNotifyPartyInvite,
     kNotifyPartyJoined,
     kNotifyPartyLeft,
+    kNotifyPlayerPartyLeft,
     kNotifyActorValueChanges,
     kNotifyActorMaxValueChanges,
     kNotifyHealthChangeBroadcast,

@@ -88,6 +88,8 @@ declare namespace SkyrimTogetherTypes {
   type PartyLeftCallback = (inviterId: number) => void;
 
   type PartyInviteReceivedCallback = (inviterId: number) => void;
+
+  type OtherPlayerLeftPartyCallback = (leavingPlayerId: number) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -177,6 +179,8 @@ interface SkyrimTogether {
 
   on(event: 'partyInviteReceived', callback: SkyrimTogetherTypes.PartyInviteReceivedCallback): void;
 
+  on(event: 'otherPlayerLeftParty', callback?: SkyrimTogetherTypes.OtherPlayerLeftPartyCallback): void;
+
   /** Remove listener from when the application is first initialized. */
   off(event: 'init', callback?: SkyrimTogetherTypes.InitCallback): void;
 
@@ -255,6 +259,8 @@ interface SkyrimTogether {
   off(event: 'partyLeft', callback?: SkyrimTogetherTypes.PartyLeftCallback): void;
 
   off(event: 'partyInviteReceived', callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback): void;
+
+  off(event: 'otherPlayerLeftParty', callback?: SkyrimTogetherTypes.OtherPlayerLeftPartyCallback): void;
 
   /**
    * Connect to server at given address and port.
