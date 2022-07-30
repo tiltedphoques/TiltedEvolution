@@ -32,6 +32,7 @@ public:
     TDate GetDate() const noexcept;
 
     float GetTimeScale() const noexcept { return m_timeModel.TimeScale; }
+    bool SetTimeScale(float aScale) noexcept;
 
 private:
     void OnUpdate(const UpdateEvent &) noexcept; 

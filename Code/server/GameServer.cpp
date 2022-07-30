@@ -264,6 +264,23 @@ void GameServer::BindServerCommands()
             out->error("Hour must be between 0-23 and minute must be between 0-59");
         }
     });
+
+    m_commands.RegisterCommand<int64_t>("SetTimeScale", "Set how fast time passes. 1 is realtime. 20 is Default. ", [&](Console::ArgStack& aStack) {
+        auto out = spdlog::get("ConOut");
+
+        auto timescale = static_cast<float>(aStack.Pop<int64_t>());
+
+        bool timescale_set_successfully = m_pWorld->GetCalendarService().SetTimeScale(timescale);
+        
+        if (timescale_set_successfully)
+        {
+            out->info("Every IRL second, game time will progress by {} seconds.", timescale);
+        }
+        else
+        {
+            out->error("Scale must between 0 and 1000.");
+        }
+    });
 }
     /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
