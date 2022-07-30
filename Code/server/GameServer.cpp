@@ -73,7 +73,7 @@ constexpr char kBypassMoPoWarning[]{
     "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players won't be able "
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
@@ -246,7 +246,7 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 
-    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hours and minutes", [&](Console::ArgStack& aStack) {
+    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hour and minute", [&](Console::ArgStack& aStack) {
         auto out = spdlog::get("ConOut");
 
         auto hour = aStack.Pop<int64_t>();
@@ -261,7 +261,7 @@ void GameServer::BindServerCommands()
         }
         else
         {
-            out->error("Hours must between 0-23 and minutes must be between 0-59");
+            out->error("Hour must be between 0-23 and minute must be between 0-59");
         }
     });
 }
