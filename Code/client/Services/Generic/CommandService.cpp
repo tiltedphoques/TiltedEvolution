@@ -10,6 +10,7 @@
 
 #include <Events/CommandEvent.h>
 
+#include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportCommandRequest.h>
 #include <Messages/TeleportCommandResponse.h>
 
