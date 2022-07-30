@@ -13,8 +13,8 @@ struct PlayerCamera : public TESCamera
     void ForceFirstPerson() noexcept;
     void ForceThirdPerson() noexcept;
 
-    float rotZ;
-    float rotX;
+    float yaw;
+    float pitch;
     NiPoint3 pos;
     float zoom;
     NiNode* cameraNode;
