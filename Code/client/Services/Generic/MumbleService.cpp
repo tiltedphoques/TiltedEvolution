@@ -128,17 +128,17 @@ void MumbleService::Update(const UpdateEvent& acEvent)
     m_pLinkedMem->fAvatarTop[2] = playerUpVector.y;
 
     // Position of the avatar (here standing slightly off the origin)
-    m_pLinkedMem->fAvatarPosition[0] = pPlayer->position.x * fUnitsToMeters;
-    m_pLinkedMem->fAvatarPosition[1] = pPlayer->position.z * fUnitsToMeters;
-    m_pLinkedMem->fAvatarPosition[2] = pPlayer->position.y * fUnitsToMeters;
+    m_pLinkedMem->fAvatarPosition[0] = pPlayer->position.x / fUnitsToMeters;
+    m_pLinkedMem->fAvatarPosition[1] = pPlayer->position.z / fUnitsToMeters;
+    m_pLinkedMem->fAvatarPosition[2] = pPlayer->position.y / fUnitsToMeters;
 
-    spdlog::info("Player Mumble Position: x:{}, y:{}, z:{}", pPlayer->position.x * fUnitsToMeters,
-                 pPlayer->position.y * fUnitsToMeters, pPlayer->position.z * fUnitsToMeters);
+    spdlog::info("Player Mumble Position: x:{}, y:{}, z:{}", pPlayer->position.x / fUnitsToMeters,
+                 pPlayer->position.y / fUnitsToMeters, pPlayer->position.z / fUnitsToMeters);
 
     // Same as avatar but for the camera.
-    m_pLinkedMem->fCameraPosition[0] = pCamera->pos.x * fUnitsToMeters;
-    m_pLinkedMem->fCameraPosition[1] = pCamera->pos.z * fUnitsToMeters;
-    m_pLinkedMem->fCameraPosition[2] = pCamera->pos.y * fUnitsToMeters;
+    m_pLinkedMem->fCameraPosition[0] = pCamera->pos.x / fUnitsToMeters;
+    m_pLinkedMem->fCameraPosition[1] = pCamera->pos.z / fUnitsToMeters;
+    m_pLinkedMem->fCameraPosition[2] = pCamera->pos.y / fUnitsToMeters;
 
     auto rot = angleAxis(pCamera->pitch, glm::vec3(1, 0, 0));
     rot *= angleAxis(pCamera->yaw, glm::vec3(0, 1, 0));
