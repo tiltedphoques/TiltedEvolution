@@ -81,7 +81,7 @@ MumbleService::~MumbleService() = default;
 
 void MumbleService::Update(const UpdateEvent& acEvent)
 {
-    float fUnitsToMeters = 70.03f;
+    constexpr float fUnitsToMeters = 70.03f;
 
     // TODO: Fallout4 doesn't have PlayerCamera?
 #if TP_SKYRIM
