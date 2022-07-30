@@ -46,7 +46,7 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
 {
     m_timeModel.TimeScale = aScale;
 
-    if (aHours >= 0 && aHours <= 24 && aMinutes >= 0 && aMinutes <= 60)
+    if (aHours >= 0 && aHours <= 23 && aMinutes >= 0 && aMinutes <= 59)
     {
         // encode time as skyrim time
         auto minutes = static_cast<float>(aMinutes) * 0.17f;
