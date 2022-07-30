@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmit
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
+import { Sound, SoundService } from 'src/app/services/sound.service';
 import { DestroyService } from '../../services/destroy.service';
 import { DropdownOptionComponent } from './dropdown-option.component';
 
@@ -22,6 +23,7 @@ let dropdownCounter = 1;
       multi: true,
     },
     DestroyService,
+    SoundService
   ],
 })
 export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
@@ -46,6 +48,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
 
   constructor(
     private readonly destroy$: DestroyService,
+    private readonly soundService: SoundService,
     private readonly cdr: ChangeDetectorRef,
   ) {
   }
@@ -82,6 +85,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.selected = idx;
     this.isSelectedValue = true;
     this.isOpen = false;
+    this.soundService.play(Sound.Check);
     this.onChangeCallback(selectedOption);
     this.optSelect.emit(selectedOption);
   }
