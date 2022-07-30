@@ -79,6 +79,8 @@ MumbleService::~MumbleService() = default;
 
 void MumbleService::Update(const UpdateEvent& acEvent)
 {
+    float fUnitsToMeters = 70.03f;
+
     // TODO: Fallout4 doesn't have PlayerCamera?
 #if TP_SKYRIM
     if (!m_pLinkedMem || !m_transport.IsOnline())
@@ -106,7 +108,7 @@ void MumbleService::Update(const UpdateEvent& acEvent)
     // Y positive towards "up".
     // Z positive towards "front".
     //
-    // 1 unit = 1 meter
+    // 70.03 units = 1 meter
 
     auto playerRot = angleAxis(pPlayer->rotation.x, glm::vec3(1, 0, 0));
     playerRot *= angleAxis(pPlayer->rotation.y, glm::vec3(0, 1, 0));
@@ -126,14 +128,17 @@ void MumbleService::Update(const UpdateEvent& acEvent)
     m_pLinkedMem->fAvatarTop[2] = playerUpVector.y;
 
     // Position of the avatar (here standing slightly off the origin)
-    m_pLinkedMem->fAvatarPosition[0] = pPlayer->position.x;
-    m_pLinkedMem->fAvatarPosition[1] = pPlayer->position.z;
-    m_pLinkedMem->fAvatarPosition[2] = pPlayer->position.y;
+    m_pLinkedMem->fAvatarPosition[0] = pPlayer->position.x * fUnitsToMeters;
+    m_pLinkedMem->fAvatarPosition[1] = pPlayer->position.z * fUnitsToMeters;
+    m_pLinkedMem->fAvatarPosition[2] = pPlayer->position.y * fUnitsToMeters;
+
+    spdlog::info("Player Mumble Position: x:{}, y:{}, z:{}", pPlayer->position.x * fUnitsToMeters,
+                 pPlayer->position.y * fUnitsToMeters, pPlayer->position.z * fUnitsToMeters);
 
     // Same as avatar but for the camera.
-    m_pLinkedMem->fCameraPosition[0] = pCamera->pos.x;
-    m_pLinkedMem->fCameraPosition[1] = pCamera->pos.z;
-    m_pLinkedMem->fCameraPosition[2] = pCamera->pos.y;
+    m_pLinkedMem->fCameraPosition[0] = pCamera->pos.x * fUnitsToMeters;
+    m_pLinkedMem->fCameraPosition[1] = pCamera->pos.z * fUnitsToMeters;
+    m_pLinkedMem->fCameraPosition[2] = pCamera->pos.y * fUnitsToMeters;
 
     auto rot = angleAxis(pCamera->pitch, glm::vec3(1, 0, 0));
     rot *= angleAxis(pCamera->yaw, glm::vec3(0, 1, 0));
