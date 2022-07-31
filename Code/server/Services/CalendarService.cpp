@@ -94,7 +94,7 @@ bool CalendarService::SetTimeScale(float aScale) noexcept
         ServerTimeSettings timeMsg;
         timeMsg.TimeScale = m_timeModel.TimeScale;
         timeMsg.Time = m_timeModel.Time;
-        GameServer::Get()->SendToLoaded(timeMsg);
+        GameServer::Get()->SendToPlayers(timeMsg);
         return true;
     }
 
