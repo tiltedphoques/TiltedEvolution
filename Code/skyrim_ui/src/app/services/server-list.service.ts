@@ -26,7 +26,7 @@ export class ServerListService {
   public getServerList(): Observable<Server[]> {
     return this.http.get<Server[]>(`${ environment.urlProtocol }://${ environment.url }/list`)
       .pipe(
-        map<any, Server[]>((data: any) => {console.log(data); return data.servers}),
+        map<any, Server[]>((data: any) => data.servers),
         map(servers => servers.map(truncateServerName))
       );
   }
