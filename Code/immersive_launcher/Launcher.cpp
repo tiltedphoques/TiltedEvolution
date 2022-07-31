@@ -47,6 +47,21 @@ LaunchContext* GetLaunchContext()
         return false;                                                                                                  \
     }
 
+
+void SetMaxstdio()
+{
+    const auto handle = GetModuleHandleW(L"API-MS-WIN-CRT-STDIO-L1-1-0.DLL");
+    if (!handle)
+        return;
+
+    const auto setmaxstdioFunc = reinterpret_cast<decltype(&_setmaxstdio)>(GetProcAddress(handle, "_setmaxstdio"));
+
+    if (!setmaxstdioFunc)
+        return;
+
+    setmaxstdioFunc(8192);
+}
+
 int StartUp(int argc, char** argv)
 {
     bool askSelect = (GetAsyncKeyState(VK_SPACE) & 0x8000);
@@ -62,6 +77,8 @@ int StartUp(int argc, char** argv)
 #if (!IS_MASTER)
     TiltedPhoques::Debug::CreateConsole();
 #endif
+
+    SetMaxstdio();
 
     if (!EarlyInstallSucceeded())
         DIE_NOW(L"Early load install failed. Tell Force about this.");
