@@ -128,77 +128,72 @@ export class ClientService implements OnDestroy {
     private readonly loadingService: LoadingService,
     private readonly translocoService: TranslocoService,
   ) {
-    if (environment.game) {
-      skyrimtogether.on('init', this.onInit.bind(this));
-      skyrimtogether.on('activate', this.onActivate.bind(this));
-      skyrimtogether.on('deactivate', this.onDeactivate.bind(this));
-      skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
-      skyrimtogether.on('exitGame', this.onExitGame.bind(this));
-      skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
-      skyrimtogether.on('message', this.onMessage.bind(this));
-      skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
-      skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
-      skyrimtogether.on('connect', this.onConnect.bind(this));
-      skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
-      skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
-      skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
-      skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
-      skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
-      skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
-      skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
-      skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
-      skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
-      skyrimtogether.on('setCell', this.onSetCell.bind(this));
-      skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
-      skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
-      skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
-      skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
-      skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
-      skyrimtogether.on('dummyData', this.onDummyData.bind(this));
-      skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
-      skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
-      skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
-      skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
-    }
+    skyrimtogether.on('init', this.onInit.bind(this));
+    skyrimtogether.on('activate', this.onActivate.bind(this));
+    skyrimtogether.on('deactivate', this.onDeactivate.bind(this));
+    skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
+    skyrimtogether.on('exitGame', this.onExitGame.bind(this));
+    skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
+    skyrimtogether.on('message', this.onMessage.bind(this));
+    skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
+    skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
+    skyrimtogether.on('connect', this.onConnect.bind(this));
+    skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
+    skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
+    skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
+    skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
+    skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
+    skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
+    skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
+    skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
+    skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
+    skyrimtogether.on('setCell', this.onSetCell.bind(this));
+    skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
+    skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
+    skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
+    skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
+    skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
+    skyrimtogether.on('dummyData', this.onDummyData.bind(this));
+    skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
+    skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
+    skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
+    skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
   }
 
   /**
    * Dispose.
    */
   public ngOnDestroy(): void {
-    if (environment.game) {
-      skyrimtogether.off('init');
-      skyrimtogether.off('activate');
-      skyrimtogether.off('deactivate');
-      skyrimtogether.off('enterGame');
-      skyrimtogether.off('exitGame');
-      skyrimtogether.off('openingMenu');
-      skyrimtogether.off('message');
-      skyrimtogether.off('systemMessage');
-      skyrimtogether.off('dialogueMessage');
-      skyrimtogether.off('connect');
-      skyrimtogether.off('disconnect');
-      skyrimtogether.off('setName');
-      skyrimtogether.off('setVersion');
-      skyrimtogether.off('debug');
-      skyrimtogether.off('debugData');
-      skyrimtogether.off('userDataSet');
-      skyrimtogether.off('playerConnected');
-      skyrimtogether.off('playerDisconnected');
-      skyrimtogether.off('setHealth');
-      skyrimtogether.off('setLevel');
-      skyrimtogether.off('setCell');
-      skyrimtogether.off('setPlayer3dLoaded');
-      skyrimtogether.off('setPlayer3dUnloaded');
-      skyrimtogether.off('setLocalPlayerId');
-      skyrimtogether.off('protocolMismatch');
-      skyrimtogether.off('triggerError');
-      skyrimtogether.off('dummyData');
-      skyrimtogether.off('partyInfo');
-      skyrimtogether.off('partyCreated');
-      skyrimtogether.off('partyLeft');
-      skyrimtogether.off('partyInviteReceived');
-    }
+    skyrimtogether.off('init');
+    skyrimtogether.off('activate');
+    skyrimtogether.off('deactivate');
+    skyrimtogether.off('enterGame');
+    skyrimtogether.off('exitGame');
+    skyrimtogether.off('openingMenu');
+    skyrimtogether.off('message');
+    skyrimtogether.off('systemMessage');
+    skyrimtogether.off('dialogueMessage');
+    skyrimtogether.off('connect');
+    skyrimtogether.off('disconnect');
+    skyrimtogether.off('setName');
+    skyrimtogether.off('setVersion');
+    skyrimtogether.off('debug');
+    skyrimtogether.off('debugData');
+    skyrimtogether.off('playerConnected');
+    skyrimtogether.off('playerDisconnected');
+    skyrimtogether.off('setHealth');
+    skyrimtogether.off('setLevel');
+    skyrimtogether.off('setCell');
+    skyrimtogether.off('setPlayer3dLoaded');
+    skyrimtogether.off('setPlayer3dUnloaded');
+    skyrimtogether.off('setLocalPlayerId');
+    skyrimtogether.off('protocolMismatch');
+    skyrimtogether.off('triggerError');
+    skyrimtogether.off('dummyData');
+    skyrimtogether.off('partyInfo');
+    skyrimtogether.off('partyCreated');
+    skyrimtogether.off('partyLeft');
+    skyrimtogether.off('partyInviteReceived');
   }
 
   /**
@@ -209,28 +204,19 @@ export class ClientService implements OnDestroy {
    * @param password Password or admin password
    */
   public connect(host: string, port: number, password = ''): void {
-    if (environment.game) {
-      skyrimtogether.connect(host, port, password);
-      this.isConnectionInProgressChange.next(true);
-      this._host = host;
-      this._port = port;
-      this._password = password;
-    } else {
-      this.connectionStateChange.next(true);
-      this.isConnectionInProgressChange.next(false);
-    }
+    skyrimtogether.connect(host, port, password);
+    this.isConnectionInProgressChange.next(true);
+    this._host = host;
+    this._port = port;
+    this._password = password;
   }
 
   /**
    * Disconnect from the server or cancel connection.
    */
   public disconnect(): void {
-    if (environment.game) {
-      skyrimtogether.disconnect();
-      this._remainingReconnectionAttempt = 0;
-    } else {
-      this.connectionStateChange.next(false);
-    }
+    skyrimtogether.disconnect();
+    this._remainingReconnectionAttempt = 0;
   }
 
   /**
@@ -239,107 +225,68 @@ export class ClientService implements OnDestroy {
    * @param message Message to send.
    */
   public sendMessage(message: string): void {
-    if (environment.game) {
-      skyrimtogether.sendMessage(message);
-    } else {
-      this.messageReception.next({ name: this.nameChange.getValue(), content: message });
-    }
+    skyrimtogether.sendMessage(message);
   }
 
   /**
    * Launch a party.
    */
   public launchParty(): void {
-    if (environment.game) {
-      skyrimtogether.launchParty();
-    } else {
-      this.partyLaunchedChange.next();
-      this.onPartyCreated();
-    }
+    skyrimtogether.launchParty();
   }
 
   /**
    * Create a party invite.
    */
   public createPartyInvite(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.createPartyInvite(playerId);
-    } else {
-      this.partyInviteChange.next(playerId);
-    }
+    skyrimtogether.createPartyInvite(playerId);
   }
 
   /**
    * Accept a party invite.
    */
   public acceptPartyInvite(inviterId: number): void {
-    if (environment.game) {
-      skyrimtogether.acceptPartyInvite(inviterId);
-    } else {
-      this.partyJoinedChange.next(inviterId);
-    }
+    skyrimtogether.acceptPartyInvite(inviterId);
   }
 
   /**
    * As a party leader, kick a player from the party.
    */
   public kickPartyMember(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.kickPartyMember(playerId);
-    } else {
-      this.memberKickedChange.next(playerId);
-    }
+    skyrimtogether.kickPartyMember(playerId);
   }
 
   /**
    * Leave a party.
    */
   public leaveParty(): void {
-    if (environment.game) {
-      skyrimtogether.leaveParty();
-    } else {
-      this.onPartyLeft();
-    }
+    skyrimtogether.leaveParty();
   }
 
   /**
    * As a party leader, make someone else the leader.
    */
   public changePartyLeader(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.changePartyLeader(playerId);
-    } else {
-      this.partyLeaderChange.next(playerId);
-    }
+    skyrimtogether.changePartyLeader(playerId);
   }
 
   /**
    * Deactivate UI and release control.
    */
   public deactivate(): void {
-    if (environment.game) {
-      skyrimtogether.deactivate();
-    } else {
-      this.activationStateChange.next(this.activationStateChange.getValue());
-    }
+    skyrimtogether.deactivate();
   }
 
   /**
    * Reconnect
    */
   public reconnect(): void {
-    if (environment.game) {
-      skyrimtogether.reconnect();
-      this._remainingReconnectionAttempt = 0;
-    }
+    skyrimtogether.reconnect();
+    this._remainingReconnectionAttempt = 0;
   }
 
   public teleportToPlayer(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.teleportToPlayer(playerId);
-    } else {
-      this.messageReception.next({ content: 'Simulating teleport' });
-    }
+    skyrimtogether.teleportToPlayer(playerId);
   }
 
   /**
@@ -445,9 +392,7 @@ export class ClientService implements OnDestroy {
       this.connectionStateChange.next(true);
 
       const content = await firstValueFrom(
-        this.translocoService.selectTranslate<string>(
-          'SERVICE.CLIENT.CONNECTED'
-        )
+        this.translocoService.selectTranslate<string>('SERVICE.CLIENT.CONNECTED'),
       );
       this.messageReception.next({ content });
     });
@@ -474,9 +419,7 @@ export class ClientService implements OnDestroy {
         this.connect(this._host, this._port, this._password);
       } else {
         const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'SERVICE.CLIENT.DISCONNECTED'
-          )
+          this.translocoService.selectTranslate<string>('SERVICE.CLIENT.DISCONNECTED'),
         );
         this.messageReception.next({ content });
       }

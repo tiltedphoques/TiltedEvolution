@@ -1,6 +1,9 @@
 import { APP_INITIALIZER, Provider } from '@angular/core';
-import { MockClientService } from '../app/services/mock-client.service';
+import { MockClientService } from '../app/mock/mock-client.service';
+import { mockSkyrimTogether } from '../app/mock/skyrimtogether.mock';
 
+
+mockSkyrimTogether();
 
 export const environment = {
   production: false,
