@@ -27,12 +27,7 @@
     "DISCONNECT": {
       "PROMPT": "您确定要断开连接吗？",
       "PROCEED": "确定",
-      "CANCEL": "取消",
-      "ERROR": {
-        "CONNECTION": "无法连接至指定的服务器。请确认输入了正确的地址，且没有网络问题。",
-        "VERSION_MISMATCH": "无法连接至服务器。服务器的Skyrim Together版本与您的不同。",
-        "INVALID_ADDRESS": "地址格式无效。"
-      }
+      "CANCEL": "取消"
     },
     "ERROR": {
       "OK": "确定"
@@ -43,6 +38,8 @@
     "PARTY_MENU": {
       "ACCEPT_INVITE": "接受{{name}}的邀请。",
       "LAUNCH_PARTY" : "组建团队",
+	  "INVITES": "邀请",
+      "NO_INVITES": "您没有收到任何邀请",
       "EXPERIENCE_WARNING": "为保证最优的任务体验，请阅读<b>skyrim-together.com</b>上的游玩指导。其摘要如下：",
       "GUIDELINES": {
         "PARTY": "创建团队使您成为\"主机\"，即队长；",
@@ -93,6 +90,8 @@
       "LOADING": "加载中...",
       "NO_SERVERS": "没有可用的公开服务器",
       "HIDE_MISMATCHED_SERVER": "隐藏不兼容的服务器",
+	  "HIDE_FULL_SERVERS": "隐藏已满的服务器",
+	  "SERVER_COUNT": "显示{{count}}个服务器中的{{filteredCount}}个",
       "TABLE_HEADERS": {
         "NAME": "服务器名称",
         "PLAYERS": "玩家数",
@@ -119,6 +118,8 @@
       "PARTY_ANCHOR_OFFSET_X": "水平偏移",
       "PARTY_ANCHOR_OFFSET_Y": "铅垂偏移",
       "LENGTH": "{{length}}秒",
+	  "UI": "UI",
+      "LANGUAGE": "语言",
       "DEBUG": "调试",
       "SHOW_DEBUG_INFO": "显示调试信息",
       "BACK": "返回"
@@ -126,7 +127,9 @@
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "连接已丢失，正在重新连接。剩余{{remainingReconnectionAttempt }次尝试。"
+      "CONNECTION_LOST": "连接已丢失，正在重新连接。剩余{{remainingReconnectionAttempt}次尝试。"
+	  "CONNECTED": "成功连接至服务器",
+      "DISCONNECTED": "与服务器断开连接"
     },
     "GROUP": {
       "LEVEL_UP": "{{name}}升级至{{level}}级。",
@@ -142,8 +145,12 @@
         "MODS_MISMATCH_INSTALL": "欲加入该服务器，请安装以下模组：\n{{mods}}",
         "CLIENT_MODS_DISALLOWED": "该服务器禁止以下模组：{{mods}}。将其移除以加入服务器。",
         "WRONG_PASSWORD": "您输入的密码不正确。",
-        "NO_REASON": "服务器无故拒绝了连接。"
+        "NO_REASON": "服务器无故拒绝了连接。",
+		"SERVER_FULL": "服务器已满。"
       }
+    },
+	"PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}}邀请您加入其团队"
     }
   }
 }
