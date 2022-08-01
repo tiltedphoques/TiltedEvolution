@@ -173,10 +173,29 @@ void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+
     if (acEvent.FormId == 0x14)
     {
-        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
         pActor->GetExtension()->SetPlayer(true);
+    }
+
+    auto commandingActorBits = pActor->GetCommandingActor();
+    if (commandingActorBits != 0)
+    {
+        auto pActorHandle = pActor->currentProcess->middleProcess->commandingActor;
+        auto pOwner = TESObjectREFR::GetByHandle(pActorHandle.handle.iBits);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+
+        if (pOwner && pOwnerActor && pOwnerActor->formID == 0x14)
+        {
+            spdlog::info("Spawn Actor: {:X} is a player summon", pActor->formID);
+            m_world.playerHandler = pActorHandle;
+        }
+    }
+    else if (acEvent.FormId != 0x14 && m_world.playerHandler)
+    {
+        pActor->SetCommandingActor(m_world.playerHandler);
     }
 
     entt::entity entity;

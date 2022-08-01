@@ -11,6 +11,7 @@
 #include <Systems/ModSystem.h>
 
 #include <Structs/ServerSettings.h>
+#include <Misc/MiddleProcess.h>
 
 struct World : entt::registry
 {
@@ -44,6 +45,8 @@ struct World : entt::registry
 
     static void Create() noexcept;
     [[nodiscard]] static World& Get() noexcept;
+
+    ActorHandle playerHandler;
 
 private:
 
