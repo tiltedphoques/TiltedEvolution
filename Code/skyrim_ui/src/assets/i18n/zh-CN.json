@@ -127,7 +127,7 @@
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "连接已丢失，正在重新连接。剩余{{remainingReconnectionAttempt}次尝试。"
+      "CONNECTION_LOST": "连接已丢失，正在重新连接。剩余{{remainingReconnectionAttempt}次尝试。",
       "CONNECTED": "成功连接至服务器",
       "DISCONNECTED": "与服务器断开连接"
     },
