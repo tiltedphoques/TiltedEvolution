@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, forwardRef, Input, Renderer2 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Sound, SoundService } from 'src/app/services/sound.service';
 import { DestroyService } from '../../services/destroy.service';
 
 
@@ -39,11 +40,13 @@ export class CheckboxComponent implements ControlValueAccessor {
     private readonly cdr: ChangeDetectorRef,
     private readonly elementRef: ElementRef,
     private readonly renderer: Renderer2,
+    private readonly soundService: SoundService
   ) {
   }
 
   setValue(checked: boolean) {
     this.checked = checked;
+    this.soundService.play(checked ? Sound.Check : Sound.Uncheck)
     this.onChangeCallback(checked);
   }
 

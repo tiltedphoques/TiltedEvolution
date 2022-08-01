@@ -20,6 +20,7 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
 
+constexpr size_t kMaxSererNameLength = 128u;
 
 // -- Cvars --
 Console::Setting<uint16_t> uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
@@ -72,7 +73,7 @@ constexpr char kBypassMoPoWarning[]{
     "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players won't be able "
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
@@ -245,7 +246,7 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 
-    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hours and minutes", [&](Console::ArgStack& aStack) {
+    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hour and minute", [&](Console::ArgStack& aStack) {
         auto out = spdlog::get("ConOut");
 
         auto hour = aStack.Pop<int64_t>();
@@ -260,15 +261,25 @@ void GameServer::BindServerCommands()
         }
         else
         {
-            out->error("Hours must between 0-23 and minutes must be between 0-59");
+            out->error("Hour must be between 0-23 and minute must be between 0-59");
         }
     });
 }
-
+    /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
 {
-    // Update Info fields from user facing CVARS.
-    m_info.name = sServerName.c_str();
+    const String cServerName = sServerName.c_str();
+
+    if (cServerName.length() > kMaxSererNameLength) 
+    {
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxSererNameLength);
+        m_info.name = cServerName.substr(0U, kMaxSererNameLength);
+    }
+    else
+    {
+        m_info.name = cServerName;
+    }
+
     m_info.desc = "";
     m_info.icon_url = "";
     m_info.tagList = "";

@@ -60,13 +60,7 @@ export class SettingsComponent implements OnInit {
   }
 
   onMutedChange(checked: boolean) {
-    if (checked) {
-      this.sound.play(Sound.Check);
-    }
     this.settings.muteAudio(checked);
-    if (!checked) {
-      this.sound.play(Sound.Uncheck);
-    }
     this.settingsUpdated.next();
   }
 
@@ -78,27 +72,23 @@ export class SettingsComponent implements OnInit {
   onShowDebugChange(checked: boolean) {
     this.settings.setDebugShown(checked);
     this.client.debugStateChange.next(checked);
-    this.sound.play(checked ? Sound.Check : Sound.Uncheck);
     this.settingsUpdated.next();
   }
 
   onShowPartyChange(checked: boolean) {
     this.settings.showParty(checked);
-    this.sound.play(checked ? Sound.Check : Sound.Uncheck);
     this.settingsUpdated.next();
   }
 
   onAutoHidePartyChange(checked: boolean) {
     this.settings.autoHideParty(checked);
     this.autoHideParty = checked;
-    this.sound.play(checked ? Sound.Check : Sound.Uncheck);
     this.settingsUpdated.next();
   }
 
   onAutoHideTimeChange(time: number) {
     this.settings.setAutoHideTime(time);
     this.autoHideTime = time;
-    this.sound.play(Sound.Check);
     this.settingsUpdated.next();
   }
 
