@@ -85,7 +85,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CF();
     virtual void sub_D0();
     virtual void sub_D1();
-    virtual void sub_D2();
+    virtual bool sub_D2() const;
     virtual void sub_D3();
     virtual void sub_D4();
     virtual void sub_D5();
@@ -153,8 +153,8 @@ struct Actor : TESObjectREFR
     virtual void sub_112();
     virtual void sub_113();
     virtual void sub_114();
-    virtual void sub_115();
-    virtual void sub_116();
+    virtual bool sub_115();
+    virtual bool sub_116();
     virtual void sub_117();
     virtual void sub_118();
     virtual void sub_119();
@@ -186,6 +186,7 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
+    Actor* GetCommandingActor() const noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;

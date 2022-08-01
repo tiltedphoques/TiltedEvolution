@@ -193,6 +193,20 @@ TESForm* Actor::GetEquippedAmmo() const noexcept
     return nullptr;
 }
 
+// Get owner of a summon or raised corpse
+Actor* Actor::GetCommandingActor() const noexcept
+{
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess->commandingActor)
+    {
+        auto handle = currentProcess->middleProcess->commandingActor.handle;
+        auto pOwner = TESObjectREFR::GetByHandle(handle.iBits);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+        return pOwnerActor;
+    }
+
+    return nullptr;
+}
+
 TESForm *Actor::GetCurrentLocation()
 {
     // we use the safe function which also
