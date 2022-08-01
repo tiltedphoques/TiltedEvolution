@@ -9,6 +9,8 @@
 #include <Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Forms/MagicItem.h>
 #include <Magic/ActorMagicCaster.h>
+#include <AI/AIProcess.h>
+#include <Misc/MiddleProcess.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
@@ -187,6 +189,7 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
     Actor* GetCommandingActor() const noexcept;
+    void SetCommandingActor(ActorHandle aCommandingActor) noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
@@ -239,6 +242,7 @@ struct Actor : TESObjectREFR
     enum ActorFlags
     {
         IS_A_MOUNT = 1 << 1,
+        IS_COMMANDED_ACTOR = 1 << 16,
         IS_ESSENTIAL = 1 << 18,
     };
 
@@ -257,6 +261,11 @@ struct Actor : TESObjectREFR
             flags2 |= ActorFlags::IS_ESSENTIAL;
         else
             flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
+
+    bool IsCommandedActor() const noexcept
+    {
+        return flags2 & ActorFlags::IS_COMMANDED_ACTOR;
     }
 
 public:
