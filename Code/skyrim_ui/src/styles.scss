@@ -180,7 +180,6 @@ button {
 
 ::-webkit-scrollbar {
   width: $scrollbar;
-  height: $scrollbar;
 }
 
 ::-webkit-scrollbar-button {
@@ -241,4 +240,45 @@ html,
 body {
   height: 100%;
   margin: 0;
+}
+
+hr {
+  border-image: url(./assets/images/separator/single.svg) 3;
+}
+
+.separator {
+  text-align: center;
+  border: 0;
+  white-space: nowrap;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+
+  & > * {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  &:before, &:after {
+    content: "";
+    height: 2px;
+    width: 50%;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: rem($-size-font, 2px);
+    border-bottom: rem($-size-font, 2px) solid;
+    border-image: url(./assets/images/separator/single.svg) 3;
+  }
+
+  &:before {
+    margin-left: -100%;
+  }
+
+  &:after {
+    margin-right: -100%;
+  }
+
 }

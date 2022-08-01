@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct TESNPC;
 
 struct ExtraLeveledCreature : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::LeveledCreature;
+    inline static constexpr auto eExtraData = ExtraDataType::LeveledCreature;
 
     virtual ~ExtraLeveledCreature();
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Structs/Inventory.h>
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 
 /**
 * @brief Dispatched when the contents of an object or actor inventory changes locally.

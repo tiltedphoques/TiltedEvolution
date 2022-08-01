@@ -1,51 +1,39 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, Subscription, timer } from 'rxjs';
-import { Player } from '../models/player';
-import { NotificationType, PopupNotification } from '../models/popup-notification';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
+import { PopupNotifactionOptions, PopupNotification } from '../models/popup-notification';
 import { Sound, SoundService } from './sound.service';
 
 
 @Injectable({
   providedIn: 'root',
 })
-export class PopupNotificationService implements OnDestroy {
+export class PopupNotificationService {
 
-  private messageSubject = new Subject<PopupNotification>();
-  private timerSubscription: Subscription;
+  private message = new Subject<PopupNotification>();
+  public message$ = this.message.asObservable();
+  private messagesCleared = new Subject<void>();
+  public messagesCleared$ = this.messagesCleared.asObservable();
 
   constructor(
     private readonly soundService: SoundService,
   ) {
   }
 
-  ngOnDestroy() {
-    if (this.timerSubscription) {
-      this.timerSubscription.unsubscribe();
-    }
-  }
-
-  public get message(): Observable<PopupNotification> {
-    return this.messageSubject.asObservable();
-  }
-
-  public setMessage(msg: string, typeNotification: NotificationType, player?: Player) {
-    if (this.timerSubscription) {
-      this.timerSubscription.unsubscribe();
-    }
-
-    this.messageSubject.next({ message: msg, type: typeNotification, player: player });
-
+  public addMessage(message: string, options: PopupNotifactionOptions) {
+    const notification: PopupNotification = {
+      message,
+      type: options.type,
+      player: options.player,
+      duration: options.duration ? (options.duration < 0 ? 500 : options.duration) : 5000,
+      onClose: new Subject(),
+    };
+    this.message.next(notification);
     this.soundService.play(Sound.Focus);
-
-    const source = timer(3000);
-
-    this.timerSubscription = source.subscribe(() => {
-      this.messageSubject.next({ message: '', type: NotificationType.Connection, player: undefined });
-    });
+    return notification;
   }
 
-  public clearMessage() {
-    this.messageSubject.next({ message: '' });
+  public clearMessages() {
+    this.messagesCleared.next();
   }
 
 }

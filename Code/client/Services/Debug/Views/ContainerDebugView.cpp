@@ -5,10 +5,58 @@
 #include <PlayerCharacter.h>
 #include <EquipManager.h>
 #include <World.h>
+
+#if TP_SKYRIM64
 #include <DefaultObjectManager.h>
+#elif TP_FALLOUT4
+#include <Forms/TESObjectARMO.h>
+#include <Forms/TESObjectWEAP.h>
+#include <Forms/TESObjectBOOK.h>
+#include <Forms/TESObjectMISC.h>
+#include <Forms/BGSNote.h>
+#include <Forms/TESAmmo.h>
+#include <Magic/MagicItem.h>
+
+String GetName(uint32_t aFormId) noexcept
+{
+    if (auto* pObject = Cast<TESObjectARMO>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else if (auto* pObject = Cast<TESObjectWEAP>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else if (auto* pObject = Cast<TESObjectBOOK>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else if (auto* pObject = Cast<TESObjectMISC>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else if (auto* pObject = Cast<BGSNote>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else if (auto* pObject = Cast<TESAmmo>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else if (auto* pObject = Cast<MagicItem>(TESForm::GetById(aFormId)))
+    {
+        return pObject->value.AsAscii();
+    }
+    else
+    {
+        return "NONAME";
+    }
+}
+#endif
 
 void DebugService::DrawContainerDebugView()
 {
+#if TP_SKYRIM64
     static TESForm* pFetchForm = nullptr;
     static Actor* pActor = nullptr;
 
@@ -127,4 +175,61 @@ void DebugService::DrawContainerDebugView()
     }
 
     ImGui::End();
+#elif TP_FALLOUT4
+    static Actor* pActor = nullptr;
+
+    ImGui::Begin("Inventory");
+
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
+                       ImGuiInputTextFlags_CharsHexadecimal);
+
+    if (ImGui::Button("Look up"))
+    {
+        if (m_formId)
+        {
+            pActor = Cast<Actor>(TESForm::GetById(m_formId));
+        }
+    }
+
+    if (pActor)
+    {
+        static Inventory inventory{};
+
+        if (ImGui::Button("Fetch inventory"))
+            inventory = pActor->GetInventory();
+
+        int inventoryCount = inventory.Entries.size();
+
+        ImGui::InputInt("Inventory count", &inventoryCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+        ImGui::BeginChild("Items", ImVec2(0, 200), true);
+
+        for (Inventory::Entry& entry : inventory.Entries)
+        {
+            int itemId = entry.BaseId.BaseId + entry.BaseId.ModId;
+
+            ImGui::PushID(itemId);
+
+            String itemLabel = GetName(entry.BaseId.BaseId);
+            if (!ImGui::CollapsingHeader(itemLabel.c_str()))
+                continue;
+
+            ImGui::InputInt("Item ID", &itemId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+            int itemCount = entry.Count;
+            ImGui::InputInt("Item count", &itemCount, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            int isWorn = entry.ExtraWorn;
+            ImGui::InputInt("Is worn?", &isWorn, 0, 0, ImGuiInputTextFlags_ReadOnly);
+
+            ImGui::Separator();
+
+            ImGui::PopID();
+        }
+
+        ImGui::EndChild();
+    }
+
+    ImGui::End();
+#endif
 }

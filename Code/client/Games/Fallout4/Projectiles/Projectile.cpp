@@ -19,7 +19,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 {
     if (arData.pShooter)
     {
-        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(arData.pShooter);
         if (pActor)
         {
             ActorExtension* pExtendedActor = pActor->GetExtension();
@@ -71,7 +71,7 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
 {
     if (apSource)
     {
-        Actor* pActor = RTTI_CAST(apSource, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(apSource);
         if (pActor)
         {
             ActorExtension* pExtension = pActor->GetExtension();
@@ -87,8 +87,8 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_FALLOUT4(TLaunch, s_launch, 0x140FCA260 - 0x140000000);
-    POINTER_FALLOUT4(TFire, fire, 0x14034D490 - 0x140000000);
+    POINTER_FALLOUT4(TLaunch, s_launch, 1452335);
+    POINTER_FALLOUT4(TFire, fire, 1056038);
 
     RealLaunch = s_launch.Get();
     RealFire = fire.Get();

@@ -22,7 +22,6 @@ struct TESWorldSpace;
 */
 struct DiscoveryService final
     : BSTEventSink<TESLoadGameEvent>
-    , BSTEventSink<TESDeathEvent>
 {
     DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
     ~DiscoveryService() noexcept = default;
@@ -65,11 +64,6 @@ protected:
     * TODO(cosideci): this system is incomplete.
     */
     BSTEventResult OnEvent(const TESLoadGameEvent*, const EventDispatcher<TESLoadGameEvent>*) override;
-
-    /**
-    * Papyrus event sent when an actor dies. We only care about player death here.
-    */
-    BSTEventResult OnEvent(const TESDeathEvent*, const EventDispatcher<TESDeathEvent>*) override;
 
 private:
 

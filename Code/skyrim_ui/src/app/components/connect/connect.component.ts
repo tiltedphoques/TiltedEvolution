@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, Subscription } from 'rxjs';
+import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
-import { RootView } from '../root/root.component';
+import { UiRepository } from '../../store/ui.repository';
 
 
 @Component({
@@ -22,7 +23,6 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   public connecting = false;
 
   @Output() public done = new EventEmitter<void>();
-  @Output() public setView = new EventEmitter<RootView>();
 
   public constructor(
     private readonly client: ClientService,
@@ -30,6 +30,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     private readonly errorService: ErrorService,
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
+    private readonly uiRepository: UiRepository,
   ) {
     this.connectionSubscription = this.client.connectionStateChange.subscribe(async state => {
       if (this.connecting) {
@@ -104,7 +105,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   }
 
   public openServerList(): void {
-    this.setView.next(RootView.SERVER_LIST);
+    this.uiRepository.openView(View.SERVER_LIST);
   }
 
   @ViewChild('input')

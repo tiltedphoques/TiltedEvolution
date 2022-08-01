@@ -1,0 +1,26 @@
+<div *ngIf="options | async as options"
+     class="dropdown-wrapper"
+     [class.focus]="isFocused"
+     [class.is-open]="isOpen"
+     [class.disabled]="isDisabled"
+>
+  <div class="box" (click)="toggle($event)">
+    <ng-container>
+      <div class="dropdown-selected">
+        <span>{{ options?.[selected] ? options[selected].text : placeholder }}</span>
+        <fa-icon [icon]="faCaretDown"></fa-icon>
+      </div>
+    </ng-container>
+  </div>
+
+  <ul class="dropdown-options" *ngIf="options">
+    <li
+      *ngFor="let option of options; let i = index"
+      [id]="'li-' + dropdownCounter + '-' + i"
+      (click)="optionSelect(option.value, i, $event)"
+    >
+      <app-checkbox [ngModel]="selected === i"></app-checkbox>
+      {{ option.text ?? option.value }}
+    </li>
+  </ul>
+</div>

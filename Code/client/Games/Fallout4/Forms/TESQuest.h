@@ -12,10 +12,27 @@ struct TESQuest : BGSStoryManagerTreeForm
         Disabled,
         Enabled = 1 << 0,
         Completed = 1 << 1,
-        Started = 1 << 7,
+        StageWait = 1 << 7,
         Unk = 2 << 10, // this is very likely a combination
         Unk2 = 8 << 10,
     };
+
+    enum class Type : uint8_t
+    {
+        None = 0x0,
+        QTYPE_MAINQUEST = 0x1,
+        QTYPE_BROTHERHOOD = 0x2,
+        QTYPE_INSTITUTE = 0x3,
+        QTYPE_MINUTEMEN = 0x4,
+        QTYPE_RAILROAD = 0x5,
+        Miscellaneous = 0x6,
+        QTYPE_SIDEQUESTS = 0x7,
+        QTYPE_DLC01 = 0x8,
+        QTYPE_DLC02 = 0x9,
+        QTYPE_DLC03 = 0xA,
+        QTYPE_COUNT = 0xB,
+    };
+
 
     struct Objective
     {
@@ -38,7 +55,7 @@ struct TESQuest : BGSStoryManagerTreeForm
         uint8_t flags;            // 0x001A
         uint16_t pad1B;           // 0x001B
 
-        inline bool IsDone()
+        inline bool IsDone() const
         {
             return flags & 1;
         }
@@ -48,7 +65,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     char pad30[0xC4];        // 0x0030
     uint16_t flags;          // 0x00F4
     uint8_t priority;        // 0x00F6
-    uint8_t type;            // 0x00F7
+    Type  type;            // 0x00F7
     int32_t scopedStatus;    // 0x00F8
     char padFC[0x4];         // 0x00FC
     GameArray<Stage> stages; // 0x0100
@@ -62,12 +79,13 @@ struct TESQuest : BGSStoryManagerTreeForm
     void SetActive(bool toggle);
     bool SetStage(uint16_t stage);
     void SetStopped();
+    void ScriptSetStage(uint16_t stage);
 
     inline bool IsActive() const { return ((flags >> 11) & 1); }
     inline bool IsCompleted() const { return ((flags >> 1) & 1); }
     inline bool IsStopped() const { return !(flags & Flags::Enabled) && flags >= 0; }
 
-    bool UnkSetRunning(bool& succeded, bool force);
+    bool EnsureQuestStarted(bool& succeded, bool force);
 };
 
 static_assert(sizeof(TESQuest) == 752);

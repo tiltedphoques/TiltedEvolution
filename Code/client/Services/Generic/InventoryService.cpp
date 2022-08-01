@@ -23,6 +23,11 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <EquipManager.h>
+
+#if TP_FALLOUT4
+#include <Forms/BGSObjectInstance.h>
+#endif
+
 #include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -136,20 +141,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
         ScopedInventoryOverride _;
 
-        ExtraDataList* pExtraData = pActor->GetExtraDataFromItem(acMessage.Item);
-        ModSystem& modSystem = World::Get().GetModSystem();
-
-        uint32_t objectId = modSystem.GetGameId(acMessage.Item.BaseId);
-        TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
-        if (!pObject)
-        {
-            spdlog::warn("{}: Object to drop not found, {:X}:{:X}.", __FUNCTION__, acMessage.Item.BaseId.ModId,
-                         acMessage.Item.BaseId.BaseId);
-            return;
-        }
-
-        if (acMessage.Item.Count < 0)
-            pActor->DropObject(pObject, pExtraData, acMessage.Item.Count, nullptr, nullptr);
+        pActor->DropOrPickUpObject(acMessage.Item, nullptr, nullptr);
     }
     else
     {
@@ -188,6 +180,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
 
     auto* pEquipManager = EquipManager::Get();
 
+#if TP_SKYRIM64
     if (acMessage.IsSpell)
     {
         uint32_t spellSlotId = 0;
@@ -198,6 +191,8 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
         else
             pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
+
+        return;
     }
     else if (acMessage.IsShout)
     {
@@ -205,38 +200,55 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             pEquipManager->UnEquipShout(pActor, pItem);
         else
             pEquipManager->EquipShout(pActor, pItem);
+
+        return;
+    }
+#endif
+
+    auto* pObject = Cast<TESBoundObject>(pItem);
+
+    // TODO: ExtraData necessary? probably
+    if (acMessage.Unequip)
+    {
+#if TP_SKYRIM64
+        pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
+#elif TP_FALLOUT4
+        // TODO: this is flawed, little control over slots and extra data
+        if (pObject)
+            pActor->UnequipItem(pObject);
+#endif
     }
     else
     {
-        // TODO: ExtraData necessary? probably
-        if (acMessage.Unequip)
-            pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
-        else
+        // Unequip all armor first, since the game won't auto unequip armor
+#if TP_SKYRIM64
+        Inventory wornArmor{};
+        if (pItem->formType == FormType::Armor)
         {
-            // Unequip all armor first, since the game won't auto unequip armor
-            Inventory wornArmor{};
-            if (pItem->formType == FormType::Armor)
-            {
-                wornArmor = pActor->GetWornArmor();
-                for (const auto& armor : wornArmor.Entries)
-                {
-                    uint32_t armorId = modSystem.GetGameId(armor.BaseId);
-                    TESForm* pArmor = TESForm::GetById(armorId);
-                    if (pArmor)
-                        pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
-                }
-            }
-
-            pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
-
+            wornArmor = pActor->GetWornArmor();
             for (const auto& armor : wornArmor.Entries)
             {
                 uint32_t armorId = modSystem.GetGameId(armor.BaseId);
                 TESForm* pArmor = TESForm::GetById(armorId);
                 if (pArmor)
-                    pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+                    pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
             }
         }
+
+        pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+
+        for (const auto& armor : wornArmor.Entries)
+        {
+            uint32_t armorId = modSystem.GetGameId(armor.BaseId);
+            TESForm* pArmor = TESForm::GetById(armorId);
+            if (pArmor)
+                pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+        }
+#elif TP_FALLOUT4
+        // TODO(cosideci): same armor trick required for fallout 4?
+        BGSObjectInstance object(pObject, nullptr);
+        EquipManager::Get()->EquipObject(pActor, object, 0, acMessage.Count, nullptr, false, true, false, false, false);
+#endif
     }
 }
 

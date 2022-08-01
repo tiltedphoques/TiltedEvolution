@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraDataList.h>
+#include "ExtraDataList.h"
 
 struct BGSLoadFormBuffer;
 struct BGSSaveFormBuffer;
@@ -9,7 +9,7 @@ struct TESForm;
 
 struct ExtraContainerChanges : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::ContainerChanges;
+    inline static constexpr auto eExtraData = ExtraDataType::ContainerChanges;
 
     struct Entry
     {

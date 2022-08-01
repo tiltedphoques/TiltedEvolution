@@ -10,7 +10,7 @@
 #include <Forms/TESNPC.h>
 #include <Forms/TESPackage.h>
 #include <SaveLoad.h>
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 
 #include <BSAnimationGraphManager.h>
 #include <Misc/GameVM.h>
@@ -30,13 +30,16 @@
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
-#include <Events/DialogueEvent.h>
 
 #include <TiltedCore/Serialization.hpp>
 
 #include <Services/PapyrusService.h>
 #include <Services/DebugService.h>
 #include <World.h>
+
+#if TP_FALLOUT4
+#include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
+#endif
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
 thread_local uint32_t ScopedReferencesOverride::s_refCount = 0;
@@ -58,26 +61,45 @@ namespace Settings
 int32_t* GetDifficulty() noexcept
 {
     POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
+    POINTER_FALLOUT4(int32_t, s_difficulty, 1072875);
     return s_difficulty.Get();
 }
 
 float* GetGreetDistance() noexcept
 {
     POINTER_SKYRIMSE(float, s_greetDistance, 370892);
+    POINTER_FALLOUT4(float, s_greetDistance, 855966);
     return s_greetDistance.Get();
 }
+
+#if TP_FALLOUT4
+float* GetVATSSelectTargetTimeMultiplier() noexcept
+{
+    POINTER_FALLOUT4(float, s_vatsSelectTargetMult, 302827);
+    return s_vatsSelectTargetMult.Get();
+}
+#endif
 }
 
 namespace GameplayFormulas
 {
 
+// TODO: ft
+// fallout 4's damage calc code looks a bit different
+// move this from References.cpp
 float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexcept
 {
     using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
     POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
 
     bool isPlayer = apHittee == PlayerCharacter::Get();
+
+    // TODO: ft
+#if TP_SKYRIM64
     float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->difficulty, ActorValueInfo::kHealth, isPlayer);
+#else
+    float multiplier = 1.f;
+#endif
 
     float realDamage = aDamage;
 
@@ -91,11 +113,14 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 
 }
 
+// TODO: ft
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
 {
+#if TP_SKYRIM64
     using TFadeOutGame = void(bool, bool, float, bool, float);
     POINTER_SKYRIMSE(TFadeOutGame, fadeOutGame, 52847);
     fadeOutGame.Get()(aFadingOut, aBlackFade, aFadeDuration, aRemainVisible, aSecondsToFade);
+#endif
 }
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
@@ -105,7 +130,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
 
     POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 17201);
-    POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 0x140023740 - 0x140000000);
+    POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 1152089);
 
     s_getRefrByHandle.Get()(aHandle, pResult);
 
@@ -118,7 +143,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 uint32_t* TESObjectREFR::GetNullHandle() noexcept
 {
     POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
-    POINTER_FALLOUT4(uint32_t, s_nullHandle, 0x1438CCE04 - 0x140000000);
+    POINTER_FALLOUT4(uint32_t, s_nullHandle, 888642);
 
     return s_nullHandle.Get();
 }
@@ -162,7 +187,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             auto* pExtendedActor = pActor->GetExtension();
             if (pExtendedActor->GraphDescriptorHash == 0)
             {
-                // Force first person graph to be used on player
+                // Force third person graph to be used on player
                 if (pActor->formID == 0x14)
                     pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey(0);
                 else
@@ -185,9 +210,30 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
             aVariables.Integers.resize(pDescriptor->IntegerLookupTable.size());
 
+#if TP_FALLOUT4
+            // TODO: maybe send a var with the variables indicating first or third person?
+            hkbVariableValueSet* pFirstPersonVariables = nullptr;
+            if (pActor->formID == 0x14)
+                pFirstPersonVariables = pManager->animationGraphs.Get(1)->behaviorGraph->animationVariables;
+#endif
+
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
+
+#if TP_FALLOUT4
+                if (pActor->formID == 0x14)
+                {
+                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
+                    if (!firstPersonIdx)
+                        continue;
+
+                    if (pFirstPersonVariables->data[*firstPersonIdx] != 0)
+                        aVariables.Booleans |= (1ull << i);
+
+                    continue;
+                }
+#endif
 
                 if (pVariableSet->data[idx] != 0)
                     aVariables.Booleans |= (1ull << i);
@@ -196,12 +242,46 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pActor->formID == 0x14)
+                {
+                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
+                    if (!firstPersonIdx)
+                    {
+                        aVariables.Floats[i] = 0.f;
+                        continue;
+                    }
+
+                    aVariables.Floats[i] = *reinterpret_cast<float*>(&pFirstPersonVariables->data[*firstPersonIdx]);
+
+                    continue;
+                }
+#endif
+
                 aVariables.Floats[i] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
             }
 
             for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->IntegerLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pActor->formID == 0x14)
+                {
+                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
+                    if (!firstPersonIdx)
+                    {
+                        aVariables.Integers[i] = 0.f;
+                        continue;
+                    }
+
+                    aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pFirstPersonVariables->data[*firstPersonIdx]);
+
+                    continue;
+                }
+#endif
+
                 aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
             }
         }
@@ -240,11 +320,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
-            {
-                //if ((formID & 0xFF000000) == 0xFF000000)
-                    //spdlog::info("Form id {} has {}", formID, pGraph->behaviorGraph->stateMachine->name);
                 return;
-            }
 
             const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
             
@@ -255,6 +331,14 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
 
+#if TP_FALLOUT4
+                if (pExtendedActor->IsRemotePlayer())
+                {
+                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
+                        continue;
+                }
+#endif
+
                 if (pVariableSet->size > idx)
                 {
                     pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
@@ -264,51 +348,36 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pExtendedActor->IsRemotePlayer())
+                {
+                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
+                        continue;
+                }
+#endif
+
                 *reinterpret_cast<float*>(&pVariableSet->data[idx]) = aVariables.Floats.size() > i ? aVariables.Floats[i] : 0.f;
             }
 
             for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->IntegerLookupTable[i];
+
+#if TP_FALLOUT4
+                if (pExtendedActor->IsRemotePlayer())
+                {
+                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
+                        continue;
+                }
+#endif
+
                 *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers.size() > i ? aVariables.Integers[i] : 0;
             }
         }
 
         pManager->Release();
     }
-}
-
-String TESObjectREFR::SerializeInventory() const noexcept
-{
-    ScopedSaveLoadOverride _;
-
-    // TODO: buffer[1 << 15] is too small for some inventories
-    // buffer[1 << 18] does the job, but these inventories seem to be bugged
-    // ask cosi for repro
-    // temp solution: increase the buffer
-    // only happened in skyrim, idk if fallout 4 needs it
-    char buffer[1 << 18];
-    BGSSaveFormBuffer saveBuffer;
-    saveBuffer.buffer = buffer;
-    saveBuffer.capacity = 1 << 18;
-    saveBuffer.changeFlags = 1024;
-
-    SaveInventory(&saveBuffer);
-
-    return String(buffer, saveBuffer.position);
-}
-
-void TESObjectREFR::DeserializeInventory(const String& acData) noexcept
-{
-    ScopedSaveLoadOverride _;
-
-    BGSLoadFormBuffer loadBuffer(1024);
-    loadBuffer.SetSize(acData.size() & 0xFFFFFFFF);
-    loadBuffer.buffer = acData.c_str();
-    loadBuffer.formId = 0;
-    loadBuffer.form = nullptr;
-    
-    LoadInventory(&loadBuffer);
 }
 
 uint32_t TESObjectREFR::GetCellId() const noexcept
@@ -376,22 +445,27 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
                      const NiPoint3&, const NiPoint3&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
-    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 0x1413FE7E0 - 0x140000000);
+    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 1332435);
 
     ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
+// TODO: ft
 void TESObjectREFR::PayGold(int32_t aAmount) noexcept
 {
+#if TP_SKYRIM64
     ScopedInventoryOverride _;
     PayGoldToContainer(nullptr, aAmount);
+#endif
 }
 
 void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept
 {
+#if TP_SKYRIM64
     TP_THIS_FUNCTION(TPayGoldToContainer, void, TESObjectREFR, TESObjectREFR*, int32_t);
     POINTER_SKYRIMSE(TPayGoldToContainer, s_payGoldToContainer, 37511);
     ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
+#endif
 }
 
 float Actor::GetSpeed() noexcept
@@ -407,6 +481,14 @@ void Actor::SetSpeed(float aSpeed) noexcept
 {
     static BSFixedString speedSampledStr("SpeedSampled");
     animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
+}
+
+uint16_t Actor::GetLevel() noexcept
+{
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
+    POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
+    POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
+    return ThisCall(s_getLevel, this);
 }
 
 
@@ -431,7 +513,7 @@ void Actor::QueueUpdate() noexcept
 #endif
 
     POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 40255);
-    POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 0x140D8A1F0 - 0x140000000);
+    POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 302889);
 
 #ifdef TP_SKYRIM
     ThisCall(QueueUpdate, this, true);
@@ -442,11 +524,16 @@ void Actor::QueueUpdate() noexcept
     pSetting->data = originalValue;
 }
 
+// TODO: ft
 TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept
 {
+#if TP_SKYRIM64
     TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
     POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
     return ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
+#else
+    return nullptr;
+#endif
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
@@ -491,7 +578,7 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
     POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 11806);
-    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 0x14008F660 - 0x140000000);
+    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 780730);
 
 #if TP_FALLOUT4
     const auto pExtraDataList = extraData;
@@ -535,7 +622,7 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
-    POINTER_FALLOUT4(PlayerCharacter*, s_character, 0x145AA4388 - 0x140000000);
+    POINTER_FALLOUT4(PlayerCharacter*, s_character, 303411);
     POINTER_SKYRIMSE(PlayerCharacter*, s_character, 401069);
 
     return *s_character.Get();
@@ -555,7 +642,7 @@ Lock* TESObjectREFR::GetLock() noexcept
 {
     TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
     POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
-    POINTER_FALLOUT4(TGetLock, realGetLock, 0x14047FEE0 - 0x140000000);
+    POINTER_FALLOUT4(TGetLock, realGetLock, 930786);
 
     return ThisCall(realGetLock, this);
 }
@@ -564,7 +651,7 @@ Lock* TESObjectREFR::CreateLock() noexcept
 {
     TP_THIS_FUNCTION(TCreateLock, Lock*, TESObjectREFR);
     POINTER_SKYRIMSE(TCreateLock, realCreateLock, 20221);
-    POINTER_FALLOUT4(TCreateLock, realCreateLock, 0x14047FD20 - 0x140000000);
+    POINTER_FALLOUT4(TCreateLock, realCreateLock, 1303718);
 
     return ThisCall(realCreateLock, this);
 }
@@ -585,7 +672,7 @@ bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
     TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);
 
     POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 38979);
-    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 0x140E22DF0 - 0x140000000);
+    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 835807);
 
     return ThisCall(setWeaponState, this, aDraw);
 }
@@ -615,6 +702,65 @@ void Actor::SetPackage(TESPackage* apPackage) noexcept
     s_execInitPackage = true;
     PutCreatedPackage(apPackage);
     s_execInitPackage = false;
+}
+
+void Actor::SetPlayerRespawnMode() noexcept
+{
+    SetEssentialEx(true);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(true);
+}
+
+void Actor::SetEssentialEx(bool aSet) noexcept
+{
+    SetEssential(true);
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (pBase)
+        pBase->actorData.SetEssential(true);
+}
+
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    POINTER_FALLOUT4(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 925299);
+    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::DispelAllSpells(bool aNow) noexcept
+{
+    magicTarget.DispelAllSpells(aNow);
+}
+
+void MagicTarget::DispelAllSpells(bool aNow) noexcept
+{
+    TP_THIS_FUNCTION(TDispelAllSpells, void, MagicTarget, bool aNow);
+    POINTER_SKYRIMSE(TDispelAllSpells, dispelAllSpells, 34512);
+    POINTER_FALLOUT4(TDispelAllSpells, dispelAllSpells, 629903);
+    ThisCall(dispelAllSpells, this, aNow);
+}
+
+void TESObjectCELL::GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bool aAllowCellLoad) noexcept
+{
+    TP_THIS_FUNCTION(TGetCOCPlacementInfo, void, TESObjectCELL, NiPoint3*, NiPoint3*, bool);
+    POINTER_SKYRIMSE(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 19075);
+    POINTER_FALLOUT4(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 1045265);
+    ThisCall(s_getCOCPlacementInfo, this, aOutPos, aOutRot, aAllowCellLoad);
+}
+
+void PlayerCharacter::SetGodMode(bool aSet) noexcept
+{
+    POINTER_SKYRIMSE(bool, bGodMode, 404238);
+    POINTER_FALLOUT4(bool, bGodMode, 806707);
+    *bGodMode.Get() = aSet;
+}
+
+void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude)
+{
+    TP_THIS_FUNCTION(TKnockExplosion, void, AIProcess, Actor*, const NiPoint3*, float);
+    POINTER_SKYRIMSE(TKnockExplosion, knockExplosion, 39895);
+    POINTER_FALLOUT4(TKnockExplosion, knockExplosion, 803088);
+    ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
 }
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
@@ -732,27 +878,6 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
     return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
-TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
-static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
-
-bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
-{
-    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
-                  (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
-
-    if (apThis->GetExtension()->IsLocal())
-        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
-
-    return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
-}
-
-void Actor::SpeakSound(const char* pFile)
-{
-    uint32_t handle[3]{};
-    handle[0] = -1;
-    ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
-}
-
 TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* apRefr);
 static TSetCurrentPickREFR* RealSetCurrentPickREFR = nullptr;
 
@@ -764,7 +889,8 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     if (pObject)
         formId = pObject->formID;
 
-    World::Get().GetDebugService().SetDebugId(formId);
+    // TODO: ft
+    //World::Get().GetDebugService().SetDebugId(formId);
 
     return ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
@@ -772,30 +898,28 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
-        POINTER_FALLOUT4(TSetPosition, s_setPosition, 0x14040C060 - 0x140000000);
+        POINTER_FALLOUT4(TSetPosition, s_setPosition, 1101833);
 
         POINTER_SKYRIMSE(TRotate, s_rotateX, 19787);
-        POINTER_FALLOUT4(TRotate, s_rotateX, 0x14040BE70 - 0x140000000);
+        POINTER_FALLOUT4(TRotate, s_rotateX, 158657);
 
         POINTER_SKYRIMSE(TRotate, s_rotateY, 19788);
-        POINTER_FALLOUT4(TRotate, s_rotateY, 0x14040BF00 - 0x140000000);
+        POINTER_FALLOUT4(TRotate, s_rotateY, 942683);
 
         POINTER_SKYRIMSE(TRotate, s_rotateZ, 19789);
-        POINTER_FALLOUT4(TRotate, s_rotateZ, 0x14040BF90 - 0x140000000);
+        POINTER_FALLOUT4(TRotate, s_rotateZ, 144722);
 
         POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 37356);
-        POINTER_FALLOUT4(TActorProcess, s_actorProcess, 0x140D7CEB0 - 0x140000000);
+        POINTER_FALLOUT4(TActorProcess, s_actorProcess, 1479788);
 
         POINTER_SKYRIMSE(TLockChange, s_lockChange, 19512);
-        POINTER_FALLOUT4(TLockChange, s_lockChange, 0x1403EDBA0 - 0x140000000);
+        POINTER_FALLOUT4(TLockChange, s_lockChange, 1578707);
 
         POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 39114);
-        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 0x140E28F80 - 0x140000000);
+        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 609986);
 
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
-        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 0x140E219A0 - 0x140000000);
-
-        POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
+        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 644844);
 
         POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
 
@@ -807,8 +931,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
-        RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        // TODO: ft
+    #if TP_SKYRIM64
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
+    #endif
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -818,7 +944,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealLockChange, HookLockChange);
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
-        TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
         TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
     });
 

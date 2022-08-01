@@ -78,10 +78,11 @@ bool ESLoader::LoadLoadOrder()
         PluginData plugin;
         plugin.m_filename = line;
 
+        // On Linux, the carriage return won't be taken into account
+        line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+
         char extensionType = line.back();
 
-        // TODO(Vince): This code should account for different line endings in the future...
-        //spdlog::info("Extension type: {} of line {}", extensionType, line.c_str());
         switch (extensionType)
         {
         case 'm':

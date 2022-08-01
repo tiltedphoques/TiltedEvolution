@@ -5,9 +5,11 @@
       <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
         <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
-        <input id="muted" type="checkbox" [ngModel]="muted"
-               (ngModelChange)="onMutedChange($event)"
-        >
+        <app-checkbox
+          id="muted"
+          [ngModel]="muted"
+          (ngModelChange)="onMutedChange($event)"
+        ></app-checkbox>
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
@@ -17,103 +19,127 @@
       </div>
     </div>
 
+    <hr>
+
+    <div class="section">
+      <h2>{{ 'COMPONENT.SETTINGS.UI' | transloco }}</h2>
+      <div class="flex-item">
+        <label>{{ 'COMPONENT.SETTINGS.LANGUAGE' | transloco }}</label>
+        <app-dropdown class="settings-dropdown" [ngModel]="language" (ngModelChange)="onLanguageChange($event)">
+          <app-dropdown-option *ngFor="let l of availableLanguages" [text]="l.label" [value]="l.id"></app-dropdown-option>
+        </app-dropdown>
+      </div>
+    </div>
+
+    <hr>
+
     <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
       <div class="flex-item">
         <label for="showParty">{{ 'COMPONENT.SETTINGS.SHOW_PARTY' | transloco }}</label>
-        <input id="showParty" type="checkbox" [ngModel]="showParty" [disabled]="autoHideParty"
-               (ngModelChange)="onShowPartyChange($event)"
-        >
+        <app-checkbox
+          id="showParty"
+          [ngModel]="showParty"
+          (ngModelChange)="onShowPartyChange($event)"
+        ></app-checkbox>
       </div>
       <div class="flex-item">
         <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
-        <input id="autoHideParty" type="checkbox" [ngModel]="autoHideParty"
-               (ngModelChange)="onAutoHidePartyChange($event)"
-        >
+        <app-checkbox
+          id="autoHideParty"
+          [ngModel]="autoHideParty"
+          (ngModelChange)="onAutoHidePartyChange($event)"
+        ></app-checkbox>
+
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
         <div class="radio-group">
-          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
-          <input
-            type="radio"
-            [value]="1"
-            [disabled]="!autoHideParty"
-            [ngModel]="autoHideTime"
-            (ngModelChange)="onAutoHideTimeChange($event)"
-          >
-          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
-          <input
-            type="radio"
-            [value]="3"
-            [disabled]="!autoHideParty"
-            [ngModel]="autoHideTime"
-            (ngModelChange)="onAutoHideTimeChange($event)"
-          >
-          <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
-          <input
-            type="radio"
-            [value]="5"
-            [disabled]="!autoHideParty"
-            [ngModel]="autoHideTime"
-            (ngModelChange)="onAutoHideTimeChange($event)"
-          >
+          <div>
+            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
+            <input
+              type="radio"
+              [value]="1"
+              [disabled]="!autoHideParty"
+              [ngModel]="autoHideTime"
+              (ngModelChange)="onAutoHideTimeChange($event)"
+            >
+          </div>
+          <div>
+            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
+            <input
+              type="radio"
+              [value]="3"
+              [disabled]="!autoHideParty"
+              [ngModel]="autoHideTime"
+              (ngModelChange)="onAutoHideTimeChange($event)"
+            >
+          </div>
+          <div>
+            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
+            <input
+              type="radio"
+              [value]="5"
+              [disabled]="!autoHideParty"
+              [ngModel]="autoHideTime"
+              (ngModelChange)="onAutoHideTimeChange($event)"
+            >
+          </div>
         </div>
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
-        <div class="anchor-radios">
-          <div class="radio-group">
-            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco }}</label>
-            <input type="radio" [value]="PartyAnchor.TOP_LEFT" [ngModel]="partyAnchor"
-                   (ngModelChange)="onPartyAnchorChange($event)"
-            >
-          </div>
-          <div class="radio-group">
-            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco }}</label>
-            <input type="radio" [value]="PartyAnchor.TOP_RIGHT" [ngModel]="partyAnchor"
-                   (ngModelChange)="onPartyAnchorChange($event)"
-            >
-          </div>
-          <div class="radio-group">
-            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco }}</label>
-            <input type="radio" [value]="PartyAnchor.BOTTOM_RIGHT" [ngModel]="partyAnchor"
-                   (ngModelChange)="onPartyAnchorChange($event)"
-            >
-          </div>
-          <div class="radio-group">
-            <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco }}</label>
-            <input type="radio" [value]="PartyAnchor.BOTTOM_LEFT" [ngModel]="partyAnchor"
-                   (ngModelChange)="onPartyAnchorChange($event)"
-            >
-          </div>
-        </div>
+        <app-dropdown class="settings-dropdown" [ngModel]="partyAnchor" (ngModelChange)="onPartyAnchorChange($event)">
+          <app-dropdown-option
+            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco"
+            [value]="PartyAnchor.TOP_LEFT"
+          ></app-dropdown-option>
+          <app-dropdown-option
+            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco"
+            [value]="PartyAnchor.TOP_RIGHT"
+          ></app-dropdown-option>
+          <app-dropdown-option
+            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco"
+            [value]="PartyAnchor.BOTTOM_RIGHT"
+          ></app-dropdown-option>
+          <app-dropdown-option
+            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco"
+            [value]="PartyAnchor.BOTTOM_LEFT"
+          ></app-dropdown-option>
+        </app-dropdown>
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_X' | transloco }}</label>
         <input type="range" min="0" max="84" step="1" [ngModel]="partyAnchorOffsetX"
-               (ngModelChange)="onPartyAnchorChangeOffsetX($event)"
+               (ngModelChange)="onPartyAnchorOffsetXChange($event)"
         >
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_Y' | transloco }}</label>
-        <input type="range" min="2" max="50" step="1" [ngModel]="partyAnchorOffsetY"
-               (ngModelChange)="onPartyAnchorChangeOffsetY($event)"
+        <input
+          type="range" min="2" max="50" step="1" [ngModel]="partyAnchorOffsetY"
+          (ngModelChange)="onPartyAnchorOffsetYChange($event)"
         >
       </div>
     </div>
+
+    <hr>
 
     <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
       <div class="flex-item">
         <label for="showDebug">{{ 'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco }}</label>
-        <input id="showDebug" type="checkbox" [ngModel]="showDebug"
-               (ngModelChange)="onShowDebugChange($event)"
-        >
+        <app-checkbox
+          id="showDebug"
+          [ngModel]="showDebug"
+          (ngModelChange)="onShowDebugChange($event)"
+        ></app-checkbox>
       </div>
     </div>
   </div>
 </div>
+
+<hr>
 
 <div class="actions">
   <button data-style-ornament="simple" class="btnCancel" (click)="close()">

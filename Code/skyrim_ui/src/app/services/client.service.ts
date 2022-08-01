@@ -439,10 +439,17 @@ export class ClientService implements OnDestroy {
    * Called when a connection is made.
    */
   private onConnect(): void {
-    this.zone.run(() => {
+    this.zone.run(async () => {
       this._remainingReconnectionAttempt = environment.nbReconnectionAttempts;
       this.isConnectionInProgressChange.next(false);
       this.connectionStateChange.next(true);
+
+      const content = await firstValueFrom(
+        this.translocoService.selectTranslate<string>(
+          'SERVICE.CLIENT.CONNECTED'
+        )
+      );
+      this.messageReception.next({ content });
     });
   }
 
@@ -465,6 +472,13 @@ export class ClientService implements OnDestroy {
         );
         this.messageReception.next({ content });
         this.connect(this._host, this._port, this._password);
+      } else {
+        const content = await firstValueFrom(
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.CLIENT.DISCONNECTED'
+          )
+        );
+        this.messageReception.next({ content });
       }
     });
   }

@@ -10,13 +10,11 @@
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
-#include <Games/Skyrim/Actor.h>
-#include <Games/ActorExtension.h>
 #endif
 
-#if (TP_FALLOUT4)
-#include <Games/Fallout4/Actor.h>
-#endif
+#include <Games/ActorExtension.h>
+
+#include <Actor.h>
 
 #include <BSAnimationGraphManager.h>
 #include <Havok/hkbStateMachine.h>

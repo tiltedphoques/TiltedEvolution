@@ -3,14 +3,14 @@
 #include <Games/Primitives.h>
 #include <Forms/TESForm.h>
 #include <NetImmerse/BSFaceGenNiNode.h>
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
 #include <Structs/Inventory.h>
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 
 struct AnimationVariables;
 struct TESWorldSpace;
@@ -164,14 +164,9 @@ struct TESObjectREFR : TESForm
     int64_t GetItemCountInInventory(TESForm* apItem) const noexcept;
     TESObjectCELL* GetParentCellEx() const noexcept;
 
-    void SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept;
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
-    String SerializeInventory() const noexcept;
-
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
-    void LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept;
-    void DeserializeInventory(const String& acData) noexcept;
-    
+
     void RemoveAllItems() noexcept;
     void Delete() const noexcept;
     void Disable() const noexcept;

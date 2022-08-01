@@ -339,3 +339,9 @@ struct BSPointerHandle
 
     THandle handle{};
 };
+
+struct BSReadWriteLock
+{
+    uint32_t uiWriterThread;
+    volatile uint32_t uiLock;
+};

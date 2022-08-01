@@ -36,9 +36,9 @@ void PlayerCharacter::SetGodMode(bool aSet) noexcept
     *bGodMode.Get() = aSet;
 }
 
-void PlayerCharacter::SetDifficulty(const int32_t aDifficulty) noexcept
+void PlayerCharacter::SetDifficulty(const int32_t aDifficulty, bool aForceUpdate, bool aExpectGameDataLoaded) noexcept
 {
-    if (aDifficulty > 5)
+    if (aDifficulty > 5 || aDifficulty < 0)
         return;
 
     int32_t* difficultySetting = Settings::GetDifficulty();
@@ -65,7 +65,7 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
     // Make bleedout state recoverable
     SetNoBleedoutRecovery(false);
 
-    DispellAllSpells();
+    DispelAllSpells();
 
     // Reset health to max
     // TODO(cosideci): there's a cleaner way to do this

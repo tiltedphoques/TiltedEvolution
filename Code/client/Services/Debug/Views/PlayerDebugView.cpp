@@ -97,6 +97,8 @@ void DebugService::DrawPlayerDebugView()
 
     auto& modSystem = m_world.GetModSystem();
 
+    // TODO: ft
+#if TP_SKYRIM64
     if (ImGui::CollapsingHeader("Worn armor"))
     {
         Inventory wornArmor{};
@@ -110,4 +112,5 @@ void DebugService::DrawPlayerDebugView()
     }
 
     ImGui::End();
+#endif
 }

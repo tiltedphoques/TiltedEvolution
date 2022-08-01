@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 enum class SOUL_LEVEL
 {
@@ -15,7 +15,7 @@ enum class SOUL_LEVEL
 
 struct ExtraSoul : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Soul;
+    inline static constexpr auto eExtraData = ExtraDataType::Soul;
 
     SOUL_LEVEL cSoul{};
 };

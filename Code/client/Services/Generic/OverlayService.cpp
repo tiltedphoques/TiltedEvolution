@@ -47,7 +47,11 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     OverlayRenderHandler* Create() override
     {
         auto* pHandler = new OverlayRenderHandlerD3D11(this);
+    #if TP_SKYRIM64
         pHandler->SetVisible(true);
+    #else
+        pHandler->SetVisible(false);
+    #endif
 
         return pHandler;
     }
@@ -94,12 +98,13 @@ String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 float CalculateHealthPercentage(Actor* apActor) noexcept
 {
     const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
+    const float tempModHealth = apActor->healthModifiers.temporaryModifier;
+
     if (maxHealth == 0.f)
         return 0.f;
-
     const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
 
-    float percentage = health / maxHealth * 100.f;
+    float percentage = health / (maxHealth + tempModHealth) * 100.f;
     if (percentage < 0.f)
         percentage = 0.f;
 
@@ -146,7 +151,10 @@ void OverlayService::Render() noexcept
     static bool s_bi = false;
     if (!s_bi)
     {
+        // TODO: ft, this crashes fallout sometimes
+#if TP_SKYRIM64
         m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
+#endif
 
         s_bi = true;
     }
@@ -282,7 +290,6 @@ void OverlayService::OnUpdate(const UpdateEvent&) noexcept
 void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 {
     m_pOverlay->ExecuteAsync("connect");
-    SendSystemMessage("Successfully connected to server");
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
@@ -292,7 +299,6 @@ void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 {
     m_pOverlay->ExecuteAsync("disconnect");
-    SendSystemMessage("Disconnected from server");
 }
 
 void OverlayService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
