@@ -47,7 +47,8 @@
       </div>
       <div class="flex-item">
         <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
-        <input type="checkbox"
+        <input 
+          type="checkbox"
           id="autoHideParty"
           [ngModel]="autoHideParty"
           (ngModelChange)="onAutoHidePartyChange($event)"
