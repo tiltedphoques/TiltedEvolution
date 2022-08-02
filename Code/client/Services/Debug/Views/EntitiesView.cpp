@@ -178,8 +178,8 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
         m_world.GetRunner().Trigger(MoveActorEvent(pActor->formID, pActor->GetParentCell()->formID, pActor->position));
     }
     ImGui::InputScalar("Commanding Actor", ImGuiDataType_U8, &commandingActorId, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
-    int playerHandle = m_world.playerHandler ? m_world.playerHandler.handle.iBits : 0x0;
-    ImGui::InputScalar("Player handle bits", ImGuiDataType_U8, &playerHandle, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
+    auto handle = pActor->GetHandle();
+    ImGui::InputInt("Handle", (int*)&handle.handle.iBits, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 #if TP_SKYRIM64
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
