@@ -9,8 +9,6 @@
 #include <Misc/IPostAnimationChannelUpdateFunctor.h>
 #include <Forms/MagicItem.h>
 #include <Magic/ActorMagicCaster.h>
-#include <AI/AIProcess.h>
-#include <Misc/MiddleProcess.h>
 
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>

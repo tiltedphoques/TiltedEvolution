@@ -378,7 +378,6 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
     auto& message = acMessage.Packet;
 
     auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    
     auto it = view.find(static_cast<entt::entity>(message.Id));
 
     if (it != std::end(view))
@@ -480,7 +479,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
 void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
 {
-    auto packet = acMessage.Packet;
+    auto& packet = acMessage.Packet;
 
     NotifyProjectileLaunch notify{};
 
