@@ -32,6 +32,7 @@
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+#include <Events/MoveActorEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -180,8 +181,8 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
         pActor->GetExtension()->SetPlayer(true);
     }
 
-    auto commandingActorBits = pActor->GetCommandingActor();
-    if (commandingActorBits != 0)
+    auto commandingActor = pActor->GetCommandingActor();
+    if (commandingActor)
     {
         auto pActorHandle = pActor->currentProcess->middleProcess->commandingActor;
         auto pOwner = TESObjectREFR::GetByHandle(pActorHandle.handle.iBits);
@@ -195,7 +196,7 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
     }
     else if (acEvent.FormId != 0x14 && m_world.playerHandler)
     {
-        pActor->SetCommandingActor(m_world.playerHandler);
+
     }
 
     entt::entity entity;
@@ -511,6 +512,14 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    spdlog::info("Spawn Reqeust Is summon {} {}", acMessage.IsPlayerSummon, m_world.playerHandler ? "handle" : "no handle");
+
+    if (acMessage.IsPlayerSummon && m_world.playerHandler)
+    {
+        pActor->SetCommandingActor(m_world.playerHandler);
+        m_world.GetRunner().Trigger(MoveActorEvent(pActor->formID, pActor->GetParentCell()->formID, pActor->position));
+    }
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
@@ -1451,6 +1460,16 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 #endif
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
+
+    if (pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14)
+    {
+        message.IsPlayerSummon = true;
+    }
+    else
+    {
+        message.IsPlayerSummon = false;
+    }
+    
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
