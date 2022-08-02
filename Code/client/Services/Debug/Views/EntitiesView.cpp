@@ -172,6 +172,11 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     ImGui::InputScalar("Is remote?", ImGuiDataType_U8, &isRemote, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     auto owner = pActor->GetCommandingActor();
     int commandingActorId = int(owner ? owner->formID : 0x0);
+    if (ImGui::Button("Take Commmand"))
+    {
+        pActor->SetCommandingActor(m_world.playerHandler);
+        m_world.GetRunner().Trigger(MoveActorEvent(pActor->formID, pActor->GetParentCell()->formID, pActor->position));
+    }
     ImGui::InputScalar("Commanding Actor", ImGuiDataType_U8, &commandingActorId, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     int playerHandle = m_world.playerHandler ? m_world.playerHandler.handle.iBits : 0x0;
     ImGui::InputScalar("Player handle bits", ImGuiDataType_U8, &playerHandle, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
