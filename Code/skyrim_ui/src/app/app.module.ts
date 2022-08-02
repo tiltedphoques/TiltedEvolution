@@ -70,10 +70,10 @@ import { TranslocoRootModule } from './transloco-root.module';
     ToggleComponent,
     WindowComponent,
 
+    CheckboxDirective,
     HealthDirective,
-    SliderDirective,
     RadioDirective,
-    CheckboxDirective
+    SliderDirective,
   ],
   imports: [
     BrowserAnimationsModule,

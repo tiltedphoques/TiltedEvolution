@@ -26,7 +26,8 @@
     />
 
     <div class="filter-checkbox">
-      <input type="checkbox"
+      <input 
+        type="checkbox"
         id="hide-version-mismatched-servers-checkbox"
         [ngModel]="hideVersionMismatchedServers | async"
         (ngModelChange)="hideVersionMismatchedServers.next($event)"
@@ -35,7 +36,8 @@
     </div>
 
     <div class="filter-checkbox">
-      <input type="checkbox"
+      <input 
+        type="checkbox"
         id="hide-full-servers-checkbox"
         [ngModel]="hideFullServers | async"
         (ngModelChange)="hideFullServers.next($event)"

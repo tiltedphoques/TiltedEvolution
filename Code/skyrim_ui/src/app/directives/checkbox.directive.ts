@@ -3,9 +3,6 @@ import { Sound, SoundService } from '../services/sound.service';
 
 @Directive({
   selector: 'input[type="checkbox"]',
-  providers: [
-    SoundService
-  ]
 })
 // @ts-ignore
 export class CheckboxDirective {
@@ -13,9 +10,8 @@ export class CheckboxDirective {
   constructor(private readonly soundService: SoundService) {}
 
   @HostListener('change', ['$event'])
-  // @ts-ignore
-  onChange(event: ChangeEvent<HTMLInputElement>) {
-    const target: HTMLInputElement = event.target
+  onChange(event: Event) {
+    const target = event.target as HTMLInputElement;
     this.soundService.play(target.checked ? Sound.Check : Sound.Uncheck);
   }
 }
