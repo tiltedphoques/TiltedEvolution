@@ -189,7 +189,7 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
     Actor* GetCommandingActor() const noexcept;
-    void SetCommandingActor(ActorHandle aCommandingActor) noexcept;
+    void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;

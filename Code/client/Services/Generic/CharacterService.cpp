@@ -181,24 +181,6 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
         pActor->GetExtension()->SetPlayer(true);
     }
 
-    auto commandingActor = pActor->GetCommandingActor();
-    if (commandingActor)
-    {
-        auto pActorHandle = pActor->currentProcess->middleProcess->commandingActor;
-        auto pOwner = TESObjectREFR::GetByHandle(pActorHandle.handle.iBits);
-        auto pOwnerActor = Cast<Actor>(pOwner);
-
-        if (pOwner && pOwnerActor && pOwnerActor->formID == 0x14)
-        {
-            spdlog::info("Spawn Actor: {:X} is a player summon", pActor->formID);
-            m_world.playerHandler = pActorHandle;
-        }
-    }
-    else if (acEvent.FormId != 0x14 && m_world.playerHandler)
-    {
-
-    }
-
     entt::entity entity;
 
     const auto view = m_world.view<RemoteComponent>();
@@ -513,12 +495,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    spdlog::info("Spawn Reqeust Is summon {} {}", acMessage.IsPlayerSummon, m_world.playerHandler ? "handle" : "no handle");
+    spdlog::info("Spawn Reqeust Is summon {}", acMessage.IsPlayerSummon);
 
-    if (acMessage.IsPlayerSummon && m_world.playerHandler)
+    if (acMessage.IsPlayerSummon)
     {
-        pActor->SetCommandingActor(m_world.playerHandler);
-        m_world.GetRunner().Trigger(MoveActorEvent(pActor->formID, pActor->GetParentCell()->formID, pActor->position));
+        // Prevents remote summons agroing other players.
+        pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
     }
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
@@ -1461,15 +1443,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
 
-    if (pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14)
-    {
-        message.IsPlayerSummon = true;
-    }
-    else
-    {
-        message.IsPlayerSummon = false;
-    }
-    
+    message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();

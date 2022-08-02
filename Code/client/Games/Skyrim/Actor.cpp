@@ -199,24 +199,22 @@ Actor* Actor::GetCommandingActor() const noexcept
     if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess->commandingActor)
     {
         auto handle = currentProcess->middleProcess->commandingActor.handle;
-        auto pOwner = TESObjectREFR::GetByHandle(handle.iBits);
-        auto pOwnerActor = Cast<Actor>(pOwner);
-        return pOwnerActor;
+        auto* pOwner = Cast<Actor>(TESObjectREFR::GetByHandle(handle.iBits));
+        return pOwner;
     }
 
     return nullptr;
 }
+
 // Get owner of a summon or raised corpse
-void Actor::SetCommandingActor( ActorHandle aCommandingActor) noexcept
+void Actor::SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept
 {
     if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess)
     {
         currentProcess->middleProcess->commandingActor = aCommandingActor;
         flags2 |= ActorFlags::IS_COMMANDED_ACTOR;
     }
-
 }
-
 
 TESForm *Actor::GetCurrentLocation()
 {
