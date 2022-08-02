@@ -1,0 +1,12 @@
+{
+  "//": [
+    "@angular/cdk and by extension @ngx-playwright/test only support ES Modules.",
+    "Playwright has an (experimental) Node ESM loader that transpiles TypeScript",
+    "to JavaScript. This loader is enabled when certain conditions are met:",
+    "- the package must have type module",
+    "- the playwright config must be written in typescript",
+    "- the playwright config must be written in ESM (i.e. import/export, not require)",
+    "- you must be using node >= 16"
+  ],
+  "type": "module"
+}

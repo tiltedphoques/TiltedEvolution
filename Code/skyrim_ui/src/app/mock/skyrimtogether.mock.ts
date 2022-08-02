@@ -256,15 +256,19 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
   }
 
   updateMockDebugData() {
-    this.emit(
-      'debugData',
+    const debugData = [
       Math.floor(Math.random() * 100),
       Math.floor(Math.random() * 100),
       Math.floor(Math.random() * 100),
       Math.floor((Math.random() / 4) * 100),
       Math.random() * 100,
       Math.random() * 100,
+    ];
+    this.emit(
+      'debugData',
+      ...debugData,
     );
+    return debugData;
   }
 }
 

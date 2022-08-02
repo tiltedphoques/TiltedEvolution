@@ -44,7 +44,8 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "flat"
+              "flat",
+              "events"
             ]
           },
           "configurations": {
@@ -91,6 +92,14 @@
                   "with": "src/environments/environment.develop.ts"
                 }
               ]
+            },
+            "e2e": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.e2e.ts"
+                }
+              ]
             }
           }
         },
@@ -109,6 +118,9 @@
             },
             "develop": {
               "browserTarget": "skyrim-together-ui:build:develop"
+            },
+            "e2e": {
+              "browserTarget": "skyrim-together-ui:build:e2e"
             }
           }
         },
@@ -150,14 +162,14 @@
           }
         },
         "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
+          "builder": "@ngx-playwright/test:run",
           "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "skyrim-together-ui:serve"
+            "config": "playwright/playwright.config.ts",
+            "devServerTarget": "skyrim-together-ui:serve:e2e"
           },
           "configurations": {
-            "production": {
-              "devServerTarget": "skyrim-together-ui:serve:production"
+            "ci": {
+              "forbidOnly": true
             }
           }
         }
