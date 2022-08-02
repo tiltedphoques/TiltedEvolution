@@ -5,11 +5,11 @@
       <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
         <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
-        <app-checkbox
+        <input type="checkbox"
           id="muted"
           [ngModel]="muted"
           (ngModelChange)="onMutedChange($event)"
-        ></app-checkbox>
+        />
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
@@ -37,19 +37,19 @@
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
       <div class="flex-item">
         <label for="showParty">{{ 'COMPONENT.SETTINGS.SHOW_PARTY' | transloco }}</label>
-        <app-checkbox
+        <input type="checkbox"
           id="showParty"
           [ngModel]="showParty"
           (ngModelChange)="onShowPartyChange($event)"
-        ></app-checkbox>
+        />
       </div>
       <div class="flex-item">
         <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
-        <app-checkbox
+        <input type="checkbox"
           id="autoHideParty"
           [ngModel]="autoHideParty"
           (ngModelChange)="onAutoHidePartyChange($event)"
-        ></app-checkbox>
+        >
 
       </div>
       <div class="flex-item">
@@ -129,11 +129,11 @@
       <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
       <div class="flex-item">
         <label for="showDebug">{{ 'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco }}</label>
-        <app-checkbox
+        <input type="checkbox"
           id="showDebug"
           [ngModel]="showDebug"
           (ngModelChange)="onShowDebugChange($event)"
-        ></app-checkbox>
+        />
       </div>
     </div>
   </div>
