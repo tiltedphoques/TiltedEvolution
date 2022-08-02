@@ -212,7 +212,7 @@ void Actor::SetCommandingActor( ActorHandle aCommandingActor) noexcept
     if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess)
     {
         currentProcess->middleProcess->commandingActor = aCommandingActor;
-        flags2 &= ~ActorFlags::IS_COMMANDED_ACTOR;
+        flags2 |= ActorFlags::IS_COMMANDED_ACTOR;
     }
 
 }
