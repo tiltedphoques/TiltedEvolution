@@ -13,7 +13,7 @@
         "HELGEN": "Verbind niet met een server wanneer je nog in de Helgen introductie bent. Zorg ervoor dat je eerst uit Helgen vlucht."
       },
       "ADDRESS": "Adres",
-      "PASSWORD": "Wachtworod",
+      "PASSWORD": "Wachtwoord",
       "SAVE_PASSWORD": "Wachtwoord opslaan?",
       "CONNECT": "Verbinden",
       "CANCEL": "Annuleren",
@@ -43,11 +43,11 @@
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accepteer uitnodiging van {{name}}",
       "LAUNCH_PARTY" : "Maak groep",
-      "EXPERIENCE_WARNING": "Voor een optimale 'questing' ervaring, lees de the speelgids op onze wiki, welke je kan vinden op onze website, <b>skyrim-together.com</b>. Hier is een korte opsomming van de richtlijnen:",
+      "EXPERIENCE_WARNING": "Voor een optimale 'questing' ervaring, lees de speelgids op onze wiki, welke je kan vinden op onze website, <b>skyrim-together.com</b>. Hier is een korte opsomming van de richtlijnen:",
       "GUIDELINES": {
-        "PARTY": "Door het maken van een groep, wordt jij een soort van  \"host\", aka de groepsleider.",
+        "PARTY": "Door het maken van een groep, word jij een soort van  \"host\", aka de groepsleider.",
         "PARTY_LEADER_TALK": "Alleen de groepsleider kan praten tegen quest NPCs om de quests voort te zetten.",
-        "PARTY_LEADER_LOOT_QUESTITEMS": "Alleen de groepsleider kan quests items looten.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Alleen de groepsleider kan quest voorwerpen oprapen.",
         "KEEP_PARTY_LEADER": "Gebruik steeds dezelfde groepsleider in de speelsessies.",
         "ONE_PARTY_PER_SERVER": "Wees lid van één groep per server."
       },
@@ -131,17 +131,17 @@
     "GROUP": {
       "LEVEL_UP": "{{name}} heeft level {{level}} bereikt.",
       "ALREADY_IN_GROUP": "Je bent nu in een groep. Verlaat deze groep om aan een andere groep deel te nemen.",
-      "KICK_NO_PARTY_LEADER": "Je kan geen spelers uit de groep gooien omdat je niet de groepsleider ben.",
-      "MAKE_LEADER_NO_PARTY_LEADER": "Je kan geen lid de leider maken omdat jij niet de groepsleider ben."
+      "KICK_NO_PARTY_LEADER": "Je kan geen spelers uit de groep gooien omdat je niet de groepsleider bent.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Je kan geen lid de leider maken omdat jij niet de groepsleider bent."
     },
     "ERROR": {
       "ERRORS": {
-        "WRONG_VERSION": "Deze server verwacht versie {{expectedVersion}}, maar jij ben op versie {{version}}.",
+        "WRONG_VERSION": "Deze server verwacht versie {{expectedVersion}}, maar jij bent op versie {{version}}.",
         "MODS_MISMATCH": "Deze server heeft een modbeleid (ModPolicy) toegepast.{{mods}}.",
         "MODS_MISMATCH_REMOVE": "Verwijder de volgende mods om deel te nemen:\n{{mods}}.",
         "MODS_MISMATCH_INSTALL": "Installeer de volgende mods om deel te nemen:\n{{mods}}.",
         "CLIENT_MODS_DISALLOWED": "Deze server staat de volgende mods niet toe {{mods}}. Verwijder ze om deel te nemen.",
-        "WRONG_PASSWORD": "Het ingevoerde wachtwoord is incorrect .",
+        "WRONG_PASSWORD": "Het ingevoerde wachtwoord is incorrect.",
         "NO_REASON": "De server heeft de verbinding zonder reden geweigerd."
       }
     }
