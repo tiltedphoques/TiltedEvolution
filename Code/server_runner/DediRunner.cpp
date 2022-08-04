@@ -44,6 +44,7 @@ DediRunner::DediRunner(int argc, char** argv)
 
     // it is here for now..
     m_pServerInstance->Initialize();
+    SaveSettingsToIni(m_console, m_SettingsPath);
 }
 
 DediRunner::~DediRunner()

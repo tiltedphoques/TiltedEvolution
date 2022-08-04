@@ -8,7 +8,7 @@
     "CONNECT": {
       "INFO": {
         "SERVER_ADDRESS": "Verbinden dich mit einem Server über dessen vollständige Adresse. Verwende das Format  <strong>addresse:port</strong>. Standardwert für den Port ist <strong>10578</strong>.",
-        "HELGEN": "Stelle KEINE Verbindung zu einem Server her, wenn du dich noch in der Helgen-Intro-Sequenz befinden. Vergewisser dich, dass du bereits aus Helgen entkommen bist."
+        "HELGEN": "Stelle KEINE Verbindung zu einem Server her, wenn du dich noch in der Helgen-Intro-Sequenz befinden. Vergewissere dich, dass du bereits aus Helgen entkommen bist."
       },
       "ADDRESS": "Adresse",
       "PASSWORD": "Passwort",
@@ -17,8 +17,8 @@
       "CANCEL": "Abbrechen",
       "PUBLIC_SERVERS": "Öffentliche Server",
       "ERROR": {
-        "CONNECTION": "Es konnte keine Verbindung mit dem angegebenen Server hergestellt werden. Bitte vergewisser dich, dass du die richtige Adresse eingegeben hast und dass keine Netzwerkprobleme vorliegen",
-        "VERSION_MISMATCH": "Du kannst dich nicht mit dem Server verbinden, weil diese eine andere Version von Skyrim Together verwendet.",
+        "CONNECTION": "Es konnte keine Verbindung mit dem angegebenen Server hergestellt werden. Bitte vergewissere dich, dass du die richtige Adresse eingegeben hast und dass keine Netzwerkprobleme vorliegen.",
+        "VERSION_MISMATCH": "Es konnte keine Verbindung mit dem Server hergestellt werden, weil dieser eine andere Version von Skyrim Together verwendet.",
         "INVALID_ADDRESS": "Die Adresse hat ein ungültiges Format."
       }
     },
@@ -39,7 +39,7 @@
       "EXPERIENCE_WARNING": "Für ein optimales Questerlebnis solltet ihr unbedingt den Spielleitfaden in unserem Wiki lesen, den ihr auf unserer Website <b>skyrim-together.com</b> finden könnt. Hier ist eine kurze Zusammenfassung des Leitfadens:",
       "GUIDELINES": {
         "PARTY": "Wenn du eine Gruppe erstellst, wirst du der \"Host\", also der Gruppenleiter.",
-        "PARTY_LEADER_TALK": "Nur der Gruppenleiter kann mit Quest-NPCs sprechen, um Quests voranzutreiben",
+        "PARTY_LEADER_TALK": "Nur der Gruppenleiter kann mit Quest-NPCs sprechen, um Quests voranzutreiben.",
         "PARTY_LEADER_LOOT_QUESTITEMS": "Nur der Gruppenleiter kann Questgegenstände an sich nehmen.",
         "KEEP_PARTY_LEADER": "Bleibt bei einem Gruppenleiter pro Spieldurchgang.",
         "ONE_PARTY_PER_SERVER": "Beschränkt euch auf eine Gruppe pro Server."
@@ -111,7 +111,7 @@
       },
       "PARTY_ANCHOR_OFFSET_X": "Horizontaler Versatz",
       "PARTY_ANCHOR_OFFSET_Y": "Vertikaler Versatz",
-      "LENGTH": "{{length}}sek",
+      "LENGTH": "{{length}}s",
       "UI": "Oberfläche",
       "LANGUAGE": "Sprache",
       "DEBUG": "Debug",
@@ -126,7 +126,7 @@
     "GROUP": {
       "LEVEL_UP": "{{name}} hat Level {{level}} erreicht.",
       "ALREADY_IN_GROUP": "Du bist bereits in einer Gruppe. Um einer anderen Gruppe beizutreten, musst du deine zuerst aktuelle Gruppe verlassen.",
-      "KICK_NO_PARTY_LEADER": "Wenn du nicht der Gruppenleiter bist, kannst du keine anderen Gruppenmitglieder rauswerfen",
+      "KICK_NO_PARTY_LEADER": "Wenn du nicht der Gruppenleiter bist, kannst du keine anderen Gruppenmitglieder rauswerfen.",
       "MAKE_LEADER_NO_PARTY_LEADER": "Wenn du nicht der Gruppenleiter bist, kannst du niemand anderen zum Gruppenleiter machen."
     },
     "ERROR": {

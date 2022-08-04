@@ -19,7 +19,7 @@
       [id]="'li-' + dropdownCounter + '-' + i"
       (click)="optionSelect(option.value, i, $event)"
     >
-      <app-checkbox [ngModel]="selected === i"></app-checkbox>
+      <input type="checkbox" [ngModel]="selected === i"/>
       {{ option.text ?? option.value }}
     </li>
   </ul>
