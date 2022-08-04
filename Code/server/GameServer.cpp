@@ -38,7 +38,7 @@ Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
-
+Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
@@ -118,6 +118,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     m_pWorld = MakeUnique<World>();
 
     BindMessageHandlers();
+    UpdateTimeScale();
 }
 
 GameServer::~GameServer()
@@ -284,6 +285,21 @@ void GameServer::UpdateInfo()
     m_info.icon_url = "";
     m_info.tagList = "";
     m_info.tick_rate = GetUserTickRate();
+}
+
+void GameServer::UpdateTimeScale()
+{
+    auto timescale = uTimeScale.value_as<float>();
+
+    bool timescale_set_successfully = m_pWorld->GetCalendarService().SetTimeScale(timescale);
+
+    if (!timescale_set_successfully)
+    {
+        spdlog::warn("TimeScale is invalid (should be from 0 to 1000, current value is {}), setting TimeScale to 20 (default)",
+                     timescale);
+
+        uTimeScale = 20u;
+    }
 }
 
 void GameServer::OnUpdate()
