@@ -144,11 +144,13 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
         return false;
     }
 
+#if TP_SKYRIM64
     if (pActor->IsPlayerSummon())
     {
         spdlog::error("Cannot take control over remote player summon, form id: {:X}, server id: {:X}", acFormId, acServerId);
         return false;
     }
+#endif
 
     pExtension->SetRemote(false);
 
@@ -503,11 +505,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     spdlog::info("Spawn Reqeust Is summon {}", acMessage.IsPlayerSummon);
 
+#if TP_SKYRIM64
     if (acMessage.IsPlayerSummon)
     {
         // Prevents remote summons agroing other players.
         pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
     }
+#endif
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
@@ -1449,7 +1453,9 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
 
+#if TP_SKYRIM64
     message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
+#endif
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
