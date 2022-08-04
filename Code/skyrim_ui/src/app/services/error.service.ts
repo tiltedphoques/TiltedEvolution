@@ -5,7 +5,7 @@ import { Sound, SoundService } from './sound.service';
 
 
 export interface ErrorEvent {
-  error: 'wrong_version' | 'mods_mismatch' | 'client_mods_disallowed' | 'wrong_password' | 'no_reason';
+  error: 'wrong_version' | 'mods_mismatch' | 'client_mods_disallowed' | 'wrong_password'  | 'server_full'| 'no_reason';
   data?: Record<any, any>;
 }
 
@@ -24,10 +24,15 @@ export interface ClientModsDisallowedErrorEvent extends ErrorEvent {
   data: { mods: ('SKSE' | 'MO2')[] };
 }
 
+export interface ServerFullErrorEvent extends ErrorEvent {
+  error: 'server_full';
+}
+
 export type ErrorEvents =
   | WrongVersionErrorEvent
   | ModsMismatchErrorEvent
   | ClientModsDisallowedErrorEvent
+  | ServerFullErrorEvent
   | ErrorEvent
 
 @Injectable({

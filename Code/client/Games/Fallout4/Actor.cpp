@@ -1,4 +1,3 @@
-#include <TiltedOnlinePCH.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Forms/TESFaction.h>
 #include <Forms/TESNPC.h>
@@ -8,12 +7,17 @@
 #include <Games/Fallout4/EquipManager.h>
 #include <Forms/BGSObjectInstance.h>
 #include <Games/Misc/ActorKnowledge.h>
+#include <ExtraData/ExtraDataList.h>
 
 #include <Services/PapyrusService.h>
 #include <World.h>
 
 #include <Effects/ValueModifierEffect.h>
+
 #include <Events/HealthChangeEvent.h>
+#include <Events/DialogueEvent.h>
+
+#include <Games/Overrides.h>
 
 TP_THIS_FUNCTION(TActorConstructor, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TActorConstructor2, Actor*, Actor, volatile int** aRefCount, uint8_t aUnk);
@@ -60,23 +64,9 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 {
     using TGetEquippedWeapon = TESForm*(__fastcall)(void*, void*, const Actor*, uint32_t);
 
-    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 0x141388BC0 - 0x140000000);
+    POINTER_FALLOUT4(TGetEquippedWeapon, s_getEquippedWeapon, 811140);
 
     return s_getEquippedWeapon(nullptr, nullptr, this, aSlotId);
-}
-
-Inventory Actor::GetInventory() const noexcept
-{
-    auto& modSystem = World::Get().GetModSystem();
-
-    Inventory InventorySave;
-    InventorySave.Buffer = SerializeInventory();
-
-    auto* pMainHandWeapon = GetEquippedWeapon(0);
-    const uint32_t mainId = pMainHandWeapon ? pMainHandWeapon->formID : 0;
-    modSystem.GetServerModId(mainId, InventorySave.RightHandWeapon);
-
-    return InventorySave;
 }
 
 Factions Actor::GetFactions() const noexcept
@@ -85,7 +75,7 @@ Factions Actor::GetFactions() const noexcept
 
     auto& modSystem = World::Get().GetModSystem();
 
-    auto* pNpc = RTTI_CAST(baseForm, TESForm, TESNPC);
+    auto* pNpc = Cast<TESNPC>(baseForm);
     if (pNpc)
     {
         auto& factions = pNpc->actorData.factions;
@@ -101,7 +91,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pFactionExtras = RTTI_CAST(extraData->GetByType(ExtraData::Faction), BSExtraData, ExtraFactionChanges);
+    auto* pFactionExtras = Cast<ExtraFactionChanges>(extraData->GetByType(ExtraDataType::Faction));
     if (pFactionExtras)
     {
         for (auto i = 0u; i < pFactionExtras->entries.length; ++i)
@@ -147,9 +137,7 @@ ActorValues Actor::GetEssentialActorValues() noexcept
 void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
 {
     TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
-
-    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 0x140DFFD00 - 0x140000000);
-
+    POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 1277202);
     return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
 }
 
@@ -159,35 +147,22 @@ float Actor::GetActorValue(uint32_t aId) const noexcept
     return actorValueOwner.GetValue(pActorValueInfo);
 }
 
-float Actor::GetActorMaxValue(uint32_t aId) const noexcept
+float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
 {
     ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
     return actorValueOwner.GetMaxValue(pActorValueInfo);
 }
 
-void Actor::SetInventory(const Inventory& acInventory) noexcept
+Inventory Actor::GetActorInventory() const noexcept
 {
-    spdlog::info("Actor[{:X}]::SetInventory() with inventory size: {}", formID, acInventory.Buffer.size());
+    return GetInventory();
+}
 
-    UnEquipAll();
-
-    if (!acInventory.Buffer.empty())
-        DeserializeInventory(acInventory.Buffer);
-
-    auto* pEquipManager = EquipManager::Get();
-    auto& modSystem = World::Get().GetModSystem();
-
-    uint32_t mainHandWeaponId = modSystem.GetGameId(acInventory.RightHandWeapon);
-
-    if (mainHandWeaponId)
-    {
-        TESForm* pWeapon = TESForm::GetById(mainHandWeaponId);
-        BGSObjectInstance object(pWeapon, nullptr);
-
-        const BGSEquipSlot* pSlot = GetEquipSlot(0);
-
-        pEquipManager->EquipObject(this, object, 0, 1, pSlot, false, true, false, true, false);
-    }
+Inventory Actor::GetEquipment() const noexcept
+{
+    Inventory inventory = GetInventory();
+    inventory.RemoveByFilter([](const auto& entry) { return !entry.IsWorn(); });
+    return inventory;
 }
 
 void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
@@ -196,7 +171,7 @@ void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
     actorValueOwner.SetValue(pActorValueInfo, aValue);
 }
 
-void Actor::ForceActorValue(uint32_t aMode, uint32_t aId, float aValue) noexcept
+void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
     const float current = GetActorValue(aId);
     ActorValueInfo* pActorValueInfo = GetActorValueInfo(aId);
@@ -209,7 +184,7 @@ void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
     {
         ActorValueInfo* pActorValueInfo = GetActorValueInfo(value.first);
         float current = actorValueOwner.GetValue(pActorValueInfo);
-        actorValueOwner.ForceCurrent(0, pActorValueInfo, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::PERMANENT, pActorValueInfo, value.second - current);
     }
 
     for (auto& value : acActorValues.ActorValuesList)
@@ -218,7 +193,7 @@ void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
         if (value.first == ActorValueInfo::kRads || value.first == ActorValueInfo::kRadHealthMax)
             actorValueOwner.SetValue(pActorValueInfo, value.second);
         float current = actorValueOwner.GetValue(pActorValueInfo);
-        actorValueOwner.ForceCurrent(2, pActorValueInfo, value.second - current);
+        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, pActorValueInfo, value.second - current);
     }
 }
 
@@ -231,7 +206,7 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
     for (const auto& entry : acFactions.NpcFactions)
     {
         auto* pForm = GetById(modSystem.GetGameId(entry.Id));
-        auto* pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto* pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -241,7 +216,7 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
     for (const auto& entry : acFactions.ExtraFactions)
     {
         auto* pForm = GetById(modSystem.GetGameId(entry.Id));
-        auto* pFaction = RTTI_CAST(pForm, TESForm, TESFaction);
+        auto* pFaction = Cast<TESFaction>(pForm);
         if (pFaction)
         {
             SetFactionRank(pFaction, entry.Rank);
@@ -252,46 +227,47 @@ void Actor::SetFactions(const Factions& acFactions) noexcept
 void Actor::SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, SetFactionRank, const TESFaction*, int8_t);
-
     s_pSetFactionRank(this, acpFaction, aRank);
+}
+
+void Actor::SetActorInventory(const Inventory& acInventory) noexcept
+{
+    spdlog::info("Setting actor inventory, form id: {:X}", formID);
+
+    UnEquipAll();
+
+    SetInventory(acInventory);
 }
 
 void Actor::UnEquipAll() noexcept
 {
     TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
-
-    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 0x140D8E370 - 0x140000000);
-
+    POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 1260318);
     ThisCall(s_unequipAll, this);
 }
 
 void Actor::RemoveFromAllFactions() noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, RemoveFromAllFactions);
-
     s_pRemoveFromAllFactions(this);
 }
 
 bool Actor::IsDead() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
-
     return s_pIsDead(this);
 }
 
 void Actor::Kill() noexcept
 {
     PAPYRUS_FUNCTION(void, Actor, Kill, void*);
-
     s_pKill(this, NULL);
 }
 
 void Actor::Reset() noexcept
 {
     using ObjectReference = TESObjectREFR;
-
     PAPYRUS_FUNCTION(void, ObjectReference, Reset, int, TESObjectREFR*);
-
     s_pReset(this, 0, nullptr);
 }
 
@@ -299,6 +275,54 @@ void Actor::Respawn() noexcept
 {
     Resurrect(false);
     Reset();
+}
+
+// TODO(cosideci): this is flawed, since we need to equip specific stacks.
+void Actor::ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState, bool abSilent) noexcept
+{
+    ScopedEquipOverride _;
+
+    TP_THIS_FUNCTION(TProcessScriptedEquip, void, Actor, TESBoundObject*, bool, bool);
+    POINTER_FALLOUT4(TProcessScriptedEquip, processScriptedEquip, 868003);
+    ThisCall(processScriptedEquip, this, apObj, abEquipLockState, abSilent);
+}
+
+void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept
+{
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!pObject)
+    {
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
+        return;
+    }
+
+    if (arEntry.Count < 0)
+        DropObject(pObject, -arEntry.Count, apPoint, apRotate);
+    // TODO: pick up
+}
+
+void Actor::DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoint, NiPoint3* apRotate) noexcept
+{
+    BGSObjectInstance object(apObject, nullptr);
+
+    TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*,
+                     BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3*);
+    POINTER_FALLOUT4(TDropObject, dropObject, 1482294);
+
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(dropObject, this, &result, &object, nullptr, aCount, apPoint, apRotate);
+}
+
+void Actor::UnequipItem(TESBoundObject* apObject) noexcept
+{
+    ScopedEquipOverride _;
+
+    PAPYRUS_FUNCTION(void, Actor, UnequipItem, TESBoundObject*, bool, bool);
+    s_pUnequipItem(this, apObject, false, true);
 }
 
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter);
@@ -349,7 +373,7 @@ static TApplyActorEffect* RealApplyActorEffect = nullptr;
 void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue,
                       ActorValueInfo* apActorValueInfo)
 {
-    const auto* pValueModEffect = RTTI_CAST(apThis, ActiveEffect, ValueModifierEffect);
+    const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
     if (pValueModEffect)
     {
@@ -382,8 +406,8 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
 
     if (pOwner && pTarget)
     {
-        auto pOwnerActor = RTTI_CAST(pOwner, TESObjectREFR, Actor);
-        auto pTargetActor = RTTI_CAST(pTarget, TESObjectREFR, Actor);
+        auto pOwnerActor = Cast<Actor>(pOwner);
+        auto pTargetActor = Cast<Actor>(pTarget);
         if (pOwnerActor && pTargetActor)
         {
             if (pOwnerActor->GetExtension()->IsRemotePlayer() && pTargetActor->GetExtension()->IsLocalPlayer())
@@ -397,13 +421,33 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
     return ThisCall(RealRunDetection, apThis, apTarget);
 }
 
+TP_THIS_FUNCTION(TSpeakSoundFunction, float, Actor, const char* apName, uint32_t* aSoundHand, void* apArchTypeAnimation, int32_t aiStringLength, bool abSetEmotion, void* apOutputModel, bool abQueue, bool abLip, bool abPCapcall);
+static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* aSoundHand, void* apArchTypeAnimation, int32_t aiStringLength, bool abSetEmotion, void* apOutputModel, bool abQueue, bool abLip, bool abPCapcall)
+{
+    if (apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+
+    return ThisCall(RealSpeakSoundFunction, apThis, apName, aSoundHand, apArchTypeAnimation, aiStringLength, abSetEmotion, apOutputModel, abQueue, abLip, abPCapcall);
+}
+
+void Actor::SpeakSound(const char* pFile)
+{
+    uint32_t handle[4]{};
+    handle[0] = -1;
+    ThisCall(RealSpeakSoundFunction, this, pFile, handle, nullptr, 0, false, nullptr, false, true, false);
+}
+
 static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
-    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 0x140D6E9A0 - 0x140000000);
-    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 0x140D6ED80 - 0x140000000);
-    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 0x140D6F1C0 - 0x140000000);
-    POINTER_FALLOUT4(TDamageActor, s_damageActor, 0x140D79EB0 - 0x140000000);
-    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 0x140C8B189 - 0x140000000);
-    POINTER_FALLOUT4(TRunDetection, s_runDetection, 0x140F60320 - 0x140000000);
+    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
+    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
+    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 1104083);
+    POINTER_FALLOUT4(TDamageActor, s_damageActor, 1539011);
+    // TODO: not sure about this ID, seems to interfere with jump when hooked?
+    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
+    POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
+    POINTER_FALLOUT4(TSpeakSoundFunction, s_speakSoundFunction, 1567997);
 
     RealActorConstructor = s_actorCtor.Get();
     RealActorConstructor2 = s_actorCtor2.Get();
@@ -411,6 +455,7 @@ static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     RealDamageActor = s_damageActor.Get();
     RealApplyActorEffect = s_applyActorEffect.Get();
     RealRunDetection = s_runDetection.Get();
+    RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
     TP_HOOK(&RealActorConstructor, HookActorContructor);
     TP_HOOK(&RealActorConstructor2, HookActorContructor2);
@@ -418,4 +463,5 @@ static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
     TP_HOOK(&RealDamageActor, HookDamageActor);
     TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
     TP_HOOK(&RealRunDetection, HookRunDetection);
+    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
 });

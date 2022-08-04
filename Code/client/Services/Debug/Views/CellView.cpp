@@ -27,9 +27,12 @@ void DebugService::DrawCellView()
             size_t nameLen = strlen(pName);
             ImGui::InputText("Name", pName, nameLen, ImGuiInputTextFlags_ReadOnly);
 
+            // TODO: ft
+        #if TP_SKYRIM64
             char* pEditorId = (char*)pWorldSpace->GetFormEditorID();
             size_t editorIdLen = strlen(pEditorId);
             ImGui::InputText("Editor ID", pEditorId, editorIdLen, ImGuiInputTextFlags_ReadOnly);
+        #endif
         }
     }
 
@@ -45,9 +48,12 @@ void DebugService::DrawCellView()
             size_t nameLen = strlen(pName);
             ImGui::InputText("Name", pName, nameLen, ImGuiInputTextFlags_ReadOnly);
 
+            // TODO: ft
+        #if TP_SKYRIM64
             char* pEditorId = (char*)pCell->GetFormEditorID();
             size_t editorIdLen = strlen(pEditorId);
             ImGui::InputText("Editor ID", pEditorId, editorIdLen, ImGuiInputTextFlags_ReadOnly);
+        #endif
         }
     }
 

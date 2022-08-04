@@ -299,7 +299,7 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
     pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
 
     const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
-    if (health <= 0.f)
+    if (!pActor->IsDead() && health <= 0.f)
     {
         ActorExtension* pExtension = pActor->GetExtension();
         // Players should never be killed

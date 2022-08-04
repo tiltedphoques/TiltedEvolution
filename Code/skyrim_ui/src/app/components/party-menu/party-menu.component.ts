@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Observable, pluck } from 'rxjs';
+import { Observable, pluck, startWith } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { Player } from 'src/app/models/player';
 import { ClientService } from 'src/app/services/client.service';
@@ -36,6 +36,7 @@ export class PartyMenuComponent {
         filter(playerlist => !!playerlist),
         pluck('players'),
         map(players => players.filter(player => player.hasInvitedLocalPlayer)),
+        startWith([]),
       );
     this.isPartyLeader$ = this.groupService.group
       .asObservable()

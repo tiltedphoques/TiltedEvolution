@@ -27,12 +27,7 @@
     "DISCONNECT": {
       "PROMPT": "Are you sure you want to disconnect?",
       "PROCEED": "Proceed",
-      "CANCEL": "Cancel",
-      "ERROR": {
-        "CONNECTION": "Could not connect to the specified server. Please make sure you've entered the correct address and that you're not experiencing network issues",
-        "VERSION_MISMATCH": "You cannot connect to the server because it does not have the same version of Skyrim Together as you.",
-        "INVALID_ADDRESS": "The address is of invalid format."
-      }
+      "CANCEL": "Cancel"
     },
     "ERROR": {
       "OK": "Ok"
@@ -42,7 +37,9 @@
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accept invite from {{name}}",
-      "LAUNCH_PARTY" : "Launch party",
+      "LAUNCH_PARTY": "Launch party",
+      "INVITES": "Invites",
+      "NO_INVITES": "You don't have any invites",
       "EXPERIENCE_WARNING": "For an optimal questing experience, make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:",
       "GUIDELINES": {
         "PARTY": "By creating a party, you sort of become the \"host\", aka the party leader.",
@@ -84,7 +81,7 @@
       "RECONNECT": "Reconnect",
       "PLAYER_MANAGER": "Player Manager",
       "SETTINGS": "Settings",
-      "CONNECTION_IN_PROGRESS": "Connection in progress"
+      "CONNECTION_IN_PROGRESS": "Connection in progress..."
     },
     "SERVER_LIST": {
       "SEARCH": "Search...",
@@ -92,10 +89,12 @@
       "BACK": "Back",
       "LOADING": "Loading...",
       "NO_SERVERS": "No public server available",
-      "HIDE_MISMATCHED_SERVER": "Hide servers with incompatible version",
+      "HIDE_MISMATCHED_SERVERS": "Hide servers with incompatible version",
+      "HIDE_FULL_SERVERS": "Hide full servers",
+      "SERVER_COUNT": "Showing {{filteredCount}} of {{count}} servers",
       "TABLE_HEADERS": {
         "NAME": "Server Name",
-        "PLAYERS": "Players",
+        "PLAYERS": "Players / Max.",
         "COUNTRY": "Country",
         "FAVORITE": "Favorite"
       },
@@ -119,6 +118,8 @@
       "PARTY_ANCHOR_OFFSET_X": "Horizontal Offset",
       "PARTY_ANCHOR_OFFSET_Y": "Vertical Offset",
       "LENGTH": "{{length}}s",
+      "UI": "UI",
+      "LANGUAGE": "Language",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Show Debug Information",
       "BACK": "Back"
@@ -126,7 +127,9 @@
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "Connection lost, trying to reconnect. {{remainingReconnectionAttempt } attempts left."
+      "CONNECTION_LOST": "Connection lost, trying to reconnect. {{remainingReconnectionAttempt}} attempts left.",
+      "CONNECTED": "Successfully connected to server.",
+      "DISCONNECTED": "Disconnected from server."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} has reached level {{level}}.",
@@ -142,8 +145,12 @@
         "MODS_MISMATCH_INSTALL": "Please install the following mods to join:\n{{mods}}",
         "CLIENT_MODS_DISALLOWED": "This server disallows {{mods}}. Please remove them to join.",
         "WRONG_PASSWORD": "The password you entered is incorrect.",
-        "NO_REASON": "The server refused connection without reason."
+        "NO_REASON": "The server refused connection without reason.",
+        "SERVER_FULL": "This server is full."
       }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} invited you to join a party"
     }
   }
 }

@@ -115,12 +115,16 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         m_leaderPlayerId = acPartyInfo.LeaderPlayerId;
         m_partyMembers = acPartyInfo.PlayerIds;
 
+#if TP_SKYRIM64
         // TODO: this can be done a bit prettier
         if (m_isLeader)
         {
             TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
             pWorldEncountersEnabled->f = 1.f;
         }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
 
         auto pArguments = CefListValue::Create();
 
@@ -151,11 +155,15 @@ void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
     spdlog::debug("[PartyService]: Left party");
 
     // TODO: this can be done a bit prettier
+#if TP_SKYRIM64
     if (World::Get().GetTransport().IsConnected())
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
         pWorldEncountersEnabled->f = 0.f;
     }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
 
     m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
 
@@ -172,11 +180,15 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
     m_partyMembers = acPartyJoined.PlayerIds;
 
     // TODO: this can be done a bit prettier
+#if TP_SKYRIM64
     if (m_isLeader)
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
         pWorldEncountersEnabled->f = 1.f;
     }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
 
     // Takes ownership of all actors
     if (m_isLeader)

@@ -18,6 +18,7 @@ void ServerSettings::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noe
     Serialization::WriteVarInt(aWriter, Difficulty);
     Serialization::WriteBool(aWriter, GreetingsEnabled);
     Serialization::WriteBool(aWriter, PvpEnabled);
+    Serialization::WriteBool(aWriter, SyncPlayerHomes);
 }
 
 void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -25,5 +26,6 @@ void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     Difficulty = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     GreetingsEnabled = Serialization::ReadBool(aReader);
     PvpEnabled = Serialization::ReadBool(aReader);
+    SyncPlayerHomes = Serialization::ReadBool(aReader);
 }
 

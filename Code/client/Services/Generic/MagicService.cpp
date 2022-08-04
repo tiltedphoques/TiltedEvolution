@@ -23,13 +23,16 @@
 
 #include <Games/Overrides.h>
 
-#if TP_SKYRIM64
 #include <Forms/SpellItem.h>
 #include <PlayerCharacter.h>
+
+// TODO: these paths are inconsistent
+#if TP_FALLOUT4
+#include <Magic/EffectItem.h>
+#include <Magic/EffectSetting.h>
 #endif
 
-#define MAGIC_DEBUG 0
-
+// TODO: ft
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
@@ -40,12 +43,6 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&MagicService::OnNotifyInterruptCast>(this);
     m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&MagicService::OnAddTargetEvent>(this);
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
-
-#if MAGIC_DEBUG
-    auto* pEventList = EventDispatcherManager::Get();
-    pEventList->magicEffectApplyEvent.RegisterSink(this);
-    pEventList->activeEffectApplyRemove.RegisterSink(this);
-#endif
 }
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -307,10 +304,11 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
 
 void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 {
-#if TP_SKYRIM64
+#if 1
     if (!m_transport.IsConnected())
         return;
 
+#if TP_SKYRIM64
     // These effects are applied through spell cast sync
     if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
     {
@@ -322,8 +320,9 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
             return;
         }
     }
+#endif
 
-    AddTargetRequest request;
+    AddTargetRequest request{};
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.SpellID, request.SpellId.ModId, request.SpellId.BaseId))
     {
@@ -368,7 +367,6 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
 {
-#if TP_SKYRIM64
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
     {
@@ -420,23 +418,27 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     data.pSpell = pSpell;
     data.pEffectItem = pEffect;
     data.fMagnitude = acMessage.Magnitude;
+#if TP_SKYRIM64
     data.fUnkFloat1 = 1.0f;
+#endif
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
+#if TP_SKYRIM64
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (pEffect->IsVampireLordEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
+    // TODO: ft, check if this bug also occurs in fallout 4
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
+#endif
 
     pActor->magicTarget.AddTarget(data);
 
     spdlog::debug("Applied remote magic effect");
-#endif
 }
 
 void MagicService::ApplyQueuedEffects() noexcept
@@ -477,29 +479,4 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     for (uint32_t formId : markedForRemoval)
         m_queuedEffects.erase(formId);
-}
-
-BSTEventResult MagicService::OnEvent(const TESMagicEffectApplyEvent* apEvent, const EventDispatcher<TESMagicEffectApplyEvent>*)
-{
-#if MAGIC_DEBUG
-    spdlog::warn("TESMagicEffectApplyEvent, target: {:X}, caster: {:X}, effect id: {:X}",
-                 apEvent->hTarget ? apEvent->hTarget->formID : 0,
-                 apEvent->hCaster ? apEvent->hCaster->formID : 0,
-                 apEvent->uiMagicEffectFormID);
-#endif
-
-    return BSTEventResult::kOk;
-}
-
-BSTEventResult MagicService::OnEvent(const TESActiveEffectApplyRemove* apEvent, const EventDispatcher<TESActiveEffectApplyRemove>*)
-{
-#if MAGIC_DEBUG
-    spdlog::error("TESActiveEffectApplyRemove, target: {:X}, caster: {:X}, effect id: {:X}, applied? {}",
-                 apEvent->hTarget ? apEvent->hTarget->formID : 0,
-                 apEvent->hCaster ? apEvent->hCaster->formID : 0,
-                 apEvent->usActiveEffectUniqueID,
-                 apEvent->bIsApplied);
-#endif
-
-    return BSTEventResult::kOk;
 }

@@ -8,11 +8,21 @@
 #include <Actor.h>
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
+#include <Games/PapyrusFunctions.h>
 
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
+// TODO: ft
+#if TP_SKYRIM64
+TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
+TP_THIS_FUNCTION(TSignaturesMatch, bool, BSScript::NativeFunction, BSScript::NativeFunction*);
+#endif
 TP_THIS_FUNCTION(TCompareVariables, int64_t, void, BSScript::Variable*, BSScript::Variable*);
 
 TRegisterPapyrusFunction* RealRegisterPapyrusFunction = nullptr;
+#if TP_SKYRIM64
+TBindEverythingToScript* RealBindEverythingToScript = nullptr;
+TSignaturesMatch* RealSignaturesMatch = nullptr;
+#endif
 TCompareVariables* RealCompareVariables = nullptr;
 
 void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, NativeFunction* apFunction)
@@ -26,8 +36,34 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
     ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
 }
 
+#if TP_SKYRIM64
+void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine*)
+{
+    (*apThis)->BindNativeMethod(new BSScript::IsRemotePlayerFunc(
+             "IsRemotePlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsRemotePlayer, BSScript::Variable::kBoolean));
+
+    (*apThis)->BindNativeMethod(new BSScript::IsPlayerFunc(
+             "IsPlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsPlayer, BSScript::Variable::kBoolean));
+
+    ThisCall(RealBindEverythingToScript, apThis);
+}
+
+bool TP_MAKE_THISCALL(HookSignaturesMatch, BSScript::NativeFunction, BSScript::NativeFunction* apOther)
+{
+    /*
+    if (!strcmp(apThis->GetName().AsAscii(), "IsRemotePlayer"))
+        DebugBreak();
+    */
+
+    return ThisCall(RealSignaturesMatch, apThis, apOther);
+}
+#endif
+
+// This is a neat hack, but it has been disabled since it messes up other things like beastform.
+// These kinds of issues should be solved with custom scripts now that we have SkyrimTogether.esp anyway.
 int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1, BSScript::Variable* apVar2)
 {
+#if TP_SKYRIM64
     BSScript::Object* pObject1 = apVar1->GetObject();
     BSScript::Object* pObject2 = apVar2->GetObject();
 
@@ -70,18 +106,35 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
     }
 
     return ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
+#else
+    return 0;
+#endif
 }
 
 static TiltedPhoques::Initializer s_vmHooks([]()
 {
     POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 104788);
-    POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 0x1427338A0 - 0x140000000);
+    POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 919894);
 
-    POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
+#if TP_SKYRIM64
+    POINTER_SKYRIMSE(TBindEverythingToScript, s_bindEverythingToScript, 55739);
+    POINTER_SKYRIMSE(TSignaturesMatch, s_signaturesMatch, 104359);
+#endif
+
+    //POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
 
     RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();
-    RealCompareVariables = s_compareVariables.Get();
+#if TP_SKYRIM64
+    RealBindEverythingToScript = s_bindEverythingToScript.Get();
+    RealSignaturesMatch = s_signaturesMatch.Get();
+#endif
+    //RealCompareVariables = s_compareVariables.Get();
+
 
     TP_HOOK(&RealRegisterPapyrusFunction, HookRegisterPapyrusFunction);
-    TP_HOOK(&RealCompareVariables, HookCompareVariables);
+#if TP_SKYRIM64
+    TP_HOOK(&RealBindEverythingToScript, HookBindEverythingToScript);
+    TP_HOOK(&RealSignaturesMatch, HookSignaturesMatch);
+#endif
+    //TP_HOOK(&RealCompareVariables, HookCompareVariables);
 });

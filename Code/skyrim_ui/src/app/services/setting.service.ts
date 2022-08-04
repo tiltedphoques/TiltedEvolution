@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject } from 'rxjs';
 import { PartyAnchor } from '../components/settings/settings.component';
 import { StoreService } from './store.service';
@@ -14,6 +15,7 @@ export class SettingService {
 
   constructor(
     private readonly storeService: StoreService,
+    private readonly translocoService: TranslocoService,
   ) {
   }
 
@@ -89,5 +91,19 @@ export class SettingService {
 
   public getPartyAnchorOffsetY(): number {
     return JSON.parse(this.storeService.get('party_anchor_offset_y', 3));
+  }
+
+  public getLanguage(): string {
+    const language = this.storeService.get('language', 'en');
+    const isValid = !!(this.translocoService.getAvailableLangs() as any[])
+      .find(lang => lang === language || lang.id === language);
+    if (isValid) {
+      return language;
+    }
+    return this.translocoService.getDefaultLang();
+  }
+
+  public setLanguage(language: string) {
+    this.storeService.set('language', language);
   }
 }

@@ -4,8 +4,10 @@
 
 #include <PlayerCharacter.h>
 
+// TODO: ft
 void DebugService::DrawSkillView()
 {
+#if TP_SKYRIM64
     ImGui::Begin("Skills");
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
@@ -31,4 +33,5 @@ void DebugService::DrawSkillView()
     }
 
     ImGui::End();
+#endif
 }

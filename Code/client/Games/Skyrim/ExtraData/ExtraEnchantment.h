@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct EnchantmentItem;
 
 struct ExtraEnchantment : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Enchantment;
+    inline static constexpr auto eExtraData = ExtraDataType::Enchantment;
 
     EnchantmentItem* pEnchantment;
     uint16_t usCharge;

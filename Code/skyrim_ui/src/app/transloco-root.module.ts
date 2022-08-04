@@ -24,16 +24,17 @@ export class TranslocoHttpLoader implements TranslocoLoader {
       provide: TRANSLOCO_CONFIG,
       useValue: translocoConfig({
         availableLangs: [
-          { id: 'de', label: 'Deutsch' },
           { id: 'en', label: 'English' },
+          { id: 'de', label: 'Deutsch' },
           { id: 'fr', label: 'Français' }, 
           { id: 'nl', label: 'Nederlands' },
         ],
-        defaultLang: 'overwrite',
+        defaultLang: 'en',
         fallbackLang: 'en',
         missingHandler: {
           useFallbackTranslation: true,
         },
+        reRenderOnLangChange: true,
         prodMode: environment.production,
       }),
     },

@@ -1,0 +1,8 @@
+export enum View {
+  CONNECT = 1,
+  DISCONNECT,
+  RECONNECT,
+  SERVER_LIST,
+  SETTINGS,
+  PLAYER_MANAGER,
+}

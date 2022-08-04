@@ -2,61 +2,81 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+}
 
-  .no-players {
-    overflow: hidden;
+.separator, hr {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.optional-info {
+  line-height: 1.3;
+  margin-top: 0;
+}
+
+.no-players {
+  overflow: hidden;
+}
+
+.no-invites {
+  margin: 3%;
+  display: flex;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.party-menu-button {
+  padding: 0.25vw;
+  background-color: #292929;
+  border-radius: 2px;
+  width: 100%;
+  margin-bottom: 0.5rem;
+
+  &:first-of-type {
+    margin-top: 0.5rem;
   }
+}
 
-  .hidden {
-    display: none;
-  }
+.server-list {
+  overflow: auto;
+  max-height: 60vh;
+  margin-bottom: 1.0rem;
 
-  .party-menu-button {
-    padding: 0.25vw;
-    background-color: #292929;
-    border-radius: 2px;
+  .player-list-table {
     width: 100%;
-    margin-bottom: 0.5rem;
-  }
+    border-collapse: collapse;
 
-  .server-list {
-    overflow: auto;
-    max-height: 60vh;
-    margin-bottom: 1.0rem;
+    .list-header {
+      position: sticky;
+      top: 0;
+      background-color: #151515;
+      z-index: 1;
+    }
 
-    .player-list-table {
-      width: 100%;
-      border-collapse: collapse;
+    th {
+      text-align: left;
+      border-bottom: 1px solid grey;
+      border-collapse: separate;
 
-      .list-header {
-        position: sticky;
-        top: 0;
-        background-color: #151515;
-        z-index: 1;
+      button {
+        padding: 0 0.5rem;
       }
+    }
 
-      th {
-        text-align: left;
-        border-bottom: 1px solid grey;
-        border-collapse: separate;
+    tr:not(:last-child) {
+      border-bottom: 1px solid grey;
+      padding: 15px;
+    }
 
-        button {
-          padding: 0 0.5rem;
-        }
-      }
-
-      tr:not(:last-child) {
-        border-bottom: 1px solid grey;
-        padding: 15px;
-      }
-
-      .user-action-button {
-        padding: 0.25vw;
-        background-color: #292929;
-        border-radius: 2px;
-        margin-left: 5%;
-      }
+    .user-action-button {
+      padding: 0.25vw;
+      background-color: #292929;
+      border-radius: 2px;
+      margin-left: 5%;
     }
   }
 }

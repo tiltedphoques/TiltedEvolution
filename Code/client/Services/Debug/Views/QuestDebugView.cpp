@@ -11,8 +11,10 @@
 
 #include <imgui.h>
 
+// TODO: ft
 void DebugService::DrawQuestDebugView()
 {
+#if TP_SKYRIM64
     auto* pPlayer = PlayerCharacter::Get();
     if (!pPlayer) return;
 
@@ -99,4 +101,5 @@ void DebugService::DrawQuestDebugView()
     }
 
     ImGui::End();
+#endif
 }

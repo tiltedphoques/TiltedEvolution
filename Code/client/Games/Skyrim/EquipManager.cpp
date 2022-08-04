@@ -146,7 +146,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
@@ -178,7 +178,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
@@ -205,7 +205,7 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
         evt.EquipSlotId = apData->pEquipSlot->formID;
@@ -230,7 +230,7 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
         evt.EquipSlotId = apData->pEquipSlot->formID;
@@ -254,7 +254,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;
         evt.IsShout = true;
@@ -278,7 +278,7 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;
         evt.Unequip = true;
