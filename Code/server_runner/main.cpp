@@ -19,6 +19,8 @@
 #ifdef _WIN32
 #include <base/dialogues/win/TaskDialog.h>
 #pragma comment(lib, "Comctl32.lib")
+#elif defined(linux)
+#include <signal.h>
 #endif
 
 namespace
@@ -115,8 +117,26 @@ static bool RegisterQuitHandler()
     });
 
     return SetConsoleCtrlHandler(CtrlHandler, TRUE);
-#endif
+
+#elif defined(linux)
+    static auto CtrlHandler = ([](int aSig) {
+        if (auto* pRunner = GetDediRunner())
+        {
+            pRunner->RequestKill();
+            return true;
+        }
+
+        // if the user kills during the ctor we deny the request
+        // to save our dear life.
+        return false;
+    });
+
+    signal(SIGINT, CtrlHandler);
+    signal(SIGTERM, CtrlHandler);
+    signal(SIGKILL, CtrlHandler);
+#else
     return true;
+#endif
 }
 
 #ifdef _WIN32
