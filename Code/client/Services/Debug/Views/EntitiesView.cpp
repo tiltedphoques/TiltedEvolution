@@ -131,12 +131,10 @@ void DebugService::DisplayEntityPanel(entt::entity aEntity) noexcept
 {
     const auto pFormIdComponent = m_world.try_get<FormIdComponent>(aEntity);
     const auto pLocalComponent = m_world.try_get<LocalComponent>(aEntity);
-    const auto pPlayerSummonComponent = m_world.try_get<PlayerSummonComponent>(aEntity);
     const auto pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
 
     if (pFormIdComponent)               DisplayFormComponent(*pFormIdComponent);
     if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent, pFormIdComponent ? pFormIdComponent->Id : 0);
-    if (pPlayerSummonComponent)         DisplayPlayerSummonComponent(*pPlayerSummonComponent, pFormIdComponent ? pFormIdComponent->Id : 0);
     if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent, aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
 }
 
@@ -232,11 +230,4 @@ void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, con
             }
         });
     }
-}
-void DebugService::DisplayPlayerSummonComponent(PlayerSummonComponent& aLocalComponent, const uint32_t acFormId) const noexcept
-{
-    if (!ImGui::CollapsingHeader("Player Summon Component", ImGuiTreeNodeFlags_DefaultOpen))
-        return;
-
-    ImGui::InputInt("Net Id", (int*)&aLocalComponent.OwnerServerId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 }

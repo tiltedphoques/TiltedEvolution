@@ -216,6 +216,12 @@ void Actor::SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) 
     }
 }
 
+bool Actor::IsPlayerSummon() const noexcept
+{
+    const Actor* pCommandingActor = GetCommandingActor();
+    return pCommandingActor && pCommandingActor->formID == 0x14;
+}
+
 TESForm *Actor::GetCurrentLocation()
 {
     // we use the safe function which also

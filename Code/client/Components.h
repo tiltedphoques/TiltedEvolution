@@ -16,6 +16,5 @@
 #include <Components/ActorValuesComponent.h>
 #include <Components/ObjectComponent.h>
 #include <Components/PlayerComponent.h>
-#include <Components/PlayerSummonComponent.h>
 
 #undef TP_INTERNAL_COMPONENTS_GUARD
