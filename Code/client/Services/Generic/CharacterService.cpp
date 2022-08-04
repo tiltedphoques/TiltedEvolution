@@ -144,6 +144,12 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
         return false;
     }
 
+    if (m_world.all_of<RemoteComponent, PlayerSummonComponent>(acEntity))
+    {
+        spdlog::error("Cannot take control over remote player summon, form id: {:X}, server id: {:X}", acFormId, acServerId);
+        return false;
+    }
+
     pExtension->SetRemote(false);
 
     // TODO(cosideci): this should be done differently.
@@ -200,6 +206,11 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
         entity = m_world.create();
 
     m_world.emplace_or_replace<FormIdComponent>(entity, acEvent.FormId);
+
+    if (pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14)
+    {
+        m_world.emplace_or_replace<PlayerSummonComponent>(entity, pActor->formID);
+    }
 
     ProcessNewEntity(entity);
 }
@@ -501,6 +512,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     {
         // Prevents remote summons agroing other players.
         pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
+        m_world.emplace_or_replace<PlayerSummonComponent>(*entity, 256u);
     }
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
@@ -646,6 +658,14 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     if (itor != std::end(view))
     {
         auto& formIdComponent = view.get<FormIdComponent>(*itor);
+
+        // if (m_world.try_get<PlayerSummonComponent>(*itor))
+        // {
+        //     spdlog::info("Deleting orphaned player summon, form id: {:X}, server id: {:X}", formIdComponent.Id, acMessage.ServerId);
+        //     CharacterService::DeleteTempActor(formIdComponent.Id);
+        //     m_world.remove<PlayerSummonComponent>(*itor);
+        //     return;
+        // }
 
         if (TakeOwnership(formIdComponent.Id, acMessage.ServerId, *itor))
         {

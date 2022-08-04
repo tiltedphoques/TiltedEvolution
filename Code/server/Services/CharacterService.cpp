@@ -261,6 +261,15 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
 
+    if(auto* pCharacterComponent = m_world.try_get<CharacterComponent>(cEntity)) {
+        if (pCharacterComponent->IsPlayerSummon())
+        {
+            spdlog::info("Client {:X} requested ownership transfer of an orphaned summon, serverid id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
+            m_world.GetDispatcher().trigger(CharacterRemoveEvent(message.ServerId));
+            return;
+        }
+    }
+
     if (!m_world.valid(cEntity))
     {
         spdlog::warn("Client {:X} requested ownership transfer of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
