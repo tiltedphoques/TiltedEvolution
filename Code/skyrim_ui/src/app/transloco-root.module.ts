@@ -28,6 +28,7 @@ export class TranslocoHttpLoader implements TranslocoLoader {
           { id: 'de', label: 'Deutsch' },
           { id: 'fr', label: 'Français' }, 
           { id: 'nl', label: 'Nederlands' },
+          { id: 'overwrite', label: 'Custom' },
         ],
         defaultLang: 'en',
         fallbackLang: 'en',
