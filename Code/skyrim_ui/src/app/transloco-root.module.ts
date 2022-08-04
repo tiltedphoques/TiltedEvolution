@@ -26,7 +26,10 @@ export class TranslocoHttpLoader implements TranslocoLoader {
         availableLangs: [
           { id: 'en', label: 'English' },
           { id: 'de', label: 'Deutsch' },
-		  { id: 'ru', label: 'Русский' },
+		      { id: 'ru', label: 'Русский' },
+          { id: 'zh-CN', label: '中文（中国）'},
+          { id: 'fr', label: 'Français' }, 
+          { id: 'nl', label: 'Nederlands' },
           { id: 'overwrite', label: 'Custom' },
         ],
         defaultLang: 'en',

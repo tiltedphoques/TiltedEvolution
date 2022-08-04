@@ -45,6 +45,7 @@ struct GameServer final : Server
     void BindServerCommands();
 
     void UpdateInfo();
+    void UpdateTimeScale();
 
     // Packet dispatching
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
