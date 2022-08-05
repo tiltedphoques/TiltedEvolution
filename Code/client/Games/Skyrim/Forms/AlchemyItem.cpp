@@ -1,16 +1,17 @@
-#include "EnchantmentItem.h"
+#include "AlchemyItem.h"
 
 #include <Systems/ModSystem.h>
 #include <Magic/EffectItem.h>
 #include <World.h>
 #include <Games/BGSCreatedObjectManager.h>
 
-EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData) noexcept
+AlchemyItem* AlchemyItem::Create(const Inventory::EnchantmentData& aData) noexcept
 {
-    TP_THIS_FUNCTION(TAddWeaponEnchantment, EnchantmentItem*, BGSCreatedObjectManager, GameArray<EffectItem>*);
-    POINTER_SKYRIMSE(TAddWeaponEnchantment, addWeaponEnchantment, 36165);
-    TP_THIS_FUNCTION(TAddArmorEnchantment, EnchantmentItem*, BGSCreatedObjectManager, GameArray<EffectItem>*);
-    POINTER_SKYRIMSE(TAddArmorEnchantment, addArmorEnchantment, 36166);
+    TP_THIS_FUNCTION(TAddPoison, void, BGSCreatedObjectManager, AlchemyItem**, GameArray<EffectItem>*);
+    POINTER_SKYRIMSE(TAddPoison, addPoison, 36168);
+    TP_THIS_FUNCTION(TAddPotion, void, BGSCreatedObjectManager, AlchemyItem**, GameArray<EffectItem>*);
+    // TODO: confirm these IDs
+    POINTER_SKYRIMSE(TAddPotion, addPotion, 36167);
 
     ModSystem& modSystem = World::Get().GetModSystem();
 
@@ -35,14 +36,13 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
         effects[i] = effectItem;
     }
 
-    BGSCreatedObjectManager* pObjManager = BGSCreatedObjectManager::Get();
+    BGSCreatedObjectManager* objManager = BGSCreatedObjectManager::Get();
 
-    EnchantmentItem* pItem = nullptr;
+    AlchemyItem* item = Memory::Allocate<AlchemyItem>();
     if (aData.IsWeapon)
-        pItem = ThisCall(addWeaponEnchantment, pObjManager, &effects);
+        ThisCall(addPoison, objManager, &item, &effects);
     else
-        pItem = ThisCall(addArmorEnchantment, pObjManager, &effects);
+        ThisCall(addPotion, objManager, &item, &effects);
 
-    return pItem;
+    return item;
 }
-

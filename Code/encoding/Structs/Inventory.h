@@ -22,7 +22,7 @@ struct Inventory
 
     struct EnchantmentData
     {
-        bool IsWeapon{};
+        bool IsWeapon{}; // For potions, this can be considered IsPoison
         Vector<EffectItem> Effects{};
     };
 

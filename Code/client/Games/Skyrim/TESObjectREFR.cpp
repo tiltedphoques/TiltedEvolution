@@ -185,11 +185,6 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
     }
 
-    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraDataType::Health)))
-    {
-        arEntry.ExtraHealth = pExtraHealth->fHealth;
-    }
-
     if (ExtraPoison* pExtraPoison = Cast<ExtraPoison>(apExtraDataList->GetByType(ExtraDataType::Poison)))
     {
         TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
@@ -198,6 +193,11 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
             modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
             arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
         }
+    }
+
+    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraDataType::Health)))
+    {
+        arEntry.ExtraHealth = pExtraHealth->fHealth;
     }
 
     if (ExtraSoul* pExtraSoul = Cast<ExtraSoul>(apExtraDataList->GetByType(ExtraDataType::Soul)))
