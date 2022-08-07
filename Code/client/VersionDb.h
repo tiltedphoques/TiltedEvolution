@@ -373,7 +373,7 @@ public:
         return true;
     }
 
-    bool Dump(const std::string& path)
+    bool DumpToTextFile(const std::string& path)
     {
         std::ofstream f = std::ofstream(path.c_str());
         if (!f.good())

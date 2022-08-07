@@ -68,4 +68,40 @@ static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundIt
 
 static TiltedPhoques::Initializer s_uiHooks([]() {
     // TODO: find AddToActiveQueue hook
+
+    TiltedPhoques::Put<uint16_t>(0x1412A020C, 0xE990);
+
+    // nuke entire isinputallowed stuff
+    TiltedPhoques::Nop(0x1412A0E48, 0x29);
+
+    struct C : TiltedPhoques::CodeGenerator
+    {
+        C(uint8_t* loc)
+        {
+            mov(r8d, 0); // hide the prompt
+            jmp_S(loc + 8);
+        }
+    } gen((uint8_t*)0x1412A0E71);
+    TiltedPhoques::Jump(0x1412A0E71, gen.getCode());
+    TiltedPhoques::Nop(0x1412A0E71 + 5, 3);
+
+
+    TiltedPhoques::Nop(0x1412A1B76, 10);
+
+    #if 0
+    struct D : TiltedPhoques::CodeGenerator
+    {
+        D(uint8_t* loc)
+        {
+            mov(rdx, 1);
+            mov(ptr[rax + 0x0E4], rdx); // user is now engaged
+            jmp_S(loc + 7);
+        }
+    } gen2((uint8_t*)0x1412A01AE);
+    TiltedPhoques::Jump(0x1412A01AE, gen2.getCode());
+    TiltedPhoques::Nop(0x1412A01AE + 5, 3 + 2);
+    #endif
+
+    // This yeets the engagement check
+    TiltedPhoques::Nop(0x1412A01A9, 14);
 });
