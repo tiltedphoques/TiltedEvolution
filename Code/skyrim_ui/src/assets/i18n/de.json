@@ -141,7 +141,7 @@
       }
     },
     "PLAYER_LIST": {
-      "PARTY_INVITE": "{{from}} hat Sie zu einer Gruppe eingeladen"
+      "PARTY_INVITE": "{{from}} hat dich in eine Gruppe eingeladen"
     }
   }
 }
