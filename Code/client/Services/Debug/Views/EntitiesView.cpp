@@ -175,11 +175,6 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
 #if TP_SKYRIM64
     auto owner = pActor->GetCommandingActor();
     int commandingActorId = int(owner ? owner->formID : 0x0);
-    if (ImGui::Button("Take Commmand"))
-    {
-        pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
-        m_world.GetRunner().Trigger(MoveActorEvent(pActor->formID, pActor->GetParentCell()->formID, pActor->position));
-    }
     ImGui::InputScalar("Commanding Actor", ImGuiDataType_U8, &commandingActorId, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
