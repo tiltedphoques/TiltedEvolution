@@ -144,6 +144,9 @@
         "WRONG_PASSWORD": "Het ingevoerde wachtwoord is incorrect.",
         "NO_REASON": "De server heeft de verbinding zonder reden geweigerd."
       }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} heeft je uitgenodigd voor een groep"
     }
   }
 }
