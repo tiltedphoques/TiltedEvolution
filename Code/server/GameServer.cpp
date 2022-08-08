@@ -53,20 +53,10 @@ Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/of
     spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
 });
 
-// Console::Command<bool> SetPremium("SetPremium", "pass \'true\' or \'false\' to enable or disable premium tickrate mode", [](Console::ArgStack& aStack) {
-//     bPremiumTickrate = aStack.Pop<bool>();
-//     spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
-// });
-
 Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&){
     bEnablePvp = !bEnablePvp;
     spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
 });
-
-// Console::Command<bool> SetPvp("SetPvp", "pass \'true\' or \'false\' to enable or disable PvP", [](Console::ArgStack& aStack) {
-//     bEnablePvp = aStack.Pop<bool>();
-//     spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
-// });
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
     spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
