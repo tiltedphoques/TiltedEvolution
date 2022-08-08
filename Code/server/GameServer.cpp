@@ -50,7 +50,6 @@ Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Org
 // -- Commands --
 Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/off", [](Console::ArgStack&) {
     bPremiumTickrate = !bPremiumTickrate;
-    //spdlog::get("ConOut")->info("Premium Tickrate enabled: {}", (bool)bPremiumTickrate); 
     spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
 });
 
