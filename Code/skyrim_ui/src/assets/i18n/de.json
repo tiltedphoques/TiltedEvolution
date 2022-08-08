@@ -138,6 +138,9 @@
         "CLIENT_MODS_DISALLOWED": "Dieser Server verbietet folgende Mods {{mods}}. Bitte entferne diese, um beitreten zu können.",
         "WRONG_PASSWORD": "Das eingegebene Passwort ist falsch.",
         "NO_REASON": "Der Server hat die Verbindung ohne Angabe von Gründen verweigert."
+      },
+      "PLAYER_LIST": {
+        "PARTY_INVITE": "{{from}} hat Sie zu einer Gruppe eingeladen"
       }
     }
   }
