@@ -291,11 +291,15 @@ void UI_AddToMenuStack(UI* apSelf, UI::UIMenuEntry* menuEntry)
 }
 
 static TiltedPhoques::Initializer s_uiHooks([]() {
-#if 1
-    TiltedPhoques::Put<uint16_t>(0x1412A020C, 0xE990);
+    const VersionDbPtr<uint8_t> mainMenuCtor(1079381);
+    TiltedPhoques::Put<uint16_t>(mainMenuCtor.Get() + 0x2DC, 0xE990);
+
+    // Remove engagement check, jump directly into main state.
+    TiltedPhoques::Nop(mainMenuCtor.Get() + 0x279, 14); // 0x1412A01A9
 
     // nuke entire isinputallowed stuff
-    TiltedPhoques::Nop(0x1412A0E48, 0x29);
+    const VersionDbPtr<uint8_t> mainMenuLoop(1512372);
+    TiltedPhoques::Nop(mainMenuLoop.Get() + (0x2D - 5), 0x29); // 0x1412A0E48
 
     struct C : TiltedPhoques::CodeGenerator
     {
@@ -304,14 +308,13 @@ static TiltedPhoques::Initializer s_uiHooks([]() {
             mov(r8d, 0); // hide the prompt
             jmp_S(loc + 8);
         }
-    } gen((uint8_t*)0x1412A0E71);
-    TiltedPhoques::Jump(0x1412A0E71, gen.getCode());
-    TiltedPhoques::Nop(0x1412A0E71 + 5, 3);
+    } gen(mainMenuLoop.Get() + 0x51);
+    TiltedPhoques::Jump(mainMenuLoop.Get() + 0x51, gen.getCode());
+    TiltedPhoques::Nop(mainMenuLoop.Get() + 0x51 + 5, 3);
 
-    TiltedPhoques::Nop(0x1412A1B76, 10);
-    // This yeets the engagement check
-    TiltedPhoques::Nop(0x1412A01A9, 14);
+    const VersionDbPtr<uint8_t> handleInput(1001404);
+    TiltedPhoques::Nop(handleInput.Get() + 0x56, 10);// 0x1412A1B76
 
-#endif
-    TiltedPhoques::SwapCall(0x142042F08, UI_AddToMenuStack_Real, &UI_AddToMenuStack);
+    const VersionDbPtr<uint8_t> processMenus(239711);// 0x142042F08
+    TiltedPhoques::SwapCall(processMenus.Get() + 0xAD8, UI_AddToMenuStack_Real, &UI_AddToMenuStack);
 });
