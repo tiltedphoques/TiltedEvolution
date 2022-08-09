@@ -37,7 +37,7 @@ void UI::PrintMenuMap()
 
 void UI::PrintActiveMenus()
 {
-    auto findName = [&](IMenu * apMenu) -> const char* {
+    auto findName = [&](IMenu* apMenu) -> const char* {
         for (const auto& it : menuMap)
         {
             if (it.value.spMenu == apMenu)
@@ -263,34 +263,15 @@ SafeZoneMenu @ 0x0
 WorkshopMenu @ 0x0
 */
 
-static constexpr const char* kAllowList[] = {"ConsoleNativeUIMenu", "Console", "PauseMenu"};
+static constexpr const char* kAllowList[] = {"ConsoleNativeUIMenu", "Console",       "PauseMenu",
+                                             /*"PipboyMenu",*/          "TerminalMenu",  "SleepWaitMenu",
+                                             "LockpickingMenu",     "MessageBoxMenu", "WorkshopMenu"};
 
-static void UnpauseMenu(UI* apSelf, IMenu* apMenu)
-{
-    /*
-        if (apMenu && World::Get()
-                      .GetTransport()
-                      .IsConnected() /*TODO(Force): Maybe consider some souls like option for singleplayer*/
-
-    if (!apMenu) return;
-
-    // NOTE(Force): could also compare by RTTI later on...
-    for (const char* item : kAllowList)
-    {
-        if (auto* pMenu = apSelf->FindMenuByName(item))
-        {
-            if (pMenu == apMenu)
-                UnfreezeMenu(apMenu);
-        }
-    }
-}
-
-using TCallback = void(UI*, UI::UIMenuEntry*);
-static TCallback* UI_AddToMenuStack_Real;
+static void (*UI_AddToMenuStack_Real)(UI*, UI::UIMenuEntry*);
 
 void UI_AddToMenuStack(UI* apSelf, UI::UIMenuEntry* menuEntry)
 {
-    if (!menuEntry->spMenu)
+    if (!menuEntry->spMenu || !World::Get().GetTransport().IsConnected())
         return;
 
     // NOTE(Force): could also compare by RTTI later on...
@@ -325,55 +306,9 @@ static TiltedPhoques::Initializer s_uiHooks([]() {
     TiltedPhoques::Jump(0x1412A0E71, gen.getCode());
     TiltedPhoques::Nop(0x1412A0E71 + 5, 3);
 
-
     TiltedPhoques::Nop(0x1412A1B76, 10);
     // This yeets the engagement check
     TiltedPhoques::Nop(0x1412A01A9, 14);
 
-    #if 0
-    struct MenuPatch : TiltedPhoques::CodeGenerator
-    {
-        MenuPatch(uint8_t* loc)
-        {
-            mov(rbx, rax);
-            // save for later
-            mov(r14, rcx);
-
-            mov(rcx, r13); // ui thisptr
-            mov(rdx, rbx); // the menu
-            call(&UnpauseMenu);
-
-            // restore
-            mov(rcx, r14);
-
-            test(rbx, rcx);
-            jmp_S(loc + 6);
-        }
-    } genUnpause((uint8_t*)0x142042D21);
-
-    TiltedPhoques::Jump(0x142042D21, genUnpause.getCode());
-    TiltedPhoques::Nop(0x142042D21 + 5, 1);
-    #endif
-
-    // fallout seems to be reusing menus?
-
-    #if 0
-    struct MenuPatch2 : TiltedPhoques::CodeGenerator
-    {
-        MenuPatch2(uint8_t* loc)
-        {
-            mov(rcx, r13); // ui thisptr
-            mov(rdx, ptr[rsp + 0x40]); // menu ptr
-            call(&UnpauseMenu);
-
-            mov(rdx, r12);
-            mov(r8d, 2);
-            mov(rcx, ptr[rsp + 0x30]);
-            jmp_S(loc + 14);
-        }
-    } genUnpause2((uint8_t*)0x142043184);
-    TiltedPhoques::Jump(0x142043184, genUnpause2.getCode());
-    //TiltedPhoques::Nop(0x142043189 + 5, 4);
-    #endif
     TiltedPhoques::SwapCall(0x142042F08, UI_AddToMenuStack_Real, &UI_AddToMenuStack);
 });

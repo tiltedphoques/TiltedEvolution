@@ -85,25 +85,23 @@ static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
-    if (apMenu && World::Get()
-                      .GetTransport()
-                      .IsConnected() /*TODO(Force): Maybe consider some souls like option for singleplayer*/)
-    {
-#if 0
+    if (!apMenu || !World::Get().GetTransport().IsConnected())
+        return;
+
+    #if 0
         if (auto* pName = apSelf->LookupMenuNameByInstance(apEntry))
         {
             spdlog::info("Menu requested {}", pName->AsAscii());
         }
 #endif
 
-        // NOTE(Force): could also compare by RTTI later on...
-        for (const char* item : kAllowList)
+    // NOTE(Force): could also compare by RTTI later on...
+    for (const char* item : kAllowList)
+    {
+        if (auto* pMenu = apSelf->FindMenuByName(item))
         {
-            if (auto* pMenu = apSelf->FindMenuByName(item))
-            {
-                if (pMenu == apMenu)
-                    UnfreezeMenu(apMenu);
-            }
+            if (pMenu == apMenu)
+                UnfreezeMenu(apMenu);
         }
     }
 
