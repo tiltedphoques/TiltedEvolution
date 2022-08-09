@@ -264,7 +264,7 @@ WorkshopMenu @ 0x0
 */
 
 static constexpr const char* kAllowList[] = {"ConsoleNativeUIMenu", "Console",        "PauseMenu",
-                                             "PipboyMenu",          "TerminalMenu",   "SleepWaitMenu",
+                                             /* "PipboyMenu",*/     "TerminalMenu",   "SleepWaitMenu",
                                              "LockpickingMenu",     "MessageBoxMenu", "WorkshopMenu"};
 
 static void (*UI_AddToMenuStack_Real)(UI*, UI::UIMenuEntry*);
