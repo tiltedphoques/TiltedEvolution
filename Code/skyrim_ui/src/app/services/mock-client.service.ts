@@ -1,16 +1,15 @@
 import { Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { firstValueFrom, fromEvent, takeUntil, withLatestFrom } from 'rxjs';
+import { fromEvent, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { PartyInfo } from '../models/party-info';
-import { Player } from '../models/player';
 import { PlayerManagerTab } from '../models/player-manager-tab.enum';
-import { NotificationType } from '../models/popup-notification';
 import { View } from '../models/view.enum';
 import { UiRepository } from '../store/ui.repository';
 import { ClientService } from './client.service';
 import { DestroyService } from './destroy.service';
 import { PopupNotificationService } from './popup-notification.service';
+import { faHandshakeSimple } from '@fortawesome/free-solid-svg-icons';
 
 
 // TODO: this is bad. We shouldn't take different paths to accommodate for
@@ -66,33 +65,40 @@ export class MockClientService extends DestroyService {
         this.partyInfo.playerIds.push(playerId);
         this.clientService.onPartyInfo(this.partyInfo.playerIds, this.partyInfo.leaderId);
       });
-
-    fromEvent(window, 'keydown')
+      fromEvent(window, 'keydown')
       .pipe(
         takeUntil(this),
-        filter((e: KeyboardEvent) => e.key === 'n'),
-        withLatestFrom(this.translocoService.selectTranslate('SERVICE.PLAYER_LIST.PARTY_INVITE', { from: 'Dumbeldor' })),
+        filter((e: KeyboardEvent) => e.key === 'n')
       )
-      .subscribe(([, inviteMessage]) => {
-        const message = this.popupNotificationService
-          .addMessage(inviteMessage, {
-            type: NotificationType.Connection,
-            duration: 10000,
-            player: new Player({
-                name: 'Dumbeldor',
-                online: true,
-                avatar: 'https://skyrim-together.com/images/float/avatars/random3.jpg',
-              },
-            ),
-          });
-        firstValueFrom(message.onClose)
-          .then(clicked => {
-            if (clicked) {
-              this.uiRepository.openView(View.PLAYER_MANAGER);
-              this.uiRepository.openPlayerManagerTab(PlayerManagerTab.PARTY_MENU);
-            }
-          });
-      });
+      .subscribe(() => {
+        this.popupNotificationService.addMessage({
+          messageKey: 'Notifications can show an image, an icon or both. Supports multiple actions or none. Text that is too long will be wrapped. Supports live translation',
+          duration: 10000,
+          imageUrl: 'https://skyrim-together.com/images/logo.png',
+          icon: faHandshakeSimple
+        })
+        this.popupNotificationService.addMessage({
+          messageKey: 'SERVICE.GROUP.LEVEL_UP',
+          messageParams: { name: 'Dumbeldor', level: 100 },
+          duration: 10000,
+          actions: [
+          {
+            nameKey: "OPTION",
+            callback: () => {console.log("1")}
+          },
+          {
+            nameKey: "OPTION",
+            callback: () => {console.log("2")}
+          },
+          {
+            nameKey: "OPTION",
+            callback: () => {console.log("3")}
+          },
+          
+        ]
+        })
+        this.popupNotificationService.addPartyInvite('Cosideci', () => console.log("ACCEPTED!"));
+      })
   }
 
   private onPartyJoined() {

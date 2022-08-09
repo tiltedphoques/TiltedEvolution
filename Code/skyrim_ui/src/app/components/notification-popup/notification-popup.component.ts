@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { NotificationType, PopupNotification } from '../../models/popup-notification';
+import { PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
 
 
@@ -53,10 +53,6 @@ export class NotificationPopupComponent implements OnInit, OnDestroy {
       clearTimeout(this.eraseTimer);
       this.eraseTimer = null;
     }
-  }
-
-  get isConnected(): boolean {
-    return this.notification.type === NotificationType.Connection;
   }
 
   async clickNotification() {

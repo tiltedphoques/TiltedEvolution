@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { faHandshakeSimple } from '@fortawesome/free-solid-svg-icons';
 import { Subject } from 'rxjs';
-import { PopupNotifactionOptions, PopupNotification } from '../models/popup-notification';
+import { PopupNotification } from '../models/popup-notification';
 import { Sound, SoundService } from './sound.service';
 
 
@@ -19,17 +20,22 @@ export class PopupNotificationService {
   ) {
   }
 
-  public addMessage(message: string, options: PopupNotifactionOptions) {
-    const notification: PopupNotification = {
-      message,
-      type: options.type,
-      player: options.player,
-      duration: options.duration ? (options.duration < 0 ? 500 : options.duration) : 5000,
-      onClose: new Subject(),
-    };
+  public addMessage(notification: PopupNotification) {
     this.message.next(notification);
     this.soundService.play(Sound.Focus);
-    return notification;
+  }
+
+  public addPartyInvite(from: string, callback: ()=>void ) {
+    this.addMessage({
+      messageKey: 'SERVICE.PLAYER_LIST.PARTY_INVITE',
+      messageParams: {from},
+      icon: faHandshakeSimple,
+      duration: 30000,
+      actions: [{
+        nameKey: 'COMPONENT.NOTIFICATIONS.ACCEPT',
+        callback
+      }],
+    });
   }
 
   public clearMessages() {

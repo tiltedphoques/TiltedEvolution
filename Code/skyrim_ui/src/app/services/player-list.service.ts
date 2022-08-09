@@ -1,10 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { BehaviorSubject, firstValueFrom, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
 import { PlayerManagerTab } from '../models/player-manager-tab.enum';
-import { NotificationType } from '../models/popup-notification';
 import { View } from '../models/view.enum';
 import { UiRepository } from '../store/ui.repository';
 import { ClientService } from './client.service';
@@ -125,22 +124,7 @@ export class PlayerListService implements OnDestroy {
         const invitingPlayer = this.getPlayerById(inviterId);
         invitingPlayer.hasInvitedLocalPlayer = true;
         this.playerList.next(playerList);
-        const inviteMessage = await firstValueFrom(
-          this.translocoService.selectTranslate('SERVICE.PLAYER_LIST.PARTY_INVITE', { from: invitingPlayer.name }),
-        );
-        const message = this.popupNotificationService
-          .addMessage(inviteMessage, {
-            type: NotificationType.Invitation,
-            player: invitingPlayer,
-            duration: 10000,
-          });
-        firstValueFrom(message.onClose)
-          .then(clicked => {
-            if (clicked) {
-              this.uiRepository.openView(View.PLAYER_MANAGER);
-              this.uiRepository.openPlayerManagerTab(PlayerManagerTab.PARTY_MENU);
-            }
-          });
+        this.popupNotificationService.addPartyInvite(invitingPlayer.name, () => this.acceptPartyInvite(inviterId));
       }
     });
   }
