@@ -122,7 +122,6 @@
       "LANGUAGE": "Language",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Show Debug Information",
-      "FONT": "Font",
       "FONT_SIZE": "Font size",
       "FONT_SIZES": {
         "XS": "Extra small",
