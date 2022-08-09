@@ -181,6 +181,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f6Pressed = false;
 
+    if (GetAsyncKeyState(VK_F10) & 0x8000)
+    {
+        UI::Get()->PrintActiveMenus();
+    }
+
+
     if (GetAsyncKeyState(VK_F7))
     {
         if (!s_f7Pressed)
@@ -271,6 +277,8 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
 #if (!IS_MASTER)
+
+
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);

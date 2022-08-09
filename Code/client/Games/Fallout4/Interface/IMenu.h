@@ -1,6 +1,62 @@
 #pragma once
 
-struct IMenu
+class UserEvents
+{
+  public:
+    enum INPUT_CONTEXT_ID : int
+    {
+        ICI_MAIN_GAMEPLAY = 0x0,
+        ICI_BASIC_MENU_NAV = 0x1,
+        ICI_THUMB_NAV = 0x2,
+        ICI_VIRT_CONTROLLER = 0x3,
+        ICI_CURSOR = 0x4,
+        ICI_LTHUMB_CURSOR = 0x5,
+        ICI_CONSOLE = 0x6,
+        ICI_DEBUG_TEXT = 0x7,
+        ICI_BOOK = 0x8,
+        ICI_DEBUG_OVERLAY = 0x9,
+        ICI_TFC = 0xA,
+        ICI_DEBUG_MAP = 0xB,
+        ICI_LOCKPICK = 0xC,
+        ICI_VATS = 0xD,
+        ICI_VATS_PLAYBACK = 0xE,
+        ICI_MULTI_ACTIVATE = 0xF,
+        ICI_WORKSHOP = 0x10,
+        ICI_SCOPE = 0x11,
+        ICI_SITWAIT = 0x12,
+        ICI_LOOKSMENU = 0x13,
+        ICI_WORKSHOP_ADDENDUM = 0x14,
+        ICI_PAUSEMENU = 0x15,
+        ICI_LEVELUPMENU = 0x16,
+        ICI_LEVELUPMENU_PREVNEXT = 0x17,
+        ICI_MAINMENU = 0x18,
+        ICI_QUICKCONTAINERMENU = 0x19,
+        ICI_SPECIALACTIVATEROLLOVER = 0x1A,
+        ICI_TWOBUTTONROLLOVER = 0x1B,
+        ICI_QUICKCONTAINERMENU_PERK = 0x1C,
+        ICI_VERTIBIRD = 0x1D,
+        ICI_PLAYBINKMENU = 0x1E,
+        ICI_ROBOT_MOD_ADDENDUM = 0x1F,
+        ICI_CREATION_CLUB = 0x20,
+        ICI_COUNT = 0x21,
+        ICI_NONE = 0x22,
+    };
+};
+
+struct __declspec(align(8)) BSInputEventUser
+{
+    void* __vftable /*VFT*/;
+    bool InputEventHandlingEnabled;
+};
+
+struct __declspec(align(8)) Scaleform_RefCountImplCore
+{
+    void* __vftable /*VFT*/;
+    volatile int RefCount;
+};
+
+
+struct IMenu : Scaleform_RefCountImplCore, BSInputEventUser
 {
     enum UI_MENU_FLAGS : int32_t
     {
@@ -34,30 +90,49 @@ struct IMenu
         UIMF_USES_MOVEMENT_TO_DIRECTION = 0x8000000,
     };
 
-    void SetFlag(uint32_t auiFlag)
+    void SetFlag(UI_MENU_FLAGS auiFlag)
     {
-        uiMenuFlags |= auiFlag;
+        int* val = reinterpret_cast<int*>(&uiMenuFlags);
+        *val |= auiFlag;
     }
-    void ClearFlag(uint32_t auiFlag)
+
+    void ClearFlag(UI_MENU_FLAGS auiFlag)
     {
-        uiMenuFlags &= ~auiFlag;
+        int* val = reinterpret_cast<int*>(&uiMenuFlags);
+        *val &= ~auiFlag;
     }
+
     bool PausesGame() const
     {
         return uiMenuFlags & UIMF_PAUSES_GAME;
     }
+
     bool FreezesBackground() const
     {
         return uiMenuFlags & UIMF_FREEZE_FRAME_BACKGROUND;
     }
+
     bool FreezesFramePause() const
     {
         return uiMenuFlags & UIMF_FREEZE_FRAME_PAUSE;
     }
 
-    uint8_t pad0[0x58];
-    uint32_t uiMenuFlags;
-    uint8_t pad5C[0x70 - 0x5C];
+    // force the game to generate a vt
+    virtual void m1() = 0;
+
+    char menuObj[0x20 -8]; // scaleform var.
+    void* pMovie;
+    BSFixedString CustomRendererName;
+    BSFixedString MenuName;
+    UI_MENU_FLAGS uiMenuFlags;
+    uint32_t AdvanceWithoutRenderCount; // atomic
+    bool bPassesTopMenuTest;
+    bool bMenuCanBeVisible;
+    bool bHasQuadsForCumstomRenderer;
+    bool bHasDoneFirstAdvanceMovie;
+    uint8_t ucDepthPriority;
+    UserEvents::INPUT_CONTEXT_ID eInputContext;
 };
 
+static_assert(offsetof(IMenu, IMenu::uiMenuFlags) == 0x58);
 static_assert(sizeof(IMenu) == 0x70);
