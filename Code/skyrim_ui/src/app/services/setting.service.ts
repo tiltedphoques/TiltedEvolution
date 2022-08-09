@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject } from 'rxjs';
-import {FontSize, fontSizeToPixels, PartyAnchor} from '../components/settings/settings.component';
+import {FontSize, PartyAnchor} from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
 

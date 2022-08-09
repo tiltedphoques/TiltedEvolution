@@ -12,7 +12,7 @@ export enum FontSize {
   XL = 'xl'
 }
 
-export const fontSizeToPixels = {
+export const fontSizeToPixels: Record<FontSize, string> = {
   [FontSize.XS]: '10px',
   [FontSize.S]: '12px',
   [FontSize.M]: '16px',
@@ -38,6 +38,13 @@ export class SettingsComponent implements OnInit {
   readonly PartyAnchor = PartyAnchor;
 
   readonly availableLanguages = this.translocoService.getAvailableLangs();
+  readonly availableFontSizes: {id: FontSize, label: string}[] = [
+    {id: FontSize.XS, label: 'COMPONENT.SETTINGS.FONT_SIZES.XS'},
+    {id: FontSize.S, label: 'COMPONENT.SETTINGS.FONT_SIZES.S'},
+    {id: FontSize.M, label: 'COMPONENT.SETTINGS.FONT_SIZES.M'},
+    {id: FontSize.L, label: 'COMPONENT.SETTINGS.FONT_SIZES.L'},
+    {id: FontSize.XL, label: 'COMPONENT.SETTINGS.FONT_SIZES.XL'}
+  ]
 
   public volume: number;
   public muted: boolean;
@@ -49,7 +56,6 @@ export class SettingsComponent implements OnInit {
   public partyAnchorOffsetX: number;
   public partyAnchorOffsetY: number;
   public fontSize: FontSize;
-  private _fontSize: number;
   public maxFontSize = Object.values(FontSize).length - 1;
   public minFontSize = 0;
   public language: string;
@@ -76,7 +82,6 @@ export class SettingsComponent implements OnInit {
     this.partyAnchorOffsetX = this.settings.getPartyAnchorOffsetX();
     this.partyAnchorOffsetY = this.settings.getPartyAnchorOffsetY();
     this.fontSize = this.settings.getFontSize();
-    this._fontSize = Object.values(FontSize).indexOf(this.fontSize);
     this.language = this.settings.getLanguage();
   }
 
@@ -141,23 +146,12 @@ export class SettingsComponent implements OnInit {
     this.settingsUpdated.next();
   }
 
-  onFontSizeChange(size: number) {
-    if (size >= this.minFontSize && size <= this.maxFontSize) {
-      const fontSize = Object.values(FontSize)[size];
-      this.settings.setFontSize(fontSize);
-      this.fontSize = fontSize;
-      this._fontSize = size;
-      this.settingsUpdated.next();
-    }
+  onFontSizeChange(fontSize: FontSize) {
+    this.settings.setFontSize(fontSize);
+    this.fontSize = fontSize;
+    this.settingsUpdated.next();
   }
 
-  onFontSizeUp() {
-    this.onFontSizeChange(this._fontSize + 1)
-  }
-
-  onFontSizeDown() {
-    this.onFontSizeChange(this._fontSize - 1)
-  }
   onLanguageChange(language: string) {
     this.settings.setLanguage(language);
     this.language = language;
