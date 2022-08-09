@@ -181,11 +181,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f6Pressed = false;
 
+    #if 0
     if (GetAsyncKeyState(VK_F10) & 0x8000)
     {
         UI::Get()->PrintActiveMenus();
     }
-
+    #endif
 
     if (GetAsyncKeyState(VK_F7))
     {
