@@ -85,8 +85,11 @@ static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
-    if (!apMenu || !World::Get().GetTransport().IsConnected())
+    if (!apMenu)
         return;
+
+    if (!World::Get().GetTransport().IsConnected())
+        return UI_AddToActiveQueue(apSelf, apMenu, apFoundItem);
 
     #if 0
         if (auto* pName = apSelf->LookupMenuNameByInstance(apEntry))

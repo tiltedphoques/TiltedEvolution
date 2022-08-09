@@ -263,16 +263,19 @@ SafeZoneMenu @ 0x0
 WorkshopMenu @ 0x0
 */
 
-static constexpr const char* kAllowList[] = {"ConsoleNativeUIMenu", "Console",       "PauseMenu",
-                                             /*"PipboyMenu",*/          "TerminalMenu",  "SleepWaitMenu",
+static constexpr const char* kAllowList[] = {"ConsoleNativeUIMenu", "Console",        "PauseMenu",
+                                             "PipboyMenu",          "TerminalMenu",   "SleepWaitMenu",
                                              "LockpickingMenu",     "MessageBoxMenu", "WorkshopMenu"};
 
 static void (*UI_AddToMenuStack_Real)(UI*, UI::UIMenuEntry*);
 
 void UI_AddToMenuStack(UI* apSelf, UI::UIMenuEntry* menuEntry)
 {
-    if (!menuEntry->spMenu || !World::Get().GetTransport().IsConnected())
+    if (!menuEntry->spMenu)
         return;
+
+    if (!World::Get().GetTransport().IsConnected())
+        return UI_AddToMenuStack_Real(apSelf, menuEntry);
 
     // NOTE(Force): could also compare by RTTI later on...
     for (const char* item : kAllowList)
@@ -288,8 +291,7 @@ void UI_AddToMenuStack(UI* apSelf, UI::UIMenuEntry* menuEntry)
 }
 
 static TiltedPhoques::Initializer s_uiHooks([]() {
-    // TODO: find AddToActiveQueue hook
-
+#if 1
     TiltedPhoques::Put<uint16_t>(0x1412A020C, 0xE990);
 
     // nuke entire isinputallowed stuff
@@ -310,5 +312,6 @@ static TiltedPhoques::Initializer s_uiHooks([]() {
     // This yeets the engagement check
     TiltedPhoques::Nop(0x1412A01A9, 14);
 
+#endif
     TiltedPhoques::SwapCall(0x142042F08, UI_AddToMenuStack_Real, &UI_AddToMenuStack);
 });
