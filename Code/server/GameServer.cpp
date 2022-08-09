@@ -258,7 +258,7 @@ void GameServer::BindServerCommands()
 
         if (time_set_successfully)
         {
-            out->info("Time set to {}:{}", hour, minute);
+            out->info("Time set to {:02}:{:02}", hour, minute);
         }
         else
         {

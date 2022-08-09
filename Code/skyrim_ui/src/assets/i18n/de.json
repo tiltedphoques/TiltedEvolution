@@ -139,6 +139,9 @@
         "WRONG_PASSWORD": "Das eingegebene Passwort ist falsch.",
         "NO_REASON": "Der Server hat die Verbindung ohne Angabe von Gründen verweigert."
       }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} hat dich in eine Gruppe eingeladen"
     }
   }
 }
