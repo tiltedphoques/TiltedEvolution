@@ -21,8 +21,8 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
 #elif TP_FALLOUT4
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\F4SE\\Plugins", apGamePath);
 
-    Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Fallout 4 Address Library",
-                         L"", errorDetail.c_str());
+    Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Fallout 4 Address Library", L"",
+                         errorDetail.c_str());
 #endif
 
     dia.AppendButton(0xBEEF, L"Visit Address Library modpage on nexusmods.com");
@@ -33,8 +33,8 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
         ShellExecuteW(nullptr, L"open", LR"(https://www.nexusmods.com/skyrimspecialedition/mods/32444?tab=files)",
                       nullptr, nullptr, SW_SHOWNORMAL);
 #elif TP_FALLOUT4
-        ShellExecuteW(nullptr, L"open", LR"(https://www.nexusmods.com/fallout4/mods/47327)",
-                      nullptr, nullptr, SW_SHOWNORMAL);
+        ShellExecuteW(nullptr, L"open", LR"(https://www.nexusmods.com/fallout4/mods/47327)", nullptr, nullptr,
+                      SW_SHOWNORMAL);
 #endif
     }
 
@@ -51,6 +51,8 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
     {
         ShowAddressLibraryError(acGamePath.c_str());
     }
+
+    //VersionDb::Get().DumpToTextFile(R"(S:\Work\Tilted\fallout\_addresslib.txt)");
 
     g_appInstance = std::make_unique<TiltedOnlineApp>();
 
