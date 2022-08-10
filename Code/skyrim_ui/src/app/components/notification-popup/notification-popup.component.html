@@ -1,10 +1,10 @@
 <div *transloco="let t" class="notification-popup" (click)="clickNotification()" (mouseenter)="onEnter()" (mouseleave)="onLeave()">
-  <img *ngIf="notification.imageUrl" src="{{notification.imageUrl}}" />
+  <img *ngIf="notification.imageUrl" [src]="notification.imageUrl" />
   <div *ngIf="notification.icon" class="icon">
-    <fa-icon  [icon]="notification.icon"></fa-icon>
+    <fa-icon [icon]="notification.icon"></fa-icon>
   </div>
   <p>{{ t(notification.messageKey, notification.messageParams) }}</p>
   <button *ngFor="let action of notification.actions" (click)="action.callback()">
-    {{t(action.nameKey)}}
+    {{ t(action.nameKey) }}
   </button>
 </div>
