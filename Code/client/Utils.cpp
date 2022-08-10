@@ -12,7 +12,7 @@ String RandomString(size_t aLength)
 
     std::random_device device;
     std::mt19937 generator(device());
-    const std::uniform_int_distribution<> distribution(0, std::size(kAllowedCharacters) - 1);
+    std::uniform_int_distribution<> distribution(0, std::size(kAllowedCharacters) - 1);
 
     String result;
 
@@ -30,7 +30,7 @@ TiltedPhoques::WString RandomStringW(size_t aLength)
 
     std::random_device device;
     std::mt19937 generator(device());
-    const std::uniform_int_distribution<> distribution(0, std::size(kAllowedCharacters) - 1);
+    std::uniform_int_distribution<> distribution(0, std::size(kAllowedCharacters) - 1);
 
     TiltedPhoques::WString result;
 
