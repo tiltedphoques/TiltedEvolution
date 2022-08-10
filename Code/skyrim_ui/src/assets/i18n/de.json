@@ -33,7 +33,7 @@
     "NOTIFICATIONS": {
       "MESSAGE_FROM": "Nachricht von",
       "ACCEPT": "Akzeptieren",
-      "DECLINE": "Annuleren"
+      "DECLINE": "Ablehnen"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Einladung von {{name}} akzeptieren",
