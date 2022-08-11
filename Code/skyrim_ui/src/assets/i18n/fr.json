@@ -1,5 +1,6 @@
 {
   "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
+
   "COMPONENT": {
     "CHAT": {
       "SEND": "Envoyer",
@@ -18,30 +19,32 @@
       "CANCEL": "Annuler",
       "PUBLIC_SERVERS": "Serveurs publics",
       "ERROR": {
-        "CONNECTION": "Impossible de se connecter au serveur spécifié. Veuillez vous assurer que vous avez entré l'adresse correcte et que vous ne rencontrez pas de problèmes de réseau.",
+        "CONNECTION": "Impossible de se connecter au serveur spécifié. Veuillez vous assurer que vous avez correctement entré l'adresse et que vous ne rencontrez pas de problèmes de réseau.",
         "VERSION_MISMATCH": "Vous ne pouvez pas vous connecter au serveur car il ne dispose pas de la même version de Skyrim Together que vous.",
-        "INVALID_ADDRESS": "Le format de l'adresse est invalide. (Adresse:Port)"
+        "INVALID_ADDRESS": "Le format de l'adresse est invalide. [Adresse:Port]"
       }
     },
     "DISCONNECT": {
       "PROMPT": "Vous êtes sûr de vouloir vous déconnecter ?",
-      "PROCEED": "Allez-y",
+      "PROCEED": "Déconnexion",
       "CANCEL": "Annuler"
     },
     "ERROR": {
       "OK": "Ok"
     },
     "NOTIFICATIONS": {
-      "MESSAGE_FROM": "Message de"
+      "MESSAGE_FROM": "Message de",
+      "ACCEPT": "Accepter",
+      "DECLINE": "Décliner"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accepter l'invitation de {{name}}",
-      "LAUNCH_PARTY": "Lancer la partie",
+      "LAUNCH_PARTY": "Créer le groupe",
       "INVITES": "Invités",
       "NO_INVITES": "Vous n'avez pas d'invitations",
       "EXPERIENCE_WARNING": "Pour une expérience de quête optimale, veillez à lire le guide de jeu sur notre wiki, que vous pouvez trouver via notre site web, <b>skyrim-together.com</b>. Voici un petit résumé des directives :",
       "GUIDELINES": {
-        "PARTY": "En créant un groupe, vous devenez en quelque sorte l'hôte, autrement dit le chef de groupe.",
+        "PARTY": "En créant un groupe, vous devenez le chef du groupe.",
         "PARTY_LEADER_TALK": "Seul le chef du groupe peut parler aux PNJ des quêtes pour progresser dans ces dernières.",
         "PARTY_LEADER_LOOT_QUESTITEMS": "Seul le chef de groupe peut récupérer les objets de quête.",
         "KEEP_PARTY_LEADER": "Tenez-vous-en à un seul chef de groupe par partie.",
@@ -49,7 +52,7 @@
       },
       "NO_PLAYERS_IN_PARTY": "Il n'y a encore personne dans votre groupe. Invitez-les via la liste des joueurs !",
       "TABLE_HEADERS": {
-        "LEVEL": "Niv.",
+        "LEVEL": "Lv.",
         "NAME": "Nom",
         "LOCATION": "Localisation"
       },
@@ -63,7 +66,7 @@
     "PARTY_LIST": {
       "NO_OTHER_PLAYERS": "Il n'y a personne ici à part nous poulets ",
       "TABLE_HEADERS": {
-        "LEVEL": "Niv.",
+        "LEVEL": "Lv.",
         "NAME": "Nom",
         "LOCATION": "Localisation"
       },
@@ -101,13 +104,13 @@
     },
     "SETTINGS": {
       "AUDIO": "Audio",
-      "MUTE_UI": "Interface utilisateur muette",
-      "UI_VOLUME": "Volume de l'interface utilisateur",
+      "MUTE_UI": "Intéface silencieuse",
+      "UI_VOLUME": "Volume de l'interface",
       "PARTY": "Groupe",
       "SHOW_PARTY": "Afficher le groupe",
       "AUTO_HIDE_PARTY": "Masquer automatiquement le groupe",
       "AUTO_HIDE_PARTY_LENGTH": "Après...",
-      "PARTY_ANCHOR": "Position de l'UI de groupe",
+      "PARTY_ANCHOR": "Position des membres du groupe",
       "PARTY_ANCHOR_POSITION": {
         "TOP_LEFT": "Haut gauche",
         "TOP_RIGHT": "Haut droite",
@@ -118,7 +121,7 @@
       "PARTY_ANCHOR_OFFSET_Y": "Décalage vertical",
       "LENGTH": "{{length}}s",
       "UI": "INTERFACE",
-      "LANGUAGE": "Langue",
+      "LANGUAGE": "Langues",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Afficher les informations de débogage",
       "BACK": "Retour"
@@ -133,16 +136,16 @@
     "GROUP": {
       "LEVEL_UP": "{{name}} a atteint le niveau {{level}}.",
       "ALREADY_IN_GROUP": "Vous êtes déjà dans un groupe. Pour rejoindre un autre groupe, veuillez quitter votre groupe actuel.",
-      "KICK_NO_PARTY_LEADER": "YVous ne pouvez pas exclure les autres membres car vous n'êtes pas le chef du groupe.",
-      "MAKE_LEADER_NO_PARTY_LEADER": "Vous ne pouvez pas faire d'un autre membre le chef, car vous n'êtes pas le chef... "
+      "KICK_NO_PARTY_LEADER": "Vous ne pouvez pas exclure les autres membres car vous n'êtes pas chef du groupe.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Vous ne pouvez pas faire d'un autre membre le chef, car vous n'êtes pas chef du groupe. "
     },
     "ERROR": {
       "ERRORS": {
-        "WRONG_VERSION": "Ce serveur attend la version {{expectedVersion}} mais vous êtes sur la version{{version}}.",
+        "WRONG_VERSION": "Ce serveur attend la version {{expectedVersion}} mais vous êtes sur la version {{version}}.",
         "MODS_MISMATCH": "ModPolicy est activé sur ce serveur. {{mods}}",
         "MODS_MISMATCH_REMOVE": "Veuillez supprimer les mods suivants pour rejoindre ce serveur :\n{{mods}}",
         "MODS_MISMATCH_INSTALL": "Veuillez installer les mods suivants pour rejoindre ce serveur :\n{{mods}}",
-        "CLIENT_MODS_DISALLOWED": "Ce serveur n'autorise pas  {{mods}}. Veuillez les retirer pour rejoindre le serveur.",
+        "CLIENT_MODS_DISALLOWED": "Ce serveur n'autorise pas : {{mods}}. Veuillez les retirer pour rejoindre le serveur.",
         "WRONG_PASSWORD": "Le mot de passe que vous avez saisi est incorrect.",
         "NO_REASON": "Le serveur a refusé la connexion sans raison.",
         "SERVER_FULL": "Le serveur est plein."
