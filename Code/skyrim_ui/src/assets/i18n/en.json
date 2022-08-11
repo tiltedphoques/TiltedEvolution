@@ -33,7 +33,9 @@
       "OK": "Ok"
     },
     "NOTIFICATIONS": {
-      "MESSAGE_FROM": "Message from"
+      "MESSAGE_FROM": "Message from",
+      "ACCEPT": "Accept",
+      "DECLINE": "Decline"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accept invite from {{name}}",
