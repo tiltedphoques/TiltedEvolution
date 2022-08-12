@@ -32,6 +32,7 @@
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+#include <Events/MoveActorEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -143,6 +144,14 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
         return false;
     }
 
+#if TP_SKYRIM64
+    if (pActor->IsPlayerSummon())
+    {
+        spdlog::error("Cannot take control over remote player summon, form id: {:X}, server id: {:X}", acFormId, acServerId);
+        return false;
+    }
+#endif
+
     pExtension->SetRemote(false);
 
     // TODO(cosideci): this should be done differently.
@@ -173,9 +182,10 @@ void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+
     if (acEvent.FormId == 0x14)
     {
-        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
         pActor->GetExtension()->SetPlayer(true);
     }
 
@@ -492,6 +502,16 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    spdlog::info("Spawn Reqeust Is summon {}", acMessage.IsPlayerSummon);
+
+#if TP_SKYRIM64
+    if (acMessage.IsPlayerSummon)
+    {
+        // Prevents remote summons agroing other players.
+        pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
+    }
+#endif
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
@@ -1432,6 +1452,10 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 #endif
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
+
+#if TP_SKYRIM64
+    message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
+#endif
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();

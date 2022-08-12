@@ -155,6 +155,7 @@ struct TESObjectREFR : TESForm
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
+    BSPointerHandle<TESObjectREFR> GetHandle() noexcept;
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;
     ExtraContainerChanges::Data* GetContainerChanges() const noexcept;

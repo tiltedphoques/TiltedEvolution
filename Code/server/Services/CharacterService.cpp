@@ -84,6 +84,7 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     apSpawnRequest->IsDead = characterComponent.IsDead();
     apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+    apSpawnRequest->IsPlayerSummon = characterComponent.IsPlayerSummon();
     apSpawnRequest->PlayerId = characterComponent.PlayerId;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
@@ -266,6 +267,16 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         return;
     }
 
+    if (auto* pCharacterComponent = m_world.try_get<CharacterComponent>(cEntity))
+    {
+        if (pCharacterComponent->IsPlayerSummon())
+        {
+            spdlog::info("Client {:X} requested ownership transfer of an orphaned summon, serverid id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
+            m_world.GetDispatcher().trigger(CharacterRemoveEvent(message.ServerId));
+            return;
+        }
+    }
+
     if (message.WorldSpaceId || message.CellId)
     {
         auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
@@ -377,7 +388,6 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
     auto& message = acMessage.Packet;
 
     auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    
     auto it = view.find(static_cast<entt::entity>(message.Id));
 
     if (it != std::end(view))
@@ -479,7 +489,7 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
 
 void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
 {
-    auto packet = acMessage.Packet;
+    auto& packet = acMessage.Packet;
 
     NotifyProjectileLaunch notify{};
 
@@ -659,6 +669,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
     characterComponent.SetDragon(message.IsDragon);
     characterComponent.SetMount(message.IsMount);
+    characterComponent.SetPlayerSummon(message.IsPlayerSummon);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;

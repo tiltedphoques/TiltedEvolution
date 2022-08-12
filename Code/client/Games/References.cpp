@@ -140,6 +140,18 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     return pResult;
 }
 
+BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() noexcept
+{
+    TP_THIS_FUNCTION(TGetHandle, BSPointerHandle<TESObjectREFR>, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult);
+    POINTER_SKYRIMSE(TGetHandle, s_getHandle, 19846);
+    POINTER_FALLOUT4(TGetHandle, s_getHandle, 1573131);
+
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(s_getHandle, this, &result);
+
+    return result;
+}
+
 uint32_t* TESObjectREFR::GetNullHandle() noexcept
 {
     POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
