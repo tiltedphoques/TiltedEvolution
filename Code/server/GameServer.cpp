@@ -48,18 +48,25 @@ Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Org
                            Console::SettingsFlags::kLocked};
 
 // -- Commands --
-Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
-                                     [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/off", [](Console::ArgStack&) {
+    bPremiumTickrate = !bPremiumTickrate;
+    spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
+});
 
-Console::Command<bool> TogglePvp("TogglePvp", "Toggle pvp",
-                                     [](Console::ArgStack& aStack) { bEnablePvp = aStack.Pop<bool>(); });
+Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&){
+    bEnablePvp = !bEnablePvp;
+    spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+});
 
-Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                               [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
+    spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
+});
+
 Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
     int* i = 0;
     *i = 42;
 });
+
 Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
