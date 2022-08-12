@@ -3,12 +3,12 @@ import { ApplicationRef, Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { first, takeUntil, timer } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { DebugHelperComponent } from '../components/debug-helper/debug-helper.component';
 import { RootComponent } from '../components/root/root.component';
 import { ClientService } from '../services/client.service';
 import { DestroyService } from '../services/destroy.service';
 import { PopupNotificationService } from '../services/popup-notification.service';
 import { UiRepository } from '../store/ui.repository';
+import { DebugHelperComponent } from './debug-helper/debug-helper.component';
 import { SkyrimtogetherMock } from './skyrimtogether.mock';
 
 

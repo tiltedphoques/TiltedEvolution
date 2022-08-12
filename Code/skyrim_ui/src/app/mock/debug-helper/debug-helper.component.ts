@@ -9,12 +9,10 @@ import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, of, takeUntil, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
-import { MockClientService } from '../../mock/mock-client.service';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
-import { PopupNotificationService } from '../../services/popup-notification.service';
 import { StoreService } from '../../services/store.service';
-import { UiRepository } from '../../store/ui.repository';
+import { MockClientService } from '../mock-client.service';
 
 
 @Component({
@@ -48,8 +46,6 @@ export class DebugHelperComponent implements OnInit {
   constructor(
     private readonly destroy$: DestroyService,
     private readonly translocoService: TranslocoService,
-    private readonly popupNotificationService: PopupNotificationService,
-    private readonly uiRepository: UiRepository,
     private readonly renderer: Renderer2,
     private readonly storeService: StoreService,
     private readonly mockClientService: MockClientService,
@@ -59,6 +55,7 @@ export class DebugHelperComponent implements OnInit {
 
   ngOnInit() {
     this.setBackground(this.storeService.get('debug_background', 'dark'));
+    this.visible.next(this.storeService.get('debug_helper', false) === 'true');
     this.randomizeDebug.asObservable()
       .pipe(
         takeUntil(this.destroy$),
@@ -73,6 +70,7 @@ export class DebugHelperComponent implements OnInit {
 
   toggleVisibility() {
     this.visible.next(!this.visible.getValue());
+    this.storeService.set('debug_helper', this.visible.getValue());
   }
 
   setBackground(newClass: string) {
