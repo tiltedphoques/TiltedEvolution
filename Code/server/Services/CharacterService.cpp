@@ -670,11 +670,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetDragon(message.IsDragon);
     characterComponent.SetMount(message.IsMount);
     characterComponent.SetPlayerSummon(message.IsPlayerSummon);
-    if (message.IsPlayerSummon)
-    {
-        spdlog::info("FormId: {:x}:{:x} Is a Player Summon", gameId.ModId, gameId.BaseId);
-    }
-    
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
