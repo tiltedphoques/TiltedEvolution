@@ -11,7 +11,7 @@
 #include <httplib.h>
 
 
-extern Console::Setting<uint16_t> uMaxPlayerCount;
+extern Console::Setting<uint32_t> uMaxPlayerCount;
 
 static constexpr char kMasterServerEndpoint[] =
 #if TP_SKYRIM
