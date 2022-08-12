@@ -20,7 +20,7 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
 
-constexpr size_t kMaxSererNameLength = 128u;
+constexpr size_t kMaxServerNameLength = 128u;
 
 // -- Cvars --
 Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
@@ -278,10 +278,10 @@ void GameServer::UpdateInfo()
 {
     const String cServerName = sServerName.c_str();
 
-    if (cServerName.length() > kMaxSererNameLength) 
+    if (cServerName.length() > kMaxServerNameLength) 
     {
-        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxSererNameLength);
-        m_info.name = cServerName.substr(0U, kMaxSererNameLength);
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxServerNameLength);
+        m_info.name = cServerName.substr(0U, kMaxServerNameLength);
     }
     else
     {
