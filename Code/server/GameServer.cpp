@@ -58,7 +58,7 @@ Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgSt
     spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
 });
 
-Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty from 0-5 (0 being Novice and 5 being Master; default is 4)", [](Console::ArgStack& aStack) {
+Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)", [](Console::ArgStack& aStack) {
     auto aDiff = aStack.Pop<int64_t>();
 
     if (aDiff < 0 || aDiff > 5)
