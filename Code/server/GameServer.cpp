@@ -364,11 +364,11 @@ void GameServer::OnConnection(const ConnectionId_t aHandle)
 
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
 {
-    spdlog::info("Connection ended {:x}", aConnectionId);
-
     m_adminSessions.erase(aConnectionId);
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
+
+    spdlog::info("Connection ended {:x} - '{}' disconnected", aConnectionId, (pPlayer != NULL ? pPlayer->GetUsername().c_str() : "NULL"));
 
     if (pPlayer)
     {
