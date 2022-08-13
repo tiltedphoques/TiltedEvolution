@@ -15,6 +15,8 @@
 #include "oobe/SupportChecks.h"
 #include "steam/SteamLoader.h"
 
+#include "memory/RipAllocator.h"
+
 #include "base/dialogues/win/TaskDialog.h"
 
 // These symbols are defined within the client code skyrimtogetherclient
@@ -82,6 +84,8 @@ int StartUp(int argc, char** argv)
 
     if (!EarlyInstallSucceeded())
         DIE_NOW(L"Early load install failed. Tell Force about this.");
+
+    RipAllocatorInit();
 
     auto LC = std::make_unique<LaunchContext>();
     g_context = LC.get();

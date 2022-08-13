@@ -23,7 +23,7 @@ uint8_t game_seg[CurrentTarget.exeLoadSz];
 
 // high rip zone, used for RIP relative addressing
 // guaranteed to always be there.
-uint8_t highrip[0x100000];
+uint8_t highrip[0x100000]{0};
 
 #pragma data_seg(".xcode")
 uint8_t zdata[200] = {1};
