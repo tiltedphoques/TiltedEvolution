@@ -58,6 +58,22 @@ Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgSt
     spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
 });
 
+Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty from 0-5 (0 being Novice and 5 being Master; default is 4)", [](Console::ArgStack& aStack) {
+    auto difficulty = aStack.Pop<int64_t>();
+
+    if (difficulty < 0 || difficulty > 5)
+    {
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).",
+                     difficulty);
+
+        difficulty = 4;
+    }
+
+    uDifficulty = (uint32_t)difficulty;
+
+    spdlog::get("ConOut")->info("Setting difficulty to {} - have all players reconnect to take effect", difficulty);
+});
+
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
     spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
 });
