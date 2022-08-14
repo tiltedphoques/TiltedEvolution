@@ -1,3 +1,9 @@
+// NOTE(V): Smarter implementation of the code with freelist management for code reuse but comes with overhead which we
+// dont need right now.
+
+#include "RipAllocator.h"
+
+#if !USE_ALLOCATOR_V1
 
 #include <atomic>
 #include <cstdint>
@@ -145,3 +151,5 @@ void RipFree(uint8_t* apBlock)
         pEntry->m_flags |= FreeListEntry::kAvailable;
     }
 }
+
+#endif
