@@ -1,6 +1,5 @@
 import { APP_INITIALIZER, Provider } from '@angular/core';
-import { MockClientService } from '../app/mock/mock-client.service';
-import { mockSkyrimTogether } from '../app/mock/skyrimtogether.mock';
+import { mockSkyrimTogether, SkyrimtogetherMock } from '../app/mock/skyrimtogether.mock';
 
 
 mockSkyrimTogether();
@@ -16,10 +15,8 @@ export const environment = {
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: (mockClientService: MockClientService) => () => undefined,
-      deps: [MockClientService],
+      useFactory: () => () => (skyrimtogether as SkyrimtogetherMock).initMock(),
       multi: true,
     },
-    MockClientService,
   ] as Provider[],
 };

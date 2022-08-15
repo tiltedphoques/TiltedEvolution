@@ -1,3 +1,4 @@
+import { OverlayModule } from '@angular/cdk/overlay';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
@@ -30,8 +31,8 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ToggleComponent } from './components/toggle/toggle.component';
 import { WindowComponent } from './components/window/window.component';
 import { HealthDirective } from './directives/health.directive';
-import { SliderDirective } from './directives/slider.directive';
 import { RadioDirective } from './directives/radio.directive';
+import { SliderDirective } from './directives/slider.directive';
 import { CheckboxDirective } from './directives/checkbox.directive';
 import { AssetService } from './services/asset.service';
 import { ClientService } from './services/client.service';
@@ -84,6 +85,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     ReactiveFormsModule,
     ScrollingModule,
     TranslocoRootModule,
+    OverlayModule,
   ],
   providers: [
     ClientService,
