@@ -18,6 +18,7 @@
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifySettingsChange.h>
 #include <console/ConsoleRegistry.h>
 
 constexpr size_t kMaxServerNameLength = 128u;
@@ -56,6 +57,7 @@ Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/of
 Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&){
     bEnablePvp = !bEnablePvp;
     spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+    GameServer::Get()->UpdateSettings();
 });
 
 Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)", [](Console::ArgStack& aStack) {
@@ -71,6 +73,7 @@ Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty 
 
     uDifficulty = (uint32_t)aDiff;
 
+    GameServer::Get()->UpdateSettings();
     spdlog::get("ConOut")->info("Difficulty has been set to {} - have all players reconnect to take effect", aDiff);
 });
 
@@ -750,6 +753,17 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
         sendKick(RT::kWrongPassword);
     }
+}
+
+void GameServer::UpdateSettings()
+{
+    NotifySettingsChange notify{};
+    notify.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
+    notify.Settings.GreetingsEnabled = bEnableGreetings;
+    notify.Settings.PvpEnabled = bEnablePvp;
+    notify.Settings.SyncPlayerHomes = bSyncPlayerHomes;
+
+    SendToPlayers(notify);
 }
 
 void GameServer::UpdateTitle() const

@@ -7,6 +7,7 @@ struct ImguiService;
 struct UpdateEvent;
 struct ClientMessage;
 struct AuthenticationResponse;
+struct NotifySettingsChange;
 
 struct World;
 
@@ -42,6 +43,7 @@ protected:
 
     // Packet handlers
     void HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept;
+    void HandleNotifySettingsChange(const NotifySettingsChange& acMessage) noexcept;
 
 private:
 
@@ -52,5 +54,6 @@ private:
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_sendServerMessageConnection;
+    entt::scoped_connection m_settingsChangeConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };
