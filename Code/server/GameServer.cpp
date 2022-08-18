@@ -74,7 +74,7 @@ Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty 
     uDifficulty = (uint32_t)aDiff;
 
     GameServer::Get()->UpdateSettings();
-    spdlog::get("ConOut")->info("Difficulty has been set to {} - have all players reconnect to take effect", aDiff);
+    spdlog::get("ConOut")->info("Difficulty has been set to {}.", aDiff);
 });
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
