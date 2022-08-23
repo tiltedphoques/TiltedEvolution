@@ -139,6 +139,11 @@ struct Actor : TESObjectREFR
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void UnequipItem(TESBoundObject* apObject) noexcept;
 
+    bool IsInCombat() noexcept;
+    Actor* GetCombatTarget() noexcept;
+    void StartCombat(Actor* apTarget) noexcept;
+    void StopCombat() noexcept;
+
     enum ActorFlags
     {
         IS_A_MOUNT = 1 << 1,

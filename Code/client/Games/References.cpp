@@ -775,7 +775,6 @@ void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, 
     ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
 }
 
-#if TP_SKYRIM64
 bool Actor::IsInCombat() noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsInCombat);
@@ -790,8 +789,9 @@ Actor* Actor::GetCombatTarget() noexcept
 
 void Actor::StartCombat(Actor* apTarget) noexcept
 {
-    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*);
-    s_pStartCombat(this, apTarget);
+    // TODO: not sure about this bool
+    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*, bool);
+    s_pStartCombat(this, apTarget, true);
 }
 
 void Actor::StopCombat() noexcept
@@ -799,7 +799,6 @@ void Actor::StopCombat() noexcept
     PAPYRUS_FUNCTION(void, Actor, StopCombat);
     s_pStopCombat(this);
 }
-#endif
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {

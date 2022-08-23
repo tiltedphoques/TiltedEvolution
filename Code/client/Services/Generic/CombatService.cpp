@@ -222,7 +222,7 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
 void CombatService::RunTargetUpdates(const float acDelta) const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenUpdates = 100ms;
+    constexpr auto cDelayBetweenUpdates = 20ms;
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenUpdates)
