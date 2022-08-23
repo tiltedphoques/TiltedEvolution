@@ -12,8 +12,13 @@
 #include <Services/OverlayService.h>
 #include <Services/CommandService.h>
 #include <Services/StringCacheService.h>
+#include <Services/DatabaseService.h>
 
 #include <es_loader/ESLoader.h>
+
+Console::Setting bPersistenceEnabled{"Persistence:bEnabled",
+                                     "Enable server persistence, requires a MariaDB compatible database", false};
+
 
 World::World()
 {
@@ -34,6 +39,9 @@ World::World()
     ctx().emplace<OverlayService>(*this, m_dispatcher);
     ctx().emplace<CommandService>(*this, m_dispatcher);
     ctx().emplace<StringCacheService>(*this, m_dispatcher);
+
+    if (bPersistenceEnabled)
+        ctx().emplace<DatabaseService>(*this, m_dispatcher);
 
     ESLoader::ESLoader loader;
     // emplace loaded mods into modscomponent.

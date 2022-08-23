@@ -25,6 +25,7 @@ private:
     void OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>&) noexcept;
 
     World &m_world;
+    entt::dispatcher& m_dispatcher;
 
     entt::scoped_connection m_leaveCellConnection;
     entt::scoped_connection m_assignObjectConnection;
