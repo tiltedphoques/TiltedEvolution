@@ -442,21 +442,6 @@ void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
     ThisCall(s_setNoBleedoutRecovery, this, aSet);
 }
 
-void Actor::SetPlayerRespawnMode() noexcept
-{
-    SetEssentialEx(true);
-    // Makes the player go in an unrecoverable bleedout state
-    SetNoBleedoutRecovery(true);
-
-    if (formID != 0x14)
-    {
-        //SetPlayerTeammate(true);
-
-        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
-        SetFactionRank(pPlayerFaction, 1);
-    }
-}
-
 void Actor::SetPlayerTeammate(bool aSet) noexcept
 {
     TP_THIS_FUNCTION(TSetPlayerTeammate, void, Actor, bool aSet, bool abCanDoFavor);

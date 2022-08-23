@@ -41,11 +41,16 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
 }
 
+namespace
+{
+bool isDeathSystemEnabled = true;
+
 bool knockdownStart = false;
 double knockdownTimer = 0.0;
 
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
+}
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
@@ -77,6 +82,8 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
+
+    ToggleDeathSystem(false);
 
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 1.f;
@@ -110,6 +117,8 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
         float* greetDistance = Settings::GetGreetDistance();
         *greetDistance = 0.f;
     }
+
+    ToggleDeathSystem(acSettings.DeathSystemEnabled);
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
@@ -186,6 +195,9 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
 // TODO: ft (verify)
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
+    if (!isDeathSystemEnabled)
+        return;
+
     static bool s_startTimer = false;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
@@ -228,6 +240,9 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 // Doesn't seem to respawn quite yet
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
+    if (!isDeathSystemEnabled)
+        return;
+
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
     // It also makes the player invincible for 5 seconds.
@@ -294,4 +309,11 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
+}
+
+void PlayerService::ToggleDeathSystem(bool aSet) const noexcept
+{
+    isDeathSystemEnabled = aSet;
+
+    PlayerCharacter::Get()->SetPlayerRespawnMode(aSet);
 }
