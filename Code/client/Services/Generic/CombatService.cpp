@@ -204,6 +204,10 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
     if (!pHitter || !pHitter->GetExtension()->IsPlayer())
         return;
 
+    // If the target is not in combat, don't start combat, let the game take care of that first.
+    if (!pHittee->IsInCombat())
+        return;
+
     auto view = m_world.view<FormIdComponent, LocalComponent>(entt::exclude<ObjectComponent>);
 
     const auto hitteeIt =
