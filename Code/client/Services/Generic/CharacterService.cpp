@@ -66,11 +66,6 @@
 #include <World.h>
 #include <Games/TES.h>
 
-#include <Projectiles/Projectile.h>
-#include <Forms/TESObjectWEAP.h>
-#include <Forms/TESAmmo.h>
-#include <Forms/TESTopicInfo.h>
-
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)

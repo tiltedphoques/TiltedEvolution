@@ -1,7 +1,9 @@
 #include <Services/CombatService.h>
 #include <Services/TransportService.h>
 
+#include <Events/UpdateEvent.h>
 #include <Events/ProjectileLaunchedEvent.h>
+#include <Events/HitEvent.h>
 
 #include <Messages/ProjectileLaunchRequest.h>
 #include <Messages/NotifyProjectileLaunch.h>
@@ -12,6 +14,7 @@
 #include <Projectiles/Projectile.h>
 #include <Forms/TESObjectWEAP.h>
 #include <Forms/TESAmmo.h>
+#include <Games/ActorExtension.h>
 
 CombatService::CombatService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher) 
     : m_world(aWorld), 
@@ -19,6 +22,14 @@ CombatService::CombatService(World& aWorld, TransportService& aTransport, entt::
 {
     m_projectileLaunchedConnection = aDispatcher.sink<ProjectileLaunchedEvent>().connect<&CombatService::OnProjectileLaunchedEvent>(this);
     m_projectileLaunchConnection = aDispatcher.sink<NotifyProjectileLaunch>().connect<&CombatService::OnNotifyProjectileLaunch>(this);
+    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CombatService::OnUpdate>(this);
+}
+
+// TODO: OnLocalComponentRemoved, remove CombatComponent
+
+void CombatService::OnUpdate(const UpdateEvent& acEvent) const noexcept
+{
+    RunTargetUpdates(static_cast<float>(acEvent.Delta));
 }
 
 void CombatService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
@@ -173,3 +184,87 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     Projectile::Launch(&result, launchData);
 }
 
+void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    // The targeting system does not apply to players.
+    auto* pHittee = Cast<Actor>(TESForm::GetById(acEvent.HitteeId));
+    if (!pHittee || pHittee->GetExtension()->IsPlayer())
+        return;
+
+    // NPCs should not affect targeting, and only local actors should be considered.
+    auto* pHitter = Cast<Actor>(TESForm::GetById(acEvent.HitterId));
+    if (!pHitter || !pHitter->GetExtension()->IsPlayer() || pHitter->GetExtension()->IsRemote())
+        return;
+
+    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+
+    const auto hitteeIt =
+        std::find_if(std::begin(view), std::end(view), [id = acEvent.HitteeId, view](entt::entity entity) {
+            return view.get<FormIdComponent>(entity).Id == id;
+        });
+
+    if (hitteeIt == std::end(view))
+    {
+        spdlog::warn(__FUNCTION__ ": hittee form id component not found, form id: {:X}", acEvent.HitterId);
+        return;
+    }
+
+    m_world.emplace_or_replace<CombatComponent>(*hitteeIt, acEvent.HitterId);
+}
+
+void CombatService::RunTargetUpdates(const float acDelta) const noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 100ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    const auto view = m_world.view<FormIdComponent, CombatComponent>();
+
+    Vector<entt::entity> toRemove{};
+
+    for (const auto entity : view)
+    {
+        auto& combatComponent = view.get<CombatComponent>(entity);
+        combatComponent.Timer = combatComponent.Timer - acDelta;
+        
+        if (combatComponent.Timer <= 0.f)
+        {
+            toRemove.push_back(entity);
+            continue;
+        }
+
+        auto* pTarget = Cast<Actor>(TESForm::GetById(combatComponent.TargetFormId));
+        if (!pTarget)
+        {
+            // TODO: should probably remove the CombatComponent?
+            spdlog::warn(__FUNCTION__ ": combat target not found, form id {:X}", combatComponent.TargetFormId);
+            continue;
+        }
+        
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        auto* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+        {
+            // TODO: should probably remove the CombatComponent?
+            spdlog::warn(__FUNCTION__ ": actor not found, form id {:X}", formIdComponent.Id);
+            continue;
+        }
+
+        if (pActor->GetCombatTarget() != pTarget)
+        {
+            pActor->StopCombat();
+            pActor->StartCombat(pTarget);
+        }
+    }
+
+    for (const auto entity : toRemove)
+        m_world.remove<CombatComponent>(entity);
+}
