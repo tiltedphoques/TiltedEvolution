@@ -18,9 +18,10 @@
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifySettingsChange.h>
 #include <console/ConsoleRegistry.h>
 
-constexpr size_t kMaxSererNameLength = 128u;
+constexpr size_t kMaxServerNameLength = 128u;
 
 // -- Cvars --
 Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
@@ -56,6 +57,24 @@ Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/of
 Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&){
     bEnablePvp = !bEnablePvp;
     spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+    GameServer::Get()->UpdateSettings();
+});
+
+Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)", [](Console::ArgStack& aStack) {
+    auto aDiff = aStack.Pop<int64_t>();
+
+    if (aDiff < 0 || aDiff > 5)
+    {
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).",
+                     aDiff);
+
+        aDiff = 4;
+    }
+
+    uDifficulty = (uint32_t)aDiff;
+
+    GameServer::Get()->UpdateSettings();
+    spdlog::get("ConOut")->info("Difficulty has been set to {}.", aDiff);
 });
 
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
@@ -278,10 +297,10 @@ void GameServer::UpdateInfo()
 {
     const String cServerName = sServerName.c_str();
 
-    if (cServerName.length() > kMaxSererNameLength) 
+    if (cServerName.length() > kMaxServerNameLength) 
     {
-        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxSererNameLength);
-        m_info.name = cServerName.substr(0U, kMaxSererNameLength);
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxServerNameLength);
+        m_info.name = cServerName.substr(0U, kMaxServerNameLength);
     }
     else
     {
@@ -364,11 +383,11 @@ void GameServer::OnConnection(const ConnectionId_t aHandle)
 
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
 {
-    spdlog::info("Connection ended {:x}", aConnectionId);
-
     m_adminSessions.erase(aConnectionId);
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
+
+    spdlog::info("Connection ended {:x} - '{}' disconnected", aConnectionId, (pPlayer != NULL ? pPlayer->GetUsername().c_str() : "NULL"));
 
     if (pPlayer)
     {
@@ -679,7 +698,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.PlayerId = pPlayer->GetId();
 
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
-        spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
+        spdlog::info("New player '{}' [{:x}] connected with {} mods\n\t: {}", pPlayer->GetUsername().c_str(), aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
         serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
@@ -734,6 +753,17 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
         sendKick(RT::kWrongPassword);
     }
+}
+
+void GameServer::UpdateSettings()
+{
+    NotifySettingsChange notify{};
+    notify.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
+    notify.Settings.GreetingsEnabled = bEnableGreetings;
+    notify.Settings.PvpEnabled = bEnablePvp;
+    notify.Settings.SyncPlayerHomes = bSyncPlayerHomes;
+
+    SendToPlayers(notify);
 }
 
 void GameServer::UpdateTitle() const

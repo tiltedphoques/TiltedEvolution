@@ -17,6 +17,7 @@
 
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
+#include <Messages/NotifySettingsChange.h>
 #include <Packet.hpp>
 
 #include <ScriptExtender.h>
@@ -33,6 +34,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
+    m_settingsChangeConnection = m_dispatcher.sink<NotifySettingsChange>().connect<&TransportService::HandleNotifySettingsChange>(this);
 
     m_connected = false;
 
@@ -246,4 +248,10 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     }
 
     m_dispatcher.trigger(errorEvent);
+}
+
+void TransportService::HandleNotifySettingsChange(const NotifySettingsChange& acMessage) noexcept
+{
+    m_world.SetServerSettings(acMessage.Settings);
+    m_dispatcher.trigger(acMessage.Settings);
 }
