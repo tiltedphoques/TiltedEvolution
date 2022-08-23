@@ -5,7 +5,7 @@ import { Sound, SoundService } from './sound.service';
 
 
 export interface ErrorEvent {
-  error: 'wrong_version' | 'mods_mismatch' | 'client_mods_disallowed' | 'wrong_password' | 'no_reason';
+  error: 'wrong_version' | 'mods_mismatch' | 'client_mods_disallowed' | 'wrong_password'  | 'server_full'| 'no_reason';
   data?: Record<any, any>;
 }
 

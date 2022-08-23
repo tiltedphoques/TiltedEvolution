@@ -20,11 +20,11 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <console/ConsoleRegistry.h>
 
+constexpr size_t kMaxSererNameLength = 128u;
 
-namespace
-{
 // -- Cvars --
 Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
@@ -38,7 +38,7 @@ Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
-
+Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
@@ -48,18 +48,25 @@ Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Org
                            Console::SettingsFlags::kLocked};
 
 // -- Commands --
-Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
-                                     [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/off", [](Console::ArgStack&) {
+    bPremiumTickrate = !bPremiumTickrate;
+    spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
+});
 
-Console::Command<bool> TogglePvp("TogglePvp", "Toggle pvp",
-                                     [](Console::ArgStack& aStack) { bEnablePvp = aStack.Pop<bool>(); });
+Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&){
+    bEnablePvp = !bEnablePvp;
+    spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+});
 
-Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                               [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
+    spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
+});
+
 Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
     int* i = 0;
     *i = 42;
 });
+
 Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
@@ -73,11 +80,10 @@ constexpr char kBypassMoPoWarning[]{
     "may not be able to assist you if ModCheck was disabled."};
 
 constexpr char kMopoRecordsMissing[]{
-    "Failed to start: ModPolicy's mod check is enabled, but no mods are installed. Players wont be able "
+    "Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players won't be able "
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
-} // namespace
 
 static uint16_t GetUserTickRate()
 {
@@ -113,12 +119,13 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
 
     UpdateInfo();
-    spdlog::info("Server started on port {}", GetPort());
+    spdlog::info("Server {} started on port {}", BUILD_COMMIT, GetPort());
     UpdateTitle();
 
     m_pWorld = MakeUnique<World>();
 
     BindMessageHandlers();
+    UpdateTimeScale();
 }
 
 GameServer::~GameServer()
@@ -246,16 +253,60 @@ void GameServer::BindServerCommands()
     });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
-}
 
+    m_commands.RegisterCommand<int64_t, int64_t>("SetTime", "Set ingame hour and minute", [&](Console::ArgStack& aStack) {
+        auto out = spdlog::get("ConOut");
+
+        auto hour = aStack.Pop<int64_t>();
+        auto minute = aStack.Pop<int64_t>();
+        auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
+
+        bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
+
+        if (time_set_successfully)
+        {
+            out->info("Time set to {:02}:{:02}", hour, minute);
+        }
+        else
+        {
+            out->error("Hour must be between 0-23 and minute must be between 0-59");
+        }
+    });
+}
+    /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
 {
-    // Update Info fields from user facing CVARS.
-    m_info.name = sServerName.c_str();
+    const String cServerName = sServerName.c_str();
+
+    if (cServerName.length() > kMaxSererNameLength) 
+    {
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxSererNameLength);
+        m_info.name = cServerName.substr(0U, kMaxSererNameLength);
+    }
+    else
+    {
+        m_info.name = cServerName;
+    }
+
     m_info.desc = "";
     m_info.icon_url = "";
     m_info.tagList = "";
     m_info.tick_rate = GetUserTickRate();
+}
+
+void GameServer::UpdateTimeScale()
+{
+    auto timescale = uTimeScale.value_as<float>();
+
+    bool timescale_set_successfully = m_pWorld->GetCalendarService().SetTimeScale(timescale);
+
+    if (!timescale_set_successfully)
+    {
+        spdlog::warn("TimeScale is invalid (should be from 0 to 1000, current value is {}), setting TimeScale to 20 (default)",
+                     timescale);
+
+        uTimeScale = 20u;
+    }
 }
 
 void GameServer::OnUpdate()
@@ -512,6 +563,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         return;
     }
 #endif
+
+    if (m_pWorld->GetPlayerManager().Count() >=  uMaxPlayerCount.value_as<uint32_t>())
+    {
+        sendKick(RT::kServerFull);
+        return;
+    }
 
     bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
     bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;

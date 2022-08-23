@@ -1,4 +1,3 @@
-#include <TiltedOnlinePCH.h>
 #include <Games/References.h>
 #include <Games/Skyrim/EquipManager.h>
 #include <AI/AIProcess.h>
@@ -14,6 +13,7 @@
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
+#include <Events/DialogueEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -26,7 +26,7 @@
 #include <Games/Skyrim/ExtraData/ExtraCount.h>
 #include <Games/Misc/ActorKnowledge.h>
 
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 #include <ExtraData/ExtraCharge.h>
 #include <ExtraData/ExtraCount.h>
 #include <ExtraData/ExtraEnchantment.h>
@@ -193,6 +193,35 @@ TESForm* Actor::GetEquippedAmmo() const noexcept
     return nullptr;
 }
 
+// Get owner of a summon or raised corpse
+Actor* Actor::GetCommandingActor() const noexcept
+{
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess->commandingActor)
+    {
+        auto handle = currentProcess->middleProcess->commandingActor.handle;
+        auto* pOwner = Cast<Actor>(TESObjectREFR::GetByHandle(handle.iBits));
+        return pOwner;
+    }
+
+    return nullptr;
+}
+
+// Get owner of a summon or raised corpse
+void Actor::SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept
+{
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess)
+    {
+        currentProcess->middleProcess->commandingActor = aCommandingActor;
+        flags2 |= ActorFlags::IS_COMMANDED_ACTOR;
+    }
+}
+
+bool Actor::IsPlayerSummon() const noexcept
+{
+    const Actor* pCommandingActor = GetCommandingActor();
+    return pCommandingActor && pCommandingActor->formID == 0x14;
+}
+
 TESForm *Actor::GetCurrentLocation()
 {
     // we use the safe function which also
@@ -222,7 +251,7 @@ Factions Actor::GetFactions() const noexcept
         }
     }
 
-    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraData::Faction));
+    auto* pChanges = Cast<ExtraFactionChanges>(extraData.GetByType(ExtraDataType::Faction));
     if (pChanges)
     {
         for (auto i = 0u; i < pChanges->entries.length; ++i)
@@ -318,13 +347,6 @@ int32_t Actor::GetGoldAmount() noexcept
     return ThisCall(s_getGoldAmount, this);
 }
 
-uint16_t Actor::GetLevel() noexcept
-{
-    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
-    POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
-    return ThisCall(s_getLevel, this);
-}
-
 void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
@@ -360,14 +382,6 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
         spdlog::debug("Setting shout: {:X}", shoutId);
         pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
     }
-}
-
-void Actor::SetEssentialEx(bool aSet) noexcept
-{
-    SetEssential(true);
-    TESNPC* pBase = Cast<TESNPC>(baseForm);
-    if (pBase)
-        pBase->actorData.SetEssential(true);
 }
 
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
@@ -436,7 +450,7 @@ void Actor::SetPlayerRespawnMode() noexcept
 
     if (formID != 0x14)
     {
-        SetPlayerTeammate(true);
+        //SetPlayerTeammate(true);
 
         auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
         SetFactionRank(pPlayerFaction, 1);
@@ -467,13 +481,13 @@ void Actor::UnEquipAll() noexcept
                     BSScopedLock<BSRecursiveLock> _(pDataList->lock);
 
                     // Right slot
-                    if (pDataList->Contains(ExtraData::Worn))
+                    if (pDataList->Contains(ExtraDataType::Worn))
                     {
                         EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
                     }
 
                     // Left slot
-                    if (pDataList->Contains(ExtraData::WornLeft))
+                    if (pDataList->Contains(ExtraDataType::WornLeft))
                     {
                         EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false, nullptr);
                     }
@@ -514,13 +528,6 @@ void Actor::GenerateMagicCasters() noexcept
         if (casters[i] == nullptr)
             casters[i] = Cast<ActorMagicCaster>(GetMagicCaster(static_cast<CS>(i)));
     }
-}
-
-void Actor::DispellAllSpells() noexcept
-{
-    using TDispellAllSpells = void(void*, uint32_t, Actor*);
-    POINTER_SKYRIMSE(TDispellAllSpells, s_dispell, 54917);
-    s_dispell(nullptr, 0, this);
 }
 
 bool Actor::IsDead() noexcept
@@ -615,6 +622,7 @@ bool TP_MAKE_THISCALL(HookSpawnActorInWorld, Actor)
 TP_THIS_FUNCTION(TDamageActor, bool, Actor, float aDamage, Actor* apHitter, bool aKillMove);
 static TDamageActor* RealDamageActor = nullptr;
 
+// TODO: this is flawed, since it does not account for invulnerable actors
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
     float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);
@@ -776,11 +784,31 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
     return ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
 }
 
+void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+{
+    ExtraDataList* pExtraData = GetExtraDataFromItem(arEntry);
+
+    ModSystem& modSystem = World::Get().GetModSystem();
+
+    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!pObject)
+    {
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
+                     arEntry.BaseId.BaseId);
+        return;
+    }
+
+    if (arEntry.Count < 0)
+        DropObject(pObject, pExtraData, -arEntry.Count, apLocation, apRotation);
+    // TODO: pick up
+}
+
 void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
     spdlog::debug("Dropping object, form id: {:X}, count: {}, actor: {:X}", apObject->formID, aCount, formID);
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(RealDropObject, this, &result, apObject, apExtraData, -aCount, apLocation, apRotation);
+    ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);
@@ -840,6 +868,27 @@ void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* ap
     ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
 }
 
+TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
+static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
+
+bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
+{
+    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
+                  (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+
+    if (apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+
+    return ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+}
+
+void Actor::SpeakSound(const char* pFile)
+{
+    uint32_t handle[3]{};
+    handle[0] = -1;
+    ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
+}
+
 static TiltedPhoques::Initializer s_actorHooks([]()
 {
     POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
@@ -858,6 +907,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
     POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
     POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
+    POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
 
     FUNC_GetActorLocation = s_GetActorLocation.Get();
     RealCharacterConstructor = s_characterCtor.Get();
@@ -874,6 +924,7 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     RealProcessResponse = s_processResponse.Get();
     RealInitiateMountPackage = s_initiateMountPackage.Get();
     RealUnequipObject = s_unequipObject.Get();
+    RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
     TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
     TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
@@ -889,4 +940,5 @@ static TiltedPhoques::Initializer s_actorHooks([]()
     TP_HOOK(&RealProcessResponse, HookProcessResponse);
     TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
     TP_HOOK(&RealUnequipObject, HookUnequipObject);
+    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
 });

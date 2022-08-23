@@ -126,6 +126,12 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
 
     spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
 
+    if (!pNewLeader) 
+    {
+        spdlog::error("[PartyService]: Player {} does not exist¨. Cannot change paty leader", message.PartyMemberPlayerId);
+        return;
+    }
+
     auto& inviterPartyComponent = player->GetParty();
     if (inviterPartyComponent.JoinedPartyId) // Ensure not in party
     {
@@ -151,6 +157,14 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     auto& message = acPacket.Packet;
     Player* const player = acPacket.pPlayer;
     Player* const pKick = m_world.GetPlayerManager().GetById(message.PartyMemberPlayerId);
+
+    spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
+
+    if (!pKick) 
+    {
+        spdlog::error("[PartyService]: Player {} does not exist. Cannot kick", message.PartyMemberPlayerId);
+        return;
+    }
 
     auto& inviterPartyComponent = player->GetParty();
     if (inviterPartyComponent.JoinedPartyId) // Ensure not in party

@@ -5,37 +5,54 @@
 
 :host {
   position: relative;
-  display: block;
+  display: flex;
+  gap: 1em;
   width: 70vw;
+  --server-list-row-height: calc(16 * 100vw / 1920 * 2);
 }
 
 .server-list-action-bar {
+  width: 25%;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   margin-bottom: 1%;
+
+  hr {
+    width: 100%;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+  }
 
   .server-list-filters {
     display: flex;
-    align-items: center;
-    gap: 4em;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75em;
 
-    .hide-mismatched-servers-checkbox {
+    .filter-checkbox {
       display: flex;
       align-items: center;
       gap: 0.5em;
     }
   }
 
+  .server-count {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex: 1 1 auto;
+  }
+
   .server-list-actions {
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
     align-items: center;
 
     button {
-      padding: 0.25vw;
+      min-width: 4em;
+      padding: 0.5em;
       background-color: #292929;
       border-radius: 2px;
-      margin-left: 5%;
     }
   }
 }
@@ -46,13 +63,22 @@
 }
 
 .serverlist-alternative {
-  margin: 3%;
+  height: calc(60vh - var(--server-list-row-height) - 1px);
   display: flex;
   justify-content: center;
+  align-items: center;
+
+  &.serverlist-loading {
+    flex: 1 1 auto;
+    height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .virtual-viewport {
-  height: calc(60vh - 38px);
+  height: calc(60vh - var(--server-list-row-height) - 1px);
   width: 100%;
 }
 
@@ -62,14 +88,18 @@
   font-size: 0.85rem;
   border-radius: 7px;
   height: 1.5rem;
-  width: 8vw;
   border: none;
 }
 
 .server-list {
+  flex: 1 1 auto;
   overflow: auto;
   max-height: 60vh;
-  margin-top: 1rem;
+  height: 60vh;
+
+  cdk-virtual-scroll-viewport {
+    overflow-y: scroll;
+  }
 
 
   .server-list-table {
@@ -78,7 +108,8 @@
     table-layout: fixed;
 
     .row {
-      height: 38px;
+      height: var(--server-list-row-height);
+      line-height: var(--server-list-row-height);
       display: flex;
       align-items: center;
       width: 100%;
@@ -94,7 +125,8 @@
       }
 
       > div {
-        padding: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
       }
 
       &.header {
@@ -122,24 +154,23 @@
       background-color: #292929;
       border-radius: 2px;
       margin-left: 5%;
+      margin-right: 5%;
       float: right;
     }
 
     .server-list-favorite {
-      text-align: center;
-      color: grey;
+      color: white;
 
       &:hover {
-        color: white;
+        color: gray;
       }
-    }
 
-    .server-list-not-favorite {
-      text-align: center;
-      color: grey;
+      &.not {
+        color: gray;
 
-      &:hover {
-        color: white;
+        &:hover {
+          color: white;
+        }
       }
     }
   }

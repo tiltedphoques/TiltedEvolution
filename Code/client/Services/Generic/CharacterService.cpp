@@ -31,6 +31,7 @@
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+#include <Events/MoveActorEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -64,6 +65,11 @@
 
 #include <World.h>
 #include <Games/TES.h>
+
+#include <Projectiles/Projectile.h>
+#include <Forms/TESObjectWEAP.h>
+#include <Forms/TESAmmo.h>
+#include <Forms/TESTopicInfo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -132,6 +138,14 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
         return false;
     }
 
+#if TP_SKYRIM64
+    if (pActor->IsPlayerSummon())
+    {
+        spdlog::error("Cannot take control over remote player summon, form id: {:X}, server id: {:X}", acFormId, acServerId);
+        return false;
+    }
+#endif
+
     pExtension->SetRemote(false);
 
     // TODO(cosideci): this should be done differently.
@@ -162,9 +176,10 @@ void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+
     if (acEvent.FormId == 0x14)
     {
-        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
         pActor->GetExtension()->SetPlayer(true);
     }
 
@@ -481,6 +496,16 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+
+    spdlog::info("Spawn Reqeust Is summon {}", acMessage.IsPlayerSummon);
+
+#if TP_SKYRIM64
+    if (acMessage.IsPlayerSummon)
+    {
+        // Prevents remote summons agroing other players.
+        pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
+    }
+#endif
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
@@ -896,7 +921,10 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
+    // TODO: ft
+#if TP_SKYRIM64
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
+#endif
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
@@ -926,6 +954,8 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
+// TODO: ft (verify)
+// deal with player voice lines in fallout 4
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -974,8 +1004,37 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     SubtitleRequest request{};
     request.ServerId = serverIdRes.value();
     request.Text = acEvent.Text;
+    request.TopicFormId = acEvent.TopicFormID;
 
     m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    // This is only for fallout 4
+    TESTopicInfo* pInfo = nullptr;
+    pInfo = Cast<TESTopicInfo>(TESForm::GetById(acMessage.TopicFormId));
+
+    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str(), pInfo);
 }
 
 void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept
@@ -1022,30 +1081,6 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
     }
 
     spdlog::error("Did not find actor to relinquish control of, server id {:X}", acMessage.ServerId);
-}
-
-void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
-{
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = Cast<Actor>(pForm);
-
-    if (!pActor)
-        return;
-
-    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
 void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept
@@ -1116,6 +1151,7 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
+        // TODO: ft (verify)
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
@@ -1252,16 +1288,23 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    // TODO: ft, fallout probably uses skycells for those choppers
+#if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
+#endif
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
+
+#if TP_SKYRIM64
+    message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
+#endif
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
 
     if (isTemporary)
     {
-        if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        if (pNpc && !m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
             spdlog::error("Server NPC form id not found for form id {:X}", pNpc->formID);
             return;
@@ -1330,6 +1373,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
+            // TODO: ft (verify)
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();

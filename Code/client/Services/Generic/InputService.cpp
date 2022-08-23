@@ -102,6 +102,7 @@ bool IsDisableKey(int aKey) noexcept
     return aKey == VK_ESCAPE;
 }
 
+#if TP_SKYRIM64
 void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
 {
 #if defined(TP_SKYRIM)
@@ -121,6 +122,7 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
     while (ShowCursor(FALSE) >= 0)
         ;
 }
+#endif
 
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
@@ -228,6 +230,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pRenderer)
         return;
 
+#if TP_SKYRIM64
     const auto active = overlay.GetActive();
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
@@ -247,6 +250,26 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     {
         pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
     }
+
+#else
+    const auto active = pRenderer->IsVisible();
+
+    if (aType == KEYEVENT_KEYDOWN && aKey == VK_RCONTROL)
+    {
+        pRenderer->SetVisible(!active);
+
+        if (active)
+            while (ShowCursor(FALSE) >= 0)
+                ;
+        else
+            while (ShowCursor(TRUE) <= 0)
+                ;
+    }
+    else if (active)
+    {
+        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
+    }
+#endif
 }
 
 void ProcessMouseMove(uint16_t aX, uint16_t aY)
@@ -338,7 +361,11 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     auto &discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
+#if TP_SKYRIM64
     const bool active = s_pOverlay->GetActive();
+#else
+    const bool active = pRenderer->IsVisible();
+#endif
     if (active)
     {
         auto& imgui = World::Get().ctx().at<ImguiService>();
@@ -346,7 +373,8 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
 
 #if TP_FALLOUT4
-    POINTER_FALLOUT4(uint8_t, s_viewportLock, 0x3846670);
+    const bool isVisible = pRenderer->IsVisible();
+    POINTER_FALLOUT4(uint8_t, s_viewportLock, 1549778);
     *s_viewportLock = isVisible ? 1 : 0;
 #endif
 
@@ -421,7 +449,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         ProcessKeyboard(static_cast<uint16_t>(wParam), (lParam >> 16) & 0xFF, KEYEVENT_CHAR, false, false);
     }
 
-#if defined(TP_FALLOUT)
+#if TP_FALLOUT
     // Fallout specific code to disable input
     if (isVisible)
         return 1;

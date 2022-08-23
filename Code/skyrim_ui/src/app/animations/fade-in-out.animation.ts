@@ -2,19 +2,19 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 
 
 export const fadeInOutAnimation = trigger('fadeInOut', [
-  state('false', style({
+  state('void', style({
     'visibility': 'hidden',
     'opacity': '0',
   })),
-  transition('false => true', [
-    animate('200ms ease-out', style({
-      'visibility': '*',
-      'opacity': '*',
+  transition('void => *', [
+    animate('300ms ease-in', style({
+      'visibility': 'visible',
+      'opacity': '1',
     })),
   ]),
-  transition('true => false', [
-    animate('200ms ease-in', style({
-      'opacity': '0'
-    }))
-  ])
+  transition('* => void', [
+    animate('300ms ease-out', style({
+      'opacity': '0',
+    })),
+  ]),
 ]);

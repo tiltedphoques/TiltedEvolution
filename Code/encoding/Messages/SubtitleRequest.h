@@ -19,10 +19,12 @@ struct SubtitleRequest final : ClientMessage
     {
         return GetOpcode() == acRhs.GetOpcode() &&
                ServerId == acRhs.ServerId &&
-               Text == acRhs.Text;
+               Text == acRhs.Text &&
+               TopicFormId == acRhs.TopicFormId;
     }
 
     uint32_t ServerId{};
     TiltedPhoques::String Text{};
+    uint32_t TopicFormId{};
 };
 

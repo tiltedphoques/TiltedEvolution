@@ -81,6 +81,7 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     apSpawnRequest->IsDead = characterComponent.IsDead();
     apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+    apSpawnRequest->IsPlayerSummon = characterComponent.IsPlayerSummon();
     apSpawnRequest->PlayerId = characterComponent.PlayerId;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
@@ -263,6 +264,16 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         return;
     }
 
+    if (auto* pCharacterComponent = m_world.try_get<CharacterComponent>(cEntity))
+    {
+        if (pCharacterComponent->IsPlayerSummon())
+        {
+            spdlog::info("Client {:X} requested ownership transfer of an orphaned summon, serverid id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
+            m_world.GetDispatcher().trigger(CharacterRemoveEvent(message.ServerId));
+            return;
+        }
+    }
+
     if (message.WorldSpaceId || message.CellId)
     {
         auto& formIdComponent = m_world.get<FormIdComponent>(cEntity);
@@ -374,7 +385,6 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
     auto& message = acMessage.Packet;
 
     auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    
     auto it = view.find(static_cast<entt::entity>(message.Id));
 
     if (it != std::end(view))
@@ -472,6 +482,55 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
         characterComponent.FactionsContent = factions;
         characterComponent.SetDirtyFactions(true);
     }
+}
+
+void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
+{
+    auto packet = acMessage.Packet;
+
+    NotifyProjectileLaunch notify{};
+
+    notify.ShooterID = packet.ShooterID;
+
+    notify.OriginX = packet.OriginX;
+    notify.OriginY = packet.OriginY;
+    notify.OriginZ = packet.OriginZ;
+
+    notify.ProjectileBaseID = packet.ProjectileBaseID;
+    notify.WeaponID = packet.WeaponID;
+    notify.AmmoID = packet.AmmoID;
+
+    notify.ZAngle = packet.ZAngle;
+    notify.XAngle = packet.XAngle;
+    notify.YAngle = packet.YAngle;
+
+    notify.ParentCellID = packet.ParentCellID;
+
+    notify.SpellID = packet.SpellID;
+    notify.CastingSource = packet.CastingSource;
+
+    notify.Area = packet.Area;
+    notify.Power = packet.Power;
+    notify.Scale = packet.Scale;
+
+    notify.AlwaysHit = packet.AlwaysHit;
+    notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
+    notify.AutoAim = packet.AutoAim;
+    notify.DeferInitialization = packet.DeferInitialization;
+    notify.ForceConeOfFire = packet.ForceConeOfFire;
+
+    notify.UnkBool1 = packet.UnkBool1;
+    notify.UnkBool2 = packet.UnkBool2;
+
+    notify.ConeOfFireRadiusMult = packet.ConeOfFireRadiusMult;
+    notify.Tracer = packet.Tracer;
+    notify.IntentionalMiss = packet.IntentionalMiss;
+    notify.Allow3D = packet.Allow3D;
+    notify.Penetrates = packet.Penetrates;
+    notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
+
+    const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
+    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender());
 }
 
 void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
@@ -607,6 +666,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
     characterComponent.SetDragon(message.IsDragon);
     characterComponent.SetMount(message.IsMount);
+    characterComponent.SetPlayerSummon(message.IsPlayerSummon);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;

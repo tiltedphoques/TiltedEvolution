@@ -20,8 +20,12 @@
     (keydown.enter)="connect()"
   >
   <span class="save-password">
-    <label for="savePassword">{{ 'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco }}</label>
-    <input id="savePassword" type="checkbox" [(ngModel)]="savePassword" (keydown.enter)="connect()">
+    <input 
+      type="checkbox"
+      id="save-password"
+      [(ngModel)]="savePassword"
+    />
+    <label for="save-password">{{ 'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco }}</label>
   </span>
 
 

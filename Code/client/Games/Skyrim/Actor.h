@@ -85,7 +85,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CF();
     virtual void sub_D0();
     virtual void sub_D1();
-    virtual void sub_D2();
+    virtual bool sub_D2() const;
     virtual void sub_D3();
     virtual void sub_D4();
     virtual void sub_D5();
@@ -153,8 +153,8 @@ struct Actor : TESObjectREFR
     virtual void sub_112();
     virtual void sub_113();
     virtual void sub_114();
-    virtual void sub_115();
-    virtual void sub_116();
+    virtual bool sub_115();
+    virtual bool sub_116();
     virtual void sub_117();
     virtual void sub_118();
     virtual void sub_119();
@@ -186,6 +186,8 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
+    Actor* GetCommandingActor() const noexcept;
+    void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
@@ -223,10 +225,11 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
-    void DispellAllSpells() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
 
     bool IsDead() noexcept;
     bool IsDragon() noexcept;
+    bool IsPlayerSummon() const noexcept;
 
     void Kill() noexcept;
     void Reset() noexcept;
@@ -234,7 +237,7 @@ struct Actor : TESObjectREFR
 
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
-
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void SpeakSound(const char* pFile);
 
     bool IsInCombat() noexcept;
@@ -245,6 +248,7 @@ struct Actor : TESObjectREFR
     enum ActorFlags
     {
         IS_A_MOUNT = 1 << 1,
+        IS_COMMANDED_ACTOR = 1 << 16,
         IS_ESSENTIAL = 1 << 18,
     };
 
@@ -263,6 +267,11 @@ struct Actor : TESObjectREFR
             flags2 |= ActorFlags::IS_ESSENTIAL;
         else
             flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
+
+    bool IsCommandedActor() const noexcept
+    {
+        return flags2 & ActorFlags::IS_COMMANDED_ACTOR;
     }
 
 public:
