@@ -20,16 +20,20 @@ CombatService::CombatService(World& aWorld, TransportService& aTransport, entt::
     : m_world(aWorld), 
       m_transport(aTransport)
 {
+    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CombatService::OnUpdate>(this);
+    m_localComponentRemoved = m_world.on_destroy<LocalComponent>().connect<&CombatService::OnLocalComponentRemoved>(this);
     m_projectileLaunchedConnection = aDispatcher.sink<ProjectileLaunchedEvent>().connect<&CombatService::OnProjectileLaunchedEvent>(this);
     m_projectileLaunchConnection = aDispatcher.sink<NotifyProjectileLaunch>().connect<&CombatService::OnNotifyProjectileLaunch>(this);
-    m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CombatService::OnUpdate>(this);
 }
-
-// TODO: OnLocalComponentRemoved, remove CombatComponent
 
 void CombatService::OnUpdate(const UpdateEvent& acEvent) const noexcept
 {
     RunTargetUpdates(static_cast<float>(acEvent.Delta));
+}
+
+void CombatService::OnLocalComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
+{
+    m_world.remove<CombatComponent>(aEntity);
 }
 
 void CombatService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
@@ -189,17 +193,17 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
     if (!m_transport.IsConnected())
         return;
 
-    // The targeting system does not apply to players.
+    // The targeting system does not apply to players, and only local actors should be considered.
     auto* pHittee = Cast<Actor>(TESForm::GetById(acEvent.HitteeId));
-    if (!pHittee || pHittee->GetExtension()->IsPlayer())
+    if (!pHittee || pHittee->GetExtension()->IsPlayer() || pHittee->GetExtension()->IsRemote())
         return;
 
-    // NPCs should not affect targeting, and only local actors should be considered.
+    // NPCs should not affect targeting.
     auto* pHitter = Cast<Actor>(TESForm::GetById(acEvent.HitterId));
-    if (!pHitter || !pHitter->GetExtension()->IsPlayer() || pHitter->GetExtension()->IsRemote())
+    if (!pHitter || !pHitter->GetExtension()->IsPlayer())
         return;
 
-    auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+    auto view = m_world.view<FormIdComponent, LocalComponent>(entt::exclude<ObjectComponent>);
 
     const auto hitteeIt =
         std::find_if(std::begin(view), std::end(view), [id = acEvent.HitteeId, view](entt::entity entity) {
@@ -258,6 +262,8 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
             continue;
         }
 
+        // TODO: this is a really hacky solution, might not even work.
+        // The internal targeting system should be disabled instead.
         if (pActor->GetCombatTarget() != pTarget)
         {
             pActor->StopCombat();

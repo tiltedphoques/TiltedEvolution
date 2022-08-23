@@ -20,6 +20,7 @@ public:
 
 protected:
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
+    void OnLocalComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept;
     void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
     void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
     void OnHitEvent(const HitEvent& acEvent) const noexcept;
@@ -31,6 +32,7 @@ private:
     TransportService& m_transport;
 
     entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_localComponentRemoved;
     entt::scoped_connection m_projectileLaunchedConnection;
     entt::scoped_connection m_projectileLaunchConnection;
     entt::scoped_connection m_hitConnection;
