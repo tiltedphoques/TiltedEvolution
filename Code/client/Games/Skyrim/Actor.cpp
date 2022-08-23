@@ -14,6 +14,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/DialogueEvent.h>
+#include <Events/HitEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -625,6 +626,10 @@ static TDamageActor* RealDamageActor = nullptr;
 // TODO: this is flawed, since it does not account for invulnerable actors
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
+    // TODO: do magic hits also still get registered here?
+    if (apHitter)
+        World::Get().GetRunner().Trigger(HitEvent(apHitter->formID, apThis->formID));
+
     float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);
 
     float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);
