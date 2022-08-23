@@ -789,9 +789,14 @@ Actor* Actor::GetCombatTarget() noexcept
 
 void Actor::StartCombat(Actor* apTarget) noexcept
 {
+#if TP_SKYRIM64
+    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*);
+    s_pStartCombat(this, apTarget);
+#elif TP_FALLOUT4
     // TODO: not sure about this bool
     PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*, bool);
     s_pStartCombat(this, apTarget, true);
+#endif
 }
 
 void Actor::StopCombat() noexcept
