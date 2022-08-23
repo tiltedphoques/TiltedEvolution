@@ -242,6 +242,7 @@ struct Actor : TESObjectREFR
 
     bool IsInCombat() noexcept;
     Actor* GetCombatTarget() noexcept;
+    void StartCombatEx(Actor* apTarget) noexcept;
     void StartCombat(Actor* apTarget) noexcept;
     void StopCombat() noexcept;
 

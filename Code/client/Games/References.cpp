@@ -787,6 +787,17 @@ Actor* Actor::GetCombatTarget() noexcept
     return s_pGetCombatTarget(this);
 }
 
+// TODO: this is a really hacky solution.
+// The internal targeting system should be disabled instead.
+void Actor::StartCombatEx(Actor* apTarget) noexcept
+{
+    if (GetCombatTarget() != apTarget)
+    {
+        StopCombat();
+        StartCombat(apTarget);
+    }
+}
+
 void Actor::StartCombat(Actor* apTarget) noexcept
 {
 #if TP_SKYRIM64

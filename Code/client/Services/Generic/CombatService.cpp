@@ -218,6 +218,8 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
     }
 
     m_world.emplace_or_replace<CombatComponent>(*hitteeIt, acEvent.HitterId);
+
+    pHittee->StartCombatEx(pHitter);
 }
 
 void CombatService::RunTargetUpdates(const float acDelta) const noexcept
@@ -249,8 +251,8 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
         auto* pTarget = Cast<Actor>(TESForm::GetById(combatComponent.TargetFormId));
         if (!pTarget)
         {
-            // TODO: should probably remove the CombatComponent?
             spdlog::warn(__FUNCTION__ ": combat target not found, form id {:X}", combatComponent.TargetFormId);
+            toRemove.push_back(entity);
             continue;
         }
         
@@ -258,18 +260,12 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
         auto* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (!pActor)
         {
-            // TODO: should probably remove the CombatComponent?
-            spdlog::warn(__FUNCTION__ ": actor not found, form id {:X}", formIdComponent.Id);
+            spdlog::error(__FUNCTION__ ": actor not found, form id {:X}", formIdComponent.Id);
+            toRemove.push_back(entity);
             continue;
         }
 
-        // TODO: this is a really hacky solution, might not even work.
-        // The internal targeting system should be disabled instead.
-        if (pActor->GetCombatTarget() != pTarget)
-        {
-            pActor->StopCombat();
-            pActor->StartCombat(pTarget);
-        }
+        pActor->StartCombatEx(pTarget);
     }
 
     for (const auto entity : toRemove)
