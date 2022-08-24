@@ -12,7 +12,6 @@ struct HitEvent;
 */
 struct CombatService
 {
-public:
     CombatService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher);
     ~CombatService() noexcept = default;
 

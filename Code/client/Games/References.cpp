@@ -140,9 +140,9 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     return pResult;
 }
 
-BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() noexcept
+BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() const noexcept
 {
-    TP_THIS_FUNCTION(TGetHandle, BSPointerHandle<TESObjectREFR>, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult);
+    TP_THIS_FUNCTION(TGetHandle, BSPointerHandle<TESObjectREFR>, const TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult);
     POINTER_SKYRIMSE(TGetHandle, s_getHandle, 19846);
     POINTER_FALLOUT4(TGetHandle, s_getHandle, 1573131);
 
@@ -495,9 +495,9 @@ void Actor::SetSpeed(float aSpeed) noexcept
     animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
 }
 
-uint16_t Actor::GetLevel() noexcept
+uint16_t Actor::GetLevel() const noexcept
 {
-    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, const Actor);
     POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
     POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
     return ThisCall(s_getLevel, this);
@@ -650,9 +650,9 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 }
 #endif
 
-Lock* TESObjectREFR::GetLock() noexcept
+Lock* TESObjectREFR::GetLock() const noexcept
 {
-    TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
+    TP_THIS_FUNCTION(TGetLock, Lock*, const TESObjectREFR);
     POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
     POINTER_FALLOUT4(TGetLock, realGetLock, 930786);
 
@@ -775,13 +775,13 @@ void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, 
     ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
 }
 
-bool Actor::IsInCombat() noexcept
+bool Actor::IsInCombat() const noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsInCombat);
     return s_pIsInCombat(this);
 }
 
-Actor* Actor::GetCombatTarget() noexcept
+Actor* Actor::GetCombatTarget() const noexcept
 {
     PAPYRUS_FUNCTION(Actor*, Actor, GetCombatTarget);
     return s_pGetCombatTarget(this);

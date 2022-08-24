@@ -341,9 +341,9 @@ Inventory Actor::GetEquipment() const noexcept
     return inventory;
 }
 
-int32_t Actor::GetGoldAmount() noexcept
+int32_t Actor::GetGoldAmount() const noexcept
 {
-    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, const Actor);
     POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
     return ThisCall(s_getGoldAmount, this);
 }
@@ -531,14 +531,14 @@ void Actor::GenerateMagicCasters() noexcept
     }
 }
 
-bool Actor::IsDead() noexcept
+bool Actor::IsDead() const noexcept
 {
-    PAPYRUS_FUNCTION(bool, Actor, IsDead);
+    PAPYRUS_FUNCTION(bool, const Actor, IsDead);
 
     return s_pIsDead(this);
 }
 
-bool Actor::IsDragon() noexcept
+bool Actor::IsDragon() const noexcept
 {
     // TODO: if anyone has a better way of doing this, please do tell.
     BSAnimationGraphManager* pManager = nullptr;

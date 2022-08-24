@@ -252,9 +252,9 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
-bool Actor::IsDead() noexcept
+bool Actor::IsDead() const noexcept
 {
-    PAPYRUS_FUNCTION(bool, Actor, IsDead);
+    PAPYRUS_FUNCTION(bool, const Actor, IsDead);
     return s_pIsDead(this);
 }
 
