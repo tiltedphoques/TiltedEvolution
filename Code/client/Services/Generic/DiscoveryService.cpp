@@ -260,8 +260,6 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
 
-    PlayerCharacter::Get()->SetPlayerRespawnMode();
-
     return BSTEventResult::kOk;
 }
 
