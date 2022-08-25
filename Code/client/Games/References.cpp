@@ -716,11 +716,21 @@ void Actor::SetPackage(TESPackage* apPackage) noexcept
     s_execInitPackage = false;
 }
 
-void Actor::SetPlayerRespawnMode() noexcept
+void Actor::SetPlayerRespawnMode(bool aSet) noexcept
 {
-    SetEssentialEx(true);
+    SetEssentialEx(aSet);
     // Makes the player go in an unrecoverable bleedout state
-    SetNoBleedoutRecovery(true);
+    SetNoBleedoutRecovery(aSet);
+
+#if TP_SKYRIM64
+    if (formID != 0x14)
+    {
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
+#elif TP_FALLOUT4
+    // TODO: ft
+#endif
 }
 
 void Actor::SetEssentialEx(bool aSet) noexcept

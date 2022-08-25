@@ -220,7 +220,7 @@ struct Actor : TESObjectREFR
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
-    void SetPlayerRespawnMode() noexcept;
+    void SetPlayerRespawnMode(bool aSet = true) noexcept;
     void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions

@@ -39,6 +39,7 @@ Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
+Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the custom multiplayer death system", true};
 Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -114,6 +115,17 @@ static bool IsMoPoActive()
     return bEnableModCheck;
 }
 
+ServerSettings GetSettings()
+{
+    ServerSettings settings{};
+    settings.Difficulty = uDifficulty.value_as<uint8_t>();
+    settings.GreetingsEnabled = bEnableGreetings;
+    settings.PvpEnabled = bEnablePvp;
+    settings.SyncPlayerHomes = bSyncPlayerHomes;
+    settings.DeathSystemEnabled = bEnableDeathSystem;
+    return settings;
+}
+
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
@@ -133,6 +145,14 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
                      uDifficulty.value_as<uint8_t>());
 
         uDifficulty = 4;
+    }
+
+    if (!bEnableDeathSystem)
+    {
+        spdlog::warn(
+            "The multiplayer death system is disabled on this server. We recommend that you ONLY do this if you have"
+            " a mod that replaces the vanilla death system. You should only disable our death system if you"
+            " absolutely know what you are doing!");
     }
 
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
@@ -701,10 +721,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         spdlog::info("New player '{}' [{:x}] connected with {} mods\n\t: {}", pPlayer->GetUsername().c_str(), aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
-        serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
-        serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
-        serverResponse.Settings.PvpEnabled = bEnablePvp;
-        serverResponse.Settings.SyncPlayerHomes = bSyncPlayerHomes;
+        serverResponse.Settings = GetSettings();
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
@@ -758,10 +775,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 void GameServer::UpdateSettings()
 {
     NotifySettingsChange notify{};
-    notify.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
-    notify.Settings.GreetingsEnabled = bEnableGreetings;
-    notify.Settings.PvpEnabled = bEnablePvp;
-    notify.Settings.SyncPlayerHomes = bSyncPlayerHomes;
+    notify.Settings = GetSettings();
 
     SendToPlayers(notify);
 }

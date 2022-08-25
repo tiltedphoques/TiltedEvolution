@@ -124,7 +124,7 @@ struct Actor : TESObjectREFR
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
     void SetEssentialEx(bool aSet) noexcept;
-    void SetPlayerRespawnMode() noexcept;
+    void SetPlayerRespawnMode(bool aSet = true) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
