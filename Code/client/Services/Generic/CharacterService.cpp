@@ -25,7 +25,6 @@
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
@@ -49,8 +48,6 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
-#include <Messages/ProjectileLaunchRequest.h>
-#include <Messages/NotifyProjectileLaunch.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
@@ -68,11 +65,6 @@
 
 #include <World.h>
 #include <Games/TES.h>
-
-#include <Projectiles/Projectile.h>
-#include <Forms/TESObjectWEAP.h>
-#include <Forms/TESAmmo.h>
-#include <Forms/TESTopicInfo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -95,9 +87,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
-
-    m_projectileLaunchedConnection = m_dispatcher.sink<ProjectileLaunchedEvent>().connect<&CharacterService::OnProjectileLaunchedEvent>(this);
-    m_projectileLaunchConnection = m_dispatcher.sink<NotifyProjectileLaunch>().connect<&CharacterService::OnNotifyProjectileLaunch>(this);
 
     m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
     m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
@@ -733,158 +722,6 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
         pActor->Delete();
 
     m_transport.Send(request);
-}
-
-void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
-{
-    ModSystem& modSystem = m_world.Get().GetModSystem();
-
-    uint32_t shooterFormId = acEvent.ShooterID;
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == shooterFormId;
-    });
-
-    if (shooterEntityIt == std::end(view))
-        return;
-
-    LocalComponent& localComponent = view.get<LocalComponent>(*shooterEntityIt);
-
-    ProjectileLaunchRequest request{};
-
-    request.OriginX = acEvent.Origin.x;
-    request.OriginY = acEvent.Origin.y;
-    request.OriginZ = acEvent.Origin.z;
-
-    modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
-    modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
-    modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
-
-    request.ShooterID = localComponent.Id;
-
-    request.ZAngle = acEvent.ZAngle;
-    request.XAngle = acEvent.XAngle;
-    request.YAngle = acEvent.YAngle;
-
-    modSystem.GetServerModId(acEvent.ParentCellID, request.ParentCellID);
-    modSystem.GetServerModId(acEvent.SpellID, request.SpellID);
-
-    request.CastingSource = acEvent.CastingSource;
-
-    request.Area = acEvent.Area;
-    request.Power = acEvent.Power;
-    request.Scale = acEvent.Scale;
-
-    request.AlwaysHit = acEvent.AlwaysHit;
-    request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
-    request.AutoAim = acEvent.AutoAim;
-    request.DeferInitialization = acEvent.DeferInitialization;
-    request.ForceConeOfFire = acEvent.ForceConeOfFire;
-
-#if TP_SKYRIM64
-    request.UnkBool1 = acEvent.UnkBool1;
-    request.UnkBool2 = acEvent.UnkBool2;
-#else
-    request.ConeOfFireRadiusMult = acEvent.ConeOfFireRadiusMult;
-    request.Tracer = acEvent.Tracer;
-    request.IntentionalMiss = acEvent.IntentionalMiss;
-    request.Allow3D = acEvent.Allow3D;
-    request.Penetrates = acEvent.Penetrates;
-    request.IgnoreNearCollisions = acEvent.IgnoreNearCollisions;
-#endif
-
-    m_transport.Send(request);
-}
-
-void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
-{
-    ModSystem& modSystem = World::Get().GetModSystem();
-
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterID);
-        return;
-    }
-
-    FormIdComponent formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-
-#if TP_SKYRIM64
-    Projectile::LaunchData launchData{};
-#else
-    ProjectileLaunchData launchData{};
-#endif
-
-    launchData.pShooter = Cast<TESObjectREFR>(TESForm::GetById(formIdComponent.Id));
-
-    launchData.Origin.x = acMessage.OriginX;
-    launchData.Origin.y = acMessage.OriginY;
-    launchData.Origin.z = acMessage.OriginZ;
-
-    const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
-    launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
-
-#if TP_SKYRIM64
-    const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
-    launchData.pFromWeapon = Cast<TESObjectWEAP>(TESForm::GetById(cFromWeaponId));
-#endif
-
-#if TP_FALLOUT4
-    Actor* pShooter = Cast<Actor>(launchData.pShooter);
-    pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
-#endif
-
-    const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
-    launchData.pFromAmmo = Cast<TESAmmo>(TESForm::GetById(cFromAmmoId));
-
-    launchData.fZAngle = acMessage.ZAngle;
-    launchData.fXAngle = acMessage.XAngle;
-    launchData.fYAngle = acMessage.YAngle;
-
-    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
-
-    const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
-    launchData.pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
-
-    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
-
-    launchData.iArea = acMessage.Area;
-    launchData.fPower = acMessage.Power;
-    launchData.fScale = acMessage.Scale;
-
-    launchData.bAlwaysHit = acMessage.AlwaysHit;
-    launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
-    launchData.bAutoAim = acMessage.AutoAim;
-
-    launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
-
-    // always use origin, or it'll recalculate it and it desyncs
-    launchData.bUseOrigin = true;
-
-#if TP_SKYRIM64
-    launchData.bUnkBool1 = acMessage.UnkBool1;
-    launchData.bUnkBool2 = acMessage.UnkBool2;
-#else
-    launchData.eTargetLimb = -1;
-
-    launchData.fConeOfFireRadiusMult = acMessage.ConeOfFireRadiusMult;
-    launchData.bTracer = acMessage.Tracer;
-    launchData.bIntentionalMiss = acMessage.IntentionalMiss;
-    launchData.bAllow3D = acMessage.Allow3D;
-    launchData.bPenetrates = acMessage.Penetrates;
-    launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
-#endif
-
-    BSPointerHandle<Projectile> result;
-
-    Projectile::Launch(&result, launchData);
 }
 
 void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept

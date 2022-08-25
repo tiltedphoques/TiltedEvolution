@@ -187,7 +187,6 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
     Actor* GetCommandingActor() const noexcept;
-    void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
@@ -195,11 +194,15 @@ struct Actor : TESObjectREFR
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
     Inventory GetEquipment() const noexcept;
-    int32_t GetGoldAmount() noexcept;
-    uint16_t GetLevel() noexcept;
-
+    int32_t GetGoldAmount() const noexcept;
+    uint16_t GetLevel() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
+    [[nodiscard]] bool IsDead() const noexcept;
+    [[nodiscard]] bool IsDragon() const noexcept;
+    [[nodiscard]] bool IsPlayerSummon() const noexcept;
+    [[nodiscard]] bool IsInCombat() const noexcept;
+    [[nodiscard]] Actor* GetCombatTarget() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -207,6 +210,7 @@ struct Actor : TESObjectREFR
     void SetActorValue(uint32_t aId, float aValue) noexcept;
     void ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
+    void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
@@ -226,18 +230,16 @@ struct Actor : TESObjectREFR
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
     void DispelAllSpells(bool aNow = false) noexcept;
-
-    bool IsDead() noexcept;
-    bool IsDragon() noexcept;
-    bool IsPlayerSummon() const noexcept;
-
-    void Kill() noexcept;
     void Reset() noexcept;
+    void Kill() noexcept;
     void Respawn() noexcept;
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void SpeakSound(const char* pFile);
+    void StartCombatEx(Actor* apTarget) noexcept;
+    void StartCombat(Actor* apTarget) noexcept;
+    void StopCombat() noexcept;
 
     enum ActorFlags
     {

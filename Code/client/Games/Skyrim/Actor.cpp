@@ -14,6 +14,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/DialogueEvent.h>
+#include <Events/HitEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -340,9 +341,9 @@ Inventory Actor::GetEquipment() const noexcept
     return inventory;
 }
 
-int32_t Actor::GetGoldAmount() noexcept
+int32_t Actor::GetGoldAmount() const noexcept
 {
-    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, const Actor);
     POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
     return ThisCall(s_getGoldAmount, this);
 }
@@ -530,14 +531,14 @@ void Actor::GenerateMagicCasters() noexcept
     }
 }
 
-bool Actor::IsDead() noexcept
+bool Actor::IsDead() const noexcept
 {
-    PAPYRUS_FUNCTION(bool, Actor, IsDead);
+    PAPYRUS_FUNCTION(bool, const Actor, IsDead);
 
     return s_pIsDead(this);
 }
 
-bool Actor::IsDragon() noexcept
+bool Actor::IsDragon() const noexcept
 {
     // TODO: if anyone has a better way of doing this, please do tell.
     BSAnimationGraphManager* pManager = nullptr;
@@ -625,6 +626,9 @@ static TDamageActor* RealDamageActor = nullptr;
 // TODO: this is flawed, since it does not account for invulnerable actors
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
+    if (apHitter)
+        World::Get().GetRunner().Trigger(HitEvent(apHitter->formID, apThis->formID));
+
     float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);
 
     float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);

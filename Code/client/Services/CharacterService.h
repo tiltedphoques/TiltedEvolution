@@ -71,8 +71,6 @@ struct CharacterService
     void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) noexcept;
-    void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
-    void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
     void OnMountEvent(const MountEvent& acEvent) const noexcept;
     void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
@@ -141,8 +139,6 @@ private:
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
-    entt::scoped_connection m_projectileLaunchedConnection;
-    entt::scoped_connection m_projectileLaunchConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_notifyMountConnection;
     entt::scoped_connection m_initPackageConnection;
