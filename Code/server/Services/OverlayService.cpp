@@ -2,6 +2,8 @@
 
 #include <Services/OverlayService.h>
 
+#include <ChatMessageTypes.h>
+
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/PlayerDialogueRequest.h>
