@@ -221,6 +221,9 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
         return;
     }
 
+    if (m_world.any_of<CombatComponent>(*hitteeIt))
+        return;
+
     m_world.emplace_or_replace<CombatComponent>(*hitteeIt, acEvent.HitterId);
 
     pHittee->StartCombatEx(pHitter);
