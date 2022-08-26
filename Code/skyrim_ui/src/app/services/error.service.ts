@@ -24,15 +24,10 @@ export interface ClientModsDisallowedErrorEvent extends ErrorEvent {
   data: { mods: ('SKSE' | 'MO2')[] };
 }
 
-export interface ServerFullErrorEvent extends ErrorEvent {
-  error: 'server_full';
-}
-
 export type ErrorEvents =
   | WrongVersionErrorEvent
   | ModsMismatchErrorEvent
   | ClientModsDisallowedErrorEvent
-  | ServerFullErrorEvent
   | ErrorEvent
 
 @Injectable({

@@ -54,6 +54,7 @@
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyTeleport.h>
 #include <Messages/NotifyPlayerHealthUpdate.h>
+#include <Messages/NotifySettingsChange.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -76,7 +77,7 @@ struct ServerMessageFactory
                                  TeleportCommandResponse, NotifyPlayerRespawn, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue,
                                  NotifyActorTeleport, NotifyRelinquishControl, NotifyPlayerLeft, NotifyPlayerJoined, 
                                  NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyPlayerLevel, NotifyPlayerCellChanged,
-                                 NotifyTeleport, NotifyPlayerHealthUpdate>;
+                                 NotifyTeleport, NotifyPlayerHealthUpdate, NotifySettingsChange>;
 
         return s_visitor(std::forward<T>(func));
     }

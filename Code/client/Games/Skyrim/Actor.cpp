@@ -14,6 +14,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/DialogueEvent.h>
+#include <Events/HitEvent.h>
 
 #include <World.h>
 #include <Services/PapyrusService.h>
@@ -193,6 +194,35 @@ TESForm* Actor::GetEquippedAmmo() const noexcept
     return nullptr;
 }
 
+// Get owner of a summon or raised corpse
+Actor* Actor::GetCommandingActor() const noexcept
+{
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess->commandingActor)
+    {
+        auto handle = currentProcess->middleProcess->commandingActor.handle;
+        auto* pOwner = Cast<Actor>(TESObjectREFR::GetByHandle(handle.iBits));
+        return pOwner;
+    }
+
+    return nullptr;
+}
+
+// Get owner of a summon or raised corpse
+void Actor::SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept
+{
+    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess)
+    {
+        currentProcess->middleProcess->commandingActor = aCommandingActor;
+        flags2 |= ActorFlags::IS_COMMANDED_ACTOR;
+    }
+}
+
+bool Actor::IsPlayerSummon() const noexcept
+{
+    const Actor* pCommandingActor = GetCommandingActor();
+    return pCommandingActor && pCommandingActor->formID == 0x14;
+}
+
 TESForm *Actor::GetCurrentLocation()
 {
     // we use the safe function which also
@@ -311,9 +341,9 @@ Inventory Actor::GetEquipment() const noexcept
     return inventory;
 }
 
-int32_t Actor::GetGoldAmount() noexcept
+int32_t Actor::GetGoldAmount() const noexcept
 {
-    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, Actor);
+    TP_THIS_FUNCTION(TGetGoldAmount, int32_t, const Actor);
     POINTER_SKYRIMSE(TGetGoldAmount, s_getGoldAmount, 37527);
     return ThisCall(s_getGoldAmount, this);
 }
@@ -413,21 +443,6 @@ void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
     ThisCall(s_setNoBleedoutRecovery, this, aSet);
 }
 
-void Actor::SetPlayerRespawnMode() noexcept
-{
-    SetEssentialEx(true);
-    // Makes the player go in an unrecoverable bleedout state
-    SetNoBleedoutRecovery(true);
-
-    if (formID != 0x14)
-    {
-        //SetPlayerTeammate(true);
-
-        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
-        SetFactionRank(pPlayerFaction, 1);
-    }
-}
-
 void Actor::SetPlayerTeammate(bool aSet) noexcept
 {
     TP_THIS_FUNCTION(TSetPlayerTeammate, void, Actor, bool aSet, bool abCanDoFavor);
@@ -501,14 +516,14 @@ void Actor::GenerateMagicCasters() noexcept
     }
 }
 
-bool Actor::IsDead() noexcept
+bool Actor::IsDead() const noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
 
     return s_pIsDead(this);
 }
 
-bool Actor::IsDragon() noexcept
+bool Actor::IsDragon() const noexcept
 {
     // TODO: if anyone has a better way of doing this, please do tell.
     BSAnimationGraphManager* pManager = nullptr;
@@ -596,6 +611,9 @@ static TDamageActor* RealDamageActor = nullptr;
 // TODO: this is flawed, since it does not account for invulnerable actors
 bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bool aKillMove)
 {
+    if (apHitter)
+        World::Get().GetRunner().Trigger(HitEvent(apHitter->formID, apThis->formID));
+
     float realDamage = GameplayFormulas::CalculateRealDamage(apThis, aDamage, aKillMove);
 
     float currentHealth = apThis->GetActorValue(ActorValueInfo::kHealth);

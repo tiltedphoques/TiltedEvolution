@@ -169,11 +169,12 @@ struct TESObjectREFR : TESForm
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
+    BSPointerHandle<TESObjectREFR> GetHandle() const noexcept;
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
     ExtraDataList* GetExtraDataList() noexcept;
     ActorValueInfo* GetActorValueInfo(uint32_t aId) const noexcept;
-    Lock* GetLock() noexcept;
+    Lock* GetLock() const noexcept;
     const BGSEquipSlot* GetEquipSlot(uint32_t uiIndex) const noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;

@@ -140,6 +140,18 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     return pResult;
 }
 
+BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() const noexcept
+{
+    TP_THIS_FUNCTION(TGetHandle, BSPointerHandle<TESObjectREFR>, const TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult);
+    POINTER_SKYRIMSE(TGetHandle, s_getHandle, 19846);
+    POINTER_FALLOUT4(TGetHandle, s_getHandle, 1573131);
+
+    BSPointerHandle<TESObjectREFR> result{};
+    ThisCall(s_getHandle, this, &result);
+
+    return result;
+}
+
 uint32_t* TESObjectREFR::GetNullHandle() noexcept
 {
     POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
@@ -483,9 +495,9 @@ void Actor::SetSpeed(float aSpeed) noexcept
     animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
 }
 
-uint16_t Actor::GetLevel() noexcept
+uint16_t Actor::GetLevel() const noexcept
 {
-    TP_THIS_FUNCTION(TGetLevel, uint16_t, Actor);
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, const Actor);
     POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
     POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
     return ThisCall(s_getLevel, this);
@@ -638,9 +650,9 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 }
 #endif
 
-Lock* TESObjectREFR::GetLock() noexcept
+Lock* TESObjectREFR::GetLock() const noexcept
 {
-    TP_THIS_FUNCTION(TGetLock, Lock*, TESObjectREFR);
+    TP_THIS_FUNCTION(TGetLock, Lock*, const TESObjectREFR);
     POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
     POINTER_FALLOUT4(TGetLock, realGetLock, 930786);
 
@@ -704,11 +716,21 @@ void Actor::SetPackage(TESPackage* apPackage) noexcept
     s_execInitPackage = false;
 }
 
-void Actor::SetPlayerRespawnMode() noexcept
+void Actor::SetPlayerRespawnMode(bool aSet) noexcept
 {
-    SetEssentialEx(true);
+    SetEssentialEx(aSet);
     // Makes the player go in an unrecoverable bleedout state
-    SetNoBleedoutRecovery(true);
+    SetNoBleedoutRecovery(aSet);
+
+#if TP_SKYRIM64
+    if (formID != 0x14)
+    {
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
+#elif TP_FALLOUT4
+    // TODO: ft
+#endif
 }
 
 void Actor::SetEssentialEx(bool aSet) noexcept
@@ -761,6 +783,47 @@ void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, 
     POINTER_SKYRIMSE(TKnockExplosion, knockExplosion, 39895);
     POINTER_FALLOUT4(TKnockExplosion, knockExplosion, 803088);
     ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
+}
+
+bool Actor::IsInCombat() const noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, IsInCombat);
+    return s_pIsInCombat(this);
+}
+
+Actor* Actor::GetCombatTarget() const noexcept
+{
+    PAPYRUS_FUNCTION(Actor*, Actor, GetCombatTarget);
+    return s_pGetCombatTarget(this);
+}
+
+// TODO: this is a really hacky solution.
+// The internal targeting system should be disabled instead.
+void Actor::StartCombatEx(Actor* apTarget) noexcept
+{
+    if (GetCombatTarget() != apTarget)
+    {
+        StopCombat();
+        StartCombat(apTarget);
+    }
+}
+
+void Actor::StartCombat(Actor* apTarget) noexcept
+{
+#if TP_SKYRIM64
+    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*);
+    s_pStartCombat(this, apTarget);
+#elif TP_FALLOUT4
+    // TODO: not sure about this bool
+    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*, bool);
+    s_pStartCombat(this, apTarget, true);
+#endif
+}
+
+void Actor::StopCombat() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, StopCombat);
+    s_pStopCombat(this);
 }
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)

@@ -11,7 +11,7 @@
 #include <httplib.h>
 
 
-extern Console::Setting<uint16_t> uMaxPlayerCount;
+extern Console::Setting<uint32_t> uMaxPlayerCount;
 
 static constexpr char kMasterServerEndpoint[] =
 #if TP_SKYRIM
@@ -33,7 +33,7 @@ ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatche
                      "If you are just playing with friends, this is probably what you want.");
 
     // TODO: list pw protected servers on server list
-    if (GameServer::Get()->IsPasswordProtected())
+    if (bAnnounceServer && GameServer::Get()->IsPasswordProtected())
     {
         spdlog::warn("Your server will not show up on the server list because this server has a password.");
         bAnnounceServer = false;

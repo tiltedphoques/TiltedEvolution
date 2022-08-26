@@ -45,10 +45,7 @@ export class NotificationPopupContainerComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  remove(notification: PopupNotification, userAction: boolean) {
-    notification.onClose.next(userAction);
-    notification.onClose.complete();
-
+  remove(notification: PopupNotification) {
     const index = this.notifications.indexOf(notification);
     this.notifications.splice(index, 1);
     this.notifications = [...this.notifications];
@@ -57,10 +54,6 @@ export class NotificationPopupContainerComponent implements OnInit {
   }
 
   removeAll() {
-    for (const notification of this.notifications) {
-      notification.onClose.next(false);
-      notification.onClose.complete();
-    }
     this.notifications = [];
     this.cdr.detectChanges();
   }

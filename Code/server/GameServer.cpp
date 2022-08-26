@@ -18,13 +18,14 @@
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifySettingsChange.h>
 #include <console/ConsoleRegistry.h>
 
-constexpr size_t kMaxSererNameLength = 128u;
+constexpr size_t kMaxServerNameLength = 128u;
 
 // -- Cvars --
-Console::Setting<uint16_t> uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
-Console::Setting<uint16_t> uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
+Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
+Console::Setting uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
@@ -38,6 +39,7 @@ Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
+Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the custom multiplayer death system", true};
 Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
@@ -48,18 +50,43 @@ Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Org
                            Console::SettingsFlags::kLocked};
 
 // -- Commands --
-Console::Command<bool> TogglePremium("TogglePremium", "Toggle the premium mode",
-                                     [](Console::ArgStack& aStack) { bPremiumTickrate = aStack.Pop<bool>(); });
+Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/off", [](Console::ArgStack&) {
+    bPremiumTickrate = !bPremiumTickrate;
+    spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
+});
 
-Console::Command<bool> TogglePvp("TogglePvp", "Toggle pvp",
-                                     [](Console::ArgStack& aStack) { bEnablePvp = aStack.Pop<bool>(); });
+Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&){
+    bEnablePvp = !bEnablePvp;
+    spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+    GameServer::Get()->UpdateSettings();
+});
 
-Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
-                               [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Command<int64_t> SetDifficulty("SetDifficulty", "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)", [](Console::ArgStack& aStack) {
+    auto aDiff = aStack.Pop<int64_t>();
+
+    if (aDiff < 0 || aDiff > 5)
+    {
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).",
+                     aDiff);
+
+        aDiff = 4;
+    }
+
+    uDifficulty = (uint32_t)aDiff;
+
+    GameServer::Get()->UpdateSettings();
+    spdlog::get("ConOut")->info("Difficulty has been set to {}.", aDiff);
+});
+
+Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) {
+    spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
+});
+
 Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
     int* i = 0;
     *i = 42;
 });
+
 Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
@@ -88,6 +115,17 @@ static bool IsMoPoActive()
     return bEnableModCheck;
 }
 
+ServerSettings GetSettings()
+{
+    ServerSettings settings{};
+    settings.Difficulty = uDifficulty.value_as<uint8_t>();
+    settings.GreetingsEnabled = bEnableGreetings;
+    settings.PvpEnabled = bEnablePvp;
+    settings.SyncPlayerHomes = bSyncPlayerHomes;
+    settings.DeathSystemEnabled = bEnableDeathSystem;
+    return settings;
+}
+
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
@@ -107,6 +145,14 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
                      uDifficulty.value_as<uint8_t>());
 
         uDifficulty = 4;
+    }
+
+    if (!bEnableDeathSystem)
+    {
+        spdlog::warn(
+            "The multiplayer death system is disabled on this server. We recommend that you ONLY do this if you have"
+            " a mod that replaces the vanilla death system. You should only disable our death system if you"
+            " absolutely know what you are doing!");
     }
 
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
@@ -258,7 +304,7 @@ void GameServer::BindServerCommands()
 
         if (time_set_successfully)
         {
-            out->info("Time set to {}:{}", hour, minute);
+            out->info("Time set to {:02}:{:02}", hour, minute);
         }
         else
         {
@@ -271,10 +317,10 @@ void GameServer::UpdateInfo()
 {
     const String cServerName = sServerName.c_str();
 
-    if (cServerName.length() > kMaxSererNameLength) 
+    if (cServerName.length() > kMaxServerNameLength) 
     {
-        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxSererNameLength);
-        m_info.name = cServerName.substr(0U, kMaxSererNameLength);
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxServerNameLength);
+        m_info.name = cServerName.substr(0U, kMaxServerNameLength);
     }
     else
     {
@@ -357,11 +403,11 @@ void GameServer::OnConnection(const ConnectionId_t aHandle)
 
 void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnectReason aReason)
 {
-    spdlog::info("Connection ended {:x}", aConnectionId);
-
     m_adminSessions.erase(aConnectionId);
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
+
+    spdlog::info("Connection ended {:x} - '{}' disconnected", aConnectionId, (pPlayer != NULL ? pPlayer->GetUsername().c_str() : "NULL"));
 
     if (pPlayer)
     {
@@ -672,13 +718,10 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         serverResponse.PlayerId = pPlayer->GetId();
 
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
-        spdlog::info("New player {:x} connected with {} mods\n\t: {}", aConnectionId,
+        spdlog::info("New player '{}' [{:x}] connected with {} mods\n\t: {}", pPlayer->GetUsername().c_str(), aConnectionId,
                      acRequest->UserMods.ModList.size(), modList.c_str());
 
-        serverResponse.Settings.Difficulty = uDifficulty.value_as<uint8_t>();
-        serverResponse.Settings.GreetingsEnabled = bEnableGreetings;
-        serverResponse.Settings.PvpEnabled = bEnablePvp;
-        serverResponse.Settings.SyncPlayerHomes = bSyncPlayerHomes;
+        serverResponse.Settings = GetSettings();
 
         serverResponse.Type = AuthenticationResponse::ResponseType::kAccepted;
         Send(aConnectionId, serverResponse);
@@ -727,6 +770,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
         sendKick(RT::kWrongPassword);
     }
+}
+
+void GameServer::UpdateSettings()
+{
+    NotifySettingsChange notify{};
+    notify.Settings = GetSettings();
+
+    SendToPlayers(notify);
 }
 
 void GameServer::UpdateTitle() const
