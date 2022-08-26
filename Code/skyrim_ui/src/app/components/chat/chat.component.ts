@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { ClientService, Message, MessageType } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
+import { CommandService } from '../../services/command.service';
 import { MessageHistory } from './message-history';
 
 interface ChatMessage extends Message {
@@ -62,6 +63,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
+    private readonly commandService: CommandService
 
   ) {
     client.messageReception
@@ -130,7 +132,12 @@ export class ChatComponent implements AfterViewChecked {
         return;
       }
 
-      this.client.sendMessage({type: MessageType.GLOBAL_CHAT, content: this.message});
+      if (this.message.startsWith(this.commandService.COMMAND_PREFIX)) {
+        this.commandService.tryExecute(this.message);
+      } else {
+        this.client.sendMessage({type: MessageType.GLOBAL_CHAT, content: this.message});
+      }
+
       this.sound.play(Sound.Focus);
 
       this.history.push(this.message)

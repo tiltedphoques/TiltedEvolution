@@ -36,6 +36,7 @@ import { SliderDirective } from './directives/slider.directive';
 import { CheckboxDirective } from './directives/checkbox.directive';
 import { AssetService } from './services/asset.service';
 import { ClientService } from './services/client.service';
+import { CommandService } from './services/command.service';
 import { ErrorService } from './services/error.service';
 import { GroupService } from './services/group.service';
 import { PlayerListService } from './services/player-list.service';
@@ -89,6 +90,7 @@ import { TranslocoRootModule } from './transloco-root.module';
   ],
   providers: [
     ClientService,
+    CommandService,
     AssetService,
     SoundService,
     ErrorService,
