@@ -112,7 +112,7 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
         messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
         messageRequest.ChatMessage = contents;
         
-        spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
+        spdlog::info("Send chat message of type {}: '{}' " , messageRequest.MessageType, messageRequest.ChatMessage);
         m_transport.Send(messageRequest);
     }
 }
