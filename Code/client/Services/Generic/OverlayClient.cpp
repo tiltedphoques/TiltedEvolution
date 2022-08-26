@@ -105,11 +105,13 @@ void OverlayClient::ProcessDisconnectMessage()
 
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
 {
-    std::string contents = aEventArgs->GetString(0).ToString();
+    std::string contents = aEventArgs->GetString(1).ToString();
     if (!contents.empty())
     {
         SendChatMessageRequest messageRequest;
-        messageRequest.ChatMessage = aEventArgs->GetString(0).ToString();
+        messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
+        messageRequest.ChatMessage = contents;
+        
         spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
         m_transport.Send(messageRequest);
     }

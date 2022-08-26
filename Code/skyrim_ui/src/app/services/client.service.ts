@@ -14,10 +14,15 @@ export interface Message {
   /** Player name. Unset if it's a system message. */
   name?: string;
 
-  /** Message content. */
   content: string;
 
-  dialogue?: boolean;
+  type: MessageType;
+}
+
+export enum MessageType {
+  SYSTEM_MESSAGE = 0,
+  GLOBAL_CHAT = 1,
+  PLAYER_DIALOGUE = 2
 }
 
 /** Client game service. */
@@ -135,8 +140,6 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('exitGame', this.onExitGame.bind(this));
     skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
     skyrimtogether.on('message', this.onMessage.bind(this));
-    skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
-    skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
     skyrimtogether.on('connect', this.onConnect.bind(this));
     skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
     skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
@@ -171,8 +174,6 @@ export class ClientService implements OnDestroy {
     skyrimtogether.off('exitGame');
     skyrimtogether.off('openingMenu');
     skyrimtogether.off('message');
-    skyrimtogether.off('systemMessage');
-    skyrimtogether.off('dialogueMessage');
     skyrimtogether.off('connect');
     skyrimtogether.off('disconnect');
     skyrimtogether.off('setName');
@@ -220,12 +221,10 @@ export class ClientService implements OnDestroy {
   }
 
   /**
-   * Broadcast message to server.
-   *
-   * @param message Message to send.
+   * Send message to server.
    */
-  public sendMessage(message: string): void {
-    skyrimtogether.sendMessage(message);
+  public sendMessage(message: Message): void {
+    skyrimtogether.sendMessage(message.type, message.content);
   }
 
   /**
@@ -352,33 +351,9 @@ export class ClientService implements OnDestroy {
    * @param name Sender's name.
    * @param message Message content.
    */
-  private onMessage(name: string, message: string): void {
+  private onMessage(type: MessageType, content: string, name: string = undefined): void {
     this.zone.run(() => {
-      this.messageReception.next({ name, content: message });
-    });
-  }
-
-  /**
-   * Called when a system message is received.
-   *
-   * @param message Message content.
-   */
-  private onSystemMessage(message: string): void {
-    this.zone.run(() => {
-      this.messageReception.next({ content: message });
-    });
-  }
-
-  /**
-   * Called when a dialogue message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onDialogueMessage(name: string, message: string): void {
-    let dialogue = true;
-    this.zone.run(() => {
-      this.messageReception.next({ name, content: message, dialogue: dialogue });
+      this.messageReception.next({ type, content, name });
     });
   }
 
@@ -394,7 +369,7 @@ export class ClientService implements OnDestroy {
       const content = await firstValueFrom(
         this.translocoService.selectTranslate<string>('SERVICE.CLIENT.CONNECTED'),
       );
-      this.messageReception.next({ content });
+      this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
     });
   }
 
@@ -415,13 +390,13 @@ export class ClientService implements OnDestroy {
             { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
           ),
         );
-        this.messageReception.next({ content });
+        this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
         this.connect(this._host, this._port, this._password);
       } else {
         const content = await firstValueFrom(
           this.translocoService.selectTranslate<string>('SERVICE.CLIENT.DISCONNECTED'),
         );
-        this.messageReception.next({ content });
+        this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
       }
     });
   }

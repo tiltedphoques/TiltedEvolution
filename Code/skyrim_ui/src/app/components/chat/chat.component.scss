@@ -26,13 +26,13 @@
       background: transparentize(mod($-color-background, 1), 0.97);
     }
 
-    &[data-system=true] {
+    &.system {
       .app-chat-date,
       .app-chat-message {
         color: #9999ff;
       }
     }
-    &[data-dialogue=true] {
+    &.dialogue {
       .app-chat-message {
         color: #00FF33;
       }

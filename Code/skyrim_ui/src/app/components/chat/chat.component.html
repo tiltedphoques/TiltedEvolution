@@ -2,9 +2,8 @@
   <p
     #entry
     *ngFor="let message of messages"
-    [attr.data-system]="!message.name"
     [attr.data-odd]="message.odd"
-    [attr.data-dialogue]="message.dialogue"
+    [ngClass]="message.typeClass"
   >
     <span class="app-chat-date">[{{ message.date | date: 'HH:mm:ss' }}] </span>
     <span class="app-chat-name" *ngIf="message.name">{{ message.name }}: </span>

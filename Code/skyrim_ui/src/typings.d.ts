@@ -24,14 +24,14 @@ declare namespace SkyrimTogetherTypes {
   /** Player open/close game menu callback */
   type OpeningMenuCallback = (openingMenu: boolean) => void;
 
-  /** Player message reception callback */
-  type MessageCallback = (name: string, message: string) => void;
+  enum ChatMessageType {
+    SYSTEM_MESSAGE = 0,
+    GLOBAL_CHAT = 1,
+    PLAYER_DIALOGUE = 2
+  }
 
-  /** System message reception callback */
-  type SystemMessageCallback = (message: string) => void;
-
-  /** Dialogue message reception callback */
-  type DialogueMessageCallback = (name: string, message: string) => void;
+  /** Chat message reception callback */
+  type MessageCallback = (type: ChatMessageType, content: string, sender: string) => void;
 
   /** Connection callback */
   type ConnectCallback = () => void;
@@ -116,12 +116,6 @@ interface SkyrimTogether {
   /** Add listener to when a player message is received. */
   on(event: 'message', callback: SkyrimTogetherTypes.MessageCallback): void;
 
-  /** Add listener to when a system message is received. */
-  on(event: 'systemMessage', callback: SkyrimTogetherTypes.SystemMessageCallback): void;
-
-  /** Add listener to when a dialogue message is received. */
-  on(event: 'dialogueMessage', callback: SkyrimTogetherTypes.DialogueMessageCallback): void;
-
   /** Add listener to when the player connects to a server. */
   on(event: 'connect', callback: SkyrimTogetherTypes.ConnectCallback): void;
 
@@ -198,12 +192,6 @@ interface SkyrimTogether {
   /** Remove listener from when a player message is received. */
   off(event: 'message', callback?: SkyrimTogetherTypes.MessageCallback): void;
 
-  /** Remove listener from when a system message is received. */
-  off(event: 'systemMessage', callback?: SkyrimTogetherTypes.SystemMessageCallback): void;
-
-  /** Remove listener from when a dialogue message is received. */
-  off(event: 'dialogueMessage', callback?: SkyrimTogetherTypes.DialogueMessageCallback): void;
-
   /** Remove listener from when the player connects to a server. */
   off(event: 'connect', callback?: SkyrimTogetherTypes.ConnectCallback): void;
 
@@ -272,10 +260,8 @@ interface SkyrimTogether {
 
   /**
    * Send message to server.
-   *
-   * @param message Message to send.
    */
-  sendMessage(message: string): void;
+  sendMessage(type: number, message: string): void;
 
   /**
    * Deactivate UI and release control.
