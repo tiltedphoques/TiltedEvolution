@@ -5,8 +5,6 @@
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
 
-#include <Events/CommandEvent.h>
-
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportRequest.h>
 
@@ -110,17 +108,10 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
     std::string contents = aEventArgs->GetString(0).ToString();
     if (!contents.empty())
     {
-        if (contents[0] == '/')
-        {
-            World::Get().GetRunner().Trigger(CommandEvent(std::move(String(contents))));
-        }
-        else
-        {
-            SendChatMessageRequest messageRequest;
-            messageRequest.ChatMessage = aEventArgs->GetString(0).ToString();
-            spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
-            m_transport.Send(messageRequest);
-        }
+        SendChatMessageRequest messageRequest;
+        messageRequest.ChatMessage = aEventArgs->GetString(0).ToString();
+        spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
+        m_transport.Send(messageRequest);
     }
 }
 
