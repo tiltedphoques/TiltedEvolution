@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ClientService, MessageType } from './client.service';
 
-interface Command {
-    name: string,
-    executor: () => void
+export interface Command {
+    readonly name: string,
+    readonly executor: (args: string[]) => Promise<void>
 }
 
 @Injectable({
@@ -11,10 +11,10 @@ interface Command {
 })
 export class CommandService {
 
-  private Help: Command = {name: 'help', executor: () => {
-    const cmds = [...this.commands.keys()].join(',');
+  private Help: Command = { name: 'help', executor: async () => {
+    const cmds = [...this.commands.keys()].join(', ');
     this.client.messageReception.next({ content: `Available commands: ${cmds}`, type: MessageType.SYSTEM_MESSAGE });
-  } }
+  }}
 
   private readonly commands: Map<string, Command>;
 
@@ -33,7 +33,7 @@ export class CommandService {
     }
   }
 
-  public tryExecute(input: string) {
+  public async tryExecute(input: string) {
     if (!input.startsWith(this.COMMAND_PREFIX) || input.length < this.COMMAND_PREFIX.length) {
         return;
     }
@@ -42,7 +42,7 @@ export class CommandService {
     const [commandName, ...args] = inputWithoutPrefix.split(' ');
     const command = this.commands.get(commandName);
     if(command) {
-        command.executor();
+        command.executor(args);
     } else {
         this.client.messageReception.next({ content: `${commandName} is not a recognized command`, type: MessageType.SYSTEM_MESSAGE });
     }
