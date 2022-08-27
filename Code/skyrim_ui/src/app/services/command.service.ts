@@ -16,6 +16,11 @@ export class CommandService {
     this.client.messageReception.next({ content: `Available commands: ${cmds}`, type: MessageType.SYSTEM_MESSAGE });
   }}
 
+  private PartyChat: Command = { name: 'party', executor: async (args) => {
+    const content = args.join(' ');
+    this.client.sendMessage({ content, type: MessageType.PARTY_MESSAGE });
+  }}
+
   private readonly commands: Map<string, Command>;
 
   public readonly COMMAND_PREFIX = '/';
@@ -25,6 +30,7 @@ export class CommandService {
   ) {
     this.commands = new Map<string, Command>();
     this.register(this.Help);
+    this.register(this.PartyChat);
   }
 
   public register(cmd: Command ) {

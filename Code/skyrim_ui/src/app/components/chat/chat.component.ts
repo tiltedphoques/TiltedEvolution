@@ -21,6 +21,9 @@ function messageTypeToClassName(type: MessageType): string {
     
     case MessageType.PLAYER_DIALOGUE:
       return "dialogue";
+    
+    case MessageType.PARTY_MESSAGE:
+      return "party";
 
     default:
       return "global";

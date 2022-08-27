@@ -37,6 +37,11 @@
         color: #00FF33;
       }
     }
+    &.party {
+      .app-chat-message {
+        color: #9affe6;
+      }
+    }
   }
 }
 
