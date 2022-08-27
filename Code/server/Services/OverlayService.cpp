@@ -34,6 +34,8 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
     notifyMessage.PlayerName = std::regex_replace(aSendingPlayer->GetUsername(), escapeHtml, "");
     notifyMessage.ChatMessage = std::regex_replace(acContent, escapeHtml, "");
 
+    auto character = aSendingPlayer->GetCharacter();
+
     switch (notifyMessage.MessageType)
     {
     case (kGlobalChat):
@@ -50,6 +52,13 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
 
     case (kPartyChat):
         GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
+        break;
+
+    case (kLocalChat):
+        if (character)
+        {
+            GameServer::Get()->SendToPlayersInRange(notifyMessage, *character);
+        }
         break;
 
     default:

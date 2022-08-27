@@ -42,6 +42,11 @@
         color: #9affe6;
       }
     }
+    &.local {
+      .app-chat-message {
+        color: #eeff00;
+      }
+    }
   }
 }
 

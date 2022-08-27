@@ -5,5 +5,6 @@ enum ChatMessageType : unsigned char
     kSystemMessage = 0,
     kGlobalChat,
     kPlayerDialogue,
-    kPartyChat
+    kPartyChat,
+    kLocalChat
 };

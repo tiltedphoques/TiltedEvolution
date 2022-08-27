@@ -24,7 +24,8 @@ export enum MessageType {
   SYSTEM_MESSAGE = 0,
   GLOBAL_CHAT = 1,
   PLAYER_DIALOGUE = 2,
-  PARTY_MESSAGE = 3
+  PARTY_MESSAGE = 3,
+  LOCAL_MESSAGE = 4
 }
 
 /** Client game service. */

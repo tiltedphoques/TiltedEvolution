@@ -24,6 +24,9 @@ function messageTypeToClassName(type: MessageType): string {
     
     case MessageType.PARTY_MESSAGE:
       return "party";
+    
+    case MessageType.LOCAL_MESSAGE:
+      return "local";
 
     default:
       return "global";
