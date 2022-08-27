@@ -79,7 +79,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
 
   sendMessage(type: MessageType, message: string): void {
     if (this.connected) {
-      this.emit('message', type, this.playerName, message);
+      this.emit('message', type, message, this.playerName,);
     }
   }
 
