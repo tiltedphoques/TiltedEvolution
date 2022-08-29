@@ -7,7 +7,8 @@
   >
     <span class="app-chat-date">[{{ message.date | date: 'HH:mm:ss' }}] </span>
     <span class="app-chat-name" *ngIf="message.name">{{ message.name }}: </span>
-    <span class="app-chat-message" style="user-select: text;">{{ message.content }}</span>
+    <span class="app-chat-message" *ngIf="message.typeClass === 'system'">{{ message.content | transloco: message.translationParams }}</span>
+    <span class="app-chat-message" *ngIf="message.typeClass !== 'system'">{{ message.content }}</span>
   </p>
 </div>
 <div class="app-chat-input">

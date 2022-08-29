@@ -170,11 +170,7 @@ export class GroupService implements OnDestroy {
         const p = this.playerListService.getPlayerById(player.id);
         if (p) {
           p.level = player.level;
-
-          const content = await firstValueFrom(
-            this.translocoService.selectTranslate<string>('SERVICE.GROUP.LEVEL_UP', { name: p.name, level: player.level }),
-          );
-          this.chatService.pushSystemMessage(content);
+          this.chatService.pushSystemMessage('SERVICE.GROUP.LEVEL_UP', { name: p.name, level: player.level });
         }
       }
     });

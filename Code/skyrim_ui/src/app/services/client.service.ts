@@ -327,10 +327,7 @@ export class ClientService implements OnDestroy {
       this.isConnectionInProgressChange.next(false);
       this.connectionStateChange.next(true);
 
-      const content = await firstValueFrom(
-        this.translocoService.selectTranslate<string>('SERVICE.CLIENT.CONNECTED'),
-      );
-      this.chatService.pushSystemMessage(content);
+      this.chatService.pushSystemMessage('SERVICE.CLIENT.CONNECTED');
     });
   }
 
@@ -345,19 +342,10 @@ export class ClientService implements OnDestroy {
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'SERVICE.CLIENT.CONNECTION_LOST',
-            { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
-          ),
-        );
-        this.chatService.pushSystemMessage(content);
+        this.chatService.pushSystemMessage('SERVICE.CLIENT.CONNECTION_LOST');
         this.connect(this._host, this._port, this._password);
       } else {
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>('SERVICE.CLIENT.DISCONNECTED'),
-        );
-        this.chatService.pushSystemMessage(content);
+        this.chatService.pushSystemMessage('SERVICE.CLIENT.DISCONNECTED');
       }
     });
   }

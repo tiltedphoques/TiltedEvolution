@@ -12,6 +12,7 @@ export enum MessageTypes {
 
 export interface ChatMessage {
   senderName?: string;
+  translationParams?: Record<string, any>;
   content: string;
   type: MessageTypes;
 }
@@ -42,8 +43,8 @@ export class ChatService {
     this.messageList.next(message);
   }
 
-  pushSystemMessage(content: string) {
-    this.pushMessage({type: MessageTypes.SYSTEM_MESSAGE, content})
+  pushSystemMessage(translationKey: string, params: Record<string, any> = undefined) {
+    this.pushMessage({type: MessageTypes.SYSTEM_MESSAGE, content: translationKey, translationParams: params});
   }
 
   private onMessageRecieved(type: MessageTypes, content: string, senderName: string | undefined = undefined): void {
