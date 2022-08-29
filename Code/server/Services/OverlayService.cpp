@@ -67,7 +67,6 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
     }
 }
 
-// maybe just gatther these into one method, which will sort out the targets
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
     sendPlayerMessage(acMessage.Packet.MessageType, acMessage.Packet.ChatMessage, acMessage.pPlayer);
