@@ -31,7 +31,6 @@ export class ChatService {
     if (content.startsWith(this.CommandHandler.COMMAND_PREFIX)) {
       this.CommandHandler.tryExecute(content);
     } else {
-      console.log("send msg")
       skyrimtogether.sendMessage(type, content);
     }
   }
@@ -48,7 +47,6 @@ export class ChatService {
   }
 
   private onMessageRecieved(type: MessageTypes, content: string, senderName: string | undefined = undefined): void {
-    console.log("reciv msg")
     this.messageList.next({ type, content, senderName });
   }
 
@@ -56,7 +54,6 @@ export class ChatService {
 
   constructor ( 
     ) {
-    console.log("sky", skyrimtogether)
     skyrimtogether.on('message', this.onMessageRecieved.bind(this));
     this.CommandHandler = new CommandHandler(this)
   }  
