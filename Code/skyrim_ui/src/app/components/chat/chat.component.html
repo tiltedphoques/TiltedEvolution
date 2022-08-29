@@ -6,7 +6,7 @@
     [ngClass]="message.typeClass"
   >
     <span class="app-chat-date">[{{ message.date | date: 'HH:mm:ss' }}] </span>
-    <span class="app-chat-name" *ngIf="message.name">{{ message.name }}: </span>
+    <span class="app-chat-name" *ngIf="message.senderName">{{ message.senderName }}: </span>
     <span class="app-chat-message" *ngIf="message.typeClass === 'system'">{{ message.content | transloco: message.translationParams }}</span>
     <span class="app-chat-message" *ngIf="message.typeClass !== 'system'">{{ message.content }}</span>
   </p>
