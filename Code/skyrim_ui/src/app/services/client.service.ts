@@ -16,17 +16,11 @@ export interface Message {
 
   content: string;
 
-  type: MessageType;
+  type: SkyrimTogetherTypes.ChatMessageType;
 }
 
-
-export enum MessageType {
-  SYSTEM_MESSAGE = 0,
-  GLOBAL_CHAT = 1,
-  PLAYER_DIALOGUE = 2,
-  PARTY_MESSAGE = 3,
-  LOCAL_MESSAGE = 4
-}
+type MessageTypes = SkyrimTogetherTypes.ChatMessageType;
+const MessageTypes = SkyrimTogetherTypes.ChatMessageType;
 
 /** Client game service. */
 @Injectable({
@@ -354,7 +348,7 @@ export class ClientService implements OnDestroy {
    * @param name Sender's name.
    * @param message Message content.
    */
-  private onMessage(type: MessageType, content: string, name: string = undefined): void {
+  private onMessage(type: MessageTypes, content: string, name: string = undefined): void {
     this.zone.run(() => {
       this.messageReception.next({ type, content, name });
     });
@@ -372,7 +366,7 @@ export class ClientService implements OnDestroy {
       const content = await firstValueFrom(
         this.translocoService.selectTranslate<string>('SERVICE.CLIENT.CONNECTED'),
       );
-      this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
+      this.messageReception.next({ content, type: MessageTypes.SYSTEM_MESSAGE });
     });
   }
 
@@ -393,13 +387,13 @@ export class ClientService implements OnDestroy {
             { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
           ),
         );
-        this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
+        this.messageReception.next({ content, type: MessageTypes.SYSTEM_MESSAGE });
         this.connect(this._host, this._port, this._password);
       } else {
         const content = await firstValueFrom(
           this.translocoService.selectTranslate<string>('SERVICE.CLIENT.DISCONNECTED'),
         );
-        this.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE });
+        this.messageReception.next({ content, type: MessageTypes.SYSTEM_MESSAGE });
       }
     });
   }

@@ -2,7 +2,7 @@ import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewC
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ClientService, Message, MessageType } from '../../services/client.service';
+import { ClientService, Message } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { CommandService } from '../../services/command.service';
@@ -14,18 +14,20 @@ interface ChatMessage extends Message {
   typeClass: string;
 }
 
-function messageTypeToClassName(type: MessageType): string {
+const MessageTypes = SkyrimTogetherTypes.ChatMessageType
+
+function messageTypeToClassName(type: SkyrimTogetherTypes.ChatMessageType): string {
   switch (type) {
-    case MessageType.SYSTEM_MESSAGE:
+    case MessageTypes.SYSTEM_MESSAGE:
       return "system";
     
-    case MessageType.PLAYER_DIALOGUE:
+    case MessageTypes.PLAYER_DIALOGUE:
       return "dialogue";
     
-    case MessageType.PARTY_MESSAGE:
+    case MessageTypes.PARTY_MESSAGE:
       return "party";
     
-    case MessageType.LOCAL_MESSAGE:
+    case MessageTypes.LOCAL_MESSAGE:
       return "local";
 
     default:
@@ -134,14 +136,14 @@ export class ChatComponent implements AfterViewChecked {
             { chatMessageLengthLimit: environment.chatMessageLengthLimit },
           ),
         );
-        this.client.messageReception.next({ content, type: MessageType.GLOBAL_CHAT  });
+        this.client.messageReception.next({ content, type: MessageTypes.GLOBAL_CHAT  });
         return;
       }
 
       if (this.message.startsWith(this.commandService.COMMAND_PREFIX)) {
         this.commandService.tryExecute(this.message);
       } else {
-        this.client.sendMessage({type: MessageType.GLOBAL_CHAT, content: this.message});
+        this.client.sendMessage({type: MessageTypes.GLOBAL_CHAT, content: this.message});
       }
 
       this.sound.play(Sound.Focus);

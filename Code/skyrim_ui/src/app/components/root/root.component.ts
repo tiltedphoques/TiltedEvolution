@@ -5,7 +5,7 @@ import { takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
 import { View } from '../../models/view.enum';
-import { ClientService, MessageType } from '../../services/client.service';
+import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { SettingService } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';

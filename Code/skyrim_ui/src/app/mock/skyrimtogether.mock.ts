@@ -2,7 +2,6 @@ import { createStore } from '@ngneat/elf';
 import { addEntities, deleteEntities, getAllEntities, getEntity, selectAllEntities, updateEntities, withEntities } from '@ngneat/elf-entities';
 import { EventEmitter } from 'events';
 import { fromEvent } from 'rxjs';
-import { MessageType } from '../services/client.service';
 import { ErrorEvents } from '../services/error.service';
 import { MockPlayer } from './mock-player';
 
@@ -77,7 +76,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     throw new Error('NOT YET IMPLEMENTED');
   }
 
-  sendMessage(type: MessageType, message: string): void {
+  sendMessage(type: SkyrimTogetherTypes.ChatMessageType, message: string): void {
     if (this.connected) {
       this.emit('message', type, message, this.playerName,);
     }

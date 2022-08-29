@@ -5,7 +5,7 @@ import { filter, map } from 'rxjs/operators';
 import { Group } from '../models/group';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
-import { ClientService, MessageType } from './client.service';
+import { ClientService } from './client.service';
 import { ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
 import { PlayerListService } from './player-list.service';
@@ -172,7 +172,7 @@ export class GroupService implements OnDestroy {
           const content = await firstValueFrom(
             this.translocoService.selectTranslate<string>('SERVICE.GROUP.LEVEL_UP', { name: p.name, level: player.level }),
           );
-          this.clientService.messageReception.next({ content, type: MessageType.SYSTEM_MESSAGE  });
+          this.clientService.messageReception.next({ content, type: SkyrimTogetherTypes.ChatMessageType.SYSTEM_MESSAGE  });
         }
       }
     });
