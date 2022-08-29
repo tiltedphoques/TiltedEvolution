@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { CommandHandler } from './chat/commands';
 
@@ -20,14 +20,15 @@ export interface ChatMessage {
 
 @Injectable({
     providedIn: 'root',
-  })
+})
 export class ChatService {
+
   public messageList = new ReplaySubject<ChatMessage>();
   
   /**
    * Send chat message to the Server. Does not add anything to the local mesesage list.
    */
-  sendMessage(type: MessageTypes, content: string) {
+  public sendMessage(type: MessageTypes, content: string) {
     if (content.length === 0) {
       return
     }
@@ -46,13 +47,16 @@ export class ChatService {
   }
 
   /**
-   * Only adds the message to the local message list, without sending anything to the Server.
+   * Pushes a message to the chat window, without sending anything to the Server.
    */
-  pushMessage(message: ChatMessage) {
+  public pushMessage(message: ChatMessage) {
     this.messageList.next(message);
   }
 
-  pushSystemMessage(translationKey: string, params: Record<string, any> = undefined) {
+  /**
+   * For pushing translateable system messages to the chat window.
+   */
+  public pushSystemMessage(translationKey: string, params: Record<string, any> = undefined) {
     this.pushMessage({type: MessageTypes.SYSTEM_MESSAGE, content: translationKey, translationParams: params});
   }
 
@@ -60,11 +64,10 @@ export class ChatService {
     this.messageList.next({ type, content, senderName });
   }
 
-  private CommandHandler: CommandHandler
+  private CommandHandler: CommandHandler;
 
-  constructor ( 
-    ) {
+  constructor () {
     skyrimtogether.on('message', this.onMessageRecieved.bind(this));
-    this.CommandHandler = new CommandHandler(this)
+    this.CommandHandler = new CommandHandler(this);
   }  
 }

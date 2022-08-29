@@ -24,8 +24,6 @@ export class CommandHandler {
 
   private readonly commands: Map<string, Command>;
 
-  public readonly COMMAND_PREFIX = '/';
-
   private readonly chatService: ChatService
 
   public constructor (
@@ -38,6 +36,8 @@ export class CommandHandler {
     this.register(this.PartyChat);
     this.register(this.LocalChat);
   }
+
+  public readonly COMMAND_PREFIX = '/';
 
   public register(cmd: Command ) {
     if (!this.commands.has(cmd.name)) {
