@@ -24,16 +24,8 @@ declare namespace SkyrimTogetherTypes {
   /** Player open/close game menu callback */
   type OpeningMenuCallback = (openingMenu: boolean) => void;
 
-  enum ChatMessageType {
-    SYSTEM_MESSAGE = 0,
-    GLOBAL_CHAT = 1,
-    PLAYER_DIALOGUE = 2,
-    PARTY_MESSAGE = 3,
-    LOCAL_MESSAGE = 4
-  }
-
   /** Chat message reception callback */
-  type MessageCallback = (type: ChatMessageType, content: string, sender: string) => void;
+  type MessageCallback = (type: number, content: string, sender: string) => void;
 
   /** Connection callback */
   type ConnectCallback = () => void;

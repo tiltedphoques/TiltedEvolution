@@ -2,21 +2,20 @@ import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewC
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ClientService, Message } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
-import { CommandService } from '../../services/command.service';
 import { MessageHistory } from './message-history';
+import { ChatMessage, ChatService, MessageTypes } from 'src/app/services/chat.service';
+import { ClientService } from 'src/app/services/client.service';
 
-interface ChatMessage extends Message {
+interface ChatComponentMessage extends ChatMessage {
   date: number;
   odd: boolean;
   typeClass: string;
 }
 
-const MessageTypes = SkyrimTogetherTypes.ChatMessageType
 
-function messageTypeToClassName(type: SkyrimTogetherTypes.ChatMessageType): string {
+function messageTypeToClassName(type: MessageTypes): string {
   switch (type) {
     case MessageTypes.SYSTEM_MESSAGE:
       return "system";
@@ -46,7 +45,7 @@ export class ChatComponent implements AfterViewChecked {
   public padding = 0;
 
   public message = '';
-  public messages = [] as ChatMessage[];
+  public messages = [] as ChatComponentMessage[];
 
   private odd = false;
   private autoScroll = true;
@@ -68,13 +67,13 @@ export class ChatComponent implements AfterViewChecked {
 
   public constructor(
     private readonly destroy$: DestroyService,
-    private readonly client: ClientService,
+    private readonly clientService: ClientService,
+    private readonly chatService: ChatService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
-    private readonly commandService: CommandService
 
   ) {
-    client.messageReception
+    chatService.messageList
       .pipe(takeUntil(this.destroy$))
       .subscribe(message => {
         const typeClass = messageTypeToClassName(message.type);
@@ -98,7 +97,7 @@ export class ChatComponent implements AfterViewChecked {
         this.sound.play(Sound.Message);
       });
 
-    client.activationStateChange
+      clientService.activationStateChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
         if (!state && this.inputRef) {
@@ -136,15 +135,11 @@ export class ChatComponent implements AfterViewChecked {
             { chatMessageLengthLimit: environment.chatMessageLengthLimit },
           ),
         );
-        this.client.messageReception.next({ content, type: MessageTypes.GLOBAL_CHAT  });
+        this.chatService.pushSystemMessage(content);
         return;
       }
 
-      if (this.message.startsWith(this.commandService.COMMAND_PREFIX)) {
-        this.commandService.tryExecute(this.message);
-      } else {
-        this.client.sendMessage({type: MessageTypes.GLOBAL_CHAT, content: this.message});
-      }
+      this.chatService.sendMessage(MessageTypes.GLOBAL_CHAT, this.message);
 
       this.sound.play(Sound.Focus);
 

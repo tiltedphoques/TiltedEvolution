@@ -5,22 +5,9 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
+import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
-
-
-/** Message. */
-export interface Message {
-  /** Player name. Unset if it's a system message. */
-  name?: string;
-
-  content: string;
-
-  type: SkyrimTogetherTypes.ChatMessageType;
-}
-
-type MessageTypes = SkyrimTogetherTypes.ChatMessageType;
-const MessageTypes = SkyrimTogetherTypes.ChatMessageType;
 
 /** Client game service. */
 @Injectable({
@@ -38,9 +25,6 @@ export class ClientService implements OnDestroy {
 
   /** Opening/close menu change. */
   public openingMenuChange = new BehaviorSubject(false);
-
-  /** Message reception. */
-  public messageReception = new ReplaySubject<Message>();
 
   /** Connection state change. */
   public connectionStateChange = new BehaviorSubject(false);
@@ -129,6 +113,7 @@ export class ClientService implements OnDestroy {
     private readonly errorService: ErrorService,
     private readonly loadingService: LoadingService,
     private readonly translocoService: TranslocoService,
+    private readonly chatService: ChatService
   ) {
     skyrimtogether.on('init', this.onInit.bind(this));
     skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -136,7 +121,6 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
     skyrimtogether.on('exitGame', this.onExitGame.bind(this));
     skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
-    skyrimtogether.on('message', this.onMessage.bind(this));
     skyrimtogether.on('connect', this.onConnect.bind(this));
     skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
     skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
@@ -170,7 +154,6 @@ export class ClientService implements OnDestroy {
     skyrimtogether.off('enterGame');
     skyrimtogether.off('exitGame');
     skyrimtogether.off('openingMenu');
-    skyrimtogether.off('message');
     skyrimtogether.off('connect');
     skyrimtogether.off('disconnect');
     skyrimtogether.off('setName');
@@ -215,13 +198,6 @@ export class ClientService implements OnDestroy {
   public disconnect(): void {
     skyrimtogether.disconnect();
     this._remainingReconnectionAttempt = 0;
-  }
-
-  /**
-   * Send message to server.
-   */
-  public sendMessage(message: Message): void {
-    skyrimtogether.sendMessage(message.type, message.content);
   }
 
   /**
@@ -343,18 +319,6 @@ export class ClientService implements OnDestroy {
   }
 
   /**
-   * Called when a message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onMessage(type: MessageTypes, content: string, name: string = undefined): void {
-    this.zone.run(() => {
-      this.messageReception.next({ type, content, name });
-    });
-  }
-
-  /**
    * Called when a connection is made.
    */
   private onConnect(): void {
@@ -366,7 +330,7 @@ export class ClientService implements OnDestroy {
       const content = await firstValueFrom(
         this.translocoService.selectTranslate<string>('SERVICE.CLIENT.CONNECTED'),
       );
-      this.messageReception.next({ content, type: MessageTypes.SYSTEM_MESSAGE });
+      this.chatService.pushSystemMessage(content);
     });
   }
 
@@ -387,13 +351,13 @@ export class ClientService implements OnDestroy {
             { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
           ),
         );
-        this.messageReception.next({ content, type: MessageTypes.SYSTEM_MESSAGE });
+        this.chatService.pushSystemMessage(content);
         this.connect(this._host, this._port, this._password);
       } else {
         const content = await firstValueFrom(
           this.translocoService.selectTranslate<string>('SERVICE.CLIENT.DISCONNECTED'),
         );
-        this.messageReception.next({ content, type: MessageTypes.SYSTEM_MESSAGE });
+        this.chatService.pushSystemMessage(content);
       }
     });
   }

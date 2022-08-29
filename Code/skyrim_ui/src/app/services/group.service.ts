@@ -6,6 +6,7 @@ import { Group } from '../models/group';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
 import { ClientService } from './client.service';
+import { ChatService } from './chat.service';
 import { ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
 import { PlayerListService } from './player-list.service';
@@ -35,6 +36,7 @@ export class GroupService implements OnDestroy {
     private readonly errorService: ErrorService,
     private readonly soundService: SoundService,
     private readonly clientService: ClientService,
+    private readonly chatService: ChatService,
     private readonly playerListService: PlayerListService,
     private readonly loadingService: LoadingService,
     private readonly translocoService: TranslocoService,
@@ -172,7 +174,7 @@ export class GroupService implements OnDestroy {
           const content = await firstValueFrom(
             this.translocoService.selectTranslate<string>('SERVICE.GROUP.LEVEL_UP', { name: p.name, level: player.level }),
           );
-          this.clientService.messageReception.next({ content, type: SkyrimTogetherTypes.ChatMessageType.SYSTEM_MESSAGE  });
+          this.chatService.pushSystemMessage(content);
         }
       }
     });
