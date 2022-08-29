@@ -14,12 +14,12 @@ export class CommandHandler {
 
   private PartyChat: Command = { name: 'party', executor: async (args) => {
     const content = args.join(' ');
-    this.chatService.sendMessage(MessageTypes.PARTY_MESSAGE, content);
+    this.chatService.sendMessage(MessageTypes.PARTY_CHAT, content);
   }}
 
   private LocalChat: Command = { name: 'local', executor: async (args) => {
     const content = args.join(' ');
-    this.chatService.sendMessage(MessageTypes.LOCAL_MESSAGE, content);
+    this.chatService.sendMessage(MessageTypes.LOCAL_CHAT, content);
   }}
 
   private readonly commands: Map<string, Command>;

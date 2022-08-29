@@ -23,10 +23,10 @@ function messageTypeToClassName(type: MessageTypes): string {
     case MessageTypes.PLAYER_DIALOGUE:
       return "dialogue";
     
-    case MessageTypes.PARTY_MESSAGE:
+    case MessageTypes.PARTY_CHAT:
       return "party";
     
-    case MessageTypes.LOCAL_MESSAGE:
+    case MessageTypes.LOCAL_CHAT:
       return "local";
 
     default:
