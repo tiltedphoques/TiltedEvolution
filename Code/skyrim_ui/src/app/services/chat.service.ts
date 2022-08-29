@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { environment } from 'src/environments/environment';
 import { CommandHandler } from './chat/commands';
 
 export enum MessageTypes {
@@ -21,18 +22,27 @@ export interface ChatMessage {
     providedIn: 'root',
   })
 export class ChatService {
-
   public messageList = new ReplaySubject<ChatMessage>();
   
   /**
    * Send chat message to the Server. Does not add anything to the local mesesage list.
    */
   sendMessage(type: MessageTypes, content: string) {
+    if (content.length === 0) {
+      return
+    }
+
+    if (content.length > environment.chatMessageLengthLimit) {
+      this.pushSystemMessage('COMPONENT.CHAT.MESSAGE_TOO_LONG',{ chatMessageLengthLimit: environment.chatMessageLengthLimit });
+      return
+    } 
+
     if (content.startsWith(this.CommandHandler.COMMAND_PREFIX)) {
       this.CommandHandler.tryExecute(content);
-    } else {
-      skyrimtogether.sendMessage(type, content);
+      return
     }
+
+    skyrimtogether.sendMessage(type, content);
   }
 
   /**

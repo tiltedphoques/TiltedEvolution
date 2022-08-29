@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
-import { takeUntil, withLatestFrom } from 'rxjs';
-import { ChatService } from 'src/app/services/chat.service';
+import { takeUntil } from 'rxjs';
+import { ChatMessage, ChatService } from 'src/app/services/chat.service';
 import { DestroyService } from '../../services/destroy.service';
 
 
-interface Notification {
-  content: string;
+interface Notification extends ChatMessage {
   timer: number;
 }
 
@@ -23,16 +21,14 @@ export class NotificationsComponent {
   public constructor(
     private readonly destroy$: DestroyService,
     private readonly chatService: ChatService,
-    private readonly translocoService: TranslocoService,
   ) {
     this.chatService.messageList
       .pipe(
         takeUntil(this.destroy$),
-        withLatestFrom(this.translocoService.selectTranslate<string>('COMPONENT.NOTIFICATIONS.MESSAGE_FROM')),
       )
-      .subscribe(([message, text]) => {
+      .subscribe((message) => {
         this.notifications.push({
-          content: `${ message.senderName ? `${ text } ${ message.senderName }: ` : '' }${ message.content }`,
+          ...message,
           timer: setTimeout(() => {
             this.notifications.shift();
           }, 5000),

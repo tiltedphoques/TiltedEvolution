@@ -1,7 +1,6 @@
 import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { firstValueFrom, takeUntil } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { takeUntil } from 'rxjs';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { MessageHistory } from './message-history';
@@ -128,23 +127,9 @@ export class ChatComponent implements AfterViewChecked {
 
   async sendMessage(): Promise<void> {
     if (this.message) {
-      if (this.message.length > environment.chatMessageLengthLimit) {
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'COMPONENT.CHAT.MESSAGE_TOO_LONG',
-            { chatMessageLengthLimit: environment.chatMessageLengthLimit },
-          ),
-        );
-        this.chatService.pushSystemMessage(content);
-        return;
-      }
-
       this.chatService.sendMessage(MessageTypes.GLOBAL_CHAT, this.message);
-
       this.sound.play(Sound.Focus);
-
       this.history.push(this.message)
-
       this.message = '';
     }
 
