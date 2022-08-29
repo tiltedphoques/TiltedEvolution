@@ -9,7 +9,7 @@ export class CommandHandler {
 
   private Help: Command = { name: 'help', executor: async () => {
     const cmds = [...this.commands.keys()].join(', ');
-    this.chatService.pushSystemMessage(`Available commands: ${cmds}`);
+    this.chatService.pushSystemMessage('SERVICE.COMMANDS.AVAILABLE_COMMANDS', {cmds});
   }}
 
   private PartyChat: Command = { name: 'party', executor: async (args) => {
@@ -26,7 +26,7 @@ export class CommandHandler {
 
   public readonly COMMAND_PREFIX = '/';
 
-  private readonly chatService
+  private readonly chatService: ChatService
 
   public constructor (
     chatService: ChatService
@@ -56,7 +56,7 @@ export class CommandHandler {
     if(command) {
       command.executor(args);
     } else {
-      this.chatService.pushSystemMessage(`${commandName} is not a recognized command`);
+      this.chatService.pushSystemMessage('SERVICE.COMMANDS.COMMAND_NOT_FOUND', {cmd: inputWithoutPrefix});
     }
   }
 

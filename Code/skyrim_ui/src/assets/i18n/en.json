@@ -133,6 +133,10 @@
       "CONNECTED": "Successfully connected to server.",
       "DISCONNECTED": "Disconnected from server."
     },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Available chat commands: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' is recognized as a command."
+    },
     "GROUP": {
       "LEVEL_UP": "{{name}} has reached level {{level}}.",
       "ALREADY_IN_GROUP": "You are already in a group. To join another group, please leave your current group.",
