@@ -343,7 +343,7 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, acMessage.MessageType);
+    pArguments->SetInt(0, (int)acMessage.MessageType);
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
     pArguments->SetString(2, acMessage.PlayerName.c_str());
 
