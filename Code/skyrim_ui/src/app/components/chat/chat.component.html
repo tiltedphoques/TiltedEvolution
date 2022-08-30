@@ -2,7 +2,6 @@
   <p
     #entry
     *ngFor="let message of messages"
-    [attr.data-odd]="message.odd"
     [ngClass]="message.typeClass"
   >
     <span class="app-chat-date">[{{ message.date | date: 'HH:mm:ss' }}] </span>

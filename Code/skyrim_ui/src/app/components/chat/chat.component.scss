@@ -22,7 +22,7 @@
     padding: ($-size-gap * 0.2) ($-size-gap * 0.5);
     text-align: left;
 
-    &[data-odd=true] {
+    &:nth-child(odd) {
       background: transparentize(mod($-color-background, 1), 0.97);
     }
 

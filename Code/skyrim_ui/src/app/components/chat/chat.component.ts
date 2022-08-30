@@ -9,7 +9,6 @@ import { ClientService } from 'src/app/services/client.service';
 
 interface ChatComponentMessage extends ChatMessage {
   date: number;
-  odd: boolean;
   typeClass: string;
 }
 
@@ -76,7 +75,7 @@ export class ChatComponent implements AfterViewChecked {
       .pipe(takeUntil(this.destroy$))
       .subscribe(message => {
         const typeClass = messageTypeToClassName(message.type);
-        this.messages.push({ ...message, date: Date.now(), odd: this.odd, typeClass });
+        this.messages.push({ ...message, date: Date.now(), typeClass });
 
         if (this.messages.length > 100) {
           if (this.entryRefQuery && this.entryRefQuery.first) {
