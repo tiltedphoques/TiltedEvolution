@@ -38,23 +38,23 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
 
     switch (notifyMessage.MessageType)
     {
-    case (kGlobalChat):
+    case kGlobalChat:
         GameServer::Get()->SendToPlayers(notifyMessage);
         break;
 
-    case (kSystemMessage):
+    case kSystemMessage:
         spdlog::error("PlayerId {} attempted to send a System Message.", aSendingPlayer->GetId());
         break;
 
-    case (kPlayerDialogue):
+    case kPlayerDialogue:
         GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
         break;
 
-    case (kPartyChat):
+    case kPartyChat:
         GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
         break;
 
-    case (kLocalChat):
+    case kLocalChat:
         if (character)
         {
             GameServer::Get()->SendToPlayersInRange(notifyMessage, *character);
