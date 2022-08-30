@@ -22,16 +22,11 @@ export class CommandHandler {
     this.chatService.sendMessage(MessageTypes.LOCAL_CHAT, content);
   }}
 
-  private readonly commands: Map<string, Command>;
-
-  private readonly chatService: ChatService
+  private readonly commands = new Map<string, Command>;
 
   public constructor (
-    chatService: ChatService
+    private readonly chatService: ChatService
   ) {
-    this.chatService = chatService;
-
-    this.commands = new Map<string, Command>();
     this.register(this.Help);
     this.register(this.PartyChat);
     this.register(this.LocalChat);
@@ -46,10 +41,6 @@ export class CommandHandler {
   }
 
   public async tryExecute(input: string) {
-    if (!input.startsWith(this.COMMAND_PREFIX) || input.length < this.COMMAND_PREFIX.length) {
-      return;
-    }
-
     const inputWithoutPrefix = input.slice(this.COMMAND_PREFIX.length);
     const [commandName, ...args] = inputWithoutPrefix.split(' ');
     const command = this.commands.get(commandName);
