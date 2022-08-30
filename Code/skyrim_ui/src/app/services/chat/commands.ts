@@ -12,24 +12,12 @@ export class CommandHandler {
     this.chatService.pushSystemMessage('SERVICE.COMMANDS.AVAILABLE_COMMANDS', {cmds});
   }}
 
-  private PartyChat: Command = { name: 'party', executor: async (args) => {
-    const content = args.join(' ');
-    this.chatService.sendMessage(MessageTypes.PARTY_CHAT, content);
-  }}
-
-  private LocalChat: Command = { name: 'local', executor: async (args) => {
-    const content = args.join(' ');
-    this.chatService.sendMessage(MessageTypes.LOCAL_CHAT, content);
-  }}
-
   private readonly commands = new Map<string, Command>;
 
   public constructor (
     private readonly chatService: ChatService
   ) {
     this.register(this.Help);
-    this.register(this.PartyChat);
-    this.register(this.LocalChat);
   }
 
   public readonly COMMAND_PREFIX = '/';

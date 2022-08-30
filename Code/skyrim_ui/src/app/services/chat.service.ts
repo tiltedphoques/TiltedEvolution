@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { CommandHandler } from './chat/commands';
+import { Command, CommandHandler } from './chat/commands';
 
 export enum MessageTypes {
   SYSTEM_MESSAGE = 0,
@@ -66,8 +66,21 @@ export class ChatService {
 
   private CommandHandler: CommandHandler;
 
+  private LocalChat: Command = { name: 'local', executor: async (args) => {
+    const content = args.join(' ');
+    this.sendMessage(MessageTypes.LOCAL_CHAT, content);
+  }}
+
+  private PartyChat: Command = { name: 'party', executor: async (args) => {
+    const content = args.join(' ');
+    this.sendMessage(MessageTypes.PARTY_CHAT, content);
+  }}
+
   constructor () {
     skyrimtogether.on('message', this.onMessageRecieved.bind(this));
+
     this.CommandHandler = new CommandHandler(this);
+    this.CommandHandler.register(this.LocalChat);
+    this.CommandHandler.register(this.PartyChat);
   }  
 }
