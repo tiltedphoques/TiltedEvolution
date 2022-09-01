@@ -14,7 +14,7 @@ bool UI::GetMenuOpen(const BSFixedString& acName) const
 
     TP_THIS_FUNCTION(TMenuSystem_IsOpen, bool, const UI, const BSFixedString&);
     POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 1065115);
-    return ThisCall(s_isMenuOpen.Get(), this, acName);
+    return TiltedPhoques::ThisCall(s_isMenuOpen.Get(), this, acName);
 }
 
 IMenu* UI::FindMenuByName(const char* acName)

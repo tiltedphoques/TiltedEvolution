@@ -52,7 +52,7 @@ void PlayerCharacter::AddSkillExperience(int32_t aSkill, float aExperience) noex
 
     ScopedExperienceOverride _;
 
-    ThisCall(RealAddSkillExperience, this, aSkill, aExperience);
+    TiltedPhoques::ThisCall(RealAddSkillExperience, this, aSkill, aExperience);
 
     float newExperience = GetSkillExperience(skill);
     float deltaExperience = newExperience - oldExperience;
@@ -136,7 +136,7 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
 
     ScopedInventoryOverride _;
 
-    return ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
+    return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
 void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool aEntering)
@@ -147,7 +147,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
         World::Get().GetRunner().Trigger(LeaveBeastFormEvent());
     }
 
-    ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
+    TiltedPhoques::ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }
 
 void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, float aExperience)
@@ -160,7 +160,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
     Skills::Skill skill = Skills::GetSkillFromActorValue(aSkill);
     float oldExperience = apThis->GetSkillExperience(skill);
 
-    ThisCall(RealAddSkillExperience, apThis, aSkill, aExperience);
+    TiltedPhoques::ThisCall(RealAddSkillExperience, apThis, aSkill, aExperience);
 
     float newExperience = apThis->GetSkillExperience(skill);
     float deltaExperience = newExperience - oldExperience;
@@ -178,7 +178,7 @@ void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, f
 
 bool TP_MAKE_THISCALL(HookCalculateExperience, int32_t, float* aFactor, float* aBonus, float* aUnk1, float* aUnk2)
 {
-    bool result = ThisCall(RealCalculateExperience, apThis, aFactor, aBonus, aUnk1, aUnk2);
+    bool result = TiltedPhoques::ThisCall(RealCalculateExperience, apThis, aFactor, aBonus, aUnk1, aUnk2);
 
     if (ScopedExperienceOverride::IsOverriden())
     {

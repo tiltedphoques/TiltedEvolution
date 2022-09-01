@@ -15,7 +15,7 @@ bool PlayerCamera::IsFirstPerson() noexcept
     POINTER_SKYRIMSE(TIsFirstPerson, isFirstPerson, 21600);
 
     double firstPerson = 0.0;
-    ThisCall(isFirstPerson, this, nullptr, nullptr, &firstPerson);
+    TiltedPhoques::ThisCall(isFirstPerson, this, nullptr, nullptr, &firstPerson);
 
     return firstPerson == 1.0;
 }
@@ -35,12 +35,12 @@ void PlayerCamera::ForceFirstPerson() noexcept
 {
     TP_THIS_FUNCTION(TForceFirstPerson, void, PlayerCamera);
     POINTER_SKYRIMSE(TForceFirstPerson, forceFirstPerson, 50790);
-    ThisCall(forceFirstPerson, this);
+    TiltedPhoques::ThisCall(forceFirstPerson, this);
 }
 
 void PlayerCamera::ForceThirdPerson() noexcept
 {
     TP_THIS_FUNCTION(TForceThirdPerson, void, PlayerCamera);
     POINTER_SKYRIMSE(TForceThirdPerson, forceThirdPerson, 50796);
-    ThisCall(forceThirdPerson, this);
+    TiltedPhoques::ThisCall(forceThirdPerson, this);
 }

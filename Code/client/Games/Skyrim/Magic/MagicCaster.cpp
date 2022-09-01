@@ -6,7 +6,7 @@ bool MagicCaster::CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, 
 
     POINTER_SKYRIMSE(TCastSpell, s_castSpell, 34401);
 
-    return ThisCall(s_castSpell, this, apSpell, apDesiredTarget, abLoadCast);
+    return TiltedPhoques::ThisCall(s_castSpell, this, apSpell, apDesiredTarget, abLoadCast);
 }
 
 void MagicCaster::InterruptCast() noexcept
@@ -15,6 +15,6 @@ void MagicCaster::InterruptCast() noexcept
 
     POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34408);
 
-    ThisCall(s_interruptCast, this);
+    TiltedPhoques::ThisCall(s_interruptCast, this);
 }
 

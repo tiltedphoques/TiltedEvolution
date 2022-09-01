@@ -37,7 +37,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         pActor->SaveAnimationVariables(action.Variables);
 
-        const auto res = ThisCall(RealPerformAction, apThis, apAction);
+        const auto res = TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
 
         //spdlog::debug("Action event name: {}, target name: {}", apAction->eventName.AsAscii(), apAction->targetEventName.AsAscii());
 
@@ -61,7 +61,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 #if TP_FALLOUT4
     // Let the ActionInstantInitializeGraphToBaseState event go through
     if (apAction->action->formID == 0x5704c)
-        return ThisCall(RealPerformAction, apThis, apAction);
+        return TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
 #endif
 
     return 0;
@@ -95,7 +95,7 @@ bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
         //spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
     }
 
-    const auto res = ThisCall(RealPerformAction, this, apAction);
+    const auto res = TiltedPhoques::ThisCall(RealPerformAction, this, apAction);
     //const auto res = RePerformAction(apAction, aValue);
 
     if (res && apAction->actor->formID == 0x13482)
@@ -121,7 +121,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     auto pActor = static_cast<Actor*>(apAction->actor);
     if (!pActor || pActor->animationGraphHolder.IsReady())
     {
-        result = ThisCall(PerformComplexAction, this, apAction);
+        result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 
 #if TP_SKYRIM64
         ApplyAnimationVariables(*qword_142F271B8.Get(), apAction);

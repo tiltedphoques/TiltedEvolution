@@ -333,7 +333,7 @@ public:
     uint32_t unk178; // F0
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
-    BSTSmallArray<void*> addedSpells;
+    BSTSmallArray<TESForm*> addedSpells;
     ActorMagicCaster* casters[4];
     MagicItem* magicItems[4];
     TESForm* equippedShout;

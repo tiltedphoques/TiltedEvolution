@@ -6,6 +6,6 @@ int64_t TESContainer::GetItemCount(TESForm* apItem) const noexcept
 
     POINTER_SKYRIMSE(TGetItemCount, s_getItemCount, 14529);
 
-    return ThisCall(s_getItemCount, this);
+    return TiltedPhoques::ThisCall(s_getItemCount, this);
 }
 

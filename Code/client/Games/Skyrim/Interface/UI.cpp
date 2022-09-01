@@ -23,7 +23,7 @@ bool UI::GetMenuOpen(const BSFixedString& acName) const
     POINTER_SKYRIMSE(TMenuSystem_IsOpen, s_isMenuOpen, 82074);
     POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 1065115);
 
-    return ThisCall(s_isMenuOpen.Get(), this, acName);
+    return TiltedPhoques::ThisCall(s_isMenuOpen.Get(), this, acName);
 }
 
 void UI::CloseAllMenus()
@@ -31,7 +31,7 @@ void UI::CloseAllMenus()
     TP_THIS_FUNCTION(TUI_CloseAll, void, const UI);
     POINTER_SKYRIMSE(TUI_CloseAll, s_CloseAll, 82088);
 
-    ThisCall(s_CloseAll.Get(), this);
+    TiltedPhoques::ThisCall(s_CloseAll.Get(), this);
 }
 
 BSFixedString* UI::LookupMenuNameByInstance(IMenu* apMenu)

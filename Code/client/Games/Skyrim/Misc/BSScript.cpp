@@ -5,7 +5,7 @@ uint64_t BSScript::Object::GetHandle()
 {
     TP_THIS_FUNCTION(TGetHandle, uint64_t, BSScript::Object);
     POINTER_SKYRIMSE(TGetHandle, s_getHandle, 104247);
-    return ThisCall(s_getHandle, this);
+    return TiltedPhoques::ThisCall(s_getHandle, this);
 }
 
 BSScript::Variable::Variable()
@@ -23,7 +23,7 @@ void BSScript::Variable::Reset() noexcept
 
     POINTER_SKYRIMSE(TReset, s_reset, 104296);
 
-    ThisCall(s_reset, this);
+    TiltedPhoques::ThisCall(s_reset, this);
 }
 
 void BSScript::Variable::Clear() noexcept
@@ -101,7 +101,7 @@ void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::IFunctionArguments::Statement, uint32_t aCount);
     POINTER_SKYRIMSE(TSetSize, s_setSize, 53915);
-    ThisCall(s_setSize, this, aCount);
+    TiltedPhoques::ThisCall(s_setSize, this, aCount);
 }
 
 BSScript::IObjectHandlePolicy* BSScript::IObjectHandlePolicy::Get() noexcept
@@ -192,7 +192,7 @@ BSScript::CallResult BSScript::NativeFunctionBase::Call(Stack* apStack, void* ap
 {
     TP_THIS_FUNCTION(TCall, CallResult, NativeFunctionBase, Stack*, void*, IVirtualMachine*, bool);
     POINTER_SKYRIMSE(TCall, s_call, 104651);
-    return ThisCall(s_call, this, apStack, apLogger, apVm, aArg4);
+    return TiltedPhoques::ThisCall(s_call, this, apStack, apLogger, apVm, aArg4);
 }
 
 BSFixedString& BSScript::NativeFunctionBase::GetSourceFilename()

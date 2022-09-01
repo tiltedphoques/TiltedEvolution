@@ -29,7 +29,7 @@ BGSSaveFormBuffer::BGSSaveFormBuffer()
     POINTER_SKYRIMSE(CtorT, ctor, 36035);
     POINTER_FALLOUT4(CtorT, ctor, 824899);
 
-    ThisCall(ctor, this);
+    TiltedPhoques::ThisCall(ctor, this);
 
     position = 0;
 }
@@ -61,7 +61,7 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
     POINTER_SKYRIMSE(CtorT, ctor, 35993);
     POINTER_FALLOUT4(CtorT, ctor, 994876);
 
-    ThisCall(ctor, this);
+    TiltedPhoques::ThisCall(ctor, this);
 
     changeFlags = aChangeFlags;
     loadFlag = 0x40;
@@ -89,7 +89,7 @@ void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer, TESForm*
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
-        ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm);
+        TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm);
         return;
     }
 
@@ -100,7 +100,7 @@ void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint64_t aId
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
-        ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId);
+        TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId);
         return;
     }
 
@@ -112,7 +112,7 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
-        return ThisCall(RealBGSLoadFormBuffer_ReadFormId, apThis, aFormId);
+        return TiltedPhoques::ThisCall(RealBGSLoadFormBuffer_ReadFormId, apThis, aFormId);
     }
 
     uint8_t* pReadLocation = (uint8_t*)(apThis->buffer + apThis->position);

@@ -147,7 +147,7 @@ BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() const noexcept
     POINTER_FALLOUT4(TGetHandle, s_getHandle, 1573131);
 
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(s_getHandle, this, &result);
+    TiltedPhoques::ThisCall(s_getHandle, this, &result);
 
     return result;
 }
@@ -162,9 +162,9 @@ uint32_t* TESObjectREFR::GetNullHandle() noexcept
 
 void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
 {
-    ThisCall(RealRotateX, this, aX);
-    ThisCall(RealRotateY, this, aY);
-    ThisCall(RealRotateZ, this, aZ);
+    TiltedPhoques::ThisCall(RealRotateX, this, aX);
+    TiltedPhoques::ThisCall(RealRotateY, this, aY);
+    TiltedPhoques::ThisCall(RealRotateZ, this, aZ);
 }
 
 using TiltedPhoques::Serialization;
@@ -459,7 +459,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 1332435);
 
-    ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
+    TiltedPhoques::ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
 // TODO: ft
@@ -476,7 +476,7 @@ void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmoun
 #if TP_SKYRIM64
     TP_THIS_FUNCTION(TPayGoldToContainer, void, TESObjectREFR, TESObjectREFR*, int32_t);
     POINTER_SKYRIMSE(TPayGoldToContainer, s_payGoldToContainer, 37511);
-    ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
+    TiltedPhoques::ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
 #endif
 }
 
@@ -500,7 +500,7 @@ uint16_t Actor::GetLevel() const noexcept
     TP_THIS_FUNCTION(TGetLevel, uint16_t, const Actor);
     POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
     POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
-    return ThisCall(s_getLevel, this);
+    return TiltedPhoques::ThisCall(s_getLevel, this);
 }
 
 
@@ -528,9 +528,9 @@ void Actor::QueueUpdate() noexcept
     POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 302889);
 
 #ifdef TP_SKYRIM
-    ThisCall(QueueUpdate, this, true);
+    TiltedPhoques::ThisCall(QueueUpdate, this, true);
 #else
-    ThisCall(QueueUpdate, this, true, 0, true, 0);
+    TiltedPhoques::ThisCall(QueueUpdate, this, true, 0, true, 0);
 #endif
 
     pSetting->data = originalValue;
@@ -542,7 +542,7 @@ TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinat
 #if TP_SKYRIM64
     TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
     POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
-    return ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
+    return TiltedPhoques::ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
 #else
     return nullptr;
 #endif
@@ -598,7 +598,7 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
     const auto pExtraDataList = &extraData;
 #endif
 
-    ThisCall(realSetLevelMod, pExtraDataList, aLevel);
+    TiltedPhoques::ThisCall(realSetLevelMod, pExtraDataList, aLevel);
 }
 
 ActorExtension* Actor::GetExtension() noexcept
@@ -656,7 +656,7 @@ Lock* TESObjectREFR::GetLock() const noexcept
     POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
     POINTER_FALLOUT4(TGetLock, realGetLock, 930786);
 
-    return ThisCall(realGetLock, this);
+    return TiltedPhoques::ThisCall(realGetLock, this);
 }
 
 Lock* TESObjectREFR::CreateLock() noexcept
@@ -665,12 +665,12 @@ Lock* TESObjectREFR::CreateLock() noexcept
     POINTER_SKYRIMSE(TCreateLock, realCreateLock, 20221);
     POINTER_FALLOUT4(TCreateLock, realCreateLock, 1303718);
 
-    return ThisCall(realCreateLock, this);
+    return TiltedPhoques::ThisCall(realCreateLock, this);
 }
 
 void TESObjectREFR::LockChange() noexcept
 {
-    ThisCall(RealLockChange, this);
+    TiltedPhoques::ThisCall(RealLockChange, this);
 }
 
 const float TESObjectREFR::GetHeight() noexcept
@@ -686,7 +686,7 @@ bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
     POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 38979);
     POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 835807);
 
-    return ThisCall(setWeaponState, this, aDraw);
+    return TiltedPhoques::ThisCall(setWeaponState, this, aDraw);
 }
 
 extern thread_local bool g_forceAnimation;
@@ -746,7 +746,7 @@ void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
     TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
     POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
     POINTER_FALLOUT4(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 925299);
-    ThisCall(s_setNoBleedoutRecovery, this, aSet);
+    TiltedPhoques::ThisCall(s_setNoBleedoutRecovery, this, aSet);
 }
 
 void Actor::DispelAllSpells(bool aNow) noexcept
@@ -759,7 +759,7 @@ void MagicTarget::DispelAllSpells(bool aNow) noexcept
     TP_THIS_FUNCTION(TDispelAllSpells, void, MagicTarget, bool aNow);
     POINTER_SKYRIMSE(TDispelAllSpells, dispelAllSpells, 34512);
     POINTER_FALLOUT4(TDispelAllSpells, dispelAllSpells, 629903);
-    ThisCall(dispelAllSpells, this, aNow);
+    TiltedPhoques::ThisCall(dispelAllSpells, this, aNow);
 }
 
 void TESObjectCELL::GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bool aAllowCellLoad) noexcept
@@ -767,7 +767,7 @@ void TESObjectCELL::GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bo
     TP_THIS_FUNCTION(TGetCOCPlacementInfo, void, TESObjectCELL, NiPoint3*, NiPoint3*, bool);
     POINTER_SKYRIMSE(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 19075);
     POINTER_FALLOUT4(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 1045265);
-    ThisCall(s_getCOCPlacementInfo, this, aOutPos, aOutRot, aAllowCellLoad);
+    TiltedPhoques::ThisCall(s_getCOCPlacementInfo, this, aOutPos, aOutRot, aAllowCellLoad);
 }
 
 void PlayerCharacter::SetGodMode(bool aSet) noexcept
@@ -782,7 +782,7 @@ void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, 
     TP_THIS_FUNCTION(TKnockExplosion, void, AIProcess, Actor*, const NiPoint3*, float);
     POINTER_SKYRIMSE(TKnockExplosion, knockExplosion, 39895);
     POINTER_FALLOUT4(TKnockExplosion, knockExplosion, 803088);
-    ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
+    TiltedPhoques::ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
 }
 
 bool Actor::IsInCombat() const noexcept
@@ -836,7 +836,7 @@ char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 
     // Don't interfere with non actor references, or the player, or if we are calling our self
     if (apThis->formType != Actor::Type || apThis == PlayerCharacter::Get() || ScopedReferencesOverride::IsOverriden())
-        return ThisCall(RealSetPosition, apThis, aPosition);
+        return TiltedPhoques::ThisCall(RealSetPosition, apThis, aPosition);
 
     ScopedReferencesOverride recursionGuard;
 
@@ -856,7 +856,7 @@ void TP_MAKE_THISCALL(HookRotateX, TESObjectREFR, float aAngle)
             return;
     }
 
-    return ThisCall(RealRotateX, apThis, aAngle);
+    return TiltedPhoques::ThisCall(RealRotateX, apThis, aAngle);
 }
 
 void TP_MAKE_THISCALL(HookRotateY, TESObjectREFR, float aAngle)
@@ -869,7 +869,7 @@ void TP_MAKE_THISCALL(HookRotateY, TESObjectREFR, float aAngle)
             return;
     }
 
-    return ThisCall(RealRotateY, apThis, aAngle);
+    return TiltedPhoques::ThisCall(RealRotateY, apThis, aAngle);
 }
 
 void TP_MAKE_THISCALL(HookRotateZ, TESObjectREFR, float aAngle)
@@ -882,7 +882,7 @@ void TP_MAKE_THISCALL(HookRotateZ, TESObjectREFR, float aAngle)
             return;
     }
 
-    return ThisCall(RealRotateZ, apThis, aAngle);
+    return TiltedPhoques::ThisCall(RealRotateZ, apThis, aAngle);
 }
 
 char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
@@ -892,7 +892,7 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
     if (apThis->GetExtension()->IsRemote())
         return 0;
 
-    return ThisCall(RealActorProcess, apThis, a2);
+    return TiltedPhoques::ThisCall(RealActorProcess, apThis, a2);
 }
 
 void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
@@ -902,7 +902,7 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
 
     World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->flags, lockLevel));
 
-    ThisCall(RealLockChange, apThis);
+    TiltedPhoques::ThisCall(RealLockChange, apThis);
 }
 
 // Disable AI sync for now, experiment didn't work, code might be useful later on though.
@@ -918,7 +918,7 @@ bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUn
         return false;
 
 #endif
-    return ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
+    return TiltedPhoques::ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
 }
 
 TP_THIS_FUNCTION(TInitFromPackage, void, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor);
@@ -929,7 +929,7 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
 #if AI_SYNC
     // This guard is here for when the client sets the package based on a remote message
     if (s_execInitPackage)
-        return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
+        return TiltedPhoques::ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 
     if (arActor && arActor->GetExtension()->IsRemote())
         return;
@@ -938,7 +938,7 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
         World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
 
 #endif
-    return ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
+    return TiltedPhoques::ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
 TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* apRefr);
@@ -955,7 +955,7 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     // TODO: ft
     //World::Get().GetDebugService().SetDebugId(formId);
 
-    return ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
+    return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
 
 TiltedPhoques::Initializer s_referencesHooks([]()

@@ -81,7 +81,7 @@ void hkbBehaviorGraph::ReHandleEvent(hkEventContext& aContext, hkEventType& aTyp
                 TP_THIS_FUNCTION(Tsub_1409CA9D0, int32_t, void, int32_t, int64_t);
                 POINTER_SKYRIMSE(Tsub_1409CA9D0, sub_1409CA9D0, 57185);
 
-                eventType = ThisCall(sub_1409CA9D0, &pGraph->symbolIdMap->pointer20, eventType + 1, -1ll);
+                eventType = TiltedPhoques::ThisCall(sub_1409CA9D0, &pGraph->symbolIdMap->pointer20, eventType + 1, -1ll);
             }
             if(eventType != -1)
             {
@@ -95,7 +95,7 @@ void hkbBehaviorGraph::ReHandleEvent(hkEventContext& aContext, hkEventType& aTyp
                     TP_THIS_FUNCTION(Tsub_140A13150, int32_t, hkEventContext, hkbGenerator*, hkEventType&, SomeData*);
                     POINTER_SKYRIMSE(Tsub_140A13150, sub_140A13150, 59310);
 
-                    ThisCall(sub_140A13150, &aContext, pGenerator, type, pSomeData);
+                    TiltedPhoques::ThisCall(sub_140A13150, &aContext, pGenerator, type, pSomeData);
                 }
                 else
                 {
@@ -120,14 +120,14 @@ void hkbBehaviorGraph::ReHandleEvent(hkEventContext& aContext, hkEventType& aTyp
 
         hkEventType type(aType);
 
-        ThisCall(sub_1409F3EF0, this, aContext, type);
+        TiltedPhoques::ThisCall(sub_1409F3EF0, this, aContext, type);
     }
     if(byte12E || g_forceAnimation)
     {
         TP_THIS_FUNCTION(Tsub_140A4DFA0, void, hkbBehaviorGraph, hkEventContext&);
         POINTER_SKYRIMSE(Tsub_140A4DFA0, sub_140A4DFA0, 60079);
 
-        ThisCall(sub_140A4DFA0, this, aContext);
+        TiltedPhoques::ThisCall(sub_140A4DFA0, this, aContext);
     }
 
     aContext.behaviorGraph = nullptr;
@@ -206,7 +206,7 @@ bool BShkbAnimationGraph::ReSendEvent(BSFixedString* apEventName)
     TP_THIS_FUNCTION(TBSSendEvent, bool, BShkbAnimationGraph, BSFixedString*);
     POINTER_SKYRIMSE(TBSSendEvent, InternalSendEvent, 63591);
 
-    return ThisCall(InternalSendEvent, this, apEventName);*/
+    return TiltedPhoques::ThisCall(InternalSendEvent, this, apEventName);*/
 }
 
 
@@ -227,7 +227,7 @@ uint32_t BSAnimationGraphManager::ReSendEvent(BSFixedString* apEventName)
     TP_THIS_FUNCTION(Tsub_140AE2DB0, uint8_t, BSAnimationGraphManager, BSFixedString*);
     POINTER_SKYRIMSE(Tsub_140AE2DB0, sub_140AE2DB0, 63372);
 
-    ThisCall(sub_140AE2DB0, this, apEventName);
+    TiltedPhoques::ThisCall(sub_140AE2DB0, this, apEventName);
 
     return counter;
 }
@@ -269,7 +269,7 @@ uint8_t Class142F3A1E8::SendGraphAction(TESActionData* apAction)
 
         if(pAction == apAction->action)
         {
-            const auto result = static_cast<float>(ThisCall(GetSomeIdleProperty, apAction->idleForm));
+            const auto result = static_cast<float>(TiltedPhoques::ThisCall(GetSomeIdleProperty, apAction->idleForm));
 
             auto& stringManager = DefaultStringManager::Get();
 
@@ -292,13 +292,13 @@ bool ActorMediator::RePerformAction(TESActionData* apAction) noexcept
     auto pActor = static_cast<Actor*>(apAction->actor);
     if(!pActor || pActor->animationGraphHolder.IsReady())
     {
-        //result = ThisCall(PerformIdleAction, this, apAction);
+        //result = TiltedPhoques::ThisCall(PerformIdleAction, this, apAction);
 
         //if (apAction->someFlag & BGSActionData::kTransitionNoAnimation)
         //    apAction->someFlag = BGSActionData::kSkip;
         //else
         {
-            result = ThisCall(PerformComplexAction, this, apAction);
+            result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
             //result = RePerformComplexAction(apAction);
         }
 
@@ -313,7 +313,7 @@ bool ActorMediator::RePerformAction(TESActionData* apAction) noexcept
                 apAction->someFlag = BGSActionData::kSkip;
             else
             {
-                result = ThisCall(PerformComplexAction, this, apAction);
+                result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
                 //result = RePerformComplexAction(apAction);
             }
         }
@@ -383,7 +383,7 @@ bool ActorMediator::RePerformComplexAction(TESActionData* apData) noexcept
     if (apData->ComputeResult())
         v4 = apData->result == 2;
 
-    auto result = ThisCall(sub_1404ED090, qword_142EFF990, apData);
+    auto result = TiltedPhoques::ThisCall(sub_1404ED090, qword_142EFF990, apData);
     if (result)
     {
         qword_142F3A1E8->SendGraphAction(apData);

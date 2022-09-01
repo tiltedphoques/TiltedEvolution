@@ -12,7 +12,7 @@ static TLaunch* RealLaunch = nullptr;
 
 BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept
 {
-    return ThisCall(RealLaunch, apResult, arData);
+    return TiltedPhoques::ThisCall(RealLaunch, apResult, arData);
 }
 
 BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projectile>, ProjectileLaunchData& arData)
@@ -61,7 +61,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 
     World::Get().GetRunner().Trigger(Event);
 
-    return ThisCall(RealLaunch, apThis, arData);
+    return TiltedPhoques::ThisCall(RealLaunch, apThis, arData);
 }
 
 TP_THIS_FUNCTION(TFire, void, void, TESObjectREFR* apSource, uint32_t aEquipIndex, TESAmmo* apAmmo, AlchemyItem* apPoison);
@@ -83,7 +83,7 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
         }
     }
 
-    return ThisCall(RealFire, apThis, apSource, aEquipIndex, apAmmo, apPoison);
+    return TiltedPhoques::ThisCall(RealFire, apThis, apSource, aEquipIndex, apAmmo, apPoison);
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {

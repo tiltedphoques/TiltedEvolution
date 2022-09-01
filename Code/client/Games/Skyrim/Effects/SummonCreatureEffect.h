@@ -21,7 +21,7 @@ void* TP_MAKE_THISCALL(HookInitializeSummonCreatureEffect, Actor, MagicItem* apS
             return nullptr;
     }
 
-    return ThisCall(RealInitializeSummonCreatureEffect, apThis, apSpell, apEffect);
+    return TiltedPhoques::ThisCall(RealInitializeSummonCreatureEffect, apThis, apSpell, apEffect);
 }
 
 static TiltedPhoques::Initializer s_summonCreatureEffectsHooks([]()
