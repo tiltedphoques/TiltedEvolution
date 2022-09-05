@@ -39,6 +39,9 @@ void WeatherService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
 
 void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
 {
+    if (!Sky::s_shouldUpdateWeather)
+        return;
+
     Sky* pSky = Sky::Get();
     if (!pSky)
         return;
