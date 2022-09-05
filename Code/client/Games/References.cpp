@@ -9,6 +9,7 @@
 #include <Forms/BGSHeadPart.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESPackage.h>
+#include <Forms/TESWeather.h>
 #include <SaveLoad.h>
 #include <ExtraData/ExtraDataList.h>
 
@@ -27,6 +28,7 @@
 #include <Games/Misc/Lock.h>
 #include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
+#include <Sky/Sky.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -826,6 +828,44 @@ void Actor::StopCombat() noexcept
     s_pStopCombat(this);
 }
 
+Sky* Sky::Get() noexcept
+{
+    using SkyGet = Sky*(__fastcall)();
+
+    POINTER_SKYRIMSE(SkyGet, skyGet, 13878);
+    // TODO(ft): verify
+    POINTER_FALLOUT4(SkyGet, skyGet, 484695);
+
+    return skyGet.Get()();
+}
+
+void Sky::SetWeather(TESWeather* apWeather) noexcept
+{
+    TP_THIS_FUNCTION(TSetWeather, void, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate);
+    POINTER_SKYRIMSE(TSetWeather, setWeather, 26241);
+    // TODO(ft): verify
+    POINTER_FALLOUT4(TSetWeather, setWeather, 1244029);
+
+    // TODO: verify the use of these bools
+    TiltedPhoques::ThisCall(setWeather, this, apWeather, true, true);
+}
+
+void Sky::ForceWeather(TESWeather* apWeather) noexcept
+{
+    TP_THIS_FUNCTION(TForceWeather, void, Sky, TESWeather* apWeather, bool abOverride);
+    POINTER_SKYRIMSE(TForceWeather, forceWeather, 26243);
+    // TODO(ft): verify
+    POINTER_FALLOUT4(TForceWeather, forceWeather, 698559);
+
+    // TODO: verify the use of abOverride
+    TiltedPhoques::ThisCall(forceWeather, this, apWeather, true);
+}
+
+TESWeather* Sky::GetWeather() const noexcept
+{
+    return pCurrentWeather;
+}
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
@@ -958,6 +998,26 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
 
+TP_THIS_FUNCTION(TSetWeather, void, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate);
+static TSetWeather* RealSetWeather = nullptr;
+
+void TP_MAKE_THISCALL(HookSetWeather, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate)
+{
+    spdlog::warn("Set weather form id: {:X}, override: {}, accelerate: {}", apWeather ? apWeather->formID : 0, abOverride, abAccelerate);
+
+    TiltedPhoques::ThisCall(RealSetWeather, apThis, apWeather, abOverride, abAccelerate);
+}
+
+TP_THIS_FUNCTION(TForceWeather, void, Sky, TESWeather* apWeather, bool abOverride);
+static TForceWeather* RealForceWeather = nullptr;
+
+void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverride)
+{
+    spdlog::error("Force weather form id: {:X}, override: {}", apWeather ? apWeather->formID : 0, abOverride);
+
+    TiltedPhoques::ThisCall(RealForceWeather, apThis, apWeather, abOverride);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -986,6 +1046,16 @@ TiltedPhoques::Initializer s_referencesHooks([]()
 
         POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
 
+        // TODO: these hooks interfere with call, refactor
+        POINTER_SKYRIMSE(TSetWeather, setWeather, 26241);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TSetWeather, setWeather, 1244029);
+
+        // TODO: these hooks interfere with call, refactor
+        POINTER_SKYRIMSE(TForceWeather, forceWeather, 26243);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TForceWeather, forceWeather, 698559);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -998,6 +1068,8 @@ TiltedPhoques::Initializer s_referencesHooks([]()
     #if TP_SKYRIM64
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
     #endif
+        RealSetWeather = setWeather.Get();
+        RealForceWeather = forceWeather.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -1008,5 +1080,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
         TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
+        TP_HOOK(&RealSetWeather, HookSetWeather);
+        TP_HOOK(&RealForceWeather, HookForceWeather);
     });
 
