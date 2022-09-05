@@ -9,6 +9,8 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/PlayerDialogueEvent.h>
 #include <Events/PlayerLevelEvent.h>
+#include <Events/PartyJoinedEvent.h>
+#include <Events/PartyLeftEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
@@ -39,6 +41,8 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
     m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&PlayerService::OnPartyJoinedEvent>(this);
+    m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&PlayerService::OnPartyLeftEvent>(this);
 }
 
 namespace
@@ -190,6 +194,34 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
     request.NewLevel = PlayerCharacter::Get()->GetLevel();
 
     m_transport.Send(request);
+}
+
+void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    // TODO: this can be done a bit prettier
+#if TP_SKYRIM64
+    if (acEvent.IsLeader)
+    {
+        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+        pWorldEncountersEnabled->f = 1.f;
+    }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
+}
+
+void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
+{
+    // TODO: this can be done a bit prettier
+#if TP_SKYRIM64
+    if (World::Get().GetTransport().IsConnected())
+    {
+        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+        pWorldEncountersEnabled->f = 0.f;
+    }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
 }
 
 // TODO: ft (verify)

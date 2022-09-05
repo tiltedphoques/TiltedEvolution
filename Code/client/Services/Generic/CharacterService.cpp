@@ -32,6 +32,7 @@
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
 #include <Events/MoveActorEvent.h>
+#include <Events/PartyJoinedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -109,6 +110,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_actorTeleportConnection = m_dispatcher.sink<NotifyActorTeleport>().connect<&CharacterService::OnNotifyActorTeleport>(this);
 
     m_relinquishConnection = m_dispatcher.sink<NotifyRelinquishControl>().connect<&CharacterService::OnNotifyRelinquishControl>(this);
+
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&CharacterService::OnPartyJoinedEvent>(this);
 }
 
 void CharacterService::DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept
@@ -1095,6 +1098,19 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
     spdlog::info("Successfully teleported actor, form id: {:X}, world space: {:X}, cell: {:X}, position: ({}, {}, {})",
                  pActor->formID, acMessage.WorldSpaceId.BaseId, acMessage.CellId.BaseId, acMessage.Position.x,
                  acMessage.Position.y, acMessage.Position.z);
+}
+
+void CharacterService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    // Takes ownership of all actors
+    if (acEvent.IsLeader)
+    {
+        auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+        Vector<entt::entity> entities(view.begin(), view.end());
+
+        for (auto entity : entities)
+            ProcessNewEntity(entity);
+    }
 }
 
 void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept

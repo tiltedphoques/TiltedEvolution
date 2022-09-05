@@ -2,6 +2,8 @@
 
 struct World;
 struct TransportService;
+struct PartyJoinedEvent;
+struct PartyLeftEvent;
 
 /**
 * @brief Responsible for weather changes, which is controlled on a party-per-party basis.
@@ -14,12 +16,16 @@ struct WeatherService
     TP_NOCOPYMOVE(WeatherService);
 
 protected:
-    //void OnHitEvent(const HitEvent& acEvent) const noexcept;
+    void OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept;
+    void OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept;
 
 private:
     World& m_world;
     TransportService& m_transport;
 
-    //entt::scoped_connection m_hitConnection;
+    bool m_isInParty{};
+
+    entt::scoped_connection m_partyJoinedConnection;
+    entt::scoped_connection m_partyLeftConnection;
 };
 
