@@ -1021,6 +1021,8 @@ void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverr
 TP_THIS_FUNCTION(TUpdateWeather, void, Sky);
 static TUpdateWeather* RealUpdateWeather = nullptr;
 
+// TODO: if party leader is not in area, allow UpdateWeather.
+// Maybe add IsMyLeader bool to PlayerComponent to check if leader is loaded?
 void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
 {
     if (!Sky::s_shouldUpdateWeather)
