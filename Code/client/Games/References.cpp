@@ -1018,6 +1018,17 @@ void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverr
     TiltedPhoques::ThisCall(RealForceWeather, apThis, apWeather, abOverride);
 }
 
+TP_THIS_FUNCTION(TUpdateWeather, void, Sky);
+static TUpdateWeather* RealUpdateWeather = nullptr;
+
+void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
+{
+    if (!Sky::s_shouldUpdateWeather)
+        return;
+
+    TiltedPhoques::ThisCall(RealUpdateWeather, apThis);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -1056,6 +1067,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         // TODO(ft): verify
         POINTER_FALLOUT4(TForceWeather, forceWeather, 698559);
 
+        POINTER_SKYRIMSE(TUpdateWeather, updateWeather, 26231);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TUpdateWeather, updateWeather, 1278860);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -1070,6 +1085,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
     #endif
         RealSetWeather = setWeather.Get();
         RealForceWeather = forceWeather.Get();
+        RealUpdateWeather = updateWeather.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -1082,5 +1098,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
         TP_HOOK(&RealSetWeather, HookSetWeather);
         TP_HOOK(&RealForceWeather, HookForceWeather);
+        TP_HOOK(&RealUpdateWeather, HookUpdateWeather);
     });
 
