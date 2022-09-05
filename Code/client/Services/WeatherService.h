@@ -2,6 +2,7 @@
 
 struct World;
 struct TransportService;
+struct UpdateEvent;
 struct DisconnectedEvent;
 struct PartyJoinedEvent;
 struct PartyLeftEvent;
@@ -18,9 +19,12 @@ struct WeatherService
     TP_NOCOPYMOVE(WeatherService);
 
 protected:
+    void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
     void OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept;
     void OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept;
+
+    void RunWeatherUpdates(const double acDelta) noexcept;
 
     void RegainControlOfWeather() noexcept;
 
@@ -29,7 +33,9 @@ private:
     TransportService& m_transport;
 
     bool m_isInParty{};
+    uint32_t m_cachedWeatherId{};
 
+    entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectConnection;
     entt::scoped_connection m_partyJoinedConnection;
     entt::scoped_connection m_partyLeftConnection;
