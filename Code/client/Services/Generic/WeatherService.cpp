@@ -19,6 +19,8 @@ WeatherService::WeatherService(World& aWorld, TransportService& aTransport, entt
     m_disconnectConnection = aDispatcher.sink<DisconnectedEvent>().connect<&WeatherService::OnDisconnected>(this);
     m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&WeatherService::OnPartyJoinedEvent>(this);
     m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&WeatherService::OnPartyLeftEvent>(this);
+    m_playerAddedConnection = m_world.on_destroy<WaitingFor3D>().connect<&WeatherService::OnWaitingFor3DRemoved>(this);
+    m_playerRemovedConnection = m_world.on_destroy<PlayerComponent>().connect<&WeatherService::OnPlayerComponentRemoved>(this);
     m_weatherChangeConnection = aDispatcher.sink<NotifyWeatherChange>().connect<&WeatherService::OnWeatherChange>(this);
 }
 
@@ -29,7 +31,7 @@ void WeatherService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void WeatherService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
-    RegainControlOfWeather();
+    ToggleGameWeatherSystem(true);
 }
 
 void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
@@ -37,7 +39,20 @@ void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcep
     Sky::s_shouldUpdateWeather = acEvent.IsLeader;
 
     if (!acEvent.IsLeader)
-        m_transport.Send(RequestCurrentWeather());
+    {
+        auto view = m_world.view<PlayerComponent>();
+        const auto& partyService = m_world.GetPartyService();
+
+        for (auto entity : view)
+        {
+            const auto& playerComponent = view.get<PlayerComponent>(entity);
+            if (playerComponent.Id == partyService.GetLeaderPlayerId())
+            {
+                ToggleGameWeatherSystem(false);
+                break;
+            }
+        }
+    }
     else
     {
         Sky* pSky = Sky::Get();
@@ -74,7 +89,34 @@ void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcep
 
 void WeatherService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
 {
-    RegainControlOfWeather();
+    ToggleGameWeatherSystem(true);
+}
+
+// TODO: OnPlayerComponentAdded() instead? Does PlayerComponent exist already by then?
+void WeatherService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) noexcept
+{
+    const auto* pPlayerComponent = m_world.try_get<PlayerComponent>(aEntity);
+    if (!pPlayerComponent)
+        return;
+
+    const auto& partyService = m_world.GetPartyService();
+    if (!partyService.IsInParty() || partyService.IsLeader())
+        return;
+
+    if (partyService.GetLeaderPlayerId() == pPlayerComponent->Id)
+        ToggleGameWeatherSystem(false);
+}
+
+void WeatherService::OnPlayerComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) noexcept
+{
+    const auto& playerComponent = m_world.get<PlayerComponent>(aEntity);
+
+    const auto& partyService = m_world.GetPartyService();
+    if (!partyService.IsInParty() || partyService.IsLeader())
+        return;
+
+    if (partyService.GetLeaderPlayerId() == playerComponent.Id)
+        ToggleGameWeatherSystem(true);
 }
 
 void WeatherService::OnWeatherChange(const NotifyWeatherChange& acMessage) noexcept
@@ -94,7 +136,7 @@ void WeatherService::OnWeatherChange(const NotifyWeatherChange& acMessage) noexc
 
 void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
 {
-    if (!Sky::s_shouldUpdateWeather)
+    if (!m_world.GetPartyService().IsLeader())
         return;
 
     Sky* pSky = Sky::Get();
@@ -130,10 +172,15 @@ void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
     m_transport.Send(request);
 }
 
-void WeatherService::RegainControlOfWeather() noexcept
+void WeatherService::ToggleGameWeatherSystem(bool aToggle) noexcept
 {
-    Sky::s_shouldUpdateWeather = true;
-    Sky::Get()->ResetWeather();
+    Sky::s_shouldUpdateWeather = aToggle;
+
+    if (aToggle)
+        Sky::Get()->ResetWeather();
+
+    if (!aToggle)
+        m_transport.Send(RequestCurrentWeather());
 
     m_cachedWeatherId = 0;
 }
