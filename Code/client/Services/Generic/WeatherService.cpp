@@ -72,6 +72,10 @@ void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
         return;
     }
 
+    // This is the map weather, should not be synced.
+    if (pWeather->formID == 0xA6858)
+        return;
+
     // Have to manually check each frame because there's no singular SetWeather being used in-game.
     if (pWeather->formID == m_cachedWeatherId)
         return;
