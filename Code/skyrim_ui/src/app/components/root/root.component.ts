@@ -14,6 +14,8 @@ import { ChatComponent } from '../chat/chat.component';
 import { GroupComponent } from '../group/group.component';
 import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
+import {map} from 'rxjs/operators';
+import {fontSizeToPixels} from '../settings/settings.component';
 
 
 @Component({
@@ -55,6 +57,7 @@ export class RootComponent implements OnInit {
   public ngOnInit(): void {
     this.onInGameStateSubscription();
     this.onActivationStateSubscription();
+    this.onFontSizeSubscription();
   }
 
   public onInGameStateSubscription() {
@@ -78,6 +81,14 @@ export class RootComponent implements OnInit {
           this.closeView();
         }
       });
+  }
+
+  public onFontSizeSubscription() {
+    this.settingService.fontSizeChange
+    .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
+    .subscribe( size => {
+      document.documentElement.setAttribute('style', `font-size: ${size};`);
+    })
   }
 
   public setView(view: View | null) {

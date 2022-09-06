@@ -10,16 +10,19 @@
 .container {
   overflow: auto;
   max-height: 60vh;
-  margin-top: 1rem;
   padding-right: 15px;
 
   .settings {
     display: flex;
+    margin-top: 1rem;
     justify-content: space-between;
     flex-direction: column;
 
     .section {
       padding-bottom: 15px;
+      margin-bottom: 0.1rem;
+      border-bottom: 2px solid;
+      border-image: url("../../../assets/images/separator/single.svg") 3;
       display: flex;
       justify-content: space-between;
       flex-direction: column;

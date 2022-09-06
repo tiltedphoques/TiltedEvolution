@@ -1,6 +1,5 @@
 <div class="container">
   <div class="settings">
-
     <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
@@ -20,8 +19,6 @@
       </div>
     </div>
 
-    <hr>
-
     <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.UI' | transloco }}</h2>
       <div class="flex-item">
@@ -30,9 +27,13 @@
           <app-dropdown-option *ngFor="let l of availableLanguages" [text]="l.label" [value]="l.id"></app-dropdown-option>
         </app-dropdown>
       </div>
+      <div class="flex-item">
+        <label for="fontSize">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
+        <app-dropdown class="settings-dropdown" [ngModel]="fontSize" (ngModelChange)="onFontSizeChange($event)">
+          <app-dropdown-option *ngFor="let l of availableFontSizes" [text]="l.label | transloco" [value]="l.id"></app-dropdown-option>
+        </app-dropdown>
+      </div>
     </div>
-
-    <hr>
 
     <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
@@ -126,8 +127,6 @@
       </div>
     </div>
 
-    <hr>
-
     <div class="section">
       <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
       <div class="flex-item">
@@ -142,8 +141,6 @@
     </div>
   </div>
 </div>
-
-<hr>
 
 <div class="actions">
   <button data-style-ornament="simple" class="btnCancel" (click)="close()">
