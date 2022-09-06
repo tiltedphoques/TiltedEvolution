@@ -33,11 +33,25 @@ void DebugService::DrawWeatherView()
     ImGui::InputScalar("New weather ID", ImGuiDataType_U32, &s_weatherId, 0, 0, "%" PRIx32,
                        ImGuiInputTextFlags_CharsHexadecimal);
 
+    if (ImGui::Button("Set weather"))
+    {
+        TESWeather* pWeather = Cast<TESWeather>(TESForm::GetById(s_weatherId));
+        if (pWeather)
+            pSky->SetWeather(pWeather);
+    }
+
     if (ImGui::Button("Force weather"))
     {
         TESWeather* pWeather = Cast<TESWeather>(TESForm::GetById(s_weatherId));
         if (pWeather)
             pSky->ForceWeather(pWeather);
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Button("Reset weather"))
+    {
+        pSky->ResetWeather();
     }
 
     ImGui::End();

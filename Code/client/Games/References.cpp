@@ -861,6 +861,16 @@ void Sky::ForceWeather(TESWeather* apWeather) noexcept
     TiltedPhoques::ThisCall(forceWeather, this, apWeather, true);
 }
 
+void Sky::ResetWeather() noexcept
+{
+    TP_THIS_FUNCTION(TResetWeather, void, Sky);
+    POINTER_SKYRIMSE(TResetWeather, resetWeather, 26242);
+    // TODO(ft): verify
+    POINTER_FALLOUT4(TResetWeather, resetWeather, 6512);
+
+    TiltedPhoques::ThisCall(resetWeather, this);
+}
+
 TESWeather* Sky::GetWeather() const noexcept
 {
     return pCurrentWeather;

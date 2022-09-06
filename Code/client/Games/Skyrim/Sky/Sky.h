@@ -12,6 +12,7 @@ struct Sky
 
     void SetWeather(TESWeather* apWeather) noexcept;
     void ForceWeather(TESWeather* apWeather) noexcept;
+    void ResetWeather() noexcept;
 
     TESWeather* GetWeather() const noexcept;
 
