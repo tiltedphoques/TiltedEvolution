@@ -1061,12 +1061,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
 
         POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
 
-        // TODO: these hooks interfere with call, refactor
         POINTER_SKYRIMSE(TSetWeather, setWeather, 26241);
         // TODO(ft): verify
         POINTER_FALLOUT4(TSetWeather, setWeather, 1244029);
 
-        // TODO: these hooks interfere with call, refactor
         POINTER_SKYRIMSE(TForceWeather, forceWeather, 26243);
         // TODO(ft): verify
         POINTER_FALLOUT4(TForceWeather, forceWeather, 698559);
