@@ -52,7 +52,7 @@ select {
   padding: $-size-gap * 0.5;
   background: transparent;
   color: mod($-color-background, 1);
-  border: rem($-size-font, 2px) solid;
+  border: 3px solid;
   border-image: url("assets/images/separator/single.svg") 3;
 }
 
@@ -175,7 +175,7 @@ button {
 }
 
 :root {
-  font-size: calc(16 * 100vw / 1920);
+  font-size: 16px;
 }
 
 ::-webkit-scrollbar {
@@ -187,7 +187,7 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-  border: rem($-size-font, 3px) solid;
+  border: 4 solid;
   border-image: url("assets/images/scrollbar/track.svg") 4 fill;
 }
 
@@ -282,8 +282,8 @@ hr {
     margin-left: 0.5em;
     display: inline-block;
     vertical-align: middle;
-    margin-bottom: rem($-size-font, 2px);
-    border-bottom: rem($-size-font, 2px) solid;
+    margin-bottom: 0.1rem;
+    border-bottom: 0.1rem solid;
     border-image: url(./assets/images/separator/single.svg) 3;
   }
 

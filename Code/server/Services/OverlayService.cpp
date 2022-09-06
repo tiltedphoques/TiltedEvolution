@@ -2,6 +2,8 @@
 
 #include <Services/OverlayService.h>
 
+#include <ChatMessageTypes.h>
+
 #include <Messages/NotifyChatMessageBroadcast.h>
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/PlayerDialogueRequest.h>
@@ -24,29 +26,55 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
     m_playerHealthConnection = aDispatcher.sink<PacketEvent<RequestPlayerHealthUpdate>>().connect<&OverlayService::OnPlayerHealthUpdate>(this);
 }
 
-void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
-{
+void sendPlayerMessage(const ChatMessageType acType, const String acContent, Player* aSendingPlayer) noexcept {
     NotifyChatMessageBroadcast notifyMessage{};
 
     std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
-    notifyMessage.PlayerName = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
-    notifyMessage.ChatMessage = std::regex_replace(acMessage.Packet.ChatMessage, escapeHtml, "");
+    notifyMessage.MessageType = acType;
+    notifyMessage.PlayerName = std::regex_replace(aSendingPlayer->GetUsername(), escapeHtml, "");
+    notifyMessage.ChatMessage = std::regex_replace(acContent, escapeHtml, "");
 
-    GameServer::Get()->SendToPlayers(notifyMessage);
+    auto character = aSendingPlayer->GetCharacter();
+
+    switch (notifyMessage.MessageType)
+    {
+    case kGlobalChat:
+        GameServer::Get()->SendToPlayers(notifyMessage);
+        break;
+
+    case kSystemMessage:
+        spdlog::error("PlayerId {} attempted to send a System Message.", aSendingPlayer->GetId());
+        break;
+
+    case kPlayerDialogue:
+        GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
+        break;
+
+    case kPartyChat:
+        GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
+        break;
+
+    case kLocalChat:
+        if (character)
+        {
+            GameServer::Get()->SendToPlayersInRange(notifyMessage, *character);
+        }
+        break;
+
+    default:
+        spdlog::error("{} is not a known MessageType", static_cast<uint64_t>(notifyMessage.MessageType));
+        break;
+    }
+}
+
+void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
+{
+    sendPlayerMessage(acMessage.Packet.MessageType, acMessage.Packet.ChatMessage, acMessage.pPlayer);
 }
 
 void OverlayService::OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept
 {
-    auto& message = acMessage.Packet;
-
-    NotifyPlayerDialogue notify{};
-
-    std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
-    notify.Name = std::regex_replace(acMessage.pPlayer->GetUsername(), escapeHtml, "");
-    notify.Text = std::regex_replace(message.Text, escapeHtml, "");
-
-    auto& party = acMessage.pPlayer->GetParty();
-    GameServer::Get()->SendToParty(notify, party);
+    sendPlayerMessage(kPlayerDialogue, acMessage.Packet.Text, acMessage.pPlayer);
 }
 
 void OverlayService::OnTeleport(const PacketEvent<TeleportRequest>& acMessage) const noexcept

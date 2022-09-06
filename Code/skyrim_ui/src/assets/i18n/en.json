@@ -124,6 +124,14 @@
       "LANGUAGE": "Language",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Show Debug Information",
+      "FONT_SIZE": "Font size",
+      "FONT_SIZES": {
+        "XS": "Extra small",
+        "S": "Small",
+        "M": "Medium",
+        "L": "Large",
+        "XL": "Extra Large"
+      },
       "BACK": "Back"
     }
   },
@@ -132,6 +140,10 @@
       "CONNECTION_LOST": "Connection lost, trying to reconnect. {{remainingReconnectionAttempt}} attempts left.",
       "CONNECTED": "Successfully connected to server.",
       "DISCONNECTED": "Disconnected from server."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Available chat commands: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' is recognized as a command."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} has reached level {{level}}.",
