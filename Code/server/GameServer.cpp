@@ -556,6 +556,41 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
     }
 }
 
+void GameServer::SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                                    const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const
+{
+    if (!acPartyComponent.JoinedPartyId.has_value())
+    {
+        spdlog::warn("Part does not exist, canceling broadcast.");
+        return;
+    }
+
+    const auto view = m_pWorld->view<CellIdComponent>();
+    const auto it = view.find(acOrigin);
+
+    if (it == view.end())
+    {
+        spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
+        return;
+    }
+
+    const auto& cellComponent = view.get<CellIdComponent>(*it);
+
+    for (Player* pPlayer : m_pWorld->GetPlayerManager())
+    {
+        if (pPlayer == apExcludeSender)
+            continue;
+
+        if (!cellComponent.IsInRange(pPlayer->GetCellComponent(), false))
+            continue;
+
+        if (pPlayer->GetParty().JoinedPartyId != acPartyComponent.JoinedPartyId)
+            continue;
+
+        pPlayer->Send(acServerMessage);
+    }
+}
+
 static String PrettyPrintModList(const Vector<Mods::Entry>& acMods)
 {
     String text;

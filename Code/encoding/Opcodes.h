@@ -49,6 +49,7 @@ enum ClientOpcode : unsigned char
     kPlayerLevelRequest,
     kTeleportRequest,
     kRequestPlayerHealthUpdate,
+    kRequestWeatherChange,
     kClientOpcodeMax
 };
 
@@ -105,5 +106,6 @@ enum ServerOpcode : unsigned char
     kNotifyTeleport,
     kNotifyPlayerHealthUpdate,
     kNotifySettingsChange,
+    kNotifyWeatherChange,
     kServerOpcodeMax
 };

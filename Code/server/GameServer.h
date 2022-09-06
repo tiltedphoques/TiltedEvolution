@@ -57,6 +57,8 @@ struct GameServer final : Server
                               const Player* apExcludeSender = nullptr) const;
     void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
                      const Player* apExcludeSender = nullptr) const;
+    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                            const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
 
     const Info& GetInfo() const noexcept
     {
