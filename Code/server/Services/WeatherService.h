@@ -4,6 +4,7 @@
 
 struct World;
 struct RequestWeatherChange;
+struct RequestCurrentWeather;
 
 struct WeatherService
 {
@@ -14,10 +15,12 @@ struct WeatherService
 
 protected:
     void OnWeatherChange(const PacketEvent<RequestWeatherChange>& acMessage) const noexcept;
+    void OnRequestCurrentWeather(const PacketEvent<RequestCurrentWeather>& acMessage) const noexcept;
 
 private:
 
     World& m_world;
 
     entt::scoped_connection m_weatherChangeConnection;
+    entt::scoped_connection m_currentWeatherConnection;
 };

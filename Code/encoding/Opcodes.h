@@ -50,6 +50,7 @@ enum ClientOpcode : unsigned char
     kTeleportRequest,
     kRequestPlayerHealthUpdate,
     kRequestWeatherChange,
+    kRequestCurrentWeather,
     kClientOpcodeMax
 };
 

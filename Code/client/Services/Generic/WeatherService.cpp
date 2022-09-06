@@ -7,6 +7,7 @@
 
 #include <Messages/RequestWeatherChange.h>
 #include <Messages/NotifyWeatherChange.h>
+#include <Messages/RequestCurrentWeather.h>
 
 #include <Sky/Sky.h>
 #include <Forms/TESWeather.h>
@@ -34,6 +35,9 @@ void WeatherService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
 {
     Sky::s_shouldUpdateWeather = acEvent.IsLeader;
+
+    if (!acEvent.IsLeader)
+        m_transport.Send(RequestCurrentWeather());
 }
 
 void WeatherService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
@@ -98,4 +102,6 @@ void WeatherService::RegainControlOfWeather() noexcept
 {
     Sky::s_shouldUpdateWeather = true;
     Sky::Get()->ResetWeather();
+
+    m_cachedWeatherId = 0;
 }
