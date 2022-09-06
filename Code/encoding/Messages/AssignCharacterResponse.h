@@ -29,6 +29,7 @@ struct AssignCharacterResponse final : ServerMessage
                WorldSpaceId == achRhs.WorldSpaceId &&
                AllActorValues == achRhs.AllActorValues &&
                CurrentInventory == achRhs.CurrentInventory &&
+               BaseId == achRhs.BaseId &&
                Owner == achRhs.Owner &&
                IsDead == achRhs.IsDead &&
                IsWeaponDrawn == achRhs.IsWeaponDrawn;
@@ -42,6 +43,7 @@ struct AssignCharacterResponse final : ServerMessage
     GameId WorldSpaceId{};
     ActorValues AllActorValues{};
     Inventory CurrentInventory{};
+    GameId BaseId{};
     bool Owner{ false };
     bool IsDead{};
     bool IsWeaponDrawn{};

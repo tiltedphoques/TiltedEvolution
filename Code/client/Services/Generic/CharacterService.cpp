@@ -362,7 +362,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     }
     else
     {
-        spdlog::info("Received remote actor, form id: {:X}, isweapondrawn: {}", pActor->formID, acMessage.IsWeaponDrawn);
+        spdlog::info("Received remote actor, form id: {:X}", pActor->formID);
 
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, formIdComponent->Id);
 
@@ -371,15 +371,25 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
 
+        MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
+
+        TESNPC* pNpc = Cast<TESNPC>(pActor->baseForm);
+
+        auto& modSystem = m_world.GetModSystem();
+        uint32_t baseId = modSystem.GetGameId(acMessage.BaseId);
+
+        if (pNpc && baseId != pNpc->formID)
+        {
+            bool result = pActor->TrySetLeveledActor(baseId);
+            if (!result)
+                spdlog::error(__FUNCTION__ ": failed to match leveled actor, form id: {:X}", pActor->formID);
+        }
+
         pActor->SetActorValues(acMessage.AllActorValues);
         pActor->SetActorInventory(acMessage.CurrentInventory);
 
         if (pActor->IsDead() != acMessage.IsDead)
             acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
-
-        m_weaponDrawUpdates[pActor->formID] = {acMessage.IsWeaponDrawn};
-
-        MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
     }
 }
 
@@ -420,11 +430,15 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             pNpc = Cast<TESNPC>(TESForm::GetById(cNpcId));
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
-        else
+        else if (acMessage.IsPlayer)
         {
-            // Players and npcs with temporary ref ids and base ids (usually random events)
             pNpc = TESNPC::Create(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
             FaceGenSystem::Setup(m_world, *entity, acMessage.FaceTints);
+        }
+        else
+        {
+            spdlog::error("Failed to retrieve NPC base, it will not be spawned, form: {:X}:{:X}", acMessage.FormId.BaseId, acMessage.FormId.ModId);
+            return;
         }
 
         pActor = Actor::Create(pNpc);
@@ -1313,7 +1327,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
 
-    if (isTemporary)
+    if (!isPlayer)
     {
         if (pNpc && !m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
