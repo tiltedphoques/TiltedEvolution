@@ -40,6 +40,7 @@ add_requires(
     "gtest", 
     "mem", 
     "glm", 
+    "catch2 2.13.9",
     "sentry-native", 
     "zlib")
 
