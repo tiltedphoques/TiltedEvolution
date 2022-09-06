@@ -38,6 +38,38 @@ void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcep
 
     if (!acEvent.IsLeader)
         m_transport.Send(RequestCurrentWeather());
+    else
+    {
+        Sky* pSky = Sky::Get();
+        if (!pSky)
+            return;
+
+        TESWeather* pWeather = pSky->GetWeather();
+        if (!pWeather)
+        {
+            m_cachedWeatherId = 0;
+            return;
+        }
+
+        // Potentially sets cached weather to map weather.
+        // When the player closes the map, it'll send out the proper weather on the next update.
+        m_cachedWeatherId = pWeather->formID;
+
+        // This is the map weather, should not be synced.
+        if (pWeather->formID == 0xA6858)
+            return;
+
+        RequestWeatherChange request{};
+
+        auto& modSystem = m_world.GetModSystem();
+        if (!modSystem.GetServerModId(pWeather->formID, request.Id))
+        {
+            spdlog::error(__FUNCTION__ ": weather server ID not found, form id: {:X}", pWeather->formID);
+            return;
+        }
+
+        m_transport.Send(request);
+    }
 }
 
 void WeatherService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
