@@ -1004,7 +1004,7 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
 
 void TP_MAKE_THISCALL(HookSetWeather, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate)
 {
-    spdlog::warn("Set weather form id: {:X}, override: {}, accelerate: {}", apWeather ? apWeather->formID : 0, abOverride, abAccelerate);
+    spdlog::debug("Set weather form id: {:X}, override: {}, accelerate: {}", apWeather ? apWeather->formID : 0, abOverride, abAccelerate);
 
     if (!Sky::s_shouldUpdateWeather)
         return;
@@ -1014,7 +1014,7 @@ void TP_MAKE_THISCALL(HookSetWeather, Sky, TESWeather* apWeather, bool abOverrid
 
 void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverride)
 {
-    spdlog::error("Force weather form id: {:X}, override: {}", apWeather ? apWeather->formID : 0, abOverride);
+    spdlog::debug("Force weather form id: {:X}, override: {}", apWeather ? apWeather->formID : 0, abOverride);
 
     if (!Sky::s_shouldUpdateWeather)
         return;
@@ -1025,8 +1025,6 @@ void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverr
 TP_THIS_FUNCTION(TUpdateWeather, void, Sky);
 static TUpdateWeather* RealUpdateWeather = nullptr;
 
-// TODO: if party leader is not in area, allow UpdateWeather.
-// Maybe add IsMyLeader bool to PlayerComponent to check if leader is loaded?
 void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
 {
     if (!Sky::s_shouldUpdateWeather)
