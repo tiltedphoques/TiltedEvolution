@@ -557,7 +557,7 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
 }
 
 void GameServer::SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                                    const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const
+                                    const entt::entity acOrigin, const Player* apExcludeSender) const
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
