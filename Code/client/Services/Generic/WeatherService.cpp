@@ -53,7 +53,7 @@ void WeatherService::OnWeatherChange(const NotifyWeatherChange& acMessage) noexc
         return;
     }
 
-    Sky::Get()->SetWeather(pWeather);
+    Sky::Get()->ForceWeather(pWeather);
 }
 
 void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
