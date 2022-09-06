@@ -5,20 +5,9 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
+import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
-
-
-/** Message. */
-export interface Message {
-  /** Player name. Unset if it's a system message. */
-  name?: string;
-
-  /** Message content. */
-  content: string;
-
-  dialogue?: boolean;
-}
 
 /** Client game service. */
 @Injectable({
@@ -36,9 +25,6 @@ export class ClientService implements OnDestroy {
 
   /** Opening/close menu change. */
   public openingMenuChange = new BehaviorSubject(false);
-
-  /** Message reception. */
-  public messageReception = new ReplaySubject<Message>();
 
   /** Connection state change. */
   public connectionStateChange = new BehaviorSubject(false);
@@ -127,6 +113,7 @@ export class ClientService implements OnDestroy {
     private readonly errorService: ErrorService,
     private readonly loadingService: LoadingService,
     private readonly translocoService: TranslocoService,
+    private readonly chatService: ChatService
   ) {
     skyrimtogether.on('init', this.onInit.bind(this));
     skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -134,9 +121,6 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
     skyrimtogether.on('exitGame', this.onExitGame.bind(this));
     skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
-    skyrimtogether.on('message', this.onMessage.bind(this));
-    skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
-    skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
     skyrimtogether.on('connect', this.onConnect.bind(this));
     skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
     skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
@@ -170,9 +154,6 @@ export class ClientService implements OnDestroy {
     skyrimtogether.off('enterGame');
     skyrimtogether.off('exitGame');
     skyrimtogether.off('openingMenu');
-    skyrimtogether.off('message');
-    skyrimtogether.off('systemMessage');
-    skyrimtogether.off('dialogueMessage');
     skyrimtogether.off('connect');
     skyrimtogether.off('disconnect');
     skyrimtogether.off('setName');
@@ -217,15 +198,6 @@ export class ClientService implements OnDestroy {
   public disconnect(): void {
     skyrimtogether.disconnect();
     this._remainingReconnectionAttempt = 0;
-  }
-
-  /**
-   * Broadcast message to server.
-   *
-   * @param message Message to send.
-   */
-  public sendMessage(message: string): void {
-    skyrimtogether.sendMessage(message);
   }
 
   /**
@@ -347,42 +319,6 @@ export class ClientService implements OnDestroy {
   }
 
   /**
-   * Called when a message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onMessage(name: string, message: string): void {
-    this.zone.run(() => {
-      this.messageReception.next({ name, content: message });
-    });
-  }
-
-  /**
-   * Called when a system message is received.
-   *
-   * @param message Message content.
-   */
-  private onSystemMessage(message: string): void {
-    this.zone.run(() => {
-      this.messageReception.next({ content: message });
-    });
-  }
-
-  /**
-   * Called when a dialogue message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onDialogueMessage(name: string, message: string): void {
-    let dialogue = true;
-    this.zone.run(() => {
-      this.messageReception.next({ name, content: message, dialogue: dialogue });
-    });
-  }
-
-  /**
    * Called when a connection is made.
    */
   private onConnect(): void {
@@ -391,10 +327,7 @@ export class ClientService implements OnDestroy {
       this.isConnectionInProgressChange.next(false);
       this.connectionStateChange.next(true);
 
-      const content = await firstValueFrom(
-        this.translocoService.selectTranslate<string>('SERVICE.CLIENT.CONNECTED'),
-      );
-      this.messageReception.next({ content });
+      this.chatService.pushSystemMessage('SERVICE.CLIENT.CONNECTED');
     });
   }
 
@@ -409,19 +342,10 @@ export class ClientService implements OnDestroy {
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'SERVICE.CLIENT.CONNECTION_LOST',
-            { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
-          ),
-        );
-        this.messageReception.next({ content });
+        this.chatService.pushSystemMessage('SERVICE.CLIENT.CONNECTION_LOST');
         this.connect(this._host, this._port, this._password);
       } else {
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>('SERVICE.CLIENT.DISCONNECTED'),
-        );
-        this.messageReception.next({ content });
+        this.chatService.pushSystemMessage('SERVICE.CLIENT.DISCONNECTED');
       }
     });
   }

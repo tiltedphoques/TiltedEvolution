@@ -22,19 +22,29 @@
     padding: ($-size-gap * 0.2) ($-size-gap * 0.5);
     text-align: left;
 
-    &[data-odd=true] {
+    &:nth-child(odd) {
       background: transparentize(mod($-color-background, 1), 0.97);
     }
 
-    &[data-system=true] {
+    &.system {
       .app-chat-date,
       .app-chat-message {
         color: #9999ff;
       }
     }
-    &[data-dialogue=true] {
+    &.dialogue {
       .app-chat-message {
         color: #00FF33;
+      }
+    }
+    &.party {
+      .app-chat-message {
+        color: #9affe6;
+      }
+    }
+    &.local {
+      .app-chat-message {
+        color: #eeff00;
       }
     }
   }
@@ -46,6 +56,7 @@
 
 .app-chat-message {
   color: mod($-color-background, 0.7);
+  user-select: text;
 }
 
 .app-chat-input {
