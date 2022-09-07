@@ -9,6 +9,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  ::ng-deep {
+    strong {
+      color: mod($-color-background, 1);
+    }
+  }
 }
 
 .save-password {
@@ -19,17 +25,13 @@
   gap: 0.5em;
 }
 
-#instructions > * {
+.instructions > * {
   text-align: center;
   margin: 0.3em;
   line-height: $-size-line;
 }
 
-::ng-deep {
-  strong {
-    color: mod($-color-background, 1);
-  }
-}
+
 
 input {
   width: 100%;
