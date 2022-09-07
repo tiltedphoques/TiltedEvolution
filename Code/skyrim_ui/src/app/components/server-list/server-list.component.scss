@@ -8,7 +8,8 @@
   display: flex;
   gap: 1em;
   width: 70vw;
-  --server-list-row-height: 40px;
+  --server-list-font-size: 1rem;
+  --server-list-row-height: 2rem;
 }
 
 .server-list-action-bar {
@@ -114,7 +115,7 @@
       width: 100%;
       border-bottom: 1px solid grey;
       border-collapse: separate;
-      font-size: 15px;
+      font-size: var(--server-list-font-size);
 
       &.odd {
         background: transparentize(mod($-color-background, 1), 0.95);

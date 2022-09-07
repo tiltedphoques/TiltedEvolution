@@ -10,10 +10,12 @@ import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
+import { SettingService } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
 import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
+import { fontSizeToPixels } from '../settings/settings.component';
 
 
 interface SortFunction {
@@ -48,7 +50,7 @@ export class ServerListComponent {
   clientVersion$: Observable<string>;
 
   formSearch = new FormControl<string>('');
-  rowHeight = 40
+  rowHeight = new BehaviorSubject(16)
 
   @Output() public done = new EventEmitter<void>();
 
@@ -56,6 +58,7 @@ export class ServerListComponent {
     private readonly errorService: ErrorService,
     private readonly serverListService: ServerListService,
     private readonly clientService: ClientService,
+    private readonly settingService: SettingService,
     private readonly soundService: SoundService,
     private readonly storeService: StoreService,
     private readonly uiRepository: UiRepository,
@@ -138,6 +141,11 @@ export class ServerListComponent {
       favoriteServers[`${ favoriteServer.ip }:${ favoriteServer.port }`] = favoriteServer;
     }
     this.favoriteServers.next(favoriteServers);
+
+    settingService.fontSizeChange.subscribe(fontSize => {
+      const font_height_str = fontSizeToPixels[fontSize].slice(-2);
+      this.rowHeight.next(parseInt(font_height_str)*2)
+    })
   }
 
   public cancel(): void {
