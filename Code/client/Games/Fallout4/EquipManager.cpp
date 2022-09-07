@@ -48,7 +48,7 @@ bool EquipManager::EquipObject(Actor* apActor, BGSObjectInstance& arObject, uint
 
     ScopedEquipOverride _;
 
-    return ThisCall(equipObject, this, apActor, arObject, auiStackID, auiNumber, apSlot, abQueueEquip, abForceEquip, abPlaySounds, abApplyNow, abLocked);
+    return TiltedPhoques::ThisCall(equipObject, this, apActor, arObject, auiStackID, auiNumber, apSlot, abQueueEquip, abForceEquip, abPlaySounds, abApplyNow, abLocked);
 }
 
 bool EquipManager::UnequipObject(Actor* apActor, BGSObjectInstance& arObject, uint32_t auiNumber, const BGSEquipSlot* apSlot, uint32_t auiStackID, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, const BGSEquipSlot* apSlotBeingReplaced)
@@ -63,7 +63,7 @@ bool EquipManager::UnequipObject(Actor* apActor, BGSObjectInstance& arObject, ui
 
     ScopedEquipOverride _;
 
-    return ThisCall(unequipObject, this, apActor, arObject, auiNumber, apSlot, auiStackID, abQueueEquip, abForceEquip, abPlaySounds, abApplyNow, apSlotBeingReplaced);
+    return TiltedPhoques::ThisCall(unequipObject, this, apActor, arObject, auiNumber, apSlot, auiStackID, abQueueEquip, abForceEquip, abPlaySounds, abApplyNow, apSlotBeingReplaced);
 }
 
 void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, BGSObjectInstance* apItem, ObjectEquipParams& arParams)
@@ -92,7 +92,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, BGSObjectInstanc
 
     ScopedUnequipOverride _;
 
-    return ThisCall(RealEquip, apThis, apActor, apItem, arParams);
+    return TiltedPhoques::ThisCall(RealEquip, apThis, apActor, apItem, arParams);
 }
 
 void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, BGSObjectInstance* apItem, ObjectEquipParams& arParams)
@@ -117,7 +117,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, BGSObjectInsta
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealUnEquip, apThis, apActor, apItem, arParams);
+    return TiltedPhoques::ThisCall(RealUnEquip, apThis, apActor, apItem, arParams);
 }
 
 static TiltedPhoques::Initializer s_equipmentHooks([]()

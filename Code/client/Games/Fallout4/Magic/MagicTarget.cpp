@@ -23,7 +23,7 @@ static thread_local bool s_autoSucceedEffectCheck = false;
 bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 {
     s_autoSucceedEffectCheck = true;
-    bool result = ThisCall(RealAddTarget, this, arData);
+    bool result = TiltedPhoques::ThisCall(RealAddTarget, this, arData);
     s_autoSucceedEffectCheck = false;
     return result;
 }
@@ -32,7 +32,7 @@ Actor* MagicTarget::GetTargetAsActor()
 {
     TP_THIS_FUNCTION(TGetTargetAsActor, Actor*, MagicTarget);
     POINTER_FALLOUT4(TGetTargetAsActor, getTargetAsActor, 129826);
-    return ThisCall(getTargetAsActor, this);
+    return TiltedPhoques::ThisCall(getTargetAsActor, this);
 }
 
 // TODO: ft (verify)
@@ -40,15 +40,15 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 {
     Actor* pTargetActor = apThis->GetTargetAsActor();
     if (!pTargetActor)
-        return ThisCall(RealAddTarget, apThis, arData);
+        return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
 
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (!pTargetActorEx)
-        return ThisCall(RealAddTarget, apThis, arData);
+        return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
 
     if (ScopedSpellCastOverride::IsOverriden())
-        return ThisCall(RealAddTarget, apThis, arData);
+        return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
 
     AddTargetEvent addTargetEvent{};
     addTargetEvent.TargetID = pTargetActor->formID;
@@ -58,7 +58,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     if (pTargetActorEx->IsLocalPlayer())
     {
-        bool result = ThisCall(RealAddTarget, apThis, arData);
+        bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
         if (result)
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
@@ -73,7 +73,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
         if (pCasterExtension->IsLocalPlayer())
         {
-            bool result = ThisCall(RealAddTarget, apThis, arData);
+            bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
             if (result)
                 World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
@@ -86,7 +86,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     if (pTargetActorEx->IsLocal())
     {
-        bool result = ThisCall(RealAddTarget, apThis, arData);
+        bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
         if (result)
             World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
@@ -102,7 +102,7 @@ bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, 
     if (s_autoSucceedEffectCheck)
         return true;
 
-    return ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
+    return TiltedPhoques::ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
 }
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {

@@ -11,7 +11,7 @@ bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, f
     POINTER_SKYRIMSE(TSetFloatVariable, InternalSetFloatVariable, 32887);
     POINTER_FALLOUT4(TSetFloatVariable, InternalSetFloatVariable, 27401);
 
-    return ThisCall(InternalSetFloatVariable, this, apVariable, aValue);
+    return TiltedPhoques::ThisCall(InternalSetFloatVariable, this, apVariable, aValue);
 }
 
 bool IAnimationGraphManagerHolder::IsReady()

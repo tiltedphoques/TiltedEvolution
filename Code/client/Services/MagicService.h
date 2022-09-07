@@ -3,6 +3,7 @@
 #include <Games/Events.h>
 #include <Events/EventDispatcher.h>
 #include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
 
 struct World;
 struct TransportService;
@@ -14,7 +15,6 @@ struct AddTargetEvent;
 
 struct NotifySpellCast;
 struct NotifyInterruptCast;
-struct NotifyAddTarget;
 
 /**
 * @brief Handles magic spell casting and magic effects.
@@ -62,7 +62,7 @@ protected:
     /**
     * @brief Applies a magic effect based on a server message.
     */
-    void OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept;
+    void OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept;
 
 private:
 
@@ -83,6 +83,7 @@ private:
     * @see ApplyQueuedEffects
     */
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
+    Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

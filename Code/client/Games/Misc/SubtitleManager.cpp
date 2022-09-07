@@ -27,10 +27,10 @@ static TShowSubtitle* RealShowSubtitle = nullptr;
 void SubtitleManager::ShowSubtitle(TESObjectREFR* apSpeaker, const char* apSubtitleText, TESTopicInfo* apTopicInfo, bool aUnk1) noexcept
 {
 #if TP_SKYRIM64
-    ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, aUnk1);
+    TiltedPhoques::ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, aUnk1);
 #elif TP_FALLOUT4
     BSFixedString subtitleText(apSubtitleText);
-    ThisCall(RealShowSubtitle, this, apSpeaker, &subtitleText, apTopicInfo, aUnk1);
+    TiltedPhoques::ThisCall(RealShowSubtitle, this, apSpeaker, &subtitleText, apTopicInfo, aUnk1);
     subtitleText.Release();
 #endif
 }
@@ -41,7 +41,7 @@ void* SubtitleManager::HideSubtitle(TESObjectREFR* apSpeaker) noexcept
     TP_THIS_FUNCTION(THideSubtitle, void*, SubtitleManager, TESObjectREFR* apSpeaker);
     POINTER_SKYRIMSE(THideSubtitle, s_hideSubtitle, 52627);
     POINTER_FALLOUT4(THideSubtitle, s_hideSubtitle, 755148);
-    return ThisCall(s_hideSubtitle, this, apSpeaker);
+    return TiltedPhoques::ThisCall(s_hideSubtitle, this, apSpeaker);
 }
 
 #if TP_SKYRIM64
@@ -64,9 +64,9 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
 
 
 #if TP_SKYRIM64
-    ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);
+    TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);
 #elif TP_FALLOUT4
-    ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, apTopicInfo, aIsInDialogue);
+    TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, apTopicInfo, aIsInDialogue);
 #endif
 }
 

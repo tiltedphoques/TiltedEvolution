@@ -37,7 +37,7 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
         default: break;
     }
 
-    auto* pPointer = ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
+    auto* pPointer = TiltedPhoques::ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
 
     if (!pPointer)
         return nullptr;
@@ -62,18 +62,18 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 void* Memory::Allocate(const size_t aSize) noexcept
 {
 #if TP_FALLOUT4
-    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
+    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
 #else
-    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
+    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
 #endif
 }
 
 void Memory::Free(void* apData) noexcept
 {
 #if TP_FALLOUT4
-    ThisCall(RealFormFree, GameHeap::Get(), apData, true);
+    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, true);
 #else
-    ThisCall(RealFormFree, GameHeap::Get(), apData, false);
+    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 #endif
 }
 

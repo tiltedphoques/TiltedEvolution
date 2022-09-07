@@ -1,10 +1,9 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Overlay } from '@angular/cdk/overlay';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { takeUntil } from 'rxjs';
-import { PartyInfo } from 'src/app/models/party-info';
 import { environment } from '../../../environments/environment';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
-import { Player } from '../../models/player';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
@@ -15,6 +14,8 @@ import { ChatComponent } from '../chat/chat.component';
 import { GroupComponent } from '../group/group.component';
 import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
+import {map} from 'rxjs/operators';
+import {fontSizeToPixels} from '../settings/settings.component';
 
 
 @Component({
@@ -48,6 +49,7 @@ export class RootComponent implements OnInit {
     private readonly uiRepository: UiRepository,
     private readonly translocoService: TranslocoService,
     private readonly settingService: SettingService,
+    public readonly overlay: Overlay, // used for mockup
   ) {
     this.translocoService.setActiveLang(this.settingService.getLanguage());
   }
@@ -55,6 +57,7 @@ export class RootComponent implements OnInit {
   public ngOnInit(): void {
     this.onInGameStateSubscription();
     this.onActivationStateSubscription();
+    this.onFontSizeSubscription();
   }
 
   public onInGameStateSubscription() {
@@ -80,6 +83,14 @@ export class RootComponent implements OnInit {
       });
   }
 
+  public onFontSizeSubscription() {
+    this.settingService.fontSizeChange
+    .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
+    .subscribe( size => {
+      document.documentElement.setAttribute('style', `font-size: ${size};`);
+    })
+  }
+
   public setView(view: View | null) {
     this.uiRepository.openView(view);
 
@@ -96,135 +107,6 @@ export class RootComponent implements OnInit {
 
   public reconnect(): void {
     this.client.reconnect();
-  }
-
-  @HostListener('window:keydown.escape', ['$event'])
-  // @ts-ignore
-  private activate(event: KeyboardEvent): void {
-    if (!this.uiRepository.isViewOpen()) {
-      if (environment.game) {
-        this.client.deactivate();
-      } else {
-        const active = this.client.activationStateChange.getValue();
-        this.client.activationStateChange.next(!active);
-
-        if (!this.client.connectionStateChange.getValue()) {
-
-          this.client.connectionStateChange.next(true);
-
-          this.client.playerConnectedChange.next(new Player(
-            {
-              id: 1,
-              name: 'Dumbeldor',
-              online: true,
-              connected: true,
-              level: 10,
-              cellName: 'Falkreath',
-              hasInvitedLocalPlayer: true,
-            },
-          ));
-          this.client.playerConnectedChange.next(new Player(
-            {
-              id: 2,
-              name: 'Pokang',
-              online: true,
-              connected: true,
-              level: 12,
-              cellName: 'Whiterun',
-            },
-          ));
-          this.client.playerConnectedChange.next(new Player(
-            {
-              id: 3,
-              name: 'Cosideci',
-              online: true,
-              connected: true,
-              level: 69,
-              cellName: 'Whiterun',
-            },
-          ));
-          this.client.isLoadedChange.next(new Player(
-            {
-              id: 1,
-              isLoaded: true,
-              health: 50,
-            },
-          ));
-          this.client.isLoadedChange.next(new Player(
-            {
-              id: 2,
-              isLoaded: true,
-              health: 75,
-            },
-          ));
-          this.client.isLoadedChange.next(new Player(
-            {
-              id: 3,
-              isLoaded: true,
-              health: 0,
-            },
-          ));
-
-          this.client.partyInfoChange.next(new PartyInfo(
-            {
-              playerIds: [1, 2],
-              leaderId: 0,
-            },
-          ));
-
-          this.client.localPlayerId = 0;
-
-          let name = 'Banana';
-          let message = 'Hello Guys';
-          let dialogue = true;
-
-          this.client.messageReception.next({ name, content: message, dialogue: dialogue });
-        }
-      }
-    }
-
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
-
-  @HostListener('window:keydown.f3', ['$event'])
-  // @ts-ignore
-  private testGroup(event: KeyboardEvent): void {
-    if (!this.uiRepository.isViewOpen()) {
-      if (environment.game) {
-        this.client.deactivate();
-      } else {
-        this.client.partyInfoChange.next(new PartyInfo(
-          {
-            playerIds: [1],
-            leaderId: 1,
-          },
-        ));
-      }
-    }
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
-  @HostListener('window:keydown.f4', ['$event'])
-  // @ts-ignore
-  private testUnload(event: KeyboardEvent): void {
-    if (!this.uiRepository.isViewOpen()) {
-      if (environment.game) {
-        this.client.deactivate();
-      } else {
-        this.client.isLoadedChange.next(new Player(
-          {
-            id: 2,
-            isLoaded: false,
-            health: 50,
-          },
-        ));
-      }
-    }
-    event.stopPropagation();
-    event.preventDefault();
   }
 
   updateGroupPosition() {

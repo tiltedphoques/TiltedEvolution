@@ -37,7 +37,7 @@ bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
             World::Get().GetRunner().Trigger(PlayerDialogueEvent(pText));
     }
 
-    return ThisCall(RealPlayDialogueOption, apThis, aIndex);
+    return TiltedPhoques::ThisCall(RealPlayDialogueOption, apThis, aIndex);
 }
 
 TiltedPhoques::Initializer s_menuTopicHooks([]()

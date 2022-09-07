@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Opcodes.h"
+#include "../ChatMessageTypes.h"
 
 using TiltedPhoques::String;
 using TiltedPhoques::Serialization;

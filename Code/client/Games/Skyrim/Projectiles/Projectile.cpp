@@ -14,7 +14,7 @@ static TLaunch* RealLaunch = nullptr;
 
 BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, LaunchData& apLaunchData) noexcept
 {
-    BSPointerHandle<Projectile>* result = ThisCall(RealLaunch, apResult, apLaunchData);
+    BSPointerHandle<Projectile>* result = TiltedPhoques::ThisCall(RealLaunch, apResult, apLaunchData);
 
     TP_ASSERT(result, "No projectile handle returned.");
     if (!result)
@@ -47,7 +47,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
         {
             if (pSpell->eCastingType == MagicSystem::CastingType::CONCENTRATION)
             {
-                return ThisCall(RealLaunch, apThis, arData);
+                return TiltedPhoques::ThisCall(RealLaunch, apThis, arData);
             }
         }
     }
@@ -95,7 +95,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
     Event.DeferInitialization = arData.bDeferInitialization;
     Event.ForceConeOfFire = arData.bForceConeOfFire;
 
-    auto result = ThisCall(RealLaunch, apThis, arData);
+    auto result = TiltedPhoques::ThisCall(RealLaunch, apThis, arData);
 
     TP_ASSERT(result, "No projectile handle returned.");
 

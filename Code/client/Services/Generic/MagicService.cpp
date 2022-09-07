@@ -12,7 +12,6 @@
 
 #include <Messages/NotifySpellCast.h>
 #include <Messages/NotifyInterruptCast.h>
-#include <Messages/NotifyAddTarget.h>
 
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
@@ -365,12 +364,13 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 #endif
 }
 
-void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
+void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
     {
-        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.TargetId);
+        spdlog::warn(__FUNCTION__ ": could not find actor server id {:X}", acMessage.TargetId);
+        m_queuedRemoteEffects[acMessage.TargetId] = acMessage;
         return;
     }
 
@@ -452,7 +452,7 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     lastSendTimePoint = now;
 
-    Vector<uint32_t> markedForRemoval;
+    Vector<uint32_t> markedForRemoval{};
 
     for (auto [formId, request] : m_queuedEffects)
     {
@@ -479,4 +479,20 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     for (uint32_t formId : markedForRemoval)
         m_queuedEffects.erase(formId);
+
+    markedForRemoval.clear();
+
+    for (const auto& [serverId, notify] : m_queuedRemoteEffects)
+    {
+        Actor* pActor = Utils::GetByServerId<Actor>(serverId);
+        if (!pActor)
+            continue;
+
+        OnNotifyAddTarget(notify);
+
+        markedForRemoval.push_back(serverId);
+    }
+
+    for (uint32_t serverId : markedForRemoval)
+        m_queuedRemoteEffects.erase(serverId);
 }

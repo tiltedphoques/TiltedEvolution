@@ -14,7 +14,7 @@ void PlayerCharacter::SetDifficulty(const int32_t aDifficulty, bool aForceUpdate
     TP_THIS_FUNCTION(TSetDifficulty, void, PlayerCharacter, const int32_t aDifficulty, bool aForceUpdate,
                      bool aExpectGameDataLoaded);
     POINTER_FALLOUT4(TSetDifficulty, setDifficulty, 657345);
-    ThisCall(setDifficulty, this, aDifficulty, aForceUpdate, aExpectGameDataLoaded);
+    TiltedPhoques::ThisCall(setDifficulty, this, aDifficulty, aForceUpdate, aExpectGameDataLoaded);
 }
 
 void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept

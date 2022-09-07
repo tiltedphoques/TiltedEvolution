@@ -90,7 +90,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 
     POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 16040);
     
-    return ThisCall(s_getContainerChangs, this);
+    return TiltedPhoques::ThisCall(s_getContainerChangs, this);
 }
 
 void TESObjectREFR::RemoveAllItems() noexcept
@@ -110,7 +110,7 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
 
     POINTER_SKYRIMSE(TGetContainer, s_getContainer, 19702);
 
-    return ThisCall(s_getContainer, this);
+    return TiltedPhoques::ThisCall(s_getContainer, this);
 }
 
 int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
@@ -526,14 +526,14 @@ void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
 {
     TP_THIS_FUNCTION(TUpdateItemList, void, TESObjectREFR, TESForm*);
     POINTER_SKYRIMSE(TUpdateItemList, updateItemList, 52849);
-    ThisCall(updateItemList, this, pUnkForm);
+    TiltedPhoques::ThisCall(updateItemList, this, pUnkForm);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
     ScopedActivateOverride _;
 
-    return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
+    return TiltedPhoques::ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
 void TESObjectREFR::EnableImpl() noexcept
@@ -542,7 +542,7 @@ void TESObjectREFR::EnableImpl() noexcept
 
     POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
 
-    ThisCall(s_enable, this, false);
+    TiltedPhoques::ThisCall(s_enable, this, false);
 }
 
 static thread_local bool s_cancelAnimationWaitEvent = false;
@@ -570,7 +570,7 @@ bool TP_MAKE_THISCALL(HookPlayAnimationAndWait, void, uint32_t auiStackID, TESOb
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, apAnimation->AsAscii(), apEventName->AsAscii()));
 #endif
 
-    return ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
+    return TiltedPhoques::ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
 }
 
 static thread_local bool s_cancelAnimationEvent = false;
@@ -596,7 +596,7 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, String{}, apEventName->AsAscii()));
 #endif
 
-    return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
+    return TiltedPhoques::ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
@@ -605,7 +605,7 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 
-    return ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
+    return TiltedPhoques::ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
 }
 
 void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
@@ -626,7 +626,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
 
     spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
 
-    ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
+    TiltedPhoques::ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
@@ -653,7 +653,7 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
     ScopedEquipOverride _;
 
-    return ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
+    return TiltedPhoques::ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {

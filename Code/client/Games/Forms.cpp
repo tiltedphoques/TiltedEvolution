@@ -117,7 +117,7 @@ uint32_t TESForm::GetChangeFlags() const noexcept
     const auto pUnk = *(s_singleton.Get());
     
     ChangeFlags changeFlags;
-    const auto cResult = ThisCall(internalGetChangeFlags, pUnk->unk330, formID, changeFlags);
+    const auto cResult = TiltedPhoques::ThisCall(internalGetChangeFlags, pUnk->unk330, formID, changeFlags);
     if (!cResult)
         return 0;
 

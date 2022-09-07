@@ -8,7 +8,7 @@ BSFixedString::BSFixedString(const char* acpData)
 
     POINTER_FALLOUT4(TConstructor, s_constructor, 640274);
 
-    ThisCall(s_constructor, this, acpData);
+    TiltedPhoques::ThisCall(s_constructor, this, acpData);
 }
 
 BSFixedString::BSFixedString(BSFixedString&& aRhs) noexcept
@@ -34,7 +34,7 @@ void BSFixedString::Release() noexcept
 
     POINTER_FALLOUT4(TConstructor, s_release, 1204431);
 
-    ThisCall(s_release, this);
+    TiltedPhoques::ThisCall(s_release, this);
 }
 
 void BSFixedString::Set(const char* acpStr) noexcept
@@ -43,7 +43,7 @@ void BSFixedString::Set(const char* acpStr) noexcept
 
     POINTER_FALLOUT4(TSet, s_set, 1064964);
 
-    ThisCall(s_set, this, acpStr);
+    TiltedPhoques::ThisCall(s_set, this, acpStr);
 }
 
 BSFixedString::~BSFixedString()

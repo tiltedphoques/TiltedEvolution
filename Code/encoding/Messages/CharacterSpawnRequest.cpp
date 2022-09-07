@@ -19,6 +19,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     Serialization::WriteBool(aWriter, IsDead);
     Serialization::WriteBool(aWriter, IsPlayer);
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
+    Serialization::WriteBool(aWriter, IsPlayerSummon);
 }
 
 void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -53,4 +54,5 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     IsDead = Serialization::ReadBool(aReader);
     IsPlayer = Serialization::ReadBool(aReader);
     IsWeaponDrawn = Serialization::ReadBool(aReader);
+    IsPlayerSummon = Serialization::ReadBool(aReader);
 }

@@ -42,6 +42,7 @@ struct CharacterSpawnRequest final : ServerMessage
             IsDead == acRhs.IsDead &&
             IsPlayer == acRhs.IsPlayer &&
             IsWeaponDrawn == acRhs.IsWeaponDrawn &&
+            IsPlayerSummon == acRhs.IsPlayerSummon &&
             GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -62,4 +63,5 @@ struct CharacterSpawnRequest final : ServerMessage
     bool IsDead{};
     bool IsPlayer{};
     bool IsWeaponDrawn{};
+    bool IsPlayerSummon{};
 };

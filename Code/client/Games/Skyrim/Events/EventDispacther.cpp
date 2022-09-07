@@ -11,7 +11,7 @@ namespace details
         // SkyrimVM ctor RegisterSinks
         POINTER_SKYRIMSE(TRegisterSink, s_registerSink, 54425);
 
-        ThisCall(s_registerSink, apEventDispatcher, apSink);
+        TiltedPhoques::ThisCall(s_registerSink, apEventDispatcher, apSink);
     }
 
     void InternalUnRegisterSink(void* apEventDispatcher, void* apSink) noexcept
@@ -21,7 +21,7 @@ namespace details
         // SkyrimVM dtor UnRegisterSinks
         POINTER_SKYRIMSE(TUnRegisterSink, s_unregisterSink, 54522);
 
-        ThisCall(s_unregisterSink, apEventDispatcher, apSink);
+        TiltedPhoques::ThisCall(s_unregisterSink, apEventDispatcher, apSink);
     }
 
     void InternalPushEvent(void* apEventDispatcher, void* apEvent) noexcept
@@ -31,7 +31,7 @@ namespace details
         // "Failed to setup moving reference because it has no parent cell or no 3D" after interlocked
         POINTER_SKYRIMSE(TPushEvent, s_pushEvent, 19364);
 
-        ThisCall(s_pushEvent, apEventDispatcher, apEvent);
+        TiltedPhoques::ThisCall(s_pushEvent, apEventDispatcher, apEvent);
     }
 }
 

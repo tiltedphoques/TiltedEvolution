@@ -33,7 +33,7 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
 
     runner.Trigger(std::move(event));
 
-    ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
+    TiltedPhoques::ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
 }
 
 #if TP_SKYRIM64
@@ -45,7 +45,7 @@ void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine*)
     (*apThis)->BindNativeMethod(new BSScript::IsPlayerFunc(
              "IsPlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsPlayer, BSScript::Variable::kBoolean));
 
-    ThisCall(RealBindEverythingToScript, apThis);
+    TiltedPhoques::ThisCall(RealBindEverythingToScript, apThis);
 }
 
 bool TP_MAKE_THISCALL(HookSignaturesMatch, BSScript::NativeFunction, BSScript::NativeFunction* apOther)
@@ -55,7 +55,7 @@ bool TP_MAKE_THISCALL(HookSignaturesMatch, BSScript::NativeFunction, BSScript::N
         DebugBreak();
     */
 
-    return ThisCall(RealSignaturesMatch, apThis, apOther);
+    return TiltedPhoques::ThisCall(RealSignaturesMatch, apThis, apOther);
 }
 #endif
 
@@ -68,7 +68,7 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
     BSScript::Object* pObject2 = apVar2->GetObject();
 
     if (!pObject1 || !pObject2)
-        return ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
+        return TiltedPhoques::ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
 
     uint64_t handle1 = pObject1->GetHandle();
     uint64_t handle2 = pObject2->GetHandle();
@@ -83,14 +83,14 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
         !pPolicy->IsHandleObjectAvailable(handle1) ||
         !pPolicy->IsHandleObjectAvailable(handle2))
     {
-        return ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
+        return TiltedPhoques::ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
     }
 
     Actor* pActor1 = pPolicy->GetObjectForHandle<Actor>(handle1);
     Actor* pActor2 = pPolicy->GetObjectForHandle<Actor>(handle2);
 
     if (!pActor1 || !pActor2)
-        return ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
+        return TiltedPhoques::ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
 
     if (pActor1 == PlayerCharacter::Get())
     {
@@ -105,7 +105,7 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
             return 0;
     }
 
-    return ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
+    return TiltedPhoques::ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
 #else
     return 0;
 #endif

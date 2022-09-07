@@ -6,5 +6,5 @@ void Lock::SetLock(bool aIsLocked) noexcept
     POINTER_SKYRIMSE(TSetLock, realSetLock, 12401);
     POINTER_FALLOUT4(TSetLock, realSetLock, 157618);
 
-    return ThisCall(realSetLock, this, aIsLocked);
+    return TiltedPhoques::ThisCall(realSetLock, this, aIsLocked);
 }

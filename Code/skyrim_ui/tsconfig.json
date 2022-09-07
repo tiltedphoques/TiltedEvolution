@@ -11,7 +11,10 @@
       "path": "./tsconfig.app.json"
     },
     {
+      "path": "./tsconfig.browser.json"
+    },
+    {
       "path": "./tsconfig.spec.json"
     }
-]
+  ]
 }

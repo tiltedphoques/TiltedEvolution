@@ -12,7 +12,10 @@ export class StoreService {
 
     if (value !== null) {
       if (!environment.game || !environment.production) {
-        console.log(`Value : ${ key } : ${ value }`);
+        console.log(
+          `%cSTORAGE`, 'background: #400088; color: #fff; padding: 3px; font-size: 9px;',
+          'Value:', key, ':', value,
+        );
       }
       return value;
     }

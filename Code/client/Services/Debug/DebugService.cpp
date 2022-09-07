@@ -181,6 +181,13 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f6Pressed = false;
 
+    #if 0
+    if (GetAsyncKeyState(VK_F10) & 0x8000)
+    {
+        UI::Get()->PrintActiveMenus();
+    }
+    #endif
+
     if (GetAsyncKeyState(VK_F7))
     {
         if (!s_f7Pressed)
@@ -203,7 +210,9 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            m_world.GetOverlayService().Reload();
+            //m_world.GetOverlayService().Reload();
+            auto* pPlayer = PlayerCharacter::Get();
+            spdlog::info("{}", pPlayer->formID);
         }
     }
     else
@@ -271,6 +280,8 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
 #if (!IS_MASTER)
+
+
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);

@@ -2,7 +2,6 @@
 
 struct World;
 struct TransportService;
-struct CommandEvent;
 struct TeleportCommandResponse;
 
 /**
@@ -21,10 +20,6 @@ public:
 
 protected:
     /**
-    * @brief Parses and sends local commands to the server.
-    */
-    void OnCommandEvent(const CommandEvent&) noexcept;
-    /**
     * @brief Processes result of teleport command.
     */
     void OnTeleportCommandResponse(const TeleportCommandResponse&) noexcept;
@@ -33,6 +28,5 @@ private:
     World& m_world;
     TransportService& m_transport;
 
-    entt::scoped_connection m_commandEventConnection;
     entt::scoped_connection m_teleportConnection;
 };

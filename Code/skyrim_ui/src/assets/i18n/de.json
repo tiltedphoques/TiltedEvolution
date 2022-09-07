@@ -31,7 +31,9 @@
       "OK": "Ok"
     },
     "NOTIFICATIONS": {
-      "MESSAGE_FROM": "Nachricht von"
+      "MESSAGE_FROM": "Nachricht von",
+      "ACCEPT": "Akzeptieren",
+      "DECLINE": "Ablehnen"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Einladung von {{name}} akzeptieren",
@@ -139,6 +141,9 @@
         "WRONG_PASSWORD": "Das eingegebene Passwort ist falsch.",
         "NO_REASON": "Der Server hat die Verbindung ohne Angabe von Gründen verweigert."
       }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} hat dich in eine Gruppe eingeladen"
     }
   }
 }

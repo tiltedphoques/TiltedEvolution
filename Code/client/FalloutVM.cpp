@@ -27,21 +27,21 @@ int TP_MAKE_THISCALL(HookVMUpdate, VMContext)
     if (apThis->inactive == 0)
         g_appInstance->Update();
 
-    return ThisCall(VMUpdate, apThis);
+    return TiltedPhoques::ThisCall(VMUpdate, apThis);
 }
 
 short TP_MAKE_THISCALL(HookMainLoop, Main)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    return ThisCall(MainLoop, apThis);
+    return TiltedPhoques::ThisCall(MainLoop, apThis);
 }
 
 uintptr_t TP_MAKE_THISCALL(HookVMDestructor, void)
 {
     TP_EMPTY_HOOK_PLACEHOLDER
 
-    return ThisCall(VMDestructor, apThis);
+    return TiltedPhoques::ThisCall(VMDestructor, apThis);
 }
 
 static TiltedPhoques::Initializer s_mainHooks([]()

@@ -138,12 +138,12 @@ const BGSEquipSlot* TESObjectREFR::GetEquipSlot(uint32_t aEquipIndex) const noex
 
     POINTER_FALLOUT4(TGetEquipSlot, getEquipSlot, 180924);
 
-    return ThisCall(getEquipSlot, this, aEquipIndex);
+    return TiltedPhoques::ThisCall(getEquipSlot, this, aEquipIndex);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping) noexcept
 {
-    return ThisCall(RealActivate, this, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
+    return TiltedPhoques::ThisCall(RealActivate, this, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
 }
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping)
@@ -152,7 +152,7 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, T
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping));
 
-    return ThisCall(RealActivate, apThis, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
+    return TiltedPhoques::ThisCall(RealActivate, apThis, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aIsLooping);
 }
 
 void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObject, ExtraDataList* apExtraData,
@@ -162,7 +162,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObj
 #if TP_SKYRIM64
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
 #endif
-    ThisCall(RealAddInventoryItem, apThis, apObject, apExtraData, aCount, apOldContainer, apUnk1, apUnk2);
+    TiltedPhoques::ThisCall(RealAddInventoryItem, apThis, apObject, apExtraData, aCount, apOldContainer, apUnk1, apUnk2);
 }
 
 uint32_t* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, uint32_t* apUnk1, void* apUnk2)
@@ -171,7 +171,7 @@ uint32_t* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, uint32_t* apU
 #if TP_SKYRIM64
     World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID));
 #endif
-    return ThisCall(RealRemoveInventoryItem, apThis, apUnk1, apUnk2);
+    return TiltedPhoques::ThisCall(RealRemoveInventoryItem, apThis, apUnk1, apUnk2);
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {

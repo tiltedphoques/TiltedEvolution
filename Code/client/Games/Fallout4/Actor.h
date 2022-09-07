@@ -105,7 +105,10 @@ struct Actor : TESObjectREFR
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     void* GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept;
-    uint16_t GetLevel() noexcept;
+    uint16_t GetLevel() const noexcept;
+    [[nodiscard]] bool IsDead() const noexcept;
+    [[nodiscard]] bool IsInCombat() const noexcept;
+    [[nodiscard]] Actor* GetCombatTarget() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -121,23 +124,24 @@ struct Actor : TESObjectREFR
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
     void SetEssentialEx(bool aSet) noexcept;
-    void SetPlayerRespawnMode() noexcept;
+    void SetPlayerRespawnMode(bool aSet = true) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
     void QueueUpdate() noexcept;
     void RemoveFromAllFactions() noexcept;
     void DispelAllSpells(bool aNow = false) noexcept;
-
-    bool IsDead() noexcept;
     void Kill() noexcept;
-    void Reset() noexcept;
     void Respawn() noexcept;
+    void Reset() noexcept;
     void SpeakSound(const char* pFile);
     void ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState = false, bool abSilent = true) noexcept;
     void DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void UnequipItem(TESBoundObject* apObject) noexcept;
+    void StartCombatEx(Actor* apTarget) noexcept;
+    void StartCombat(Actor* apTarget) noexcept;
+    void StopCombat() noexcept;
 
     enum ActorFlags
     {

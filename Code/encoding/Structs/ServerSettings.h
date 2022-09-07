@@ -16,4 +16,5 @@ struct ServerSettings
     bool GreetingsEnabled{};
     bool PvpEnabled{};
     bool SyncPlayerHomes{};
+    bool DeathSystemEnabled{};
 };
