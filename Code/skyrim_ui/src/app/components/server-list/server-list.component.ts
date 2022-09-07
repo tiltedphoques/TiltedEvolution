@@ -48,7 +48,7 @@ export class ServerListComponent {
   clientVersion$: Observable<string>;
 
   formSearch = new FormControl<string>('');
-  rowHeight = 16 * document.documentElement.clientWidth / 1920 * 2;
+  rowHeight = 40
 
   @Output() public done = new EventEmitter<void>();
 
