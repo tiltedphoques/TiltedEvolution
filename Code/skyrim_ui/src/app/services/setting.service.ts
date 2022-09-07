@@ -22,20 +22,13 @@ export class SettingService {
 
   public settings = {
     volume: makeSetting(this.storeService, "audio_volume", 0.5),
+    muted: makeSetting(this.storeService, "audio_muted", false),
   }
 
   constructor(
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
   ) {
-  }
-
-  public muteAudio(muted: boolean) {
-    this.storeService.set('audio_muted', muted);
-  }
-
-  public isAudioMuted(): boolean {
-    return JSON.parse(this.storeService.get('audio_muted', false));
   }
 
   public setDebugShown(shown: boolean) {

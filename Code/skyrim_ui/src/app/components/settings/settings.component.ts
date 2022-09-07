@@ -47,7 +47,6 @@ export class SettingsComponent implements OnInit {
   ]
 
   public settings = this.settingService.settings;
-  public muted: boolean;
   public showDebug: boolean;
   public autoHideParty: boolean;
   public showParty: boolean;
@@ -72,7 +71,6 @@ export class SettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.muted = this.settingService.isAudioMuted();
     this.showDebug = this.settingService.isDebugShown();
     this.autoHideParty = this.settingService.isPartyAutoHidden();
     this.showParty = this.settingService.isPartyShown();
@@ -82,11 +80,6 @@ export class SettingsComponent implements OnInit {
     this.partyAnchorOffsetY = this.settingService.getPartyAnchorOffsetY();
     this.fontSize = this.settingService.getFontSize();
     this.language = this.settingService.getLanguage();
-  }
-
-  onMutedChange(checked: boolean) {
-    this.settingService.muteAudio(checked);
-    this.settingsUpdated.next();
   }
 
   onShowDebugChange(checked: boolean) {

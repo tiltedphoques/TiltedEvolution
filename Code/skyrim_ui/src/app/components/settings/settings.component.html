@@ -7,8 +7,8 @@
         <input 
           type="checkbox"
           id="muted"
-          [ngModel]="muted"
-          (ngModelChange)="onMutedChange($event)"
+          [ngModel]="settings.muted | async"
+          (ngModelChange)="settings.muted.next($event)"
         />
       </div>
       <div class="flex-item">

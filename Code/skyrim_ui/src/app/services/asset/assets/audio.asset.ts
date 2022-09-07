@@ -11,7 +11,9 @@ export class AudioAsset extends Asset<AudioBuffer> {
 
     const gainNode = AudioAsset.context.createGain();
 
-    if(this.settingService.isAudioMuted()) {
+    const isMuted = this.settingService.settings.muted.value
+
+    if(isMuted) {
       gainNode.gain.value = 0.0;
     } else {
       gainNode.gain.value = this.settingService.settings.volume.value;
