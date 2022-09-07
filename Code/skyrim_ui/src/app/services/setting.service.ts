@@ -4,11 +4,42 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import {FontSize, PartyAnchor} from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
-function makeSetting<T>(storeService: StoreService, storeKey: string, defaultValue: T): BehaviorSubject<T> {
-  const inital_value: T = storeService.get(storeKey, defaultValue);
-  const subject = new BehaviorSubject(inital_value);
-  subject.subscribe((newValue) => {storeService.set(storeKey, newValue)});
-  return subject;
+class Setting<T> extends BehaviorSubject<T>{
+
+  constructor(defaultValue: T) {
+    super(defaultValue)
+  }
+
+  public next(value: T) {
+    console.log("next", value)
+    super.next(value)
+  }
+}
+
+class SliderSetting extends Setting<number> {
+
+  constructor(private readonly storeService: StoreService, private storeKey: string, defaultValue: number) {
+    const inital_value = storeService.getFloat(storeKey, defaultValue);
+    super(inital_value)
+  }
+
+  public next(value: number) {
+    this.storeService.set(this.storeKey, value)
+    super.next(value)
+  }
+}
+
+class ToggleSetting extends Setting<boolean> {
+
+  constructor(readonly storeService: StoreService, private storeKey: string, defaultValue: boolean) {
+    const inital_value = storeService.getBool(storeKey, defaultValue);
+    super(inital_value)
+  }
+
+  public next(value: boolean) {
+    this.storeService.set(this.storeKey, value)
+    super.next(value)
+  }
 }
 
 @Injectable({
@@ -21,8 +52,8 @@ export class SettingService {
   public fontSizeChange = new BehaviorSubject(this.getFontSize())
 
   public settings = {
-    volume: makeSetting(this.storeService, "audio_volume", 0.5),
-    muted: makeSetting(this.storeService, "audio_muted", false),
+    volume: new SliderSetting(this.storeService, "audio_volume", 0.5),
+    muted: new ToggleSetting(this.storeService, "audio_muted", false),
   }
 
   constructor(
