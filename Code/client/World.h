@@ -7,6 +7,7 @@
 #include <Services/OverlayService.h>
 #include <Services/CharacterService.h>
 #include <Services/DebugService.h>
+#include <Services/CalendarService.h>
 
 #include <Systems/ModSystem.h>
 
@@ -31,6 +32,8 @@ struct World : entt::registry
     const OverlayService& GetOverlayService() const noexcept { return ctx().at<const OverlayService>(); }
     DebugService& GetDebugService() noexcept { return ctx().at<DebugService>(); }
     const DebugService& GetDebugService() const noexcept { return ctx().at<const DebugService>(); }
+    CalendarService& GetCalendarService() noexcept { return ctx().at<CalendarService>(); }
+    const CalendarService& GetCalendarService() const noexcept { return ctx().at<const CalendarService>(); }
 
     auto &GetDispatcher() noexcept
     {
