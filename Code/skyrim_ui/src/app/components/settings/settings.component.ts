@@ -16,8 +16,8 @@ export const fontSizeToPixels: Record<FontSize, string> = {
   [FontSize.XS]: '10px',
   [FontSize.S]: '12px',
   [FontSize.M]: '16px',
-  [FontSize.L]: '18px',
-  [FontSize.XL]: '20px',
+  [FontSize.L]: '20px',
+  [FontSize.XL]: '26px',
 }
 
 export enum PartyAnchor {
