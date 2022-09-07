@@ -52,8 +52,10 @@ select {
   padding: $-size-gap * 0.5;
   background: transparent;
   color: mod($-color-background, 1);
-  border: 3px solid #808081;
+}
 
+input[type=text] {  
+  border: 3px solid #808081;
   &:hover {
     border: 3px solid mod($-color-background, 0.75);;
   }
