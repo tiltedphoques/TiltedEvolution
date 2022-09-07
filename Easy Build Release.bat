@@ -1,6 +1,3 @@
-git status
-git fetch
-git submodule update --recursive
 xmake project -k vsxmake
 xmake config -m releasedbg
 xmake -y
