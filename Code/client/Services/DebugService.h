@@ -58,6 +58,7 @@ private:
     void DrawQuestDebugView();
     void DrawCellView();
     void DrawProcessView();
+    void DrawWeatherView();
 
 public:
     bool m_showDebugStuff = false;

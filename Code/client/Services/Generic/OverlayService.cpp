@@ -31,6 +31,8 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Events/PartyJoinedEvent.h>
+#include <Events/PartyLeftEvent.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
@@ -128,6 +130,8 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
     m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
     m_playerHealthConnection = aDispatcher.sink<NotifyPlayerHealthUpdate>().connect<&OverlayService::OnNotifyPlayerHealthUpdate>(this);
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&OverlayService::OnPartyJoinedEvent>(this);
+    m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&OverlayService::OnPartyLeftEvent>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -443,6 +447,17 @@ void OverlayService::OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& 
     pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
+}
+
+void OverlayService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    if (acEvent.IsLeader)
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
+}
+
+void OverlayService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
+{
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
 }
 
 void OverlayService::RunDebugDataUpdates() noexcept

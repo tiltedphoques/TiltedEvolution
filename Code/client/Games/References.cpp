@@ -9,6 +9,7 @@
 #include <Forms/BGSHeadPart.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESPackage.h>
+#include <Forms/TESWeather.h>
 #include <SaveLoad.h>
 #include <ExtraData/ExtraDataList.h>
 
@@ -27,6 +28,7 @@
 #include <Games/Misc/Lock.h>
 #include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
+#include <Sky/Sky.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -48,6 +50,8 @@ TP_THIS_FUNCTION(TSetPosition, char, Actor, NiPoint3& acPosition);
 TP_THIS_FUNCTION(TRotate, void, TESObjectREFR, float aAngle);
 TP_THIS_FUNCTION(TActorProcess, char, Actor, float aValue);
 TP_THIS_FUNCTION(TLockChange, void, TESObjectREFR);
+TP_THIS_FUNCTION(TSetWeather, void, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate);
+TP_THIS_FUNCTION(TForceWeather, void, Sky, TESWeather* apWeather, bool abOverride);
 
 static TSetPosition* RealSetPosition = nullptr;
 static TRotate* RealRotateX = nullptr;
@@ -55,6 +59,8 @@ static TRotate* RealRotateY = nullptr;
 static TRotate* RealRotateZ = nullptr;
 static TActorProcess* RealActorProcess = nullptr;
 static TLockChange* RealLockChange = nullptr;
+static TSetWeather* RealSetWeather = nullptr;
+static TForceWeather* RealForceWeather = nullptr;
 
 namespace Settings
 {
@@ -826,6 +832,44 @@ void Actor::StopCombat() noexcept
     s_pStopCombat(this);
 }
 
+Sky* Sky::Get() noexcept
+{
+    using SkyGet = Sky*(__fastcall)();
+
+    POINTER_SKYRIMSE(SkyGet, skyGet, 13878);
+    // TODO(ft): verify
+    POINTER_FALLOUT4(SkyGet, skyGet, 484695);
+
+    return skyGet.Get()();
+}
+
+void Sky::SetWeather(TESWeather* apWeather) noexcept
+{
+    // TODO: verify the use of these bools
+    TiltedPhoques::ThisCall(RealSetWeather, this, apWeather, true, true);
+}
+
+void Sky::ForceWeather(TESWeather* apWeather) noexcept
+{
+    // TODO: verify the use of abOverride
+    TiltedPhoques::ThisCall(RealForceWeather, this, apWeather, true);
+}
+
+void Sky::ResetWeather() noexcept
+{
+    TP_THIS_FUNCTION(TResetWeather, void, Sky);
+    POINTER_SKYRIMSE(TResetWeather, resetWeather, 26242);
+    // TODO(ft): verify
+    POINTER_FALLOUT4(TResetWeather, resetWeather, 6512);
+
+    TiltedPhoques::ThisCall(resetWeather, this);
+}
+
+TESWeather* Sky::GetWeather() const noexcept
+{
+    return pCurrentWeather;
+}
+
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {
     const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
@@ -958,6 +1002,37 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
 
+void TP_MAKE_THISCALL(HookSetWeather, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate)
+{
+    spdlog::debug("Set weather form id: {:X}, override: {}, accelerate: {}", apWeather ? apWeather->formID : 0, abOverride, abAccelerate);
+
+    if (!Sky::s_shouldUpdateWeather)
+        return;
+
+    TiltedPhoques::ThisCall(RealSetWeather, apThis, apWeather, abOverride, abAccelerate);
+}
+
+void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverride)
+{
+    spdlog::debug("Force weather form id: {:X}, override: {}", apWeather ? apWeather->formID : 0, abOverride);
+
+    if (!Sky::s_shouldUpdateWeather)
+        return;
+
+    TiltedPhoques::ThisCall(RealForceWeather, apThis, apWeather, abOverride);
+}
+
+TP_THIS_FUNCTION(TUpdateWeather, void, Sky);
+static TUpdateWeather* RealUpdateWeather = nullptr;
+
+void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
+{
+    if (!Sky::s_shouldUpdateWeather)
+        return;
+
+    TiltedPhoques::ThisCall(RealUpdateWeather, apThis);
+}
+
 TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
 static TAddDeathItems* RealAddDeathItems = nullptr;
 
@@ -997,6 +1072,18 @@ TiltedPhoques::Initializer s_referencesHooks([]()
 
         POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
 
+        POINTER_SKYRIMSE(TSetWeather, setWeather, 26241);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TSetWeather, setWeather, 1244029);
+
+        POINTER_SKYRIMSE(TForceWeather, forceWeather, 26243);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TForceWeather, forceWeather, 698559);
+
+        POINTER_SKYRIMSE(TUpdateWeather, updateWeather, 26231);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TUpdateWeather, updateWeather, 1278860);
+
         POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
         // TODO(ft): verify
         POINTER_FALLOUT4(TAddDeathItems, addDeathItems, 708754);
@@ -1013,6 +1100,9 @@ TiltedPhoques::Initializer s_referencesHooks([]()
     #if TP_SKYRIM64
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
     #endif
+        RealSetWeather = setWeather.Get();
+        RealForceWeather = forceWeather.Get();
+        RealUpdateWeather = updateWeather.Get();
         RealAddDeathItems = addDeathItems.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
@@ -1024,6 +1114,9 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
         TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
+        TP_HOOK(&RealSetWeather, HookSetWeather);
+        TP_HOOK(&RealForceWeather, HookForceWeather);
+        TP_HOOK(&RealUpdateWeather, HookUpdateWeather);
         TP_HOOK(&RealAddDeathItems, HookAddDeathItems);
     });
 
