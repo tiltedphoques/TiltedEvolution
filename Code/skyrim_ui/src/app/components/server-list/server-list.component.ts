@@ -10,12 +10,11 @@ import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
-import { SettingService } from '../../services/setting.service';
+import { SettingService, fontSizeToPixels } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
 import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
-import { fontSizeToPixels } from '../settings/settings.component';
 
 
 interface SortFunction {
@@ -143,8 +142,7 @@ export class ServerListComponent {
     this.favoriteServers.next(favoriteServers);
 
     settingService.fontSizeChange.subscribe(fontSize => {
-      const font_height_str = fontSizeToPixels[fontSize].slice(-2);
-      this.rowHeight.next(parseInt(font_height_str)*2)
+      this.rowHeight.next(fontSizeToPixels[fontSize]*2)
     })
   }
 

@@ -1,9 +1,24 @@
 import { Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject } from 'rxjs';
-import {FontSize, PartyAnchor} from '../components/settings/settings.component';
+import { PartyAnchor} from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
+export enum FontSize {
+  XS = 'xs',
+  S = 's',
+  M = 'm',
+  L = 'l',
+  XL = 'xl'
+}
+
+export const fontSizeToPixels: Record<FontSize, number> = {
+  [FontSize.XS]: 10,
+  [FontSize.S]: 12,
+  [FontSize.M]: 16,
+  [FontSize.L]: 20,
+  [FontSize.XL]: 26,
+}
 
 @Injectable({
   providedIn: 'root',
