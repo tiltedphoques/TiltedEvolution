@@ -16,7 +16,6 @@ import { StoreService } from '../../services/store.service';
 import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
 
-
 interface SortFunction {
   fn: ((a: Server, b: Server) => number);
   priority: number;
@@ -49,7 +48,7 @@ export class ServerListComponent {
   clientVersion$: Observable<string>;
 
   formSearch = new FormControl<string>('');
-  rowHeight = new BehaviorSubject(16)
+  rowHeight$: Observable<number>;
 
   @Output() public done = new EventEmitter<void>();
 
@@ -141,9 +140,7 @@ export class ServerListComponent {
     }
     this.favoriteServers.next(favoriteServers);
 
-    settingService.fontSizeChange.subscribe(fontSize => {
-      this.rowHeight.next(fontSizeToPixels[fontSize]*2)
-    })
+    this.rowHeight$ = this.settingService.fontSizeChange.pipe(map(fontSize => fontSizeToPixels[fontSize]*2));
   }
 
   public cancel(): void {
