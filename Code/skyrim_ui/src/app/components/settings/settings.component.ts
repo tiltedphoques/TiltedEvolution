@@ -1,24 +1,8 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { ClientService } from 'src/app/services/client.service';
-import { SettingService } from 'src/app/services/setting.service';
+import { FontSize, SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
-
-export enum FontSize {
-  XS = 'xs',
-  S = 's',
-  M = 'm',
-  L = 'l',
-  XL = 'xl'
-}
-
-export const fontSizeToPixels: Record<FontSize, string> = {
-  [FontSize.XS]: '10px',
-  [FontSize.S]: '12px',
-  [FontSize.M]: '16px',
-  [FontSize.L]: '18px',
-  [FontSize.XL]: '20px',
-}
 
 export enum PartyAnchor {
   TOP_LEFT,

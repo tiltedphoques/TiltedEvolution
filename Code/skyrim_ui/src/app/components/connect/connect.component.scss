@@ -3,56 +3,49 @@
 @import "functions/mod";
 @import "mixins/gapped-vertical";
 
-:host {
-  display: block;
-  font-size: 1.25rem;
-}
-
-.app-connect {
+.container {
   @include gapped-vertical($-size-gap);
 
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  .save-password {
-    margin-top: 0.2em;
-    width: 100%;
-    display: flex;
-    justify-items: start;
-    align-items: center;
-
-    label {
-      font-size: 0.8em;
-    }
-
-    app-checkbox {
-      margin-right: 0.3em;
-      width: unset;
-    }
-  }
-
-  p {
-    line-height: $-size-line;
-    text-align: justify;
-  }
-
   ::ng-deep {
     strong {
       color: mod($-color-background, 1);
     }
   }
+}
 
-  input {
-    width: 100%;
-  }
+.save-password {
+  width: 100%;
+  display: flex;
+  justify-items: start;
+  align-items: center;
+  gap: 0.5em;
+}
 
-  hr {
-    border: 0;
-    clear: both;
-    display: block;
-    width: 80%;
-    background-color: grey;
-    height: 1px;
-  }
+.instructions > * {
+  text-align: center;
+  margin: 0.3em;
+  line-height: $-size-line;
+}
+
+
+
+input {
+  width: 100%;
+}
+
+.warning {
+  color: rgb(247, 54, 54);
+}
+
+hr {
+  border: 0;
+  clear: both;
+  display: block;
+  width: 80%;
+  background-color: grey;
+  height: 1px;
 }

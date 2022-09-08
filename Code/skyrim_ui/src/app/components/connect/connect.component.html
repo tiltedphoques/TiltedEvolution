@@ -1,8 +1,10 @@
-<div class="app-connect">
-  <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
-  <p style="color:rgb(247, 54, 54);">
-    {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
-  </p>
+<div class="container">
+  <div class="instructions">
+    <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
+    <p class="warning">
+      {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
+    </p>
+  </div>
 
   <input
     #input
