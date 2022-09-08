@@ -1033,6 +1033,17 @@ void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
     TiltedPhoques::ThisCall(RealUpdateWeather, apThis);
 }
 
+TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
+static TAddDeathItems* RealAddDeathItems = nullptr;
+
+void TP_MAKE_THISCALL(HookAddDeathItems, Actor)
+{
+    if (apThis->GetExtension()->IsRemote())
+        return;
+
+    TiltedPhoques::ThisCall(RealAddDeathItems, apThis);
+}
+
 TiltedPhoques::Initializer s_referencesHooks([]()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
@@ -1073,6 +1084,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         // TODO(ft): verify
         POINTER_FALLOUT4(TUpdateWeather, updateWeather, 1278860);
 
+        POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TAddDeathItems, addDeathItems, 708754);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -1088,6 +1103,7 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealSetWeather = setWeather.Get();
         RealForceWeather = forceWeather.Get();
         RealUpdateWeather = updateWeather.Get();
+        RealAddDeathItems = addDeathItems.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -1101,5 +1117,6 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealSetWeather, HookSetWeather);
         TP_HOOK(&RealForceWeather, HookForceWeather);
         TP_HOOK(&RealUpdateWeather, HookUpdateWeather);
+        TP_HOOK(&RealAddDeathItems, HookAddDeathItems);
     });
 
