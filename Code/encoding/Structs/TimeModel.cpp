@@ -13,6 +13,20 @@ int TimeModel::GetNumerOfDaysByMonthIndex(int aIndex)
     return 0;
 }
 
+bool TimeModel::operator==(const TimeModel& acRhs) const noexcept
+{
+    return TimeScale == acRhs.TimeScale &&
+        Time == acRhs.Time &&
+        Year == acRhs.Year &&
+        Month == acRhs.Month &&
+        Day == acRhs.Day;
+}
+
+bool TimeModel::operator!=(const TimeModel& acRhs) const noexcept
+{
+    return !this->operator==(acRhs);
+}
+
 void TimeModel::Update(uint64_t aDelta)
 {
     float deltaSeconds = static_cast<float>(aDelta) / 1000.f;

@@ -11,6 +11,9 @@ struct TimeModel
     int Month = 1;
     int Day = 1;
 
+    bool operator==(const TimeModel& acRhs) const noexcept;
+    bool operator!=(const TimeModel& acRhs) const noexcept;
+
     void Update(uint64_t aDelta);
     [[nodiscard]] static int GetNumerOfDaysByMonthIndex(int index);
 };
