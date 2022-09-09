@@ -61,7 +61,7 @@ double godmodeTimer = 0.0;
 }
 
 Actor* pActor = *Cast<Actor>(TESForm::GetById(acEvent.Actorid))
-auto* pEquipManager = EquipManager::Get();
+EquipManager* pEquipManager = EquipManager::Get();
 static TESForm* cacheRightMag;
 static TESForm* cacheLeftMag;
 static TESForm* cacheShout;
