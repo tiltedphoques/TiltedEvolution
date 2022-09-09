@@ -31,7 +31,6 @@
 
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/EquipManager.h>
-#include <Games/Skyrim/Actor.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -60,7 +59,7 @@ bool godmodeStart = false;
 double godmodeTimer = 0.0;
 }
 
-Actor* pActor = *Cast<Actor>(TESForm::GetById(acEvent.Actorid))
+Actor* pActor = Cast<Actor>(TESForm::GetById(14617));
 EquipManager* pEquipManager = EquipManager::Get();
 static TESForm* cacheRightMag;
 static TESForm* cacheLeftMag;
