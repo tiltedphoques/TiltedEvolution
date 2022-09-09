@@ -80,8 +80,7 @@ struct ServerMessageFactory
                                  NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast,
                                  TeleportCommandResponse, NotifyPlayerRespawn, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue,
                                  NotifyActorTeleport, NotifyRelinquishControl, NotifyPlayerLeft, NotifyPlayerJoined, 
-                                 NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyPlayerLevel, NotifyPlayerCellChanged,
-                                 NotifyTeleport, NotifyPlayerHealthUpdate, NotifySettingsChange, NotifyWeatherChange,
+                                 NotifyPlayerHealthUpdate, NotifySettingsChange, NotifyWeatherChange,
                                  NotifyPlayerLevel, NotifyPlayerCellChanged, NotifyTeleport, NotifyPlayerPosition>;
 
         return s_visitor(std::forward<T>(func));
