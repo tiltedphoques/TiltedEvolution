@@ -1,5 +1,8 @@
 
 #include <Structs/TimeModel.h>
+#include <TiltedCore/Serialization.hpp>
+
+using TiltedPhoques::Serialization;
 
 const int cDayLengthArray[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
@@ -25,6 +28,24 @@ bool TimeModel::operator==(const TimeModel& acRhs) const noexcept
 bool TimeModel::operator!=(const TimeModel& acRhs) const noexcept
 {
     return !this->operator==(acRhs);
+}
+
+void TimeModel::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+{
+    Serialization::WriteFloat(aWriter, TimeScale);
+    Serialization::WriteFloat(aWriter, Time);
+    Serialization::WriteVarInt(aWriter, Year);
+    Serialization::WriteVarInt(aWriter, Month);
+    Serialization::WriteVarInt(aWriter, Day);
+}
+
+void TimeModel::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
+{
+    TimeScale = Serialization::ReadFloat(aReader);
+    Time = Serialization::ReadFloat(aReader);
+    Year = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Month = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Day = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
 
 void TimeModel::Update(uint64_t aDelta)
