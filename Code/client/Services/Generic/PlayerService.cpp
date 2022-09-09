@@ -29,6 +29,10 @@
 #include <Games/References.h>
 #include <AI/AIProcess.h>
 
+#include <Games/Skyrim/DefaultObjectManager.h>
+#include <Games/Skyrim/EquipManager.h>
+#include <Games/Skyrim/Actor.h>
+
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
@@ -55,6 +59,12 @@ double knockdownTimer = 0.0;
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
 }
+
+Actor* pActor = *Cast<Actor>(TESForm::GetById(acEvent.Actorid))
+auto* pEquipManager = EquipManager::Get();
+static TESForm* cacheRightMag;
+static TESForm* cacheLeftMag;
+static TESForm* cacheShout;
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
@@ -291,13 +301,23 @@ void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
 
             FadeOutGame(false, true, 0.5f, true, 2.f);
-
+            
+            //TODO: Cache Magic Items
+            cacheRightMag = DefaultObjectManager::Get().rightEquipSlot;
+            cacheLeftMag = DefaultObjectManager::Get().leftEquipSlot;
+            cacheShout = DefaultObjectManager::Get().voiceEquipSlot;
+            
             knockdownStart = false;
         }
     }
 
     if (godmodeStart)
-    {
+    {   
+        //TODO: Equip magic items again
+        pEquipManager->EquipSpell(pActor, cacheRightMag, 0);
+        pEquipManager->EquipSpell(pActor, cacheLeftMag, 1);
+        pEquipManager->EquipShout(pActor, cacheShout);
+        
         godmodeTimer -= acDeltaTime;
         if (godmodeTimer <= 0.0)
         {
