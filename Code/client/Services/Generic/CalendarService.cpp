@@ -29,9 +29,8 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, T
 
 void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
+    m_onlineTime = acMessage.DateTime;
     // disable the game clock
-    m_onlineTime.TimeScale = acMessage.TimeScale;
-    m_onlineTime.Time = acMessage.Time;
     ToggleGameClock(false);
 }
 
@@ -53,7 +52,7 @@ float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) c
 
         return TiltedPhoques::Mod(x, 24.f);
     }
-    
+
     return TiltedPhoques::Lerp(aFrom.Time, aTo.Time, m_fadeTimer / kTransitionSpeed);
 }
 
@@ -119,9 +118,9 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         m_lastTick = now;
 
         m_onlineTime.Update(delta);
-        pGameTime->GameDay->i = m_onlineTime.Day;
-        pGameTime->GameMonth->i = m_onlineTime.Month;
-        pGameTime->GameYear->i = m_onlineTime.Year;
+        pGameTime->GameDay->f = m_onlineTime.Day;
+        pGameTime->GameMonth->f = m_onlineTime.Month;
+        pGameTime->GameYear->f = m_onlineTime.Year;
         pGameTime->TimeScale->f = m_onlineTime.TimeScale;
         pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
 

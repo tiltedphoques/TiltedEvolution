@@ -36,8 +36,7 @@ void CalendarService::OnUpdate(const UpdateEvent &) noexcept
 void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 {
     ServerTimeSettings timeMsg;
-    timeMsg.TimeScale = m_timeModel.TimeScale;
-    timeMsg.Time = m_timeModel.Time;
+    timeMsg.DateTime = m_timeModel;
 
     acEvent.pPlayer->Send(timeMsg);
 }
@@ -54,8 +53,7 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         ServerTimeSettings timeMsg;
-        timeMsg.TimeScale = m_timeModel.TimeScale;
-        timeMsg.Time = m_timeModel.Time;
+        timeMsg.DateTime = m_timeModel;
         GameServer::Get()->SendToLoaded(timeMsg);
         return true;
     }
@@ -92,8 +90,7 @@ bool CalendarService::SetTimeScale(float aScale) noexcept
         m_timeModel.TimeScale = aScale;
 
         ServerTimeSettings timeMsg;
-        timeMsg.TimeScale = m_timeModel.TimeScale;
-        timeMsg.Time = m_timeModel.Time;
+        timeMsg.DateTime = m_timeModel;
         GameServer::Get()->SendToPlayers(timeMsg);
         return true;
     }

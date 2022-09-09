@@ -2,6 +2,8 @@
 
 #include "Message.h"
 
+#include <Structs/TimeModel.h>
+
 struct ServerTimeSettings final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kServerTimeSettings;
@@ -15,10 +17,8 @@ struct ServerTimeSettings final : ServerMessage
 
     bool operator==(const ServerTimeSettings &achRhs) const noexcept
     {
-        return Time == achRhs.Time && TimeScale == achRhs.TimeScale &&
-               GetOpcode() == achRhs.GetOpcode();
+        return DateTime == achRhs.DateTime && GetOpcode() == achRhs.GetOpcode();
     }
 
-    float Time;
-    float TimeScale;
+    TimeModel DateTime;
 };
