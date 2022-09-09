@@ -224,7 +224,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)
             {
                 TESObjectREFR* pRefr = TESObjectREFR::GetByHandle(handle);
-                ExtraMapMarker* pData = Cast<ExtraMapMarker>(pRefr->extraData.GetByType(ExtraData::MapMarker));
+                ExtraMapMarker* pData = Cast<ExtraMapMarker>(pRefr->extraData.GetByType(ExtraDataType::MapMarker));
                 if (!pData || !pData->pMarkerData)
                     continue;
 

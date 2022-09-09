@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include <ExtraData/ExtraData.h>
 #include <Interface/HUD/MapMarker_ExtraData.h>
 
 struct ExtraMapMarker : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::MapMarker;
+    inline static constexpr auto eExtraData = ExtraDataType::MapMarker;
 
     MapMarkerData* pMarkerData = nullptr;
 };

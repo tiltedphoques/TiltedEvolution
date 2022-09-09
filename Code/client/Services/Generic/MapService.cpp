@@ -24,6 +24,7 @@
 
 #include <AI/AIProcess.h>
 #include <ExtraData/ExtraMapMarker.h>
+#include <Interface/HUD/MapMarker_ExtraData.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 #include <Games/Overrides.h>
@@ -145,7 +146,7 @@ void MapService::OnPlayerJoined(const NotifyPlayerJoined& acMessage) noexcept
 
     // TODO: might have to be respawned when traveling between worldspaces?
     // doesn't always work when going from solstheim to skyrim
-    ExtraMapMarker* pMapMarker = Cast<ExtraMapMarker>(pNewPlayer->extraData.GetByType(ExtraData::MapMarker));
+    ExtraMapMarker* pMapMarker = Cast<ExtraMapMarker>(pNewPlayer->extraData.GetByType(ExtraDataType::MapMarker));
     MapMarkerData* pMarkerData = pMapMarker->pMarkerData;
     pMarkerData->name.value.Set(acMessage.Username.data());
     m_mapHandles[acMessage.PlayerId] = handle;
@@ -198,7 +199,7 @@ void MapService::OnNotifyPlayerPosition(const NotifyPlayerPosition& acMessage) c
         return;
     }
 
-    ExtraMapMarker* pMapMarker = Cast<ExtraMapMarker>(pDummyPlayer->extraData.GetByType(ExtraData::MapMarker));
+    ExtraMapMarker* pMapMarker = Cast<ExtraMapMarker>(pDummyPlayer->extraData.GetByType(ExtraDataType::MapMarker));
     if (!pMapMarker || !pMapMarker->pMarkerData)
     {
         spdlog::error(__FUNCTION__ ": could not find map marker data, player id: {:X}", acMessage.PlayerId);

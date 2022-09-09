@@ -48,6 +48,7 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyDialogue.h>
@@ -73,9 +74,11 @@
 #include <Structs/ActionEvent.h>
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
+#include <Messages/DialogueRequest.h>
 
 #include <Games/TES.h>
 #include <World.h>
+#include <Interface/HUD/MapMarker_ExtraData.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -1101,30 +1104,6 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
     }
 
     spdlog::error("Did not find actor to relinquish control of, server id {:X}", acMessage.ServerId);
-}
-
-void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
-{
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt =
-        std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity) {
-            return remoteView.get<RemoteComponent>(entity).Id == Id;
-        });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = Cast<Actor>(pForm);
-
-    if (!pActor)
-        return;
-
-    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
 }
 
 void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept

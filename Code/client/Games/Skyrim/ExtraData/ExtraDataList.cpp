@@ -1,6 +1,7 @@
 #include "ExtraDataList.h"
 
 #include <Games/Overrides.h>
+#include <Games/Skyrim/Interface/HUD/MapMarker_ExtraData.h>
 
 ExtraDataList* ExtraDataList::New() noexcept
 {
@@ -149,5 +150,5 @@ void ExtraDataList::SetMarkerData(MapMarkerData* apMarkerData) noexcept
 {
     TP_THIS_FUNCTION(TSetMarkerData, void, ExtraDataList, MapMarkerData* apMarkerData);
     POINTER_SKYRIMSE(TSetMarkerData, setMarkerData, 11607);
-    ThisCall(setMarkerData, this, apMarkerData);
+    TiltedPhoques::ThisCall(setMarkerData, this, apMarkerData);
 }

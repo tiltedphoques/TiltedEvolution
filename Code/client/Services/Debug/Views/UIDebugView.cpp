@@ -2,6 +2,7 @@
 #include <Forms/TESObject.h>
 #include <Games/Skyrim/Interface/UI.h>
 #include <Games/Skyrim/PlayerCharacter.h>
+#include <Interface/HUD/MapMarker_ExtraData.h>
 #include <Services/DebugService.h>
 #include <imgui.h>
 

@@ -6,6 +6,7 @@
 
 struct AlchemyItem;
 struct EnchantmentItem;
+struct MapMarkerData;
 
 struct ExtraDataList
 {
