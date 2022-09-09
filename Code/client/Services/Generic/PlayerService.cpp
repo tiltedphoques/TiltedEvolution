@@ -9,6 +9,8 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/PlayerDialogueEvent.h>
 #include <Events/PlayerLevelEvent.h>
+#include <Events/PartyJoinedEvent.h>
+#include <Events/PartyLeftEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
@@ -39,13 +41,20 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_cellChangeConnection = m_dispatcher.sink<CellChangeEvent>().connect<&PlayerService::OnCellChangeEvent>(this);
     m_playerDialogueConnection = m_dispatcher.sink<PlayerDialogueEvent>().connect<&PlayerService::OnPlayerDialogueEvent>(this);
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&PlayerService::OnPartyJoinedEvent>(this);
+    m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&PlayerService::OnPartyLeftEvent>(this);
 }
+
+namespace
+{
+bool isDeathSystemEnabled = true;
 
 bool knockdownStart = false;
 double knockdownTimer = 0.0;
 
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
+}
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
@@ -61,8 +70,16 @@ void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 0.f;
 
+#if TP_SKYRIM64
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 0.f;
+#elif TP_FALLOUT4
+    // Makes it so that VATS doesn't slow down time
+    float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
+    *vatsTargetingMult = 0.f;
+
+    // TODO(ft): disable world encounters
+#endif
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
@@ -70,20 +87,32 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
-    // Restore to the default value (150)
-    float* greetDistance = Settings::GetGreetDistance();
-    *greetDistance = 150.f;
+    ToggleDeathSystem(false);
 
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 1.f;
 
+    // Restore to the default value (150 in skyrim, 175 in fallout 4)
+    float* greetDistance = Settings::GetGreetDistance();
+#if TP_SKYRIM64
+    *greetDistance = 150.f;
+
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 1.f;
+#elif TP_FALLOUT4
+    *greetDistance = 175.f;
+
+    // Restore VATS slow time (default is 0.04)
+    float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
+    *vatsTargetingMult = 0.04f;
+
+    // TODO(ft): enable world encounters
+#endif
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
 {
-    m_previousDifficulty = PlayerCharacter::Get()->difficulty;
+    m_previousDifficulty = *Settings::GetDifficulty();
     PlayerCharacter::Get()->SetDifficulty(acSettings.Difficulty);
     m_serverDifficulty = acSettings.Difficulty;
 
@@ -92,6 +121,8 @@ void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) n
         float* greetDistance = Settings::GetGreetDistance();
         *greetDistance = 0.f;
     }
+
+    ToggleDeathSystem(acSettings.DeathSystemEnabled);
 }
 
 void PlayerService::OnNotifyPlayerRespawn(const NotifyPlayerRespawn& acMessage) const noexcept
@@ -165,8 +196,40 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
     m_transport.Send(request);
 }
 
+void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    // TODO: this can be done a bit prettier
+#if TP_SKYRIM64
+    if (acEvent.IsLeader)
+    {
+        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+        pWorldEncountersEnabled->f = 1.f;
+    }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
+}
+
+void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
+{
+    // TODO: this can be done a bit prettier
+#if TP_SKYRIM64
+    if (World::Get().GetTransport().IsConnected())
+    {
+        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
+        pWorldEncountersEnabled->f = 0.f;
+    }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
+}
+
+// TODO: ft (verify)
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
+    if (!isDeathSystemEnabled)
+        return;
+
     static bool s_startTimer = false;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
@@ -205,8 +268,13 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     }
 }
 
+// TODO: ft (verify)
+// Doesn't seem to respawn quite yet
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
+    if (!isDeathSystemEnabled)
+        return;
+
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
     // It also makes the player invincible for 5 seconds.
@@ -273,4 +341,11 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
+}
+
+void PlayerService::ToggleDeathSystem(bool aSet) const noexcept
+{
+    isDeathSystemEnabled = aSet;
+
+    PlayerCharacter::Get()->SetPlayerRespawnMode(aSet);
 }

@@ -17,6 +17,7 @@ struct CharacterComponent
         kIsWeaponDrawn = 1 << 3,
         kIsDragon = 1 << 4,
         kIsMount = 1 << 5,
+        kIsPlayerSummon = 1 <<6
     };
 
     [[nodiscard]] bool IsDirtyFactions() const
@@ -42,6 +43,10 @@ struct CharacterComponent
     [[nodiscard]] bool IsMount() const
     {
         return Flags & kIsMount;
+    }
+    [[nodiscard]] bool IsPlayerSummon() const
+    {
+        return Flags & kIsPlayerSummon;
     }
 
     void SetDirtyFactions(bool aSet)
@@ -85,6 +90,13 @@ struct CharacterComponent
             Flags |= kIsMount;
         else
             Flags &= ~kIsMount;
+    }
+    void SetPlayerSummon(bool aSet)
+    {
+        if (aSet)
+            Flags |= kIsPlayerSummon;
+        else
+            Flags &= ~kIsPlayerSummon;
     }
 
     uint32_t ChangeFlags{ 0 };

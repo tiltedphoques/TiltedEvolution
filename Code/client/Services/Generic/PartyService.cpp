@@ -4,6 +4,8 @@
 
 #include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/PartyJoinedEvent.h>
+#include <Events/PartyLeftEvent.h>
 
 #include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPartyInfo.h>
@@ -115,12 +117,16 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         m_leaderPlayerId = acPartyInfo.LeaderPlayerId;
         m_partyMembers = acPartyInfo.PlayerIds;
 
+#if TP_SKYRIM64
         // TODO: this can be done a bit prettier
         if (m_isLeader)
         {
             TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
             pWorldEncountersEnabled->f = 1.f;
         }
+#elif TP_FALLOUT4
+        // TODO: ft
+#endif
 
         auto pArguments = CefListValue::Create();
 
@@ -146,52 +152,26 @@ void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcep
     m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInviteReceived", pArguments);
 }
 
-void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
-{
-    spdlog::debug("[PartyService]: Left party");
-
-    // TODO: this can be done a bit prettier
-    if (World::Get().GetTransport().IsConnected())
-    {
-        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-        pWorldEncountersEnabled->f = 0.f;
-    }
-
-    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
-
-    DestroyParty();
-}
-
 void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcept
 {
     spdlog::debug("[PartyService]: Joined party. LeaderId: {}, IsLeader: {}", acPartyJoined.LeaderPlayerId,
                   acPartyJoined.IsLeader);
+
     m_inParty = true;
     m_isLeader = acPartyJoined.IsLeader;
     m_leaderPlayerId = acPartyJoined.LeaderPlayerId;
     m_partyMembers = acPartyJoined.PlayerIds;
 
-    // TODO: this can be done a bit prettier
-    if (m_isLeader)
-    {
-        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-        pWorldEncountersEnabled->f = 1.f;
-    }
+    m_world.GetDispatcher().trigger(PartyJoinedEvent(m_isLeader));
+}
 
-    // Takes ownership of all actors
-    if (m_isLeader)
-    {
-        auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
-        Vector<entt::entity> entities(view.begin(), view.end());
+void PartyService::OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept
+{
+    spdlog::debug("[PartyService]: Left party");
 
-        for (auto entity : entities)
-        {
-            m_world.GetCharacterService().ProcessNewEntity(entity);
-        }
-    }
+    DestroyParty();
 
-    if (m_isLeader)
-        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
+    m_world.GetDispatcher().trigger(PartyLeftEvent());
 }
 
 void PartyService::DestroyParty() noexcept

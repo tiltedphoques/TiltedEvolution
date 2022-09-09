@@ -27,6 +27,7 @@ static TESQuest* FindQuestByNameId(const String &name)
     return it != questRegistry.end() ? *it : nullptr;
 }
 
+// TODO: ft (verify)
 QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher) 
     : m_world(aWorld)
 {
@@ -207,6 +208,7 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
+// TODO: ft (verify)
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
     // non story quests are "blocked" and not synced

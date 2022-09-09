@@ -1,8 +1,10 @@
-<div class="app-connect">
-  <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
-  <p style="color:rgb(247, 54, 54);">
-    {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
-  </p>
+<div class="container">
+  <div class="instructions">
+    <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
+    <p class="warning">
+      {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
+    </p>
+  </div>
 
   <input
     #input
@@ -20,8 +22,12 @@
     (keydown.enter)="connect()"
   >
   <span class="save-password">
-    <label for="savePassword">{{ 'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco }}</label>
-    <input id="savePassword" type="checkbox" [(ngModel)]="savePassword" (keydown.enter)="connect()">
+    <input 
+      type="checkbox"
+      id="save-password"
+      [(ngModel)]="savePassword"
+    />
+    <label for="save-password">{{ 'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco }}</label>
   </span>
 
 

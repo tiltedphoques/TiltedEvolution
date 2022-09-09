@@ -25,13 +25,14 @@
 #include <Events/UpdateEvent.h>
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
-#include <Events/ProjectileLaunchedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+#include <Events/MoveActorEvent.h>
+#include <Events/PartyJoinedEvent.h>
 
 #include <Structs/ActionEvent.h>
 #include <Messages/CancelAssignmentRequest.h>
@@ -48,8 +49,6 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
-#include <Messages/ProjectileLaunchRequest.h>
-#include <Messages/NotifyProjectileLaunch.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
@@ -67,10 +66,6 @@
 
 #include <World.h>
 #include <Games/TES.h>
-
-#include <Projectiles/Projectile.h>
-#include <Forms/TESObjectWEAP.h>
-#include <Forms/TESAmmo.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -94,9 +89,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
     m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
 
-    m_projectileLaunchedConnection = m_dispatcher.sink<ProjectileLaunchedEvent>().connect<&CharacterService::OnProjectileLaunchedEvent>(this);
-    m_projectileLaunchConnection = m_dispatcher.sink<NotifyProjectileLaunch>().connect<&CharacterService::OnNotifyProjectileLaunch>(this);
-
     m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
     m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
 
@@ -118,6 +110,8 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_actorTeleportConnection = m_dispatcher.sink<NotifyActorTeleport>().connect<&CharacterService::OnNotifyActorTeleport>(this);
 
     m_relinquishConnection = m_dispatcher.sink<NotifyRelinquishControl>().connect<&CharacterService::OnNotifyRelinquishControl>(this);
+
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&CharacterService::OnPartyJoinedEvent>(this);
 }
 
 void CharacterService::DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept
@@ -141,6 +135,14 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
         spdlog::error("Cannot take control over remote player actor, form id: {:X}, server id: {:X}", acFormId, acServerId);
         return false;
     }
+
+#if TP_SKYRIM64
+    if (pActor->IsPlayerSummon())
+    {
+        spdlog::error("Cannot take control over remote player summon, form id: {:X}, server id: {:X}", acFormId, acServerId);
+        return false;
+    }
+#endif
 
     pExtension->SetRemote(false);
 
@@ -172,9 +174,10 @@ void CharacterService::DeleteTempActor(const uint32_t aFormId) noexcept
 
 void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 {
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
+
     if (acEvent.FormId == 0x14)
     {
-        Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId));
         pActor->GetExtension()->SetPlayer(true);
     }
 
@@ -492,6 +495,16 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
+    spdlog::info("Spawn Reqeust Is summon {}", acMessage.IsPlayerSummon);
+
+#if TP_SKYRIM64
+    if (acMessage.IsPlayerSummon)
+    {
+        // Prevents remote summons agroing other players.
+        pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
+    }
+#endif
+
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
     auto& interpolationComponent = InterpolationSystem::Setup(m_world, *entity);
@@ -714,158 +727,6 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
     m_transport.Send(request);
 }
 
-void CharacterService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
-{
-    ModSystem& modSystem = m_world.Get().GetModSystem();
-
-    uint32_t shooterFormId = acEvent.ShooterID;
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == shooterFormId;
-    });
-
-    if (shooterEntityIt == std::end(view))
-        return;
-
-    LocalComponent& localComponent = view.get<LocalComponent>(*shooterEntityIt);
-
-    ProjectileLaunchRequest request{};
-
-    request.OriginX = acEvent.Origin.x;
-    request.OriginY = acEvent.Origin.y;
-    request.OriginZ = acEvent.Origin.z;
-
-    modSystem.GetServerModId(acEvent.ProjectileBaseID, request.ProjectileBaseID);
-    modSystem.GetServerModId(acEvent.WeaponID, request.WeaponID);
-    modSystem.GetServerModId(acEvent.AmmoID, request.AmmoID);
-
-    request.ShooterID = localComponent.Id;
-
-    request.ZAngle = acEvent.ZAngle;
-    request.XAngle = acEvent.XAngle;
-    request.YAngle = acEvent.YAngle;
-
-    modSystem.GetServerModId(acEvent.ParentCellID, request.ParentCellID);
-    modSystem.GetServerModId(acEvent.SpellID, request.SpellID);
-
-    request.CastingSource = acEvent.CastingSource;
-
-    request.Area = acEvent.Area;
-    request.Power = acEvent.Power;
-    request.Scale = acEvent.Scale;
-
-    request.AlwaysHit = acEvent.AlwaysHit;
-    request.NoDamageOutsideCombat = acEvent.NoDamageOutsideCombat;
-    request.AutoAim = acEvent.AutoAim;
-    request.DeferInitialization = acEvent.DeferInitialization;
-    request.ForceConeOfFire = acEvent.ForceConeOfFire;
-
-#if TP_SKYRIM64
-    request.UnkBool1 = acEvent.UnkBool1;
-    request.UnkBool2 = acEvent.UnkBool2;
-#else
-    request.ConeOfFireRadiusMult = acEvent.ConeOfFireRadiusMult;
-    request.Tracer = acEvent.Tracer;
-    request.IntentionalMiss = acEvent.IntentionalMiss;
-    request.Allow3D = acEvent.Allow3D;
-    request.Penetrates = acEvent.Penetrates;
-    request.IgnoreNearCollisions = acEvent.IgnoreNearCollisions;
-#endif
-
-    m_transport.Send(request);
-}
-
-void CharacterService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept
-{
-    ModSystem& modSystem = World::Get().GetModSystem();
-
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Shooter with remote id {:X} not found.", acMessage.ShooterID);
-        return;
-    }
-
-    FormIdComponent formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-
-#if TP_SKYRIM64
-    Projectile::LaunchData launchData{};
-#else
-    ProjectileLaunchData launchData{};
-#endif
-
-    launchData.pShooter = Cast<TESObjectREFR>(TESForm::GetById(formIdComponent.Id));
-
-    launchData.Origin.x = acMessage.OriginX;
-    launchData.Origin.y = acMessage.OriginY;
-    launchData.Origin.z = acMessage.OriginZ;
-
-    const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
-    launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
-
-#if TP_SKYRIM64
-    const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
-    launchData.pFromWeapon = Cast<TESObjectWEAP>(TESForm::GetById(cFromWeaponId));
-#endif
-
-#if TP_FALLOUT4
-    Actor* pShooter = Cast<Actor>(launchData.pShooter);
-    pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
-#endif
-
-    const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
-    launchData.pFromAmmo = Cast<TESAmmo>(TESForm::GetById(cFromAmmoId));
-
-    launchData.fZAngle = acMessage.ZAngle;
-    launchData.fXAngle = acMessage.XAngle;
-    launchData.fYAngle = acMessage.YAngle;
-
-    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
-
-    const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
-    launchData.pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
-
-    launchData.eCastingSource = (MagicSystem::CastingSource)acMessage.CastingSource;
-
-    launchData.iArea = acMessage.Area;
-    launchData.fPower = acMessage.Power;
-    launchData.fScale = acMessage.Scale;
-
-    launchData.bAlwaysHit = acMessage.AlwaysHit;
-    launchData.bNoDamageOutsideCombat = acMessage.NoDamageOutsideCombat;
-    launchData.bAutoAim = acMessage.AutoAim;
-
-    launchData.bForceConeOfFire = acMessage.ForceConeOfFire;
-
-    // always use origin, or it'll recalculate it and it desyncs
-    launchData.bUseOrigin = true;
-
-#if TP_SKYRIM64
-    launchData.bUnkBool1 = acMessage.UnkBool1;
-    launchData.bUnkBool2 = acMessage.UnkBool2;
-#else
-    launchData.eTargetLimb = -1;
-
-    launchData.fConeOfFireRadiusMult = acMessage.ConeOfFireRadiusMult;
-    launchData.bTracer = acMessage.Tracer;
-    launchData.bIntentionalMiss = acMessage.IntentionalMiss;
-    launchData.bAllow3D = acMessage.Allow3D;
-    launchData.bPenetrates = acMessage.Penetrates;
-    launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
-#endif
-
-    BSPointerHandle<Projectile> result;
-
-    Projectile::Launch(&result, launchData);
-}
-
 void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 {
 #if TP_SKYRIM64
@@ -1058,7 +919,10 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
+    // TODO: ft
+#if TP_SKYRIM64
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
+#endif
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
@@ -1088,6 +952,8 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
+// TODO: ft (verify)
+// deal with player voice lines in fallout 4
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1136,8 +1002,37 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     SubtitleRequest request{};
     request.ServerId = serverIdRes.value();
     request.Text = acEvent.Text;
+    request.TopicFormId = acEvent.TopicFormID;
 
     m_transport.Send(request);
+}
+
+void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
+{
+    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
+    {
+        return remoteView.get<RemoteComponent>(entity).Id == Id;
+    });
+
+    if (remoteIt == std::end(remoteView))
+    {
+        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
+        return;
+    }
+
+    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
+    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
+    Actor* pActor = Cast<Actor>(pForm);
+
+    if (!pActor)
+        return;
+
+    // This is only for fallout 4
+    TESTopicInfo* pInfo = nullptr;
+    pInfo = Cast<TESTopicInfo>(TESForm::GetById(acMessage.TopicFormId));
+
+    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str(), pInfo);
 }
 
 void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept
@@ -1186,30 +1081,6 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
     spdlog::error("Did not find actor to relinquish control of, server id {:X}", acMessage.ServerId);
 }
 
-void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
-{
-    auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ServerId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
-
-    if (remoteIt == std::end(remoteView))
-    {
-        spdlog::warn("Actor for dialogue with remote id {:X} not found.", acMessage.ServerId);
-        return;
-    }
-
-    auto formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
-    const TESForm* pForm = TESForm::GetById(formIdComponent.Id);
-    Actor* pActor = Cast<Actor>(pForm);
-
-    if (!pActor)
-        return;
-
-    SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str());
-}
-
 void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept
 {
     auto& modSystem = m_world.GetModSystem();
@@ -1227,6 +1098,19 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
     spdlog::info("Successfully teleported actor, form id: {:X}, world space: {:X}, cell: {:X}, position: ({}, {}, {})",
                  pActor->formID, acMessage.WorldSpaceId.BaseId, acMessage.CellId.BaseId, acMessage.Position.x,
                  acMessage.Position.y, acMessage.Position.z);
+}
+
+void CharacterService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    // Takes ownership of all actors
+    if (acEvent.IsLeader)
+    {
+        auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
+        Vector<entt::entity> entities(view.begin(), view.end());
+
+        for (auto entity : entities)
+            ProcessNewEntity(entity);
+    }
 }
 
 void CharacterService::MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept
@@ -1278,6 +1162,7 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
+        // TODO: ft (verify)
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID,
@@ -1414,16 +1299,23 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.FactionsContent = pActor->GetFactions();
     message.AllActorValues = pActor->GetEssentialActorValues();
     message.IsDead = pActor->IsDead();
+    // TODO: ft, fallout probably uses skycells for those choppers
+#if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
+#endif
     message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
+
+#if TP_SKYRIM64
+    message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
+#endif
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
 
     if (isTemporary)
     {
-        if (!m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
+        if (pNpc && !m_world.GetModSystem().GetServerModId(pNpc->formID, message.FormId))
         {
             spdlog::error("Server NPC form id not found for form id {:X}", pNpc->formID);
             return;
@@ -1492,6 +1384,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
+            // TODO: ft (verify)
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();

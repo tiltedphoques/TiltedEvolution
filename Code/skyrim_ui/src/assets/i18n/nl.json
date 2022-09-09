@@ -1,0 +1,152 @@
+{
+  "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
+
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Verzenden",
+      "MESSAGE": "Bericht",
+      "MESSAGE_TOO_LONG": "Je kan geen bericht langer dan {{chatMessageLengthLimit}} verzenden."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Verbind met een server door het volledige adres te gebruiken. Gebruik het formaat <strong>adres:poort</strong>. De standaard poort is <strong>10578</strong>.",
+        "HELGEN": "Verbind niet met een server wanneer je nog in de Helgen introductie bent. Zorg ervoor dat je eerst uit Helgen vlucht."
+      },
+      "ADDRESS": "Adres",
+      "PASSWORD": "Wachtwoord",
+      "SAVE_PASSWORD": "Wachtwoord opslaan?",
+      "CONNECT": "Verbinden",
+      "CANCEL": "Annuleren",
+      "PUBLIC_SERVERS": "Openbare servers",
+      "ERROR": {
+        "CONNECTION": "Kan niet verbinden met de desbetreffende server. Wees er zeker van dat je het juiste adres hebt ingevuld en dat je geen netwerkproblemen ondervind.",
+        "VERSION_MISMATCH": "Kan niet verbinden met de desbetreffende server omdat het niet dezelfde versie heeft van Skyrim Together als jij.",
+        "INVALID_ADDRESS": "Het adres is in een ongeldig formaat."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Weet je het zeker dat je de verbinding wil verbreken?",
+      "PROCEED": "Doorgaan",
+      "CANCEL": "Annuleren",
+      "ERROR": {
+        "CONNECTION": "Kan niet verbinden met de desbetreffende server. Wees er zeker van dat je het juiste adres hebt ingevuld en dat je geen netwerkproblemen ondervind.",
+        "VERSION_MISMATCH": "Kan niet verbinden met de desbetreffende server omdat het niet dezelfde versie heeft van Skyrim Together als jij.",
+        "INVALID_ADDRESS": "Het adres is in een ongeldig formaat."
+      }
+    },
+    "ERROR": {
+      "OK": "Oke"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Bericht van"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Accepteer uitnodiging van {{name}}",
+      "LAUNCH_PARTY" : "Maak groep",
+      "EXPERIENCE_WARNING": "Voor een optimale 'questing' ervaring, lees de speelgids op onze wiki, welke je kan vinden op onze website, <b>skyrim-together.com</b>. Hier is een korte opsomming van de richtlijnen:",
+      "GUIDELINES": {
+        "PARTY": "Door het maken van een groep, word jij een soort van  \"host\", aka de groepsleider.",
+        "PARTY_LEADER_TALK": "Alleen de groepsleider kan praten tegen quest NPCs om de quests voort te zetten.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Alleen de groepsleider kan quest voorwerpen oprapen.",
+        "KEEP_PARTY_LEADER": "Gebruik steeds dezelfde groepsleider in de speelsessies.",
+        "ONE_PARTY_PER_SERVER": "Wees lid van één groep per server."
+      },
+      "NO_PLAYERS_IN_PARTY": "Er is nog niemand in jouw groep. Nodig mensen uit door middel van de spelerslijst!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Naam",
+        "LOCATION": "Locatie"
+      },
+      "ACTIONS": {
+        "KICK": "Kick",
+        "TELEPORT": "Teleporteren",
+        "MAKE_LEADER": "Maak leider"
+      },
+      "LEAVE_PARTY": "Verlaat groep"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Niemand aanwezig in de groep.",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Naam",
+        "LOCATION": "Locatie"
+      },
+      "INVITE": "Uitnodigen"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Spelerslijst",
+      "PARTY_MENU": "Groepsmenu",
+      "BACK": "Terug"
+    },
+    "ROOT": {
+      "CONNECT": "Verbinden",
+      "DISCONNECT": "Verbinding verbreken",
+      "RECONNECT": "Opnieuw verbinden",
+      "PLAYER_MANAGER": "Speler beheerder",
+      "SETTINGS": "Instellingen",
+      "CONNECTION_IN_PROGRESS": "Verbinden"
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Zoeken...",
+      "REFRESH": "Verversen",
+      "BACK": "Terug",
+      "LOADING": "Laden...",
+      "NO_SERVERS": "Geen openbare servers beschikbaar",
+      "HIDE_MISMATCHED_SERVER": "Verberg servers met een niet overeenkomende versie",
+      "TABLE_HEADERS": {
+        "NAME": "Server Naam",
+        "PLAYERS": "Spelers",
+        "COUNTRY": "Land",
+        "FAVORITE": "Favoriet"
+      },
+      "JOIN": "Meedoen"
+    },
+    "SETTINGS": {
+      "AUDIO": "Audio",
+      "MUTE_UI": "UI dempen",
+      "UI_VOLUME": "UI Volume",
+      "PARTY": "Groep",
+      "SHOW_PARTY": "Groep weergeven",
+      "AUTO_HIDE_PARTY": "Automatich groep verbergen",
+      "AUTO_HIDE_PARTY_LENGTH": "Automatisch timerlengte verbergen",
+      "PARTY_ANCHOR": "Positie",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Linksboven",
+        "TOP_RIGHT": "Rechtsboven",
+        "BOTTOM_RIGHT": "Rechtsonder",
+        "BOTTOM_LEFT": "Linksonder"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Horizontale verschuiving",
+      "PARTY_ANCHOR_OFFSET_Y": "Verticale verschuiving",
+      "LENGTH": "{{length}}s",
+      "DEBUG": "Debug",
+      "SHOW_DEBUG_INFO": "Debug informatie weergeven",
+      "BACK": "Terug"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Verbinding verbroken, proberen opnieuw te verbinden. {{remainingReconnectionAttempt } pogingen over."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} heeft level {{level}} bereikt.",
+      "ALREADY_IN_GROUP": "Je bent nu in een groep. Verlaat deze groep om aan een andere groep deel te nemen.",
+      "KICK_NO_PARTY_LEADER": "Je kan geen spelers uit de groep gooien omdat je niet de groepsleider bent.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Je kan geen lid de leider maken omdat jij niet de groepsleider bent."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "Deze server verwacht versie {{expectedVersion}}, maar jij bent op versie {{version}}.",
+        "MODS_MISMATCH": "Deze server heeft een modbeleid (ModPolicy) toegepast.{{mods}}.",
+        "MODS_MISMATCH_REMOVE": "Verwijder de volgende mods om deel te nemen:\n{{mods}}.",
+        "MODS_MISMATCH_INSTALL": "Installeer de volgende mods om deel te nemen:\n{{mods}}.",
+        "CLIENT_MODS_DISALLOWED": "Deze server staat de volgende mods niet toe {{mods}}. Verwijder ze om deel te nemen.",
+        "WRONG_PASSWORD": "Het ingevoerde wachtwoord is incorrect.",
+        "NO_REASON": "De server heeft de verbinding zonder reden geweigerd."
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} heeft je uitgenodigd voor een groep"
+    }
+  }
+}

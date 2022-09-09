@@ -46,7 +46,7 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
 {
     m_timeModel.TimeScale = aScale;
 
-    if (aHours >= 0 && aHours <= 24 && aMinutes >= 0 && aMinutes <= 60)
+    if (aHours >= 0 && aHours <= 23 && aMinutes >= 0 && aMinutes <= 59)
     {
         // encode time as skyrim time
         auto minutes = static_cast<float>(aMinutes) * 0.17f;
@@ -83,4 +83,20 @@ CalendarService::TTime CalendarService::GetRealTime() noexcept
 CalendarService::TDate CalendarService::GetDate() const noexcept
 {
     return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
+}
+
+bool CalendarService::SetTimeScale(float aScale) noexcept
+{
+    if (aScale >= 0.f && aScale <= 1000.f)
+    {
+        m_timeModel.TimeScale = aScale;
+
+        ServerTimeSettings timeMsg;
+        timeMsg.TimeScale = m_timeModel.TimeScale;
+        timeMsg.Time = m_timeModel.Time;
+        GameServer::Get()->SendToPlayers(timeMsg);
+        return true;
+    }
+
+    return false;
 }

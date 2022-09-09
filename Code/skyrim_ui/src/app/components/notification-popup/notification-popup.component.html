@@ -1,7 +1,10 @@
-<div class="notification-popup" [@fadeInOut]="isActive" (click)="clickNotification()">
-  <div *ngIf="notification && notification.message">
-    <div class="friendavatar" [ngStyle]="{ 'background-image': 'url(' + notification.player.avatar + ')' }"></div>
-    <div *ngIf="isConnected" class="friendstatus" [class.online]="notification.player && notification.player!.online"></div>
-    <div class="text-connection-popup">{{notification.message}}</div>
+<div *transloco="let t" class="notification-popup" (click)="clickNotification()" (mouseenter)="onEnter()" (mouseleave)="onLeave()">
+  <img *ngIf="notification.imageUrl" [src]="notification.imageUrl" />
+  <div *ngIf="notification.icon" class="icon">
+    <fa-icon [icon]="notification.icon"></fa-icon>
   </div>
+  <p>{{ t(notification.messageKey, notification.messageParams) }}</p>
+  <button *ngFor="let action of notification.actions" (click)="action.callback()">
+    {{ t(action.nameKey) }}
+  </button>
 </div>

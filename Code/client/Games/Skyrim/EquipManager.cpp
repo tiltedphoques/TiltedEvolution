@@ -76,7 +76,7 @@ void* EquipManager::Equip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtr
 
     spdlog::debug("Call Actor[{:X}]::Equip(), item id: {:X}, extra data? {}, count: {}", apActor->formID, apItem->formID, (bool)apExtraDataList, aCount);
 
-    return ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, apSlot, abQueueEquip, abForceEquip, abPlaySound, abApplyNow);
+    return TiltedPhoques::ThisCall(s_equipFunc, this, apActor, apItem, apExtraDataList, aCount, apSlot, abQueueEquip, abForceEquip, abPlaySound, abApplyNow);
 }
 
 void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, ExtraDataList* apExtraDataList, int aCount, TESForm* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySound, bool abApplyNow, TESForm* apSlotToReplace)
@@ -88,7 +88,7 @@ void* EquipManager::UnEquip(Actor* apActor, TESForm* apItem, ExtraDataList* apEx
 
     spdlog::debug("Call Actor[{:X}]::UnEquip(), item id: {:X}, extra data? {}, count: {}", apActor->formID, apItem->formID, (bool)apExtraDataList, aCount);
 
-    return ThisCall(s_unequipFunc, this, apActor, apItem, apExtraDataList, aCount, apSlot, abQueueEquip, abForceEquip, abPlaySound, abApplyNow, apSlotToReplace);
+    return TiltedPhoques::ThisCall(s_unequipFunc, this, apActor, apItem, apExtraDataList, aCount, apSlot, abQueueEquip, abForceEquip, abPlaySound, abApplyNow, apSlotToReplace);
 }
 
 void* EquipManager::EquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
@@ -98,7 +98,7 @@ void* EquipManager::EquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotI
 
     ScopedEquipOverride equipOverride;
 
-    return ThisCall(s_equipFunc, this, apActor, apSpell, aSlotId);
+    return TiltedPhoques::ThisCall(s_equipFunc, this, apActor, apSpell, aSlotId);
 }
 
 void* EquipManager::UnEquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId)
@@ -108,7 +108,7 @@ void* EquipManager::UnEquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlo
 
     ScopedEquipOverride equipOverride;
 
-    return ThisCall(s_unequipFunc, this, apActor, apSpell, aSlotId);
+    return TiltedPhoques::ThisCall(s_unequipFunc, this, apActor, apSpell, aSlotId);
 }
 
 void* EquipManager::EquipShout(Actor* apActor, TESForm* apShout)
@@ -118,7 +118,7 @@ void* EquipManager::EquipShout(Actor* apActor, TESForm* apShout)
 
     ScopedEquipOverride equipOverride;
 
-    return ThisCall(s_equipFunc, this, apActor, apShout);
+    return TiltedPhoques::ThisCall(s_equipFunc, this, apActor, apShout);
 }
 
 void* EquipManager::UnEquipShout(Actor* apActor, TESForm* apShout)
@@ -128,7 +128,7 @@ void* EquipManager::UnEquipShout(Actor* apActor, TESForm* apShout)
 
     ScopedEquipOverride equipOverride;
 
-    return ThisCall(s_unequipFunc, this, apActor, apShout);
+    return TiltedPhoques::ThisCall(s_unequipFunc, this, apActor, apShout);
 }
 
 void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData)
@@ -146,7 +146,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
@@ -158,7 +158,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
 
     ScopedUnequipOverride _;
 
-    return ThisCall(RealEquip, apThis, apActor, apItem, apData);
+    return TiltedPhoques::ThisCall(RealEquip, apThis, apActor, apItem, apData);
 }
 
 void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData)
@@ -178,7 +178,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.Count = apData->count;
         evt.ItemId = apItem->formID;
@@ -191,7 +191,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
 
     spdlog::debug("UnEquipHook, actor: {:X}", apActor->formID);
 
-    return ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
+    return TiltedPhoques::ThisCall(RealUnEquip, apThis, apActor, apItem, apData);
 }
 
 void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, MagicEquipData* apData)
@@ -205,7 +205,7 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
         evt.EquipSlotId = apData->pEquipSlot->formID;
@@ -216,7 +216,7 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
 
     ScopedUnequipOverride _;
 
-    return ThisCall(RealEquipSpell, apThis, apActor, apSpell, apData);
+    return TiltedPhoques::ThisCall(RealEquipSpell, apThis, apActor, apSpell, apData);
 }
 
 void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* apSpell, MagicEquipData* apData)
@@ -230,7 +230,7 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apSpell->formID;
         evt.EquipSlotId = apData->pEquipSlot->formID;
@@ -240,7 +240,7 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealUnEquipSpell, apThis, apActor, apSpell, apData);
+    return TiltedPhoques::ThisCall(RealUnEquipSpell, apThis, apActor, apSpell, apData);
 }
 
 void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* apShout, ShoutEquipData* apData)
@@ -254,7 +254,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
 
     if (pExtension->IsLocal())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;
         evt.IsShout = true;
@@ -264,7 +264,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
 
     ScopedUnequipOverride _;
 
-    return ThisCall(RealEquipShout, apThis, apActor, apShout, apData);
+    return TiltedPhoques::ThisCall(RealEquipShout, apThis, apActor, apShout, apData);
 }
 
 void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* apShout, ShoutEquipData* apData)
@@ -278,7 +278,7 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
 
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
-        EquipmentChangeEvent evt;
+        EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
         evt.ItemId = apShout->formID;
         evt.Unequip = true;
@@ -287,7 +287,7 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
         World::Get().GetRunner().Trigger(evt);
     }
 
-    return ThisCall(RealUnEquipShout, apThis, apActor, apShout, apData);
+    return TiltedPhoques::ThisCall(RealUnEquipShout, apThis, apActor, apShout, apData);
 }
 
 

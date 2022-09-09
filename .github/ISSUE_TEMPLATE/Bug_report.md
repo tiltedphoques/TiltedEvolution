@@ -11,9 +11,19 @@ assignees: ''
 
 **Note**: If you have mods installed, DO NOT submit a bug report. The chances of one of these mods causing the issue is very high, and so, such bug reports are worthless to us.
 
+## Version of Skyrim Together
+
+<!--
+Keep in mind that it barely makes sense to report bugs on older version and the issue might be fixed already in the latest available version of Skyrim Together. 
+-->
+
+*For example:*
+
+v1.1.0
+
 ## Description
 
-A clear and concise description of what the bug is, Include any formIDs relevant for us to use ie,
+A clear and concise description of what the bug is, Include any formIDs relevant for us to use E.g.,
 
 Related formIDs|
 ---------------|
@@ -22,7 +32,7 @@ Related formIDs|
 
 ## Steps to reproduce
 
-How to reproduce this issue. Be as specific as possible and try to only include instructions you believe are necessary to reproduce said issue, i.e.
+How to reproduce this issue. Be as specific as possible and try to only include instructions you believe are necessary to reproduce said issue, E.g.
 
 1. Start the game.
 2. Load a saved game where your character is in Whiterun standing inside your house.

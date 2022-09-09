@@ -3,17 +3,18 @@ import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
 import { FormControl } from '@ngneat/reactive-forms';
-import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, throttleTime } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, startWith, throttleTime } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Server } from '../../models/server';
+import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
+import { SettingService, fontSizeToPixels } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
+import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
-import { RootView } from '../root/root.component';
-
 
 interface SortFunction {
   fn: ((a: Server, b: Server) => number);
@@ -37,25 +38,28 @@ export class ServerListComponent {
   sortFunctions = new BehaviorSubject<SortFunction[]>([]);
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
   hideVersionMismatchedServers = new BehaviorSubject(true);
+  hideFullServers = new BehaviorSubject(true);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
   favoriteOrdering = new BehaviorSubject(SortOrder.NONE);
-  serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string })[]>;
+  serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string; isFull: boolean })[]>;
   filteredServerlist$: typeof this.serverlist$;
   clientVersion$: Observable<string>;
 
   formSearch = new FormControl<string>('');
+  rowHeight$: Observable<number>;
 
   @Output() public done = new EventEmitter<void>();
-  @Output() public setView = new EventEmitter<RootView>();
 
   constructor(
-    private errorService: ErrorService,
-    private serverListService: ServerListService,
-    private clientService: ClientService,
-    private soundService: SoundService,
-    private storeService: StoreService,
+    private readonly errorService: ErrorService,
+    private readonly serverListService: ServerListService,
+    private readonly clientService: ClientService,
+    private readonly settingService: SettingService,
+    private readonly soundService: SoundService,
+    private readonly storeService: StoreService,
+    private readonly uiRepository: UiRepository,
   ) {
     this.sortFavorite(SortOrder.DESC);
     this.sortPlayerCount(SortOrder.DESC);
@@ -77,14 +81,14 @@ export class ServerListComponent {
             this.loader.serverlist.track(),
           ),
         ),
-        combineLatestWith(this.favoriteServers),
-        map(([servers, favorites]) => {
-          const clientVersion = this.clientService.versionSet.getValue();
+        combineLatestWith(this.favoriteServers, this.clientService.versionSet),
+        map(([servers, favorites, clientVersion]) => {
           return servers.map(server => {
             const shortVersion = this.getServerVersion(server);
             return {
               ...server,
               isFavorite: !!favorites[`${ server.ip }:${ server.port }`],
+              isFull: server.player_count >= server.max_player_count,
               shortVersion,
               isCompatible: shortVersion === clientVersion,
             };
@@ -102,11 +106,15 @@ export class ServerListComponent {
             throttleTime(300),
           ),
           this.hideVersionMismatchedServers,
+          this.hideFullServers,
           this.sortFunctions,
         ),
-        map(([servers, searchPhrase, hideVersionMismatchedServers, sortFunction]) => {
+        map(([servers, searchPhrase, hideVersionMismatchedServers, hideFullServers, sortFunction]) => {
           if (hideVersionMismatchedServers) {
             servers = servers.filter(server => server.isCompatible);
+          }
+          if (hideFullServers) {
+            servers = servers.filter(server => !server.isFull);
           }
           if (searchPhrase) {
             servers = servers.filter((server: Server) => {
@@ -118,6 +126,7 @@ export class ServerListComponent {
           }
           return servers;
         }),
+        startWith([]),
         share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
       );
 
@@ -130,10 +139,12 @@ export class ServerListComponent {
       favoriteServers[`${ favoriteServer.ip }:${ favoriteServer.port }`] = favoriteServer;
     }
     this.favoriteServers.next(favoriteServers);
+
+    this.rowHeight$ = this.settingService.fontSizeChange.pipe(map(fontSize => fontSizeToPixels[fontSize]*2));
   }
 
   public cancel(): void {
-    this.setView.next(RootView.CONNECT);
+    this.uiRepository.openView(View.CONNECT);
   }
 
   async updateServerList() {
@@ -178,8 +189,8 @@ export class ServerListComponent {
   }
 
   public sortServerName(sortOrder: SortOrder) {
-    this.serverNameOrdering.next(sortOrder);
     this.setSortingFn(1, sortOrder, ServerListComponent.sortNameAsc, ServerListComponent.sortNameDesc);
+    this.serverNameOrdering.next(sortOrder);
   }
 
   public sortFavorite(sortOrder: SortOrder) {
@@ -217,14 +228,18 @@ export class ServerListComponent {
 
   private setSortingFn(priority: number, ordering: SortOrder, asc: (a: Server, b: Server) => number, desc: (a: Server, b: Server) => number) {
     const sortFns = [...this.sortFunctions.getValue()];
+    let index = sortFns.findIndex(sortFn => sortFn.fn === asc);
+    if (index !== -1) {
+      sortFns.splice(index, 1);
+    }
+    index = sortFns.findIndex(sortFn => sortFn.fn === desc);
+    if (index !== -1) {
+      sortFns.splice(index, 1);
+    }
     if (ordering === SortOrder.ASC) {
       sortFns.push({ fn: asc, priority });
     } else if (ordering === SortOrder.DESC) {
-      const index = sortFns.findIndex(sortFn => sortFn.fn === asc);
-      sortFns.splice(index, 1, { fn: desc, priority });
-    } else {
-      const index = sortFns.findIndex(sortFn => sortFn.fn === desc);
-      sortFns.splice(index, 1);
+      sortFns.push({ fn: desc, priority });
     }
     this.sortFunctions.next(sortFns);
   }

@@ -45,6 +45,8 @@ struct GameServer final : Server
     void BindServerCommands();
 
     void UpdateInfo();
+    void UpdateTimeScale();
+    void UpdateSettings();
 
     // Packet dispatching
     void Send(ConnectionId_t aConnectionId, const ServerMessage& acServerMessage) const;
@@ -55,6 +57,8 @@ struct GameServer final : Server
                               const Player* apExcludeSender = nullptr) const;
     void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
                      const Player* apExcludeSender = nullptr) const;
+    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                            const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
 
     const Info& GetInfo() const noexcept
     {

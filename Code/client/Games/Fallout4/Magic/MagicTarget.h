@@ -44,9 +44,12 @@ struct MagicTarget
 
     virtual ~MagicTarget();
 
+    Actor* GetTargetAsActor();
+
     bool AddTarget(AddTargetData& arData) noexcept;
     // this function actually adds the effect
     bool CheckAddEffect(AddTargetData& arData) noexcept;
+    void DispelAllSpells(bool aNow) noexcept;
 
     SpellDispelData* pPostUpdateDispelList;
     Flag ucFlags;

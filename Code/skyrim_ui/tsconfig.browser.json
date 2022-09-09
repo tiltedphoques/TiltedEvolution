@@ -1,0 +1,17 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": []
+  },
+  "files": [
+    "src/main.ts",
+    "src/polyfills.ts",
+    "src/environments/environment.browser.ts",
+    "src/environments/environment.e2e.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
+}

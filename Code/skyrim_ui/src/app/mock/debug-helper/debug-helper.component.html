@@ -1,0 +1,43 @@
+<div class="debug-helper" [class.open]="visible | async" cdkDrag>
+  <div class="debug-helper-actions">
+    <button (click)="toggleVisibility()">
+      <fa-icon [icon]="faCode"></fa-icon>
+    </button>
+    <span *ngIf="visible | async" class="title">Debug Menu</span>
+    <button cdkDragHandle class="drag">
+      <fa-icon [icon]="faArrowsUpDownLeftRight"></fa-icon>
+    </button>
+  </div>
+  <div *ngIf="visible | async" class="debug-helper-content">
+    <div class="separator">Players</div>
+    <button (click)="addMockPlayer()">Add Player</button>
+    <div class="player-actions">
+      <div *ngFor="let player of players$ | async">
+        <hr>
+        <div class="player-info">
+          {{ player.name }} [{{ player.cellName }}]
+        </div>
+        <div class="action-row">
+          <button (click)="disconnectMockPlayer(player.id)">Disconnect</button>
+          <button *ngIf="player.invited" [disabled]="player.hasOwnParty" (click)="accteptMockPlayerInvite(player.id)">Accept Invite</button>
+          <button *ngIf="player.hasOwnParty && (connected$ | async)" (click)="inviteToPlayerMockParty(player.id)">Invite You</button>
+          <button *ngIf="!player.hasOwnParty && !player.isInGroup" (click)="startPlayerMockParty(player.id)">Start Party</button>
+          <button *ngIf="player.hasOwnParty || player.isInGroup" (click)="mockPlayerLeaveParty(player.id)">Leave Party</button>
+        </div>
+      </div>
+    </div>
+    <div class="separator">Background</div>
+    <div class="debug-helper-row">
+      <button (click)="setBackground('dark')">Dark</button>
+      <button (click)="setBackground('light')">Ligh</button>
+      <button (click)="setBackground('dark-image')">Image Dark</button>
+      <button (click)="setBackground('light-image')">Image Light</button>
+    </div>
+    <div class="separator">Debug</div>
+    <div>
+      <label for="random-debug">Randomize Debug Info</label>
+      <input type="checkbox" id="random-debug" [ngModel]="randomizeDebug | async" (ngModelChange)="randomizeDebug.next($event)"/>
+    </div>
+  </div>
+</div>
+

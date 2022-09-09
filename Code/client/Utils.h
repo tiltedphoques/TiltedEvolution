@@ -14,7 +14,8 @@
 #endif
 
 #if defined(TP_FALLOUT) && TP_PLATFORM_64
-#define POINTER_FALLOUT4(className, variableName, ...) static AutoPtr<className> variableName(__VA_ARGS__)
+#define POINTER_FALLOUT4(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
+#define POINTER_FALLOUT4_LEGACY(className, variableName, ...) static AutoPtr<className> variableName(__VA_ARGS__)
 #else
 #define POINTER_FALLOUT4(className, variableName, ...) ;
 #endif
@@ -27,8 +28,6 @@
     }
 
 struct TESForm;
-struct TESObjectREFR;
-struct Actor;
 
 namespace Utils
 {

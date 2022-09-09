@@ -1,0 +1,89 @@
+@import "env";
+
+
+.dropdown-wrapper {
+  display: flex;
+  border-image: url("../../../assets/images/scrollbar/track.svg") 3;
+  border: 1px solid;
+  cursor: pointer;
+  position: relative;
+
+  .box {
+    display: flex;
+    width: 100%;
+  }
+
+  .dropdown-selected {
+    line-height: 1.5em;
+    height: 1.5em;
+    position: relative;
+    padding-left: 1em;
+    padding-right: 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    background: transparent;
+
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .dropdown-options {
+    height: 0;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    max-height: 25vh;
+    overflow-y: auto;
+    z-index: 999;
+
+    li {
+      line-height: 1.5em;
+      height: 2em;
+      padding: 0 0.4em;
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      app-checkbox {
+        pointer-events: none;
+        margin-right: 0.5em;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      &.active {
+        font-weight: 600;
+      }
+    }
+  }
+
+  &.is-open {
+    .dropdown-options {
+      height: unset;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      top: 1.5em;
+      background-color: #0e0e0e;
+      border-image: url("../../../assets/images/scrollbar/track.svg") 3;
+      border: 1px solid;
+    }
+  }
+}
+
+div.dropdown-wrapper.disabled {
+  pointer-events: none;
+  opacity: 0.7;
+}

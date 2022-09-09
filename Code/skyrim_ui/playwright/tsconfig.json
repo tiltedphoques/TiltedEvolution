@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}
