@@ -22,6 +22,8 @@
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyTeleport.h>
+#include <Messages/RequestPlayerHealthUpdate.h>
+#include <Messages/NotifyPlayerHealthUpdate.h>
 
 #include <Structs/GridCellCoords.h>
 
@@ -29,6 +31,8 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Events/PartyJoinedEvent.h>
+#include <Events/PartyLeftEvent.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
@@ -45,7 +49,11 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     OverlayRenderHandler* Create() override
     {
         auto* pHandler = new OverlayRenderHandlerD3D11(this);
+    #if TP_SKYRIM64
         pHandler->SetVisible(true);
+    #else
+        pHandler->SetVisible(false);
+    #endif
 
         return pHandler;
     }
@@ -91,9 +99,18 @@ String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 
 float CalculateHealthPercentage(Actor* apActor) noexcept
 {
-    const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
     const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
-    return health / maxHealth * 100.f;
+    const float tempModHealth = apActor->healthModifiers.temporaryModifier;
+
+    if (maxHealth == 0.f)
+        return 0.f;
+    const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
+
+    float percentage = health / (maxHealth + tempModHealth) * 100.f;
+    if (percentage < 0.f)
+        percentage = 0.f;
+
+    return percentage;
 }
 
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
@@ -112,6 +129,9 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_playerLevelConnection = aDispatcher.sink<NotifyPlayerLevel>().connect<&OverlayService::OnPlayerLevel>(this);
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
     m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
+    m_playerHealthConnection = aDispatcher.sink<NotifyPlayerHealthUpdate>().connect<&OverlayService::OnNotifyPlayerHealthUpdate>(this);
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&OverlayService::OnPartyJoinedEvent>(this);
+    m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&OverlayService::OnPartyLeftEvent>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -135,7 +155,10 @@ void OverlayService::Render() noexcept
     static bool s_bi = false;
     if (!s_bi)
     {
+        // TODO: ft, this crashes fallout sometimes
+#if TP_SKYRIM64
         m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
+#endif
 
         s_bi = true;
     }
@@ -153,6 +176,17 @@ void OverlayService::Render() noexcept
 void OverlayService::Reset() const noexcept
 {
     m_pOverlay->GetClient()->Reset();
+}
+
+void OverlayService::Reload() noexcept
+{
+    SetInGame(false);
+    SetActive(false);
+    GetOverlayApp()->GetClient()->GetBrowser()->Reload();
+    Initialize();
+    SetInGame(true);
+    m_pOverlay->ExecuteAsync("enterGame");
+    SetActive(true);
 }
 
 void OverlayService::Initialize() noexcept
@@ -191,6 +225,7 @@ void OverlayService::SetInGame(bool aInGame) noexcept
     else
     {
         m_pOverlay->ExecuteAsync("exitGame");
+        // TODO: this does nothing, since m_inGame is false
         SetActive(false);
     }
 }
@@ -217,8 +252,10 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage);
-    m_pOverlay->ExecuteAsync("systemMessage", pArguments);
+    pArguments->SetInt(0, kSystemMessage);
+    pArguments->SetString(1, acMessage);
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
@@ -246,49 +283,28 @@ void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, playerComponent.Id);
-    pArguments->SetInt(1, static_cast<int>(percentage));
+    pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
 
 void OverlayService::OnUpdate(const UpdateEvent&) noexcept
 {
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenUpdates = 1000ms;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenUpdates)
-        return;
-
-    lastSendTimePoint = now;
-
-    auto internalStats = m_transport.GetStatistics();
-    auto steamStats = m_transport.GetConnectionStatus();
-
-    auto pArguments = CefListValue::Create();
-    pArguments->SetInt(0, steamStats.m_flOutPacketsPerSec);
-    pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
-    pArguments->SetInt(2, steamStats.m_nPing);
-    pArguments->SetInt(3, 0);
-    pArguments->SetInt(4, internalStats.SentBytes);
-    pArguments->SetInt(5, internalStats.RecvBytes);
-
-    m_pOverlay->ExecuteAsync("debugData", pArguments);
+    RunDebugDataUpdates();
+    RunPlayerHealthUpdates();
 }
 
 void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 {
     m_pOverlay->ExecuteAsync("connect");
-    SendSystemMessage("Successfully connected to server");
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
-    m_pOverlay->ExecuteAsync("setServerId", pArguments);
+    m_pOverlay->ExecuteAsync("setLocalPlayerId", pArguments);
 }
 
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 {
     m_pOverlay->ExecuteAsync("disconnect");
-    SendSystemMessage("Disconnected from server");
 }
 
 void OverlayService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
@@ -331,14 +347,24 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.PlayerName.c_str());
+    pArguments->SetInt(0, (int)acMessage.MessageType);
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
+    pArguments->SetString(2, acMessage.PlayerName.c_str());
+
     m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noexcept
 {
-    SendSystemMessage(acMessage.Text.c_str());
+    if (!m_pOverlay)
+        return;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, kPlayerDialogue);
+    pArguments->SetString(1, acMessage.Text.c_str());
+    pArguments->SetString(2, acMessage.Name.c_str());
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept
@@ -382,7 +408,7 @@ void OverlayService::OnPlayerCellChanged(const NotifyPlayerCellChanged& acMessag
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acMessage.PlayerId);
     String cellName = GetCellName(acMessage.WorldSpaceId, acMessage.CellId);
-    pArguments->SetString(3, cellName.c_str());
+    pArguments->SetString(1, cellName.c_str());
     m_pOverlay->ExecuteAsync("setCell", pArguments);
 }
 
@@ -411,4 +437,80 @@ void OverlayService::OnNotifyTeleport(const NotifyTeleport& acMessage) noexcept
     }
 
     PlayerCharacter::Get()->MoveTo(pCell, acMessage.Position);
+}
+
+void OverlayService::OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& acMessage) noexcept
+{
+    const float percentage = acMessage.Percentage >= 0.f ? acMessage.Percentage : 0.f;
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, acMessage.PlayerId);
+    pArguments->SetDouble(1, static_cast<double>(percentage));
+    m_pOverlay->ExecuteAsync("setHealth", pArguments);
+}
+
+void OverlayService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    if (acEvent.IsLeader)
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
+}
+
+void OverlayService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
+{
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
+}
+
+void OverlayService::RunDebugDataUpdates() noexcept
+{
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto internalStats = m_transport.GetStatistics();
+    auto steamStats = m_transport.GetConnectionStatus();
+
+    auto pArguments = CefListValue::Create();
+    pArguments->SetInt(0, steamStats.m_flOutPacketsPerSec);
+    pArguments->SetInt(1, steamStats.m_flInPacketsPerSec);
+    pArguments->SetInt(2, steamStats.m_nPing);
+    pArguments->SetInt(3, 0);
+    pArguments->SetInt(4, internalStats.SentBytes);
+    pArguments->SetInt(5, internalStats.RecvBytes);
+
+    m_pOverlay->ExecuteAsync("debugData", pArguments);
+}
+
+// TODO(cosideci): this whole thing is a really hacky solution to 
+// health sync code being somewhat broken for players.
+void OverlayService::RunPlayerHealthUpdates() noexcept
+{
+    if (!m_transport.IsConnected() || !m_world.GetPartyService().IsInParty())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 500ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    static float s_previousPercentage = -1.f;
+
+    const float newPercentage = CalculateHealthPercentage(PlayerCharacter::Get());
+    if (newPercentage == s_previousPercentage)
+        return;
+
+    s_previousPercentage = newPercentage;
+
+    RequestPlayerHealthUpdate request{};
+    request.Percentage = newPercentage;
+
+    m_transport.Send(request);
 }

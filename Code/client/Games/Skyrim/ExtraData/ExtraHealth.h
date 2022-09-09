@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct ExtraHealth : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::Health;
+    inline static constexpr auto eExtraData = ExtraDataType::Health;
 
     float fHealth{};
 };

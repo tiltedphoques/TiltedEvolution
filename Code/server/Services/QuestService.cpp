@@ -45,14 +45,14 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
 
             if (message.Status == RequestQuestUpdate::Started)
             {
-                spdlog::info("Started quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
+                spdlog::debug("Started quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
                 notify.Status = NotifyQuestUpdate::Started;
             }
         } 
         else 
         {
-            spdlog::info("Updated quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
+            spdlog::debug("Updated quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
             auto& record = *questIt;
             record.Id = message.Id;
@@ -63,7 +63,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     }
     else if (message.Status == RequestQuestUpdate::Stopped)
     {
-        spdlog::info("Stopped quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
+        spdlog::debug("Stopped quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
         if (questIt != entries.end())
             entries.erase(questIt);

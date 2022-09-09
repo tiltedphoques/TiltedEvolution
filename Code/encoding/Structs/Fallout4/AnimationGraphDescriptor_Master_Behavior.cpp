@@ -1,9 +1,197 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
 
+// First person variables
+namespace FP
+{
+    enum Variables
+    {
+        kfSpeedWalk = 0,
+        kfSpeedRun = 1,
+        kSpeed = 2,
+        kDirection = 3,
+        kiSyncIdleLocomotion = 4,
+        kCamPitchForward = 5,
+        kCamPitchBackward = 6,
+        kSpineTwist = 7,
+        kCamRoll = 8,
+        kiState = 9,
+        kIsFirstPerson = 10,
+        km_bEnablePitchTwistModifier = 11,
+        kPitchOffset = 12,
+        kiState_PlayerDefault = 13,
+        kCamPitch = 14,
+        kCamPitchDamped = 15,
+        kCamRollDamped = 16,
+        kdamper_kP = 17,
+        kdamper_kI = 18,
+        kdamper_kD = 19,
+        kSpineTwistDamped = 20,
+        kPitch = 21,
+        kiSyncSprintState = 22,
+        kIsSprinting = 23,
+        kTurnDelta = 24,
+        kfTest = 25,
+        kfDampenTwist = 26,
+        kspeedDamped = 27,
+        kisFiring = 28,
+        kfDampenSighted = 29,
+        kfTest3 = 30,
+        kisReloading = 31,
+        kfTurnDeltaSpeedLimited = 32,
+        kiState_NPCSighted = 33,
+        kfTurnDeltaSpeedLimit = 34,
+        kTurnDeltaSpeedLimitedDampened = 35,
+        kiAttackState = 36,
+        kIsAttackReady = 37,
+        kPitchDelta = 38,
+        kTurnDeltaSmoothed = 39,
+        kPitchDeltaSmoothed = 40,
+        kTurnDeltaDamped = 41,
+        kDirectionDamped = 42,
+        kPitchDeltaDamped = 43,
+        kTurnDeltaSmoothedDamped = 44,
+        kPitchDeltaSmoothedDamped = 45,
+        kbAnimationDriven = 46,
+        kisAttackNotReady = 47,
+        kVelocityZ = 48,
+        kDirectionSmoothed = 49,
+        kAimStability = 50,
+        kisJumping = 51,
+        kisAttacking = 52,
+        kweaponSpeedMult = 53,
+        kiState_NPCSneaking = 54,
+        kiZoomBehavior = 55,
+        kfControllerYSum = 56,
+        kiZoomState = 57,
+        kbDisableLooking = 58,
+        kbEnableLooking = 59,
+        kfControllerXSmoothed = 60,
+        kfControllerYSmoothed = 61,
+        kfPitchFactor = 62,
+        kfTurnFactor = 63,
+        kbAllowRotation = 64,
+        kfArmTurnFactor = 65,
+        kfArmPitchFactor = 66,
+        kfIdleSpeedMult = 67,
+        kiCategory = 68,
+        kfZoomLevel1 = 69,
+        kTest = 70,
+        kbAdjust1stPersonFOV = 71,
+        kbIsSynced = 72,
+        kbGraphDrivenRotation = 73,
+        kbGraphDriven = 74,
+        kbRenderFirstPersonInWorld = 75,
+        kstaggerMagnitude = 76,
+        kstaggerDirection = 77,
+        kiState_NPCAttacking = 78,
+        kbEquipOk = 79,
+        kiState_PlayerMelee = 80,
+        kiIsInSneak = 81,
+        kiState_NPCGun = 82,
+        kiState_Player1HM = 83,
+        kiState_Player2HM = 84,
+        kiState_PlayerPistol = 85,
+        kiState_PlayerShoulderMounted = 86,
+        kiState_PlayerBigGuns = 87,
+        kiState_NPCFastWalk_1stP = 88,
+        kiState_PlayerSneakMelee = 89,
+        kSpeedSmoothed = 90,
+        kfControllerXRaw = 91,
+        kfControllerYRaw = 92,
+        kiSyncChargeState = 93,
+        kReloadSpeedMult = 94,
+        kAimWobble = 95,
+        kiSyncSightedState = 96,
+        kiSyncWeaponDrawState = 97,
+        kisStagger = 98,
+        kbBlockPOVSwitch = 99,
+        kbIsThrowing = 100,
+        kbBlockPipboy = 101,
+        kFirstPersonSpeedSmoothed = 102,
+        kLeftHandTarget = 103,
+        kiWeaponChargeMode = 104,
+        kiSyncGunDown = 105,
+        kSightedSpeedMult = 106,
+        kAimWobbleSpeedMult = 107,
+        kiSyncJumpState = 108,
+        kfCrippledWobbleWeight = 109,
+        kbDoNotAllowMelee = 110,
+        kbDoNotAllowThrow = 111,
+        kbIsAnimationDriven = 112,
+        kiWantBlock = 113,
+        kIsBlocking = 114,
+        kbGraphWantsFootIK = 115,
+        kbAllowHeadTracking = 116,
+        kLookAtOutOfRange = 117,
+        kcamerafromx = 118,
+        kcamerafromy = 119,
+        kcamerafromz = 120,
+        kfRandomClipStartTimePercentage = 121,
+        kLookAtChest_Enabled = 122,
+        kLookAtSpine2_Enabled = 123,
+        kbFreezeSpeedUpdate = 124,
+        kbDisableSpineTracking = 125,
+        kIsPlayer = 126,
+        kPose = 127,
+        kbManualGraphChange = 128,
+        kpipboyUp = 129,
+        kfControllerXSum = 130,
+        kbAimActive = 131,
+        kAimHeadingCurrent = 132,
+        kAimPitchCurrent = 133,
+        kAimHeadingMaxCCW = 134,
+        kAimHeadingMaxCW = 135,
+        kfDirectAtSavedGain = 136,
+        kAimPitchMaxUp = 137,
+        kAimPitchMaxDown = 138,
+        kIsNPC = 139,
+        kfPACameraAdd = 140,
+        kfPipboyInputYScaled = 141,
+        kfPipboyInputXScaled = 142,
+        kpipboyState = 143,
+        kfPipboyInputX = 144,
+        kfPipboyInputY = 145,
+        kfPipboyInputMagnitude = 146,
+        ktest_holotape = 147,
+        kfIdleTimer = 148,
+        kfRadioTune = 149,
+        kfZeroToOneAngle = 150,
+        kRH_HandIKTarget_WeaponLeft = 151,
+        ktestFloat = 152,
+        ktestPipboyIK = 153,
+        ktestModCamPitch = 154,
+        kiPipboyRadio = 155,
+        ktestRadioBlend = 156,
+        kfZoom2 = 157,
+        kfZoom1 = 158,
+        kfZoom0 = 159,
+        kfRadioZoom1 = 160,
+        kfRadioZoom2 = 161,
+        kiFromRadio = 162,
+        kiPipboyRootStartState = 163,
+        kLookAtOutsideLimit = 164,
+        kbForceIdleStop = 165,
+        kbDoNotInterrupt = 166,
+        kLookAtLimitAngleDeg = 167,
+        kLookAtChest_LimitAngleDeg = 168,
+        kLookAtNeck_LimitAngleDeg = 169,
+        kLookAtHead_LimitAngleDeg = 170,
+        kLookAtHead_OnGain = 171,
+        kLookAtAdditive = 172,
+        kbEnableRoot_IsActiveMod = 173,
+        kLookAtOnGain = 174,
+        kLookAtOffGain = 175,
+        kbTalkableWithItem = 176,
+        kiTalkGenerator = 177,
+        kbFreezeRotationUpdate = 178,
+        kiPcapTalkGenerator = 179,
+        kbIsInFlavor = 180,
+    };
+}
 
-
-AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
+// Third person variables
+namespace TP
 {
     enum Variables
     {
@@ -307,122 +495,245 @@ AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavi
         kiTalkGenerator = 297,
         kstaggerDirection = 298,
     };
+}
+
+std::optional<uint32_t> AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(uint32_t aThirdPersonVar)
+{
+    switch (aThirdPersonVar)
+    {
+        // bools
+    case TP::km_bEnablePitchTwistModifier:
+        return FP::km_bEnablePitchTwistModifier;
+    case TP::kIsSprinting:
+        return FP::kIsSprinting;
+    case TP::kisFiring:
+        return FP::kisFiring;
+    case TP::kisReloading:
+        return FP::kisReloading;
+    case TP::kiIsInSneak:
+        return FP::kiIsInSneak;
+    case TP::kisJumping:
+        return FP::kisJumping;
+    case TP::kbEquipOk:
+        return FP::kbEquipOk;
+    case TP::kIsStaggering:
+        return FP::kisStagger;
+    case TP::kbGraphDriven:
+        return FP::kbGraphDriven;
+    case TP::kbGraphDrivenRotation:
+        return FP::kbGraphDrivenRotation;
+    case TP::kbGraphWantsFootIK:
+        return FP::kbGraphWantsFootIK;
+    case TP::kbIsThrowing:
+        return FP::kbIsThrowing;
+    case TP::kIsBlocking:
+        return FP::kIsBlocking;
+    case TP::kbForceIdleStop:
+        return FP::kbForceIdleStop;
+    case TP::kbAllowHeadTracking:
+        return FP::kbAllowHeadTracking;
+    case TP::kbIsInFlavor:
+        return FP::kbIsInFlavor;
+    case TP::kbAimActive:
+        return FP::kbAimActive;
+    case TP::kbAllowRotation:
+        return FP::kbAllowRotation;
+    case TP::kbEnableRoot_IsActiveMod:
+        return FP::kbEnableRoot_IsActiveMod;
+    case TP::kbDisableSpineTracking:
+        return FP::kbDisableSpineTracking;
+    case TP::kIsNPC:
+        return FP::kIsNPC;
+    case TP::kIsPlayer:
+        return FP::kIsPlayer;
+    case TP::kbFreezeSpeedUpdate:
+        return FP::kbFreezeSpeedUpdate;
+    case TP::kbFreezeRotationUpdate:
+        return FP::kbFreezeRotationUpdate;
+
+        // floats
+    case TP::kDirection:
+        return FP::kDirection;
+    case TP::kfSpeedRun:
+        return FP::kfSpeedRun;
+    case TP::kfSpeedWalk:
+        return FP::kfSpeedWalk;
+    case TP::kSpineTwist:
+        return FP::kSpineTwist;
+    case TP::kSpeed:
+        return FP::kSpeed;
+    case TP::kPitchOffset:
+        return FP::kPitchOffset;
+    case TP::kPitch:
+        return FP::kPitch;
+    case TP::kTurnDelta:
+        return FP::kTurnDelta;
+    case TP::kDirectionSmoothed:
+        return FP::kDirectionSmoothed;
+    case TP::kAimStability:
+        return FP::kAimStability;
+    case TP::kSpeedSmoothed:
+        return FP::kSpeedSmoothed;
+    case TP::kReloadSpeedMult:
+        return FP::kReloadSpeedMult;
+    case TP::kTurnDeltaSmoothed:
+        return FP::kTurnDeltaSmoothed;
+    case TP::kweaponSpeedMult:
+        return FP::kweaponSpeedMult;
+    case TP::kVelocityZ:
+        return FP::kVelocityZ;
+    case TP::kAimHeadingCurrent:
+        return FP::kAimHeadingCurrent;
+    case TP::kAimPitchCurrent:
+        return FP::kAimPitchCurrent;
+    case TP::kfDirectAtSavedGain:
+        return FP::kfDirectAtSavedGain;
+
+        // ints
+    case TP::kiState:
+        return FP::kiState;
+    case TP::kiSyncSprintState:
+        return FP::kiSyncSprintState;
+    case TP::kiWeaponChargeMode:
+        return FP::kiWeaponChargeMode;
+    case TP::kiAttackState:
+        return FP::kiAttackState;
+    case TP::kiState_NPCSneaking:
+        return FP::kiState_NPCSneaking;
+    case TP::kiState_PlayerDefault:
+        return FP::kiState_PlayerDefault;
+    case TP::kiState_NPCGun:
+        return FP::kiState_NPCGun;
+    case TP::kiState_PlayerMelee:
+        return FP::kiState_PlayerMelee;
+    case TP::kiSyncIdleLocomotion:
+        return FP::kiSyncIdleLocomotion;
+    case TP::kiSyncJumpState:
+        return FP::kiSyncJumpState;
+
+    default:
+        return std::nullopt;
+    }
+}
+
+AnimationGraphDescriptor_Master_Behavior::AnimationGraphDescriptor_Master_Behavior(AnimationGraphDescriptorManager& aManager)
+{
     // third person key
     uint64_t key = 8074503569708505439;
 
     AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
         AnimationGraphDescriptor(
-        {km_bEnablePitchTwistModifier,
-            kIsSprinting,
-            kisFiring,
-            kisReloading,
-            kIsAttackReady,
-            kisAttackNotReady,
-            kiIsInSneak,
-            kisJumping,
-            kbEquipOk,
-            kbInJumpState,
-            kIsStaggering,
-            kIsSneaking,
-            kisMirrored,
-            kbNotHeadTrack,
-            kbCCSupport,
-            kbCCOnStairs,
-            kbGraphDriven,
-            kbGraphDrivenTranslation,
-            kbGraphDrivenRotation,
-            kbGraphWantsFootIK,
-            kbIsFemale,
-            kbIsThrowing,
-            kEnable_bEquipOK,
-            kIsBlocking,
-            kbUseRifleReadyDirectAt,
-            kbEquipOkIsActiveEnabled,
-            kbIsSneaking,
-            kbAimEnabled,
-            kbForceIdleStop,
-            kbActorMobilityNotFullyCrippled,
-            kbSyncDirection,
-            kbDisableAttackReady,
-            kbAllowHeadTracking,
-            kbInLandingState,
-            kbIsInFlavor,
-            kbAimActive,
-            kbAllowRotation,
-            kbUseLeftHandIKDefaults,
-            kLeftHandIKOn,
-            kbEnableRoot_IsActiveMod,
-            kbIsInMT,
-            kbRootRifleEquipOk,
-            kbAimCaptureEnabled,
-            kbDisableSpineTracking,
-            kIsNPC,
-            kIsPlayer,
-            kbFreezeSpeedUpdate,
-            kbFreezeRotationUpdate,
+        {TP::km_bEnablePitchTwistModifier,
+            TP::kIsSprinting,
+            TP::kisFiring,
+            TP::kisReloading,
+            TP::kIsAttackReady,
+            TP::kisAttackNotReady,
+            TP::kiIsInSneak,
+            TP::kisJumping,
+            TP::kbEquipOk,
+            TP::kbInJumpState,
+            TP::kIsStaggering,
+            TP::kIsSneaking,
+            TP::kisMirrored,
+            TP::kbNotHeadTrack,
+            TP::kbCCSupport,
+            TP::kbCCOnStairs,
+            TP::kbGraphDriven,
+            TP::kbGraphDrivenTranslation,
+            TP::kbGraphDrivenRotation,
+            TP::kbGraphWantsFootIK,
+            TP::kbIsFemale,
+            TP::kbIsThrowing,
+            TP::kEnable_bEquipOK,
+            TP::kIsBlocking,
+            TP::kbUseRifleReadyDirectAt,
+            TP::kbEquipOkIsActiveEnabled,
+            TP::kbIsSneaking,
+            TP::kbAimEnabled,
+            TP::kbForceIdleStop,
+            TP::kbActorMobilityNotFullyCrippled,
+            TP::kbSyncDirection,
+            TP::kbDisableAttackReady,
+            TP::kbAllowHeadTracking,
+            TP::kbInLandingState,
+            TP::kbIsInFlavor,
+            TP::kbAimActive,
+            TP::kbAllowRotation,
+            TP::kbUseLeftHandIKDefaults,
+            TP::kLeftHandIKOn,
+            TP::kbEnableRoot_IsActiveMod,
+            TP::kbIsInMT,
+            TP::kbRootRifleEquipOk,
+            TP::kbAimCaptureEnabled,
+            TP::kbDisableSpineTracking,
+            TP::kIsNPC,
+            TP::kIsPlayer,
+            TP::kbFreezeSpeedUpdate,
+            TP::kbFreezeRotationUpdate,
         },
-        {kDirection,
-            kfSpeedRun,
-            kfSpeedWalk,
-            kSpineTwist,
-            kSpeed,
-            kPitchOffset,
-            kPitch,
-            kTurnDelta,
-            kDirectionSmoothed,
-            kAimStability,
-            kSampledSpeed,
-            kSpeedSmoothed,
-            kReloadSpeedMult,
-            kTurnDeltaSmoothed,
-            kWalkSpeedMult,
-            krunSpeedMult,
-            kDirectionDegrees,
-            kJogSpeedMult,
-            kweaponSpeedMult,
-            kfLocomotionWalkPlaybackSpeed,
-            kfLocomotionJogPlaybackSpeed,
-            kfLocomotionRunPlaybackSpeed,
-            kfLocomotionSneakRunPlaybackSpeed,
-            kfLocomotionSneakWalkPlaybackSpeed,
-            kfik_footplantedgain,
-            kVelocityZ,
-            kAimHeadingCurrent,
-            kAimPitchCurrent,
-            kfDirectAtSavedGain,
-            kfPlaybackMult,
-            kbAnimateWeaponBones,
+        {TP::kDirection,
+            TP::kfSpeedRun,
+            TP::kfSpeedWalk,
+            TP::kSpineTwist,
+            TP::kSpeed,
+            TP::kPitchOffset,
+            TP::kPitch,
+            TP::kTurnDelta,
+            TP::kDirectionSmoothed,
+            TP::kAimStability,
+            TP::kSampledSpeed,
+            TP::kSpeedSmoothed,
+            TP::kReloadSpeedMult,
+            TP::kTurnDeltaSmoothed,
+            TP::kWalkSpeedMult,
+            TP::krunSpeedMult,
+            TP::kDirectionDegrees,
+            TP::kJogSpeedMult,
+            TP::kweaponSpeedMult,
+            TP::kfLocomotionWalkPlaybackSpeed,
+            TP::kfLocomotionJogPlaybackSpeed,
+            TP::kfLocomotionRunPlaybackSpeed,
+            TP::kfLocomotionSneakRunPlaybackSpeed,
+            TP::kfLocomotionSneakWalkPlaybackSpeed,
+            TP::kfik_footplantedgain,
+            TP::kVelocityZ,
+            TP::kAimHeadingCurrent,
+            TP::kAimPitchCurrent,
+            TP::kfDirectAtSavedGain,
+            TP::kfPlaybackMult,
+            TP::kbAnimateWeaponBones,
         },
-        {kTurnDelta,
-            kiState,
-            kiWeaponChargeMode,
-            kiAttackState,
-            kiGetUpType,
-            kiState_Raider_Stumble_Rifle,
-            kiState_NPCSneaking,
-            kiState_PlayerDefault,
-            kiState_NPCMelee,
-            kiState_NPCGun,
-            kiState_PlayerMelee,
-            kiState_NPCFastWalk,
-            kiControlsIdleSync,
-            kiSyncWalkRun,
-            kiState_NPCBlocking,
-            kiLocomotionSpeedState,
-            kiMeleeState,
-            kCurrentJumpState,
-            kiSyncTurnState,
-            kbPathingInterruptibleIdle,
-            kiSyncLocomotionSpeed,
-            kiSyncShuffleState,
-            kiSyncSneakWalkRun,
-            kiSyncDirection,
-            kiSyncForwardBackward00,
-            kiSyncForwardBackward,
-            kiSyncIdleLocomotion,
-            kiSyncJumpState,
-            kiSyncReadyAlertRelaxed,
-            kiIsPlayer,
+        {TP::kiState,
+            TP::kiSyncSprintState,
+            TP::kiWeaponChargeMode,
+            TP::kiAttackState,
+            TP::kiGetUpType,
+            TP::kiState_Raider_Stumble_Rifle,
+            TP::kiState_NPCSneaking,
+            TP::kiState_PlayerDefault,
+            TP::kiState_NPCMelee,
+            TP::kiState_NPCGun,
+            TP::kiState_PlayerMelee,
+            TP::kiState_NPCFastWalk,
+            TP::kiControlsIdleSync,
+            TP::kiSyncWalkRun,
+            TP::kiState_NPCBlocking,
+            TP::kiLocomotionSpeedState,
+            TP::kiMeleeState,
+            TP::kCurrentJumpState,
+            TP::kiSyncTurnState,
+            TP::kbPathingInterruptibleIdle,
+            TP::kiSyncLocomotionSpeed,
+            TP::kiSyncShuffleState,
+            TP::kiSyncSneakWalkRun,
+            TP::kiSyncDirection,
+            TP::kiSyncForwardBackward00,
+            TP::kiSyncForwardBackward,
+            TP::kiSyncIdleLocomotion,
+            TP::kiSyncJumpState,
+            TP::kiSyncReadyAlertRelaxed,
+            TP::kiIsPlayer,
         }
     ));
 }

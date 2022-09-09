@@ -1,9 +1,10 @@
-import { Observable, from as fromPromise } from 'rxjs';
+import { from as fromPromise, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { SettingService } from '../../setting.service';
 
 import { AssetDecoder } from '../asset-decoder';
 import { AudioAsset } from '../assets/audio.asset';
-import { SettingService } from '../../setting.service';
+
 
 export class AudioAssetDecoder extends AssetDecoder<AudioAsset> {
 

@@ -126,6 +126,12 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
 
     spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
 
+    if (!pNewLeader) 
+    {
+        spdlog::error("[PartyService]: Player {} does not exist¨. Cannot change paty leader", message.PartyMemberPlayerId);
+        return;
+    }
+
     auto& inviterPartyComponent = player->GetParty();
     if (inviterPartyComponent.JoinedPartyId) // Ensure not in party
     {
@@ -151,6 +157,14 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     auto& message = acPacket.Packet;
     Player* const player = acPacket.pPlayer;
     Player* const pKick = m_world.GetPlayerManager().GetById(message.PartyMemberPlayerId);
+
+    spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
+
+    if (!pKick) 
+    {
+        spdlog::error("[PartyService]: Player {} does not exist. Cannot kick", message.PartyMemberPlayerId);
+        return;
+    }
 
     auto& inviterPartyComponent = player->GetParty();
     if (inviterPartyComponent.JoinedPartyId) // Ensure not in party
@@ -179,7 +193,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 
     notify.Level = acEvent.pPlayer->GetLevel();
 
-    spdlog::info("[Party] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
+    spdlog::debug("[Party] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
 }
@@ -330,7 +344,6 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
     }
 }
 
-// TODO(cosideci): why broadcast the whole list every time? Why not just the diff?
 void PartyService::BroadcastPlayerList(Player* apPlayer) const noexcept
 {
     auto pIgnoredPlayer = apPlayer;

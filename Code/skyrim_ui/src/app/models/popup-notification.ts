@@ -1,12 +1,18 @@
-import { Player } from "./player";
-
-export enum NotificationType {
-  Connection = 1,
-  Invitation
-}
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 export interface PopupNotification {
-  message: string,
-  type?: NotificationType,
-  player?: Player,
+  /** Translation Key. Plaintext should **NOT** be used */
+  messageKey: string;
+  messageParams?: Record<string, any>;
+  imageUrl?: string;
+  icon?: IconDefinition;
+  /** milliseconds */
+  duration?: number;
+  actions?: PopupNotifactionAction[];
+}
+
+export interface PopupNotifactionAction {
+  /** Translation Key. Plaintext should **NOT** be used */
+  nameKey: string;
+  callback: () => void;
 }

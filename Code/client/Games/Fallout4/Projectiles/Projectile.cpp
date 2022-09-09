@@ -12,14 +12,14 @@ static TLaunch* RealLaunch = nullptr;
 
 BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept
 {
-    return ThisCall(RealLaunch, apResult, arData);
+    return TiltedPhoques::ThisCall(RealLaunch, apResult, arData);
 }
 
 BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projectile>, ProjectileLaunchData& arData)
 {
     if (arData.pShooter)
     {
-        Actor* pActor = RTTI_CAST(arData.pShooter, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(arData.pShooter);
         if (pActor)
         {
             ActorExtension* pExtendedActor = pActor->GetExtension();
@@ -61,7 +61,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 
     World::Get().GetRunner().Trigger(Event);
 
-    return ThisCall(RealLaunch, apThis, arData);
+    return TiltedPhoques::ThisCall(RealLaunch, apThis, arData);
 }
 
 TP_THIS_FUNCTION(TFire, void, void, TESObjectREFR* apSource, uint32_t aEquipIndex, TESAmmo* apAmmo, AlchemyItem* apPoison);
@@ -71,7 +71,7 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
 {
     if (apSource)
     {
-        Actor* pActor = RTTI_CAST(apSource, TESObjectREFR, Actor);
+        Actor* pActor = Cast<Actor>(apSource);
         if (pActor)
         {
             ActorExtension* pExtension = pActor->GetExtension();
@@ -83,12 +83,12 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
         }
     }
 
-    return ThisCall(RealFire, apThis, apSource, aEquipIndex, apAmmo, apPoison);
+    return TiltedPhoques::ThisCall(RealFire, apThis, apSource, aEquipIndex, apAmmo, apPoison);
 }
 
 static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_FALLOUT4(TLaunch, s_launch, 0x140FCA260 - 0x140000000);
-    POINTER_FALLOUT4(TFire, fire, 0x14034D490 - 0x140000000);
+    POINTER_FALLOUT4(TLaunch, s_launch, 1452335);
+    POINTER_FALLOUT4(TFire, fire, 1056038);
 
     RealLaunch = s_launch.Get();
     RealFire = fire.Get();

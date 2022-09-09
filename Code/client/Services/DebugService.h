@@ -44,6 +44,7 @@ private:
     void DisplayLocalComponent(LocalComponent& aLocalComponent, const uint32_t acFormId) const noexcept;
     void DisplayRemoteComponent(RemoteComponent& aLocalComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept;
 
+    void DrawServerView() noexcept;
     void DrawEntitiesView();
     void DrawComponentDebugView();
     void DrawPlayerDebugView();
@@ -58,6 +59,12 @@ private:
     void DrawCellView();
     void DrawUIView();
     void DrawProcessView();
+    void DrawWeatherView();
+
+public:
+    bool m_showDebugStuff = false;
+
+private:
 
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
@@ -72,12 +79,11 @@ private:
 
     uint32_t SubActorID = 0;
     String SubtitleText = "";
+    uint32_t TopicID = 0;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
     entt::scoped_connection m_dialogueConnection;
-
-    bool m_showDebugStuff = false;
     bool m_showBuildTag = true;
     bool m_drawComponentsInWorldSpace = false;
 };

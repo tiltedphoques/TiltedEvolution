@@ -19,9 +19,20 @@ struct BGSHeadPart;
 
 struct TESNPC : TESActorBase
 {
-    static constexpr uint32_t Type = FormType::Npc;
+    static constexpr FormType Type = FormType::Npc;
 
     static TESNPC* Create(const String& acBuffer, uint32_t aChangeFlags) noexcept;
+
+    // TODO: ft, verify whether it also works like this in fallout 4
+    TESNPC* GetTemplateBase() const noexcept
+    {
+        TESNPC* pTemplate = npcTemplate;
+
+        while (pTemplate && pTemplate->IsTemporary())
+            pTemplate = pTemplate->npcTemplate;
+
+        return pTemplate;
+    }
 
     struct Head
     {

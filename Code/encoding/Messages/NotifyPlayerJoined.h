@@ -30,10 +30,10 @@ struct NotifyPlayerJoined final : ServerMessage
                CenterCoords == acRhs.CenterCoords;
     }
 
-    uint32_t PlayerId;
-    String Username;
-    GameId WorldSpaceId;
-    GameId CellId;
-    uint16_t Level;
-    GridCellCoords CenterCoords;
+    uint32_t PlayerId{};
+    String Username{};
+    GameId WorldSpaceId{};
+    GameId CellId{};
+    uint16_t Level{};
+    GridCellCoords CenterCoords{};
 };

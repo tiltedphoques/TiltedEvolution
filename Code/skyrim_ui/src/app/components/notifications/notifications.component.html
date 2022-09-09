@@ -1,4 +1,5 @@
 <p *ngFor="let notification of notifications">
   <span class="app-notifications-icon"></span>
-  <span class="app-notifications-content">{{notification.content}}</span>
+  <span class="app-notifications-content" *ngIf="notification.senderName">{{ notification.senderName }}: {{ notification.content }}</span>
+  <span class="app-notifications-content" *ngIf="!notification.senderName">{{ notification.content | transloco: notification.translationParams }}</span>
 </p>

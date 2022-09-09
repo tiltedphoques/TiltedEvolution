@@ -1,0 +1,170 @@
+{
+  "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
+
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Send",
+      "MESSAGE": "Message",
+      "MESSAGE_TOO_LONG": "You cannot send a message longer than {{chatMessageLengthLimit}} characters."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Connect to a server using its full address. Use the format <strong>address:port</strong>. The port defaults to <strong>10578</strong>.",
+        "HELGEN": "Do NOT connect to any server if you are still in the Helgen intro sequence. Make sure you just escaped Helgen first."
+      },
+      "ADDRESS": "Address",
+      "PASSWORD": "Password",
+      "SAVE_PASSWORD": "Save Password?",
+      "CONNECT": "Connect",
+      "CANCEL": "Cancel",
+      "PUBLIC_SERVERS": "Public servers",
+      "ERROR": {
+        "CONNECTION": "Could not connect to the specified server. Please make sure you've entered the correct address and that you're not experiencing network issues",
+        "VERSION_MISMATCH": "You cannot connect to the server because it does not have the same version of Skyrim Together as you.",
+        "INVALID_ADDRESS": "The address is of invalid format."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Are you sure you want to disconnect?",
+      "PROCEED": "Proceed",
+      "CANCEL": "Cancel"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Message from",
+      "ACCEPT": "Accept",
+      "DECLINE": "Decline"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Accept invite from {{name}}",
+      "LAUNCH_PARTY": "Launch party",
+      "INVITES": "Invites",
+      "NO_INVITES": "You don't have any invites",
+      "EXPERIENCE_WARNING": "For an optimal questing experience, make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>. Here is a small summary of the guidelines:",
+      "GUIDELINES": {
+        "PARTY": "By creating a party, you sort of become the \"host\", aka the party leader.",
+        "PARTY_LEADER_TALK": "Only the party leader can talk to quest NPCs to progress quests.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Only the party leader can loot quest items.",
+        "KEEP_PARTY_LEADER": "Stick to one party leader per playthrough.",
+        "ONE_PARTY_PER_SERVER": "Stick to one party per server."
+      },
+      "NO_PLAYERS_IN_PARTY": "There is nobody in your party yet. Invite them through the player list!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Name",
+        "LOCATION": "Location"
+      },
+      "ACTIONS": {
+        "KICK": "Kick",
+        "TELEPORT": "Teleport",
+        "MAKE_LEADER": "Make leader"
+      },
+      "LEAVE_PARTY": "Leave party"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Nobody here but us chickens!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Name",
+        "LOCATION": "Location"
+      },
+      "INVITE": "Invite"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Player List",
+      "PARTY_MENU": "Party Menu",
+      "BACK": "Back"
+    },
+    "ROOT": {
+      "CONNECT": "Connect",
+      "DISCONNECT": "Disconnect",
+      "RECONNECT": "Reconnect",
+      "PLAYER_MANAGER": "Player Manager",
+      "SETTINGS": "Settings",
+      "CONNECTION_IN_PROGRESS": "Connection in progress..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Search...",
+      "REFRESH": "Refresh",
+      "BACK": "Back",
+      "LOADING": "Loading...",
+      "NO_SERVERS": "No public server available",
+      "HIDE_MISMATCHED_SERVERS": "Hide servers with incompatible version",
+      "HIDE_FULL_SERVERS": "Hide full servers",
+      "SERVER_COUNT": "Showing {{filteredCount}} of {{count}} servers",
+      "TABLE_HEADERS": {
+        "NAME": "Server Name",
+        "PLAYERS": "Players / Max.",
+        "COUNTRY": "Country",
+        "FAVORITE": "Favorite"
+      },
+      "JOIN": "Join"
+    },
+    "SETTINGS": {
+      "AUDIO": "Audio",
+      "MUTE_UI": "Mute UI",
+      "UI_VOLUME": "UI Volume",
+      "PARTY": "Party",
+      "SHOW_PARTY": "Show Party",
+      "AUTO_HIDE_PARTY": "Auto Hide Party",
+      "AUTO_HIDE_PARTY_LENGTH": "Auto Hide Timer Length",
+      "PARTY_ANCHOR": "Position",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Top left",
+        "TOP_RIGHT": "Top right",
+        "BOTTOM_RIGHT": "Bottom right",
+        "BOTTOM_LEFT": "Bottom left"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Horizontal Offset",
+      "PARTY_ANCHOR_OFFSET_Y": "Vertical Offset",
+      "LENGTH": "{{length}}s",
+      "UI": "UI",
+      "LANGUAGE": "Language",
+      "DEBUG": "Debug",
+      "SHOW_DEBUG_INFO": "Show Debug Information",
+      "FONT_SIZE": "Font size",
+      "FONT_SIZES": {
+        "XS": "Extra small",
+        "S": "Small",
+        "M": "Medium",
+        "L": "Large",
+        "XL": "Extra Large"
+      },
+      "BACK": "Back"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Connection lost, trying to reconnect. {{remainingReconnectionAttempt}} attempts left.",
+      "CONNECTED": "Successfully connected to server.",
+      "DISCONNECTED": "Disconnected from server."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Available chat commands: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' is recognized as a command."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} has reached level {{level}}.",
+      "ALREADY_IN_GROUP": "You are already in a group. To join another group, please leave your current group.",
+      "KICK_NO_PARTY_LEADER": "You cannot kick other members as you are not the party leader.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "You cannot make another member the leader as you are not the party leader."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "This server expects version {{expectedVersion}} but you are on version {{version}}.",
+        "MODS_MISMATCH": "This server has ModPolicy enabled.{{mods}}",
+        "MODS_MISMATCH_REMOVE": "Please remove the following mods to join:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Please install the following mods to join:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "This server disallows {{mods}}. Please remove them to join.",
+        "WRONG_PASSWORD": "The password you entered is incorrect.",
+        "NO_REASON": "The server refused connection without reason.",
+        "SERVER_FULL": "This server is full."
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} invited you to join a party"
+    }
+  }
+}

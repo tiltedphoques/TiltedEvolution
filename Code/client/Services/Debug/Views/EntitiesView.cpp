@@ -148,6 +148,7 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     if (!pActor)
         return;
 
+    /*
     if (ImGui::Button("Teleport away"))
     {
         m_world.GetRunner().Queue([id = aFormComponent.Id]() {
@@ -160,6 +161,7 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
             pActor->MoveTo(pCell, pos);
         });
     }
+    */
 
     ImGui::InputInt("Game Id", (int*)&aFormComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputFloat3("Position", pActor->position.AsArray(), "%.3f", ImGuiInputTextFlags_ReadOnly);
@@ -168,7 +170,12 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &isDead, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     int isRemote = int(pActor->GetExtension()->IsRemote());
     ImGui::InputScalar("Is remote?", ImGuiDataType_U8, &isRemote, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
+    auto handle = pActor->GetHandle();
+    ImGui::InputInt("Handle", (int*)&handle.handle.iBits, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 #if TP_SKYRIM64
+    auto owner = pActor->GetCommandingActor();
+    int commandingActorId = int(owner ? owner->formID : 0x0);
+    ImGui::InputScalar("Commanding Actor", ImGuiDataType_U8, &commandingActorId, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
     float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
 #endif

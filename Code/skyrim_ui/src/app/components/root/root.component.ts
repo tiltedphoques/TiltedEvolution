@@ -1,202 +1,114 @@
-import {
-  Component, ViewEncapsulation, HostListener, ViewChild,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
-
-import { Subscription } from 'rxjs';
-
-import { ClientService } from '../../services/client.service';
-import { UserService } from '../../services/user.service';
-import { SoundService, Sound } from '../../services/sound.service';
-
-import { ChatComponent } from '../chat/chat.component';
-
-import { animation as controlsAnimation } from './controls.animation';
-import { animation as notificationsAnimation } from './notifications.animation';
-import { animation as popupsAnimation } from './popups.animation';
-
+import { Overlay } from '@angular/cdk/overlay';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { TranslocoService } from '@ngneat/transloco';
+import { takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User } from '../../models/user';
-import { Player } from '../../models/player';
+import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
+import { View } from '../../models/view.enum';
+import { ClientService } from '../../services/client.service';
+import { DestroyService } from '../../services/destroy.service';
+import { SettingService, fontSizeToPixels } from '../../services/setting.service';
+import { Sound, SoundService } from '../../services/sound.service';
+import { UiRepository } from '../../store/ui.repository';
+import { ChatComponent } from '../chat/chat.component';
+import { GroupComponent } from '../group/group.component';
+import { controlsAnimation } from './controls.animation';
+import { notificationsAnimation } from './notifications.animation';
+import {map} from 'rxjs/operators';
 
-import { faCogs, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { PlayerList } from 'src/app/models/player-list';
-import { PlayerListService } from 'src/app/services/player-list.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './root.component.html',
   styleUrls: ['./root.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [controlsAnimation, notificationsAnimation, popupsAnimation],
-  host: { 'data-app-root-game': environment.game.toString() }
+  animations: [controlsAnimation, fadeInOutActiveAnimation, notificationsAnimation],
+  host: { 'data-app-root-game': environment.game.toString() },
+  providers: [DestroyService],
 })
-export class RootComponent implements OnInit, OnDestroy {
+export class RootComponent implements OnInit {
 
-  faCogs: IconDefinition = faCogs;
+  /* ### ENUMS ### */
+  readonly RootView = View;
 
-  @ViewChild('chat')
-  private chatComp!: ChatComponent;
+  view$ = this.uiRepository.view$;
 
-  private _view?: string;
+  connected$ = this.client.connectionStateChange.asObservable();
+  menuOpen$ = this.client.openingMenuChange.asObservable();
+  inGame$ = this.client.inGameStateChange.asObservable();
+  active$ = this.client.activationStateChange.asObservable();
+  connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
 
-  private activationSubscription: Subscription;
-  private gameSubscription: Subscription;
-  private activationStateChangeSubscription: Subscription;
+  @ViewChild('chat') private chatComp!: ChatComponent;
+  @ViewChild(GroupComponent) private groupComponent: GroupComponent;
 
   public constructor(
-    private client: ClientService,
-    private user: UserService,
-    private sound: SoundService,
-    private playerList: PlayerListService
+    private readonly destroy$: DestroyService,
+    private readonly client: ClientService,
+    private readonly sound: SoundService,
+    private readonly uiRepository: UiRepository,
+    private readonly translocoService: TranslocoService,
+    private readonly settingService: SettingService,
+    public readonly overlay: Overlay, // used for mockup
   ) {
+    this.translocoService.setActiveLang(this.settingService.getLanguage());
   }
 
   public ngOnInit(): void {
-    this.activationSubscription = this.client.activationStateChange.subscribe(state => {
-      if (this.inGame && state && !this.view) {
-        setTimeout(() => this.chatComp.focus(), 100);
-      }
-    });
-
-    this.gameSubscription = this.client.inGameStateChange.subscribe(state => {
-      if (!state) {
-        this.view = undefined;
-      }
-    });
-
+    this.onInGameStateSubscription();
     this.onActivationStateSubscription();
+    this.onFontSizeSubscription();
+  }
+
+  public onInGameStateSubscription() {
+    this.client.inGameStateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        if (!state) {
+          this.closeView();
+        }
+      });
   }
 
   public onActivationStateSubscription() {
-    this.activationStateChangeSubscription = this.client.activationStateChange.subscribe((state: boolean) => {
-      if (!state) {
-        this.view = undefined;
-      }
+    this.client.activationStateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        if (this.client.inGameStateChange.getValue() && state && !this.uiRepository.isViewOpen()) {
+          setTimeout(() => this.chatComp.focus(), 100);
+        }
+        if (!state) {
+          this.closeView();
+        }
+      });
+  }
+
+  public onFontSizeSubscription() {
+    this.settingService.fontSizeChange
+    .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
+    .subscribe( size => {
+      document.documentElement.setAttribute('style', `font-size: ${size}px;`);
     })
   }
 
-  public ngOnDestroy(): void {
-    this.activationSubscription.unsubscribe();
-    this.gameSubscription.unsubscribe();
-    this.activationStateChangeSubscription.unsubscribe();
-  }
-
-  public get currentUser(): User | undefined {
-    return this.user.user.value;
-  }
-
-  public get openingMenu(): boolean {
-    return this.client.openingMenuChange.value;
-  }
-
-  public get connected(): boolean {
-    return this.client.connectionStateChange.value;
-  }
-
-  public get active(): boolean {
-    return this.client.activationStateChange.value;
-  }
-
-  public get version(): string {
-    return this.client.versionSet.value;
-  }
-
-  public get inGame(): boolean {
-    return this.client.inGameStateChange.value;
-  }
-
-  public get isConnectionInProgress(): boolean {
-    return this.client.isConnectionInProgressChange.value;
-  }
-
-  public set view(view: string | undefined) {
-    this._view = view;
+  public setView(view: View | null) {
+    this.uiRepository.openView(view);
 
     if (view) {
       this.sound.play(Sound.Focus);
-    }
-    else if (this.chatComp) {
+    } else if (this.chatComp) {
       this.chatComp.focus();
     }
   }
 
-  public get view(): string | undefined {
-    return this._view;
-  }
-
-  public get isProduction(): boolean {
-    return environment.production;
-  }
-
-  public get isnightly(): boolean {
-    return environment.nightlyBuild;
+  public closeView() {
+    this.uiRepository.openView(null);
   }
 
   public reconnect(): void {
     this.client.reconnect();
   }
 
-  @HostListener('window:keydown.escape', ['$event'])
-  // @ts-ignore
-  private activate(event: KeyboardEvent): void {
-    if (!this.view) {
-      if (environment.game) {
-        this.client.deactivate();
-      } else {
-        if (!this.connected) {
-          this.user.login('1', 'Dumbeldor');
-
-          this.client.connectionStateChange.next(true);
-
-          this.client.playerConnectedChange.next(new Player(
-            {
-              serverId: 1,
-              name: 'Dumbeldor',
-              online: true,
-              connected: true,
-              level: 10,
-              cellName: 'Falkreath'
-            }
-          ));
-          this.client.playerConnectedChange.next(new Player(
-            {
-              serverId: 2,
-              name: 'Pokang',
-              online: true,
-              connected: true,
-              level: 12,
-              cellName: 'Whiterun'
-            }
-          ));
-          this.client.isLoadedChange.next(new Player(
-            {
-              serverId: 1,
-              isLoaded: true,
-              health: 50
-            }
-          ));
-          this.client.isLoadedChange.next(new Player(
-            {
-              serverId: 2,
-              isLoaded: false,
-              health: 75
-            }
-          ));
-
-          let name = "Banana";
-          let message = "Hello Guys";
-          let whisper = true;
-
-          this.client.messageReception.next({ name, content: message, whisper })
-        }
-        this.client.activationStateChange.next(!this.active);
-
-      }
-    }
-
-    event.stopPropagation();
-    event.preventDefault();
+  updateGroupPosition() {
+    this.groupComponent?.updatePosition();
   }
 }

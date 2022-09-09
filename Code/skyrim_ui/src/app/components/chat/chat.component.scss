@@ -3,7 +3,7 @@
 @import 'functions/mod';
 @import 'functions/rem';
 
-app-chat {
+:host {
   display: contents;
   flex-direction: column;
 }
@@ -13,27 +13,38 @@ app-chat {
   overflow-x: hidden;
   overflow-y: scroll;
   overflow-wrap: break-word;
-  padding-right: rem($-size-font, 2px);
+  padding-right: 0.1rem;
+  font-size: 1rem;
 
   p {
     margin: 0;
     line-height: $-size-line;
-    padding: ($-size-gap / 5) ($-size-gap / 2);
+    padding: ($-size-gap * 0.2) ($-size-gap * 0.5);
     text-align: left;
 
-    &[data-odd=true] {
+    &:nth-child(odd) {
       background: transparentize(mod($-color-background, 1), 0.97);
     }
 
-    &[data-system=true] {
+    &.system {
       .app-chat-date,
       .app-chat-message {
-        color: #99F;
+        color: #9999ff;
       }
     }
-    &[data-whisper=true] {
+    &.dialogue {
       .app-chat-message {
         color: #00FF33;
+      }
+    }
+    &.party {
+      .app-chat-message {
+        color: #9affe6;
+      }
+    }
+    &.local {
+      .app-chat-message {
+        color: #eeff00;
       }
     }
   }
@@ -45,13 +56,14 @@ app-chat {
 
 .app-chat-message {
   color: mod($-color-background, 0.7);
+  user-select: text;
 }
 
 .app-chat-input {
   display: flex;
   flex: 0 0 (1rem + $-size-gap);
-  margin-top: rem($-size-font, 2px);
-  border-top: rem($-size-font, 2px) solid;
+  margin-top: 0.1rem;
+  border-top: 0.1rem solid;
   border-image: url('../../../assets/images/separator/single.svg') 3;
 
   input {

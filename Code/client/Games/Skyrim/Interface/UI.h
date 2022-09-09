@@ -67,9 +67,9 @@ class UI
 
     uint64_t spinlock;
     // These offsets are a bit unreliable.
-    // 
-    // 
-    //char pad_2[0x18];
+    //
+    //
+    // char pad_2[0x18];
     uint32_t numPausesGame;                // 160 (= 0) += 1 if (imenu->flags & 0x00001)
     uint32_t numItemMenus;                 // 164 (= 0) += 1 if (imenu->flags & 0x02000)
     uint32_t numDisablePauseMenu;          // 168 (= 0) += 1 if (imenu->flags & 0x00080)

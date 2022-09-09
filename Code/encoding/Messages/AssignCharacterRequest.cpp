@@ -21,6 +21,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
     Serialization::WriteBool(aWriter, IsDragon);
     Serialization::WriteBool(aWriter, IsMount);
+    Serialization::WriteBool(aWriter, IsPlayerSummon);
 }
 
 void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -57,4 +58,5 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     IsWeaponDrawn = Serialization::ReadBool(aReader);
     IsDragon = Serialization::ReadBool(aReader);
     IsMount = Serialization::ReadBool(aReader);
+    IsPlayerSummon = Serialization::ReadBool(aReader);
 }

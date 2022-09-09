@@ -32,19 +32,7 @@ END
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resources/server.manifest"
 
 #if defined(TARGET_ST)
-#if (IS_MASTER)
 102 ICON "resources/st_srv.ico"
-#elif (IS_BRANCH_PREREL)
-102 ICON "resources/st_srv_pre.ico"
-#else
-102 ICON "resources/st_srv_dev.ico"
-#endif
 #elif defined(TARGET_FT)
-#if (IS_MASTER)
 102 ICON "resources/ft_srv.ico"
-#elif (IS_BRANCH_PREREL)
-102 ICON "resources/ft_srv_pre.ico"
-#else
-102 ICON "resources/ft_srv_dev.ico"
-#endif
 #endif

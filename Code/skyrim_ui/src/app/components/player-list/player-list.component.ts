@@ -1,53 +1,58 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from "@angular/core";
-import { PlayerList } from "src/app/models/player-list";
-import { ClientService } from "src/app/services/client.service";
-import { PlayerListService } from "src/app/services/player-list.service";
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { combineLatest, Observable, pluck, ReplaySubject, share } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ClientService } from 'src/app/services/client.service';
+import { GroupService } from 'src/app/services/group.service';
+import { PlayerListService } from 'src/app/services/player-list.service';
+import { Player } from '../../models/player';
+
 
 @Component({
-    selector: 'app-player-list',
-    templateUrl: './player-list.component.html',
-    styleUrls: ['./player-list.component.scss'],
-    encapsulation: ViewEncapsulation.None
+  selector: 'app-player-list',
+  templateUrl: './player-list.component.html',
+  styleUrls: ['./player-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PlayerListComponent implements OnInit, OnDestroy {
+export class PlayerListComponent {
 
-    @Output()
-    public done = new EventEmitter();
+  playerList$: Observable<(Player & { isMember: boolean })[]>;
+  playerListLength$: Observable<number>;
+  isPartyLeader$: Observable<boolean>;
 
-    constructor(public playerListService: PlayerListService,
-        private clientService: ClientService
-    ) {}
+  constructor(
+    private readonly playerListService: PlayerListService,
+    private readonly clientService: ClientService,
+    private readonly groupService: GroupService,
+  ) {
+    this.playerList$ = combineLatest([
+      this.playerListService.playerList.asObservable().pipe(pluck('players')),
+      this.groupService.group.asObservable().pipe(pluck('members')),
+    ]).pipe(
+      map(([players, members]) => {
+        if (!players) {
+          return [];
+        }
+        return players.map(player => ({
+          ...player,
+          isMember: members.includes(player.id),
+        }));
+      }),
+      share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
+    );
+    this.playerListLength$ = this.playerList$
+      .pipe(
+        map(players => players?.length ?? 0),
+      );
+    this.isPartyLeader$ = this.groupService.group
+      .asObservable()
+      .pipe(
+        map(group => group.isEnabled && group.owner == this.clientService.localPlayerId),
+        share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
+      );
+  }
 
-    ngOnDestroy(): void {
+  public sendPartyInvite(inviteeId: number) {
+    this.playerListService.sendPartyInvite(inviteeId);
+  }
 
-    }
-    ngOnInit(): void {
-    }
-
-    public get playerList(): PlayerList | undefined {
-        console.log("##LIST##");
-        console.log("list " + this.playerListService.playerList);
-        console.log("list " + this.playerListService.playerList.value);
-        return this.playerListService.playerList.value;
-    }
-
-    public get getListSize(): number {
-        console.log("##SIZE##");
-        console.log("service " + this.playerListService);
-        console.log("list " + this.playerList);
-        console.log("players" + this.playerList.players);
-        return this.playerList.players.size;
-    }
-
-    public get isConnected(): boolean {
-        return this.clientService.connectionStateChange.value;
-    }
-
-    public teleportToPlayer(playerId: number) {
-        this.clientService.teleportToPlayer(playerId);
-    }
-
-    public cancel(): void {
-        this.done.next();
-    }
 }

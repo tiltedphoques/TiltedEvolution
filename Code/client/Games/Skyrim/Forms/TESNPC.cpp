@@ -9,7 +9,7 @@ TESNPC* TP_MAKE_THISCALL(HookSetLeveledNpc, TESNPC, TESNPC* apSelectedNpc)
 {
     spdlog::info("For TESNPC: {}, spawning: {}", apThis->fullName.value, apSelectedNpc->fullName.value);
 
-    return ThisCall(RealSetLeveledNpc, apThis, Cast<TESNPC>(TESForm::GetById(0x3B547)));
+    return TiltedPhoques::ThisCall(RealSetLeveledNpc, apThis, Cast<TESNPC>(TESForm::GetById(0x3B547)));
 }
 
 

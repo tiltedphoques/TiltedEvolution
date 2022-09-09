@@ -11,11 +11,14 @@
 
 #include <imgui.h>
 
+// TODO: ft
 void DebugService::DrawQuestDebugView()
 {
+#if TP_SKYRIM64
     auto* pPlayer = PlayerCharacter::Get();
     if (!pPlayer) return;
 
+    ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Quests");
 
     // TODO(cosideci): yes I'll refactor this
@@ -98,4 +101,5 @@ void DebugService::DrawQuestDebugView()
     }
 
     ImGui::End();
+#endif
 }

@@ -20,7 +20,10 @@
 #include <Messages/NotifyPlayerCellChanged.h>
 #include <Messages/NotifyPlayerPosition.h>
 
+namespace
+{
 Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Factor of the amount of gold lost on death", 0.0f};
+}
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)

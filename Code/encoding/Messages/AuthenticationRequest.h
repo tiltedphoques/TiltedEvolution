@@ -35,15 +35,15 @@ struct AuthenticationRequest final : ClientMessage
             CenterCoords == achRhs.CenterCoords;
     }
 
-    uint64_t DiscordId;
-    bool SKSEActive;
-    bool MO2Active; 
-    String Token;
-    String Version;
-    Mods UserMods;
-    String Username;
-    GameId WorldSpaceId;
-    GameId CellId;
-    uint16_t Level;
-    GridCellCoords CenterCoords;
+    uint64_t DiscordId{};
+    bool SKSEActive{};
+    bool MO2Active{};
+    String Token{};
+    String Version{};
+    Mods UserMods{};
+    String Username{};
+    GameId WorldSpaceId{};
+    GameId CellId{};
+    uint16_t Level{};
+    GridCellCoords CenterCoords{};
 };

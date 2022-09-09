@@ -26,8 +26,6 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
-#include <Messages/ProjectileLaunchRequest.h>
-#include <Messages/NotifyProjectileLaunch.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
@@ -44,6 +42,11 @@
 #include <Messages/NotifyRelinquishControl.h>
 #include <Messages/NotifyPlayerPosition.h>
 
+namespace
+{
+Console::Setting bEnableXpSync{"Gameplay:bEnableXpSync", "Syncs combat XP within the party", true};
+}
+
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this))
@@ -58,7 +61,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
-    , m_projectileLaunchConnection(aDispatcher.sink<PacketEvent<ProjectileLaunchRequest>>().connect<&CharacterService::OnProjectileLaunchRequest>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
@@ -80,6 +82,7 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     apSpawnRequest->IsDead = characterComponent.IsDead();
     apSpawnRequest->IsPlayer = characterComponent.IsPlayer();
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
+    apSpawnRequest->IsPlayerSummon = characterComponent.IsPlayerSummon();
     apSpawnRequest->PlayerId = characterComponent.PlayerId;
 
     const auto* pFormIdComponent = aRegistry.try_get<FormIdComponent>(aEntity);
@@ -200,7 +203,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
         if (itor != std::end(view))
         {
             // This entity already has an owner
-            spdlog::info("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
+            spdlog::debug("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             auto& actorValuesComponent = view.get<ActorValuesComponent>(*itor);
             auto& inventoryComponent = view.get<InventoryComponent>(*itor);
@@ -260,6 +263,16 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
     {
         spdlog::warn("Client {:X} requested ownership transfer of an entity that doesn't exist, server id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
         return;
+    }
+
+    if (auto* pCharacterComponent = m_world.try_get<CharacterComponent>(cEntity))
+    {
+        if (pCharacterComponent->IsPlayerSummon())
+        {
+            spdlog::info("Client {:X} requested ownership transfer of an orphaned summon, serverid id: {:X}", acMessage.pPlayer->GetConnectionId(), message.ServerId);
+            m_world.GetDispatcher().trigger(CharacterRemoveEvent(message.ServerId));
+            return;
+        }
     }
 
     if (message.WorldSpaceId || message.CellId)
@@ -351,7 +364,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     }
 
     m_world.destroy(*it);
-    spdlog::info("Character destroyed {:X}", acEvent.ServerId);
+    spdlog::debug("Character destroyed {:X}", acEvent.ServerId);
 }
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
@@ -373,7 +386,6 @@ void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& a
     auto& message = acMessage.Packet;
 
     auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    
     auto it = view.find(static_cast<entt::entity>(message.Id));
 
     if (it != std::end(view))
@@ -473,55 +485,6 @@ void CharacterService::OnFactionsChanges(const PacketEvent<RequestFactionsChange
     }
 }
 
-void CharacterService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept
-{
-    auto packet = acMessage.Packet;
-
-    NotifyProjectileLaunch notify{};
-
-    notify.ShooterID = packet.ShooterID;
-
-    notify.OriginX = packet.OriginX;
-    notify.OriginY = packet.OriginY;
-    notify.OriginZ = packet.OriginZ;
-
-    notify.ProjectileBaseID = packet.ProjectileBaseID;
-    notify.WeaponID = packet.WeaponID;
-    notify.AmmoID = packet.AmmoID;
-
-    notify.ZAngle = packet.ZAngle;
-    notify.XAngle = packet.XAngle;
-    notify.YAngle = packet.YAngle;
-
-    notify.ParentCellID = packet.ParentCellID;
-
-    notify.SpellID = packet.SpellID;
-    notify.CastingSource = packet.CastingSource;
-
-    notify.Area = packet.Area;
-    notify.Power = packet.Power;
-    notify.Scale = packet.Scale;
-
-    notify.AlwaysHit = packet.AlwaysHit;
-    notify.NoDamageOutsideCombat = packet.NoDamageOutsideCombat;
-    notify.AutoAim = packet.AutoAim;
-    notify.DeferInitialization = packet.DeferInitialization;
-    notify.ForceConeOfFire = packet.ForceConeOfFire;
-
-    notify.UnkBool1 = packet.UnkBool1;
-    notify.UnkBool2 = packet.UnkBool2;
-
-    notify.ConeOfFireRadiusMult = packet.ConeOfFireRadiusMult;
-    notify.Tracer = packet.Tracer;
-    notify.IntentionalMiss = packet.IntentionalMiss;
-    notify.Allow3D = packet.Allow3D;
-    notify.Penetrates = packet.Penetrates;
-    notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
-
-    const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
-    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender());
-}
-
 void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept
 {
     auto& message = acMessage.Packet;
@@ -575,15 +538,13 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
 
 void CharacterService::OnSyncExperienceRequest(const PacketEvent<SyncExperienceRequest>& acMessage) const noexcept
 {
+    if (!bEnableXpSync)
+        return;
+
     NotifySyncExperience notify;
     notify.Experience = acMessage.Packet.Experience;
 
     const auto& partyComponent = acMessage.pPlayer->GetParty();
-
-    if (!partyComponent.JoinedPartyId.has_value())
-        return;
-
-    spdlog::debug("Sending over experience {} to party {}", notify.Experience, partyComponent.JoinedPartyId.value());
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
 
@@ -657,6 +618,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
     characterComponent.SetDragon(message.IsDragon);
     characterComponent.SetMount(message.IsMount);
+    characterComponent.SetPlayerSummon(message.IsPlayerSummon);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
     inventoryComponent.Content = message.InventoryContent;
@@ -664,7 +626,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
     actorValuesComponent.CurrentActorValues = message.AllActorValues;
 
-    spdlog::info("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
+    spdlog::debug("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
 
     auto& movementComponent = m_world.emplace<MovementComponent>(cEntity);
     movementComponent.Tick = pServer->GetTick();
@@ -723,7 +685,7 @@ void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServ
     characterOwnerComponent.SetOwner(apPlayer);
     characterOwnerComponent.InvalidOwners.clear();
 
-    spdlog::info("\tOwnership claimed {:X}", acServerId);
+    spdlog::debug("\tOwnership claimed {:X}", acServerId);
 }
 
 void CharacterService::ProcessFactionsChanges() const noexcept

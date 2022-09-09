@@ -15,7 +15,9 @@ struct MiddleProcess
     float direction; // B8
     uint8_t padBC[0x1A0 - 0xBC];
     GameList<ActiveEffect>* ActiveEffects;
-    uint8_t pad1A8[0x220 - 0x1A8];
+    uint8_t pad1A8[0x218 - 0x1A8];
+    BSPointerHandle<TESObjectREFR> commandingActor;
+    uint8_t pad21C[0x220 - 0x21C];
     InventoryEntry* leftEquippedObject;
     uint8_t pad228[0x260 - 0x228];
     InventoryEntry* rightEquippedObject;

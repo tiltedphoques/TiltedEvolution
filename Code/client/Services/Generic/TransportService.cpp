@@ -17,6 +17,7 @@
 
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
+#include <Messages/NotifySettingsChange.h>
 #include <Packet.hpp>
 
 #include <ScriptExtender.h>
@@ -33,6 +34,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
+    m_settingsChangeConnection = m_dispatcher.sink<NotifySettingsChange>().connect<&TransportService::HandleNotifySettingsChange>(this);
 
     m_connected = false;
 
@@ -105,10 +107,13 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 
 void TransportService::OnConnected()
 {
-    AuthenticationRequest request;
+    AuthenticationRequest request{};
     request.Version = BUILD_COMMIT;
     request.SKSEActive = IsScriptExtenderLoaded();
     request.MO2Active = GetModuleHandleW(kMO2DllName);
+
+    request.Token = m_serverPassword;
+    m_serverPassword = "";
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
@@ -141,7 +146,7 @@ void TransportService::OnConnected()
     auto& modSystem = m_world.GetModSystem();
     if (pPlayer->GetWorldSpace())
         modSystem.GetServerModId(pPlayer->GetWorldSpace()->formID, request.WorldSpaceId);
-    
+
     modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
 
     TES* pTes = TES::Get();
@@ -187,34 +192,56 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
 
     // error finding
 
-    // TODO(vince): these should be more bare bones, but for now this suffices, maybe we should just make a tiny json
-    // here in the future and give it to the frontend
     TiltedPhoques::String ErrorInfo;
+
+    ErrorInfo = "{";
+
     switch (acMessage.Type)
     {
     case AR::kWrongVersion:
-        ErrorInfo =
-            fmt::format("This server expects version {} but you are on version {}", acMessage.Version, BUILD_COMMIT);
+        ErrorInfo += "\"error\": \"wrong_version\", \"data\": {";
+        ErrorInfo +=
+            fmt::format("\"expectedVersion\": \"{}\", \"version\": \"{}\"", acMessage.Version, BUILD_COMMIT);
+        ErrorInfo += "}";
         break;
     case AR::kModsMismatch: {
-        ErrorInfo = "This server has ModPolicy enabled. You were kicked because you have the following mods installed:";
+        ErrorInfo += "\"error\": \"mods_mismatch\", \"data\": {\"mods\": [";
+        bool first = true;
         for (const auto& m : acMessage.UserMods.ModList)
-            ErrorInfo += fmt::format("{}:{}", m.Filename.c_str(), m.Id);
-        ErrorInfo += "Please remove them to join";
+        {
+            if(!first)
+                ErrorInfo += ",";
+            ErrorInfo += fmt::format("[\"{}\",\"{}\"]", m.Filename.c_str(), m.Id);
+            first = false;
+        }
+        ErrorInfo += "]}";
         break;
     }
     case AR::kClientModsDisallowed: {
-        ErrorInfo = "This server disallows";
+        ErrorInfo += "\"error\": \"client_mods_disallowed\", \"data\": { \"mods\": [";
         if (acMessage.SKSEActive)
-            ErrorInfo += " SKSE";
+            ErrorInfo += "\"SKSE\"";
         if (acMessage.MO2Active)
-            ErrorInfo += " MO2";
+            if (acMessage.SKSEActive)
+                ErrorInfo += ",";
+            ErrorInfo += "\"MO2\"";
+        ErrorInfo += "]}";
+        break;
+    }
+    case AR::kWrongPassword: {
+        ErrorInfo += "\"error\": \"wrong_password\"";
+        break;
+    }
+    case AR::kServerFull: {
+        ErrorInfo += "\"error\": \"server_full\"";
         break;
     }
     default:
-        ErrorInfo = "The server refused connection without reason.";
+        ErrorInfo += "\"error\": \"no_reason\"";
         break;
     }
+
+    ErrorInfo += "}";
 
     ConnectionErrorEvent errorEvent;
     if (!ErrorInfo.empty())
@@ -224,4 +251,10 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     }
 
     m_dispatcher.trigger(errorEvent);
+}
+
+void TransportService::HandleNotifySettingsChange(const NotifySettingsChange& acMessage) noexcept
+{
+    m_world.SetServerSettings(acMessage.Settings);
+    m_dispatcher.trigger(acMessage.Settings);
 }

@@ -39,6 +39,7 @@ struct SubtitleEvent;
 struct NotifySubtitle;
 struct NotifyActorTeleport;
 struct NotifyRelinquishControl;
+struct PartyJoinedEvent;
 
 struct Actor;
 struct World;
@@ -71,8 +72,6 @@ struct CharacterService
     void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
     void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) noexcept;
-    void OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept;
-    void OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMessage) const noexcept;
     void OnMountEvent(const MountEvent& acEvent) const noexcept;
     void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
@@ -87,6 +86,7 @@ struct CharacterService
     void OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept;
     void OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept;
     void OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept;
+    void OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept;
 
     void ProcessNewEntity(entt::entity aEntity) const noexcept;
 
@@ -97,6 +97,7 @@ private:
 
     void RequestServerAssignment(entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
+    void DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
 
@@ -140,8 +141,6 @@ private:
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_remoteSpawnDataReceivedConnection;
-    entt::scoped_connection m_projectileLaunchedConnection;
-    entt::scoped_connection m_projectileLaunchConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_notifyMountConnection;
     entt::scoped_connection m_initPackageConnection;
@@ -156,4 +155,5 @@ private:
     entt::scoped_connection m_subtitleSyncConnection;
     entt::scoped_connection m_actorTeleportConnection;
     entt::scoped_connection m_relinquishConnection;
+    entt::scoped_connection m_partyJoinedConnection;
 };

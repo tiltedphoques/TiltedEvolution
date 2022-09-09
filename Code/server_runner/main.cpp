@@ -19,6 +19,8 @@
 #ifdef _WIN32
 #include <base/dialogues/win/TaskDialog.h>
 #pragma comment(lib, "Comctl32.lib")
+#elif defined(__linux__)
+#include <signal.h>
 #endif
 
 namespace
@@ -115,8 +117,21 @@ static bool RegisterQuitHandler()
     });
 
     return SetConsoleCtrlHandler(CtrlHandler, TRUE);
-#endif
+
+#elif defined(__linux__)
+    static auto CtrlHandler = ([](int aSig) {
+        if (auto* pRunner = GetDediRunner())
+        {
+            pRunner->RequestKill();
+        }
+    });
+
+    signal(SIGINT, CtrlHandler);
+    signal(SIGTERM, CtrlHandler);
+    signal(SIGKILL, CtrlHandler);
+#else
     return true;
+#endif
 }
 
 #ifdef _WIN32
@@ -200,11 +215,14 @@ int main(int argc, char** argv)
     LogInstance logger;
     (void)logger;
 
+    // Disabled EULA check since we have no EULA contents yet
+    /*
     if (!IsEULAAccepted())
     {
         spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
         return 2;
     }
+    */
 
     ScopedCrashHandler _(true, true);
 

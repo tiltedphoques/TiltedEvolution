@@ -20,6 +20,9 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#if TP_SKYRIM64
+#include <Forms/BGSEncounterZone.h>
+#endif
 
 #include <inttypes.h>
 
@@ -44,6 +47,43 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
 #endif
 }
 
+#if TP_SKYRIM64
+bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
+{
+    if (pCell && pCell->loadedCellData && pCell->loadedCellData->encounterZone)
+    {
+        // Only return true if cell has the NoResetZone encounter zone
+        if (pCell->loadedCellData->encounterZone->formID == 0xf90b1)
+        {
+            switch (pCell->formID)
+            {
+            case 0xeec55: // one known exception: Sinderion's Field Lab
+                return false;
+            default:
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
+{
+    if (!apObject)
+        return false;
+
+    switch (apObject->formID)
+    {
+        // Don't sync the chest in the "Diplomatic Immunity" quest
+    case 0x39CF1:
+        return false;
+    default:
+        return true;
+    }
+}
+#endif
+
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // TODO(cosideci): clear object components
@@ -55,7 +95,14 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         return;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    const TESObjectCELL* pCell = pPlayer->parentCell;
+    TESObjectCELL* pCell = pPlayer->parentCell;
+
+    // Player homes should not be synced, so that chest contents,
+    // which are often used as storage, are never accidentally wiped.
+#if TP_SKYRIM64
+    if (!World::Get().GetServerSettings().SyncPlayerHomes && IsPlayerHome(pCell))
+        return;
+#endif
 
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
@@ -75,12 +122,22 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
+    // TODO: ft (verify)
+    // Door seemed to be at the wrong form id (29, now 32), verify this.
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 
     AssignObjectsRequest request{};
 
     for (TESObjectREFR* pObject : objects)
     {
+#if TP_SKYRIM64
+        if (!ShouldSyncObject(pObject))
+        {
+            spdlog::warn("Excluding sync for {:X}", pObject->formID);
+            continue;
+        }
+#endif
+
         ObjectData objectData{};
         objectData.CellId = cellId;
         objectData.WorldSpaceId = worldSpaceId;
@@ -194,7 +251,12 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
     }
 
+    // TODO: ft
+#if TP_SKYRIM64
     TESObjectCELL* pCell = acEvent.pObject->GetParentCellEx();
+#else
+    TESObjectCELL* pCell = acEvent.pObject->parentCell;
+#endif
     if (!pCell)
     {
         spdlog::error("Activated object has no parent cell: {:X}", acEvent.pObject->formID);
@@ -269,7 +331,12 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
 
+    // TODO: ft
+#if TP_SKYRIM64
     TESObjectCELL* pCell = pObject->GetParentCellEx();
+#else
+    TESObjectCELL* pCell = pObject->parentCell;
+#endif
     if (!pCell)
     {
         spdlog::error("Activated object has no parent cell: {:X}", pObject->formID);

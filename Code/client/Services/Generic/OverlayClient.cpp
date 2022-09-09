@@ -5,8 +5,6 @@
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
 
-#include <Events/CommandEvent.h>
-
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportRequest.h>
 
@@ -58,7 +56,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         else if (eventName == "acceptPartyInvite")
         {
             uint32_t aInviterId = eventArgs->GetInt(0);
-            World::Get().GetPartyService().AcceptInvite(aInviterId);
+            // push to main thread because the party service has to check validity of invite thread safely
+            World::Get().GetRunner().Queue([aInviterId]() { World::Get().GetPartyService().AcceptInvite(aInviterId); });
         }
         else if (eventName == "kickPartyMember")
         {
@@ -72,6 +71,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         }
         else if (eventName == "teleportToPlayer")
             ProcessTeleportMessage(eventArgs);
+        else if (eventName == "toggleDebugUI")
+            ProcessToggleDebugUI();
 
         return true;
     }
@@ -88,7 +89,7 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
     }
 
     uint16_t port = aEventArgs->GetInt(1) ? aEventArgs->GetInt(1) : 10578;
-    // iAmAToken = aEventArgs->GeString(2);
+    World::Get().GetTransport().SetServerPassword(aEventArgs->GetString(2));
 
     std::string endpoint = baseIp + ":" + std::to_string(port);
 
@@ -104,20 +105,15 @@ void OverlayClient::ProcessDisconnectMessage()
 
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
 {
-    std::string contents = aEventArgs->GetString(0).ToString();
+    std::string contents = aEventArgs->GetString(1).ToString();
     if (!contents.empty())
     {
-        if (contents[0] == '/')
-        {
-            World::Get().GetRunner().Trigger(CommandEvent(std::move(String(contents))));
-        }
-        else
-        {
-            SendChatMessageRequest messageRequest;
-            messageRequest.ChatMessage = aEventArgs->GetString(0).ToString();
-            spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
-            m_transport.Send(messageRequest);
-        }
+        SendChatMessageRequest messageRequest;
+        messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
+        messageRequest.ChatMessage = contents;
+        
+        spdlog::info("Send chat message of type {}: '{}' " , messageRequest.MessageType, messageRequest.ChatMessage);
+        m_transport.Send(messageRequest);
     }
 }
 
@@ -127,4 +123,9 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
     request.PlayerId = aEventArgs->GetInt(0);
 
     m_transport.Send(request);
+}
+
+void OverlayClient::ProcessToggleDebugUI()
+{
+    World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff;
 }

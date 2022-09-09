@@ -1,202 +1,203 @@
-import { Component, OnInit, ViewEncapsulation, OnDestroy } from '@angular/core';
-import { GroupService } from '../../services/group.service';
-import { Subscription, timer } from 'rxjs';
-import { Group } from '../../models/group';
-import { animation as popupsAnimation } from '../root/popups.animation';
-import { ClientService } from '../../services/client.service';
-import { Player } from '../../models/player';
-import { UserService } from '../../services/user.service';
-import { ErrorService } from '../../services/error.service';
-import { SoundService, Sound } from '../../services/sound.service';
-import { LoadingService } from '../../services/loading.service';
-import { StoreService } from '../../services/store.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, combineLatestWith, Observable, Subscription, takeUntil, timer } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { SettingService } from 'src/app/services/setting.service';
+import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
+import { Group } from '../../models/group';
+import { Player } from '../../models/player';
+import { ClientService } from '../../services/client.service';
+import { DestroyService } from '../../services/destroy.service';
+import { GroupService } from '../../services/group.service';
+import { PartyAnchor } from '../settings/settings.component';
 
+
+interface GroupPosition {
+  top?: string;
+  right?: string;
+  bottom?: string;
+  left?: string;
+}
 
 @Component({
   selector: 'app-group',
   templateUrl: './group.component.html',
   styleUrls: ['./group.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [popupsAnimation]
+  animations: [fadeInOutActiveAnimation],
+  providers: [DestroyService],
 })
 export class GroupComponent implements OnInit, OnDestroy {
 
-  public isAutoHide = true;
-  public isShown = true;
-  public waitLaunch = false;
+  timerSubscription: Subscription;
 
-  private connectionSubscription: Subscription;
-  private isLoading: Subscription;
-  private timerSubscription: Subscription;
-  private userHealthSubscription: Subscription;
-  private playerConnectedSubscription: Subscription;
-  private connectionStateSubscription: Subscription;
+  groupMembers$: Observable<(Player & { isOwner: boolean })[]>;
+  group$: Observable<Group>;
 
-  private partyShownSubscription: Subscription;
-  private partyAutoHideSubscription: Subscription;
+  public isAutoHide = new BehaviorSubject(true);
+  public isShown = new BehaviorSubject(true);
+  public waitLaunch = new BehaviorSubject(false);
+  public positionStyle = new BehaviorSubject<GroupPosition>({ top: '0%', left: '0%' });
 
-  constructor(public groupService: GroupService,
-    private clientService: ClientService,
-    private userService: UserService,
-    private errorService: ErrorService,
-    private soundService: SoundService,
-    private loadingService: LoadingService,
-    private storeService: StoreService,
-    private settings: SettingService) {
-    this.isShown = this.settings.isPartyShown();
-    this.isAutoHide = this.settings.isPartyAutoHidden();
+  constructor(
+    private readonly destroy$: DestroyService,
+    private readonly groupService: GroupService,
+    private readonly clientService: ClientService,
+    private readonly settings: SettingService,
+  ) {
+    this.isShown.next(this.settings.isPartyShown());
+    this.isAutoHide.next(this.settings.isPartyAutoHidden());
+
+    this.group$ = this.groupService.group.asObservable();
+    this.groupMembers$ = this.groupService.selectMembers()
+      .pipe(
+        combineLatestWith(this.groupService.group),
+        map(([members, group]) => {
+            if (!group) {
+              return [];
+            }
+            return members
+              .map(member => ({ ...member, isOwner: member.id === group.owner }))
+              .sort((a, b) => ((group.owner === a.id) === (group.owner === b.id) ? 0 : group.owner === a.id ? -1 : 1));
+          },
+        ),
+      );
   }
 
-
   ngOnInit() {
-
-    this.isLoading = this.loadingService.getLoading().subscribe((isLoading: boolean) => {
-      this.waitLaunch = isLoading;
-    })
-
-    this.connectionSubscription = this.clientService.connectionStateChange.subscribe((state) => {
-      if (this.waitLaunch) {
-        this.loadingService.setLoading(false);
-        this.clientService.messageReception.next({ content: "Connected!" });
-
-        if (state) {
-          this.soundService.play(Sound.Success);
-        }
-        else {
-          this.soundService.play(Sound.Fail);
-
-          this.errorService.error(
-            'Unable to reach the game server. Please try again later.'
-          );
-        }
-      }
-    });
-
     this.onPartyShownState();
     this.onPartyAutoHideState();
 
     this.subscribeChangeHealth();
-    this.onPlayerConnected();
+    this.onPartyInfo();
     this.onConnectionState();
+    this.subscribeActivation();
+
+    this.updatePosition();
+  }
+
+  private subscribeActivation() {
+    this.clientService.activationStateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.flashGroup();
+      });
   }
 
   private subscribeChangeHealth() {
-    this.userHealthSubscription = this.clientService.healthChange.subscribe((p: Player) => {
-      if (this.userService.player.value && p.serverId !== this.userService.player.value.serverId) {
-        this.changeUIGroup();
-      }
-    })
+    this.clientService.healthChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.flashGroup();
+      });
   }
 
-  private onPlayerConnected() {
-    this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe(() => {
-      this.changeUIGroup();
-    })
+  private onPartyInfo() {
+    this.clientService.partyInfoChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.flashGroup();
+      });
   }
 
   private onConnectionState() {
-    this.connectionStateSubscription = this.clientService.connectionStateChange.subscribe((state: boolean) => {
-      if (this.isAutoHide) {
-        if (state) {
-          this.changeUIGroup();
-        }
-        else {
-          if (this.timerSubscription) {
-            this.timerSubscription.unsubscribe();
+    this.clientService.connectionStateChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: boolean) => {
+        if (this.isAutoHide.getValue()) {
+          if (state) {
+            this.flashGroup();
+          } else {
+            if (this.timerSubscription) {
+              this.timerSubscription.unsubscribe();
+            }
           }
         }
-      }
-
-    })
+      });
   }
 
   private onPartyShownState() {
-    this.partyShownSubscription = this.settings.partyShownChange.subscribe((state: boolean) => {
-      console.log("partyshow");
-      this.isShown = state;
-      this.isAutoHide = false;
-    });
+    this.settings.partyShownChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: boolean) => {
+        this.isShown.next(state);
+        this.isAutoHide.next(false);
+        this.flashGroup();
+      });
   }
 
   private onPartyAutoHideState() {
-    this.partyAutoHideSubscription = this.settings.partyAutoHideChange.subscribe((state: boolean) => {
-      console.log("partyAuto");
-      this.isAutoHide = state;
-      if (this.isAutoHide) {
-        this.changeUIGroup();
-      }
-    })
+    this.settings.partyAutoHideChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: boolean) => {
+        this.isAutoHide.next(state);
+        if (this.settings.isPartyShown()) {
+          this.isShown.next(true);
+        }
+        this.flashGroup();
+      });
   }
 
   ngOnDestroy() {
-    this.connectionSubscription.unsubscribe();
-    this.isLoading.unsubscribe();
-    this.userHealthSubscription.unsubscribe();
-    this.playerConnectedSubscription.unsubscribe();
-    this.connectionStateSubscription.unsubscribe();
-
-    this.partyShownSubscription.unsubscribe();
-    this.partyAutoHideSubscription.unsubscribe();
-
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
     }
   }
 
-  private changeUIGroup() {
-    if (this.isAutoHide && this.clientService.connectionStateChange.value) {
-      if (!this.isShown) {
-        this.isShown = true;
+  private flashGroup() {
+    if (this.isAutoHide.getValue() && this.clientService.connectionStateChange.getValue()) {
+      if (!this.isShown.getValue()) {
+        this.isShown.next(true);
       }
 
       if (this.timerSubscription) {
         this.timerSubscription.unsubscribe();
       }
 
-      const source = timer(3000);
-
-      this.timerSubscription = source.subscribe(() => {
-        console.log("FIN TIMER IS SHOW => FALSE");
-        this.isShown = false;
-      })
+      if (!this.clientService.activationStateChange.getValue()) {
+        let timerLength = this.settings.getAutoHideTime() * 1000;
+        let source = timer(timerLength);
+        this.timerSubscription = source.subscribe(() => {
+          this.isShown.next(false);
+        });
+      }
     }
   }
 
-  public get isConnected(): boolean {
-    return this.clientService.connectionStateChange.value;
+  public invite(playerId: number) {
+    this.groupService.invite(playerId);
   }
 
-  public get group(): Group | undefined {
-    return this.groupService.group.value;
+  public accept(inviterId: number) {
+    return this.groupService.accept(inviterId);
   }
 
-  public get active(): boolean {
-    return this.clientService.activationStateChange.value;
+  public kick(playerId: number) {
+    return this.groupService.kick(playerId);
   }
 
-  public get player(): Player {
-    return this.userService.player.value;
+  public changeLeader(playerId: number) {
+    return this.groupService.changeLeader(playerId);
   }
 
-  public leave() {
-    this.groupService.leave();
-  }
-
-  isLaunchPartyDisable(): boolean {
-    return (this.waitLaunch || (this.groupService.getSizeMembers() < 1));
-  }
-
-  public launchParty() {
-    this.soundService.play(Sound.Focus);
-    this.loadingService.setLoading(true);
-    this.clientService.messageReception.next({ content: "Your session is being created..." });
-    this.groupService.launch().subscribe(
-      () => { },
-      () => {
-        this.errorService.error('Failed to create a session. Please try again later.');
-        this.loadingService.setLoading(false);
-      }
-    )
+  updatePosition() {
+    const newPosition: GroupPosition = {};
+    switch (this.settings.getPartyAnchor()) {
+      case PartyAnchor.TOP_LEFT:
+        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
+        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        break;
+      case PartyAnchor.TOP_RIGHT:
+        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
+        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        break;
+      case PartyAnchor.BOTTOM_RIGHT:
+        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
+        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        break;
+      case PartyAnchor.BOTTOM_LEFT:
+        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
+        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        break;
+    }
+    this.positionStyle.next(newPosition);
   }
 }

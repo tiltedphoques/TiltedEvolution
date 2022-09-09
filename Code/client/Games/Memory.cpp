@@ -13,7 +13,7 @@ struct GameHeap
     static GameHeap* Get()
     {
         POINTER_SKYRIMSE(GameHeap, s_gameHeap, 400188);
-        POINTER_FALLOUT4(GameHeap, s_gameHeap, 0x1438CC980 - 0x140000000);
+        POINTER_FALLOUT4(GameHeap, s_gameHeap, 42694);
 
         return s_gameHeap.Get();
     }
@@ -37,7 +37,7 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
         default: break;
     }
 
-    auto* pPointer = ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
+    auto* pPointer = TiltedPhoques::ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
 
     if (!pPointer)
         return nullptr;
@@ -62,18 +62,18 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 void* Memory::Allocate(const size_t aSize) noexcept
 {
 #if TP_FALLOUT4
-    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
+    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
 #else
-    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
+    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
 #endif
 }
 
 void Memory::Free(void* apData) noexcept
 {
 #if TP_FALLOUT4
-    ThisCall(RealFormFree, GameHeap::Get(), apData, true);
+    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, true);
 #else
-    ThisCall(RealFormFree, GameHeap::Get(), apData, false);
+    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 #endif
 }
 
@@ -110,10 +110,10 @@ void* Hook_aligned_malloc(size_t aSize, size_t aAlignment)
 static TiltedPhoques::Initializer s_memoryHooks([]()
     {
         POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
-        POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 0x141B0EFD0 - 0x140000000);
+        POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 652768);
 
         POINTER_SKYRIMSE(TFormFree, s_formFree, 68116);
-        POINTER_FALLOUT4(TFormFree, s_formFree, 0x141B0F2E0 - 0x140000000);
+        POINTER_FALLOUT4(TFormFree, s_formFree, 1582182);
 
         RealFormAllocate = s_formAllocate.Get();
         RealFormFree = s_formFree.Get();

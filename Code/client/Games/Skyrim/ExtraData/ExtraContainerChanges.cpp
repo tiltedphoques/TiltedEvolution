@@ -8,7 +8,7 @@ void ExtraContainerChanges::Data::Save(BGSSaveFormBuffer* apBuffer)
 
     POINTER_SKYRIMSE(TSaveFunc, s_save, 16142);
 
-    ThisCall(s_save, this, apBuffer);
+    TiltedPhoques::ThisCall(s_save, this, apBuffer);
 }
 
 void ExtraContainerChanges::Data::Load(BGSLoadFormBuffer* apBuffer)
@@ -17,7 +17,7 @@ void ExtraContainerChanges::Data::Load(BGSLoadFormBuffer* apBuffer)
 
     POINTER_SKYRIMSE(TLoadFunc, s_load, 16143);
 
-    ThisCall(s_load, this, apBuffer);
+    TiltedPhoques::ThisCall(s_load, this, apBuffer);
 }
 
 bool ExtraContainerChanges::Entry::IsQuestObject() noexcept
@@ -26,5 +26,5 @@ bool ExtraContainerChanges::Entry::IsQuestObject() noexcept
 
     POINTER_SKYRIMSE(TIsQuestObject, s_isQuestObject, 16005);
 
-    return ThisCall(s_isQuestObject, this);
+    return TiltedPhoques::ThisCall(s_isQuestObject, this);
 }

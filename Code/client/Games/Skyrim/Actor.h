@@ -85,7 +85,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CF();
     virtual void sub_D0();
     virtual void sub_D1();
-    virtual void sub_D2();
+    virtual bool sub_D2() const;
     virtual void sub_D3();
     virtual void sub_D4();
     virtual void sub_D5();
@@ -146,15 +146,15 @@ struct Actor : TESObjectREFR
     virtual void sub_10B();
     virtual void sub_10C();
     virtual void sub_10D();
-    virtual void sub_10E();
+    virtual void KillImpl(Actor* apAttacker, float aDamage, bool aSendEvent, bool aRagdollInstant);
     virtual void sub_10F();
     virtual void sub_110();
     virtual void sub_111();
     virtual void sub_112();
     virtual void sub_113();
     virtual void sub_114();
-    virtual void sub_115();
-    virtual void sub_116();
+    virtual bool sub_115();
+    virtual bool sub_116();
     virtual void sub_117();
     virtual void sub_118();
     virtual void sub_119();
@@ -186,6 +186,7 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
+    Actor* GetCommandingActor() const noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
@@ -193,11 +194,15 @@ struct Actor : TESObjectREFR
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
     Inventory GetEquipment() const noexcept;
-    int32_t GetGoldAmount() noexcept;
-    uint16_t GetLevel() noexcept;
-
+    int32_t GetGoldAmount() const noexcept;
+    uint16_t GetLevel() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
+    [[nodiscard]] bool IsDead() const noexcept;
+    [[nodiscard]] bool IsDragon() const noexcept;
+    [[nodiscard]] bool IsPlayerSummon() const noexcept;
+    [[nodiscard]] bool IsInCombat() const noexcept;
+    [[nodiscard]] Actor* GetCombatTarget() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -205,6 +210,7 @@ struct Actor : TESObjectREFR
     void SetActorValue(uint32_t aId, float aValue) noexcept;
     void ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
+    void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
@@ -214,7 +220,8 @@ struct Actor : TESObjectREFR
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
-    void SetPlayerRespawnMode() noexcept;
+    void SetPlayerRespawnMode(bool aSet = true) noexcept;
+    void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions
     void UnEquipAll() noexcept;
@@ -222,20 +229,22 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
-    void DispellAllSpells() noexcept;
-
-    bool IsDead() noexcept;
-    bool IsDragon() noexcept;
-    void Kill() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
     void Reset() noexcept;
+    void Kill() noexcept;
     void Respawn() noexcept;
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void SpeakSound(const char* pFile);
+    void StartCombatEx(Actor* apTarget) noexcept;
+    void StartCombat(Actor* apTarget) noexcept;
+    void StopCombat() noexcept;
 
     enum ActorFlags
     {
         IS_A_MOUNT = 1 << 1,
+        IS_COMMANDED_ACTOR = 1 << 16,
         IS_ESSENTIAL = 1 << 18,
     };
 
@@ -254,6 +263,11 @@ struct Actor : TESObjectREFR
             flags2 |= ActorFlags::IS_ESSENTIAL;
         else
             flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
+
+    bool IsCommandedActor() const noexcept
+    {
+        return flags2 & ActorFlags::IS_COMMANDED_ACTOR;
     }
 
 public:
@@ -319,7 +333,7 @@ public:
     uint32_t unk178; // F0
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
-    BSTSmallArray<void*> addedSpells;
+    BSTSmallArray<TESForm*> addedSpells;
     ActorMagicCaster* casters[4];
     MagicItem* magicItems[4];
     TESForm* equippedShout;

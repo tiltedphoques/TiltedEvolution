@@ -48,7 +48,8 @@ struct AssignCharacterRequest final : ClientMessage
             IsDead == acRhs.IsDead &&
             IsWeaponDrawn == acRhs.IsWeaponDrawn &&
             IsDragon == acRhs.IsDragon &&
-            IsMount == acRhs.IsMount;
+            IsMount == acRhs.IsMount &&
+            IsPlayerSummon == acRhs.IsPlayerSummon;
     }
 
     uint32_t Cookie{};
@@ -70,4 +71,5 @@ struct AssignCharacterRequest final : ClientMessage
     bool IsWeaponDrawn{};
     bool IsDragon{};
     bool IsMount{};
+    bool IsPlayerSummon{};
 };

@@ -1,45 +1,45 @@
-import {
-  Component, ViewEncapsulation, OnDestroy
-} from '@angular/core';
+import { Component } from '@angular/core';
+import { takeUntil } from 'rxjs';
+import { ChatMessage, ChatService } from 'src/app/services/chat.service';
+import { DestroyService } from '../../services/destroy.service';
 
-import { Subscription } from 'rxjs';
 
-import { ClientService } from '../../services/client.service';
-
-interface Notification {
-  content: string;
+interface Notification extends ChatMessage {
   timer: number;
 }
 
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
-  styleUrls: [ './notifications.component.scss' ],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./notifications.component.scss'],
+  providers: [DestroyService],
 })
-export class NotificationsComponent implements OnDestroy {
+export class NotificationsComponent {
+
   public notifications = [] as Notification[];
 
-  public constructor(private client: ClientService) {
-    this.messageSubscription = this.client.messageReception.subscribe(message => {
-      this.notifications.push({
-        content: `${message.name ? `Message from ${message.name}: ` : ''}${message.content}`,
-        timer: setTimeout(() => {
-          this.notifications.shift();
-        }, 5000)
-      });
+  public constructor(
+    private readonly destroy$: DestroyService,
+    private readonly chatService: ChatService,
+  ) {
+    this.chatService.messageList
+      .pipe(
+        takeUntil(this.destroy$),
+      )
+      .subscribe((message) => {
+        this.notifications.push({
+          ...message,
+          timer: setTimeout(() => {
+            this.notifications.shift();
+          }, 5000),
+        });
 
-      if (this.notifications.length > 5) {
-        for (let notification of this.notifications.splice(0, this.notifications.length - 5)) {
-          clearTimeout(notification.timer);
+        if (this.notifications.length > 5) {
+          for (let notification of this.notifications.splice(0, this.notifications.length - 5)) {
+            clearTimeout(notification.timer);
+          }
         }
-      }
-    })
+      });
   }
 
-  public ngOnDestroy(): void {
-    this.messageSubscription.unsubscribe();
-  }
-
-  private messageSubscription: Subscription;
 }

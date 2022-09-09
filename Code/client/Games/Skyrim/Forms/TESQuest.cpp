@@ -10,7 +10,7 @@ TESObjectREFR* TESQuest::GetAliasedRef(uint32_t aAliasID) noexcept
     POINTER_SKYRIMSE(TGetAliasedRef, getAliasedRef, 25066);
 
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(getAliasedRef, this, &result, aAliasID);
+    TiltedPhoques::ThisCall(getAliasedRef, this, &result, aAliasID);
 
     return TESObjectREFR::GetByHandle(result.handle.iBits);
 }

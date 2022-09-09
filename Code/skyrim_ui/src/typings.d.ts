@@ -24,14 +24,8 @@ declare namespace SkyrimTogetherTypes {
   /** Player open/close game menu callback */
   type OpeningMenuCallback = (openingMenu: boolean) => void;
 
-  /** Player message reception callback */
-  type MessageCallback = (name: string, message: string) => void;
-
-  /** System message reception callback */
-  type SystemMessageCallback = (message: string) => void;
-
-  /** Whisper message reception callback */
-  type WhisperMessageCallback = (name: string, message: string) => void;
+  /** Chat message reception callback */
+  type MessageCallback = (type: number, content: string, sender: string) => void;
 
   /** Connection callback */
   type ConnectCallback = () => void;
@@ -57,27 +51,37 @@ declare namespace SkyrimTogetherTypes {
     receivedBandwidth: number
   ) => void;
 
-  type UserDataSetCallback = (token: string, username: string) => void;
+  type UserDataSetCallback = (password: string, username: string) => void;
 
-  type PlayerConnectedCallback = (serverId: number, username: string, level: number, cellName: string) => void;
+  type PlayerConnectedCallback = (playerId: number, username: string, level: number, cellName: string) => void;
 
-  type PlayerDisconnectedCallback = (serverId: number, username: string) => void;
+  type PlayerDisconnectedCallback = (playerId: number, username: string) => void;
 
-  type SetHealthCallback = (serverId: number, health: number) => void;
+  type SetHealthCallback = (playerId: number, health: number) => void;
 
-  type SetLevelCallback = (serverId: number, level: number) => void;
+  type SetLevelCallback = (playerId: number, level: number) => void;
 
-  type SetCellCallback = (serverId: number, cellName: string) => void;
+  type SetCellCallback = (playerId: number, cellName: string) => void;
 
-  type SetPlayer3dLoadedCallback = (serverId: number, health: number) => void;
+  type SetPlayer3dLoadedCallback = (playerId: number, health: number) => void;
 
-  type SetPlayer3dUnloadedCallback = (serverId: number) => void;
+  type SetPlayer3dUnloadedCallback = (playerId: number) => void;
 
-  type SetServerIdCallback = (serverId: number) => void;
+  type SetLocalPlayerIdCallback = (playerId: number) => void;
 
   type ProtocolMismatch = () => void;
 
   type TriggerError = () => void;
+
+  type DummyDataCallback = (data: Array<number>) => void;
+
+  type PartyInfoCallback = (playerIds: Array<number>, leaderId: number) => void;
+
+  type PartyCreatedCallback = () => void;
+
+  type PartyLeftCallback = (inviterId: number) => void;
+
+  type PartyInviteReceivedCallback = (inviterId: number) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -105,12 +109,6 @@ interface SkyrimTogether {
 
   /** Add listener to when a player message is received. */
   on(event: 'message', callback: SkyrimTogetherTypes.MessageCallback): void;
-
-  /** Add listener to when a system message is received. */
-  on(event: 'systemMessage', callback: SkyrimTogetherTypes.SystemMessageCallback): void;
-
-  /** Add listener to when a whisper message is received. */
-  on(event: 'whisperMessage', callback: SkyrimTogetherTypes.WhisperMessageCallback): void;
 
   /** Add listener to when the player connects to a server. */
   on(event: 'connect', callback: SkyrimTogetherTypes.ConnectCallback): void;
@@ -151,11 +149,21 @@ interface SkyrimTogether {
 
   on(event: 'setPlayer3dUnloaded', callback: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback): void;
 
-  on(event: 'setServerId', callback: SkyrimTogetherTypes.SetServerIdCallback): void;
+  on(event: 'setLocalPlayerId', callback: SkyrimTogetherTypes.SetLocalPlayerIdCallback): void;
 
   on(event: 'protocolMismatch', callback: SkyrimTogetherTypes.ProtocolMismatch): void;
 
   on(event: 'triggerError', callback: SkyrimTogetherTypes.TriggerError): void;
+
+  on(event: 'dummyData', callback: SkyrimTogetherTypes.DummyDataCallback): void;
+
+  on(event: 'partyInfo', callback: SkyrimTogetherTypes.PartyInfoCallback): void;
+
+  on(event: 'partyCreated', callback: SkyrimTogetherTypes.PartyCreatedCallback): void;
+
+  on(event: 'partyLeft', callback: SkyrimTogetherTypes.PartyLeftCallback): void;
+
+  on(event: 'partyInviteReceived', callback: SkyrimTogetherTypes.PartyInviteReceivedCallback): void;
 
   /** Remove listener from when the application is first initialized. */
   off(event: 'init', callback?: SkyrimTogetherTypes.InitCallback): void;
@@ -177,12 +185,6 @@ interface SkyrimTogether {
 
   /** Remove listener from when a player message is received. */
   off(event: 'message', callback?: SkyrimTogetherTypes.MessageCallback): void;
-
-  /** Remove listener from when a system message is received. */
-  off(event: 'systemMessage', callback?: SkyrimTogetherTypes.SystemMessageCallback): void;
-
-  /** Remove listener from when a whisper message is received. */
-  off(event: 'whisperMessage', callback?: SkyrimTogetherTypes.WhisperMessageCallback): void;
 
   /** Remove listener from when the player connects to a server. */
   off(event: 'connect', callback?: SkyrimTogetherTypes.ConnectCallback): void;
@@ -220,19 +222,30 @@ interface SkyrimTogether {
 
   off(event: 'setPlayer3dUnloaded', callback?: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback): void;
 
-  off(event: 'setServerId', callback?: SkyrimTogetherTypes.SetServerIdCallback): void;
+  off(event: 'setLocalPlayerId', callback?: SkyrimTogetherTypes.SetLocalPlayerIdCallback): void;
 
   off(event: 'protocolMismatch', callback?: SkyrimTogetherTypes.ProtocolMismatch): void;
 
   off(event: 'triggerError', callback?: SkyrimTogetherTypes.TriggerError): void;
+
+  off(event: 'dummyData', callback?: SkyrimTogetherTypes.DummyDataCallback): void;
+
+  off(event: 'partyInfo', callback?: SkyrimTogetherTypes.PartyInfoCallback): void;
+
+  off(event: 'partyCreated', callback?: SkyrimTogetherTypes.PartyCreatedCallback): void;
+
+  off(event: 'partyLeft', callback?: SkyrimTogetherTypes.PartyLeftCallback): void;
+
+  off(event: 'partyInviteReceived', callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback): void;
 
   /**
    * Connect to server at given address and port.
    *
    * @param host IP address or hostname.
    * @param port Port.
+   * @param password Server password.
    */
-  connect(host: string, port: number, token: string): void;
+  connect(host: string, port: number, password: string): void;
 
   /**
    * Disconnect from server or cancel connection.
@@ -241,10 +254,8 @@ interface SkyrimTogether {
 
   /**
    * Send message to server.
-   *
-   * @param message Message to send.
    */
-  sendMessage(message: string): void;
+  sendMessage(type: number, message: string): void;
 
   /**
    * Deactivate UI and release control.
@@ -253,13 +264,51 @@ interface SkyrimTogether {
 
   /**
    * Teleport to given player
-   * 
+   *
    * @param playerId Id of the player to which the requester should be teleported to
    */
   teleportToPlayer(playerId: number): void;
 
-   /** 
+  /**
    * Reconnect the client.
    */
   reconnect(): void;
+
+  /**
+   * Launch a party.
+   */
+  launchParty(): void;
+
+  /**
+   * Send a party invite to player with player id.
+   *
+   * @param playerId Id of the player to which the invite should be sent.
+   */
+  createPartyInvite(playerId: number): void;
+
+  /**
+   * Accept a party invite.
+   *
+   * @param inviterId Id of the player who sent the invite.
+   */
+  acceptPartyInvite(inviterId: number): void;
+
+  /**
+   * As a party leader, kick a member from the party.
+   *
+   * @param playerId Id of the player who gets kicked.
+   */
+  kickPartyMember(playerId: number): void;
+
+  /**
+   * Leave the currently joined party.
+   */
+  leaveParty(): void;
+
+  /**
+   * As a party leader, make someone else the leader.
+   *
+   * @param playerId Id of the new leader.
+   */
+  changePartyLeader(playerId: number): void;
 }

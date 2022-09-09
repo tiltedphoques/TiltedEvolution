@@ -45,8 +45,8 @@ struct AnimationSystem
     * @param aWorld The registry where the actor in question lives.
     * @param aMovementSnapshot The output of the animation data.
     * @param localComponent The local component of the actor whose data is to be serialized.
-    * @param localComponent The local animation component of the actor, used to give the output the server id of the actor.
-    * @param localComponent The form id component of the actor, used to fetch the actor pointer.
+    * @param animationComponent The local animation component of the actor, used to give the output the server id of the actor.
+    * @param formIdComponent The form id component of the actor, used to fetch the actor pointer.
     */
     static void Serialize(World& aWorld, ClientReferencesMoveRequest& aMovementSnapshot, LocalComponent& localComponent, LocalAnimationComponent& animationComponent, FormIdComponent& formIdComponent);
     /**

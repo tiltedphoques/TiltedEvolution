@@ -247,16 +247,16 @@ void ActorValueService::RunDeathStateUpdates() noexcept
 
     lastSendTimePoint = now;
 
-    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    auto localView = m_world.view<FormIdComponent, LocalComponent>();
 
-    for (auto entity : view)
+    for (auto entity : localView)
     {
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        const auto& formIdComponent = localView.get<FormIdComponent>(entity);
         Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (!pActor)
             continue;
 
-        auto& localComponent = view.get<LocalComponent>(entity);
+        auto& localComponent = localView.get<LocalComponent>(entity);
 
         bool isDead = pActor->IsDead();
         if (isDead != localComponent.IsDead)
@@ -299,7 +299,7 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
     pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
 
     const float health = pActor->GetActorValue(ActorValueInfo::kHealth);
-    if (health <= 0.f)
+    if (!pActor->IsDead() && health <= 0.f)
     {
         ActorExtension* pExtension = pActor->GetExtension();
         // Players should never be killed
@@ -307,8 +307,11 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
             pActor->Kill();
     }
 
+    // TODO(cosideci): find fix for player health sync so this can be used again
+    /*
     if (pActor->GetExtension()->IsRemotePlayer())
         World::Get().GetOverlayService().SetPlayerHealthPercentage(pActor->formID);
+    */
 }
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
