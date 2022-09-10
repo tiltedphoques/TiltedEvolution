@@ -28,6 +28,7 @@
 #include <Games/Overrides.h>
 #include <Games/References.h>
 #include <AI/AIProcess.h>
+#include <EquipManager.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -54,6 +55,10 @@ double knockdownTimer = 0.0;
 
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
+
+uint32_t cachedMainSpellId = 0;
+uint32_t cachedSecondarySpellId = 0;
+uint32_t cachedPowerId = 0;
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -235,6 +240,10 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer->actorState.IsBleedingOut())
     {
+        cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
+        cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
+        cachedPowerId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
+
         s_startTimer = false;
         return;
     }
@@ -265,6 +274,17 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         m_transport.Send(PlayerRespawnRequest());
 
         s_startTimer = false;
+
+        auto* pEquipManager = EquipManager::Get();
+        TESForm* pSpell = TESForm::GetById(cachedMainSpellId);
+        if (pSpell)
+            pEquipManager->EquipSpell(pPlayer, pSpell, 0);
+        pSpell = TESForm::GetById(cachedSecondarySpellId);
+        if (pSpell)
+            pEquipManager->EquipSpell(pPlayer, pSpell, 1);
+        pSpell = TESForm::GetById(cachedPowerId);
+        if (pSpell)
+            pEquipManager->EquipShout(pPlayer, pSpell);
     }
 }
 
