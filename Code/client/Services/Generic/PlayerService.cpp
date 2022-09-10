@@ -46,21 +46,6 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&PlayerService::OnPartyLeftEvent>(this);
 }
 
-namespace
-{
-bool isDeathSystemEnabled = true;
-
-bool knockdownStart = false;
-double knockdownTimer = 0.0;
-
-bool godmodeStart = false;
-double godmodeTimer = 0.0;
-
-uint32_t cachedMainSpellId = 0;
-uint32_t cachedSecondarySpellId = 0;
-uint32_t cachedPowerId = 0;
-}
-
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
     RunRespawnUpdates(acEvent.Delta);
@@ -232,7 +217,7 @@ void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
 // TODO: ft (verify)
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
-    if (!isDeathSystemEnabled)
+    if (!m_isDeathSystemEnabled)
         return;
 
     static bool s_startTimer = false;
@@ -240,9 +225,9 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer->actorState.IsBleedingOut())
     {
-        cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
-        cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
-        cachedPowerId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
+        m_cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
+        m_cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
+        m_cachedPowerId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
 
         s_startTimer = false;
         return;
@@ -268,21 +253,21 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         pPlayer->RespawnPlayer();
 
-        knockdownTimer = 1.5;
-        knockdownStart = true;
+        m_knockdownTimer = 1.5;
+        m_knockdownStart = true;
 
         m_transport.Send(PlayerRespawnRequest());
 
         s_startTimer = false;
 
         auto* pEquipManager = EquipManager::Get();
-        TESForm* pSpell = TESForm::GetById(cachedMainSpellId);
+        TESForm* pSpell = TESForm::GetById(m_cachedMainSpellId);
         if (pSpell)
             pEquipManager->EquipSpell(pPlayer, pSpell, 0);
-        pSpell = TESForm::GetById(cachedSecondarySpellId);
+        pSpell = TESForm::GetById(m_cachedSecondarySpellId);
         if (pSpell)
             pEquipManager->EquipSpell(pPlayer, pSpell, 1);
-        pSpell = TESForm::GetById(cachedPowerId);
+        pSpell = TESForm::GetById(m_cachedPowerId);
         if (pSpell)
             pEquipManager->EquipShout(pPlayer, pSpell);
     }
@@ -292,38 +277,38 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 // Doesn't seem to respawn quite yet
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
-    if (!isDeathSystemEnabled)
+    if (!m_isDeathSystemEnabled)
         return;
 
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
     // It also makes the player invincible for 5 seconds.
-    if (knockdownStart)
+    if (m_knockdownStart)
     {
-        knockdownTimer -= acDeltaTime;
-        if (knockdownTimer <= 0.0)
+        m_knockdownTimer -= acDeltaTime;
+        if (m_knockdownTimer <= 0.0)
         {
             PlayerCharacter::SetGodMode(true);
-            godmodeStart = true;
-            godmodeTimer = 10.0;
+            m_godmodeStart = true;
+            m_godmodeTimer = 10.0;
 
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
 
             FadeOutGame(false, true, 0.5f, true, 2.f);
 
-            knockdownStart = false;
+            m_knockdownStart = false;
         }
     }
 
-    if (godmodeStart)
+    if (m_godmodeStart)
     {
-        godmodeTimer -= acDeltaTime;
-        if (godmodeTimer <= 0.0)
+        m_godmodeTimer -= acDeltaTime;
+        if (m_godmodeTimer <= 0.0)
         {
             PlayerCharacter::SetGodMode(false);
 
-            godmodeStart = false;
+            m_godmodeStart = false;
         }
     }
 }
@@ -363,9 +348,9 @@ void PlayerService::RunLevelUpdates() const noexcept
     }
 }
 
-void PlayerService::ToggleDeathSystem(bool aSet) const noexcept
+void PlayerService::ToggleDeathSystem(bool aSet) noexcept
 {
-    isDeathSystemEnabled = aSet;
+    m_isDeathSystemEnabled = aSet;
 
     PlayerCharacter::Get()->SetPlayerRespawnMode(aSet);
 }
