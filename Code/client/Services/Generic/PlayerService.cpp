@@ -56,9 +56,12 @@ double knockdownTimer = 0.0;
 bool godmodeStart = false;
 double godmodeTimer = 0.0;
 
+#if TP_SKYRIM64
 uint32_t cachedMainSpellId = 0;
 uint32_t cachedSecondarySpellId = 0;
 uint32_t cachedPowerId = 0;
+
+#endif
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -240,10 +243,11 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer->actorState.IsBleedingOut())
     {
+#if TP_SKYRIM64
         cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
         cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
         cachedPowerId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
-
+#endif
         s_startTimer = false;
         return;
     }
@@ -275,6 +279,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
         s_startTimer = false;
 
+#if TP_SKYRIM64
         auto* pEquipManager = EquipManager::Get();
         TESForm* pSpell = TESForm::GetById(cachedMainSpellId);
         if (pSpell)
@@ -285,6 +290,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         pSpell = TESForm::GetById(cachedPowerId);
         if (pSpell)
             pEquipManager->EquipShout(pPlayer, pSpell);
+#endif
     }
 }
 
