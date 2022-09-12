@@ -17,7 +17,9 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\SKSE\\Plugins", apGamePath);
 
     Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Skyrim Address Library",
-        L"Make sure to use the All in one (Anniversary Edition) even if you don't have the Anniversary Edition upgrade", errorDetail.c_str());
+          L"Make sure to use the All in one (Anniversary Edition) even if you do not have the Anniversary Edition upgrade",
+          errorDetail.c_str());
+
 #elif TP_FALLOUT4
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\F4SE\\Plugins", apGamePath);
 
@@ -25,6 +27,7 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
                          errorDetail.c_str());
 #endif
 
+    dia.AppendButton(0xBEED, L"Visit troubleshooting page on wiki.tiltedphoques.com");
     dia.AppendButton(0xBEEF, L"Visit Address Library modpage on nexusmods.com");
     const int result = dia.Show();
     if (result == 0xBEEF)
@@ -36,6 +39,11 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
         ShellExecuteW(nullptr, L"open", LR"(https://www.nexusmods.com/fallout4/mods/47327)", nullptr, nullptr,
                       SW_SHOWNORMAL);
 #endif
+    }
+    else if (result == 0xBEED)
+    {
+        ShellExecuteW(nullptr, L"open", LR"(https://wiki.tiltedphoques.com/tilted-online/guides/troubleshooting/address-library-error)",
+                      nullptr, nullptr, SW_SHOWNORMAL);
     }
 
     exit(4);
