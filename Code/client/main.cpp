@@ -17,7 +17,7 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\SKSE\\Plugins", apGamePath);
 
     Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Skyrim Address Library",
-                         L"Make sure to use the All in one Anniversary Edition", errorDetail.c_str());
+        L"Make sure to use the All in one (Anniversary Edition) even if you don't have the Anniversary Edition upgrade", errorDetail.c_str());
 #elif TP_FALLOUT4
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\F4SE\\Plugins", apGamePath);
 
