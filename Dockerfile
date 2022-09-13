@@ -1,59 +1,43 @@
-ARG arch=x86_64
+FROM tiltedphoques/multiarch-builder:latest as builder
 
-FROM tiltedphoques/builder:${arch} AS builder
+ARG REPO=https://github.com/tiltedphoques/TiltedEvolution.git
+ARG BRANCH=master
 
-ARG arch
+WORKDIR /home/builder
 
-WORKDIR /home/server
+ENV XMAKE_ROOT=y
 
-RUN apt update && \
-apt install cmake -y
+RUN git clone --recursive -b ${BRANCH} ${REPO} ./str && \
+    cd str && xmake config -m release -y && xmake -y && xmake install -o package -y
 
-RUN apt install -y sudo
 
-# switch to ruki user
-RUN groupadd -r ruki && useradd -r -g ruki ruki
-RUN mkdir /home/ruki
-RUN chown -R ruki:ruki /home
-RUN echo "root:0000" | chpasswd
-RUN echo "ruki:0000" | chpasswd
-RUN echo "ruki ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-USER ruki
+#Building for x86_64
+FROM builder as amd64builder
 
-# install xmake
-RUN cd /tmp/ && git clone --depth=1 "https://github.com/xmake-io/xmake.git" --recursive xmake && cd xmake && ./scripts/get.sh __local__
-RUN rm -rf /tmp/xmake
+RUN cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6
 
-COPY ./modules ./modules
-COPY ./Libraries ./Libraries
-COPY xmake.lua xmake.lua
-COPY ./.git ./.git
-COPY ./Code ./Code
 
-RUN ~/.local/bin/xmake f -y -vD
-RUN ~/.local/bin/xmake -j`nproc` -vD
+#Building for arm64/v8
+FROM builder as arm64builder
 
-RUN objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug
-RUN objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
+RUN cp /usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6
 
-RUN ~/.local/bin/xmake install -o package
 
-FROM ubuntu:20.04 AS skyrim
+#Intermediate image that has the library specific to our $TARGETARCH
+FROM ${TARGETARCH}builder as intermediate
 
-ARG arch
+RUN echo "Building for $TARGETARCH"
 
-RUN apt update && apt install libssl1.1
 
-# We copy it twice since we can't really tell the arch from Dockerfile :(
-COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/x86_64-linux-gnu/libstdc++.so.6
-COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/aarch64-linux-gnu/libstdc++.so.6
+#Actual server image
+FROM ubuntu:22.04
 
-# Now copy the actual bins
-COPY --from=builder /home/server/package/lib/libSTServer.so /home/server/libSTServer.so
-COPY --from=builder /home/server/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
-COPY --from=builder /home/server/package/bin/crashpad_handler /home/server/crashpad_handler
-COPY --from=builder /home/server/build/linux/${arch}/release/libSTServer.debug /home/server/libSTServer.debug
-COPY --from=builder /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug /home/server/SkyrimTogetherServer.debug
+COPY --from=intermediate /home/builder/str/package/lib/libSTServer.so /home/server/libSTServer.so
+COPY --from=intermediate /home/builder/str/package/bin/crashpad_handler /home/server/crashpad_handler
+COPY --from=intermediate /home/builder/str/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
+
+COPY --from=intermediate /home/builder/libstdc++.so.6 /home/server/libstdc++.so.6
+
 WORKDIR /home/server
 ENTRYPOINT ["./SkyrimTogetherServer"]
 
