@@ -11,7 +11,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     ports:
-      - "10578:10578/udp"
+      - 10578:10578/udp
     restart: unless-stopped
     stdin_open: true
     tty: true
