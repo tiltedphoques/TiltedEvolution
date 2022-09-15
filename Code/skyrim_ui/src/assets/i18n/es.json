@@ -1,0 +1,171 @@
+{
+  "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
+
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Enviar",
+      "MESSAGE": "Mensaje",
+      "MESSAGE_TOO_LONG": "No puedes enviar un mensaje de más de {{chatMessageLengthLimit}} caracteres."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Conéctate a un servidor utilizando la dirección completa. Usa el formato <strong>dirección:puerto</strong>. El puerto por defecto es: <strong>10578</strong>.",
+        "HELGEN": "NO te conectes a ningún servidor si todavía te encuentras en la misión de introducción de Helgen. Asegúrate de haber escapado de Helgen primero."
+      },
+      "ADDRESS": "Dirección",
+      "PASSWORD": "Contraseña",
+      "SAVE_PASSWORD": "¿Guardar contraseña?",
+      "CONNECT": "Conectar",
+      "CANCEL": "Cancelar",
+      "PUBLIC_SERVERS": "Servidores públicos",
+      "ERROR": {
+        "CONNECTION": "No se ha podido conectar con el servidor especificado. Asegúrate de haber introducido la dirección correctamente y de no tener problemas de conexión.",
+        "VERSION_MISMATCH": "No puedes conectarte al servidor ya que no posees la misma versión de Skyrim Together que el servidor.",
+        "INVALID_ADDRESS": "La dirección tiene un formato no válido."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "¿Seguro que quieres desconectarte?",
+      "PROCEED": "Proceder",
+      "CANCEL": "Cancelar"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Mensaje de",
+      "ACCEPT": "Aceptar",
+      "DECLINE": "Rechazar"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Aceptar invitación de {{name}}",
+      "LAUNCH_PARTY": "Crear grupo",
+      "INVITES": "Invitaciones",
+      "NO_INVITES": "No tienes ninguna invitación",
+      "EXPERIENCE_WARNING": "Para una experiencia de aventura óptima, asegúrate de leer la guía de juego en nuestra wiki que puedes encontrar en nuestra página web, <b>skyrim-together.com</b>. Aquí tienes un pequeño resumen de las pautas:",
+      "GUIDELINES": {
+        "PARTY": "Al crear un grupo, te conviertes en el líder del grupo.",
+        "PARTY_LEADER_TALK": "Tan sólo el líder del grupo debe hablar con los NPCs de las misiones para avanzar.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Sólo el líder del grupo puede obtener objetos de las misiones.",
+        "KEEP_PARTY_LEADER": "Limítate a un líder de grupo por partida.",
+        "ONE_PARTY_PER_SERVER": "Limítate a un grupo por servidor."
+      },
+      "NO_PLAYERS_IN_PARTY": "Todavía no hay nadie en tu grupo. ¡Invítalos mediante la lista de jugadores!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Nvl.",
+        "NAME": "Nombre",
+        "LOCATION": "Ubicación"
+      },
+      "ACTIONS": {
+        "KICK": "Expulsar",
+        "TELEPORT": "Teletransportar",
+        "MAKE_LEADER": "Hacer lider"
+      },
+      "LEAVE_PARTY": "Abandonar grupo"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "¡Aquí no hay nadie más que nosotros, polluelo!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Nvl.",
+        "NAME": "Nombre",
+        "LOCATION": "Ubicación"
+      },
+      "INVITE": "Invitar"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Lista de jugadores",
+      "PARTY_MENU": "Gestionar grupo",
+      "BACK": "Atrás"
+    },
+    "ROOT": {
+      "CONNECT": "Conectar",
+      "DISCONNECT": "Desconectar",
+      "RECONNECT": "Reconectar",
+      "PLAYER_MANAGER": "Gestionar jugadores",
+      "SETTINGS": "Parámetros",
+      "CONNECTION_IN_PROGRESS": "Conexión en progreso..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Buscar...",
+      "REFRESH": "Actualizar",
+      "BACK": "Atrás",
+      "LOADING": "Cargando...",
+      "NO_SERVERS": "No hay servidores públicos disponibles",
+      "HIDE_MISMATCHED_SERVERS": "Ocultar servidores con versión incompatible",
+      "HIDE_FULL_SERVERS": "Ocultar servidores llenos",
+      "SERVER_COUNT": "Mostrando {{filteredCount}} de {{count}} servidores",
+      "TABLE_HEADERS": {
+        "NAME": "Nombre del servidor",
+        "PLAYERS": "Jugadores / Máx.",
+        "COUNTRY": "País",
+        "FAVORITE": "Favorito"
+      },
+      "JOIN": "Entrar"
+    },
+    "SETTINGS": {
+      "AUDIO": "Audio",
+      "MUTE_UI": "Silenciar interfaz",
+      "UI_VOLUME": "Volumen de interfaz",
+      "PARTY": "Grupo",
+      "SHOW_PARTY": "Mostrar grupo",
+      "AUTO_HIDE_PARTY": "Ocultar automáticamente el grupo",
+      "AUTO_HIDE_PARTY_LENGTH": "Ocultar automáticamente tamaño del contador",
+      "PARTY_ANCHOR": "Posición",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Superior izquierda",
+        "TOP_RIGHT": "Superior derecha",
+        "BOTTOM_RIGHT": "Inferior derecha",
+        "BOTTOM_LEFT": "Inferior izquierda"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Desplazamiento horizontal",
+      "PARTY_ANCHOR_OFFSET_Y": "Desplazamiento vertical",
+      "LENGTH": "{{length}}s",
+      "UI": "INTERFAZ",
+      "LANGUAGE": "Idioma",
+      "DEBUG": "Depuración",
+      "SHOW_DEBUG_INFO": "Mostrar información de depuración",
+      "FONT_SIZE": "Tamaño de fuente",
+      "FONT_SIZES": {
+        "XS": "Diminuto",
+        "S": "Pequeño",
+        "M": "Medio",
+        "L": "Grande",
+        "XL": "Extra grande"
+      },
+      "BACK": "Atrás"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Conexión perdida, intentando reconectar. Quedan {{remainingReconnectionAttempt}} intentos.",
+      "CONNECTED": "Conectado con éxito al servidor.",
+      "DISCONNECTED": "Desconectado del servidor."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Comandos del chat disponibles: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' se reconoce como un comando."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} ha alcanzado el nivel {{level}}.",
+      "ALREADY_IN_GROUP": "Ya formas parte de un grupo. Para unirte a otro grupo debes abandonar el grupo actual.",
+      "KICK_NO_PARTY_LEADER": "No puedes expulsar a otros miembros ya que no eres el líder del grupo.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "No puedes hacer que otro miembro sea líder, ya que no eres el líder del grupo."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "El servidor requiere la versión {{expectedVersion}} pero te encuentras en la versión {{version}}.",
+        "MODS_MISMATCH": "Este servidor tiene ModPolicy activado. {{mods}}",
+        "MODS_MISMATCH_REMOVE": "Por favor, elimina los siguientes mods para poder unirte:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Por favor, instala los siguientes mods para unirte:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "Este servidor no permite {{mods}}. Por favor, elimínalos para poder unirte.",
+        "WRONG_PASSWORD": "La contraseña que has introducido es incorrecta.",
+        "NO_REASON": "El servidor ha rechazado la conexión sin razón.",
+        "SERVER_FULL": "El servidor está lleno."
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} te invitó para unirte a un grupo"
+    }
+  }
+}
+
