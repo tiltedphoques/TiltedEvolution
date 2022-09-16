@@ -171,7 +171,7 @@ struct PlayerCharacter : Actor
         uint64_t instanceCount;
     };
 
-    uint8_t pad1[0x580 - sizeof(Actor)];
+    uint8_t pad1[0x588 - sizeof(Actor)];
     GameArray<ObjectiveInstance> objectives; 
     uint8_t pad588[0x9B0 - 0x598];
     Skills** pSkills;
@@ -186,10 +186,10 @@ struct PlayerCharacter : Actor
     uint8_t padPlayerEnd[0xBE0 - 0xB30];
 };
 
-static_assert(offsetof(PlayerCharacter, objectives) == 0x580);
-static_assert(offsetof(PlayerCharacter, pSkills) == 0x9B0);
-static_assert(offsetof(PlayerCharacter, locationForm) == 0xAC8);
-static_assert(offsetof(PlayerCharacter, baseTints) == 0xB10);
-static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB28);
-static_assert(sizeof(PlayerCharacter) == 0xBE0);
+static_assert(offsetof(PlayerCharacter, objectives) == 0x588);
+static_assert(offsetof(PlayerCharacter, pSkills) == 0x9B8);
+static_assert(offsetof(PlayerCharacter, locationForm) == 0xAD0);
+static_assert(offsetof(PlayerCharacter, baseTints) == 0xB18);
+static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB30);
+static_assert(sizeof(PlayerCharacter) == 0xBE8);
 
