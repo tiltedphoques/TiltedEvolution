@@ -1,4 +1,6 @@
-FROM tiltedphoques/multiarch-builder:latest as builder
+ARG TARGETARCH=amd64
+
+FROM outshynd/multiarch-builder:latest as builder
 
 ARG REPO=https://github.com/tiltedphoques/TiltedEvolution.git
 ARG BRANCH=master
@@ -14,17 +16,19 @@ RUN git clone --recursive -b ${BRANCH} ${REPO} ./str && \
 #Building for x86_64
 FROM builder as amd64builder
 
-RUN cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6
+RUN cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6 2>/dev/null || :
 
 
 #Building for arm64/v8
 FROM builder as arm64builder
 
-RUN cp /usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6
+RUN cp /usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6 2>/dev/null || :
 
 
 #Intermediate image that has the library specific to our $TARGETARCH
 FROM ${TARGETARCH}builder as intermediate
+
+ARG TARGETARCH
 
 RUN echo "Building for $TARGETARCH"
 
