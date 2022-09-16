@@ -1,4 +1,4 @@
-ARG TARGETARCH=amd64
+ARG TARGETARCH
 
 FROM outshynd/multiarch-builder:latest as builder
 
