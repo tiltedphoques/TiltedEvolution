@@ -42,15 +42,37 @@ class ToggleSetting extends Setting<boolean> {
   }
 }
 
+class SelectSetting extends Setting<string> {
+
+  constructor(
+    private readonly storeService: StoreService, 
+    private storeKey: string, 
+    private options: Record<string, string>, 
+    defaultValue: string
+  ) {
+    const allowedValues = Object.values(options);
+    const storedValue = storeService.get(storeKey, defaultValue);
+    super(allowedValues.includes(storedValue) ? storedValue : defaultValue);
+  }
+
+  public next(value: string) {
+    const allowedValues = Object.values(this.options);
+    if (allowedValues.includes(value)) {
+      this.storeService.set(this.storeKey, value);
+      super.next(value);
+    }
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class SettingService {
-  public fontSizeChange = new BehaviorSubject(this.getFontSize())
 
   public settings = {
     volume: new SliderSetting(this.storeService, "audio_volume", 0.5),
     muted: new ToggleSetting(this.storeService, "audio_muted", false),
+    fontSize: new SelectSetting(this.storeService, "font_size", FontSize, FontSize.M),
     isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
     autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
     partyAnchorOffsetX: new SliderSetting(this.storeService, "party_anchor_offset_x", 0),
@@ -78,15 +100,6 @@ export class SettingService {
 
   public getPartyAnchor(): PartyAnchor {
     return JSON.parse(this.storeService.get('party_anchor', PartyAnchor.TOP_LEFT));
-  }
-
-  public setFontSize(size: FontSize) {
-    this.fontSizeChange.next(size);
-    this.storeService.set('font_size', size);
-  }
-
-  public getFontSize(): FontSize {
-    return this.storeService.get('font_size', FontSize.M);
   }
 
   public getLanguage(): string {
