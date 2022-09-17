@@ -194,7 +194,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     const x = this.settings.partyAnchorOffsetX.value
     const y = this.settings.partyAnchorOffsetY.value
 
-    switch (this.settingService.getPartyAnchor()) {
+    switch (this.settings.partyAnchor.value) {
       case PartyAnchor.TOP_LEFT:
         newPosition.top = `${ y }vh`;
         newPosition.left = `${ x }vw`;

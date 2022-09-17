@@ -20,10 +20,10 @@ export const fontSizeToPixels: Record<FontSize, string> = {
 }
 
 export enum PartyAnchor {
-  TOP_LEFT,
-  TOP_RIGHT,
-  BOTTOM_RIGHT,
-  BOTTOM_LEFT,
+  TOP_LEFT = 'top_left',
+  TOP_RIGHT = 'top_right',
+  BOTTOM_RIGHT = 'bottom_right',
+  BOTTOM_LEFT = 'bottom_left',
 }
 
 @Component({
@@ -33,9 +33,6 @@ export enum PartyAnchor {
 })
 export class SettingsComponent implements OnInit {
 
-  /* ### ENUMS ### */
-  readonly PartyAnchor = PartyAnchor;
-
   readonly availableLanguages = this.translocoService.getAvailableLangs();
   readonly availableFontSizes: {id: FontSize, label: string}[] = [
     {id: FontSize.XS, label: 'COMPONENT.SETTINGS.FONT_SIZES.XS'},
@@ -43,7 +40,13 @@ export class SettingsComponent implements OnInit {
     {id: FontSize.M, label: 'COMPONENT.SETTINGS.FONT_SIZES.M'},
     {id: FontSize.L, label: 'COMPONENT.SETTINGS.FONT_SIZES.L'},
     {id: FontSize.XL, label: 'COMPONENT.SETTINGS.FONT_SIZES.XL'}
-  ]
+  ];
+  readonly availablePartyAnchors: {id: PartyAnchor, label: string}[] = [
+    {id: PartyAnchor.TOP_LEFT, label : 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT'},
+    {id: PartyAnchor.TOP_RIGHT, label : 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT'},
+    {id: PartyAnchor.BOTTOM_RIGHT, label : 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT'},
+    {id: PartyAnchor.BOTTOM_LEFT, label : 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT'}
+  ];
 
   public settings = this.settingService.settings;
   public autoHideTime: number;
@@ -66,18 +69,11 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.autoHideTime = this.settingService.getAutoHideTime();
-    this.partyAnchor = this.settingService.getPartyAnchor();
   }
 
   onAutoHideTimeChange(time: number) {
     this.settingService.setAutoHideTime(time);
     this.autoHideTime = time;
-    this.settingsUpdated.next();
-  }
-
-  onPartyAnchorChange(anchor: PartyAnchor) {
-    this.settingService.setPartyAnchor(anchor);
-    this.partyAnchor = anchor;
     this.settingsUpdated.next();
   }
 

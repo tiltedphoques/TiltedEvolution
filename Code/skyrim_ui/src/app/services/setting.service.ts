@@ -69,6 +69,7 @@ export class SettingService {
 
   private readonly languageValues: string[] = Object.values(this.translocoService.getAvailableLangs()).map(lang => lang.id);
   private readonly fontSizeValues = Object.values(FontSize);
+  private readonly partyAnchorValues = Object.values(PartyAnchor);
 
   public settings = {
     volume: new SliderSetting(this.storeService, "audio_volume", 0.5),
@@ -77,6 +78,7 @@ export class SettingService {
     fontSize: new SelectSetting(this.storeService, "font_size", this.fontSizeValues, FontSize.M),
     isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
     autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
+    partyAnchor: new SelectSetting(this.storeService, "party_anchor", this.partyAnchorValues, PartyAnchor.TOP_LEFT),
     partyAnchorOffsetX: new SliderSetting(this.storeService, "party_anchor_offset_x", 0),
     partyAnchorOffsetY: new SliderSetting(this.storeService, "party_anchor_offset_y", 3),
     isDebugShown: new ToggleSetting(this.storeService, "debug_isShown", false),
@@ -96,13 +98,4 @@ export class SettingService {
   public getAutoHideTime(): number {
     return JSON.parse(this.storeService.get('party_autoHideTime', 3));
   }
-
-  public setPartyAnchor(anchor: PartyAnchor) {
-    this.storeService.set('party_anchor', anchor);
-  }
-
-  public getPartyAnchor(): PartyAnchor {
-    return JSON.parse(this.storeService.get('party_anchor', PartyAnchor.TOP_LEFT));
-  }
-
 }

@@ -93,23 +93,8 @@
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
-        <app-dropdown class="settings-dropdown" [ngModel]="partyAnchor" (ngModelChange)="onPartyAnchorChange($event)">
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco"
-            [value]="PartyAnchor.TOP_LEFT"
-          ></app-dropdown-option>
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco"
-            [value]="PartyAnchor.TOP_RIGHT"
-          ></app-dropdown-option>
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco"
-            [value]="PartyAnchor.BOTTOM_RIGHT"
-          ></app-dropdown-option>
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco"
-            [value]="PartyAnchor.BOTTOM_LEFT"
-          ></app-dropdown-option>
+        <app-dropdown class="settings-dropdown" [ngModel]="settings.partyAnchor | async" (ngModelChange)="settings.partyAnchor.next($event)">
+          <app-dropdown-option *ngFor="let l of availablePartyAnchors" [text]="l.label | transloco" [value]="l.id"></app-dropdown-option>
         </app-dropdown>
       </div>
       <div class="flex-item">
