@@ -23,7 +23,7 @@
       <h2>{{ 'COMPONENT.SETTINGS.UI' | transloco }}</h2>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.LANGUAGE' | transloco }}</label>
-        <app-dropdown class="settings-dropdown" [ngModel]="language" (ngModelChange)="onLanguageChange($event)">
+        <app-dropdown class="settings-dropdown" [ngModel]="settings.language | async" (ngModelChange)="settings.language.next($event)">
           <app-dropdown-option *ngFor="let l of availableLanguages" [text]="l.label" [value]="l.id"></app-dropdown-option>
         </app-dropdown>
       </div>

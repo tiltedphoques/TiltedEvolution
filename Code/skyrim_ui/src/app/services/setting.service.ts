@@ -47,17 +47,15 @@ class SelectSetting extends Setting<string> {
   constructor(
     private readonly storeService: StoreService, 
     private storeKey: string, 
-    private options: Record<string, string>, 
+    private options: string[], 
     defaultValue: string
   ) {
-    const allowedValues = Object.values(options);
     const storedValue = storeService.get(storeKey, defaultValue);
-    super(allowedValues.includes(storedValue) ? storedValue : defaultValue);
+    super(options.includes(storedValue) ? storedValue : defaultValue);
   }
 
   public next(value: string) {
-    const allowedValues = Object.values(this.options);
-    if (allowedValues.includes(value)) {
+    if (this.options.includes(value)) {
       this.storeService.set(this.storeKey, value);
       super.next(value);
     }
@@ -69,10 +67,14 @@ class SelectSetting extends Setting<string> {
 })
 export class SettingService {
 
+  private readonly languageValues: string[] = Object.values(this.translocoService.getAvailableLangs()).map(lang => lang.id);
+  private readonly fontSizeValues = Object.values(FontSize);
+
   public settings = {
     volume: new SliderSetting(this.storeService, "audio_volume", 0.5),
     muted: new ToggleSetting(this.storeService, "audio_muted", false),
-    fontSize: new SelectSetting(this.storeService, "font_size", FontSize, FontSize.M),
+    language: new SelectSetting(this.storeService, "language", this.languageValues, "en"),
+    fontSize: new SelectSetting(this.storeService, "font_size", this.fontSizeValues, FontSize.M),
     isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
     autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
     partyAnchorOffsetX: new SliderSetting(this.storeService, "party_anchor_offset_x", 0),
@@ -84,6 +86,7 @@ export class SettingService {
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
   ) {
+    this.settings.language.subscribe(lang => translocoService.setActiveLang(lang));    
   }
 
   public setAutoHideTime(time: number) {
@@ -102,17 +105,4 @@ export class SettingService {
     return JSON.parse(this.storeService.get('party_anchor', PartyAnchor.TOP_LEFT));
   }
 
-  public getLanguage(): string {
-    const language = this.storeService.get('language', 'en');
-    const isValid = !!(this.translocoService.getAvailableLangs() as any[])
-      .find(lang => lang === language || lang.id === language);
-    if (isValid) {
-      return language;
-    }
-    return this.translocoService.getDefaultLang();
-  }
-
-  public setLanguage(language: string) {
-    this.storeService.set('language', language);
-  }
 }

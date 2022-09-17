@@ -53,7 +53,6 @@ export class SettingsComponent implements OnInit {
   public fontSize: FontSize;
   public maxFontSize = Object.values(FontSize).length - 1;
   public minFontSize = 0;
-  public language: string;
 
   @Output() public done = new EventEmitter<void>();
   @Output() public settingsUpdated = new EventEmitter<void>();
@@ -68,7 +67,6 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.autoHideTime = this.settingService.getAutoHideTime();
     this.partyAnchor = this.settingService.getPartyAnchor();
-    this.language = this.settingService.getLanguage();
   }
 
   onAutoHideTimeChange(time: number) {
@@ -81,13 +79,6 @@ export class SettingsComponent implements OnInit {
     this.settingService.setPartyAnchor(anchor);
     this.partyAnchor = anchor;
     this.settingsUpdated.next();
-  }
-
-  onLanguageChange(language: string) {
-    this.settingService.setLanguage(language);
-    this.language = language;
-    this.settingsUpdated.next();
-    this.translocoService.setActiveLang(language);
   }
 
   public autoHideTimeSelected(number: number): boolean {
