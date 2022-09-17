@@ -114,15 +114,15 @@
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_X' | transloco }}</label>
-        <input type="range" min="0" max="84" step="1" [ngModel]="partyAnchorOffsetX"
-               (ngModelChange)="onPartyAnchorOffsetXChange($event)"
+        <input type="range" min="0" max="84" step="1" [ngModel]="settings.partyAnchorOffsetX | async"
+        (ngModelChange)="settings.partyAnchorOffsetX.next($event)"
         >
       </div>
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_Y' | transloco }}</label>
         <input
-          type="range" min="2" max="50" step="1" [ngModel]="partyAnchorOffsetY"
-          (ngModelChange)="onPartyAnchorOffsetYChange($event)"
+          type="range" min="2" max="50" step="1" [ngModel]="settings.partyAnchorOffsetY | async"
+          (ngModelChange)="settings.partyAnchorOffsetY.next($event)"
         >
       </div>
     </div>

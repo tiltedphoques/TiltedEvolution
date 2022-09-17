@@ -68,8 +68,6 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.autoHideTime = this.settingService.getAutoHideTime();
     this.partyAnchor = this.settingService.getPartyAnchor();
-    this.partyAnchorOffsetX = this.settingService.getPartyAnchorOffsetX();
-    this.partyAnchorOffsetY = this.settingService.getPartyAnchorOffsetY();
     this.fontSize = this.settingService.getFontSize();
     this.language = this.settingService.getLanguage();
   }
@@ -83,18 +81,6 @@ export class SettingsComponent implements OnInit {
   onPartyAnchorChange(anchor: PartyAnchor) {
     this.settingService.setPartyAnchor(anchor);
     this.partyAnchor = anchor;
-    this.settingsUpdated.next();
-  }
-
-  onPartyAnchorOffsetXChange(offset: number) {
-    this.settingService.setPartyAnchorOffsetX(offset);
-    this.partyAnchorOffsetX = offset;
-    this.settingsUpdated.next();
-  }
-
-  onPartyAnchorOffsetYChange(offset: number) {
-    this.settingService.setPartyAnchorOffsetY(offset);
-    this.partyAnchorOffsetY = offset;
     this.settingsUpdated.next();
   }
 

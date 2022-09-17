@@ -53,6 +53,8 @@ export class SettingService {
     muted: new ToggleSetting(this.storeService, "audio_muted", false),
     isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
     autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
+    partyAnchorOffsetX: new SliderSetting(this.storeService, "party_anchor_offset_x", 0),
+    partyAnchorOffsetY: new SliderSetting(this.storeService, "party_anchor_offset_y", 3),
     isDebugShown: new ToggleSetting(this.storeService, "debug_isShown", false),
   }
 
@@ -76,22 +78,6 @@ export class SettingService {
 
   public getPartyAnchor(): PartyAnchor {
     return JSON.parse(this.storeService.get('party_anchor', PartyAnchor.TOP_LEFT));
-  }
-
-  public setPartyAnchorOffsetX(offset: number) {
-    this.storeService.set('party_anchor_offset_x', offset);
-  }
-
-  public getPartyAnchorOffsetX(): number {
-    return JSON.parse(this.storeService.get('party_anchor_offset_x', 0));
-  }
-
-  public setPartyAnchorOffsetY(offset: number) {
-    this.storeService.set('party_anchor_offset_y', offset);
-  }
-
-  public getPartyAnchorOffsetY(): number {
-    return JSON.parse(this.storeService.get('party_anchor_offset_y', 3));
   }
 
   public setFontSize(size: FontSize) {
