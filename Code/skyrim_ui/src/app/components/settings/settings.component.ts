@@ -1,6 +1,5 @@
 import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { ClientService } from 'src/app/services/client.service';
 import { SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 
@@ -47,7 +46,6 @@ export class SettingsComponent implements OnInit {
   ]
 
   public settings = this.settingService.settings;
-  public showDebug: boolean;;
   public autoHideTime: number;
   public partyAnchor: PartyAnchor;
   public partyAnchorOffsetX: number;
@@ -62,26 +60,18 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private readonly settingService: SettingService,
-    private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
   ) {
   }
 
   ngOnInit(): void {
-    this.showDebug = this.settingService.isDebugShown();
     this.autoHideTime = this.settingService.getAutoHideTime();
     this.partyAnchor = this.settingService.getPartyAnchor();
     this.partyAnchorOffsetX = this.settingService.getPartyAnchorOffsetX();
     this.partyAnchorOffsetY = this.settingService.getPartyAnchorOffsetY();
     this.fontSize = this.settingService.getFontSize();
     this.language = this.settingService.getLanguage();
-  }
-
-  onShowDebugChange(checked: boolean) {
-    this.settingService.setDebugShown(checked);
-    this.client.debugStateChange.next(checked);
-    this.settingsUpdated.next();
   }
 
   onAutoHideTimeChange(time: number) {

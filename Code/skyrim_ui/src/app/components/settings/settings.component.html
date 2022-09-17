@@ -134,8 +134,8 @@
         <input 
           type="checkbox"
           id="showDebug"
-          [ngModel]="showDebug"
-          (ngModelChange)="onShowDebugChange($event)"
+          [ngModel]="settings.isDebugShown"
+          (ngModelChange)="settings.isDebugShown.next($event)"
         />
       </div>
     </div>

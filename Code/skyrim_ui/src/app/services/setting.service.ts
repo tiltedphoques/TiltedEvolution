@@ -53,24 +53,13 @@ export class SettingService {
     muted: new ToggleSetting(this.storeService, "audio_muted", false),
     isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
     autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
+    isDebugShown: new ToggleSetting(this.storeService, "debug_isShown", false),
   }
 
   constructor(
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
   ) {
-  }
-
-  public setDebugShown(shown: boolean) {
-    this.storeService.set('debug_isShown', shown);
-  }
-
-  public isDebugShown(): boolean {
-    return JSON.parse(this.storeService.get('debug_isShown', false));
-  }
-
-  public isPartyAutoHidden(): boolean {
-    return JSON.parse(this.storeService.get('party_autoHide', false));
   }
 
   public setAutoHideTime(time: number) {
