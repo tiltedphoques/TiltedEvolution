@@ -47,9 +47,7 @@ export class SettingsComponent implements OnInit {
   ]
 
   public settings = this.settingService.settings;
-  public showDebug: boolean;
-  public autoHideParty: boolean;
-  public showParty: boolean;
+  public showDebug: boolean;;
   public autoHideTime: number;
   public partyAnchor: PartyAnchor;
   public partyAnchorOffsetX: number;
@@ -72,8 +70,6 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.showDebug = this.settingService.isDebugShown();
-    this.autoHideParty = this.settingService.isPartyAutoHidden();
-    this.showParty = this.settingService.isPartyShown();
     this.autoHideTime = this.settingService.getAutoHideTime();
     this.partyAnchor = this.settingService.getPartyAnchor();
     this.partyAnchorOffsetX = this.settingService.getPartyAnchorOffsetX();
@@ -85,17 +81,6 @@ export class SettingsComponent implements OnInit {
   onShowDebugChange(checked: boolean) {
     this.settingService.setDebugShown(checked);
     this.client.debugStateChange.next(checked);
-    this.settingsUpdated.next();
-  }
-
-  onShowPartyChange(checked: boolean) {
-    this.settingService.showParty(checked);
-    this.settingsUpdated.next();
-  }
-
-  onAutoHidePartyChange(checked: boolean) {
-    this.settingService.autoHideParty(checked);
-    this.autoHideParty = checked;
     this.settingsUpdated.next();
   }
 

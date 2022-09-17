@@ -42,8 +42,8 @@
         <input 
           type="checkbox"
           id="showParty"
-          [ngModel]="showParty"
-          (ngModelChange)="onShowPartyChange($event)"
+          [ngModel]="settings.isPartyShown | async"
+          (ngModelChange)="settings.isPartyShown.next($event)"
         />
       </div>
       <div class="flex-item">
@@ -51,8 +51,8 @@
         <input 
           type="checkbox"
           id="autoHideParty"
-          [ngModel]="autoHideParty"
-          (ngModelChange)="onAutoHidePartyChange($event)"
+          [ngModel]="settings.autoHideParty | async"
+          (ngModelChange)="settings.autoHideParty.next($event)"
         >
 
       </div>
@@ -64,7 +64,7 @@
             <input
               type="radio"
               [value]="1"
-              [disabled]="!autoHideParty"
+              [disabled]="!(settings.autoHideParty | async)"
               [ngModel]="autoHideTime"
               (ngModelChange)="onAutoHideTimeChange($event)"
             >
@@ -74,7 +74,7 @@
             <input
               type="radio"
               [value]="3"
-              [disabled]="!autoHideParty"
+              [disabled]="!(settings.autoHideParty | async)"
               [ngModel]="autoHideTime"
               (ngModelChange)="onAutoHideTimeChange($event)"
             >
@@ -84,7 +84,7 @@
             <input
               type="radio"
               [value]="5"
-              [disabled]="!autoHideParty"
+              [disabled]="!(settings.autoHideParty | async)"
               [ngModel]="autoHideTime"
               (ngModelChange)="onAutoHideTimeChange($event)"
             >

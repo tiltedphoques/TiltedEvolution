@@ -36,15 +36,16 @@ export class GroupComponent implements OnInit, OnDestroy {
   public isShown = new BehaviorSubject(true);
   public waitLaunch = new BehaviorSubject(false);
   public positionStyle = new BehaviorSubject<GroupPosition>({ top: '0%', left: '0%' });
+  public settings = this.settingService.settings;
 
   constructor(
     private readonly destroy$: DestroyService,
     private readonly groupService: GroupService,
     private readonly clientService: ClientService,
-    private readonly settings: SettingService,
+    private readonly settingService: SettingService,
   ) {
-    this.isShown.next(this.settings.isPartyShown());
-    this.isAutoHide.next(this.settings.isPartyAutoHidden());
+    this.isShown.next(this.settings.isPartyShown.value);
+    this.isAutoHide.next(this.settings.autoHideParty.value);
 
     this.group$ = this.groupService.group.asObservable();
     this.groupMembers$ = this.groupService.selectMembers()
@@ -115,7 +116,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   private onPartyShownState() {
-    this.settings.partyShownChange
+    this.settings.isPartyShown
       .pipe(takeUntil(this.destroy$))
       .subscribe((state: boolean) => {
         this.isShown.next(state);
@@ -125,11 +126,11 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   private onPartyAutoHideState() {
-    this.settings.partyAutoHideChange
+    this.settings.autoHideParty
       .pipe(takeUntil(this.destroy$))
       .subscribe((state: boolean) => {
         this.isAutoHide.next(state);
-        if (this.settings.isPartyShown()) {
+        if (this.settings.isPartyShown.value) {
           this.isShown.next(true);
         }
         this.flashGroup();
@@ -153,7 +154,7 @@ export class GroupComponent implements OnInit, OnDestroy {
       }
 
       if (!this.clientService.activationStateChange.getValue()) {
-        let timerLength = this.settings.getAutoHideTime() * 1000;
+        let timerLength = this.settingService.getAutoHideTime() * 1000;
         let source = timer(timerLength);
         this.timerSubscription = source.subscribe(() => {
           this.isShown.next(false);
@@ -180,22 +181,22 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   updatePosition() {
     const newPosition: GroupPosition = {};
-    switch (this.settings.getPartyAnchor()) {
+    switch (this.settingService.getPartyAnchor()) {
       case PartyAnchor.TOP_LEFT:
-        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
-        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        newPosition.top = `${ this.settingService.getPartyAnchorOffsetY() }vh`;
+        newPosition.left = `${ this.settingService.getPartyAnchorOffsetX() }vw`;
         break;
       case PartyAnchor.TOP_RIGHT:
-        newPosition.top = `${ this.settings.getPartyAnchorOffsetY() }vh`;
-        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        newPosition.top = `${ this.settingService.getPartyAnchorOffsetY() }vh`;
+        newPosition.right = `${ -(100 - this.settingService.getPartyAnchorOffsetX()) }vw`;
         break;
       case PartyAnchor.BOTTOM_RIGHT:
-        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
-        newPosition.right = `${ -(100 - this.settings.getPartyAnchorOffsetX()) }vw`;
+        newPosition.bottom = `${ -(100 - this.settingService.getPartyAnchorOffsetY()) }vh`;
+        newPosition.right = `${ -(100 - this.settingService.getPartyAnchorOffsetX()) }vw`;
         break;
       case PartyAnchor.BOTTOM_LEFT:
-        newPosition.bottom = `${ -(100 - this.settings.getPartyAnchorOffsetY()) }vh`;
-        newPosition.left = `${ this.settings.getPartyAnchorOffsetX() }vw`;
+        newPosition.bottom = `${ -(100 - this.settingService.getPartyAnchorOffsetY()) }vh`;
+        newPosition.left = `${ this.settingService.getPartyAnchorOffsetX() }vw`;
         break;
     }
     this.positionStyle.next(newPosition);

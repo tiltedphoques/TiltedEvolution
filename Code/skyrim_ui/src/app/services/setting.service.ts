@@ -46,14 +46,13 @@ class ToggleSetting extends Setting<boolean> {
   providedIn: 'root',
 })
 export class SettingService {
-
-  public partyShownChange = new BehaviorSubject(this.isPartyShown());
-  public partyAutoHideChange = new BehaviorSubject(this.isPartyAutoHidden());
   public fontSizeChange = new BehaviorSubject(this.getFontSize())
 
   public settings = {
     volume: new SliderSetting(this.storeService, "audio_volume", 0.5),
     muted: new ToggleSetting(this.storeService, "audio_muted", false),
+    isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
+    autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
   }
 
   constructor(
@@ -68,20 +67,6 @@ export class SettingService {
 
   public isDebugShown(): boolean {
     return JSON.parse(this.storeService.get('debug_isShown', false));
-  }
-
-  public showParty(showParty: boolean) {
-    this.storeService.set('party_isShown', showParty);
-    this.partyShownChange.next(showParty);
-  }
-
-  public isPartyShown(): boolean {
-    return JSON.parse(this.storeService.get('party_isShown', true));
-  }
-
-  public autoHideParty(autoHideParty: boolean) {
-    this.storeService.set('party_autoHide', autoHideParty);
-    this.partyAutoHideChange.next(autoHideParty);
   }
 
   public isPartyAutoHidden(): boolean {
