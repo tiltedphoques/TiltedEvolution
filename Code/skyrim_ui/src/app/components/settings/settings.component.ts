@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
@@ -26,12 +26,14 @@ export enum PartyAnchor {
   BOTTOM_LEFT = 'bottom_left',
 }
 
+export const autoHideTimerLengths = [1, 3, 5].map(l => l.toFixed(0));
+
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent {
 
   readonly availableLanguages = this.translocoService.getAvailableLangs();
   readonly availableFontSizes: {id: FontSize, label: string}[] = [
@@ -47,6 +49,7 @@ export class SettingsComponent implements OnInit {
     {id: PartyAnchor.BOTTOM_RIGHT, label : 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT'},
     {id: PartyAnchor.BOTTOM_LEFT, label : 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT'}
   ];
+  readonly availableAutoHideTimes = autoHideTimerLengths;
 
   public settings = this.settingService.settings;
   public autoHideTime: number;
@@ -65,20 +68,6 @@ export class SettingsComponent implements OnInit {
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
   ) {
-  }
-
-  ngOnInit(): void {
-    this.autoHideTime = this.settingService.getAutoHideTime();
-  }
-
-  onAutoHideTimeChange(time: number) {
-    this.settingService.setAutoHideTime(time);
-    this.autoHideTime = time;
-    this.settingsUpdated.next();
-  }
-
-  public autoHideTimeSelected(number: number): boolean {
-    return this.settingService.getAutoHideTime() === number;
   }
 
   close() {

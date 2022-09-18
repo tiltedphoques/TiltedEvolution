@@ -59,36 +59,19 @@
       <div class="flex-item">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
         <div class="radio-group">
-          <div>
-            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
+          <div *ngFor="let t of availableAutoHideTimes">
+            <label [for]="'autoHide' + t">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: t } }}</label>
             <input
-              type="radio"
-              [value]="1"
-              [disabled]="!(settings.autoHideParty | async)"
-              [ngModel]="autoHideTime"
-              (ngModelChange)="onAutoHideTimeChange($event)"
+            type="radio"
+            name="autoHide"
+            [id]="'autoHide' + t"
+            [value]="t"
+            [disabled]="!(settings.autoHideParty | async)"
+            [ngModel]="settings.autoHideTime | async"
+            (ngModelChange)="settings.autoHideTime.next(t)"
             >
           </div>
-          <div>
-            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
-            <input
-              type="radio"
-              [value]="3"
-              [disabled]="!(settings.autoHideParty | async)"
-              [ngModel]="autoHideTime"
-              (ngModelChange)="onAutoHideTimeChange($event)"
-            >
-          </div>
-          <div>
-            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
-            <input
-              type="radio"
-              [value]="5"
-              [disabled]="!(settings.autoHideParty | async)"
-              [ngModel]="autoHideTime"
-              (ngModelChange)="onAutoHideTimeChange($event)"
-            >
-          </div>
+          
         </div>
       </div>
       <div class="flex-item">
