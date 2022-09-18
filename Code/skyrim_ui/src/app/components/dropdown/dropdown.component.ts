@@ -23,7 +23,6 @@ let dropdownCounter = 1;
       multi: true,
     },
     DestroyService,
-    SoundService
   ],
 })
 export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
