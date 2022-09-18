@@ -1,8 +1,24 @@
 import { Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { BehaviorSubject, Observable } from 'rxjs';
-import {autoHideTimerLengths, FontSize, PartyAnchor} from '../components/settings/settings.component';
+import { BehaviorSubject } from 'rxjs';
+import { autoHideTimerLengths, PartyAnchor } from '../components/settings/settings.component';
 import { StoreService } from './store.service';
+
+export enum FontSize {
+  XS = 'xs',
+  S = 's',
+  M = 'm',
+  L = 'l',
+  XL = 'xl'
+}
+
+export const fontSizeToPixels: Record<FontSize, number> = {
+  [FontSize.XS]: 10,
+  [FontSize.S]: 12,
+  [FontSize.M]: 16,
+  [FontSize.L]: 20,
+  [FontSize.XL]: 26,
+}
 
 class Setting<T> extends BehaviorSubject<T>{
 

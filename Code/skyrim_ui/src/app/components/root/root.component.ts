@@ -7,7 +7,7 @@ import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.an
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
-import { SettingService } from '../../services/setting.service';
+import { SettingService, fontSizeToPixels } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { UiRepository } from '../../store/ui.repository';
 import { ChatComponent } from '../chat/chat.component';
@@ -15,7 +15,6 @@ import { GroupComponent } from '../group/group.component';
 import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
 import {map} from 'rxjs/operators';
-import {fontSizeToPixels} from '../settings/settings.component';
 
 
 @Component({
@@ -87,7 +86,7 @@ export class RootComponent implements OnInit {
     this.settingService.settings.fontSize
     .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
     .subscribe( size => {
-      document.documentElement.setAttribute('style', `font-size: ${size};`);
+      document.documentElement.setAttribute('style', `font-size: ${size}px;`);
     })
   }
 

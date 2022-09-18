@@ -94,7 +94,7 @@
         {{ 'COMPONENT.SERVER_LIST.NO_SERVERS' | transloco }}
       </div>
 
-      <cdk-virtual-scroll-viewport *ngIf="serverlist.length !== 0" [itemSize]="rowHeight" class="virtual-viewport">
+      <cdk-virtual-scroll-viewport *ngIf="serverlist.length !== 0" [itemSize]="rowHeight | async" class="virtual-viewport">
         <div class="server-list-table">
           <div *cdkVirtualFor="let server of serverlist; let odd = odd" class="row" [class.odd]="odd">
             <div>{{ server.name }}</div>

@@ -31,6 +31,10 @@ struct ExtraDataList
     
     [[nodiscard]] bool HasQuestObjectAlias() noexcept;
 
+#if TP_SKYRIM64
+    virtual ~ExtraDataList();
+#endif
+
 #if TP_FALLOUT4
     void* unk0;
 #endif

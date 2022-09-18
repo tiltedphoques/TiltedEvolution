@@ -13,6 +13,7 @@
 #include <Services/CommandService.h>
 #include <Services/StringCacheService.h>
 #include <Services/CombatService.h>
+#include <Services/WeatherService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -36,6 +37,7 @@ World::World()
     ctx().emplace<CommandService>(*this, m_dispatcher);
     ctx().emplace<StringCacheService>(*this, m_dispatcher);
     ctx().emplace<CombatService>(*this, m_dispatcher);
+    ctx().emplace<WeatherService>(*this, m_dispatcher);
 
     ESLoader::ESLoader loader;
     // emplace loaded mods into modscomponent.

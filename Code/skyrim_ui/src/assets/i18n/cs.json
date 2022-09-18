@@ -1,0 +1,170 @@
+{
+    "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
+  
+    "COMPONENT": {
+      "CHAT": {
+        "SEND": "Odeslat",
+        "MESSAGE": "Zpráva",
+        "MESSAGE_TOO_LONG": "Nelze odeslat zprávu delší než {{chatMessageLengthLimit}} znaků."
+      },
+      "CONNECT": {
+        "INFO": {
+          "SERVER_ADDRESS": "Připojení k serveru pomocí jeho úplné adresy. Použijte format <strong>adresa:port</strong>. Výchozí port je <strong>10578</strong>.",
+          "HELGEN": "Nepřipojujte se k žádnému serveru, pokud se stále nacházíte v úvodní sekvenci hry. Nejprve se ujistěte, že jste právě utekli z Helgenu."
+        },
+        "ADDRESS": "Adresa",
+        "PASSWORD": "Heslo",
+        "SAVE_PASSWORD": "Uložit heslo?",
+        "CONNECT": "Připojit",
+        "CANCEL": "Zrušit",
+        "PUBLIC_SERVERS": "Veřejné servery",
+        "ERROR": {
+          "CONNECTION": "Nepodařilo se připojit k zadanému serveru. Ujistěte se, že jste zadali správnou adresu a že nemáte problémy se sítí.",
+          "VERSION_MISMATCH": "Nelze se připojit k serveru, protože nemáte stejnou verzi Skyrim Together.",
+          "INVALID_ADDRESS": "Adresa má špatný formát."
+        }
+      },
+      "DISCONNECT": {
+        "PROMPT": "Určitě se chcete odpojit?",
+        "PROCEED": "Pokračovat",
+        "CANCEL": "Zrušit"
+      },
+      "ERROR": {
+        "OK": "Ok"
+      },
+      "NOTIFICATIONS": {
+        "MESSAGE_FROM": "Zpráva od",
+        "ACCEPT": "Přijmout",
+        "DECLINE": "Odmítnout"
+      },
+      "PARTY_MENU": {
+        "ACCEPT_INVITE": "Přijmout pozvánku od {{name}}",
+        "LAUNCH_PARTY": "Založit skupinu",
+        "INVITES": "Pozvánky",
+        "NO_INVITES": "Nemáte žádné pozvánky",
+        "EXPERIENCE_WARNING": "Pro optimální zážitek ze hry si nezapomeňte přečíst návod na naší wiki, který najdete na našich webových stránkách <b>skyrim-together.com</b>. Zde je malé shrnutí pokynů:",
+        "GUIDELINES": {
+          "PARTY": "Vytvořením skupiny se stáváte \"hostem\", tedy lídrem skupiny.",
+          "PARTY_LEADER_TALK": "Pouze lídr skupiny může mluvit s NPC a pokračovat v plnění úkolů.",
+          "PARTY_LEADER_LOOT_QUESTITEMS": "Úkolové předměty může brát pouze vůdce party.",
+          "KEEP_PARTY_LEADER": "Při hraní byste měli zachovat stejného hosta / lídra skupiny.",
+          "ONE_PARTY_PER_SERVER": "Při hraní mějte jenom jednu skupinu na serveru."
+        },
+        "NO_PLAYERS_IN_PARTY": "Ve vaší skupině zatím nikdo není. Pozvěte je prostřednictvím seznamu hráčů",
+        "TABLE_HEADERS": {
+          "LEVEL": "Lv.",
+          "NAME": "Jméno",
+          "LOCATION": "Lokace"
+        },
+        "ACTIONS": {
+          "KICK": "Vyhodit",
+          "TELEPORT": "Teleportovat",
+          "MAKE_LEADER": "Povýšit na lídra"
+        },
+        "LEAVE_PARTY": "Opustit skupinu"
+      },
+      "PARTY_LIST": {
+        "NO_OTHER_PLAYERS": "Nikdo tu není!",
+        "TABLE_HEADERS": {
+          "LEVEL": "Lv.",
+          "NAME": "Jméno",
+          "LOCATION": "Lokace"
+        },
+        "INVITE": "Pozvat"
+      },
+      "PLAYER_MANAGER": {
+        "PLAYER_LIST": "Seznam hráčů",
+        "PARTY_MENU": "Skupinové menu",
+        "BACK": "Zpět"
+      },
+      "ROOT": {
+        "CONNECT": "Připojit",
+        "DISCONNECT": "Odpojit",
+        "RECONNECT": "Znovu připojit",
+        "PLAYER_MANAGER": "Správa hráčů",
+        "SETTINGS": "Nastavení",
+        "CONNECTION_IN_PROGRESS": "Připojení probíhá..."
+      },
+      "SERVER_LIST": {
+        "SEARCH": "Vyhledávání...",
+        "REFRESH": "Obnovit",
+        "BACK": "Zpět",
+        "LOADING": "Načítání...",
+        "NO_SERVERS": "Není k dispozici žádný veřejný server",
+        "HIDE_MISMATCHED_SERVERS": "Skrýt servery s nekompatibilní verzí",
+        "HIDE_FULL_SERVERS": "Skrýt obsazené servery",
+        "SERVER_COUNT": "Zobrazeno  {{filteredCount}} z {{count}} serverů",
+        "TABLE_HEADERS": {
+          "NAME": "Jméno serveru",
+          "PLAYERS": "Hráčů / Max.",
+          "COUNTRY": "Země",
+          "FAVORITE": "Oblíbené"
+        },
+        "JOIN": "Připojit"
+      },
+      "SETTINGS": {
+        "AUDIO": "Audio",
+        "MUTE_UI": "Ztlumit UI",
+        "UI_VOLUME": "Hlasitost UI",
+        "PARTY": "Skupina",
+        "SHOW_PARTY": "Zobraz skupinu",
+        "AUTO_HIDE_PARTY": "Automatického skrytí skupiny",
+        "AUTO_HIDE_PARTY_LENGTH": "Čas do automatického skrytí",
+        "PARTY_ANCHOR": "Pozice",
+        "PARTY_ANCHOR_POSITION": {
+          "TOP_LEFT": "Vlevo nahoře",
+          "TOP_RIGHT": "Vpravo nahoře",
+          "BOTTOM_RIGHT": "Vpravo dole",
+          "BOTTOM_LEFT": "Vlevo dole"
+        },
+        "PARTY_ANCHOR_OFFSET_X": "Horizontální odsazení",
+        "PARTY_ANCHOR_OFFSET_Y": "Vertikální odsazení",
+        "LENGTH": "{{length}}s",
+        "UI": "UI",
+        "LANGUAGE": "Jazyk",
+        "DEBUG": "Ladění",
+        "SHOW_DEBUG_INFO": "Zobrazit ladicí informace",
+        "FONT_SIZE": "Velikost textu",
+        "FONT_SIZES": {
+          "XS": "Velmi malé",
+          "S": "Malé",
+          "M": "Střední",
+          "L": "Velké",
+          "XL": "Velmi Velké"
+        },
+        "BACK": "Zpět"
+      }
+    },
+    "SERVICE": {
+      "CLIENT": {
+        "CONNECTION_LOST": "Ztráta spojení, pokus o obnovení spojení. {{remainingReconnectionAttempt}} zbývajících pokusů.",
+        "CONNECTED": "Úspěšně připojeno k serveru.",
+        "DISCONNECTED": "Odpojeno od serveru."
+      },
+      "COMMANDS": {
+        "AVAILABLE_COMMANDS": "Dostupné příkazy pro chat: {{cmds}}",
+        "COMMAND_NOT_FOUND": "'{{cmd}}' je rozpoznán jako příkaz."
+      },
+      "GROUP": {
+        "LEVEL_UP": "{{name}} dosáhl {{level}} lv.",
+        "ALREADY_IN_GROUP": "Již jste ve skupině. Chcete-li se připojit k jiné skupině, opusťte svou stávající skupinu.",
+        "KICK_NO_PARTY_LEADER": "Nemůžete vyhodit ostatní hráče, protože nejste vůdcem skupiny.",
+        "MAKE_LEADER_NO_PARTY_LEADER": "Nemůžete povýšit hráče na lídra, protože nejste lídr skupiny."
+      },
+      "ERROR": {
+        "ERRORS": {
+          "WRONG_VERSION": "Tento server očekává verzi {{expectedVersion}}, ale vy máte verzi {{version}}.",
+          "MODS_MISMATCH": "Tento server má povolenou ModPolicy.{{mods}}",
+          "MODS_MISMATCH_REMOVE": "Chcete-li se připojit, odstraňte prosím následující módy:\n{{mods}}",
+          "MODS_MISMATCH_INSTALL": "Pro připojení si prosím nainstalujte následující módy:\n{{mods}}",
+          "CLIENT_MODS_DISALLOWED": "Tento server zakazuje {{mods}}. Chcete-li se připojit, odstraňte je prosím.",
+          "WRONG_PASSWORD": "Zadané heslo je chybné.",
+          "NO_REASON": "Server odmítl připojení bez udání důvodu.",
+          "SERVER_FULL": "Tento server je plný."
+        }
+      },
+      "PLAYER_LIST": {
+        "PARTY_INVITE": "{{from}} vás pozval do skupiny."
+      }
+    }
+  }

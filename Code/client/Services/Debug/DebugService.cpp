@@ -233,6 +233,7 @@ static bool g_enableActorValuesWindow{false};
 static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
+static bool g_enableWeatherWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -326,6 +327,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
+        ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
 #endif
 
         ImGui::EndMenu();
@@ -377,6 +379,8 @@ void DebugService::OnDraw() noexcept
         DrawCellView();
     if (g_enableProcessesWindow)
         DrawProcessView();
+    if (g_enableWeatherWindow)
+        DrawWeatherView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();

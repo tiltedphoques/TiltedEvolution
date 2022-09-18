@@ -52,8 +52,17 @@ select {
   padding: $-size-gap * 0.5;
   background: transparent;
   color: mod($-color-background, 1);
-  border: 3px solid;
-  border-image: url("assets/images/separator/single.svg") 3;
+}
+
+input[type=text] {  
+  border: 3px solid #808081;
+  &:hover {
+    border: 3px solid mod($-color-background, 0.75);;
+  }
+
+  &:focus-visible {
+    border: 3px solid mod($-color-background, 0.9);;
+  }
 }
 
 input[type=range] {
