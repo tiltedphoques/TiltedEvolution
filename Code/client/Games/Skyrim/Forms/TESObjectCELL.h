@@ -47,7 +47,7 @@ struct TESObjectCELL : TESForm
 
     
     ReferenceData refData;
-    uint8_t unkB0[0x118 - 0xB0];
+    uint8_t unkB0[0x118 - 0xAC];
     BSRecursiveLock lock;
 
     TESWorldSpace* worldspace;
@@ -71,5 +71,5 @@ struct TESObjectCELL : TESForm
 
 static_assert(offsetof(TESObjectCELL, cellFlags) == 0x40);
 static_assert(offsetof(TESObjectCELL, refData) == 0x88);
-static_assert(offsetof(TESObjectCELL, worldspace) == 0x120);
-static_assert(offsetof(TESObjectCELL, loadedCellData) == 0x128);
+static_assert(offsetof(TESObjectCELL, worldspace) == 0x128);
+static_assert(offsetof(TESObjectCELL, loadedCellData) == 0x130);
