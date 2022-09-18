@@ -59,6 +59,7 @@ select {
 input[type=range] {
   border: 0;
   padding: 0;
+  --thumb-size: 0.8em;
 }
 
 input:not([type=checkbox]),
@@ -200,7 +201,27 @@ button {
 }
 
 input[type=range] {
+  display: flex;
   -webkit-appearance: none;
+
+  opacity: 0.5;
+
+  &:hover{
+    opacity: 1;
+  }
+  
+  &::before{
+    content: "";
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background-image: url(./assets/images/arrow/west.svg);
+  }
+  &::after{
+    content: "";
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background-image: url(./assets/images/arrow/east.svg);
+  }
 }
 
 input[type=checkbox] {
@@ -223,19 +244,18 @@ input[type=checkbox] {
 }
 
 ::-webkit-slider-runnable-track {
-  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
+  border: 16 solid transparent;
+  border-image: url(./assets/images/slider.svg) 16 fill;
 }
 
 ::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: $scrollbar;
-  height: $scrollbar;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
 
-  background-image: url(assets/images/scrollbar/thumb-inactive.svg);
-
-  &:hover {
-    background-image: url(assets/images/scrollbar/thumb-active.svg);
-  }
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url(assets/images/arrow/north.svg);
 }
 
 body {
