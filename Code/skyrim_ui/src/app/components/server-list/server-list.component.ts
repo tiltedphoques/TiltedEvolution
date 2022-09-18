@@ -140,7 +140,7 @@ export class ServerListComponent {
     }
     this.favoriteServers.next(favoriteServers);
 
-    this.rowHeight$ = this.settingService.fontSizeChange.pipe(map(fontSize => fontSizeToPixels[fontSize]*2));
+    this.rowHeight$ = this.settingService.settings.fontSize.pipe(map(fontSize => fontSizeToPixels[fontSize]*2));
   }
 
   public cancel(): void {
