@@ -102,7 +102,7 @@
         <input 
           type="checkbox"
           id="showDebug"
-          [ngModel]="settings.isDebugShown"
+          [ngModel]="settings.isDebugShown | async"
           (ngModelChange)="settings.isDebugShown.next($event)"
         />
       </div>
