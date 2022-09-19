@@ -10,6 +10,7 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 
 #include <Events/AddTargetEvent.h>
+#include <Events/HitEvent.h>
 
 #include <Games/Overrides.h>
 
@@ -116,6 +117,8 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         }
         else if (pCasterExtension->IsRemotePlayer())
         {
+            // Send out a HitEvent because TakeDamage is never triggered.
+            World::Get().GetRunner().Trigger(HitEvent(arData.pCaster->formID, pTargetActor->formID));
             return false;
         }
     }
