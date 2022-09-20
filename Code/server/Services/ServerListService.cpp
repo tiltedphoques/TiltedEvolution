@@ -38,6 +38,8 @@ ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatche
         spdlog::warn("Your server will not show up on the server list because this server has a password.");
         bAnnounceServer = false;
     }
+
+    GameServer::Get()->SetPublic(bAnnounceServer);
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept

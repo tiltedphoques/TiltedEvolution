@@ -53,6 +53,7 @@
 #include <Messages/RequestPlayerHealthUpdate.h>
 #include <Messages/RequestWeatherChange.h>
 #include <Messages/RequestCurrentWeather.h>
+#include <Messages/SetTimeCommandRequest.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -74,7 +75,8 @@ struct ClientMessageFactory
                                  AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest,
                                  RequestRespawn, SyncExperienceRequest, RequestEquipmentChanges, SendChatMessageRequest,
                                  TeleportCommandRequest, PlayerRespawnRequest, DialogueRequest, SubtitleRequest, PlayerDialogueRequest,
-                                 PlayerLevelRequest, TeleportRequest, RequestPlayerHealthUpdate, RequestWeatherChange, RequestCurrentWeather>;
+                                 PlayerLevelRequest, TeleportRequest, RequestPlayerHealthUpdate, RequestWeatherChange, RequestCurrentWeather,
+                                 SetTimeCommandRequest>;
 
         return s_visitor(std::forward<T>(func));
     }

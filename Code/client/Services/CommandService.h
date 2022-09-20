@@ -2,6 +2,7 @@
 
 struct World;
 struct TransportService;
+struct SetTimeCommandEvent;
 struct TeleportCommandResponse;
 
 /**
@@ -19,6 +20,7 @@ public:
     TP_NOCOPYMOVE(CommandService);
 
 protected:
+    void OnSetTimeCommand(const SetTimeCommandEvent&) const noexcept;
     /**
     * @brief Processes result of teleport command.
     */
@@ -28,5 +30,6 @@ private:
     World& m_world;
     TransportService& m_transport;
 
+    entt::scoped_connection m_setTimeConnection;
     entt::scoped_connection m_teleportConnection;
 };

@@ -258,6 +258,11 @@ interface SkyrimTogether {
   sendMessage(type: number, message: string): void;
 
   /**
+   * Send message to server.
+   */
+  setTime(hours: number, minutes: number): void;
+
+  /**
    * Deactivate UI and release control.
    */
   deactivate(): void;

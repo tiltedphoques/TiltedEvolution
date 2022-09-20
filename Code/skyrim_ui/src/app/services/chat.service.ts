@@ -76,11 +76,24 @@ export class ChatService {
     this.sendMessage(MessageTypes.PARTY_CHAT, content);
   }}
 
+  private SetTime: Command = { name: 'SetTime', executor: async (args) => {
+    if (args.length != 2) {
+      return;
+    }
+    const hours = parseInt(args[0]);
+    const minutes = parseInt(args[1]);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return;
+    }
+    skyrimtogether.setTime(hours, minutes);
+  }}
+
   constructor () {
     skyrimtogether.on('message', this.onMessageRecieved.bind(this));
 
     this.CommandHandler = new CommandHandler(this);
     this.CommandHandler.register(this.LocalChat);
     this.CommandHandler.register(this.PartyChat);
+    this.CommandHandler.register(this.SetTime);
   }  
 }

@@ -8,8 +8,10 @@
 #include <Forms/TESWorldSpace.h>
 #include <PlayerCharacter.h>
 
-#include <Messages/TeleportCommandRequest.h>
+#include <Events/SetTimeCommandEvent.h>
+
 #include <Messages/TeleportCommandResponse.h>
+#include <Messages/SetTimeCommandRequest.h>
 
 #include <Structs/GridCellCoords.h>
 
@@ -17,7 +19,16 @@ CommandService::CommandService(World& aWorld, TransportService& aTransport, entt
     : m_world(aWorld), 
       m_transport(aTransport)
 {
+    m_setTimeConnection = aDispatcher.sink<SetTimeCommandEvent>().connect<&CommandService::OnSetTimeCommand>(this);
     m_teleportConnection = aDispatcher.sink<TeleportCommandResponse>().connect<&CommandService::OnTeleportCommandResponse>(this);
+}
+
+void CommandService::OnSetTimeCommand(const SetTimeCommandEvent& acEvent) const noexcept
+{
+    SetTimeCommandRequest request{};
+    request.Hours = acEvent.Hours;
+    request.Minutes = acEvent.Minutes;
+    m_transport.Send(request);
 }
 
 void CommandService::OnTeleportCommandResponse(const TeleportCommandResponse& acMessage) noexcept

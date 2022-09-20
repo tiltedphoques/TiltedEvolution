@@ -8,6 +8,8 @@
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportRequest.h>
 
+#include <Events/SetTimeCommandEvent.h>
+
 #include <World.h>
 
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
@@ -44,6 +46,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessDisconnectMessage();
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
+        else if (eventName == "setTime")
+            ProcessSetTimeCommand(eventArgs);
         else if (eventName == "launchParty")
             World::Get().GetPartyService().CreateParty();
         else if (eventName == "leaveParty")
@@ -111,10 +115,17 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
         SendChatMessageRequest messageRequest;
         messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
         messageRequest.ChatMessage = contents;
-        
+
         spdlog::info("Send chat message of type {}: '{}' " , messageRequest.MessageType, messageRequest.ChatMessage);
         m_transport.Send(messageRequest);
     }
+}
+
+void OverlayClient::ProcessSetTimeCommand(CefRefPtr<CefListValue> aEventArgs)
+{
+    int hours = aEventArgs->GetInt(0);
+    int minutes = aEventArgs->GetInt(1);
+    World::Get().GetDispatcher().trigger(SetTimeCommandEvent(hours, minutes));
 }
 
 void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
