@@ -70,7 +70,9 @@ void ServerListService::Announce() const noexcept
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(),
+    // Need to store the future. If it goes out of scope, PostAnnouncement will be blocking, not async.
+    static std::future<void> s_f;
+    s_f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(),
                    cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
 }
 
