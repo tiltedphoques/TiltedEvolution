@@ -93,16 +93,16 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
 
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
+    client.set_read_timeout(std::chrono::milliseconds(1500));
     const auto response = client.Post("/announce", params);
 
-    // If we send a 203 it means we banned this server
+    // If we send a 403 it means we banned this server
     if (response)
     {
         if (response->status == 403)
             GameServer::Get()->Kill();
         else if (response->status != 200)
             spdlog::error("Server list error! {}", response->body);
-
     }
     else
     {
