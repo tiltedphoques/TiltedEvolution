@@ -76,13 +76,15 @@ export class ChatService {
     this.sendMessage(MessageTypes.PARTY_CHAT, content);
   }}
 
-  private SetTime: Command = { name: 'SetTime', executor: async (args) => {
+  private SetTime: Command = { name: 'settime', executor: async (args) => {
     if (args.length != 2) {
+      this.pushSystemMessage('COMPONENT.CHAT.SET_TIME_ARGUMENT_COUNT');
       return;
     }
     const hours = parseInt(args[0]);
     const minutes = parseInt(args[1]);
     if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      this.pushSystemMessage('COMPONENT.CHAT.SET_TIME_INVALID_ARGUMENTS');
       return;
     }
     skyrimtogether.setTime(hours, minutes);

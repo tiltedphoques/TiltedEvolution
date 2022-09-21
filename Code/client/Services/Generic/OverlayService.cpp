@@ -246,6 +246,7 @@ void OverlayService::SetVersion(const std::string& acVersion)
     m_pOverlay->ExecuteAsync("setVersion", pArguments);
 }
 
+// TODO: needs localization
 void OverlayService::SendSystemMessage(const std::string& acMessage)
 {
     if (!m_pOverlay)

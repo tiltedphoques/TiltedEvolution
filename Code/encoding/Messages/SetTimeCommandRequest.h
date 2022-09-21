@@ -20,7 +20,7 @@ struct SetTimeCommandRequest final : ClientMessage
                Minutes == acRhs.Minutes;
     }
 
-    int32_t Hours{};
-    int32_t Minutes{};
+    uint8_t Hours{};
+    uint8_t Minutes{};
 };
 

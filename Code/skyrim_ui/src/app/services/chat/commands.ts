@@ -31,11 +31,11 @@ export class CommandHandler {
   public async tryExecute(input: string) {
     const inputWithoutPrefix = input.slice(this.COMMAND_PREFIX.length);
     const [commandName, ...args] = inputWithoutPrefix.split(' ');
-    const command = this.commands.get(commandName);
+    const command = this.commands.get(commandName.toLowerCase());
     if(command) {
       command.executor(args);
     } else {
-      this.chatService.pushSystemMessage('SERVICE.COMMANDS.COMMAND_NOT_FOUND', {cmd: inputWithoutPrefix});
+      this.chatService.pushSystemMessage('SERVICE.COMMANDS.COMMAND_NOT_FOUND', {cmd: commandName});
     }
   }
 

@@ -5,7 +5,9 @@
     "CHAT": {
       "SEND": "Send",
       "MESSAGE": "Message",
-      "MESSAGE_TOO_LONG": "You cannot send a message longer than {{chatMessageLengthLimit}} characters."
+      "MESSAGE_TOO_LONG": "You cannot send a message longer than {{chatMessageLengthLimit}} characters.",
+      "SET_TIME_ARGUMENT_COUNT": "Wrong arguments, usage: /SetTime HH MM, example: /SetTime 15 32.",
+      "SET_TIME_INVALID_ARGUMENTS": "The hours must be between 0 and 23, and the minutes between 0 and 59."
     },
     "CONNECT": {
       "INFO": {
@@ -143,7 +145,7 @@
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Available chat commands: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' is recognized as a command."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' is not a command."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} has reached level {{level}}.",
@@ -160,7 +162,8 @@
         "CLIENT_MODS_DISALLOWED": "This server disallows {{mods}}. Please remove them to join.",
         "WRONG_PASSWORD": "The password you entered is incorrect.",
         "NO_REASON": "The server refused connection without reason.",
-        "SERVER_FULL": "This server is full."
+        "SERVER_FULL": "This server is full.",
+        "SET_TIME_PUBLIC_SERVER": "The SetTime chat command is not allowed in public servers."
       }
     },
     "PLAYER_LIST": {

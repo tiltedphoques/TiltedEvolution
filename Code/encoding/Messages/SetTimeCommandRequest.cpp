@@ -2,14 +2,17 @@
 
 void SetTimeCommandRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    Serialization::WriteVarInt(aWriter, Hours);
-    Serialization::WriteVarInt(aWriter, Minutes);
+    aWriter.WriteBits(Hours, 8);
+    aWriter.WriteBits(Minutes, 8);
 }
 
 void SetTimeCommandRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ClientMessage::DeserializeRaw(aReader);
 
-    Hours = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    Minutes = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    uint64_t dest = 0;
+    aReader.ReadBits(dest, 8);
+    Hours = dest & 0xFF;
+    aReader.ReadBits(dest, 8);
+    Minutes = dest & 0xFF;
 }

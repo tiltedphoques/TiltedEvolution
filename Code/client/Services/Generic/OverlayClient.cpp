@@ -123,8 +123,8 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
 
 void OverlayClient::ProcessSetTimeCommand(CefRefPtr<CefListValue> aEventArgs)
 {
-    int hours = aEventArgs->GetInt(0);
-    int minutes = aEventArgs->GetInt(1);
+    uint8_t hours = static_cast<uint8_t>(aEventArgs->GetInt(0));
+    uint8_t minutes = static_cast<uint8_t>(aEventArgs->GetInt(1));
     World::Get().GetDispatcher().trigger(SetTimeCommandEvent(hours, minutes));
 }
 
