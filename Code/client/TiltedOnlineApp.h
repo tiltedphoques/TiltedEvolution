@@ -1,10 +1,6 @@
 #pragma once
 
-#if (!IS_MASTER)
 #include "CrashHandler.h"
-#elif
-#include <crash_handler/CrashHandler.h>
-#endif
 
 struct TiltedOnlineApp final : App
 {
@@ -33,9 +29,5 @@ struct TiltedOnlineApp final : App
     void UninstallHooks();
 
   private:
-#if (!IS_MASTER)
     CrashHandler m_crashHandler;
-#elif
-    ScopedCrashHandler m_crashHandler;
-#endif
 };
