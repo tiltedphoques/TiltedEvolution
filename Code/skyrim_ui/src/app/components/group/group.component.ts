@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, combineLatestWith, merge, Observable, Subscription, takeUntil, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, combineLatestWith, Observable, Subscription, takeUntil, timer } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SettingService } from 'src/app/services/setting.service';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
@@ -66,14 +66,12 @@ export class GroupComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.onPartyShownState();
     this.onPartyAutoHideState();
-    this.onPartyOffsetState();
+    this.onPositionUpdate();
 
     this.subscribeChangeHealth();
     this.onPartyInfo();
     this.onConnectionState();
     this.subscribeActivation();
-
-    this.updatePosition();
   }
 
   private subscribeActivation() {
@@ -138,13 +136,32 @@ export class GroupComponent implements OnInit, OnDestroy {
       });
   }
 
-  private onPartyOffsetState() {
-    merge(
-      this.settings.partyAnchorOffsetX, 
-      this.settings.partyAnchorOffsetY,
-      )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe( _ => this.updatePosition())
+  private onPositionUpdate() {
+    combineLatest([this.settings.partyAnchorOffsetX, this.settings.partyAnchorOffsetY, this.settings.partyAnchor])
+    .pipe(takeUntil(this.destroy$))
+    .subscribe( ([x, y, anchor]) => {
+      const newPosition: GroupPosition = {};
+
+      switch (anchor) {
+        case PartyAnchor.TOP_LEFT:
+          newPosition.top = `${ y }vh`;
+          newPosition.left = `${ x }vw`;
+          break;
+        case PartyAnchor.TOP_RIGHT:
+          newPosition.top = `${ y }vh`;
+          newPosition.right = `${ -100 + x }vw`;
+          break;
+        case PartyAnchor.BOTTOM_RIGHT:
+          newPosition.bottom = `${ -100 + y }vh`;
+          newPosition.right = `${ -100 + x }vw`;
+          break;
+        case PartyAnchor.BOTTOM_LEFT:
+          newPosition.bottom = `${ -100 + y }vh`;
+          newPosition.left = `${ x }vw`;
+          break;
+      };
+      this.positionStyle.next(newPosition);
+    })
   }
 
   ngOnDestroy() {
@@ -188,31 +205,5 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   public changeLeader(playerId: number) {
     return this.groupService.changeLeader(playerId);
-  }
-
-  updatePosition() {
-    const newPosition: GroupPosition = {};
-    const x = this.settings.partyAnchorOffsetX.value
-    const y = this.settings.partyAnchorOffsetY.value
-
-    switch (this.settings.partyAnchor.value) {
-      case PartyAnchor.TOP_LEFT:
-        newPosition.top = `${ y }vh`;
-        newPosition.left = `${ x }vw`;
-        break;
-      case PartyAnchor.TOP_RIGHT:
-        newPosition.top = `${ y }vh`;
-        newPosition.right = `${ -100 + x }vw`;
-        break;
-      case PartyAnchor.BOTTOM_RIGHT:
-        newPosition.bottom = `${ -100 + y }vh`;
-        newPosition.right = `${ -100 + x }vw`;
-        break;
-      case PartyAnchor.BOTTOM_LEFT:
-        newPosition.bottom = `${ -100 + y }vh`;
-        newPosition.left = `${ x }vw`;
-        break;
-    }
-    this.positionStyle.next(newPosition);
   }
 }

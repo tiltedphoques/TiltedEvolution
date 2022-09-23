@@ -107,8 +107,4 @@ export class RootComponent implements OnInit {
   public reconnect(): void {
     this.client.reconnect();
   }
-
-  updateGroupPosition() {
-    this.groupComponent?.updatePosition();
-  }
 }
