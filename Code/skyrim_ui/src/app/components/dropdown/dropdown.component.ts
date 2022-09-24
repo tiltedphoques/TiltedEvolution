@@ -1,6 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmitter, forwardRef, HostListener, Input, Output, QueryList } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
 import { Sound, SoundService } from 'src/app/services/sound.service';
 import { DestroyService } from '../../services/destroy.service';
@@ -26,8 +25,6 @@ let dropdownCounter = 1;
   ],
 })
 export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
-
-  readonly faCaretDown = faCaretDown;
 
   dropdownCounter = dropdownCounter++;
   isOpen = false;

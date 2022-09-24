@@ -8,7 +8,6 @@
     <ng-container>
       <div class="dropdown-selected">
         <span>{{ options?.[selected] ? options[selected].text : placeholder }}</span>
-        <fa-icon [icon]="faCaretDown"></fa-icon>
       </div>
     </ng-container>
   </div>
@@ -18,8 +17,8 @@
       *ngFor="let option of options; let i = index"
       [id]="'li-' + dropdownCounter + '-' + i"
       (click)="optionSelect(option.value, i, $event)"
+      [class.selected]="selected === i"
     >
-      <input type="checkbox" [ngModel]="selected === i"/>
       {{ option.text ?? option.value }}
     </li>
   </ul>
