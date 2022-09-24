@@ -37,7 +37,7 @@
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
         <app-dropdown class="settings-dropdown" [ngModel]="settings.fontSize | async" (ngModelChange)="settings.fontSize.next($event)">
-          <app-dropdown-option *ngFor="let l of availableFontSizes" [text]="l.label | transloco" [value]="l.id"></app-dropdown-option>
+          <app-dropdown-option *ngFor="let l of availableFontSizes" [text]="l.label" [value]="l.id"></app-dropdown-option>
         </app-dropdown>
       </div>
       
@@ -66,13 +66,13 @@
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
         <app-dropdown [ngModel]="settings.autoHideTime | async" (ngModelChange)="settings.autoHideTime.next($event)">
-          <app-dropdown-option *ngFor="let t of availableAutoHideTimes" [text]="'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: t }" [value]="t"></app-dropdown-option>
+          <app-dropdown-option *ngFor="let t of availableAutoHideTimes" [text]="'COMPONENT.SETTINGS.LENGTH'" [value]="t"></app-dropdown-option>
         </app-dropdown>
       </div>
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
         <app-dropdown [ngModel]="settings.partyAnchor | async" (ngModelChange)="settings.partyAnchor.next($event)">
-          <app-dropdown-option *ngFor="let l of availablePartyAnchors" [text]="l.label | transloco" [value]="l.id"></app-dropdown-option>
+          <app-dropdown-option *ngFor="let l of availablePartyAnchors" [text]="l.label" [value]="l.id"></app-dropdown-option>
         </app-dropdown>
       </div>
       <div class="setting">

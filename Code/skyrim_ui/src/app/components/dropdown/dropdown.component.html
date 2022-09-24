@@ -7,7 +7,7 @@
   <div class="box" (click)="toggle($event)">
     <ng-container>
       <div class="dropdown-selected">
-        <span>{{ options?.[selected] ? options[selected].text : placeholder }}</span>
+        <span>{{ (options?.[selected] ? options[selected].text : placeholder) | transloco: {length: options?.[selected]?.value} }}</span>
       </div>
     </ng-container>
   </div>
@@ -19,7 +19,7 @@
       (click)="optionSelect(option.value, i, $event)"
       [class.selected]="selected === i"
     >
-      {{ option.text ?? option.value }}
+      {{ (option.text ?? option.value) | transloco: {length: option?.value} }}
     </li>
   </ul>
 </div>
