@@ -12,12 +12,8 @@
   font-family: $-font-default;
 }
 
-
-input::placeholder {
-  font-size: 1rem !important;
-}
-
 input {
+  font-size: inherit;
   opacity: 0.7;
 
   &:hover:not([disabled]){
