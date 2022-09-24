@@ -65,20 +65,9 @@
       </div>
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
-        <div class="radio-group">
-          <span *ngFor="let t of availableAutoHideTimes">
-            <label [for]="'autoHide' + t">{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: t } }}</label>
-            <input
-              type="radio"
-              name="autoHide"
-              [id]="'autoHide' + t"
-              [value]="t"
-              [disabled]="!(settings.autoHideParty | async)"
-              [ngModel]="settings.autoHideTime | async"
-              (ngModelChange)="settings.autoHideTime.next(t)"
-            />
-          </span>
-        </div>
+        <app-dropdown [ngModel]="settings.autoHideTime | async" (ngModelChange)="settings.autoHideTime.next($event)">
+          <app-dropdown-option *ngFor="let t of availableAutoHideTimes" [text]="'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: t }" [value]="t"></app-dropdown-option>
+        </app-dropdown>
       </div>
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
