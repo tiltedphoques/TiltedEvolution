@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmitter, forwardRef, HostListener, Input, Output, QueryList } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, forwardRef, HostListener, Input, Output, QueryList } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
 import { Sound, SoundService } from 'src/app/services/sound.service';
@@ -46,6 +46,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     private readonly destroy$: DestroyService,
     private readonly soundService: SoundService,
     private readonly cdr: ChangeDetectorRef,
+    private readonly elRef:ElementRef
   ) {
   }
 
@@ -77,7 +78,6 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   }
 
   optionSelect(selectedOption: any, idx: number, e: any) {
-    e.stopPropagation();
     this.selected = idx;
     this.isSelectedValue = true;
     this.isOpen = false;
@@ -87,8 +87,6 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   }
 
   toggle(e: any) {
-    e.stopPropagation();
-
     if (this.isDisabled) {
       return;
     }
@@ -101,8 +99,13 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     }
   }
 
-  @HostListener('document:click')
-  onClick() {
+  @HostListener('document:click', ['$event'])
+  onClick(e: PointerEvent) {
+    const target = (e.target as Element);
+    const thisElement = this.elRef.nativeElement as Element;
+    if (thisElement.contains(target)) {
+      return;
+    }
     this.isOpen = false;
   }
 
