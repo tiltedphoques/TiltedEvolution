@@ -90,6 +90,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     if (this.isDisabled) {
       return;
     }
+    this.soundService.play(this.isOpen ? Sound.Cancel : Sound.Focus);
 
     this.isOpen = !this.isOpen;
     if (this.selected >= 0) {
@@ -106,6 +107,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     if (thisElement.contains(target)) {
       return;
     }
+    this.isOpen && this.soundService.play(Sound.Cancel);
     this.isOpen = false;
   }
 

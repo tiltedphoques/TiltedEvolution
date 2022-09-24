@@ -9,7 +9,10 @@ export class SliderDirective {
 
   constructor(private readonly soundService: SoundService) {}
 
-  @HostListener('change') onChange() {
+  @HostListener('mousedown') onMouseDown() {
+    this.soundService.play(Sound.Focus);
+  }
+  @HostListener('mouseup') onMouseUp() {
     this.soundService.play(Sound.Check);
   }
 }
