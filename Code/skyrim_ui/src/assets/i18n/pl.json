@@ -137,7 +137,7 @@
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "Stracono połączenie, próbujemy się podłączyć z powrotem. {{remainingReconnectionAttempt } pozostałych prób."
+      "CONNECTION_LOST": "Stracono połączenie, próbujemy się podłączyć z powrotem. {{remainingReconnectionAttempt}} pozostałych prób."
 	  "CONNECTED": "Pomyślnie nawiązano połączenie z serwerem.",
       "DISCONNECTED": "Rozłączono z serwerem."
 	},
