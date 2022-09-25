@@ -65,7 +65,7 @@
       </div>
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
-        <app-dropdown [ngModel]="settings.autoHideTime | async" (ngModelChange)="settings.autoHideTime.next($event)">
+        <app-dropdown [disabled]="!(settings.autoHideParty | async)" [ngModel]="settings.autoHideTime | async" (ngModelChange)="settings.autoHideTime.next($event)">
           <app-dropdown-option *ngFor="let t of availableAutoHideTimes" [text]="'COMPONENT.SETTINGS.LENGTH'" [value]="t"></app-dropdown-option>
         </app-dropdown>
       </div>
