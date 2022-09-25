@@ -89,7 +89,7 @@ export class DebugHelperComponent implements OnInit {
     this.mockClientService.skyrimtogether.disconnectMockPlayer(playerId);
   }
 
-  accteptMockPlayerInvite(playerId: number) {
+  acceptMockPlayerInvite(playerId: number) {
     this.mockClientService.skyrimtogether.accteptMockPlayerInvite(playerId);
   }
 

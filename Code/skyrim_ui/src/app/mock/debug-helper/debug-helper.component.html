@@ -19,7 +19,7 @@
         </div>
         <div class="action-row">
           <button (click)="disconnectMockPlayer(player.id)">Disconnect</button>
-          <button *ngIf="player.invited" [disabled]="player.hasOwnParty" (click)="accteptMockPlayerInvite(player.id)">Accept Invite</button>
+          <button *ngIf="player.invited" [disabled]="player.hasOwnParty" (click)="acceptMockPlayerInvite(player.id)">Accept Invite</button>
           <button *ngIf="player.hasOwnParty && (connected$ | async)" (click)="inviteToPlayerMockParty(player.id)">Invite You</button>
           <button *ngIf="!player.hasOwnParty && !player.isInGroup" (click)="startPlayerMockParty(player.id)">Start Party</button>
           <button *ngIf="player.hasOwnParty || player.isInGroup" (click)="mockPlayerLeaveParty(player.id)">Leave Party</button>
@@ -29,7 +29,7 @@
     <div class="separator">Background</div>
     <div class="debug-helper-row">
       <button (click)="setBackground('dark')">Dark</button>
-      <button (click)="setBackground('light')">Ligh</button>
+      <button (click)="setBackground('light')">Light</button>
       <button (click)="setBackground('dark-image')">Image Dark</button>
       <button (click)="setBackground('light-image')">Image Light</button>
     </div>
