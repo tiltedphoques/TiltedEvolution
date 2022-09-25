@@ -55,7 +55,7 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
     //spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
 
     Actor* pActor = Cast<Actor>(apSpeaker);
-    if (pActor && pActor->GetExtension()->IsLocal() && !pActor->GetExtension()->IsPlayer())
+    if (apSubtitleText && pActor && pActor->GetExtension()->IsLocal() && !pActor->GetExtension()->IsPlayer())
 #if TP_SKYRIM64
         World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
 #elif TP_FALLOUT4
