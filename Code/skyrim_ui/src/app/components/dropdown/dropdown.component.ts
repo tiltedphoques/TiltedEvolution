@@ -1,4 +1,16 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, EventEmitter, forwardRef, HostListener, Input, Output, QueryList } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ContentChildren,
+  ElementRef,
+  EventEmitter,
+  forwardRef,
+  HostListener,
+  Input,
+  Output,
+  QueryList
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
@@ -50,6 +62,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     private readonly destroy$: DestroyService,
     private readonly soundService: SoundService,
     private readonly cdr: ChangeDetectorRef,
+    private readonly elementRef: ElementRef,
   ) {
   }
 
@@ -90,8 +103,8 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.optSelect.emit(selectedOption);
   }
 
-  toggle(e: any) {
-    e.stopPropagation();
+  toggle(e: MouseEvent) {
+    if (this.isOpen) e.stopPropagation();
 
     if (this.isDisabled) {
       return;
@@ -105,9 +118,11 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     }
   }
 
-  @HostListener('document:click')
-  onClick() {
-    this.isOpen = false;
+  @HostListener('document:click', ['$event'])
+  onClick(event: MouseEvent) {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.isOpen = false;
+    }
   }
 
   writeValue(obj: any): void {
