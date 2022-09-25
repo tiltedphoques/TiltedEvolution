@@ -25,11 +25,6 @@ class Setting<T> extends BehaviorSubject<T>{
   constructor(defaultValue: T) {
     super(defaultValue)
   }
-
-  public next(value: T) {
-    console.log("next", value)
-    super.next(value)
-  }
 }
 
 class SliderSetting extends Setting<number> {

@@ -25,7 +25,7 @@ export class DebugComponent {
     private readonly client: ClientService,
     private readonly settingService: SettingService,
   ) {
-    this.isShown$ = this.settingService.settings.isDebugShown
+    this.isShown$ = this.settingService.settings.isDebugShown;
     this.debugData$ = this.client.debugDataChange.pipe(startWith(new Debug()));
   }
 
