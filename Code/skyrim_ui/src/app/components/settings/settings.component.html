@@ -4,7 +4,7 @@
       <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
       <div class="flex-item">
         <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
-        <input 
+        <input
           type="checkbox"
           id="muted"
           [ngModel]="muted"
@@ -28,7 +28,7 @@
         </app-dropdown>
       </div>
       <div class="flex-item">
-        <label for="fontSize">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
+        <label>{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
         <app-dropdown class="settings-dropdown" [ngModel]="fontSize" (ngModelChange)="onFontSizeChange($event)">
           <app-dropdown-option *ngFor="let l of availableFontSizes" [text]="l.label | transloco" [value]="l.id"></app-dropdown-option>
         </app-dropdown>
@@ -39,7 +39,7 @@
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
       <div class="flex-item">
         <label for="showParty">{{ 'COMPONENT.SETTINGS.SHOW_PARTY' | transloco }}</label>
-        <input 
+        <input
           type="checkbox"
           id="showParty"
           [ngModel]="showParty"
@@ -48,7 +48,7 @@
       </div>
       <div class="flex-item">
         <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
-        <input 
+        <input
           type="checkbox"
           id="autoHideParty"
           [ngModel]="autoHideParty"
@@ -131,7 +131,7 @@
       <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
       <div class="flex-item">
         <label for="showDebug">{{ 'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco }}</label>
-        <input 
+        <input
           type="checkbox"
           id="showDebug"
           [ngModel]="showDebug"

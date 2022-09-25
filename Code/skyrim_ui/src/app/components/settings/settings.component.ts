@@ -1,8 +1,8 @@
-import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
-import { ClientService } from 'src/app/services/client.service';
-import { FontSize, SettingService } from 'src/app/services/setting.service';
-import { Sound, SoundService } from '../../services/sound.service';
+import {Component, EventEmitter, HostListener, OnInit, Output} from '@angular/core';
+import {TranslocoService} from '@ngneat/transloco';
+import {ClientService} from 'src/app/services/client.service';
+import {FontSize, SettingService} from 'src/app/services/setting.service';
+import {Sound, SoundService} from '../../services/sound.service';
 
 export enum PartyAnchor {
   TOP_LEFT,
@@ -22,7 +22,7 @@ export class SettingsComponent implements OnInit {
   readonly PartyAnchor = PartyAnchor;
 
   readonly availableLanguages = this.translocoService.getAvailableLangs();
-  readonly availableFontSizes: {id: FontSize, label: string}[] = [
+  readonly availableFontSizes: { id: FontSize, label: string }[] = [
     {id: FontSize.XS, label: 'COMPONENT.SETTINGS.FONT_SIZES.XS'},
     {id: FontSize.S, label: 'COMPONENT.SETTINGS.FONT_SIZES.S'},
     {id: FontSize.M, label: 'COMPONENT.SETTINGS.FONT_SIZES.M'},
@@ -130,7 +130,7 @@ export class SettingsComponent implements OnInit {
     this.settings.setLanguage(language);
     this.language = language;
     this.settingsUpdated.next();
-    this.translocoService.setActiveLang(language);
+    this.translocoService.setActiveLang(language)
   }
 
   public autoHideTimeSelected(number: number): boolean {
