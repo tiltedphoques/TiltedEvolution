@@ -25,9 +25,9 @@ export class StoreService {
 
   public getBool(key: string, valueIfNull: boolean): boolean{
     const value = this.get(key, null)
-    if (value == "true") {
+    if (value === "true") {
       return true
-    } else if (value == "false") {
+    } else if (value === "false") {
       return false
     } else {
       return valueIfNull

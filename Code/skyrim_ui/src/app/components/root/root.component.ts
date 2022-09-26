@@ -50,7 +50,7 @@ export class RootComponent implements OnInit {
     private readonly settingService: SettingService,
     public readonly overlay: Overlay, // used for mockup
   ) {
-    this.translocoService.setActiveLang(this.settingService.settings.language.value);
+    this.translocoService.setActiveLang(this.settingService.settings.language.getValue());
   }
 
   public ngOnInit(): void {

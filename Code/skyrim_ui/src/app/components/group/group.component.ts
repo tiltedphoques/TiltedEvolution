@@ -44,8 +44,8 @@ export class GroupComponent implements OnInit, OnDestroy {
     private readonly clientService: ClientService,
     private readonly settingService: SettingService,
   ) {
-    this.isShown.next(this.settings.isPartyShown.value);
-    this.isAutoHide.next(this.settings.autoHideParty.value);
+    this.isShown.next(this.settings.isPartyShown.getValue());
+    this.isAutoHide.next(this.settings.autoHideParty.getValue());
 
     this.group$ = this.groupService.group.asObservable();
     this.groupMembers$ = this.groupService.selectMembers()
@@ -129,7 +129,7 @@ export class GroupComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((state: boolean) => {
         this.isAutoHide.next(state);
-        if (this.settings.isPartyShown.value) {
+        if (this.settings.isPartyShown.getValue()) {
           this.isShown.next(true);
         }
         this.flashGroup();
@@ -170,9 +170,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     }
   }
 
-  private flashGroup() {
-    const timerLength = parseInt(this.settings.autoHideTime.value) * 1000;
-    
+  private flashGroup() {    
     if (this.isAutoHide.getValue() && this.clientService.connectionStateChange.getValue()) {
       if (!this.isShown.getValue()) {
         this.isShown.next(true);
@@ -183,7 +181,9 @@ export class GroupComponent implements OnInit, OnDestroy {
       }
 
       if (!this.clientService.activationStateChange.getValue()) {
+        const timerLength = parseInt(this.settings.autoHideTime.value) * 1000;
         let source = timer(timerLength);
+
         this.timerSubscription = source.subscribe(() => {
           this.isShown.next(false);
         });

@@ -77,7 +77,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.isFocused = false;
   }
 
-  optionSelect(selectedOption: any, idx: number, e: any) {
+  optionSelect(selectedOption: any, idx: number) {
     this.selected = idx;
     this.isSelectedValue = true;
     this.isOpen = false;
@@ -86,7 +86,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.optSelect.emit(selectedOption);
   }
 
-  toggle(e: any) {
+  toggle() {
     if (this.isDisabled) {
       return;
     }
@@ -104,11 +104,11 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   onClick(e: PointerEvent) {
     const target = (e.target as Element);
     const thisElement = this.elRef.nativeElement as Element;
-    if (thisElement.contains(target)) {
-      return;
+
+    if (this.isOpen && !thisElement.contains(target)) {
+      this.soundService.play(Sound.Cancel);
+      this.isOpen = false;
     }
-    this.isOpen && this.soundService.play(Sound.Cancel);
-    this.isOpen = false;
   }
 
   writeValue(obj: any): void {
@@ -133,5 +133,4 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.isOpen = false;
     this.cdr.detectChanges();
   }
-
 }

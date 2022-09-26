@@ -30,8 +30,8 @@ class Setting<T> extends BehaviorSubject<T>{
 class SliderSetting extends Setting<number> {
 
   constructor(private readonly storeService: StoreService, private storeKey: string, defaultValue: number) {
-    const inital_value = storeService.getFloat(storeKey, defaultValue);
-    super(inital_value)
+    const initialValue = storeService.getFloat(storeKey, defaultValue);
+    super(initialValue)
   }
 
   public next(value: number) {
