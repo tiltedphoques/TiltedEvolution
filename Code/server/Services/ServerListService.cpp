@@ -93,7 +93,7 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
 
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
-    client.set_read_timeout(std::chrono::milliseconds(1500));
+    client.set_read_timeout(std::chrono::milliseconds(30000));
     const auto response = client.Post("/announce", params);
 
     // If we send a 403 it means we banned this server
