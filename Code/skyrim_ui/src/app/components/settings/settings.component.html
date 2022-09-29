@@ -30,7 +30,7 @@
       <h2>{{ 'COMPONENT.SETTINGS.UI' | transloco }}</h2>
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.LANGUAGE' | transloco }}</label>
-        <app-dropdown class="settings-dropdown" [ngModel]="settings.language | async" (ngModelChange)="settings.language.next($event)">
+        <app-dropdown [noTranslate]="true" class="settings-dropdown" [ngModel]="settings.language | async" (ngModelChange)="settings.language.next($event)">
           <app-dropdown-option *ngFor="let lang of availableLanguages" [text]="lang.label" [value]="lang.id"></app-dropdown-option>
         </app-dropdown>
       </div>

@@ -5,6 +5,7 @@ import { Sound, SoundService } from 'src/app/services/sound.service';
 import { DestroyService } from '../../services/destroy.service';
 import { DropdownOptionComponent } from './dropdown-option.component';
 
+type OptionValue = string | number;
 
 const noop = () => {
 };
@@ -29,16 +30,19 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   dropdownCounter = dropdownCounter++;
   isOpen = false;
   isDisabled = false;
-  selected: any;
+  selected: number | undefined = undefined;
+
   options = new BehaviorSubject<{ text: string; value: any }[]>([]);
 
   @ContentChildren(DropdownOptionComponent) optionChildren!: QueryList<DropdownOptionComponent>;
   @Input() placeholder: string;
+  // translation is opt-out because it should be the default for all UI elements.
+  @Input('noTranslate') noTranslate: boolean | undefined;
   @Output() optSelect = new EventEmitter();
 
   private onTouchedCallback: () => void = noop;
   private onChangeCallback: (_: any) => void = noop;
-  isSelectedValue: boolean;
+
   key: string;
   isFocused: boolean;
 
@@ -79,11 +83,19 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
 
   optionSelect(selectedOption: any, idx: number) {
     this.selected = idx;
-    this.isSelectedValue = true;
     this.isOpen = false;
     this.soundService.play(Sound.Check);
     this.onChangeCallback(selectedOption);
     this.optSelect.emit(selectedOption);
+  }
+
+  getSelectedLabel(): any {
+    const selectedOption = this.options.getValue()[this.selected];
+    if (selectedOption) {
+      return selectedOption.text ?? selectedOption.value;
+    } else {
+      return this.placeholder;
+    }
   }
 
   toggle() {
@@ -113,10 +125,8 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
 
   writeValue(obj: any): void {
     if (obj != null) {
-      this.isSelectedValue = true;
       this.selected = this.options.getValue().findIndex(o => o.value === obj);
     } else {
-      this.isSelectedValue = false;
     }
   }
 
