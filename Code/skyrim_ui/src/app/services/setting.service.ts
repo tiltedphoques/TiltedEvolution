@@ -18,7 +18,7 @@ export enum PartyAnchor {
   BOTTOM_LEFT,
 }
 
-export const autoHideTimerLengths = [1, 3, 5].map(l => l.toFixed(0));
+export const autoHideTimerLengths = [1, 3, 5];
 
 export const fontSizeToPixels: Record<FontSize, number> = {
   [FontSize.XS]: 10,
@@ -88,7 +88,7 @@ export class SettingService {
 
   private readonly languageValues: string[] = Object.values(this.translocoService.getAvailableLangs()).map(lang => lang.id);
   private readonly fontSizeValues = Object.values(FontSize);
-  private readonly partyAnchorValues = Object.values(PartyAnchor);
+  private readonly partyAnchorValues = Object.values(PartyAnchor) as PartyAnchor[];
   private readonly autoHideTimeValues = autoHideTimerLengths;
 
   public settings = {

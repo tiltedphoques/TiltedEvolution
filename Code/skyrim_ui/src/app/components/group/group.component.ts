@@ -179,7 +179,7 @@ export class GroupComponent implements OnInit, OnDestroy {
       }
 
       if (!this.clientService.activationStateChange.getValue()) {
-        const timerLength = parseInt(this.settings.autoHideTime.value) * 1000;
+        const timerLength = this.settings.autoHideTime.value * 1000;
         let source = timer(timerLength);
 
         this.timerSubscription = source.subscribe(() => {
