@@ -94,7 +94,7 @@ export class SettingService {
   public settings = {
     volume: new SliderSetting(this.storeService, "audio_volume", 0.5),
     muted: new ToggleSetting(this.storeService, "audio_muted", false),
-    language: new SelectSetting(this.storeService, "language", this.languageValues, "en"),
+    language: new SelectSetting(this.storeService, "language", this.languageValues, this.translocoService.getDefaultLang()),
     fontSize: new SelectSetting(this.storeService, "font_size", this.fontSizeValues, FontSize.M),
     isPartyShown: new ToggleSetting(this.storeService, "party_isShown", true),
     autoHideParty: new ToggleSetting(this.storeService, "party_autoHide", false),
