@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject } from 'rxjs';
-import { autoHideTimerLengths, PartyAnchor } from '../components/settings/settings.component';
 import { StoreService } from './store.service';
 
 export enum FontSize {
@@ -11,6 +10,15 @@ export enum FontSize {
   L = 'l',
   XL = 'xl'
 }
+
+export enum PartyAnchor {
+  TOP_LEFT = 0,
+  TOP_RIGHT,
+  BOTTOM_RIGHT,
+  BOTTOM_LEFT,
+}
+
+export const autoHideTimerLengths = [1, 3, 5].map(l => l.toFixed(0));
 
 export const fontSizeToPixels: Record<FontSize, number> = {
   [FontSize.XS]: 10,
@@ -53,19 +61,19 @@ class ToggleSetting extends Setting<boolean> {
   }
 }
 
-class SelectSetting extends Setting<string> {
+class SelectSetting<T extends string | number> extends Setting<T> {
 
   constructor(
     private readonly storeService: StoreService, 
     private storeKey: string, 
-    private options: string[], 
-    defaultValue: string
+    private options: T[], 
+    defaultValue: T
   ) {
-    const storedValue = storeService.get(storeKey, defaultValue);
+    const storedValue = typeof defaultValue === "number" ? storeService.getFloat(storeKey, defaultValue) : storeService.get(storeKey, defaultValue);
     super(options.includes(storedValue) ? storedValue : defaultValue);
   }
 
-  public next(value: string) {
+  public next(value: T) {
     if (this.options.includes(value)) {
       this.storeService.set(this.storeKey, value);
       super.next(value);

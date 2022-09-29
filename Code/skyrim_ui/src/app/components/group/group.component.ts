@@ -1,15 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, combineLatest, combineLatestWith, Observable, Subscription, takeUntil, timer } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { SettingService } from 'src/app/services/setting.service';
+import { PartyAnchor, SettingService } from 'src/app/services/setting.service';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
 import { Group } from '../../models/group';
 import { Player } from '../../models/player';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
-import { PartyAnchor } from '../settings/settings.component';
-
 
 interface GroupPosition {
   top?: string;

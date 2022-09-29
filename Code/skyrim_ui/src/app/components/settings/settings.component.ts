@@ -1,17 +1,7 @@
 import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { ClientService } from 'src/app/services/client.service';
-import { FontSize, SettingService } from 'src/app/services/setting.service';
+import { autoHideTimerLengths, FontSize, PartyAnchor, SettingService } from 'src/app/services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
-
-export enum PartyAnchor {
-  TOP_LEFT = 'top_left',
-  TOP_RIGHT = 'top_right',
-  BOTTOM_RIGHT = 'bottom_right',
-  BOTTOM_LEFT = 'bottom_left',
-}
-
-export const autoHideTimerLengths = [1, 3, 5].map(l => l.toFixed(0));
 
 @Component({
   selector: 'app-settings',
