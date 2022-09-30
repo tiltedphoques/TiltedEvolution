@@ -126,7 +126,6 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   writeValue(obj: any): void {
     if (obj != null) {
       this.selected = this.options.getValue().findIndex(o => o.value === obj);
-    } else {
     }
   }
 

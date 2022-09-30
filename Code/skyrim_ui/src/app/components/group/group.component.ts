@@ -168,7 +168,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     }
   }
 
-  private flashGroup() {    
+  private flashGroup() {
     if (this.isAutoHide.getValue() && this.clientService.connectionStateChange.getValue()) {
       if (!this.isShown.getValue()) {
         this.isShown.next(true);
