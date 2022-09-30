@@ -12,6 +12,7 @@ using TiltedPhoques::String;
 struct AuthenticationRequest;
 struct Player;
 struct PartyComponent;
+class PluginCollection;
 
 namespace Console
 {
@@ -101,6 +102,7 @@ private:
     bool m_isPasswordProtected{};
 
     Info m_info{};
+    UniquePtr<PluginCollection> m_pPlugins;
     UniquePtr<World> m_pWorld;
     Console::ConsoleRegistry& m_commands;
 

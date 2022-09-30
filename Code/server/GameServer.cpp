@@ -1,6 +1,7 @@
 #include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
+#include <PluginCollection.h>
 
 #include <Events/AdminPacketEvent.h>
 #include <Events/CharacterRemoveEvent.h>
@@ -82,14 +83,8 @@ Console::Command<> ShowVersion("version", "Show the version the server was compi
     spdlog::get("ConOut")->info("Server " BUILD_COMMIT);
 });
 
-Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
-    int* i = 0;
-    *i = 42;
-});
-
 Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
-
     spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
                                 formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
 });
@@ -165,10 +160,14 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
     BindMessageHandlers();
     UpdateTimeScale();
+
+    m_pPlugins = MakeUnique<PluginCollection>();
 }
 
 GameServer::~GameServer()
 {
+    m_pPlugins->ShutdownPlugins();
+
     s_pInstance = nullptr;
 }
 
@@ -183,6 +182,8 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
+
+    m_pPlugins->InitializePlugins();
 }
 
 void GameServer::Kill()

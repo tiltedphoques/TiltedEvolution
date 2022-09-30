@@ -6,6 +6,7 @@ local function build_server()
     add_includedirs(
         ".",
         "../../Libraries/")
+    add_defines("BUILDING_TT_SERVER")
     set_pcxxheader("Pch.h")
     add_headerfiles("**.h")
     add_files("**.cpp")
