@@ -7,8 +7,7 @@
   <div class="box" (click)="toggle($event)">
     <ng-container>
       <div class="dropdown-selected">
-        <span>{{ options?.[selected] ? options[selected].text : placeholder }}</span>
-        <fa-icon [icon]="faCaretDown"></fa-icon>
+        <span>{{ noTranslate ? selectedLabel : (selectedLabel | transloco: { length: options[selected]?.value }) }}</span>
       </div>
     </ng-container>
   </div>
@@ -18,9 +17,9 @@
       *ngFor="let option of options; let i = index"
       [id]="'li-' + dropdownCounter + '-' + i"
       (click)="optionSelect(option.value, i, $event)"
+      [class.selected]="selected === i"
     >
-      <input type="checkbox" [ngModel]="selected === i"/>
-      {{ option.text ?? option.value }}
+      {{ noTranslate ? (option.text ?? option.value) : (option.text ?? option.value) | transloco: { length: option.value } }}
     </li>
   </ul>
 </div>

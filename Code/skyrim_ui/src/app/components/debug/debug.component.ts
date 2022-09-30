@@ -23,9 +23,9 @@ export class DebugComponent {
 
   constructor(
     private readonly client: ClientService,
-    private readonly settings: SettingService,
+    private readonly settingService: SettingService,
   ) {
-    this.isShown$ = this.client.debugStateChange.pipe(startWith(this.settings.isDebugShown()));
+    this.isShown$ = this.settingService.settings.isDebugShown;
     this.debugData$ = this.client.debugDataChange.pipe(startWith(new Debug()));
   }
 

@@ -50,7 +50,7 @@ export class RootComponent implements OnInit {
     private readonly settingService: SettingService,
     public readonly overlay: Overlay, // used for mockup
   ) {
-    this.translocoService.setActiveLang(this.settingService.getLanguage());
+    this.translocoService.setActiveLang(this.settingService.settings.language.getValue());
   }
 
   public ngOnInit(): void {
@@ -83,7 +83,7 @@ export class RootComponent implements OnInit {
   }
 
   public onFontSizeSubscription() {
-    this.settingService.fontSizeChange
+    this.settingService.settings.fontSize
     .pipe(takeUntil(this.destroy$), map(size => fontSizeToPixels[size]))
     .subscribe( size => {
       document.documentElement.setAttribute('style', `font-size: ${size}px;`);
@@ -106,9 +106,5 @@ export class RootComponent implements OnInit {
 
   public reconnect(): void {
     this.client.reconnect();
-  }
-
-  updateGroupPosition() {
-    this.groupComponent?.updatePosition();
   }
 }

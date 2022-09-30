@@ -343,7 +343,7 @@ export class GroupService implements OnDestroy {
   }
 
   public isPartyEnabled(): boolean {
-    return (this.group.value ? this.group.getValue().isEnabled : false);
+    return (this.group.getValue() ? this.group.getValue().isEnabled : false);
   }
 
   private updateGroup() {

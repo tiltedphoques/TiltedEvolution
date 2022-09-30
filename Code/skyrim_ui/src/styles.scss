@@ -13,11 +13,12 @@
 }
 
 input {
-  font-size: 1rem;
-}
+  font-size: inherit;
+  opacity: 0.7;
 
-input::placeholder {
-  font-size: 1rem !important;
+  &:hover:not([disabled]){
+    opacity: 1;
+  }
 }
 
 ::selection {
@@ -68,6 +69,7 @@ input[type=text] {
 input[type=range] {
   border: 0;
   padding: 0;
+  --thumb-size: 0.8em;
 }
 
 input:not([type=checkbox]),
@@ -185,31 +187,65 @@ button {
 
 :root {
   font-size: 16px;
+  --scrollbar-thickness: 0.7rem;
 }
 
 ::-webkit-scrollbar {
-  width: $scrollbar;
+  width: var(--scrollbar-thickness);
 }
 
-::-webkit-scrollbar-button {
-  display: none;
+::-webkit-scrollbar-button:single-button {
+  background-repeat: no-repeat;
+  background-position: center;
+
+  width: var(--scrollbar-thickness);
+  height: var(--scrollbar-thickness);
+
+  &:vertical:decrement {
+    background-image: url("assets/images/scrollbar/button-north-inactive.svg");
+  }
+  &:vertical:increment {
+    background-image: url("assets/images/scrollbar/button-south-inactive.svg");
+  }
+  &:horizontal:decrement {
+    background-image: url("assets/images/scrollbar/button-west-inactive.svg");
+  }
+  &:horizontal:increment {
+    background-image: url("assets/images/scrollbar/button-east-inactive.svg");
+  }
 }
 
 ::-webkit-scrollbar-track {
-  border: 4 solid;
-  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
+  border: 0.1rem solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.3);
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-image: url(assets/images/scrollbar/thumb-inactive.svg);
+  background-color: rgba(255, 255, 255, 0.5);
+  background-clip: content-box;
 
-  &:hover {
-    background-image: url(assets/images/scrollbar/thumb-active.svg);
+  &:hover{
+    background-color: rgba(255, 255, 255, 0.8);
   }
 }
 
 input[type=range] {
+  display: flex;
   -webkit-appearance: none;
+  
+  &::before{
+    content: "";
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background-image: url(./assets/images/arrow/west.svg);
+  }
+  &::after{
+    content: "";
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background-image: url(./assets/images/arrow/east.svg);
+  }
 }
 
 input[type=checkbox] {
@@ -232,19 +268,18 @@ input[type=checkbox] {
 }
 
 ::-webkit-slider-runnable-track {
-  border-image: url("assets/images/scrollbar/track.svg") 4 fill;
+  border: 16 solid transparent;
+  border-image: url(./assets/images/slider.svg) 16 fill;
 }
 
 ::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: $scrollbar;
-  height: $scrollbar;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
 
-  background-image: url(assets/images/scrollbar/thumb-inactive.svg);
-
-  &:hover {
-    background-image: url(assets/images/scrollbar/thumb-active.svg);
-  }
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url(assets/images/arrow/north.svg);
 }
 
 body {
