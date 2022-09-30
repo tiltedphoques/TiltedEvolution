@@ -7,7 +7,7 @@
   <div class="box" (click)="toggle($event)">
     <ng-container>
       <div class="dropdown-selected">
-        <span>{{ noTranslate ? getSelectedLabel() : (getSelectedLabel() | transloco: {length: options[selected]?.value}) }}</span>
+        <span>{{ noTranslate ? selectedLabel : (selectedLabel | transloco: {length: options[selected]?.value}) }}</span>
       </div>
     </ng-container>
   </div>

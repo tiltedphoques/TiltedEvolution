@@ -89,7 +89,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.optSelect.emit(selectedOption);
   }
 
-  getSelectedLabel(): any {
+  get selectedLabel(): string {
     const selectedOption = this.options.getValue()[this.selected];
     if (selectedOption) {
       return selectedOption.text ?? selectedOption.value;
