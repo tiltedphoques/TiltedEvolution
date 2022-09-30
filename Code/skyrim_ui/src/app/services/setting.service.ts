@@ -30,52 +30,42 @@ export const fontSizeToPixels: Record<FontSize, number> = {
 
 class Setting<T> extends BehaviorSubject<T>{
 
-  constructor(defaultValue: T) {
-    super(defaultValue)
+  constructor(private readonly storeService: StoreService, private storeKey: string, defaultValue: T) {
+    super(defaultValue);
+  }
+
+  public next(value: T) {
+    this.storeService.set(this.storeKey, value);
+    super.next(value);
   }
 }
 
 class SliderSetting extends Setting<number> {
 
-  constructor(private readonly storeService: StoreService, private storeKey: string, defaultValue: number) {
+  constructor(storeService: StoreService, storeKey: string, defaultValue: number) {
     const initialValue = storeService.getFloat(storeKey, defaultValue);
-    super(initialValue)
-  }
-
-  public next(value: number) {
-    this.storeService.set(this.storeKey, value)
-    super.next(value)
+    super(storeService, storeKey, initialValue);
   }
 }
 
 class ToggleSetting extends Setting<boolean> {
 
-  constructor(readonly storeService: StoreService, private storeKey: string, defaultValue: boolean) {
-    const inital_value = storeService.getBool(storeKey, defaultValue);
-    super(inital_value)
-  }
-
-  public next(value: boolean) {
-    this.storeService.set(this.storeKey, value)
-    super.next(value)
+  constructor(storeService: StoreService, storeKey: string, defaultValue: boolean) {
+    const initialValue = storeService.getBool(storeKey, defaultValue);
+    super(storeService, storeKey, initialValue);
   }
 }
 
 class SelectSetting<T extends string | number> extends Setting<T> {
 
-  constructor(
-    private readonly storeService: StoreService, 
-    private storeKey: string, 
-    private options: T[], 
-    defaultValue: T
-  ) {
+  constructor(storeService: StoreService, storeKey: string, private options: T[], defaultValue: T) {
     const storedValue = typeof defaultValue === "number" ? storeService.getFloat(storeKey, defaultValue) : storeService.get(storeKey, defaultValue);
-    super(options.includes(storedValue) ? storedValue : defaultValue);
+    const initialValue = options.includes(storedValue) ? storedValue : defaultValue;
+    super(storeService, storeKey, initialValue);
   }
 
   public next(value: T) {
     if (this.options.includes(value)) {
-      this.storeService.set(this.storeKey, value);
       super.next(value);
     }
   }
