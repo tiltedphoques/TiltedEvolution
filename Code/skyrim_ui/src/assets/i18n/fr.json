@@ -143,7 +143,7 @@
     },
   "COMMANDS": {
       "AVAILABLE_COMMANDS": "Commandes de chat disponibles : {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' est reconnu en tant que commande."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' n'est pas reconnu en tant que commande."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} a atteint le niveau {{level}}.",
