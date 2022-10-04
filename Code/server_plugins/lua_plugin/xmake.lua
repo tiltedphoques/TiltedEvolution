@@ -1,4 +1,3 @@
-
 target("LuaScriptingRuntime")
     set_group("ServerPlugins")
     set_kind("shared")
@@ -9,4 +8,4 @@ target("LuaScriptingRuntime")
         "../.." -- main dir
     ) 
     add_headerfiles("**.h")
-    add_files("**.cpp")
+    add_files("**.c", "**.cpp")

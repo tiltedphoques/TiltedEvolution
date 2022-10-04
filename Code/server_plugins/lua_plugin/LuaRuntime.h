@@ -1,16 +1,28 @@
 #pragma once
 
-#include <server/PluginAPI.h>
+#include "LuaFunction.h"
 
 class LuaRuntime final : public PluginInterface001
 {
   public:
-    ~LuaRuntime() override = default;
+    ~LuaRuntime() override;
 
     // Inherited via PluginInterface001
-    virtual bool Initialize() override;
-    virtual void Shutdown() override;
+    bool Initialize() override;
+    void Shutdown() override;
 
     // Inherited via PluginInterface001
-    virtual uint32_t GetVersion() override;
+    uint32_t GetVersion() override
+    {
+        // we subscribe to the v1 api
+        return 1;
+    }
+
+    void CallScriptFunction(const PluginStringView aName, ScriptFunctionContext&);
+    void BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs,
+                            const size_t aArgCount);
+
+  private:
+    LuaStateHolder m_State;
+    std::vector<LuaFunction> functions_;
 };

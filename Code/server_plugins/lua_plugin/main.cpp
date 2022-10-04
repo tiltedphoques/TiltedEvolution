@@ -12,27 +12,11 @@ void DestroyRuntime(PluginInterface001* interface)
 }
 
 PLUGIN_API PluginDescriptor TT_PLUGIN{.magic = kPluginMagic,
-                                   .pluginVersion = 1,
-                                   .pName = "LuaScriptingRuntime",
-                                   .pAuthorName = "Vince",
-                                   .flags = PluginDescriptor::Flags::kNone,
-                                   .CreatePlugin = CreateRuntime,
-                                   .DestroyPlugin = DestroyRuntime
+                                      .pluginVersion = 1,
+                                      .pluginName = "LuaScriptingRuntime",
+                                      .authorName = "Vince",
+                                      .flags = PluginDescriptor::Flags::kNone,
+                                      .pCreatePlugin = CreateRuntime,
+                                      .pDestroyPlugin = DestroyRuntime
 
 };
-
-#ifdef _WIN32
-#include <Windows.h>
-// don't do anything in here.
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
-{
-    switch (fdwReason)
-    {
-    case DLL_PROCESS_ATTACH:
-        break;
-    case DLL_PROCESS_DETACH:
-        break;
-    }
-    return TRUE;
-}
-#endif

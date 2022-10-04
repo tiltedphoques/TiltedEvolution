@@ -56,12 +56,12 @@ void PluginCollection::InitializePlugins()
         }
 
         // TODO: do someting with the reurned interface version.
-        PluginInterface001* pInstance = data.pDescriptor->CreatePlugin();
+        PluginInterface001* pInstance = data.pDescriptor->pCreatePlugin();
         if (!pInstance)
         {
             spdlog::error(
                 "Descriptor->CreatePlugin() for {} returned null. Did you forget to allocate the plugin instance?",
-                data.pDescriptor->pName);
+                data.pDescriptor->pluginName.data());
             continue;
         }
 
@@ -71,7 +71,7 @@ void PluginCollection::InitializePlugins()
         if (!result)
         {
             spdlog::error("plugin->Initialize() for {} returned false. Plugin initialization failed.",
-                          data.pDescriptor->pName);
+                          data.pDescriptor->pluginName.data());
 
             data.pInterface = nullptr;
             continue;
@@ -91,12 +91,12 @@ void PluginCollection::ShutdownPlugins()
 
         if (!data.pInterface)
         {
-            spdlog::error("Unable to fetch interface for plugin {}.", data.pDescriptor->pName);
+            spdlog::error("Unable to fetch interface for plugin {}.", data.pDescriptor->pluginName.data());
             continue;
         }
 
         data.pInterface->Shutdown();
-        data.pDescriptor->DestroyPlugin(data.pInterface);
+        data.pDescriptor->pDestroyPlugin(data.pInterface);
     }
 }
 

@@ -30,8 +30,6 @@ local function build_server()
         "spdlog",
         "hopscotch-map",
         "sqlite3",
-        "lua",
-        "sol2",
         "glm",
         "entt",
         "cpp-httplib",
