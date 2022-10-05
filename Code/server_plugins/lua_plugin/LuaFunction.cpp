@@ -38,40 +38,64 @@ void LuaFunction::ValidateArg(ArgType a, int i)
     }
 }
 
+void LuaFunction::PushArg(ArgType type, ScriptFunctionContext& aContext)
+{
+    switch (type)
+    {
+    case ArgType::kBool:
+        lua_pushboolean(m_State, static_cast<int>(aContext.PopBool()));
+        break;
+    case ArgType::kF32:
+        lua_pushnumber(m_State, static_cast<lua_Number>(aContext.PopF32()));
+        break;
+    case ArgType::kI8:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopI8()));
+        break;
+    case ArgType::kI16:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopI16()));
+        break;
+    case ArgType::KI32:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopI32()));
+        break;
+    case ArgType::kI64:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopI64()));
+        break;
+    case ArgType::kU8:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopU8()));
+        break;
+    case ArgType::kU16:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopU16()));
+        break;
+    case ArgType::kU32:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopU32()));
+        break;
+    case ArgType::kU64:
+        lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopU64()));
+        break;
+    default:
+        __debugbreak();
+        break;
+    }
+}
+
 void LuaFunction::Invoke(ScriptFunctionContext& aContext)
 {
     // load on stack
     if (lua_getglobal(m_State, this->m_name.c_str()) != LUA_TFUNCTION)
     {
-        // TBD handle error
+        WriteLog(LogLevel::kInfo, "Failed to find function %s", this->m_name.c_str());
         return;
     }
 
-    // push args
-    for (uint32_t i = 0; i < aContext.count(); i++)
-    {
-        const auto x = aContext.argAt(i);
-        __debugbreak();
+    // store the max arg count (it changes when pushing/popping args so we must take a snapshot here)
+    const uint32_t argCount{aContext.count()};
+    for (uint32_t i = 0; i < argCount; i++)
+        PushArg(aContext.GetArg(i), aContext);
 
-        switch (x)
-        {
-        case ArgType::kBool:
-            __debugbreak();
-            lua_pushboolean(m_State, static_cast<int>(aContext.PopBool()));
-            break;
-        case ArgType::kF32:
-            __debugbreak();
-            lua_pushnumber(m_State, static_cast<lua_Number>(aContext.PopF32()));
-            break;
-        default:
-            __debugbreak();
-            break;
-        }
-    }
     // validate that the args we pushed are actually useful?
-   // for (int i = 0; i < m_args.size(); i++)
-   //     ValidateArg(m_args[i], i);
+    // for (int i = 0; i < m_args.size(); i++)
+    //    ValidateArg(m_args[i], i);
 
-    bool success = lua_pcall(m_State, m_args.size(), 1, 0) == LUA_OK;
+    auto result = lua_pcall(m_State, argCount, 1, 0);
     __debugbreak();
 }

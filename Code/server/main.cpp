@@ -1,6 +1,7 @@
 
 #include "GameServer.h"
 
+#include "PluginAPI.h"
 #include <common/GameServerInstance.h>
 
 #ifdef _WIN32
@@ -30,7 +31,7 @@ struct GameServerInstance final : IGameServerInstance
     bool IsRunning() override;
     void Update() override;
 
-private:
+  private:
     GameServer m_gameServer;
 };
 
@@ -71,7 +72,8 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
     return std::strcmp(apBuildTag, kBuildTag) == 0;
 }
 
-GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, const std::function<void()>& aCallback)
+GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg,
+                                                          const std::function<void()>& aCallback)
 {
     BASE_ASSERT(aCallback, "CreateGameServer(): Callback was not provided");
 
@@ -86,9 +88,8 @@ GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegist
 
 // cxx symbol
 
-// These two are windows specific implementation details, since all symbols & insances are private there, so we must hand over
-// the control.
-// if not compiling with -fvisibility=hidden, hide these
+// These two are windows specific implementation details, since all symbols & insances are private there, so we must
+// hand over the control. if not compiling with -fvisibility=hidden, hide these
 
 GS_EXPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
@@ -103,6 +104,26 @@ GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
     // yes this needs to be here, else the dedirunner dies
     spdlog::register_logger(std::move(aLogger));
     //#endif
+}
+
+// scripting api
+void WriteLog(const LogLevel aLogLevel, const char* apFormat, ...)
+{
+    using namespace spdlog::level;
+
+    level_enum level;
+    switch (aLogLevel)
+    {
+    case LogLevel::kDebug:
+        level = level_enum::debug;
+        break;
+    case LogLevel::kInfo:
+    default:
+        level = level_enum::info;
+        break;
+    }
+
+    spdlog::log(level, apFormat);
 }
 
 #ifdef _WIN32

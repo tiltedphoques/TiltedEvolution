@@ -15,6 +15,7 @@ class LuaFunction
     explicit LuaFunction(LuaStateHolder&, const std::string& aName, const ArgType* apArgs, size_t aCount);
 
     void ValidateArg(ArgType a, int i);
+    void PushArg(ArgType, ScriptFunctionContext&);
 
     void Invoke(ScriptFunctionContext&);
 

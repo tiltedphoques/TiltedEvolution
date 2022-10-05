@@ -46,11 +46,13 @@ bool LuaRuntime::Initialize()
     context.Push(32.f);
     CallScriptFunction("testFunc", context);
 
+    WriteLog(LogLevel::kInfo, "Initialized lua runtime\n");
     return true;
 }
 
 void LuaRuntime::Shutdown()
 {
+    WriteLog(LogLevel::kInfo, "Shutting down lua\n");
 }
 
 void LuaRuntime::CallScriptFunction(const PluginStringView aName, ScriptFunctionContext& aContext)
@@ -70,7 +72,7 @@ void LuaRuntime::BindScriptFunction(const PluginStringView aName, void* apFuncto
 
     // https://github.com/citizenfx/fivem/blob/e46db5133c30577f75e985a36f902a626013ac3c/code/components/citizen-scripting-lua/src/LuaScriptRuntime.cpp#L545
 
-    auto k = [](lua_State* state) -> int {
+    static auto k = [](lua_State* state) -> int {
         __debugbreak();
         return 0;
     };

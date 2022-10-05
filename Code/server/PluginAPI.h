@@ -8,6 +8,20 @@
 #endif
 #endif
 
+#ifdef BUILDING_TT_SERVER
+#define SERVER_API extern "C" __declspec(dllexport)
+#else
+#define SERVER_API extern "C" __declspec(dllimport)
+#endif
+
+// utilities for sending data to GS
+enum class LogLevel
+{
+    kInfo,
+    kDebug
+};
+SERVER_API void WriteLog(const LogLevel aLogLevel, const char* apFormat, ...);
+
 enum class ArgType
 {
     kBool,
@@ -37,96 +51,54 @@ class ScriptFunctionContext
         return m_pArgTypeStack[m_ArgCount];
     }
 
-    ArgType argAt(int i) const
-    {
-        return m_pArgTypeStack[i];
-    }
+    ArgType GetArg(int i) const { return m_pArgTypeStack[i]; } 
 
-    void PushAT(ArgType a)
-    {
-        m_pArgTypeStack[m_ArgCount] = a;
-    }
+    void Push(bool b) { PushVal(ArgType::kBool, b); }
+    void Push(float f) { PushVal(ArgType::kF32, f); }
+    // unsigned
+    void Push(uint8_t i) { PushVal(ArgType::kU8, i); }
+    void Push(uint16_t i) { PushVal(ArgType::kU16, i); }
+    void Push(uint32_t i) { PushVal(ArgType::kU32, i); }
+    void Push(uint64_t i) { PushVal(ArgType::kU64, i); }
+    // signed
+    void Push(int8_t i) { PushVal(ArgType::kI8, i); }
+    void Push(int16_t i) { PushVal(ArgType::kI16, i); }
+    void Push(int32_t i) { PushVal(ArgType::KI32, i); }
+    void Push(int64_t i) { PushVal(ArgType::kI64, i); }
 
-    void Push(bool b)
-    {
-        PushAT(ArgType::kBool);
-        *reinterpret_cast<bool*>(&m_pArgStack[m_argofs]) = b;
-        m_argofs += sizeof(bool);
-        m_ArgCount++;
-    }
-
-    bool PopBool()
-    {
-        bool b = *reinterpret_cast<bool*>(&m_pArgStack[m_argofs]);
-        m_argofs -= sizeof(bool);
-        m_ArgCount--;
-        return b;
-    }
-
-    void Push(float f)
-    {
-        PushAT(ArgType::kF32);
-        *reinterpret_cast<float*>(&m_pArgStack[m_argofs]) = f;
-        m_argofs += sizeof(float);
-        m_ArgCount++;
-    }
-
-    float PopF32()
-    {
-        float b = *reinterpret_cast<float*>(&m_pArgStack[m_argofs]);
-        m_argofs -= sizeof(float);
-        m_ArgCount--;
-        return b;
-    }
-
-    void Push(uint32_t u)
-    {
-    }
-
-    void Push(int32_t i)
-    {
-    }
-
-#if 0
-    template <typename T> inline T& GetArgument(int idx)
-    {
-        intptr_t* arguments = (intptr_t*)m_pArgs;
-
-        return *(T*)&arguments[idx];
-    }
-
-    template <typename T> inline void SetResult(int idx, T value)
-    {
-        intptr_t* returnValues = (intptr_t*)m_pReturn;
-
-        if (returnValues)
-        {
-            *(T*)&returnValues[idx] = value;
-        }
-    }
-
-    template <typename T> inline T GetResult(int idx)
-    {
-        intptr_t* returnValues = (intptr_t*)m_pReturn;
-
-        if (returnValues)
-        {
-            return *(T*)&returnValues[idx];
-        }
-
-        return T{};
-    }
-#endif
-
+    bool PopBool() { return FetchVal<bool>(); }
+    bool PopF32() { return FetchVal<float>(); }
+    // unsigned
+    bool PopU8() { return FetchVal<uint8_t>(); }
+    bool PopU16() { return FetchVal<uint16_t>(); }
+    bool PopU32() { return FetchVal<uint32_t>(); }
+    bool PopU64() { return FetchVal<uint64_t>(); }
+    // signed
+    bool PopI8() { return FetchVal<int8_t>(); }
+    bool PopI16() { return FetchVal<int16_t>(); }
+    bool PopI32() { return FetchVal<int32_t>(); }
+    bool PopI64() { return FetchVal<int64_t>(); }
+    
     inline uint32_t count() const
     {
         return m_ArgCount;
     }
 
   private:
-    uint8_t* getArgBuffer()
+    template <typename T> void PushVal(const ArgType aType, const T acValue)
     {
-        return &m_pArgStack[m_ArgCount];
+        m_pArgTypeStack[m_ArgCount] = aType;
+        *reinterpret_cast<T*>(&m_pArgStack[m_argofs]) = acValue;
+        m_argofs += sizeof(T);
+        m_ArgCount++;
+    }
+
+    template <typename T> T FetchVal()
+    {
+        T value = *reinterpret_cast<T*>(&m_pArgStack[m_argofs]);
+        m_argofs -= sizeof(T);
+        m_ArgCount--;
+        return value;
     }
 
   protected:
@@ -141,18 +113,10 @@ class ScriptFunctionContext
 template <typename T> class PluginSlice
 {
   public:
-    explicit constexpr PluginSlice(const T* ptr, size_t len) : m_pData(ptr), m_size(len)
-    {
-    }
+    explicit constexpr PluginSlice(const T* ptr, size_t len) : m_pData(ptr), m_size(len) {}
+    template <size_t N> constexpr PluginSlice(T (&a)[N]) noexcept : PluginSlice(a, N) {}
 
-    template <size_t N> constexpr PluginSlice(T (&a)[N]) noexcept : PluginSlice(a, N)
-    {
-    }
-
-    constexpr T* data() const
-    {
-        return m_pData;
-    }
+    constexpr T* data() const { return m_pData; }
 
   private:
     T* m_pData;
@@ -185,10 +149,11 @@ class PluginInterface001
 
 struct PluginDescriptor
 {
-    uint32_t magic;                     // < 'PLGN'
-    uint32_t pluginVersion;             // < Version of the plugin (user defined)
-    PluginStringView pluginName;        // < Name of the plugin
-    PluginStringView authorName;        // < Author name
+    uint32_t magic;              // < 'PLGN'
+    uint32_t structSize;         // < Size of this struct
+    uint32_t pluginVersion;      // < Version of the plugin (user defined)
+    PluginStringView pluginName; // < Name of the plugin
+    PluginStringView authorName; // < Author name
 
     enum Flags
     {
