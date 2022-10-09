@@ -1,6 +1,6 @@
 {
   "INFO": "Polska lokalizacja do Skyrim Together: Reborn! Wersja: 1.3.0. Autor:<strong>Nutyo</strong>",
-  
+
   "COMPONENT": {
     "CHAT": {
       "SEND": "Wyślij",
@@ -27,21 +27,21 @@
     "DISCONNECT": {
       "PROMPT": "Czy jesteś pewny, że chcesz się odłączyć?",
       "PROCEED": "Przystępuj",
-      "CANCEL": "Anuluj",
+      "CANCEL": "Anuluj"
     },
     "ERROR": {
       "OK": "Ok"
     },
     "NOTIFICATIONS": {
-      "MESSAGE_FROM": "Wiadomość od"
-	  "ACCEPT": "Zaakceptuj",
+      "MESSAGE_FROM": "Wiadomość od",
+      "ACCEPT": "Zaakceptuj",
       "DECLINE": "Odrzuć"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Zaakceptuj zaproszenie od {{name}}",
-	  "LAUNCH_PARTY": "Stwórz Grupe",
-	  "INVITES": "Zaproszenia",
-	  "NO_INVITES": "Nie dostałeś żadnych zaproszeń",
+      "LAUNCH_PARTY": "Stwórz Grupe",
+      "INVITES": "Zaproszenia",
+      "NO_INVITES": "Nie dostałeś żadnych zaproszeń",
       "EXPERIENCE_WARNING": "Dla Optymalnego Doświadczenia w Questowaniu, upewnij się że przeczytałeś Przewodnik do gry na naszej wiki, którą możesz znaleźć na naszej stronie internetowej. <b>skyrim-together.com</b>. to jest małe wytłumaczenie paru rzeczy z Przewodnika:",
       "GUIDELINES": {
         "PARTY": "Tworząc Grupę, stajesz się jakbym takim \"hostem\", Znaczy Liderem Grupy.",
@@ -91,8 +91,8 @@
       "BACK": "wróć",
       "LOADING": "ładowanie...",
       "NO_SERVERS": "serwery publiczne są niedostępne",
-	  "HIDE_MISMATCHED_SERVER": "Chowaj Serwery z nie kompatibilną wersją",
-	  "HIDE_FULL_SERVERS": "Chowaj pełne serwery",
+      "HIDE_MISMATCHED_SERVERS": "Chowaj Serwery z nie kompatibilną wersją",
+      "HIDE_FULL_SERVERS": "Chowaj pełne serwery",
       "SERVER_COUNT": "Pokazywanie {{filteredCount}} z {{count}} serwerów",
       "TABLE_HEADERS": {
         "NAME": "Nazwa Serwera",
@@ -120,7 +120,7 @@
       "PARTY_ANCHOR_OFFSET_X": "Przesunięcie w poziomie",
       "PARTY_ANCHOR_OFFSET_Y": "Przesunięcie pionowe",
       "LENGTH": "{{length}}s",
-	  "UI": "UI",
+      "UI": "UI",
       "LANGUAGE": "Język",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Pokaż informacje Debugowania",
@@ -131,16 +131,16 @@
         "M": "Średnia",
         "L": "Duża",
         "XL": "Bardzo Duża"
-	  },
+      },
       "BACK": "Wróć"
     }
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "Stracono połączenie, próbujemy się podłączyć z powrotem. {{remainingReconnectionAttempt}} pozostałych prób."
-	  "CONNECTED": "Pomyślnie nawiązano połączenie z serwerem.",
+      "CONNECTION_LOST": "Stracono połączenie, próbujemy się podłączyć z powrotem. {{remainingReconnectionAttempt}} pozostałych prób.",
+      "CONNECTED": "Pomyślnie nawiązano połączenie z serwerem.",
       "DISCONNECTED": "Rozłączono z serwerem."
-	},
+    },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Dostępne Komendy Czatu: {{cmds}}",
       "COMMAND_NOT_FOUND": "'{{cmd}}' jest rozpoznawane jako Komenda."
@@ -159,8 +159,8 @@
         "MODS_MISMATCH_INSTALL": "Zainstaluj następujące mody abyś mógł dołączyć:\n{{mods}}",
         "CLIENT_MODS_DISALLOWED": "Ten serwer nie pozwala na mody {{mods}}. Usuń je by dołończyć.",
         "WRONG_PASSWORD": "Hasło które wpisałeś jest niepoprawne.",
-        "NO_REASON": "Serwer odmówił połączenia brak powodu."
-		"SERVER_FULL": "Ten Serwer jest Pełen."
+        "NO_REASON": "Serwer odmówił połączenia brak powodu.",
+        "SERVER_FULL": "Ten Serwer jest Pełen."
       }
     },
     "PLAYER_LIST": {
