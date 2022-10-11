@@ -141,7 +141,7 @@
       "CONNECTED": "Connexion réussie au serveur.",
       "DISCONNECTED": "Déconnectée du serveur."
     },
-  "COMMANDS": {
+    "COMMANDS": {
       "AVAILABLE_COMMANDS": "Commandes de chat disponibles : {{cmds}}",
       "COMMAND_NOT_FOUND": "'{{cmd}}' n'est pas reconnu en tant que commande."
     },

@@ -1,23 +1,40 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Output
+} from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
 import { FormControl } from '@ngneat/reactive-forms';
-import { BehaviorSubject, combineLatestWith, Observable, ReplaySubject, share, startWith, throttleTime } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatestWith,
+  Observable,
+  ReplaySubject,
+  share,
+  startWith,
+  throttleTime
+} from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Server } from '../../models/server';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
-import { SettingService, fontSizeToPixels } from '../../services/setting.service';
+import {
+  SettingService,
+  fontSizeToPixels
+} from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
 import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
 
 interface SortFunction {
-  fn: ((a: Server, b: Server) => number);
+  fn: (a: Server, b: Server) => number;
   priority: number;
 }
 
@@ -25,10 +42,9 @@ interface SortFunction {
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ServerListComponent {
-
   /* ### ICONS ### */
   readonly fasStar = fasStar;
   readonly farStar = farStar;
@@ -43,7 +59,13 @@ export class ServerListComponent {
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
   favoriteOrdering = new BehaviorSubject(SortOrder.NONE);
-  serverlist$: Observable<(Server & { isCompatible: boolean; shortVersion: string; isFull: boolean })[]>;
+  serverlist$: Observable<
+    (Server & {
+      isCompatible: boolean;
+      shortVersion: string;
+      isFull: boolean;
+    })[]
+  >;
   filteredServerlist$: typeof this.serverlist$;
   clientVersion$: Observable<string>;
 
@@ -59,57 +81,64 @@ export class ServerListComponent {
     private readonly settingService: SettingService,
     private readonly soundService: SoundService,
     private readonly storeService: StoreService,
-    private readonly uiRepository: UiRepository,
+    private readonly uiRepository: UiRepository
   ) {
     this.sortFavorite(SortOrder.DESC);
     this.sortPlayerCount(SortOrder.DESC);
-    this.serverlist$ = this.refreshServerlist
-      .pipe(
-        switchMap(() => this.serverListService
-          .getServerList()
-          .pipe(
-            /**
-             * Removed due performance and ratelimit issue
-             *
-             * Temp fix
-             * https://github.com/tiltedphoques/TiltedEvolution/pull/226
-             *
-             * Long term fix
-             * https://github.com/tiltedphoques/TiltedEvolution/issues/247
-             */
-            //switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
-            this.loader.serverlist.track(),
-          ),
-        ),
-        combineLatestWith(this.favoriteServers, this.clientService.versionSet),
-        map(([servers, favorites, clientVersion]) => {
-          return servers.map(server => {
-            const shortVersion = this.getServerVersion(server);
-            return {
-              ...server,
-              isFavorite: !!favorites[`${ server.ip }:${ server.port }`],
-              isFull: server.player_count >= server.max_player_count,
-              shortVersion,
-              isCompatible: shortVersion === clientVersion,
-            };
-          });
-        }),
-        share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
-      );
+    this.serverlist$ = this.refreshServerlist.pipe(
+      switchMap(() =>
+        this.serverListService.getServerList().pipe(
+          /**
+           * Removed due performance and ratelimit issue
+           *
+           * Temp fix
+           * https://github.com/tiltedphoques/TiltedEvolution/pull/226
+           *
+           * Long term fix
+           * https://github.com/tiltedphoques/TiltedEvolution/issues/247
+           */
+          //switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
+          this.loader.serverlist.track()
+        )
+      ),
+      combineLatestWith(this.favoriteServers, this.clientService.versionSet),
+      map(([servers, favorites, clientVersion]) => {
+        return servers.map(server => {
+          const shortVersion = this.getServerVersion(server);
+          return {
+            ...server,
+            isFavorite: !!favorites[`${server.ip}:${server.port}`],
+            isFull: server.player_count >= server.max_player_count,
+            shortVersion,
+            isCompatible: shortVersion === clientVersion
+          };
+        });
+      }),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnRefCountZero: true
+      })
+    );
 
-    this.filteredServerlist$ = this.serverlist$
-      .pipe(
-        combineLatestWith(
-          this.formSearch.value$.pipe(
-            map(searchPhrase => searchPhrase?.toLowerCase()),
-            distinctUntilChanged(),
-            throttleTime(300),
-          ),
-          this.hideVersionMismatchedServers,
-          this.hideFullServers,
-          this.sortFunctions,
+    this.filteredServerlist$ = this.serverlist$.pipe(
+      combineLatestWith(
+        this.formSearch.value$.pipe(
+          map(searchPhrase => searchPhrase?.toLowerCase()),
+          distinctUntilChanged(),
+          throttleTime(300)
         ),
-        map(([servers, searchPhrase, hideVersionMismatchedServers, hideFullServers, sortFunction]) => {
+        this.hideVersionMismatchedServers,
+        this.hideFullServers,
+        this.sortFunctions
+      ),
+      map(
+        ([
+          servers,
+          searchPhrase,
+          hideVersionMismatchedServers,
+          hideFullServers,
+          sortFunction
+        ]) => {
           if (hideVersionMismatchedServers) {
             servers = servers.filter(server => server.isCompatible);
           }
@@ -118,29 +147,43 @@ export class ServerListComponent {
           }
           if (searchPhrase) {
             servers = servers.filter((server: Server) => {
-              return server.name.toLowerCase().includes(searchPhrase) || server.desc.toLowerCase().includes(searchPhrase);
+              return (
+                server.name.toLowerCase().includes(searchPhrase) ||
+                server.desc.toLowerCase().includes(searchPhrase)
+              );
             });
           }
           if (sortFunction.length > 0) {
             servers = [...servers].sort(this.sortElementsFn());
           }
           return servers;
-        }),
-        startWith([]),
-        share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
-      );
+        }
+      ),
+      startWith([]),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnRefCountZero: true
+      })
+    );
 
-    this.clientVersion$ = this.clientService.versionSet.pipe(map(version => version.split('-')[0]));
+    this.clientVersion$ = this.clientService.versionSet.pipe(
+      map(version => version.split('-')[0])
+    );
 
     // load favorite servers
-    const favoriteServerList = JSON.parse(this.storeService.get('favoriteServerList', '[]'));
+    const favoriteServerList = JSON.parse(
+      this.storeService.get('favoriteServerList', '[]')
+    );
     const favoriteServers: Record<string, Server> = {};
     for (const favoriteServer of favoriteServerList) {
-      favoriteServers[`${ favoriteServer.ip }:${ favoriteServer.port }`] = favoriteServer;
+      favoriteServers[`${favoriteServer.ip}:${favoriteServer.port}`] =
+        favoriteServer;
     }
     this.favoriteServers.next(favoriteServers);
 
-    this.rowHeight$ = this.settingService.settings.fontSize.pipe(map(fontSize => fontSizeToPixels[fontSize]*2));
+    this.rowHeight$ = this.settingService.settings.fontSize.pipe(
+      map(fontSize => fontSizeToPixels[fontSize] * 2)
+    );
   }
 
   public cancel(): void {
@@ -152,9 +195,14 @@ export class ServerListComponent {
   }
 
   private getLocationDataByIp(servers: Server[]): Array<Observable<Server>> {
-    return servers.map((server) => {
+    return servers.map(server => {
       return this.serverListService.getInformationForIp(server.ip).pipe(
-        map((data) => ({ ...server, countryCode: data.countryCode.toLowerCase(), continent: data.continent, country: data.country })),
+        map(data => ({
+          ...server,
+          countryCode: data.countryCode.toLowerCase(),
+          continent: data.continent,
+          country: data.country
+        }))
       );
     });
   }
@@ -167,10 +215,10 @@ export class ServerListComponent {
   async toggleServerFavorite(server: Server) {
     let favorites = this.favoriteServers.getValue();
     favorites = { ...favorites };
-    if (favorites[`${ server.ip }:${ server.port }`]) {
-      delete favorites[`${ server.ip }:${ server.port }`];
+    if (favorites[`${server.ip}:${server.port}`]) {
+      delete favorites[`${server.ip}:${server.port}`];
     } else {
-      favorites[`${ server.ip }:${ server.port }`] = { ...server };
+      favorites[`${server.ip}:${server.port}`] = { ...server };
     }
     this.favoriteServers.next(favorites);
 
@@ -179,22 +227,42 @@ export class ServerListComponent {
   }
 
   public sortPlayerCount(sortOrder: SortOrder) {
-    this.setSortingFn(3, sortOrder, ServerListComponent.sortPlayerCountAsc, ServerListComponent.sortPlayerCountDesc);
+    this.setSortingFn(
+      3,
+      sortOrder,
+      ServerListComponent.sortPlayerCountAsc,
+      ServerListComponent.sortPlayerCountDesc
+    );
     this.playerCountOrdering.next(sortOrder);
   }
 
   public sortCountry(sortOrder: SortOrder) {
-    this.setSortingFn(2, sortOrder, ServerListComponent.sortCountryAsc, ServerListComponent.sortCountryDesc);
+    this.setSortingFn(
+      2,
+      sortOrder,
+      ServerListComponent.sortCountryAsc,
+      ServerListComponent.sortCountryDesc
+    );
     this.countryOrdering.next(sortOrder);
   }
 
   public sortServerName(sortOrder: SortOrder) {
-    this.setSortingFn(1, sortOrder, ServerListComponent.sortNameAsc, ServerListComponent.sortNameDesc);
+    this.setSortingFn(
+      1,
+      sortOrder,
+      ServerListComponent.sortNameAsc,
+      ServerListComponent.sortNameDesc
+    );
     this.serverNameOrdering.next(sortOrder);
   }
 
   public sortFavorite(sortOrder: SortOrder) {
-    this.setSortingFn(0, sortOrder, ServerListComponent.sortFavoriteAsc, ServerListComponent.sortFavoriteDesc);
+    this.setSortingFn(
+      0,
+      sortOrder,
+      ServerListComponent.sortFavoriteAsc,
+      ServerListComponent.sortFavoriteDesc
+    );
     this.favoriteOrdering.next(sortOrder);
   }
 
@@ -226,7 +294,12 @@ export class ServerListComponent {
     }
   }
 
-  private setSortingFn(priority: number, ordering: SortOrder, asc: (a: Server, b: Server) => number, desc: (a: Server, b: Server) => number) {
+  private setSortingFn(
+    priority: number,
+    ordering: SortOrder,
+    asc: (a: Server, b: Server) => number,
+    desc: (a: Server, b: Server) => number
+  ) {
     const sortFns = [...this.sortFunctions.getValue()];
     let index = sortFns.findIndex(sortFn => sortFn.fn === asc);
     if (index !== -1) {
@@ -245,7 +318,9 @@ export class ServerListComponent {
   }
 
   sortElementsFn() {
-    const fns = [...this.sortFunctions.getValue()].sort((a, b) => a.priority - b.priority);
+    const fns = [...this.sortFunctions.getValue()].sort(
+      (a, b) => a.priority - b.priority
+    );
     return (a: Server, b: Server) => {
       let result = 0;
       for (const fn of fns) {
@@ -289,7 +364,7 @@ export class ServerListComponent {
   }
 
   static sortFavoriteAsc(a: Server, b: Server) {
-    return (b.isFavorite === a.isFavorite) ? 0 : b.isFavorite ? -1 : 1;
+    return b.isFavorite === a.isFavorite ? 0 : b.isFavorite ? -1 : 1;
   }
 
   @HostListener('window:keydown.escape', ['$event'])

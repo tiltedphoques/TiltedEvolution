@@ -1,6 +1,6 @@
-@import "mixins/gapped-vertical";
+@import 'mixins/gapped-vertical';
 
-@import "env";
+@import 'env';
 
 :host {
   @include gapped-vertical($-size-gap);

@@ -21,11 +21,11 @@ $font: (
   )
 );
 
-@mixin font($root, $family, $variants: ( ( regular, normal ), ), $types: ttf) {
+@mixin font($root, $family, $variants: ((regular, normal)), $types: ttf) {
   $folder: str-replace(to-lower-case($family), ' ', '-');
 
   @if type-of($types) != list {
-    $types: ( $types );
+    $types: ($types);
   }
 
   @each $variant in $variants {
@@ -44,11 +44,11 @@ $font: (
 
     $style: nth($variant, 2);
 
-    @if not(index(( normal, italic, both ), $style)) {
+    @if not(index((normal, italic, both), $style)) {
       @error '`#{dump($style)}` is not a valid style. Valid styles are: normal, italic, both.';
     }
 
-    $style-list: if($style == 'both', ( normal, italic ), ( $style ));
+    $style-list: if($style == 'both', (normal, italic), ($style));
     $type-list: map-get($font, type);
 
     @each $type in $types {
@@ -70,6 +70,5 @@ $font: (
         }
       }
     }
-
   }
 }

@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { faCaretDown, faCaretUp, faSort } from '@fortawesome/free-solid-svg-icons';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output
+} from '@angular/core';
+import {
+  faCaretDown,
+  faCaretUp,
+  faSort
+} from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject } from 'rxjs';
-
 
 export enum SortOrder {
   NONE,
@@ -13,10 +22,9 @@ export enum SortOrder {
   selector: 'app-order',
   templateUrl: './order.component.html',
   styleUrls: ['./order.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderComponent {
-
   /* ### ENUMS ### */
   readonly SortOrder = SortOrder;
 
@@ -49,5 +57,4 @@ export class OrderComponent {
     }
     this.sorted.emit(newValue);
   }
-
 }

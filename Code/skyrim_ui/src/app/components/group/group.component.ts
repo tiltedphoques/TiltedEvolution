@@ -1,5 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, combineLatest, combineLatestWith, Observable, Subscription, takeUntil, timer } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  combineLatestWith,
+  Observable,
+  Subscription,
+  takeUntil,
+  timer
+} from 'rxjs';
 import { map } from 'rxjs/operators';
 import { PartyAnchor, SettingService } from 'src/app/services/setting.service';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
@@ -21,10 +29,9 @@ interface GroupPosition {
   templateUrl: './group.component.html',
   styleUrls: ['./group.component.scss'],
   animations: [fadeInOutActiveAnimation],
-  providers: [DestroyService],
+  providers: [DestroyService]
 })
 export class GroupComponent implements OnInit, OnDestroy {
-
   timerSubscription: Subscription;
 
   groupMembers$: Observable<(Player & { isOwner: boolean })[]>;
@@ -33,32 +40,39 @@ export class GroupComponent implements OnInit, OnDestroy {
   public isAutoHide = new BehaviorSubject(true);
   public isShown = new BehaviorSubject(true);
   public waitLaunch = new BehaviorSubject(false);
-  public positionStyle = new BehaviorSubject<GroupPosition>({ top: '0%', left: '0%' });
+  public positionStyle = new BehaviorSubject<GroupPosition>({
+    top: '0%',
+    left: '0%'
+  });
   public settings = this.settingService.settings;
 
   constructor(
     private readonly destroy$: DestroyService,
     private readonly groupService: GroupService,
     private readonly clientService: ClientService,
-    private readonly settingService: SettingService,
+    private readonly settingService: SettingService
   ) {
     this.isShown.next(this.settings.isPartyShown.getValue());
     this.isAutoHide.next(this.settings.autoHideParty.getValue());
 
     this.group$ = this.groupService.group.asObservable();
-    this.groupMembers$ = this.groupService.selectMembers()
-      .pipe(
-        combineLatestWith(this.groupService.group),
-        map(([members, group]) => {
-            if (!group) {
-              return [];
-            }
-            return members
-              .map(member => ({ ...member, isOwner: member.id === group.owner }))
-              .sort((a, b) => ((group.owner === a.id) === (group.owner === b.id) ? 0 : group.owner === a.id ? -1 : 1));
-          },
-        ),
-      );
+    this.groupMembers$ = this.groupService.selectMembers().pipe(
+      combineLatestWith(this.groupService.group),
+      map(([members, group]) => {
+        if (!group) {
+          return [];
+        }
+        return members
+          .map(member => ({ ...member, isOwner: member.id === group.owner }))
+          .sort((a, b) =>
+            (group.owner === a.id) === (group.owner === b.id)
+              ? 0
+              : group.owner === a.id
+              ? -1
+              : 1
+          );
+      })
+    );
   }
 
   ngOnInit() {
@@ -135,31 +149,35 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   private onPositionUpdate() {
-    combineLatest([this.settings.partyAnchorOffsetX, this.settings.partyAnchorOffsetY, this.settings.partyAnchor])
-    .pipe(takeUntil(this.destroy$))
-    .subscribe( ([x, y, anchor]) => {
-      const newPosition: GroupPosition = {};
+    combineLatest([
+      this.settings.partyAnchorOffsetX,
+      this.settings.partyAnchorOffsetY,
+      this.settings.partyAnchor
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([x, y, anchor]) => {
+        const newPosition: GroupPosition = {};
 
-      switch (anchor) {
-        case PartyAnchor.TOP_LEFT:
-          newPosition.top = `${ y }vh`;
-          newPosition.left = `${ x }vw`;
-          break;
-        case PartyAnchor.TOP_RIGHT:
-          newPosition.top = `${ y }vh`;
-          newPosition.right = `${ -100 + x }vw`;
-          break;
-        case PartyAnchor.BOTTOM_RIGHT:
-          newPosition.bottom = `${ -100 + y }vh`;
-          newPosition.right = `${ -100 + x }vw`;
-          break;
-        case PartyAnchor.BOTTOM_LEFT:
-          newPosition.bottom = `${ -100 + y }vh`;
-          newPosition.left = `${ x }vw`;
-          break;
-      };
-      this.positionStyle.next(newPosition);
-    })
+        switch (anchor) {
+          case PartyAnchor.TOP_LEFT:
+            newPosition.top = `${y}vh`;
+            newPosition.left = `${x}vw`;
+            break;
+          case PartyAnchor.TOP_RIGHT:
+            newPosition.top = `${y}vh`;
+            newPosition.right = `${-100 + x}vw`;
+            break;
+          case PartyAnchor.BOTTOM_RIGHT:
+            newPosition.bottom = `${-100 + y}vh`;
+            newPosition.right = `${-100 + x}vw`;
+            break;
+          case PartyAnchor.BOTTOM_LEFT:
+            newPosition.bottom = `${-100 + y}vh`;
+            newPosition.left = `${x}vw`;
+            break;
+        }
+        this.positionStyle.next(newPosition);
+      });
   }
 
   ngOnDestroy() {
@@ -169,7 +187,10 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   private flashGroup() {
-    if (this.isAutoHide.getValue() && this.clientService.connectionStateChange.getValue()) {
+    if (
+      this.isAutoHide.getValue() &&
+      this.clientService.connectionStateChange.getValue()
+    ) {
       if (!this.isShown.getValue()) {
         this.isShown.next(true);
       }

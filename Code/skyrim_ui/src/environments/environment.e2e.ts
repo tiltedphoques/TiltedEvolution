@@ -1,6 +1,8 @@
 import { APP_INITIALIZER, Provider } from '@angular/core';
-import { mockSkyrimTogether, SkyrimtogetherMock } from '../app/mock/skyrimtogether.mock';
-
+import {
+  mockSkyrimTogether,
+  SkyrimtogetherMock
+} from '../app/mock/skyrimtogether.mock';
 
 mockSkyrimTogether();
 
@@ -16,7 +18,7 @@ export const environment = {
     {
       provide: APP_INITIALIZER,
       useFactory: () => () => (skyrimtogether as SkyrimtogetherMock).initMock(),
-      multi: true,
-    },
-  ] as Provider[],
+      multi: true
+    }
+  ] as Provider[]
 };

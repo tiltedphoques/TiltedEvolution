@@ -10,7 +10,6 @@ import { AudioAsset } from './asset/assets/audio.asset';
 import { TextAsset } from './asset/assets/text.asset';
 import { SettingService } from './setting.service';
 
-
 export { TextAsset, AudioAsset };
 
 /** Current state of the asset. */
@@ -72,10 +71,9 @@ interface StoredAsset<T extends Asset<any>> {
 
 /** Asset manager service. */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AssetService {
-
   public progress = new AsyncSubject<Progress>();
 
   /** Cached assets. */
@@ -87,14 +85,13 @@ export class AssetService {
   /** Asset decoders. */
   private decoders = new Map<Kind, AssetDecoder<any>>([
     [Kind.Text, new TextAssetDecoder()],
-    [Kind.Audio, new AudioAssetDecoder(this.settingService)],
+    [Kind.Audio, new AudioAssetDecoder(this.settingService)]
   ]);
 
   public constructor(
     private readonly http: HttpClient,
-    private readonly settingService: SettingService,
-  ) {
-  }
+    private readonly settingService: SettingService
+  ) {}
 
   /**
    * Load and store a text file.
@@ -133,29 +130,38 @@ export class AssetService {
 
     const get = new HttpRequest('GET', href, {
       reportProgress: true,
-      responseType: 'arraybuffer',
+      responseType: 'arraybuffer'
     });
 
-    const request = this.http.request<ArrayBuffer>(get).pipe(delay(0)).subscribe(event => {
-      if (event.type === HttpEventType.Sent) {
-        this.progress.next({ state: State.Requested, symbol });
-      } else if (event.type === HttpEventType.DownloadProgress) {
-        this.progress.next({
-          state: State.Loading,
-          progress: event.total ? event.loaded / event.total : 0,
-          symbol,
-        });
-      } else if (event.type === HttpEventType.Response) {
-        this.decoders.get(kind)!.decode(event.body!).subscribe(asset => {
-          stored.asset = asset;
+    const request = this.http
+      .request<ArrayBuffer>(get)
+      .pipe(delay(0))
+      .subscribe(
+        event => {
+          if (event.type === HttpEventType.Sent) {
+            this.progress.next({ state: State.Requested, symbol });
+          } else if (event.type === HttpEventType.DownloadProgress) {
+            this.progress.next({
+              state: State.Loading,
+              progress: event.total ? event.loaded / event.total : 0,
+              symbol
+            });
+          } else if (event.type === HttpEventType.Response) {
+            this.decoders
+              .get(kind)!
+              .decode(event.body!)
+              .subscribe(asset => {
+                stored.asset = asset;
 
-          this.progress.next({ state: State.Done, symbol });
-          this.progress.complete();
-        });
+                this.progress.next({ state: State.Done, symbol });
+                this.progress.complete();
+              });
 
-        this.progress.next({ state: State.Decoding, symbol });
-      }
-    }, () => this.progress.next({ state: State.Error, symbol }));
+            this.progress.next({ state: State.Decoding, symbol });
+          }
+        },
+        () => this.progress.next({ state: State.Error, symbol })
+      );
 
     const symbol = Symbol();
     const stored: StoredAsset<any> = { href, count: 1, request };
@@ -222,8 +228,7 @@ export class AssetService {
     return of(this.assets.get(symbol)).pipe(
       filter(stored => !!stored),
       map(stored => stored!.asset!),
-      filter<T>(asset => !!asset),
+      filter<T>(asset => !!asset)
     );
   }
-
 }

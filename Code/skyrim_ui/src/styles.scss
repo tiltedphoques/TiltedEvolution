@@ -1,10 +1,10 @@
-@import "functions/mod";
-@import "functions/rem";
+@import 'functions/mod';
+@import 'functions/rem';
 
-@import "env";
+@import 'env';
 
 @font-face {
-  font-family: "futura-condensed-medium";
+  font-family: 'futura-condensed-medium';
   src: url(assets/fonts/futura-condensed/futura-condensed-medium.otf);
 }
 
@@ -16,7 +16,7 @@ input {
   font-size: inherit;
   opacity: 0.7;
 
-  &:hover:not([disabled]){
+  &:hover:not([disabled]) {
     opacity: 1;
   }
 }
@@ -46,7 +46,7 @@ select {
   line-height: 1em;
 }
 
-input:not([type=checkbox]),
+input:not([type='checkbox']),
 textarea,
 select {
   display: block;
@@ -55,24 +55,24 @@ select {
   color: mod($-color-background, 1);
 }
 
-input[type=text] {  
+input[type='text'] {
   border: 3px solid #808081;
   &:hover {
-    border: 3px solid mod($-color-background, 0.75);;
+    border: 3px solid mod($-color-background, 0.75);
   }
 
   &:focus-visible {
-    border: 3px solid mod($-color-background, 0.9);;
+    border: 3px solid mod($-color-background, 0.9);
   }
 }
 
-input[type=range] {
+input[type='range'] {
   border: 0;
   padding: 0;
   --thumb-size: 0.8em;
 }
 
-input:not([type=checkbox]),
+input:not([type='checkbox']),
 textarea {
   user-select: contain;
 }
@@ -91,12 +91,11 @@ button {
   color: mod($-color-background, 1);
 
   &:hover:not([disabled]),
-  &[data-style-active=true] {
+  &[data-style-active='true'] {
     opacity: 1;
   }
 
-  &[data-style-active=true][data-style-ornament=inverted] {
-
+  &[data-style-active='true'][data-style-ornament='inverted'] {
     &::before,
     &::after {
       opacity: 1;
@@ -104,15 +103,14 @@ button {
     }
   }
 
-  &:hover:not([disabled])[data-style-ornament=simple] {
-
+  &:hover:not([disabled])[data-style-ornament='simple'] {
     &::before,
     &::after {
       opacity: 1 !important;
     }
   }
 
-  &[data-style-align=left] {
+  &[data-style-align='left'] {
     text-align: left;
 
     &::after {
@@ -120,12 +118,12 @@ button {
     }
   }
 
-  &[data-style-align=center] {
+  &[data-style-align='center'] {
     text-align: center;
     justify-content: space-between;
   }
 
-  &[data-style-align=right] {
+  &[data-style-align='right'] {
     text-align: right;
 
     &::before {
@@ -142,7 +140,7 @@ button {
       opacity: 0;
       width: 1em;
       height: 1em;
-      content: "";
+      content: '';
       background: center / contain no-repeat;
     }
 
@@ -155,7 +153,7 @@ button {
     }
   }
 
-  &[data-style-ornament=simple] {
+  &[data-style-ornament='simple'] {
     &::before {
       background-image: url(assets/images/arrow/east.svg);
     }
@@ -165,8 +163,7 @@ button {
     }
   }
 
-  &[data-style-ornament=inverted] {
-
+  &[data-style-ornament='inverted'] {
     &::before,
     &::after {
       opacity: 0;
@@ -202,16 +199,16 @@ button {
   height: var(--scrollbar-thickness);
 
   &:vertical:decrement {
-    background-image: url("assets/images/scrollbar/button-north-inactive.svg");
+    background-image: url('assets/images/scrollbar/button-north-inactive.svg');
   }
   &:vertical:increment {
-    background-image: url("assets/images/scrollbar/button-south-inactive.svg");
+    background-image: url('assets/images/scrollbar/button-south-inactive.svg');
   }
   &:horizontal:decrement {
-    background-image: url("assets/images/scrollbar/button-west-inactive.svg");
+    background-image: url('assets/images/scrollbar/button-west-inactive.svg');
   }
   &:horizontal:increment {
-    background-image: url("assets/images/scrollbar/button-east-inactive.svg");
+    background-image: url('assets/images/scrollbar/button-east-inactive.svg');
   }
 }
 
@@ -225,30 +222,30 @@ button {
   background-color: rgba(255, 255, 255, 0.5);
   background-clip: content-box;
 
-  &:hover{
+  &:hover {
     background-color: rgba(255, 255, 255, 0.8);
   }
 }
 
-input[type=range] {
+input[type='range'] {
   display: flex;
   -webkit-appearance: none;
-  
-  &::before{
-    content: "";
+
+  &::before {
+    content: '';
     width: var(--thumb-size);
     height: var(--thumb-size);
     background-image: url(./assets/images/arrow/west.svg);
   }
-  &::after{
-    content: "";
+  &::after {
+    content: '';
     width: var(--thumb-size);
     height: var(--thumb-size);
     background-image: url(./assets/images/arrow/east.svg);
   }
 }
 
-input[type=checkbox] {
+input[type='checkbox'] {
   width: $scrollbar;
   height: $scrollbar;
   max-width: $scrollbar;
@@ -318,8 +315,9 @@ hr {
     vertical-align: middle;
   }
 
-  &:before, &:after {
-    content: "";
+  &:before,
+  &:after {
+    content: '';
     height: 2px;
     width: 50%;
     margin-right: 0.5em;
@@ -338,5 +336,4 @@ hr {
   &:after {
     margin-right: -100%;
   }
-
 }

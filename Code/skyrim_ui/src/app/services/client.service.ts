@@ -1,6 +1,12 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { AsyncSubject, BehaviorSubject, firstValueFrom, ReplaySubject, Subject } from 'rxjs';
+import {
+  AsyncSubject,
+  BehaviorSubject,
+  firstValueFrom,
+  ReplaySubject,
+  Subject
+} from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
@@ -11,7 +17,7 @@ import { LoadingService } from './loading.service';
 
 /** Client game service. */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ClientService implements OnDestroy {
   /** Initialization done. */
@@ -128,12 +134,18 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
     skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
     skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
-    skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
+    skyrimtogether.on(
+      'playerDisconnected',
+      this.onPlayerDisconnected.bind(this)
+    );
     skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
     skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
     skyrimtogether.on('setCell', this.onSetCell.bind(this));
     skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
-    skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
+    skyrimtogether.on(
+      'setPlayer3dUnloaded',
+      this.onSetPlayer3dUnloaded.bind(this)
+    );
     skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
     skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
     skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
@@ -141,7 +153,10 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
     skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
     skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
-    skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
+    skyrimtogether.on(
+      'partyInviteReceived',
+      this.onPartyInviteReceived.bind(this)
+    );
   }
 
   /**
@@ -387,45 +402,64 @@ export class ClientService implements OnDestroy {
     RTT: number,
     packetLoss: number,
     sentBandwidth: number,
-    receivedBandwidth: number,
+    receivedBandwidth: number
   ): void {
     this.zone.run(() => {
-      this.debugDataChange.next(new Debug(
-        numPacketsSent, numPacketsReceived, RTT, packetLoss, sentBandwidth,
-        receivedBandwidth,
-      ));
+      this.debugDataChange.next(
+        new Debug(
+          numPacketsSent,
+          numPacketsReceived,
+          RTT,
+          packetLoss,
+          sentBandwidth,
+          receivedBandwidth
+        )
+      );
     });
   }
 
-  private onPlayerConnected(playerId: number, username: string, level: number, cellName: string) {
+  private onPlayerConnected(
+    playerId: number,
+    username: string,
+    level: number,
+    cellName: string
+  ) {
     if (environment.game) {
-      console.log(`%conPlayerConnected`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conPlayerConnected`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
-      this.playerConnectedChange.next(new Player(
-        {
+      this.playerConnectedChange.next(
+        new Player({
           name: username,
           id: playerId,
           connected: true,
           level: level,
-          cellName: cellName,
-        },
-      ));
+          cellName: cellName
+        })
+      );
     });
   }
 
   private onPlayerDisconnected(playerId: number, username: string) {
     if (environment.game) {
-      console.log(`%conPlayerDisconnected`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conPlayerDisconnected`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
-      this.playerDisconnectedChange.next(new Player(
-        {
+      this.playerDisconnectedChange.next(
+        new Player({
           name: username,
           id: playerId,
-          connected: false,
-        },
-      ));
+          connected: false
+        })
+      );
     });
   }
 
@@ -437,7 +471,11 @@ export class ClientService implements OnDestroy {
 
   private onSetLevel(playerId: number, level: number) {
     if (environment.game) {
-      console.log(`%conSetLevel`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conSetLevel`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.levelChange.next(new Player({ id: playerId, level: level }));
@@ -446,7 +484,11 @@ export class ClientService implements OnDestroy {
 
   private onSetCell(playerId: number, cellName: string) {
     if (environment.game) {
-      console.log(`%conSetCell`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conSetCell`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.cellChange.next(new Player({ id: playerId, cellName: cellName }));
@@ -455,16 +497,26 @@ export class ClientService implements OnDestroy {
 
   private onSetPlayer3dLoaded(playerId: number, health: number) {
     if (environment.game) {
-      console.log(`%conSetPlayer3dLoaded`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conSetPlayer3dLoaded`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({ id: playerId, isLoaded: true, health: health }));
+      this.isLoadedChange.next(
+        new Player({ id: playerId, isLoaded: true, health: health })
+      );
     });
   }
 
   private onSetPlayer3dUnloaded(playerId: number) {
     if (environment.game) {
-      console.log(`%conSetPlayer3dUnloaded`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conSetPlayer3dUnloaded`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.isLoadedChange.next(new Player({ id: playerId, isLoaded: false }));
@@ -473,7 +525,11 @@ export class ClientService implements OnDestroy {
 
   private onSetLocalPlayerId(playerId: number) {
     if (environment.game) {
-      console.log(`%conSetLocalPlayerId`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conSetLocalPlayerId`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.localPlayerId = playerId;
@@ -508,36 +564,48 @@ export class ClientService implements OnDestroy {
 
   public onPartyInfo(playerIds: Array<number>, leaderId: number) {
     if (environment.game) {
-      console.log(`%conPartyInfo`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conPartyInfo`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
-      this.partyInfoChange.next(new PartyInfo(
-        {
+      this.partyInfoChange.next(
+        new PartyInfo({
           playerIds: playerIds,
-          leaderId: leaderId,
-        },
-      ));
+          leaderId: leaderId
+        })
+      );
     });
   }
 
   private onPartyCreated() {
     if (environment.game) {
-      console.log(`%conPartyCreated`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conPartyCreated`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.loadingService.setLoading(false);
-      this.partyInfoChange.next(new PartyInfo(
-        {
+      this.partyInfoChange.next(
+        new PartyInfo({
           playerIds: [this.localPlayerId],
-          leaderId: this.localPlayerId,
-        },
-      ));
+          leaderId: this.localPlayerId
+        })
+      );
     });
   }
 
   private onPartyLeft() {
     if (environment.game) {
-      console.log(`%conPartyLeft`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conPartyLeft`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.partyLeftChange.next();
@@ -546,11 +614,14 @@ export class ClientService implements OnDestroy {
 
   private onPartyInviteReceived(inviterId: number) {
     if (environment.game) {
-      console.log(`%conPartyInviteReceived`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', ...Array.from(arguments).map(v => JSON.stringify(v)));
+      console.log(
+        `%conPartyInviteReceived`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v))
+      );
     }
     this.zone.run(() => {
       this.partyInviteReceivedChange.next(inviterId);
     });
   }
-
 }

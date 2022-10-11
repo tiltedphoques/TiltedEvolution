@@ -1,6 +1,13 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { BehaviorSubject, firstValueFrom, Observable, of, pluck, Subscription } from 'rxjs';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  Observable,
+  of,
+  pluck,
+  Subscription
+} from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { Group } from '../models/group';
 import { PartyInfo } from '../models/party-info';
@@ -12,12 +19,10 @@ import { LoadingService } from './loading.service';
 import { PlayerListService } from './player-list.service';
 import { Sound, SoundService } from './sound.service';
 
-
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class GroupService implements OnDestroy {
-
   public group = new BehaviorSubject<Group | undefined>(undefined);
 
   private debugSubscription: Subscription;
@@ -39,7 +44,7 @@ export class GroupService implements OnDestroy {
     private readonly chatService: ChatService,
     private readonly playerListService: PlayerListService,
     private readonly loadingService: LoadingService,
-    private readonly translocoService: TranslocoService,
+    private readonly translocoService: TranslocoService
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -71,138 +76,155 @@ export class GroupService implements OnDestroy {
   }
 
   private onConnectionStateChanged() {
-    this.connectionSubscription = this.clientService.connectionStateChange.subscribe((connect: boolean) => {
-      if (this.isConnect == connect) {
-        return;
-      }
+    this.connectionSubscription =
+      this.clientService.connectionStateChange.subscribe((connect: boolean) => {
+        if (this.isConnect == connect) {
+          return;
+        }
 
-      this.isConnect = connect;
+        this.isConnect = connect;
 
-      if (connect) {
-        this.createGroup(this.group.getValue());
-      } else {
-        this.group.next(undefined);
-      }
+        if (connect) {
+          this.createGroup(this.group.getValue());
+        } else {
+          this.group.next(undefined);
+        }
 
-      this.updateGroup();
-    });
+        this.updateGroup();
+      });
   }
 
   private subscribeChangeHealth() {
-    this.userHealthSubscription = this.clientService.healthChange.subscribe((player: Player) => {
+    this.userHealthSubscription = this.clientService.healthChange.subscribe(
+      (player: Player) => {
+        const group = this.group.getValue();
 
-      const group = this.group.getValue();
+        if (group) {
+          const foundPlayer = this.playerListService.getPlayerById(player.id);
 
-      if (group) {
-        const foundPlayer = this.playerListService.getPlayerById(player.id);
-
-        if (foundPlayer) {
-          foundPlayer.health = player.health;
-          this.updateGroup();
+          if (foundPlayer) {
+            foundPlayer.health = player.health;
+            this.updateGroup();
+          }
         }
       }
-    });
+    );
   }
 
   private onPartyInfo() {
-    this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe((partyInfo: PartyInfo) => {
+    this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe(
+      (partyInfo: PartyInfo) => {
+        const group = this.createGroup(this.group.getValue());
+        const playerList = this.playerListService.getPlayerList();
 
-      const group = this.createGroup(this.group.getValue());
-      const playerList = this.playerListService.getPlayerList();
+        if (group && playerList) {
+          group.members.splice(0);
 
-      if (group && playerList) {
-        group.members.splice(0);
+          for (let id of partyInfo.playerIds) {
+            group.members.push(id);
 
-        for (let id of partyInfo.playerIds) {
-          group.members.push(id);
-
-          for (const player of playerList.players) {
-            if (player.id === id) {
-              player.hasBeenInvited = false;
-              break;
+            for (const player of playerList.players) {
+              if (player.id === id) {
+                player.hasBeenInvited = false;
+                break;
+              }
             }
           }
+
+          group.owner = partyInfo.leaderId;
+          group.isEnabled = true;
+
+          this.updateGroup();
+          this.playerListService.updatePlayerList();
         }
-
-        group.owner = partyInfo.leaderId;
-        group.isEnabled = true;
-
-        this.updateGroup();
-        this.playerListService.updatePlayerList();
       }
-    });
+    );
   }
 
   private onPartyLeft() {
-    this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(() => {
-      const group = this.createGroup(this.group.getValue());
+    this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(
+      () => {
+        const group = this.createGroup(this.group.getValue());
 
-      if (group) {
-        this.playerListService.resetHasBeenInvitedFlags();
+        if (group) {
+          this.playerListService.resetHasBeenInvitedFlags();
 
-        group.isEnabled = false;
-        group.owner = undefined;
-        group.members.splice(0);
+          group.isEnabled = false;
+          group.owner = undefined;
+          group.members.splice(0);
 
-        this.updateGroup();
+          this.updateGroup();
+        }
       }
-    });
+    );
   }
 
   private onPlayerDisconnected() {
-    this.playerDisconnectedSubscription = this.clientService.playerDisconnectedChange.subscribe((player: Player) => {
-      const group = this.createGroup(this.group.getValue());
+    this.playerDisconnectedSubscription =
+      this.clientService.playerDisconnectedChange.subscribe(
+        (player: Player) => {
+          const group = this.createGroup(this.group.getValue());
 
-      if (group) {
+          if (group) {
+            group.members = group.members.filter(
+              playerId => playerId !== player.id
+            );
 
-        group.members = group.members.filter(playerId => playerId !== player.id);
-
-        this.group.next(group);
-      }
-    });
+            this.group.next(group);
+          }
+        }
+      );
   }
 
   private onLevelChange() {
-    this.levelSubscription = this.clientService.levelChange.subscribe(async (player: Player) => {
-      const group = this.createGroup(this.group.getValue());
+    this.levelSubscription = this.clientService.levelChange.subscribe(
+      async (player: Player) => {
+        const group = this.createGroup(this.group.getValue());
 
-      if (group) {
-        const p = this.playerListService.getPlayerById(player.id);
-        if (p) {
-          p.level = player.level;
-          this.chatService.pushSystemMessage('SERVICE.GROUP.LEVEL_UP', { name: p.name, level: player.level });
+        if (group) {
+          const p = this.playerListService.getPlayerById(player.id);
+          if (p) {
+            p.level = player.level;
+            this.chatService.pushSystemMessage('SERVICE.GROUP.LEVEL_UP', {
+              name: p.name,
+              level: player.level
+            });
+          }
         }
       }
-    });
+    );
   }
 
   private onCellChange() {
-    this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
-      const group = this.createGroup(this.group.getValue());
+    this.cellSubscription = this.clientService.cellChange.subscribe(
+      (player: Player) => {
+        const group = this.createGroup(this.group.getValue());
 
-      if (group) {
-        const p = this.playerListService.getPlayerById(player.id);
-        if (p) {
-          p.cellName = player.cellName;
+        if (group) {
+          const p = this.playerListService.getPlayerById(player.id);
+          if (p) {
+            p.cellName = player.cellName;
+          }
         }
       }
-    });
+    );
   }
 
   private onLoadedChange() {
-    this.loadedSubscription = this.clientService.isLoadedChange.subscribe((player: Player) => {
-      const group = this.createGroup(this.group.getValue());
+    this.loadedSubscription = this.clientService.isLoadedChange.subscribe(
+      (player: Player) => {
+        const group = this.createGroup(this.group.getValue());
 
-      if (group) {
-        const p = this.playerListService.getPlayerById(player.id);
-        if (p) {
-          p.isLoaded = player.isLoaded;
-          p.health = player.health;
+        if (group) {
+          const p = this.playerListService.getPlayerById(player.id);
+          if (p) {
+            p.isLoaded = player.isLoaded;
+            p.health = player.health;
+          }
         }
       }
-    });
+    );
   }
-
 
   public launch() {
     const group = this.createGroup(this.group.getValue());
@@ -247,7 +269,9 @@ export class GroupService implements OnDestroy {
     if (group) {
       if (group.owner || group.members.length > 0) {
         const message = await firstValueFrom(
-          this.translocoService.selectTranslate<string>('SERVICE.GROUP.ALREADY_IN_GROUP'),
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.GROUP.ALREADY_IN_GROUP'
+          )
         );
         await this.errorService.setError(message);
         return;
@@ -265,7 +289,9 @@ export class GroupService implements OnDestroy {
     if (group) {
       if (group.owner !== this.clientService.localPlayerId) {
         const message = await firstValueFrom(
-          this.translocoService.selectTranslate<string>('SERVICE.GROUP.KICK_NO_PARTY_LEADER'),
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.GROUP.KICK_NO_PARTY_LEADER'
+          )
         );
         await this.errorService.setError(message);
         return;
@@ -283,7 +309,9 @@ export class GroupService implements OnDestroy {
     if (group) {
       if (group.owner !== this.clientService.localPlayerId) {
         const message = await firstValueFrom(
-          this.translocoService.selectTranslate<string>('SERVICE.GROUP.MAKE_LEADER_NO_PARTY_LEADER'),
+          this.translocoService.selectTranslate<string>(
+            'SERVICE.GROUP.MAKE_LEADER_NO_PARTY_LEADER'
+          )
         );
         await this.errorService.setError(message);
         return;
@@ -297,13 +325,15 @@ export class GroupService implements OnDestroy {
 
   public selectMembers(): Observable<Player[]> {
     if (this.group) {
-      return this.playerListService.playerList
-        .asObservable()
-        .pipe(
-          filter(playerlist => !!playerlist),
-          pluck('players'),
-          map(players => players.filter(player => this.group.getValue().members.includes(player.id))),
-        );
+      return this.playerListService.playerList.asObservable().pipe(
+        filter(playerlist => !!playerlist),
+        pluck('players'),
+        map(players =>
+          players.filter(player =>
+            this.group.getValue().members.includes(player.id)
+          )
+        )
+      );
     } else {
       return of([]);
     }
@@ -311,22 +341,27 @@ export class GroupService implements OnDestroy {
 
   public getMembers(): Array<Player> {
     if (this.group) {
-      return this.playerListService.getPlayerList().players.filter(player => this.group.getValue().members.includes(player.id));
+      return this.playerListService
+        .getPlayerList()
+        .players.filter(player =>
+          this.group.getValue().members.includes(player.id)
+        );
     } else {
       return [];
     }
   }
 
   public selectMembersLength(excludeLocal: boolean): Observable<number> {
-    return this.selectMembers()
-      .pipe(
-        map(members => {
-          if (excludeLocal) {
-            members = members.filter(member => member !== this.clientService.localPlayerId);
-          }
-          return members.length;
-        }),
-      );
+    return this.selectMembers().pipe(
+      map(members => {
+        if (excludeLocal) {
+          members = members.filter(
+            member => member !== this.clientService.localPlayerId
+          );
+        }
+        return members.length;
+      })
+    );
   }
 
   public getMembersLength(excludeLocal: boolean): number {
@@ -336,14 +371,16 @@ export class GroupService implements OnDestroy {
 
     let members = this.group.getValue().members;
     if (excludeLocal) {
-      members = members.filter(member => member !== this.clientService.localPlayerId);
+      members = members.filter(
+        member => member !== this.clientService.localPlayerId
+      );
     }
 
     return members.length;
   }
 
   public isPartyEnabled(): boolean {
-    return (this.group.getValue() ? this.group.getValue().isEnabled : false);
+    return this.group.getValue() ? this.group.getValue().isEnabled : false;
   }
 
   private updateGroup() {

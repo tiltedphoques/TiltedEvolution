@@ -9,12 +9,10 @@ import { UiRepository } from '../store/ui.repository';
 import { ClientService } from './client.service';
 import { PopupNotificationService } from './popup-notification.service';
 
-
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class PlayerListService implements OnDestroy {
-
   public playerList = new BehaviorSubject<PlayerList | undefined>(undefined);
 
   private debugSubscription: Subscription;
@@ -31,7 +29,7 @@ export class PlayerListService implements OnDestroy {
     private readonly clientService: ClientService,
     private readonly popupNotificationService: PopupNotificationService,
     private readonly uiRepository: UiRepository,
-    private readonly translocoService: TranslocoService,
+    private readonly translocoService: TranslocoService
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -58,75 +56,91 @@ export class PlayerListService implements OnDestroy {
   }
 
   private onConnectionStateChanged() {
-    this.connectionSubscription = this.clientService.connectionStateChange.subscribe((connect: boolean) => {
-      if (this.isConnect == connect) {
-        return;
-      }
-      this.isConnect = connect;
-      this.playerList.next(undefined);
+    this.connectionSubscription =
+      this.clientService.connectionStateChange.subscribe((connect: boolean) => {
+        if (this.isConnect == connect) {
+          return;
+        }
+        this.isConnect = connect;
+        this.playerList.next(undefined);
 
-      this.updatePlayerList();
-    });
+        this.updatePlayerList();
+      });
   }
 
   private onPlayerConnected() {
-    this.playerConnectedSubscription = this.clientService.playerConnectedChange.subscribe((player: Player) => {
-      const playerList = this.getPlayerList();
+    this.playerConnectedSubscription =
+      this.clientService.playerConnectedChange.subscribe((player: Player) => {
+        const playerList = this.getPlayerList();
 
-      if (playerList) {
+        if (playerList) {
+          playerList.players.push(player);
 
-        playerList.players.push(player);
-
-        this.playerList.next(playerList);
-      }
-    });
+          this.playerList.next(playerList);
+        }
+      });
   }
 
   private onPlayerDisconnected() {
-    this.playerDisconnectedSubscription = this.clientService.playerDisconnectedChange.subscribe((playerDisco: Player) => {
+    this.playerDisconnectedSubscription =
+      this.clientService.playerDisconnectedChange.subscribe(
+        (playerDisco: Player) => {
+          const playerList = this.getPlayerList();
 
-      const playerList = this.getPlayerList();
+          if (playerList) {
+            playerList.players = playerList.players.filter(
+              player => player.id !== playerDisco.id
+            );
 
-      if (playerList) {
-        playerList.players = playerList.players.filter(player => player.id !== playerDisco.id);
-
-        this.playerList.next(playerList);
-      }
-    });
+            this.playerList.next(playerList);
+          }
+        }
+      );
   }
 
   private onMemberKicked() {
-    this.memberKickedSubscription = this.clientService.memberKickedChange.subscribe((playerId: number) => {
-      const playerList = this.getPlayerList();
-      const players = playerList.players.find(player => player.id !== playerId);
-      players.hasBeenInvited = false;
-    });
+    this.memberKickedSubscription =
+      this.clientService.memberKickedChange.subscribe((playerId: number) => {
+        const playerList = this.getPlayerList();
+        const players = playerList.players.find(
+          player => player.id !== playerId
+        );
+        players.hasBeenInvited = false;
+      });
   }
 
   private onCellChange() {
-    this.cellSubscription = this.clientService.cellChange.subscribe((player: Player) => {
-      const playerList = this.getPlayerList();
+    this.cellSubscription = this.clientService.cellChange.subscribe(
+      (player: Player) => {
+        const playerList = this.getPlayerList();
 
-      if (playerList) {
-        const p = this.getPlayerById(player.id);
-        if (p) {
-          p.cellName = player.cellName;
+        if (playerList) {
+          const p = this.getPlayerById(player.id);
+          if (p) {
+            p.cellName = player.cellName;
+          }
         }
       }
-    });
+    );
   }
 
   private onPartyInviteReceived() {
-    this.partyInviteReceivedSubscription = this.clientService.partyInviteReceivedChange.subscribe(async (inviterId: number) => {
-      const playerList = this.getPlayerList();
+    this.partyInviteReceivedSubscription =
+      this.clientService.partyInviteReceivedChange.subscribe(
+        async (inviterId: number) => {
+          const playerList = this.getPlayerList();
 
-      if (playerList) {
-        const invitingPlayer = this.getPlayerById(inviterId);
-        invitingPlayer.hasInvitedLocalPlayer = true;
-        this.playerList.next(playerList);
-        this.popupNotificationService.addPartyInvite(invitingPlayer.name, () => this.acceptPartyInvite(inviterId));
-      }
-    });
+          if (playerList) {
+            const invitingPlayer = this.getPlayerById(inviterId);
+            invitingPlayer.hasInvitedLocalPlayer = true;
+            this.playerList.next(playerList);
+            this.popupNotificationService.addPartyInvite(
+              invitingPlayer.name,
+              () => this.acceptPartyInvite(inviterId)
+            );
+          }
+        }
+      );
   }
 
   public getLocalPlayer(): Player {
@@ -193,5 +207,4 @@ export class PlayerListService implements OnDestroy {
       this.updatePlayerList();
     }
   }
-
 }

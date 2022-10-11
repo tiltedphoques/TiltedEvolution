@@ -1,10 +1,22 @@
-import { AfterViewChecked, Component, ElementRef, HostListener, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  HostListener,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { takeUntil } from 'rxjs';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { MessageHistory } from './message-history';
-import { ChatMessage, ChatService, MessageTypes } from 'src/app/services/chat.service';
+import {
+  ChatMessage,
+  ChatService,
+  MessageTypes
+} from 'src/app/services/chat.service';
 import { ClientService } from 'src/app/services/client.service';
 
 interface ChatComponentMessage extends ChatMessage {
@@ -12,23 +24,22 @@ interface ChatComponentMessage extends ChatMessage {
   typeClass: string;
 }
 
-
 function messageTypeToClassName(type: MessageTypes): string {
   switch (type) {
     case MessageTypes.SYSTEM_MESSAGE:
-      return "system";
-    
+      return 'system';
+
     case MessageTypes.PLAYER_DIALOGUE:
-      return "dialogue";
-    
+      return 'dialogue';
+
     case MessageTypes.PARTY_CHAT:
-      return "party";
-    
+      return 'party';
+
     case MessageTypes.LOCAL_CHAT:
-      return "local";
+      return 'local';
 
     default:
-      return "global";
+      return 'global';
   }
 }
 
@@ -36,10 +47,9 @@ function messageTypeToClassName(type: MessageTypes): string {
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
-  providers: [DestroyService],
+  providers: [DestroyService]
 })
 export class ChatComponent implements AfterViewChecked {
-
   public padding = 0;
 
   public message = '';
@@ -51,13 +61,14 @@ export class ChatComponent implements AfterViewChecked {
 
   private scrollBack = 0;
 
-  private history = new MessageHistory({maxHistoryLength: 50});
+  private history = new MessageHistory({ maxHistoryLength: 50 });
 
   private get maxScroll(): number {
-    return this.logRef.nativeElement.scrollHeight - this.logRef.nativeElement.clientHeight;
+    return (
+      this.logRef.nativeElement.scrollHeight -
+      this.logRef.nativeElement.clientHeight
+    );
   }
-
-  
 
   @ViewChild('input') private inputRef!: ElementRef;
   @ViewChildren('entry') private entryRefQuery!: QueryList<ElementRef>;
@@ -68,8 +79,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly clientService: ClientService,
     private readonly chatService: ChatService,
     private readonly sound: SoundService,
-    private readonly translocoService: TranslocoService,
-
+    private readonly translocoService: TranslocoService
   ) {
     chatService.messageList
       .pipe(takeUntil(this.destroy$))
@@ -95,7 +105,7 @@ export class ChatComponent implements AfterViewChecked {
         this.sound.play(Sound.Message);
       });
 
-      clientService.activationStateChange
+    clientService.activationStateChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
         if (!state && this.inputRef) {
@@ -128,7 +138,7 @@ export class ChatComponent implements AfterViewChecked {
     if (this.message) {
       this.chatService.sendMessage(MessageTypes.GLOBAL_CHAT, this.message);
       this.sound.play(Sound.Focus);
-      this.history.push(this.message)
+      this.history.push(this.message);
       this.message = '';
     }
 
@@ -160,7 +170,7 @@ export class ChatComponent implements AfterViewChecked {
     event.preventDefault();
     event.stopPropagation();
 
-    this.message = this.history.prev(this.message)
+    this.message = this.history.prev(this.message);
   }
 
   @HostListener('keydown.ArrowDown', ['$event'])
@@ -168,7 +178,6 @@ export class ChatComponent implements AfterViewChecked {
     event.preventDefault();
     event.stopPropagation();
 
-    this.message = this.history.next()
+    this.message = this.history.next();
   }
-
 }

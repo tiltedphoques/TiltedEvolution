@@ -5,9 +5,7 @@ import { SettingService } from '../../setting.service';
 import { AssetDecoder } from '../asset-decoder';
 import { AudioAsset } from '../assets/audio.asset';
 
-
 export class AudioAssetDecoder extends AssetDecoder<AudioAsset> {
-
   constructor(private settingService: SettingService) {
     super();
   }

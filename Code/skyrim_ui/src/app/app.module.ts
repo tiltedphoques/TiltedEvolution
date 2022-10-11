@@ -45,7 +45,6 @@ import { SoundService } from './services/sound.service';
 import { StoreService } from './services/store.service';
 import { TranslocoRootModule } from './transloco-root.module';
 
-
 @NgModule({
   declarations: [
     ChatComponent,
@@ -75,7 +74,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     CheckboxDirective,
     HealthDirective,
     RadioDirective,
-    SliderDirective,
+    SliderDirective
   ],
   imports: [
     BrowserAnimationsModule,
@@ -86,7 +85,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     ReactiveFormsModule,
     ScrollingModule,
     TranslocoRootModule,
-    OverlayModule,
+    OverlayModule
   ],
   providers: [
     ClientService,
@@ -99,9 +98,8 @@ import { TranslocoRootModule } from './transloco-root.module';
     StoreService,
     SettingService,
 
-    ...environment.providers,
+    ...environment.providers
   ],
-  bootstrap: [RootComponent],
+  bootstrap: [RootComponent]
 })
-export class AppModule {
-}
+export class AppModule {}

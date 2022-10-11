@@ -3,7 +3,6 @@ import { createStore, select, withProps } from '@ngneat/elf';
 import { PlayerManagerTab } from '../models/player-manager-tab.enum';
 import { View } from '../models/view.enum';
 
-
 interface UiProps {
   view: View | null;
   playerManagerTab: PlayerManagerTab;
@@ -13,30 +12,30 @@ const uiStore = createStore(
   { name: 'auth' },
   withProps<UiProps>({
     view: null,
-    playerManagerTab: PlayerManagerTab.PLAYER_LIST,
-  }),
+    playerManagerTab: PlayerManagerTab.PLAYER_LIST
+  })
 );
 
-
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class UiRepository {
-
-  public readonly view$ = uiStore.pipe(select((state) => state.view));
-  public readonly playerManagerTab$ = uiStore.pipe(select((state) => state.playerManagerTab));
+  public readonly view$ = uiStore.pipe(select(state => state.view));
+  public readonly playerManagerTab$ = uiStore.pipe(
+    select(state => state.playerManagerTab)
+  );
 
   openView(view: UiProps['view']) {
-    uiStore.update((state) => ({
+    uiStore.update(state => ({
       ...state,
-      view,
+      view
     }));
   }
 
   closeView() {
-    uiStore.update((state) => ({
+    uiStore.update(state => ({
       ...state,
-      view: null,
+      view: null
     }));
   }
 
@@ -49,10 +48,9 @@ export class UiRepository {
   }
 
   openPlayerManagerTab(playerManagerTab: UiProps['playerManagerTab']) {
-    uiStore.update((state) => ({
+    uiStore.update(state => ({
       ...state,
-      playerManagerTab,
+      playerManagerTab
     }));
   }
-
 }

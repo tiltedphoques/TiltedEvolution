@@ -5,7 +5,6 @@ export class Debug {
     public RTT = 0,
     public packetLoss = 0,
     public sentBandwidth = 0,
-    public receivedBandwidth = 0,
-  ) {
-  }
+    public receivedBandwidth = 0
+  ) {}
 }

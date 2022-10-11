@@ -2,11 +2,10 @@ import { Directive, HostListener } from '@angular/core';
 import { Sound, SoundService } from '../services/sound.service';
 
 @Directive({
-  selector: 'input[type="checkbox"]',
+  selector: 'input[type="checkbox"]'
 })
 // @ts-ignore
 export class CheckboxDirective {
-
   constructor(private readonly soundService: SoundService) {}
 
   @HostListener('change', ['$event'])

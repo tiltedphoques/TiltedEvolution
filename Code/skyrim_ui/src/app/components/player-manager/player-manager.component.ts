@@ -1,17 +1,21 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Output
+} from '@angular/core';
 import { PlayerManagerTab } from '../../models/player-manager-tab.enum';
 import { Sound, SoundService } from '../../services/sound.service';
 import { UiRepository } from '../../store/ui.repository';
-
 
 @Component({
   selector: 'app-player-manager',
   templateUrl: './player-manager.component.html',
   styleUrls: ['./player-manager.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerManagerComponent {
-
   /* ### ENUMS ### */
   readonly PlayerManagerTab = PlayerManagerTab;
 
@@ -21,9 +25,8 @@ export class PlayerManagerComponent {
 
   constructor(
     private readonly sound: SoundService,
-    private readonly uiRepository: UiRepository,
-  ) {
-  }
+    private readonly uiRepository: UiRepository
+  ) {}
 
   switchTab(tab: PlayerManagerTab) {
     this.uiRepository.openPlayerManagerTab(tab);
