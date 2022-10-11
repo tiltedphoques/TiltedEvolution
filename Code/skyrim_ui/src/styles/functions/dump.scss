@@ -1,5 +1,5 @@
 $dump: (
-  indent: '  '
+  indent: '  ',
 );
 
 @function dump($var, $pretty: false, $level: 1) {

@@ -4,7 +4,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output
+  Output,
 } from '@angular/core';
 import { PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
@@ -13,7 +13,7 @@ import { DestroyService } from '../../services/destroy.service';
   selector: 'app-notification-popup',
   templateUrl: './notification-popup.component.html',
   styleUrls: ['./notification-popup.component.scss'],
-  providers: [DestroyService]
+  providers: [DestroyService],
 })
 export class NotificationPopupComponent implements OnInit, OnDestroy {
   eraseTimer: number | null = null;

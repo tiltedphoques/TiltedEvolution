@@ -9,7 +9,7 @@ import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import {
   SettingService,
-  fontSizeToPixels
+  fontSizeToPixels,
 } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { UiRepository } from '../../store/ui.repository';
@@ -26,10 +26,10 @@ import { map } from 'rxjs/operators';
   animations: [
     controlsAnimation,
     fadeInOutActiveAnimation,
-    notificationsAnimation
+    notificationsAnimation,
   ],
   host: { 'data-app-root-game': environment.game.toString() },
-  providers: [DestroyService]
+  providers: [DestroyService],
 })
 export class RootComponent implements OnInit {
   /* ### ENUMS ### */
@@ -54,10 +54,10 @@ export class RootComponent implements OnInit {
     private readonly uiRepository: UiRepository,
     private readonly translocoService: TranslocoService,
     private readonly settingService: SettingService,
-    public readonly overlay: Overlay // used for mockup
+    public readonly overlay: Overlay, // used for mockup
   ) {
     this.translocoService.setActiveLang(
-      this.settingService.settings.language.getValue()
+      this.settingService.settings.language.getValue(),
     );
   }
 
@@ -98,7 +98,7 @@ export class RootComponent implements OnInit {
     this.settingService.settings.fontSize
       .pipe(
         takeUntil(this.destroy$),
-        map(size => fontSizeToPixels[size])
+        map(size => fontSizeToPixels[size]),
       )
       .subscribe(size => {
         document.documentElement.setAttribute('style', `font-size: ${size}px;`);

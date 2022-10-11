@@ -1,7 +1,7 @@
 import { Directive, Input } from '@angular/core';
 
 @Directive({
-  selector: 'app-dropdown-option'
+  selector: 'app-dropdown-option',
 })
 export class DropdownOptionComponent {
   @Input() text: string;

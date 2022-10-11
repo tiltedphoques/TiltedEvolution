@@ -12,30 +12,30 @@ const uiStore = createStore(
   { name: 'auth' },
   withProps<UiProps>({
     view: null,
-    playerManagerTab: PlayerManagerTab.PLAYER_LIST
-  })
+    playerManagerTab: PlayerManagerTab.PLAYER_LIST,
+  }),
 );
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UiRepository {
   public readonly view$ = uiStore.pipe(select(state => state.view));
   public readonly playerManagerTab$ = uiStore.pipe(
-    select(state => state.playerManagerTab)
+    select(state => state.playerManagerTab),
   );
 
   openView(view: UiProps['view']) {
     uiStore.update(state => ({
       ...state,
-      view
+      view,
     }));
   }
 
   closeView() {
     uiStore.update(state => ({
       ...state,
-      view: null
+      view: null,
     }));
   }
 
@@ -50,7 +50,7 @@ export class UiRepository {
   openPlayerManagerTab(playerManagerTab: UiProps['playerManagerTab']) {
     uiStore.update(state => ({
       ...state,
-      playerManagerTab
+      playerManagerTab,
     }));
   }
 }

@@ -11,7 +11,7 @@ import { PlayerListService } from 'src/app/services/player-list.service';
   selector: 'app-party-menu',
   templateUrl: './party-menu.component.html',
   styleUrls: ['./party-menu.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PartyMenuComponent {
   isLoading$ = this.loadingService.getLoading();
@@ -26,21 +26,21 @@ export class PartyMenuComponent {
     private readonly groupService: GroupService,
     private readonly loadingService: LoadingService,
     private readonly playerListService: PlayerListService,
-    private readonly clientService: ClientService
+    private readonly clientService: ClientService,
   ) {
     this.invitations$ = this.playerListService.playerList.asObservable().pipe(
       filter(playerlist => !!playerlist),
       pluck('players'),
       map(players => players.filter(player => player.hasInvitedLocalPlayer)),
-      startWith([])
+      startWith([]),
     );
     this.isPartyLeader$ = this.groupService.group
       .asObservable()
       .pipe(
         map(
           group =>
-            group.isEnabled && group.owner == this.clientService.localPlayerId
-        )
+            group.isEnabled && group.owner == this.clientService.localPlayerId,
+        ),
       );
     this.isLaunchPartyDisabled$ = this.groupService
       .selectMembersLength(false)

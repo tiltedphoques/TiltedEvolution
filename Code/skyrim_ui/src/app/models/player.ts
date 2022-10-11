@@ -55,7 +55,7 @@ export class Player implements Friend {
       cellName?: string;
       isLoaded?: boolean;
       isInLocalParty?: boolean;
-    } = {}
+    } = {},
   ) {
     this.id = options.id || 0;
     this.name = options.name || '';

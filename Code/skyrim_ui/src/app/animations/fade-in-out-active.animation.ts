@@ -3,7 +3,7 @@ import {
   state,
   style,
   transition,
-  trigger
+  trigger,
 } from '@angular/animations';
 
 export const fadeInOutActiveAnimation = trigger('fadeInOutActive', [
@@ -11,24 +11,24 @@ export const fadeInOutActiveAnimation = trigger('fadeInOutActive', [
     'false',
     style({
       visibility: 'hidden',
-      opacity: '0'
-    })
+      opacity: '0',
+    }),
   ),
   transition('false => true', [
     animate(
       '200ms ease-out',
       style({
         visibility: '*',
-        opacity: '*'
-      })
-    )
+        opacity: '*',
+      }),
+    ),
   ]),
   transition('true => false', [
     animate(
       '200ms ease-in',
       style({
-        opacity: '0'
-      })
-    )
-  ])
+        opacity: '0',
+      }),
+    ),
+  ]),
 ]);

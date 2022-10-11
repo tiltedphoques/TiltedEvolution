@@ -1,7 +1,7 @@
 import { Directive, ElementRef, Input, OnChanges } from '@angular/core';
 
 @Directive({
-  selector: '[app-health]'
+  selector: '[app-health]',
 })
 export class HealthDirective implements OnChanges {
   @Input('app-health') health: string | number;

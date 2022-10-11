@@ -6,26 +6,30 @@
   </ng-container>
 
   <app-notification-popup-container
-    class="app-notification-popup"></app-notification-popup-container>
+    class="app-notification-popup"
+  ></app-notification-popup-container>
 
   <app-notifications [@notifications]="!(active$ | async)"></app-notifications>
   <div
     [@controls]="active$ | async"
     class="app-root-controls"
-    [class.background-element]="view$ | async">
+    [class.background-element]="view$ | async"
+  >
     <app-window border="strip" class="app-root-menu">
       <button
         *ngIf="!(connected$ | async) && !(connectionInProgress$ | async)"
         data-style-ornament="inverted"
         [attr.data-style-active]="(view$ | async) === RootView.CONNECT"
-        (click)="setView(RootView.CONNECT)">
+        (click)="setView(RootView.CONNECT)"
+      >
         {{ 'COMPONENT.ROOT.CONNECT' | transloco }}
       </button>
       <ng-container *ngIf="connected$ | async">
         <button
           data-style-ornament="inverted"
           [attr.data-style-active]="(view$ | async) === RootView.DISCONNECT"
-          (click)="setView(RootView.DISCONNECT)">
+          (click)="setView(RootView.DISCONNECT)"
+        >
           {{ 'COMPONENT.ROOT.DISCONNECT' | transloco }}
         </button>
         <!--
@@ -40,21 +44,24 @@
         <button
           data-style-ornament="inverted"
           [attr.data-style-active]="(view$ | async) === RootView.PLAYER_MANAGER"
-          (click)="setView(RootView.PLAYER_MANAGER)">
+          (click)="setView(RootView.PLAYER_MANAGER)"
+        >
           {{ 'COMPONENT.ROOT.PLAYER_MANAGER' | transloco }}
         </button>
       </ng-container>
       <button
         data-style-ornament="inverted"
         [attr.data-style-active]="(view$ | async) === RootView.SETTINGS"
-        (click)="setView(RootView.SETTINGS)">
+        (click)="setView(RootView.SETTINGS)"
+      >
         {{ 'COMPONENT.ROOT.SETTINGS' | transloco }}
       </button>
       <button
         *ngIf="connectionInProgress$ | async"
         data-style-ornament="inverted"
         [attr.data-style-active]="(view$ | async) === RootView.DISCONNECT"
-        (click)="setView(RootView.DISCONNECT)">
+        (click)="setView(RootView.DISCONNECT)"
+      >
         {{ 'COMPONENT.ROOT.CONNECTION_IN_PROGRESS' | transloco }}
       </button>
     </app-window>
@@ -78,11 +85,13 @@
       <app-popup *ngSwitchCase="RootView.SETTINGS" data-popup="settings">
         <app-settings
           (done)="closeView()"
-          (settingsUpdated)="updateGroupPosition()"></app-settings>
+          (settingsUpdated)="updateGroupPosition()"
+        ></app-settings>
       </app-popup>
       <app-popup
         *ngSwitchCase="RootView.PLAYER_MANAGER"
-        data-popup="playerManager">
+        data-popup="playerManager"
+      >
         <app-player-manager (done)="closeView()"></app-player-manager>
       </app-popup>
     </ng-container>

@@ -13,5 +13,5 @@ export const environment = {
   chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5,
 
-  providers: [] as Provider[]
+  providers: [] as Provider[],
 };

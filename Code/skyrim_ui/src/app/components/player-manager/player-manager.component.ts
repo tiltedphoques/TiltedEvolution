@@ -3,7 +3,7 @@ import {
   Component,
   EventEmitter,
   HostListener,
-  Output
+  Output,
 } from '@angular/core';
 import { PlayerManagerTab } from '../../models/player-manager-tab.enum';
 import { Sound, SoundService } from '../../services/sound.service';
@@ -13,7 +13,7 @@ import { UiRepository } from '../../store/ui.repository';
   selector: 'app-player-manager',
   templateUrl: './player-manager.component.html',
   styleUrls: ['./player-manager.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerManagerComponent {
   /* ### ENUMS ### */
@@ -25,7 +25,7 @@ export class PlayerManagerComponent {
 
   constructor(
     private readonly sound: SoundService,
-    private readonly uiRepository: UiRepository
+    private readonly uiRepository: UiRepository,
   ) {}
 
   switchTab(tab: PlayerManagerTab) {

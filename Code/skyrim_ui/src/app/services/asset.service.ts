@@ -30,7 +30,7 @@ export enum State {
   Done,
 
   /** An error has occured while loading the asset. */
-  Error
+  Error,
 }
 
 /** Progress of asset loading. */
@@ -51,7 +51,7 @@ export enum Kind {
   Text,
 
   /** Audio asset. */
-  Audio
+  Audio,
 }
 
 /** Stored asset. */
@@ -71,7 +71,7 @@ interface StoredAsset<T extends Asset<any>> {
 
 /** Asset manager service. */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AssetService {
   public progress = new AsyncSubject<Progress>();
@@ -85,12 +85,12 @@ export class AssetService {
   /** Asset decoders. */
   private decoders = new Map<Kind, AssetDecoder<any>>([
     [Kind.Text, new TextAssetDecoder()],
-    [Kind.Audio, new AudioAssetDecoder(this.settingService)]
+    [Kind.Audio, new AudioAssetDecoder(this.settingService)],
   ]);
 
   public constructor(
     private readonly http: HttpClient,
-    private readonly settingService: SettingService
+    private readonly settingService: SettingService,
   ) {}
 
   /**
@@ -130,7 +130,7 @@ export class AssetService {
 
     const get = new HttpRequest('GET', href, {
       reportProgress: true,
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
     });
 
     const request = this.http
@@ -144,7 +144,7 @@ export class AssetService {
             this.progress.next({
               state: State.Loading,
               progress: event.total ? event.loaded / event.total : 0,
-              symbol
+              symbol,
             });
           } else if (event.type === HttpEventType.Response) {
             this.decoders
@@ -160,7 +160,7 @@ export class AssetService {
             this.progress.next({ state: State.Decoding, symbol });
           }
         },
-        () => this.progress.next({ state: State.Error, symbol })
+        () => this.progress.next({ state: State.Error, symbol }),
       );
 
     const symbol = Symbol();
@@ -228,7 +228,7 @@ export class AssetService {
     return of(this.assets.get(symbol)).pipe(
       filter(stored => !!stored),
       map(stored => stored!.asset!),
-      filter<T>(asset => !!asset)
+      filter<T>(asset => !!asset),
     );
   }
 }

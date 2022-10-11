@@ -6,7 +6,7 @@ $font: (
     ttf: truetype,
     otf: opentype,
     woff: woff,
-    woff2: woff2
+    woff2: woff2,
   ),
   weight: (
     thin: 100,
@@ -17,8 +17,8 @@ $font: (
     semibold: 600,
     bold: 700,
     extrabold: 800,
-    black: 900
-  )
+    black: 900,
+  ),
 );
 
 @mixin font($root, $family, $variants: ((regular, normal)), $types: ttf) {

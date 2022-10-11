@@ -5,7 +5,7 @@ import {
   HostListener,
   QueryList,
   ViewChild,
-  ViewChildren
+  ViewChildren,
 } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { takeUntil } from 'rxjs';
@@ -15,7 +15,7 @@ import { MessageHistory } from './message-history';
 import {
   ChatMessage,
   ChatService,
-  MessageTypes
+  MessageTypes,
 } from 'src/app/services/chat.service';
 import { ClientService } from 'src/app/services/client.service';
 
@@ -47,7 +47,7 @@ function messageTypeToClassName(type: MessageTypes): string {
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
-  providers: [DestroyService]
+  providers: [DestroyService],
 })
 export class ChatComponent implements AfterViewChecked {
   public padding = 0;
@@ -79,7 +79,7 @@ export class ChatComponent implements AfterViewChecked {
     private readonly clientService: ClientService,
     private readonly chatService: ChatService,
     private readonly sound: SoundService,
-    private readonly translocoService: TranslocoService
+    private readonly translocoService: TranslocoService,
   ) {
     chatService.messageList
       .pipe(takeUntil(this.destroy$))

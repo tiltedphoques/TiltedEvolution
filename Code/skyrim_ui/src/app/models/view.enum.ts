@@ -4,5 +4,5 @@ export enum View {
   RECONNECT,
   SERVER_LIST,
   SETTINGS,
-  PLAYER_MANAGER
+  PLAYER_MANAGER,
 }

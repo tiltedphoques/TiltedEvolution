@@ -6,7 +6,7 @@ import {
   Observable,
   of,
   pluck,
-  Subscription
+  Subscription,
 } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { Group } from '../models/group';
@@ -20,7 +20,7 @@ import { PlayerListService } from './player-list.service';
 import { Sound, SoundService } from './sound.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GroupService implements OnDestroy {
   public group = new BehaviorSubject<Group | undefined>(undefined);
@@ -44,7 +44,7 @@ export class GroupService implements OnDestroy {
     private readonly chatService: ChatService,
     private readonly playerListService: PlayerListService,
     private readonly loadingService: LoadingService,
-    private readonly translocoService: TranslocoService
+    private readonly translocoService: TranslocoService,
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -107,7 +107,7 @@ export class GroupService implements OnDestroy {
             this.updateGroup();
           }
         }
-      }
+      },
     );
   }
 
@@ -137,7 +137,7 @@ export class GroupService implements OnDestroy {
           this.updateGroup();
           this.playerListService.updatePlayerList();
         }
-      }
+      },
     );
   }
 
@@ -155,7 +155,7 @@ export class GroupService implements OnDestroy {
 
           this.updateGroup();
         }
-      }
+      },
     );
   }
 
@@ -167,12 +167,12 @@ export class GroupService implements OnDestroy {
 
           if (group) {
             group.members = group.members.filter(
-              playerId => playerId !== player.id
+              playerId => playerId !== player.id,
             );
 
             this.group.next(group);
           }
-        }
+        },
       );
   }
 
@@ -187,11 +187,11 @@ export class GroupService implements OnDestroy {
             p.level = player.level;
             this.chatService.pushSystemMessage('SERVICE.GROUP.LEVEL_UP', {
               name: p.name,
-              level: player.level
+              level: player.level,
             });
           }
         }
-      }
+      },
     );
   }
 
@@ -206,7 +206,7 @@ export class GroupService implements OnDestroy {
             p.cellName = player.cellName;
           }
         }
-      }
+      },
     );
   }
 
@@ -222,7 +222,7 @@ export class GroupService implements OnDestroy {
             p.health = player.health;
           }
         }
-      }
+      },
     );
   }
 
@@ -270,8 +270,8 @@ export class GroupService implements OnDestroy {
       if (group.owner || group.members.length > 0) {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>(
-            'SERVICE.GROUP.ALREADY_IN_GROUP'
-          )
+            'SERVICE.GROUP.ALREADY_IN_GROUP',
+          ),
         );
         await this.errorService.setError(message);
         return;
@@ -290,8 +290,8 @@ export class GroupService implements OnDestroy {
       if (group.owner !== this.clientService.localPlayerId) {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>(
-            'SERVICE.GROUP.KICK_NO_PARTY_LEADER'
-          )
+            'SERVICE.GROUP.KICK_NO_PARTY_LEADER',
+          ),
         );
         await this.errorService.setError(message);
         return;
@@ -310,8 +310,8 @@ export class GroupService implements OnDestroy {
       if (group.owner !== this.clientService.localPlayerId) {
         const message = await firstValueFrom(
           this.translocoService.selectTranslate<string>(
-            'SERVICE.GROUP.MAKE_LEADER_NO_PARTY_LEADER'
-          )
+            'SERVICE.GROUP.MAKE_LEADER_NO_PARTY_LEADER',
+          ),
         );
         await this.errorService.setError(message);
         return;
@@ -330,9 +330,9 @@ export class GroupService implements OnDestroy {
         pluck('players'),
         map(players =>
           players.filter(player =>
-            this.group.getValue().members.includes(player.id)
-          )
-        )
+            this.group.getValue().members.includes(player.id),
+          ),
+        ),
       );
     } else {
       return of([]);
@@ -344,7 +344,7 @@ export class GroupService implements OnDestroy {
       return this.playerListService
         .getPlayerList()
         .players.filter(player =>
-          this.group.getValue().members.includes(player.id)
+          this.group.getValue().members.includes(player.id),
         );
     } else {
       return [];
@@ -356,11 +356,11 @@ export class GroupService implements OnDestroy {
       map(members => {
         if (excludeLocal) {
           members = members.filter(
-            member => member !== this.clientService.localPlayerId
+            member => member !== this.clientService.localPlayerId,
           );
         }
         return members.length;
-      })
+      }),
     );
   }
 
@@ -372,7 +372,7 @@ export class GroupService implements OnDestroy {
     let members = this.group.getValue().members;
     if (excludeLocal) {
       members = members.filter(
-        member => member !== this.clientService.localPlayerId
+        member => member !== this.clientService.localPlayerId,
       );
     }
 

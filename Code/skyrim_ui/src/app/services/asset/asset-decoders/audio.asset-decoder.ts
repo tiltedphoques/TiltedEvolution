@@ -12,7 +12,7 @@ export class AudioAssetDecoder extends AssetDecoder<AudioAsset> {
 
   public decode(buffer: ArrayBuffer): Observable<AudioAsset> {
     return fromPromise(this.context.decodeAudioData(buffer)).pipe(
-      map(audioBuffer => new AudioAsset(audioBuffer, this.settingService))
+      map(audioBuffer => new AudioAsset(audioBuffer, this.settingService)),
     );
   }
 

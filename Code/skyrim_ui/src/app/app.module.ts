@@ -74,7 +74,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     CheckboxDirective,
     HealthDirective,
     RadioDirective,
-    SliderDirective
+    SliderDirective,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -85,7 +85,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     ReactiveFormsModule,
     ScrollingModule,
     TranslocoRootModule,
-    OverlayModule
+    OverlayModule,
   ],
   providers: [
     ClientService,
@@ -98,8 +98,8 @@ import { TranslocoRootModule } from './transloco-root.module';
     StoreService,
     SettingService,
 
-    ...environment.providers
+    ...environment.providers,
   ],
-  bootstrap: [RootComponent]
+  bootstrap: [RootComponent],
 })
 export class AppModule {}

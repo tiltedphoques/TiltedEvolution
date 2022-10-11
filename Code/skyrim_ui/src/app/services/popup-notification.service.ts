@@ -5,7 +5,7 @@ import { PopupNotification } from '../models/popup-notification';
 import { Sound, SoundService } from './sound.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PopupNotificationService {
   private message = new Subject<PopupNotification>();
@@ -29,9 +29,9 @@ export class PopupNotificationService {
       actions: [
         {
           nameKey: 'COMPONENT.NOTIFICATIONS.ACCEPT',
-          callback
-        }
-      ]
+          callback,
+        },
+      ],
     });
   }
 

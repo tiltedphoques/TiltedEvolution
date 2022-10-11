@@ -8,7 +8,7 @@ export class Group {
       isEnabled?: boolean;
       owner?: number;
       members?: Array<number>;
-    } = {}
+    } = {},
   ) {
     this.isEnabled = options.isEnabled || false;
     this.owner = options.owner;

@@ -17,8 +17,8 @@ export const environment = {
       provide: APP_INITIALIZER,
       useFactory: (mockClientService: MockClientService) => () => undefined,
       deps: [MockClientService],
-      multi: true
+      multi: true,
     },
-    MockClientService
-  ] as Provider[]
+    MockClientService,
+  ] as Provider[],
 };

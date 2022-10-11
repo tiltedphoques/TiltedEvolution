@@ -5,7 +5,7 @@ import { LoadingService } from '../../services/loading.service';
 @Component({
   selector: 'app-loading',
   templateUrl: './loading.component.html',
-  styleUrls: ['./loading.component.scss']
+  styleUrls: ['./loading.component.scss'],
 })
 export class LoadingComponent {
   isLoading$: Observable<boolean>;

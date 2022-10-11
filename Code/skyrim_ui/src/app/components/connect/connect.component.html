@@ -12,13 +12,15 @@
     [placeholder]="'COMPONENT.CONNECT.ADDRESS' | transloco"
     (keydown.enter)="connect()"
     [(ngModel)]="address"
-    spellcheck="false" />
+    spellcheck="false"
+  />
   <input
     type="text"
     [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco"
     spellcheck="false"
     [(ngModel)]="password"
-    (keydown.enter)="connect()" />
+    (keydown.enter)="connect()"
+  />
   <span class="save-password">
     <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />
     <label for="save-password">{{
@@ -30,13 +32,15 @@
     <button
       [disabled]="connecting"
       (click)="connect()"
-      data-style-ornament="simple">
+      data-style-ornament="simple"
+    >
       {{ 'COMPONENT.CONNECT.CONNECT' | transloco }}
     </button>
     <button
       [disabled]="connecting"
       (click)="cancel()"
-      data-style-ornament="simple">
+      data-style-ornament="simple"
+    >
       {{ 'COMPONENT.CONNECT.CANCEL' | transloco }}
     </button>
   </app-action-buttons>

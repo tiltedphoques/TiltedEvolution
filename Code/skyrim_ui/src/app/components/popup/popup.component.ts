@@ -6,6 +6,6 @@ import { animation } from './popup.animation';
   templateUrl: './popup.component.html',
   styleUrls: ['./popup.component.scss'],
   animations: [animation],
-  host: { '[@popup]': 'true' }
+  host: { '[@popup]': 'true' },
 })
 export class PopupComponent {}

@@ -27,12 +27,12 @@ export enum Sound {
   Uncheck = 'uncheck',
 
   /** Player joined group. */
-  PlayerJoined = 'playerjoined'
+  PlayerJoined = 'playerjoined',
 }
 
 /** Sound player service. */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SoundService {
   /**
@@ -45,9 +45,9 @@ export class SoundService {
       Object.entries(Sound).map((entry): [string, Symbol] => {
         return [
           entry[1],
-          asset.load(Kind.Audio, `assets/sounds/${entry[1]}.wav`)
+          asset.load(Kind.Audio, `assets/sounds/${entry[1]}.wav`),
         ];
-      })
+      }),
     );
   }
 

@@ -3,14 +3,14 @@ import {
   Component,
   EventEmitter,
   Input,
-  Output
+  Output,
 } from '@angular/core';
 
 @Component({
   selector: 'app-toggle',
   templateUrl: './toggle.component.html',
   styleUrls: ['./toggle.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToggleComponent {
   @Input('isShow') public isShow = false;

@@ -3,7 +3,7 @@ import {
   state,
   style,
   transition,
-  trigger
+  trigger,
 } from '@angular/animations';
 
 export const notificationsAnimation = trigger('notifications', [
@@ -12,8 +12,8 @@ export const notificationsAnimation = trigger('notifications', [
     style({
       visibility: 'hidden',
       opacity: '0',
-      transform: 'translateY(1rem)'
-    })
+      transform: 'translateY(1rem)',
+    }),
   ),
   transition('false => true', [
     animate(
@@ -21,17 +21,17 @@ export const notificationsAnimation = trigger('notifications', [
       style({
         visibility: '*',
         opacity: '*',
-        transform: '*'
-      })
-    )
+        transform: '*',
+      }),
+    ),
   ]),
   transition('true => false', [
     animate(
       '200ms ease-in',
       style({
         opacity: '0',
-        transform: 'translateY(1rem)'
-      })
-    )
-  ])
+        transform: 'translateY(1rem)',
+      }),
+    ),
+  ]),
 ]);

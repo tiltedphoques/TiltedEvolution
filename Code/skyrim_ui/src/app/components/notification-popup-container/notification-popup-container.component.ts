@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { takeUntil } from 'rxjs';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
@@ -17,7 +17,7 @@ import { PopupNotificationService } from '../../services/popup-notification.serv
   styleUrls: ['./notification-popup-container.component.scss'],
   animations: [fadeInOutAnimation],
   providers: [DestroyService],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationPopupContainerComponent implements OnInit {
   notifications: PopupNotification[] = [];
@@ -26,7 +26,7 @@ export class NotificationPopupContainerComponent implements OnInit {
     private readonly destroy$: DestroyService,
     private readonly groupService: GroupService,
     private readonly popupNotificationService: PopupNotificationService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {

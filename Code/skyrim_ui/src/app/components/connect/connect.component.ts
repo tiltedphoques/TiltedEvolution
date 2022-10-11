@@ -6,7 +6,7 @@ import {
   HostListener,
   OnDestroy,
   Output,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -20,7 +20,7 @@ import { UiRepository } from '../../store/ui.repository';
 @Component({
   selector: 'app-connect',
   templateUrl: './connect.component.html',
-  styleUrls: ['./connect.component.scss']
+  styleUrls: ['./connect.component.scss'],
 })
 export class ConnectComponent implements OnDestroy, AfterViewInit {
   public address = '';
@@ -37,7 +37,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     private readonly errorService: ErrorService,
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
-    private readonly uiRepository: UiRepository
+    private readonly uiRepository: UiRepository,
   ) {
     this.connectionSubscription = this.client.connectionStateChange.subscribe(
       async state => {
@@ -51,13 +51,13 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
             // show connection error when there is no more specific error
             const message = await firstValueFrom(
               this.translocoService.selectTranslate<string>(
-                'COMPONENT.CONNECT.ERROR.CONNECTION'
-              )
+                'COMPONENT.CONNECT.ERROR.CONNECTION',
+              ),
             );
             await this.errorService.setError(message);
           }
         }
-      }
+      },
     );
 
     this.protocolMismatchSubscription =
@@ -66,8 +66,8 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
           this.connecting = false;
           const message = await firstValueFrom(
             this.translocoService.selectTranslate<string>(
-              'COMPONENT.CONNECT.ERROR.VERSION_MISMATCH'
-            )
+              'COMPONENT.CONNECT.ERROR.VERSION_MISMATCH',
+            ),
           );
           await this.errorService.setError(message);
         }
@@ -96,8 +96,8 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
       this.sound.play(Sound.Fail);
       const message = await firstValueFrom(
         this.translocoService.selectTranslate(
-          'COMPONENT.CONNECT.ERROR.INVALID_ADDRESS'
-        )
+          'COMPONENT.CONNECT.ERROR.INVALID_ADDRESS',
+        ),
       );
       await this.errorService.setError(message);
       return;
@@ -116,7 +116,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     this.client.connect(
       address[1],
       address[2] ? Number.parseInt(address[2]) : 10578,
-      this.password
+      this.password,
     );
   }
 

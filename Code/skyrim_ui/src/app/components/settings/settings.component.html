@@ -10,7 +10,8 @@
           type="checkbox"
           id="muted"
           [ngModel]="settings.muted | async"
-          (ngModelChange)="settings.muted.next($event)" />
+          (ngModelChange)="settings.muted.next($event)"
+        />
       </div>
       <div class="setting">
         <label for="volumeSlider">{{
@@ -23,7 +24,8 @@
           max="1.0"
           step="0.1"
           [ngModel]="settings.volume | async"
-          (ngModelChange)="settings.volume.next($event)" />
+          (ngModelChange)="settings.volume.next($event)"
+        />
       </div>
     </section>
 
@@ -35,11 +37,13 @@
           [noTranslate]="true"
           class="settings-dropdown"
           [ngModel]="settings.language | async"
-          (ngModelChange)="settings.language.next($event)">
+          (ngModelChange)="settings.language.next($event)"
+        >
           <app-dropdown-option
             *ngFor="let lang of availableLanguages"
             [text]="lang.label"
-            [value]="lang.id"></app-dropdown-option>
+            [value]="lang.id"
+          ></app-dropdown-option>
         </app-dropdown>
       </div>
       <div class="setting">
@@ -47,11 +51,13 @@
         <app-dropdown
           class="settings-dropdown"
           [ngModel]="settings.fontSize | async"
-          (ngModelChange)="settings.fontSize.next($event)">
+          (ngModelChange)="settings.fontSize.next($event)"
+        >
           <app-dropdown-option
             *ngFor="let size of availableFontSizes"
             [text]="size.label"
-            [value]="size.id"></app-dropdown-option>
+            [value]="size.id"
+          ></app-dropdown-option>
         </app-dropdown>
       </div>
     </section>
@@ -66,7 +72,8 @@
           type="checkbox"
           id="showParty"
           [ngModel]="settings.isPartyShown | async"
-          (ngModelChange)="settings.isPartyShown.next($event)" />
+          (ngModelChange)="settings.isPartyShown.next($event)"
+        />
       </div>
       <div class="setting">
         <label for="autoHideParty">{{
@@ -76,7 +83,8 @@
           type="checkbox"
           id="autoHideParty"
           [ngModel]="settings.autoHideParty | async"
-          (ngModelChange)="settings.autoHideParty.next($event)" />
+          (ngModelChange)="settings.autoHideParty.next($event)"
+        />
       </div>
       <div class="setting">
         <label>{{
@@ -85,22 +93,26 @@
         <app-dropdown
           [disabled]="!(settings.autoHideParty | async)"
           [ngModel]="settings.autoHideTime | async"
-          (ngModelChange)="settings.autoHideTime.next($event)">
+          (ngModelChange)="settings.autoHideTime.next($event)"
+        >
           <app-dropdown-option
             *ngFor="let time of availableAutoHideTimes"
             [text]="'COMPONENT.SETTINGS.LENGTH'"
-            [value]="time"></app-dropdown-option>
+            [value]="time"
+          ></app-dropdown-option>
         </app-dropdown>
       </div>
       <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
         <app-dropdown
           [ngModel]="settings.partyAnchor | async"
-          (ngModelChange)="settings.partyAnchor.next($event)">
+          (ngModelChange)="settings.partyAnchor.next($event)"
+        >
           <app-dropdown-option
             *ngFor="let anchor of availablePartyAnchors"
             [text]="anchor.label"
-            [value]="anchor.id"></app-dropdown-option>
+            [value]="anchor.id"
+          ></app-dropdown-option>
         </app-dropdown>
       </div>
       <div class="setting">
@@ -114,7 +126,8 @@
           max="84"
           step="1"
           [ngModel]="settings.partyAnchorOffsetX | async"
-          (ngModelChange)="settings.partyAnchorOffsetX.next($event)" />
+          (ngModelChange)="settings.partyAnchorOffsetX.next($event)"
+        />
       </div>
       <div class="setting">
         <label for="partyAnchorOffsetY">{{
@@ -127,7 +140,8 @@
           max="50"
           step="1"
           [ngModel]="settings.partyAnchorOffsetY | async"
-          (ngModelChange)="settings.partyAnchorOffsetY.next($event)" />
+          (ngModelChange)="settings.partyAnchorOffsetY.next($event)"
+        />
       </div>
     </section>
 
@@ -141,7 +155,8 @@
           type="checkbox"
           id="showDebug"
           [ngModel]="settings.isDebugShown | async"
-          (ngModelChange)="settings.isDebugShown.next($event)" />
+          (ngModelChange)="settings.isDebugShown.next($event)"
+        />
       </div>
     </section>
   </div>

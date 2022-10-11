@@ -6,7 +6,7 @@ import {
   getEntity,
   selectAllEntities,
   updateEntities,
-  withEntities
+  withEntities,
 } from '@ngneat/elf-entities';
 import { EventEmitter } from 'events';
 import { fromEvent } from 'rxjs';
@@ -18,7 +18,7 @@ let nextPlayerId = 1;
 
 const playerStore = createStore(
   { name: 'players' },
-  withEntities<MockPlayer>()
+  withEntities<MockPlayer>(),
 );
 
 export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
@@ -48,8 +48,8 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
             error: 'wrong_version',
             data: {
               version: '[current-version]',
-              expectedVersion: '[expected-version]'
-            }
+              expectedVersion: '[expected-version]',
+            },
           };
           break;
         case 't-full':
@@ -66,9 +66,9 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
                 ['missing.esp', '0'],
                 ['remove.esp', '12'],
                 ['missing_2.esp', '0'],
-                ['remove_2.esp', '12']
-              ]
-            }
+                ['remove_2.esp', '12'],
+              ],
+            },
           };
           break;
       }
@@ -86,7 +86,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
             player.id,
             player.name,
             player.level,
-            player.cellName
+            player.cellName,
           );
           this.emit('setPlayer3dLoaded', player.id, player.health);
         }
@@ -126,7 +126,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
           JSON.stringify(player.name),
           `(${player.id})`,
           'in',
-          JSON.stringify(player.cellName)
+          JSON.stringify(player.cellName),
         );
       }
     }
@@ -150,9 +150,9 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         ...playerStore
           .query(getAllEntities())
           .filter(p => p.isInGroup)
-          .map(p => p.id)
+          .map(p => p.id),
       ],
-      inviterId
+      inviterId,
     );
   }
 
@@ -164,7 +164,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         .query(getAllEntities())
         .filter(p => p.isInGroup)
         .map(p => p.id),
-      this.localPlayerId
+      this.localPlayerId,
     );
   }
 
@@ -183,9 +183,9 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         ...playerStore
           .query(getAllEntities())
           .filter(p => p.isInGroup)
-          .map(p => p.id)
+          .map(p => p.id),
       ],
-      playerId
+      playerId,
     );
   }
 
@@ -200,7 +200,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
             `%cEVENT`,
             'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
             `[${eventName}]`,
-            ...params.map(v => JSON.stringify(v))
+            ...params.map(v => JSON.stringify(v)),
           );
         }
       });
@@ -250,7 +250,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       'Morthal',
       'Riften',
       'Solitude',
-      'Windhelm'
+      'Windhelm',
     ];
     const newPlayer: MockPlayer = {
       name: 'Player ' + newPlayerId,
@@ -261,7 +261,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       hasOwnParty: false,
       isInGroup: false,
       invited: false,
-      invitedLocalPlayer: false
+      invitedLocalPlayer: false,
     };
     playerStore.update(addEntities(newPlayer));
     if (this.connected) {
@@ -270,7 +270,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         newPlayer.id,
         newPlayer.name,
         newPlayer.level,
-        newPlayer.cellName
+        newPlayer.cellName,
       );
       this.emit('setPlayer3dLoaded', newPlayer.id, newPlayer.health);
     }
@@ -290,7 +290,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
 
   accteptMockPlayerInvite(playerId: number) {
     playerStore.update(
-      updateEntities(playerId, { invited: false, isInGroup: true })
+      updateEntities(playerId, { invited: false, isInGroup: true }),
     );
     this.emit(
       'partyInfo',
@@ -298,7 +298,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         .query(getAllEntities())
         .filter(p => p.isInGroup)
         .map(p => p.id),
-      this.localPlayerId
+      this.localPlayerId,
     );
   }
 
@@ -309,7 +309,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
 
   startPlayerMockParty(playerId: number) {
     playerStore.update(
-      updateEntities(playerId, { hasOwnParty: true, isInGroup: true })
+      updateEntities(playerId, { hasOwnParty: true, isInGroup: true }),
     );
   }
 
@@ -320,8 +320,8 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       updateEntities(playerId, {
         hasOwnParty: false,
         invitedLocalPlayer: false,
-        isInGroup: false
-      })
+        isInGroup: false,
+      }),
     );
     if (this.connected) {
       if (player.isInGroup) {
@@ -331,7 +331,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
             .query(getAllEntities())
             .filter(p => p.isInGroup)
             .map(p => p.id),
-          this.localPlayerId
+          this.localPlayerId,
         );
       } else if (player.hasOwnParty) {
         this.emit('partyInfo', [], -1);
@@ -346,7 +346,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       Math.floor(Math.random() * 100),
       Math.floor((Math.random() / 4) * 100),
       Math.random() * 100,
-      Math.random() * 100
+      Math.random() * 100,
     ];
     this.emit('debugData', ...debugData);
     return debugData;

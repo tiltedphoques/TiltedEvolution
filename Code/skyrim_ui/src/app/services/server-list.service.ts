@@ -14,7 +14,7 @@ function truncateServerName(server: Server): Server {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ServerListService {
   constructor(private readonly http: HttpClient) {}
@@ -24,7 +24,7 @@ export class ServerListService {
       .get<Server[]>(`${environment.urlProtocol}://${environment.url}/list`)
       .pipe(
         map<any, Server[]>((data: any) => data.servers),
-        map(servers => servers.map(truncateServerName))
+        map(servers => servers.map(truncateServerName)),
       );
   }
 
@@ -37,12 +37,12 @@ export class ServerListService {
 
     return this.http
       .get<GeoLocation>(
-        `http://ip-api.com/json/${ip}?fields=continent,countryCode,country`
+        `http://ip-api.com/json/${ip}?fields=continent,countryCode,country`,
       )
       .pipe(
         tap(response =>
-          localStorage.setItem(`ip-cache:${ip}`, JSON.stringify(response))
-        )
+          localStorage.setItem(`ip-cache:${ip}`, JSON.stringify(response)),
+        ),
       );
   }
 }

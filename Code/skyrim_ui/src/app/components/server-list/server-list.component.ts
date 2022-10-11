@@ -3,7 +3,7 @@ import {
   Component,
   EventEmitter,
   HostListener,
-  Output
+  Output,
 } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
@@ -16,7 +16,7 @@ import {
   ReplaySubject,
   share,
   startWith,
-  throttleTime
+  throttleTime,
 } from 'rxjs';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Server } from '../../models/server';
@@ -26,7 +26,7 @@ import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
 import {
   SettingService,
-  fontSizeToPixels
+  fontSizeToPixels,
 } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
@@ -42,7 +42,7 @@ interface SortFunction {
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerListComponent {
   /* ### ICONS ### */
@@ -81,7 +81,7 @@ export class ServerListComponent {
     private readonly settingService: SettingService,
     private readonly soundService: SoundService,
     private readonly storeService: StoreService,
-    private readonly uiRepository: UiRepository
+    private readonly uiRepository: UiRepository,
   ) {
     this.sortFavorite(SortOrder.DESC);
     this.sortPlayerCount(SortOrder.DESC);
@@ -98,8 +98,8 @@ export class ServerListComponent {
            * https://github.com/tiltedphoques/TiltedEvolution/issues/247
            */
           //switchMap((list) => forkJoin(this.getLocationDataByIp(list))),
-          this.loader.serverlist.track()
-        )
+          this.loader.serverlist.track(),
+        ),
       ),
       combineLatestWith(this.favoriteServers, this.clientService.versionSet),
       map(([servers, favorites, clientVersion]) => {
@@ -110,14 +110,14 @@ export class ServerListComponent {
             isFavorite: !!favorites[`${server.ip}:${server.port}`],
             isFull: server.player_count >= server.max_player_count,
             shortVersion,
-            isCompatible: shortVersion === clientVersion
+            isCompatible: shortVersion === clientVersion,
           };
         });
       }),
       share({
         connector: () => new ReplaySubject(1),
-        resetOnRefCountZero: true
-      })
+        resetOnRefCountZero: true,
+      }),
     );
 
     this.filteredServerlist$ = this.serverlist$.pipe(
@@ -125,11 +125,11 @@ export class ServerListComponent {
         this.formSearch.value$.pipe(
           map(searchPhrase => searchPhrase?.toLowerCase()),
           distinctUntilChanged(),
-          throttleTime(300)
+          throttleTime(300),
         ),
         this.hideVersionMismatchedServers,
         this.hideFullServers,
-        this.sortFunctions
+        this.sortFunctions,
       ),
       map(
         ([
@@ -137,7 +137,7 @@ export class ServerListComponent {
           searchPhrase,
           hideVersionMismatchedServers,
           hideFullServers,
-          sortFunction
+          sortFunction,
         ]) => {
           if (hideVersionMismatchedServers) {
             servers = servers.filter(server => server.isCompatible);
@@ -157,22 +157,22 @@ export class ServerListComponent {
             servers = [...servers].sort(this.sortElementsFn());
           }
           return servers;
-        }
+        },
       ),
       startWith([]),
       share({
         connector: () => new ReplaySubject(1),
-        resetOnRefCountZero: true
-      })
+        resetOnRefCountZero: true,
+      }),
     );
 
     this.clientVersion$ = this.clientService.versionSet.pipe(
-      map(version => version.split('-')[0])
+      map(version => version.split('-')[0]),
     );
 
     // load favorite servers
     const favoriteServerList = JSON.parse(
-      this.storeService.get('favoriteServerList', '[]')
+      this.storeService.get('favoriteServerList', '[]'),
     );
     const favoriteServers: Record<string, Server> = {};
     for (const favoriteServer of favoriteServerList) {
@@ -182,7 +182,7 @@ export class ServerListComponent {
     this.favoriteServers.next(favoriteServers);
 
     this.rowHeight$ = this.settingService.settings.fontSize.pipe(
-      map(fontSize => fontSizeToPixels[fontSize] * 2)
+      map(fontSize => fontSizeToPixels[fontSize] * 2),
     );
   }
 
@@ -201,8 +201,8 @@ export class ServerListComponent {
           ...server,
           countryCode: data.countryCode.toLowerCase(),
           continent: data.continent,
-          country: data.country
-        }))
+          country: data.country,
+        })),
       );
     });
   }
@@ -231,7 +231,7 @@ export class ServerListComponent {
       3,
       sortOrder,
       ServerListComponent.sortPlayerCountAsc,
-      ServerListComponent.sortPlayerCountDesc
+      ServerListComponent.sortPlayerCountDesc,
     );
     this.playerCountOrdering.next(sortOrder);
   }
@@ -241,7 +241,7 @@ export class ServerListComponent {
       2,
       sortOrder,
       ServerListComponent.sortCountryAsc,
-      ServerListComponent.sortCountryDesc
+      ServerListComponent.sortCountryDesc,
     );
     this.countryOrdering.next(sortOrder);
   }
@@ -251,7 +251,7 @@ export class ServerListComponent {
       1,
       sortOrder,
       ServerListComponent.sortNameAsc,
-      ServerListComponent.sortNameDesc
+      ServerListComponent.sortNameDesc,
     );
     this.serverNameOrdering.next(sortOrder);
   }
@@ -261,7 +261,7 @@ export class ServerListComponent {
       0,
       sortOrder,
       ServerListComponent.sortFavoriteAsc,
-      ServerListComponent.sortFavoriteDesc
+      ServerListComponent.sortFavoriteDesc,
     );
     this.favoriteOrdering.next(sortOrder);
   }
@@ -298,7 +298,7 @@ export class ServerListComponent {
     priority: number,
     ordering: SortOrder,
     asc: (a: Server, b: Server) => number,
-    desc: (a: Server, b: Server) => number
+    desc: (a: Server, b: Server) => number,
   ) {
     const sortFns = [...this.sortFunctions.getValue()];
     let index = sortFns.findIndex(sortFn => sortFn.fn === asc);
@@ -319,7 +319,7 @@ export class ServerListComponent {
 
   sortElementsFn() {
     const fns = [...this.sortFunctions.getValue()].sort(
-      (a, b) => a.priority - b.priority
+      (a, b) => a.priority - b.priority,
     );
     return (a: Server, b: Server) => {
       let result = 0;

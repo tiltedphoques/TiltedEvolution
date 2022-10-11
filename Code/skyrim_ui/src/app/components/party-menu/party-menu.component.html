@@ -1,7 +1,8 @@
 <div *ngIf="!(group$ | async)?.isEnabled; else inParty">
   <p
     class="optional-info"
-    [innerHtml]="'COMPONENT.PARTY_MENU.EXPERIENCE_WARNING' | transloco"></p>
+    [innerHtml]="'COMPONENT.PARTY_MENU.EXPERIENCE_WARNING' | transloco"
+  ></p>
   <ul>
     <li style="line-height: 1.3em; height: auto">
       {{ 'COMPONENT.PARTY_MENU.GUIDELINES.PARTY' | transloco }}
@@ -26,7 +27,8 @@
   <button
     class="party-menu-button"
     (click)="launchParty()"
-    [disabled]="isLaunchPartyDisabled$ | async">
+    [disabled]="isLaunchPartyDisabled$ | async"
+  >
     {{ 'COMPONENT.PARTY_MENU.LAUNCH_PARTY' | transloco }}
   </button>
 
@@ -41,7 +43,8 @@
     <button
       *ngFor="let player of invites"
       class="party-menu-button"
-      (click)="acceptPartyInvite(player.id)">
+      (click)="acceptPartyInvite(player.id)"
+    >
       {{
         'COMPONENT.PARTY_MENU.ACCEPT_INVITE' | transloco: { name: player.name }
       }}
@@ -53,7 +56,8 @@
   <div
     *ngIf="(memberCount$ | async) === 0; else notEmpty"
     style="margin-bottom: 1rem"
-    class="no-players">
+    class="no-players"
+  >
     <span>{{ 'COMPONENT.PARTY_MENU.NO_PLAYERS_IN_PARTY' | transloco }}</span>
   </div>
 
@@ -80,14 +84,16 @@
             <td>
               <button
                 class="user-action-button"
-                (click)="teleportToPlayer(player.id)">
+                (click)="teleportToPlayer(player.id)"
+              >
                 {{ 'COMPONENT.PARTY_MENU.ACTIONS.TELEPORT' | transloco }}
               </button>
               <button
                 (click)="kickMember(player.id)"
                 [disabled]="!(isPartyLeader$ | async)"
                 class="user-action-button"
-                [ngClass]="!(isPartyLeader$ | async) ? 'hidden' : ''">
+                [ngClass]="!(isPartyLeader$ | async) ? 'hidden' : ''"
+              >
                 {{ 'COMPONENT.PARTY_MENU.ACTIONS.KICK' | transloco }}
               </button>
               <!--

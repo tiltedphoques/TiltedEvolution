@@ -9,7 +9,7 @@ import {
   HostListener,
   Input,
   Output,
-  QueryList
+  QueryList,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
@@ -31,10 +31,10 @@ let dropdownCounter = 1;
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => DropdownComponent),
-      multi: true
+      multi: true,
     },
-    DestroyService
-  ]
+    DestroyService,
+  ],
 })
 export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   dropdownCounter = dropdownCounter++;
@@ -61,7 +61,7 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     private readonly destroy$: DestroyService,
     private readonly soundService: SoundService,
     private readonly cdr: ChangeDetectorRef,
-    private readonly elRef: ElementRef
+    private readonly elRef: ElementRef,
   ) {}
 
   ngAfterViewInit() {
@@ -72,8 +72,8 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
         this.options.next(
           options.map(o => ({
             text: o.text,
-            value: o.value
-          }))
+            value: o.value,
+          })),
         );
         this.cdr.detectChanges();
       });

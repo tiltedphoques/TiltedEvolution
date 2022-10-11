@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StoreService {
   public get(key: string, valueIfNull: any): any {
@@ -16,7 +16,7 @@ export class StoreService {
           'Value:',
           key,
           ':',
-          value
+          value,
         );
       }
       return value;

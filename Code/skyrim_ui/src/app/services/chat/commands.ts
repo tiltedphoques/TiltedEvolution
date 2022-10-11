@@ -12,9 +12,9 @@ export class CommandHandler {
       const cmds = [...this.commands.keys()].join(', ');
       this.chatService.pushSystemMessage(
         'SERVICE.COMMANDS.AVAILABLE_COMMANDS',
-        { cmds }
+        { cmds },
       );
-    }
+    },
   };
 
   private readonly commands = new Map<string, Command>();
@@ -39,7 +39,7 @@ export class CommandHandler {
       command.executor(args);
     } else {
       this.chatService.pushSystemMessage('SERVICE.COMMANDS.COMMAND_NOT_FOUND', {
-        cmd: inputWithoutPrefix
+        cmd: inputWithoutPrefix,
       });
     }
   }

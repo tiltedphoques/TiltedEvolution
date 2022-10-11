@@ -6,7 +6,7 @@ import {
   Observable,
   Subscription,
   takeUntil,
-  timer
+  timer,
 } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { PartyAnchor, SettingService } from 'src/app/services/setting.service';
@@ -29,7 +29,7 @@ interface GroupPosition {
   templateUrl: './group.component.html',
   styleUrls: ['./group.component.scss'],
   animations: [fadeInOutActiveAnimation],
-  providers: [DestroyService]
+  providers: [DestroyService],
 })
 export class GroupComponent implements OnInit, OnDestroy {
   timerSubscription: Subscription;
@@ -42,7 +42,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   public waitLaunch = new BehaviorSubject(false);
   public positionStyle = new BehaviorSubject<GroupPosition>({
     top: '0%',
-    left: '0%'
+    left: '0%',
   });
   public settings = this.settingService.settings;
 
@@ -50,7 +50,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     private readonly destroy$: DestroyService,
     private readonly groupService: GroupService,
     private readonly clientService: ClientService,
-    private readonly settingService: SettingService
+    private readonly settingService: SettingService,
   ) {
     this.isShown.next(this.settings.isPartyShown.getValue());
     this.isAutoHide.next(this.settings.autoHideParty.getValue());
@@ -69,9 +69,9 @@ export class GroupComponent implements OnInit, OnDestroy {
               ? 0
               : group.owner === a.id
               ? -1
-              : 1
+              : 1,
           );
-      })
+      }),
     );
   }
 
@@ -152,7 +152,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     combineLatest([
       this.settings.partyAnchorOffsetX,
       this.settings.partyAnchorOffsetY,
-      this.settings.partyAnchor
+      this.settings.partyAnchor,
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([x, y, anchor]) => {

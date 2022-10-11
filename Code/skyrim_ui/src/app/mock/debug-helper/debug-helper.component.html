@@ -20,22 +20,26 @@
           <button
             *ngIf="player.invited"
             [disabled]="player.hasOwnParty"
-            (click)="accteptMockPlayerInvite(player.id)">
+            (click)="accteptMockPlayerInvite(player.id)"
+          >
             Accept Invite
           </button>
           <button
             *ngIf="player.hasOwnParty && (connected$ | async)"
-            (click)="inviteToPlayerMockParty(player.id)">
+            (click)="inviteToPlayerMockParty(player.id)"
+          >
             Invite You
           </button>
           <button
             *ngIf="!player.hasOwnParty && !player.isInGroup"
-            (click)="startPlayerMockParty(player.id)">
+            (click)="startPlayerMockParty(player.id)"
+          >
             Start Party
           </button>
           <button
             *ngIf="player.hasOwnParty || player.isInGroup"
-            (click)="mockPlayerLeaveParty(player.id)">
+            (click)="mockPlayerLeaveParty(player.id)"
+          >
             Leave Party
           </button>
         </div>
@@ -55,7 +59,8 @@
         type="checkbox"
         id="random-debug"
         [ngModel]="randomizeDebug | async"
-        (ngModelChange)="randomizeDebug.next($event)" />
+        (ngModelChange)="randomizeDebug.next($event)"
+      />
     </div>
   </div>
 </div>

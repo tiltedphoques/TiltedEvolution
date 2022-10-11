@@ -10,7 +10,7 @@ import { ClientService } from './client.service';
 import { PopupNotificationService } from './popup-notification.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PlayerListService implements OnDestroy {
   public playerList = new BehaviorSubject<PlayerList | undefined>(undefined);
@@ -29,7 +29,7 @@ export class PlayerListService implements OnDestroy {
     private readonly clientService: ClientService,
     private readonly popupNotificationService: PopupNotificationService,
     private readonly uiRepository: UiRepository,
-    private readonly translocoService: TranslocoService
+    private readonly translocoService: TranslocoService,
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -89,12 +89,12 @@ export class PlayerListService implements OnDestroy {
 
           if (playerList) {
             playerList.players = playerList.players.filter(
-              player => player.id !== playerDisco.id
+              player => player.id !== playerDisco.id,
             );
 
             this.playerList.next(playerList);
           }
-        }
+        },
       );
   }
 
@@ -103,7 +103,7 @@ export class PlayerListService implements OnDestroy {
       this.clientService.memberKickedChange.subscribe((playerId: number) => {
         const playerList = this.getPlayerList();
         const players = playerList.players.find(
-          player => player.id !== playerId
+          player => player.id !== playerId,
         );
         players.hasBeenInvited = false;
       });
@@ -120,7 +120,7 @@ export class PlayerListService implements OnDestroy {
             p.cellName = player.cellName;
           }
         }
-      }
+      },
     );
   }
 
@@ -136,10 +136,10 @@ export class PlayerListService implements OnDestroy {
             this.playerList.next(playerList);
             this.popupNotificationService.addPartyInvite(
               invitingPlayer.name,
-              () => this.acceptPartyInvite(inviterId)
+              () => this.acceptPartyInvite(inviterId),
             );
           }
-        }
+        },
       );
   }
 

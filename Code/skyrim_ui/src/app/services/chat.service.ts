@@ -8,7 +8,7 @@ export enum MessageTypes {
   GLOBAL_CHAT = 1,
   PLAYER_DIALOGUE = 2,
   PARTY_CHAT = 3,
-  LOCAL_CHAT = 4
+  LOCAL_CHAT = 4,
 }
 
 export interface ChatMessage {
@@ -19,7 +19,7 @@ export interface ChatMessage {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService {
   public messageList = new ReplaySubject<ChatMessage>();
@@ -34,7 +34,7 @@ export class ChatService {
 
     if (content.length > environment.chatMessageLengthLimit) {
       this.pushSystemMessage('COMPONENT.CHAT.MESSAGE_TOO_LONG', {
-        chatMessageLengthLimit: environment.chatMessageLengthLimit
+        chatMessageLengthLimit: environment.chatMessageLengthLimit,
       });
       return;
     }
@@ -59,19 +59,19 @@ export class ChatService {
    */
   public pushSystemMessage(
     translationKey: string,
-    params: Record<string, any> = undefined
+    params: Record<string, any> = undefined,
   ) {
     this.pushMessage({
       type: MessageTypes.SYSTEM_MESSAGE,
       content: translationKey,
-      translationParams: params
+      translationParams: params,
     });
   }
 
   private onMessageRecieved(
     type: MessageTypes,
     content: string,
-    senderName: string | undefined = undefined
+    senderName: string | undefined = undefined,
   ): void {
     this.messageList.next({ type, content, senderName });
   }
@@ -83,7 +83,7 @@ export class ChatService {
     executor: async args => {
       const content = args.join(' ');
       this.sendMessage(MessageTypes.LOCAL_CHAT, content);
-    }
+    },
   };
 
   private PartyChat: Command = {
@@ -91,7 +91,7 @@ export class ChatService {
     executor: async args => {
       const content = args.join(' ');
       this.sendMessage(MessageTypes.PARTY_CHAT, content);
-    }
+    },
   };
 
   constructor() {

@@ -7,7 +7,8 @@
     </button>
     <button
       [disabled]="loader.serverlist.inProgress$ | async"
-      (click)="updateServerList()">
+      (click)="updateServerList()"
+    >
       {{ 'COMPONENT.SERVER_LIST.REFRESH' | transloco }}
     </button>
   </div>
@@ -23,14 +24,16 @@
       autocomplete="off"
       autocorrect="off"
       autocapitalize="off"
-      spellcheck="false" />
+      spellcheck="false"
+    />
 
     <div class="filter-checkbox">
       <input
         type="checkbox"
         id="hide-version-mismatched-servers-checkbox"
         [ngModel]="hideVersionMismatchedServers | async"
-        (ngModelChange)="hideVersionMismatchedServers.next($event)" />
+        (ngModelChange)="hideVersionMismatchedServers.next($event)"
+      />
       <label for="hide-version-mismatched-servers-checkbox">{{
         'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVERS' | transloco
       }}</label>
@@ -41,7 +44,8 @@
         type="checkbox"
         id="hide-full-servers-checkbox"
         [ngModel]="hideFullServers | async"
-        (ngModelChange)="hideFullServers.next($event)" />
+        (ngModelChange)="hideFullServers.next($event)"
+      />
       <label for="hide-full-servers-checkbox">{{
         'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco
       }}</label>
@@ -63,7 +67,8 @@
 <ng-container *ngIf="filteredServerlist$ | async as serverlist">
   <div
     *ngIf="loader.serverlist.inProgress$ | async; else notLoading"
-    class="serverlist-alternative serverlist-loading">
+    class="serverlist-alternative serverlist-loading"
+  >
     {{ 'COMPONENT.SERVER_LIST.LOADING' | transloco }}
   </div>
 
@@ -76,13 +81,15 @@
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
               <app-order
                 [sortingOrder]="serverNameOrdering | async"
-                (sorted)="sortServerName($event)"></app-order>
+                (sorted)="sortServerName($event)"
+              ></app-order>
             </div>
             <div style="width: 7em">
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.PLAYERS' | transloco }}
               <app-order
                 [sortingOrder]="playerCountOrdering | async"
-                (sorted)="sortPlayerCount($event)"></app-order>
+                (sorted)="sortPlayerCount($event)"
+              ></app-order>
             </div>
             <!-- <div style="width: 6em">-->
             <!--   {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.COUNTRY' | transloco }}-->
@@ -93,7 +100,8 @@
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.FAVORITE' | transloco }}
               <app-order
                 [sortingOrder]="favoriteOrdering | async"
-                (sorted)="sortFavorite($event)"></app-order>
+                (sorted)="sortFavorite($event)"
+              ></app-order>
             </div>
             <div style="width: 4em"></div>
           </div>
@@ -107,12 +115,14 @@
       <cdk-virtual-scroll-viewport
         *ngIf="serverlist.length !== 0"
         [itemSize]="rowHeight | async"
-        class="virtual-viewport">
+        class="virtual-viewport"
+      >
         <div class="server-list-table">
           <div
             *cdkVirtualFor="let server of serverlist; let odd = odd"
             class="row"
-            [class.odd]="odd">
+            [class.odd]="odd"
+          >
             <div>{{ server.name }}</div>
             <div style="width: 7em">
               {{ server.player_count }} / {{ server.max_player_count }}
@@ -124,21 +134,24 @@
                 server.isCompatible
                   ? 'server-compatible'
                   : 'server-incompatible'
-              ">
+              "
+            >
               {{ server.shortVersion }}
             </div>
             <div
               style="width: 6em"
               class="server-list-favorite"
               [class.not]="!server.isFavorite"
-              (click)="toggleServerFavorite(server)">
+              (click)="toggleServerFavorite(server)"
+            >
               <fa-icon [icon]="server.isFavorite ? fasStar : farStar"></fa-icon>
             </div>
             <div style="width: 4em">
               <button
                 (click)="connect(server)"
                 class="join-button"
-                [disabled]="!server.isCompatible">
+                [disabled]="!server.isCompatible"
+              >
                 {{ 'COMPONENT.SERVER_LIST.JOIN' | transloco }}
               </button>
             </div>

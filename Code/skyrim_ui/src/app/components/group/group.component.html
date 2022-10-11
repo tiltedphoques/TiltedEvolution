@@ -2,22 +2,26 @@
   <div
     *ngIf="group$ | async"
     class="group-container"
-    [ngStyle]="positionStyle | async">
+    [ngStyle]="positionStyle | async"
+  >
     <div
       *ngFor="let player of groupMembers$ | async"
       [title]="player.cellName"
       class="group-member"
-      [class.not-loaded]="!player.isLoaded">
+      [class.not-loaded]="!player.isLoaded"
+    >
       <b class="group-member-level">{{ player.level }} </b>
       <div *ngIf="player.health === 0" class="group-member-dead"></div>
       <div *ngIf="player.isOwner" class="group-member-leader"></div>
       <span class="member-name">{{ player.name }}</span>
       <div
         *ngIf="player.health !== undefined && player.isLoaded"
-        class="group-member-health">
+        class="group-member-health"
+      >
         <div
           class="group-member-health-value"
-          [app-health]="player.health"></div>
+          [app-health]="player.health"
+        ></div>
       </div>
     </div>
   </div>

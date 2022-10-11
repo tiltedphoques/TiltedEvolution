@@ -4,7 +4,7 @@ import { Asset } from '../asset';
 export class AudioAsset extends Asset<AudioBuffer> {
   public constructor(
     content: AudioBuffer,
-    private settingService: SettingService
+    private settingService: SettingService,
   ) {
     super(content);
   }

@@ -3,7 +3,8 @@
   class="dropdown-wrapper"
   [class.focus]="isFocused"
   [class.is-open]="isOpen"
-  [class.disabled]="isDisabled">
+  [class.disabled]="isDisabled"
+>
   <div class="box" (click)="toggle($event)">
     <ng-container>
       <div class="dropdown-selected">
@@ -21,7 +22,8 @@
       *ngFor="let option of options; let i = index"
       [id]="'li-' + dropdownCounter + '-' + i"
       (click)="optionSelect(option.value, i, $event)"
-      [class.selected]="selected === i">
+      [class.selected]="selected === i"
+    >
       {{
         noTranslate
           ? option.text ?? option.value

@@ -5,13 +5,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
-  Renderer2
+  Renderer2,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   faArrowsUpDownLeftRight,
-  faCode
+  faCode,
 } from '@fortawesome/free-solid-svg-icons';
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, of, takeUntil, timer } from 'rxjs';
@@ -35,8 +35,8 @@ import { MockClientService } from '../mock-client.service';
     FontAwesomeModule,
     DragDropModule,
     OverlayModule,
-    FormsModule
-  ]
+    FormsModule,
+  ],
 })
 export class DebugHelperComponent implements OnInit {
   readonly faCode = faCode;
@@ -55,7 +55,7 @@ export class DebugHelperComponent implements OnInit {
     private readonly renderer: Renderer2,
     private readonly storeService: StoreService,
     private readonly mockClientService: MockClientService,
-    private readonly clientService: ClientService
+    private readonly clientService: ClientService,
   ) {}
 
   ngOnInit() {
@@ -65,7 +65,7 @@ export class DebugHelperComponent implements OnInit {
       .asObservable()
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(enabled => (enabled ? timer(0, 1000) : of(null)))
+        switchMap(enabled => (enabled ? timer(0, 1000) : of(null))),
       )
       .subscribe(val => {
         if (val !== null) {

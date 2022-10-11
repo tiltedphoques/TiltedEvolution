@@ -12,7 +12,7 @@ import { DebugHelperComponent } from './debug-helper/debug-helper.component';
 import { SkyrimtogetherMock } from './skyrimtogether.mock';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MockClientService extends DestroyService {
   public readonly skyrimtogether: SkyrimtogetherMock =
@@ -23,7 +23,7 @@ export class MockClientService extends DestroyService {
     private readonly popupNotificationService: PopupNotificationService,
     private readonly uiRepository: UiRepository,
     private readonly translocoService: TranslocoService,
-    private readonly appRef: ApplicationRef
+    private readonly appRef: ApplicationRef,
   ) {
     super();
 
@@ -34,7 +34,7 @@ export class MockClientService extends DestroyService {
         takeUntil(this),
         map(() => this.appRef.components[0]?.instance),
         filter(overlay => !!overlay),
-        first()
+        first(),
       )
       .subscribe((root: RootComponent) => this.init(root));
   }

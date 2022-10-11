@@ -3,7 +3,8 @@
   class="notification-popup"
   (click)="clickNotification()"
   (mouseenter)="onEnter()"
-  (mouseleave)="onLeave()">
+  (mouseleave)="onLeave()"
+>
   <img *ngIf="notification.imageUrl" [src]="notification.imageUrl" />
   <div *ngIf="notification.icon" class="icon">
     <fa-icon [icon]="notification.icon"></fa-icon>
@@ -11,7 +12,8 @@
   <p>{{ t(notification.messageKey, notification.messageParams) }}</p>
   <button
     *ngFor="let action of notification.actions"
-    (click)="action.callback()">
+    (click)="action.callback()"
+  >
     {{ t(action.nameKey) }}
   </button>
 </div>

@@ -2,7 +2,7 @@ import { Directive, HostListener } from '@angular/core';
 import { Sound, SoundService } from '../services/sound.service';
 
 @Directive({
-  selector: 'input[type="radio"]'
+  selector: 'input[type="radio"]',
 })
 // @ts-ignore
 export class RadioDirective {

@@ -5,14 +5,14 @@ import { Sound, SoundService } from '../../services/sound.service';
 @Component({
   selector: 'app-disconnect',
   templateUrl: './disconnect.component.html',
-  styleUrls: ['./disconnect.component.scss']
+  styleUrls: ['./disconnect.component.scss'],
 })
 export class DisconnectComponent {
   @Output() public done = new EventEmitter<void>();
 
   public constructor(
     private readonly client: ClientService,
-    private readonly sound: SoundService
+    private readonly sound: SoundService,
   ) {}
 
   public disconnect(): void {

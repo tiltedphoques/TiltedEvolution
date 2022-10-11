@@ -3,26 +3,26 @@ import {
   Component,
   EventEmitter,
   Input,
-  Output
+  Output,
 } from '@angular/core';
 import {
   faCaretDown,
   faCaretUp,
-  faSort
+  faSort,
 } from '@fortawesome/free-solid-svg-icons';
 import { BehaviorSubject } from 'rxjs';
 
 export enum SortOrder {
   NONE,
   ASC,
-  DESC
+  DESC,
 }
 
 @Component({
   selector: 'app-order',
   templateUrl: './order.component.html',
   styleUrls: ['./order.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderComponent {
   /* ### ENUMS ### */

@@ -6,7 +6,7 @@ import {
   TRANSLOCO_LOADER,
   translocoConfig,
   TranslocoLoader,
-  TranslocoModule
+  TranslocoModule,
 } from '@ngneat/transloco';
 import { environment } from '../environments/environment';
 
@@ -35,18 +35,18 @@ export class TranslocoHttpLoader implements TranslocoLoader {
           { id: 'es', label: 'Español' },
           { id: 'cs', label: 'Čeština' },
           { id: 'pl', label: 'Polski' },
-          { id: 'overwrite', label: 'Custom' }
+          { id: 'overwrite', label: 'Custom' },
         ],
         defaultLang: 'en',
         fallbackLang: 'en',
         missingHandler: {
-          useFallbackTranslation: true
+          useFallbackTranslation: true,
         },
         reRenderOnLangChange: true,
-        prodMode: environment.production
-      })
+        prodMode: environment.production,
+      }),
     },
-    { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader }
-  ]
+    { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader },
+  ],
 })
 export class TranslocoRootModule {}

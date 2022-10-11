@@ -10,7 +10,7 @@ import { Player } from '../../models/player';
   selector: 'app-player-list',
   templateUrl: './player-list.component.html',
   styleUrls: ['./player-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerListComponent {
   playerList$: Observable<(Player & { isMember: boolean })[]>;
@@ -20,11 +20,11 @@ export class PlayerListComponent {
   constructor(
     private readonly playerListService: PlayerListService,
     private readonly clientService: ClientService,
-    private readonly groupService: GroupService
+    private readonly groupService: GroupService,
   ) {
     this.playerList$ = combineLatest([
       this.playerListService.playerList.asObservable().pipe(pluck('players')),
-      this.groupService.group.asObservable().pipe(pluck('members'))
+      this.groupService.group.asObservable().pipe(pluck('members')),
     ]).pipe(
       map(([players, members]) => {
         if (!players) {
@@ -32,26 +32,26 @@ export class PlayerListComponent {
         }
         return players.map(player => ({
           ...player,
-          isMember: members.includes(player.id)
+          isMember: members.includes(player.id),
         }));
       }),
       share({
         connector: () => new ReplaySubject(1),
-        resetOnRefCountZero: true
-      })
+        resetOnRefCountZero: true,
+      }),
     );
     this.playerListLength$ = this.playerList$.pipe(
-      map(players => players?.length ?? 0)
+      map(players => players?.length ?? 0),
     );
     this.isPartyLeader$ = this.groupService.group.asObservable().pipe(
       map(
         group =>
-          group.isEnabled && group.owner == this.clientService.localPlayerId
+          group.isEnabled && group.owner == this.clientService.localPlayerId,
       ),
       share({
         connector: () => new ReplaySubject(1),
-        resetOnRefCountZero: true
-      })
+        resetOnRefCountZero: true,
+      }),
     );
   }
 

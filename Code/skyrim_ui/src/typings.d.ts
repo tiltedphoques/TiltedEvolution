@@ -28,7 +28,7 @@ declare namespace SkyrimTogetherTypes {
   type MessageCallback = (
     type: number,
     content: string,
-    sender: string
+    sender: string,
   ) => void;
 
   /** Connection callback */
@@ -52,7 +52,7 @@ declare namespace SkyrimTogetherTypes {
     RTT: number,
     packetLoss: number,
     sentBandwidth: number,
-    receivedBandwidth: number
+    receivedBandwidth: number,
   ) => void;
 
   type UserDataSetCallback = (password: string, username: string) => void;
@@ -61,12 +61,12 @@ declare namespace SkyrimTogetherTypes {
     playerId: number,
     username: string,
     level: number,
-    cellName: string
+    cellName: string,
   ) => void;
 
   type PlayerDisconnectedCallback = (
     playerId: number,
-    username: string
+    username: string,
   ) => void;
 
   type SetHealthCallback = (playerId: number, health: number) => void;
@@ -110,7 +110,7 @@ interface SkyrimTogether {
   /** Add listener to when the UI is deactivated. */
   on(
     event: 'deactivate',
-    callback: SkyrimTogetherTypes.DeactivateCallback
+    callback: SkyrimTogetherTypes.DeactivateCallback,
   ): void;
 
   /** Add listener to when the player enters a game. */
@@ -122,7 +122,7 @@ interface SkyrimTogether {
   /** Add listener to when the player open/close a game menu. */
   on(
     event: 'openingMenu',
-    callback: SkyrimTogetherTypes.OpeningMenuCallback
+    callback: SkyrimTogetherTypes.OpeningMenuCallback,
   ): void;
 
   /** Add listener to when a player message is received. */
@@ -134,7 +134,7 @@ interface SkyrimTogether {
   /** Add listener to when the player disconnects from a server. */
   on(
     event: 'disconnect',
-    callback: SkyrimTogetherTypes.DisconnectCallback
+    callback: SkyrimTogetherTypes.DisconnectCallback,
   ): void;
 
   /** Add listener to when the player's name changes. */
@@ -143,7 +143,7 @@ interface SkyrimTogether {
   /** Add listener to when the client's version is set. */
   on(
     event: 'setVersion',
-    callback: SkyrimTogetherTypes.SetVersionCallback
+    callback: SkyrimTogetherTypes.SetVersionCallback,
   ): void;
 
   /** Add listener to when the player's press the F3 key */
@@ -151,25 +151,25 @@ interface SkyrimTogether {
 
   on(
     event: 'debugData',
-    callback: SkyrimTogetherTypes.UpdateDebugCallback
+    callback: SkyrimTogetherTypes.UpdateDebugCallback,
   ): void;
 
   /** Add listener to when the player's is connected with the launcher */
   on(
     event: 'userDataSet',
-    callback: SkyrimTogetherTypes.UserDataSetCallback
+    callback: SkyrimTogetherTypes.UserDataSetCallback,
   ): void;
 
   /** Add listener to when one player connect in server. */
   on(
     event: 'playerConnected',
-    callback: SkyrimTogetherTypes.PlayerConnectedCallback
+    callback: SkyrimTogetherTypes.PlayerConnectedCallback,
   ): void;
 
   /** Add listener to when one player disconnect in server. */
   on(
     event: 'playerDisconnected',
-    callback: SkyrimTogetherTypes.PlayerDisconnectedCallback
+    callback: SkyrimTogetherTypes.PlayerDisconnectedCallback,
   ): void;
 
   on(event: 'setHealth', callback: SkyrimTogetherTypes.SetHealthCallback): void;
@@ -183,22 +183,22 @@ interface SkyrimTogether {
   /** Add listener to when a player is loaded or unloaded in 3D.  */
   on(
     event: 'setPlayer3dLoaded',
-    callback: SkyrimTogetherTypes.SetPlayer3dLoadedCallback
+    callback: SkyrimTogetherTypes.SetPlayer3dLoadedCallback,
   ): void;
 
   on(
     event: 'setPlayer3dUnloaded',
-    callback: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback
+    callback: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback,
   ): void;
 
   on(
     event: 'setLocalPlayerId',
-    callback: SkyrimTogetherTypes.SetLocalPlayerIdCallback
+    callback: SkyrimTogetherTypes.SetLocalPlayerIdCallback,
   ): void;
 
   on(
     event: 'protocolMismatch',
-    callback: SkyrimTogetherTypes.ProtocolMismatch
+    callback: SkyrimTogetherTypes.ProtocolMismatch,
   ): void;
 
   on(event: 'triggerError', callback: SkyrimTogetherTypes.TriggerError): void;
@@ -209,14 +209,14 @@ interface SkyrimTogether {
 
   on(
     event: 'partyCreated',
-    callback: SkyrimTogetherTypes.PartyCreatedCallback
+    callback: SkyrimTogetherTypes.PartyCreatedCallback,
   ): void;
 
   on(event: 'partyLeft', callback: SkyrimTogetherTypes.PartyLeftCallback): void;
 
   on(
     event: 'partyInviteReceived',
-    callback: SkyrimTogetherTypes.PartyInviteReceivedCallback
+    callback: SkyrimTogetherTypes.PartyInviteReceivedCallback,
   ): void;
 
   /** Remove listener from when the application is first initialized. */
@@ -228,13 +228,13 @@ interface SkyrimTogether {
   /** Remove listener from when the UI is deactivated. */
   off(
     event: 'deactivate',
-    callback?: SkyrimTogetherTypes.DeactivateCallback
+    callback?: SkyrimTogetherTypes.DeactivateCallback,
   ): void;
 
   /** Remove listener from when the player enters a game. */
   off(
     event: 'enterGame',
-    callback?: SkyrimTogetherTypes.EnterGameCallback
+    callback?: SkyrimTogetherTypes.EnterGameCallback,
   ): void;
 
   /** Remove listener from when the player exits a game. */
@@ -243,7 +243,7 @@ interface SkyrimTogether {
   /** Add listener to when the player open/close a game menu. */
   off(
     event: 'openingMenu',
-    callback?: SkyrimTogetherTypes.OpeningMenuCallback
+    callback?: SkyrimTogetherTypes.OpeningMenuCallback,
   ): void;
 
   /** Remove listener from when a player message is received. */
@@ -255,7 +255,7 @@ interface SkyrimTogether {
   /** Remove listener from when the player disconnects from a server. */
   off(
     event: 'disconnect',
-    callback?: SkyrimTogetherTypes.DisconnectCallback
+    callback?: SkyrimTogetherTypes.DisconnectCallback,
   ): void;
 
   /** Remove listener from when the player's name changes. */
@@ -264,7 +264,7 @@ interface SkyrimTogether {
   /** Remove listener from when the client's version is set. */
   off(
     event: 'setVersion',
-    callback?: SkyrimTogetherTypes.SetVersionCallback
+    callback?: SkyrimTogetherTypes.SetVersionCallback,
   ): void;
 
   /** Remove listener to when the player's press the F3 key */
@@ -272,29 +272,29 @@ interface SkyrimTogether {
 
   off(
     event: 'debugData',
-    callback?: SkyrimTogetherTypes.UpdateDebugCallback
+    callback?: SkyrimTogetherTypes.UpdateDebugCallback,
   ): void;
 
   /** Add listener to when one player connect in server. */
   off(
     event: 'playerConnected',
-    callback?: SkyrimTogetherTypes.PlayerConnectedCallback
+    callback?: SkyrimTogetherTypes.PlayerConnectedCallback,
   ): void;
 
   /** Add listener to when one player disconnect in server. */
   off(
     event: 'playerDisconnected',
-    callback?: SkyrimTogetherTypes.PlayerDisconnectedCallback
+    callback?: SkyrimTogetherTypes.PlayerDisconnectedCallback,
   ): void;
 
   off(
     event: 'userDataSet',
-    callback?: SkyrimTogetherTypes.UserDataSetCallback
+    callback?: SkyrimTogetherTypes.UserDataSetCallback,
   ): void;
 
   off(
     event: 'setHealth',
-    callback?: SkyrimTogetherTypes.SetHealthCallback
+    callback?: SkyrimTogetherTypes.SetHealthCallback,
   ): void;
 
   off(event: 'setLevel', callback?: SkyrimTogetherTypes.SetLevelCallback): void;
@@ -304,49 +304,49 @@ interface SkyrimTogether {
   /** Add listener to when a player is loaded or unloaded in 3D.  */
   off(
     event: 'setPlayer3dLoaded',
-    callback?: SkyrimTogetherTypes.SetPlayer3dLoadedCallback
+    callback?: SkyrimTogetherTypes.SetPlayer3dLoadedCallback,
   ): void;
 
   off(
     event: 'setPlayer3dUnloaded',
-    callback?: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback
+    callback?: SkyrimTogetherTypes.SetPlayer3dUnloadedCallback,
   ): void;
 
   off(
     event: 'setLocalPlayerId',
-    callback?: SkyrimTogetherTypes.SetLocalPlayerIdCallback
+    callback?: SkyrimTogetherTypes.SetLocalPlayerIdCallback,
   ): void;
 
   off(
     event: 'protocolMismatch',
-    callback?: SkyrimTogetherTypes.ProtocolMismatch
+    callback?: SkyrimTogetherTypes.ProtocolMismatch,
   ): void;
 
   off(event: 'triggerError', callback?: SkyrimTogetherTypes.TriggerError): void;
 
   off(
     event: 'dummyData',
-    callback?: SkyrimTogetherTypes.DummyDataCallback
+    callback?: SkyrimTogetherTypes.DummyDataCallback,
   ): void;
 
   off(
     event: 'partyInfo',
-    callback?: SkyrimTogetherTypes.PartyInfoCallback
+    callback?: SkyrimTogetherTypes.PartyInfoCallback,
   ): void;
 
   off(
     event: 'partyCreated',
-    callback?: SkyrimTogetherTypes.PartyCreatedCallback
+    callback?: SkyrimTogetherTypes.PartyCreatedCallback,
   ): void;
 
   off(
     event: 'partyLeft',
-    callback?: SkyrimTogetherTypes.PartyLeftCallback
+    callback?: SkyrimTogetherTypes.PartyLeftCallback,
   ): void;
 
   off(
     event: 'partyInviteReceived',
-    callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback
+    callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback,
   ): void;
 
   /**

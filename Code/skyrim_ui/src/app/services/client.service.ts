@@ -5,7 +5,7 @@ import {
   BehaviorSubject,
   firstValueFrom,
   ReplaySubject,
-  Subject
+  Subject,
 } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
@@ -17,7 +17,7 @@ import { LoadingService } from './loading.service';
 
 /** Client game service. */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ClientService implements OnDestroy {
   /** Initialization done. */
@@ -119,7 +119,7 @@ export class ClientService implements OnDestroy {
     private readonly errorService: ErrorService,
     private readonly loadingService: LoadingService,
     private readonly translocoService: TranslocoService,
-    private readonly chatService: ChatService
+    private readonly chatService: ChatService,
   ) {
     skyrimtogether.on('init', this.onInit.bind(this));
     skyrimtogether.on('activate', this.onActivate.bind(this));
@@ -136,7 +136,7 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
     skyrimtogether.on(
       'playerDisconnected',
-      this.onPlayerDisconnected.bind(this)
+      this.onPlayerDisconnected.bind(this),
     );
     skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
     skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
@@ -144,7 +144,7 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
     skyrimtogether.on(
       'setPlayer3dUnloaded',
-      this.onSetPlayer3dUnloaded.bind(this)
+      this.onSetPlayer3dUnloaded.bind(this),
     );
     skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
     skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
@@ -155,7 +155,7 @@ export class ClientService implements OnDestroy {
     skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
     skyrimtogether.on(
       'partyInviteReceived',
-      this.onPartyInviteReceived.bind(this)
+      this.onPartyInviteReceived.bind(this),
     );
   }
 
@@ -402,7 +402,7 @@ export class ClientService implements OnDestroy {
     RTT: number,
     packetLoss: number,
     sentBandwidth: number,
-    receivedBandwidth: number
+    receivedBandwidth: number,
   ): void {
     this.zone.run(() => {
       this.debugDataChange.next(
@@ -412,8 +412,8 @@ export class ClientService implements OnDestroy {
           RTT,
           packetLoss,
           sentBandwidth,
-          receivedBandwidth
-        )
+          receivedBandwidth,
+        ),
       );
     });
   }
@@ -422,13 +422,13 @@ export class ClientService implements OnDestroy {
     playerId: number,
     username: string,
     level: number,
-    cellName: string
+    cellName: string,
   ) {
     if (environment.game) {
       console.log(
         `%conPlayerConnected`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -438,8 +438,8 @@ export class ClientService implements OnDestroy {
           id: playerId,
           connected: true,
           level: level,
-          cellName: cellName
-        })
+          cellName: cellName,
+        }),
       );
     });
   }
@@ -449,7 +449,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conPlayerDisconnected`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -457,8 +457,8 @@ export class ClientService implements OnDestroy {
         new Player({
           name: username,
           id: playerId,
-          connected: false
-        })
+          connected: false,
+        }),
       );
     });
   }
@@ -474,7 +474,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conSetLevel`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -487,7 +487,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conSetCell`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -500,12 +500,12 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conSetPlayer3dLoaded`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
       this.isLoadedChange.next(
-        new Player({ id: playerId, isLoaded: true, health: health })
+        new Player({ id: playerId, isLoaded: true, health: health }),
       );
     });
   }
@@ -515,7 +515,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conSetPlayer3dUnloaded`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -528,7 +528,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conSetLocalPlayerId`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -567,15 +567,15 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conPartyInfo`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
       this.partyInfoChange.next(
         new PartyInfo({
           playerIds: playerIds,
-          leaderId: leaderId
-        })
+          leaderId: leaderId,
+        }),
       );
     });
   }
@@ -585,7 +585,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conPartyCreated`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -593,8 +593,8 @@ export class ClientService implements OnDestroy {
       this.partyInfoChange.next(
         new PartyInfo({
           playerIds: [this.localPlayerId],
-          leaderId: this.localPlayerId
-        })
+          leaderId: this.localPlayerId,
+        }),
       );
     });
   }
@@ -604,7 +604,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conPartyLeft`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {
@@ -617,7 +617,7 @@ export class ClientService implements OnDestroy {
       console.log(
         `%conPartyInviteReceived`,
         'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
-        ...Array.from(arguments).map(v => JSON.stringify(v))
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
       );
     }
     this.zone.run(() => {

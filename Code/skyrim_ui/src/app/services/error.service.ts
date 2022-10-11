@@ -36,7 +36,7 @@ export type ErrorEvents =
   | ErrorEvent;
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ErrorService {
   private error = new BehaviorSubject<string>('');
@@ -44,7 +44,7 @@ export class ErrorService {
 
   constructor(
     private readonly sound: SoundService,
-    private readonly translocoService: TranslocoService
+    private readonly translocoService: TranslocoService,
   ) {}
 
   getError() {
@@ -69,8 +69,8 @@ export class ErrorService {
             mods += await firstValueFrom(
               this.translocoService.selectTranslate(
                 'SERVICE.ERROR.ERRORS.MODS_MISMATCH_INSTALL',
-                { mods: `<strong>${install.join(', ')}</strong>` }
-              )
+                { mods: `<strong>${install.join(', ')}</strong>` },
+              ),
             );
           }
           const remove = error.data.mods
@@ -81,8 +81,8 @@ export class ErrorService {
             mods += await firstValueFrom(
               this.translocoService.selectTranslate(
                 'SERVICE.ERROR.ERRORS.MODS_MISMATCH_REMOVE',
-                { mods: `<strong>${remove.join(', ')}</strong>` }
-              )
+                { mods: `<strong>${remove.join(', ')}</strong>` },
+              ),
             );
           }
           data = { mods };
@@ -94,8 +94,8 @@ export class ErrorService {
       message = await firstValueFrom(
         this.translocoService.selectTranslate(
           'SERVICE.ERROR.ERRORS.' + error.error.toUpperCase(),
-          data
-        )
+          data,
+        ),
       );
     }
     this.error.next(message);

@@ -3,7 +3,7 @@ import {
   faArrowDown,
   faArrowUp,
   faWifi,
-  IconDefinition
+  IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { Observable, startWith } from 'rxjs';
 import { SettingService } from 'src/app/services/setting.service';
@@ -13,7 +13,7 @@ import { ClientService } from '../../services/client.service';
 @Component({
   selector: 'app-debug',
   templateUrl: './debug.component.html',
-  styleUrls: ['./debug.component.scss']
+  styleUrls: ['./debug.component.scss'],
 })
 export class DebugComponent {
   /* ### ICONS ### */
@@ -26,7 +26,7 @@ export class DebugComponent {
 
   constructor(
     private readonly client: ClientService,
-    private readonly settingService: SettingService
+    private readonly settingService: SettingService,
   ) {
     this.isShown$ = this.settingService.settings.isDebugShown;
     this.debugData$ = this.client.debugDataChange.pipe(startWith(new Debug()));

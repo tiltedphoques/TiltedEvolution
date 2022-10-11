@@ -6,7 +6,7 @@ export class PlayerList {
   constructor(
     options: {
       players?: Array<Player>;
-    } = {}
+    } = {},
   ) {
     this.players = options.players || new Array<Player>();
   }

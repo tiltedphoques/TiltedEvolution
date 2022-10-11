@@ -1,6 +1,7 @@
 <div
   class="no-players"
-  *ngIf="(playerListLength$ | async) === 0; else notEmpty">
+  *ngIf="(playerListLength$ | async) === 0; else notEmpty"
+>
   <span>{{ 'COMPONENT.PARTY_LIST.NO_OTHER_PLAYERS' | transloco }}</span>
 </div>
 
@@ -31,7 +32,8 @@
                 !(isPartyLeader$ | async)
               "
               class="user-action-button"
-              (click)="sendPartyInvite(player.id)">
+              (click)="sendPartyInvite(player.id)"
+            >
               {{ 'COMPONENT.PARTY_LIST.INVITE' | transloco }}
             </button>
           </td>
