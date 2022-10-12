@@ -1,7 +1,7 @@
-@import "functions/rem";
-@import "functions/mod";
+@import 'functions/rem';
+@import 'functions/mod';
 
-@import "env";
+@import 'env';
 
 :host {
   position: relative;
@@ -85,7 +85,7 @@
 
 .search-list-server {
   display: inline-block;
-  background-color: rgba($color: #292929, $alpha: 0.60);
+  background-color: rgba($color: #292929, $alpha: 0.6);
   font-size: 0.85rem;
   border-radius: 7px;
   height: 1.5rem;
@@ -100,7 +100,6 @@
   cdk-virtual-scroll-viewport {
     overflow-y: scroll;
   }
-
 
   .server-list-table {
     width: 100%;
@@ -139,7 +138,7 @@
     }
 
     .offline {
-      background-color: #ff9494
+      background-color: #ff9494;
     }
 
     .server-compatible {
@@ -176,4 +175,3 @@
     }
   }
 }
-

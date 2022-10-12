@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
-import { faArrowDown, faArrowUp, faWifi, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowDown,
+  faArrowUp,
+  faWifi,
+  IconDefinition,
+} from '@fortawesome/free-solid-svg-icons';
 import { Observable, startWith } from 'rxjs';
 import { SettingService } from 'src/app/services/setting.service';
 import { Debug } from '../../models/debug';
 import { ClientService } from '../../services/client.service';
-
 
 @Component({
   selector: 'app-debug',
@@ -12,7 +16,6 @@ import { ClientService } from '../../services/client.service';
   styleUrls: ['./debug.component.scss'],
 })
 export class DebugComponent {
-
   /* ### ICONS ### */
   faWifi: IconDefinition = faWifi;
   faArrowDown: IconDefinition = faArrowDown;
@@ -28,5 +31,4 @@ export class DebugComponent {
     this.isShown$ = this.settingService.settings.isDebugShown;
     this.debugData$ = this.client.debugDataChange.pipe(startWith(new Debug()));
   }
-
 }

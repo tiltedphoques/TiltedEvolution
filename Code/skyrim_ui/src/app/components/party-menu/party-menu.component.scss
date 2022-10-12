@@ -5,7 +5,8 @@
   margin-top: 0.5rem;
 }
 
-.separator, hr {
+.separator,
+hr {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
@@ -44,7 +45,7 @@
 .member-list {
   overflow: auto;
   max-height: 60vh;
-  margin-bottom: 1.0rem;
+  margin-bottom: 1rem;
 
   .player-list-table {
     width: 100%;

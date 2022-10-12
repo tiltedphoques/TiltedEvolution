@@ -1,4 +1,16 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ContentChildren, ElementRef, EventEmitter, forwardRef, HostListener, Input, Output, QueryList } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ContentChildren,
+  ElementRef,
+  EventEmitter,
+  forwardRef,
+  HostListener,
+  Input,
+  Output,
+  QueryList,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
 import { Sound, SoundService } from 'src/app/services/sound.service';
@@ -7,8 +19,7 @@ import { DropdownOptionComponent } from './dropdown-option.component';
 
 type OptionValue = string | number;
 
-const noop = () => {
-};
+const noop = () => {};
 
 let dropdownCounter = 1;
 
@@ -26,7 +37,6 @@ let dropdownCounter = 1;
   ],
 })
 export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
-
   dropdownCounter = dropdownCounter++;
   isOpen = false;
   isDisabled = false;
@@ -34,7 +44,8 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
 
   options = new BehaviorSubject<{ text: string; value: any }[]>([]);
 
-  @ContentChildren(DropdownOptionComponent) optionChildren!: QueryList<DropdownOptionComponent>;
+  @ContentChildren(DropdownOptionComponent)
+  optionChildren!: QueryList<DropdownOptionComponent>;
   @Input() placeholder: string;
   // translation is opt-out because it should be the default for all UI elements.
   @Input('noTranslate') noTranslate: boolean | undefined;
@@ -50,24 +61,22 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     private readonly destroy$: DestroyService,
     private readonly soundService: SoundService,
     private readonly cdr: ChangeDetectorRef,
-    private readonly elRef:ElementRef
-  ) {
-  }
+    private readonly elRef: ElementRef,
+  ) {}
 
   ngAfterViewInit() {
-    this.optionChildren.changes.pipe(
-      takeUntil(this.destroy$),
-      startWith(null),
-    ).subscribe(() => {
-      const options = this.optionChildren.toArray();
-      this.options.next(
-        options.map(o => ({
-          text: o.text,
-          value: o.value,
-        })),
-      );
-      this.cdr.detectChanges();
-    });
+    this.optionChildren.changes
+      .pipe(takeUntil(this.destroy$), startWith(null))
+      .subscribe(() => {
+        const options = this.optionChildren.toArray();
+        this.options.next(
+          options.map(o => ({
+            text: o.text,
+            value: o.value,
+          })),
+        );
+        this.cdr.detectChanges();
+      });
   }
 
   @HostListener('focus')
@@ -107,14 +116,14 @@ export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
     this.isOpen = !this.isOpen;
     if (this.selected >= 0) {
       document
-        .querySelector(`#li-${ this.dropdownCounter }-${ this.selected }`)
+        .querySelector(`#li-${this.dropdownCounter}-${this.selected}`)
         .scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
 
   @HostListener('document:click', ['$event'])
   onClick(e: PointerEvent) {
-    const target = (e.target as Element);
+    const target = e.target as Element;
     const thisElement = this.elRef.nativeElement as Element;
 
     if (this.isOpen && !thisElement.contains(target)) {

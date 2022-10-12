@@ -9,7 +9,8 @@
     "deploy:production": "ng build --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "format": "prettier -w ./src/**/*.{ts,json,css,scss,html}"
   },
   "private": true,
   "dependencies": {
@@ -59,6 +60,7 @@
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-jasmine": "^4.0.1",
     "karma-jasmine-html-reporter": "^1.5.4",
+    "prettier": "^2.7.1",
     "ts-node": "~10.9.1",
     "typescript": "~4.7.4"
   },

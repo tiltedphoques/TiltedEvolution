@@ -1,5 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
 @Component({
   selector: 'app-toggle',
@@ -8,7 +13,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToggleComponent {
-
   @Input('isShow') public isShow = false;
   @Input('title') public title: String;
 
@@ -18,5 +22,4 @@ export class ToggleComponent {
     this.isShow = !this.isShow;
     this.toggleChange.emit(this.isShow);
   }
-
 }
