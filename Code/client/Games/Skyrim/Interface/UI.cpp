@@ -10,8 +10,6 @@ static bool g_RequestUnpauseAll{false};
 UI* UI::Get()
 {
     POINTER_SKYRIMSE(UI*, s_instance, 400327);
-    POINTER_FALLOUT4(UI*, s_instance, 0x1458D0898 - 0x140000000);
-
     return *s_instance.Get();
 }
 
@@ -23,9 +21,9 @@ bool UI::GetMenuOpen(const BSFixedString& acName) const
     TP_THIS_FUNCTION(TMenuSystem_IsOpen, bool, const UI, const BSFixedString&);
 
     POINTER_SKYRIMSE(TMenuSystem_IsOpen, s_isMenuOpen, 82074);
-    POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 0x142042160 - 0x140000000);
+    POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 1065115);
 
-    return ThisCall(s_isMenuOpen.Get(), this, acName);
+    return TiltedPhoques::ThisCall(s_isMenuOpen.Get(), this, acName);
 }
 
 void UI::CloseAllMenus()
@@ -33,7 +31,7 @@ void UI::CloseAllMenus()
     TP_THIS_FUNCTION(TUI_CloseAll, void, const UI);
     POINTER_SKYRIMSE(TUI_CloseAll, s_CloseAll, 82088);
 
-    ThisCall(s_CloseAll.Get(), this);
+    TiltedPhoques::ThisCall(s_CloseAll.Get(), this);
 }
 
 BSFixedString* UI::LookupMenuNameByInstance(IMenu* apMenu)
@@ -87,25 +85,24 @@ static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
-    if (apMenu && World::Get()
-                      .GetTransport()
-                      .IsConnected() /*TODO(Force): Maybe consider some souls like option for singleplayer*/)
-    {
-#if 0
+    // if the menu is empty we let the real function handle it.
+    if (!apMenu || !World::Get().GetTransport().IsConnected())
+        return UI_AddToActiveQueue(apSelf, apMenu, apFoundItem);
+
+    #if 0
         if (auto* pName = apSelf->LookupMenuNameByInstance(apEntry))
         {
             spdlog::info("Menu requested {}", pName->AsAscii());
         }
 #endif
 
-        // NOTE(Force): could also compare by RTTI later on...
-        for (const char* item : kAllowList)
+    // NOTE(Force): could also compare by RTTI later on...
+    for (const char* item : kAllowList)
+    {
+        if (auto* pMenu = apSelf->FindMenuByName(item))
         {
-            if (auto* pMenu = apSelf->FindMenuByName(item))
-            {
-                if (pMenu == apMenu)
-                    UnfreezeMenu(apMenu);
-            }
+            if (pMenu == apMenu)
+                UnfreezeMenu(apMenu);
         }
     }
 
@@ -131,6 +128,11 @@ static TiltedPhoques::Initializer s_s([]() {
     // TODO: Move me later.
     VersionDbPtr<uint8_t> MainInit(36548);
     TiltedPhoques::Put<uint8_t>(MainInit.Get() + 0xFE, 0xEB);
+
+    // Credits to Skyrim Souls RE for this fix.
+    // Allows the favorites menu to be numbered during connect.
+    VersionDbPtr<uint8_t> FavoritesCanProcess(51538);
+    TiltedPhoques::Put<uint16_t>(FavoritesCanProcess.Get() + 0x15, 0x9090);
 
     // Some experiments:
     // POINTER_SKYRIMSE(TCallback, s_start, 13631);

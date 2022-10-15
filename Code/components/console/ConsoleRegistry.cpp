@@ -207,7 +207,7 @@ ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const Tilted
 {
     if (acLine.length() <= 2 || acLine[0] != kCommandPrefix)
     {
-        m_out->error("Commands must begin with /");
+        m_out->error("Commands must begin with {}", kCommandPrefix);
         return ExecutionResult::kFailure;
     }
 
@@ -222,7 +222,7 @@ ConsoleRegistry::ExecutionResult ConsoleRegistry::TryExecuteCommand(const Tilted
     auto* pCommand = FindCommand(tokens[0].c_str());
     if (!pCommand)
     {
-        m_out->error("Unknown command. Type /help for help.");
+        m_out->error("Unknown command. Type {}help for help.", kCommandPrefix);
         return ExecutionResult::kFailure;
     }
 

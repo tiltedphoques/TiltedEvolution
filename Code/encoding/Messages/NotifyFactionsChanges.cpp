@@ -2,11 +2,13 @@
 #include <TiltedCore/Serialization.hpp>
 #include <cassert>
 
+static const uint64_t kMaxChangeCount = 0x400;
+
 void NotifyFactionsChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    assert(Changes.size() < 0x100);
+    assert(Changes.size() < 0x400);
 
-    aWriter.WriteBits(Changes.size() & 0xFF, 8);
+    Serialization::WriteVarInt(aWriter, Changes.size());
 
     for (auto& change : Changes)
     {
@@ -19,8 +21,11 @@ void NotifyFactionsChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
 {
     ServerMessage::DeserializeRaw(aReader);
 
-    uint64_t count = 0;
-    aReader.ReadBits(count, 8);
+    uint64_t count = Serialization::ReadVarInt(aReader);
+
+    // Early abort as we don't want to allocate a ton of memory
+    if (count >= kMaxChangeCount)
+        return;
 
     for (auto i = 0u; i < count; ++i)
     {

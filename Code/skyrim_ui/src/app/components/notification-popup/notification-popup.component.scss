@@ -3,49 +3,56 @@
 @import "functions/mod";
 @import "mixins/gapped-vertical";
 
-.notification-popup {
-  width: 100%;
-  height: 100%;
-  background-color: rgba($color: #000000, $alpha: 0.7)
+:host {
+  display: block;
+  margin-right: 2em;
+  margin-bottom: 0.5em;
+  color: white;
+  background-color: $-color-background;
+  font-size: 1.3rem;
+
+  &:last-child {
+    margin-bottom: 1em;
+  }
 }
 
-.friendavatar {
-  position: absolute;
-  top: 50%;
-  left: 13%;
-  transform: translateX(-50%) translateY(-50%);
-  overflow: hidden;
-  width: 2vw;
-  height: 2vw;
+.notification-popup {
+  display: flex;
+  align-items: center;
+  background-color: rgba($color: #000000, $alpha: 0.7);
+  padding: 0.5em;
+}
+
+.notification-popup:first-child {
+  margin-left: 1em;
+}
+
+.notification-popup > *{
+  margin-right: 1em;
+}
+
+img, .icon {
+  width: 2em;
+  height: 2em;
   background-size: contain;
 }
 
-.text-connection-popup {
-  position: absolute;
-  top: 50%;
-  left: 56%;
-  width: 64%;
-  transform: translateX(-50%) translateY(-50%);
-  overflow: hidden;
-  white-space: normal;
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.text-invite-popup {
-  left: 60%;
-  width: 73%;
+.icon > * {
+  font-size: 1.5em;
 }
 
-.friendstatus {
-  position: absolute;
-  top: 50%;
-  left: 90.5%;
-  transform: translateX(-50%) translateY(-50%);
-  width: 0.5em;
-  height: 0.5em;
-  background: #993333;
-  border-radius: 50%;
+p {
+  max-width: 25em;
 }
 
-.online {
-  background: #339933;
+button {
+  font-size: 1em;
 }
+
+

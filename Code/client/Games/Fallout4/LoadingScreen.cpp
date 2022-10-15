@@ -25,20 +25,18 @@ void RequestLoadingText(ScaleFormContext* apContext)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    BSFixedString str("TESTTTTT");
+    BSFixedString str("Welcome to Fallout Together | Show some love to the devs!");
 
-    if(apContext && apContext->value)
+    if (apContext && apContext->value)
         apContext->value->data.data = str.data;
 
     RealRequestLoadingText(apContext);
 }
 
-static TiltedPhoques::Initializer s_loadingScreenHooks([]()
-    {
-        POINTER_FALLOUT4(TRequestLoadingText, s_requestLoadingText, 0x1412985D0 - 0x140000000);
+static TiltedPhoques::Initializer s_loadingScreenHooks([]() {
+    POINTER_FALLOUT4(TRequestLoadingText, s_requestLoadingText, 277977);
 
-        RealRequestLoadingText = s_requestLoadingText.Get();
+    RealRequestLoadingText = s_requestLoadingText.Get();
 
-        TP_HOOK(&RealRequestLoadingText, RequestLoadingText);
-    });
-
+    TP_HOOK(&RealRequestLoadingText, RequestLoadingText);
+});

@@ -10,18 +10,18 @@
 .container {
   overflow: auto;
   max-height: 60vh;
-  margin-top: 1rem;
   padding-right: 15px;
 
   .settings {
     display: flex;
+    margin-top: 1rem;
     justify-content: space-between;
     flex-direction: column;
 
     .section {
       padding-bottom: 15px;
-      margin-bottom: rem($-size-font, 2px);
-      border-bottom: rem($-size-font, 2px) solid;
+      margin-bottom: 0.1rem;
+      border-bottom: 2px solid;
       border-image: url("../../../assets/images/separator/single.svg") 3;
       display: flex;
       justify-content: space-between;
@@ -32,6 +32,10 @@
       }
     }
 
+    .section > div:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
     .flex-item {
       position: relative;
       display: flex;
@@ -40,22 +44,26 @@
 
       .radio-group {
         display: flex;
-      }
+        justify-content: space-between;
+        width: 40%;
 
-      .anchor-radios {
-        display: flex;
-        flex-direction: column;
-        justify-content: end;
-
-        > div {
+        div {
           display: flex;
-          justify-content: space-between;
+          align-items: center;
         }
       }
     }
 
-    div:not(:last-child) {
-      margin-bottom: 0.5rem;
+    .flex-item > label {
+      width: 55%;
+    }
+
+    .flex-item > input {
+      width: 40%;
+    }
+
+    .settings-dropdown {
+      width: 40%;
     }
 
     hr {

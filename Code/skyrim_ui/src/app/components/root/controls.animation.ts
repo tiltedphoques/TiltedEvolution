@@ -1,7 +1,7 @@
 import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
 
 
-export const animation = trigger('controls', [
+export const controlsAnimation = trigger('controls', [
   state('false', style({
     'visibility': 'hidden',
     'opacity': '0',
@@ -10,7 +10,7 @@ export const animation = trigger('controls', [
   transition('false => true', [
     query('.app-root-menu', style({
       'opacity': '0',
-      'width': '0'
+      'width': '0',
     }), { optional: true }),
     query('.app-root-menu button', style({
       'opacity': '0',

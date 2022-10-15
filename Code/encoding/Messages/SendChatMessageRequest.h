@@ -20,8 +20,10 @@ struct SendChatMessageRequest final : ClientMessage
     bool operator==(const SendChatMessageRequest& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() &&
+               MessageType == acRhs.MessageType &&
                ChatMessage == acRhs.ChatMessage;
     }
 
+    ChatMessageType MessageType;
     TiltedPhoques::String ChatMessage;
 };

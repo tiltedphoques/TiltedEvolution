@@ -27,28 +27,28 @@ int TP_MAKE_THISCALL(HookVMUpdate, VMContext)
     if (apThis->inactive == 0)
         g_appInstance->Update();
 
-    return ThisCall(VMUpdate, apThis);
+    return TiltedPhoques::ThisCall(VMUpdate, apThis);
 }
 
 short TP_MAKE_THISCALL(HookMainLoop, Main)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    return ThisCall(MainLoop, apThis);
+    return TiltedPhoques::ThisCall(MainLoop, apThis);
 }
 
 uintptr_t TP_MAKE_THISCALL(HookVMDestructor, void)
 {
     TP_EMPTY_HOOK_PLACEHOLDER
 
-    return ThisCall(VMDestructor, apThis);
+    return TiltedPhoques::ThisCall(VMDestructor, apThis);
 }
 
 static TiltedPhoques::Initializer s_mainHooks([]()
     {
-        POINTER_FALLOUT4(TMainLoop, cMainLoop, 0x140D38E60 - 0x140000000);
-        POINTER_FALLOUT4(TVMUpdate, cVMUpdate, 0x141372150 - 0x140000000);
-        POINTER_FALLOUT4(TVMDestructor, cVMDestructor, 0x140E986D0 - 0x140000000);
+        POINTER_FALLOUT4(TMainLoop, cMainLoop, 633525);
+        POINTER_FALLOUT4(TVMUpdate, cVMUpdate, 759509);
+        POINTER_FALLOUT4(TVMDestructor, cVMDestructor, 694341);
 
         VMUpdate = cVMUpdate.Get();
         MainLoop = cMainLoop.Get();

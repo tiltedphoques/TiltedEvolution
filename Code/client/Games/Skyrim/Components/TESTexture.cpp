@@ -8,5 +8,5 @@ void TESTexture::Construct()
 
     POINTER_SKYRIMSE(TConstructor, s_constructor, 14953);
 
-    ThisCall(s_constructor, this);
+    TiltedPhoques::ThisCall(s_constructor, this);
 }

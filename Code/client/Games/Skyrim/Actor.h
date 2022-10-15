@@ -85,7 +85,7 @@ struct Actor : TESObjectREFR
     virtual void sub_CF();
     virtual void sub_D0();
     virtual void sub_D1();
-    virtual void sub_D2();
+    virtual bool sub_D2() const;
     virtual void sub_D3();
     virtual void sub_D4();
     virtual void sub_D5();
@@ -153,8 +153,8 @@ struct Actor : TESObjectREFR
     virtual void sub_112();
     virtual void sub_113();
     virtual void sub_114();
-    virtual void sub_115();
-    virtual void sub_116();
+    virtual bool sub_115();
+    virtual bool sub_116();
     virtual void sub_117();
     virtual void sub_118();
     virtual void sub_119();
@@ -186,6 +186,7 @@ struct Actor : TESObjectREFR
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
     TESForm* GetEquippedAmmo() const noexcept;
+    Actor* GetCommandingActor() const noexcept;
     // in reality this is a BGSLocation
     TESForm *GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
@@ -193,11 +194,15 @@ struct Actor : TESObjectREFR
     Inventory GetActorInventory() const noexcept;
     MagicEquipment GetMagicEquipment() const noexcept;
     Inventory GetEquipment() const noexcept;
-    int32_t GetGoldAmount() noexcept;
-    uint16_t GetLevel() noexcept;
-
+    int32_t GetGoldAmount() const noexcept;
+    uint16_t GetLevel() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;
+    [[nodiscard]] bool IsDead() const noexcept;
+    [[nodiscard]] bool IsDragon() const noexcept;
+    [[nodiscard]] bool IsPlayerSummon() const noexcept;
+    [[nodiscard]] bool IsInCombat() const noexcept;
+    [[nodiscard]] Actor* GetCombatTarget() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -205,6 +210,7 @@ struct Actor : TESObjectREFR
     void SetActorValue(uint32_t aId, float aValue) noexcept;
     void ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept;
     void SetActorValues(const ActorValues& acActorValues) noexcept;
+    void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
     void ForcePosition(const NiPoint3& acPosition) noexcept;
@@ -214,7 +220,7 @@ struct Actor : TESObjectREFR
     void SetMagicEquipment(const MagicEquipment& acEquipment) noexcept;
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
-    void SetPlayerRespawnMode() noexcept;
+    void SetPlayerRespawnMode(bool aSet = true) noexcept;
     void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions
@@ -223,20 +229,22 @@ struct Actor : TESObjectREFR
     void QueueUpdate() noexcept;
     bool InitiateMountPackage(Actor* apMount) noexcept;
     void GenerateMagicCasters() noexcept;
-    void DispellAllSpells() noexcept;
-
-    bool IsDead() noexcept;
-    bool IsDragon() noexcept;
-    void Kill() noexcept;
+    void DispelAllSpells(bool aNow = false) noexcept;
     void Reset() noexcept;
+    void Kill() noexcept;
     void Respawn() noexcept;
     void PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept;
     void DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept;
+    void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void SpeakSound(const char* pFile);
+    void StartCombatEx(Actor* apTarget) noexcept;
+    void StartCombat(Actor* apTarget) noexcept;
+    void StopCombat() noexcept;
 
     enum ActorFlags
     {
         IS_A_MOUNT = 1 << 1,
+        IS_COMMANDED_ACTOR = 1 << 16,
         IS_ESSENTIAL = 1 << 18,
     };
 
@@ -255,6 +263,11 @@ struct Actor : TESObjectREFR
             flags2 |= ActorFlags::IS_ESSENTIAL;
         else
             flags2 &= ~ActorFlags::IS_ESSENTIAL;
+    }
+
+    bool IsCommandedActor() const noexcept
+    {
+        return flags2 & ActorFlags::IS_COMMANDED_ACTOR;
     }
 
 public:
@@ -320,7 +333,7 @@ public:
     uint32_t unk178; // F0
     uint32_t unk17C; // F4
     SpellItemEntry* spellItemHead; // F8
-    BSTSmallArray<void*> addedSpells;
+    BSTSmallArray<TESForm*> addedSpells;
     ActorMagicCaster* casters[4];
     MagicItem* magicItems[4];
     TESForm* equippedShout;
@@ -351,18 +364,18 @@ public:
     //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
 };
 
-static_assert(offsetof(Actor, currentProcess) == 0xF0);
-static_assert(offsetof(Actor, flags1) == 0xE0);
-static_assert(offsetof(Actor, actorValueOwner) == 0xB0);
-static_assert(offsetof(Actor, actorState) == 0xB8);
-static_assert(offsetof(Actor, flags2) == 0x1FC);
-static_assert(offsetof(Actor, unk194) == 0x270);
-static_assert(offsetof(Actor, fVoiceTimer) == 0x108);
-static_assert(offsetof(Actor, unk84) == 0xE8);
-static_assert(offsetof(Actor, unk17C) == 0x17C);
-static_assert(offsetof(Actor, pCombatController) == 0x158);
-static_assert(offsetof(Actor, magicItems) == 0x1C0);
-static_assert(offsetof(Actor, equippedShout) == 0x1E0);
-static_assert(offsetof(Actor, actorLock) == 0x27C);
-static_assert(sizeof(Actor) == 0x2B0);
+static_assert(offsetof(Actor, currentProcess) == 0xF8);
+static_assert(offsetof(Actor, flags1) == 0xE8);
+static_assert(offsetof(Actor, actorValueOwner) == 0xB8);
+static_assert(offsetof(Actor, actorState) == 0xC0);
+static_assert(offsetof(Actor, flags2) == 0x204);
+static_assert(offsetof(Actor, unk194) == 0x278);
+static_assert(offsetof(Actor, fVoiceTimer) == 0x110);
+static_assert(offsetof(Actor, unk84) == 0xF0);
+static_assert(offsetof(Actor, unk17C) == 0x184);
+static_assert(offsetof(Actor, pCombatController) == 0x160);
+static_assert(offsetof(Actor, magicItems) == 0x1C8);
+static_assert(offsetof(Actor, equippedShout) == 0x1E8);
+static_assert(offsetof(Actor, actorLock) == 0x284);
+static_assert(sizeof(Actor) == 0x2B8);
 static_assert(sizeof(Actor::SpellItemEntry) == 0x18);

@@ -18,7 +18,7 @@ void TP_MAKE_THISCALL(HookFinish, InvisibilityEffect)
         }
     }
 
-    ThisCall(RealFinish, apThis);
+    TiltedPhoques::ThisCall(RealFinish, apThis);
 }
 
 static TiltedPhoques::Initializer s_invisibilityEffectsHooks([]()

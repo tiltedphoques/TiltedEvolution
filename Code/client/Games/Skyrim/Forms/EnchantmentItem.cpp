@@ -40,11 +40,11 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
     EnchantmentItem* pItem = nullptr;
     if (aData.IsWeapon)
     {
-        pItem = ThisCall(addWeaponEnchantment, objManager, &effects);
+        pItem = TiltedPhoques::ThisCall(addWeaponEnchantment, objManager, &effects);
     }
     else
     {
-        pItem = ThisCall(addArmorEnchantment, objManager, &effects);
+        pItem = TiltedPhoques::ThisCall(addArmorEnchantment, objManager, &effects);
     }
 
     return pItem;

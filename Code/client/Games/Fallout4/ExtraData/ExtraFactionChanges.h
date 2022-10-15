@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 
 struct TESFaction;
 
@@ -14,6 +14,7 @@ struct ExtraFactionChanges : BSExtraData
         int8_t rank;
     };
 
+    bool bRemoveCrimeFaction;
     GameArray<Entry> entries;
 };
 

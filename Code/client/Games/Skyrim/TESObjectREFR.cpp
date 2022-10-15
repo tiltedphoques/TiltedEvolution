@@ -9,7 +9,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/ScriptAnimationEvent.h>
 
-#include <Games/ExtraDataList.h>
+#include <ExtraData/ExtraDataList.h>
 #include <ExtraData/ExtraCharge.h>
 #include <ExtraData/ExtraCount.h>
 #include <ExtraData/ExtraEnchantment.h>
@@ -20,6 +20,7 @@
 #include <ExtraData/ExtraWorn.h>
 #include <ExtraData/ExtraWornLeft.h>
 #include <Forms/EnchantmentItem.h>
+#include <Forms/AlchemyItem.h>
 #include <EquipManager.h>
 #include <DefaultObjectManager.h>
 
@@ -89,28 +90,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 
     POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 16040);
     
-    return ThisCall(s_getContainerChangs, this);
-}
-
-void TESObjectREFR::SaveInventory(BGSSaveFormBuffer* apBuffer) const noexcept
-{
-    auto changes = GetContainerChanges();
-
-    auto entries = changes->entries;
-    uint32_t entryCount = 0;
-    for (auto entry : *entries)
-    {
-        entryCount++;
-    }
-    if (entryCount > 1024)
-        spdlog::error("Inventory entry count is really big: {:X}:{}", formID, entryCount);
-
-    changes->Save(apBuffer);
-}
-
-void TESObjectREFR::LoadInventory(BGSLoadFormBuffer* apBuffer) noexcept
-{
-    GetContainerChanges()->Load(apBuffer);
+    return TiltedPhoques::ThisCall(s_getContainerChangs, this);
 }
 
 void TESObjectREFR::RemoveAllItems() noexcept
@@ -130,7 +110,7 @@ TESContainer* TESObjectREFR::GetContainer() const noexcept
 
     POINTER_SKYRIMSE(TGetContainer, s_getContainer, 19702);
 
-    return ThisCall(s_getContainer, this);
+    return TiltedPhoques::ThisCall(s_getContainer, this);
 }
 
 int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
@@ -162,17 +142,17 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
 {
     auto& modSystem = World::Get().GetModSystem();
 
-    if (ExtraCount* pExtraCount = Cast<ExtraCount>(apExtraDataList->GetByType(ExtraData::Count)))
+    if (ExtraCount* pExtraCount = Cast<ExtraCount>(apExtraDataList->GetByType(ExtraDataType::Count)))
     {
         arEntry.Count = pExtraCount->count;
     }
 
-    if (ExtraCharge* pExtraCharge = Cast<ExtraCharge>(apExtraDataList->GetByType(ExtraData::Charge)))
+    if (ExtraCharge* pExtraCharge = Cast<ExtraCharge>(apExtraDataList->GetByType(ExtraDataType::Charge)))
     {
         arEntry.ExtraCharge = pExtraCharge->fCharge;
     }
 
-    if (ExtraEnchantment* pExtraEnchantment = Cast<ExtraEnchantment>(apExtraDataList->GetByType(ExtraData::Enchantment)))
+    if (ExtraEnchantment* pExtraEnchantment = Cast<ExtraEnchantment>(apExtraDataList->GetByType(ExtraDataType::Enchantment)))
     {
         TP_ASSERT(pExtraEnchantment->pEnchantment, "Null enchantment in ExtraEnchantment");
 
@@ -205,12 +185,12 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         arEntry.ExtraEnchantRemoveUnequip = pExtraEnchantment->bRemoveOnUnequip;
     }
 
-    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraData::Health)))
+    if (ExtraHealth* pExtraHealth = Cast<ExtraHealth>(apExtraDataList->GetByType(ExtraDataType::Health)))
     {
         arEntry.ExtraHealth = pExtraHealth->fHealth;
     }
 
-    if (ExtraPoison* pExtraPoison = Cast<ExtraPoison>(apExtraDataList->GetByType(ExtraData::Poison)))
+    if (ExtraPoison* pExtraPoison = Cast<ExtraPoison>(apExtraDataList->GetByType(ExtraDataType::Poison)))
     {
         TP_ASSERT(pExtraPoison->pPoison, "Null poison in ExtraPoison");
         if (pExtraPoison && pExtraPoison->pPoison)
@@ -220,13 +200,13 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         }
     }
 
-    if (ExtraSoul* pExtraSoul = Cast<ExtraSoul>(apExtraDataList->GetByType(ExtraData::Soul)))
+    if (ExtraSoul* pExtraSoul = Cast<ExtraSoul>(apExtraDataList->GetByType(ExtraDataType::Soul)))
     {
         arEntry.ExtraSoulLevel = (int32_t)pExtraSoul->cSoul;
     }
 
     /*
-    if (ExtraTextDisplayData* pExtraTextDisplayData = Cast<ExtraTextDisplayData>(apExtraDataList->GetByType(ExtraData::TextDisplayData)))
+    if (ExtraTextDisplayData* pExtraTextDisplayData = Cast<ExtraTextDisplayData>(apExtraDataList->GetByType(ExtraDataType::TextDisplayData)))
     {
         if (pExtraTextDisplayData->DisplayName)
             arEntry.ExtraTextDisplayName = pExtraTextDisplayData->DisplayName;
@@ -235,8 +215,8 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
     }
     */
 
-    arEntry.ExtraWorn = apExtraDataList->Contains(ExtraData::Worn);
-    arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraData::WornLeft);
+    arEntry.ExtraWorn = apExtraDataList->Contains(ExtraDataType::Worn);
+    arEntry.ExtraWornLeft = apExtraDataList->Contains(ExtraDataType::WornLeft);
 
     arEntry.IsQuestItem = apExtraDataList->HasQuestObjectAlias();
 }
@@ -320,7 +300,7 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
         pExtraText->iOwnerInstance = -2;
         pExtraText->fTemperFactor = 1.0F;
-        pExtraDataList->Add(ExtraData::TextDisplayData, pExtraText);
+        pExtraDataList->Add(ExtraDataType::TextDisplayData, pExtraText);
     }
     */
 
@@ -377,7 +357,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
         if (!aFilter(*pGameEntry->form))
             continue;
 
-        Inventory::Entry entry;
+        Inventory::Entry entry{};
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
         entry.Count = pGameEntry->count;
 
@@ -506,13 +486,14 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         bool isWornLeft = false;
         if (pExtraDataList)
         {
-            isWorn = pExtraDataList->Contains(ExtraData::Worn);
-            isWornLeft = pExtraDataList->Contains(ExtraData::WornLeft);
+            isWorn = pExtraDataList->Contains(ExtraDataType::Worn);
+            isWornLeft = pExtraDataList->Contains(ExtraDataType::WornLeft);
         }
 
         spdlog::debug("Adding item {:X}, count {}", pObject->formID, arEntry.Count);
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
 
+        // TODO: check Actor cast first?
         if (isWorn)
             EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
         else if (isWornLeft)
@@ -545,14 +526,14 @@ void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
 {
     TP_THIS_FUNCTION(TUpdateItemList, void, TESObjectREFR, TESForm*);
     POINTER_SKYRIMSE(TUpdateItemList, updateItemList, 52849);
-    ThisCall(updateItemList, this, pUnkForm);
+    TiltedPhoques::ThisCall(updateItemList, this, pUnkForm);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
     ScopedActivateOverride _;
 
-    return ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
+    return TiltedPhoques::ThisCall(RealActivate, this, apActivator, aUnk1, aObjectToGet, aCount, aDefaultProcessing);
 }
 
 void TESObjectREFR::EnableImpl() noexcept
@@ -561,7 +542,7 @@ void TESObjectREFR::EnableImpl() noexcept
 
     POINTER_SKYRIMSE(TEnableImpl, s_enable, 19800);
 
-    ThisCall(s_enable, this, false);
+    TiltedPhoques::ThisCall(s_enable, this, false);
 }
 
 static thread_local bool s_cancelAnimationWaitEvent = false;
@@ -589,7 +570,7 @@ bool TP_MAKE_THISCALL(HookPlayAnimationAndWait, void, uint32_t auiStackID, TESOb
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, apAnimation->AsAscii(), apEventName->AsAscii()));
 #endif
 
-    return ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
+    return TiltedPhoques::ThisCall(RealPlayAnimationAndWait, apThis, auiStackID, apSelf, apAnimation, apEventName);
 }
 
 static thread_local bool s_cancelAnimationEvent = false;
@@ -615,7 +596,7 @@ bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREF
         World::Get().GetRunner().Trigger(ScriptAnimationEvent(apSelf->formID, String{}, apEventName->AsAscii()));
 #endif
 
-    return ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
+    return TiltedPhoques::ThisCall(RealPlayAnimation, apThis, auiStackID, apSelf, apEventName);
 }
 
 void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing)
@@ -624,7 +605,7 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
     if (pActivator)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 
-    return ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
+    return TiltedPhoques::ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
 }
 
 void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner)
@@ -645,7 +626,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
 
     spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
 
-    ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
+    TiltedPhoques::ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
 BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
@@ -672,7 +653,7 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
 
     ScopedEquipOverride _;
 
-    return ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
+    return TiltedPhoques::ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks([]() {

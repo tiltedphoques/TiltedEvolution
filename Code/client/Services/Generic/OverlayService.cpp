@@ -31,6 +31,8 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/ConnectionErrorEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Events/PartyJoinedEvent.h>
+#include <Events/PartyLeftEvent.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
@@ -47,7 +49,11 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     OverlayRenderHandler* Create() override
     {
         auto* pHandler = new OverlayRenderHandlerD3D11(this);
+    #if TP_SKYRIM64
         pHandler->SetVisible(true);
+    #else
+        pHandler->SetVisible(false);
+    #endif
 
         return pHandler;
     }
@@ -94,12 +100,13 @@ String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 float CalculateHealthPercentage(Actor* apActor) noexcept
 {
     const float maxHealth = apActor->GetActorPermanentValue(ActorValueInfo::kHealth);
+    const float tempModHealth = apActor->healthModifiers.temporaryModifier;
+
     if (maxHealth == 0.f)
         return 0.f;
-
     const float health = apActor->GetActorValue(ActorValueInfo::kHealth);
 
-    float percentage = health / maxHealth * 100.f;
+    float percentage = health / (maxHealth + tempModHealth) * 100.f;
     if (percentage < 0.f)
         percentage = 0.f;
 
@@ -123,6 +130,8 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_cellChangedConnection = aDispatcher.sink<NotifyPlayerCellChanged>().connect<&OverlayService::OnPlayerCellChanged>(this);
     m_teleportConnection = aDispatcher.sink<NotifyTeleport>().connect<&OverlayService::OnNotifyTeleport>(this);
     m_playerHealthConnection = aDispatcher.sink<NotifyPlayerHealthUpdate>().connect<&OverlayService::OnNotifyPlayerHealthUpdate>(this);
+    m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&OverlayService::OnPartyJoinedEvent>(this);
+    m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&OverlayService::OnPartyLeftEvent>(this);
 }
 
 OverlayService::~OverlayService() noexcept
@@ -146,7 +155,10 @@ void OverlayService::Render() noexcept
     static bool s_bi = false;
     if (!s_bi)
     {
+        // TODO: ft, this crashes fallout sometimes
+#if TP_SKYRIM64
         m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
+#endif
 
         s_bi = true;
     }
@@ -240,8 +252,10 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage);
-    m_pOverlay->ExecuteAsync("systemMessage", pArguments);
+    pArguments->SetInt(0, kSystemMessage);
+    pArguments->SetString(1, acMessage);
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
@@ -282,7 +296,6 @@ void OverlayService::OnUpdate(const UpdateEvent&) noexcept
 void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 {
     m_pOverlay->ExecuteAsync("connect");
-    SendSystemMessage("Successfully connected to server");
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acEvent.PlayerId);
@@ -292,7 +305,6 @@ void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
 void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
 {
     m_pOverlay->ExecuteAsync("disconnect");
-    SendSystemMessage("Disconnected from server");
 }
 
 void OverlayService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
@@ -335,8 +347,10 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.PlayerName.c_str());
+    pArguments->SetInt(0, (int)acMessage.MessageType);
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
+    pArguments->SetString(2, acMessage.PlayerName.c_str());
+
     m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
@@ -346,9 +360,11 @@ void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noe
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.Name.c_str());
+    pArguments->SetInt(0, kPlayerDialogue);
     pArguments->SetString(1, acMessage.Text.c_str());
-    m_pOverlay->ExecuteAsync("dialogueMessage", pArguments);
+    pArguments->SetString(2, acMessage.Name.c_str());
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept
@@ -431,6 +447,17 @@ void OverlayService::OnNotifyPlayerHealthUpdate(const NotifyPlayerHealthUpdate& 
     pArguments->SetInt(0, acMessage.PlayerId);
     pArguments->SetDouble(1, static_cast<double>(percentage));
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
+}
+
+void OverlayService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
+{
+    if (acEvent.IsLeader)
+        m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
+}
+
+void OverlayService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
+{
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
 }
 
 void OverlayService::RunDebugDataUpdates() noexcept

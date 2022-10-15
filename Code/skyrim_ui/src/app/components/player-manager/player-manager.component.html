@@ -1,24 +1,28 @@
 <div class="tab-buttons">
   <button
     data-style-ornament="inverted"
-    [attr.data-style-active]="(activeTab | async) === PlayerManagerTab.PLAYER_LIST"
+    [attr.data-style-active]="(activeTab$ | async) === PlayerManagerTab.PLAYER_LIST"
     (click)="switchTab(PlayerManagerTab.PLAYER_LIST)"
   >
     {{ 'COMPONENT.PLAYER_MANAGER.PLAYER_LIST' | transloco }}
   </button>
   <button
     data-style-ornament="inverted"
-    [attr.data-style-active]="(activeTab | async) === PlayerManagerTab.PARTY_MENU"
+    [attr.data-style-active]="(activeTab$ | async) === PlayerManagerTab.PARTY_MENU"
     (click)="switchTab(PlayerManagerTab.PARTY_MENU)"
   >
     {{ 'COMPONENT.PLAYER_MANAGER.PARTY_MENU' | transloco }}
   </button>
 </div>
 
-<ng-container [ngSwitch]="activeTab | async">
+<hr>
+
+<ng-container [ngSwitch]="activeTab$ | async">
   <app-player-list *ngSwitchCase="PlayerManagerTab.PLAYER_LIST"></app-player-list>
   <app-party-menu *ngSwitchCase="PlayerManagerTab.PARTY_MENU"></app-party-menu>
 </ng-container>
+
+<hr>
 
 <div class="actions">
   <button data-style-ornament="simple" class="btnCancel" (click)="close()">

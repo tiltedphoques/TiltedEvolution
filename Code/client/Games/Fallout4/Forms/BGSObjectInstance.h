@@ -5,9 +5,10 @@ struct TBO_InstanceData;
 
 struct BGSObjectInstance
 {
+    BGSObjectInstance() = delete;
     BGSObjectInstance(TESForm* apObject, TBO_InstanceData* apInstanceData);
 
     TESForm* pObject;
-    void* spInstanceData; // BSTSmartPointer<TBO_InstanceData,BSTSmartPointerIntrusiveRefCount> spInstanceData;
+    TBO_InstanceData* spInstanceData;
 };
 

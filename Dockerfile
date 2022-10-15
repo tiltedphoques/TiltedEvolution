@@ -1,55 +1,43 @@
-ARG arch=x86_64
+FROM tiltedphoques/multiarch-builder:latest as builder
 
-FROM tiltedphoques/builder:${arch} AS builder
+ARG REPO=https://github.com/tiltedphoques/TiltedEvolution.git
+ARG BRANCH=master
 
-ARG arch
+WORKDIR /home/builder
 
-WORKDIR /home/server
+ENV XMAKE_ROOT=y
 
-RUN apt update && \
-apt install cmake -y
+RUN git clone --recursive -b ${BRANCH} ${REPO} ./str && \
+    cd str && xmake config -m release -y && xmake -y && xmake install -o package -y
 
-COPY ./modules ./modules
-COPY ./Libraries ./Libraries
-COPY xmake.lua xmake.lua
-COPY ./.git ./.git
-COPY ./Code ./Code
 
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
-apt update && \
-apt install cmake -y && \
-xmake config -y && \
-xmake -j`nproc`
+# Building for x86_64
+FROM builder as amd64builder
 
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
-objcopy --only-keep-debug /home/server/build/linux/${arch}/release/SkyrimTogetherServer /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug && \
-objcopy --only-keep-debug /home/server/build/linux/${arch}/release/libSTServer.so /home/server/build/linux/${arch}/release/libSTServer.debug
+RUN cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6 2>/dev/null || :
 
-RUN export XMAKE_ROOTDIR="/root/.local/bin" && \
-export PATH="$XMAKE_ROOTDIR:$PATH" && \
-export XMAKE_ROOT=y && \
-xmake install -o package
 
-FROM ubuntu:20.04 AS skyrim
+# Building for arm64/v8
+FROM builder as arm64builder
 
-ARG arch
+RUN cp /usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.30 /home/builder/libstdc++.so.6 2>/dev/null || :
 
-RUN apt update && apt install libssl1.1
 
-# We copy it twice since we can't really tell the arch from Dockerfile :(
-COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/x86_64-linux-gnu/libstdc++.so.6
-COPY --from=builder /usr/local/lib64/libstdc++.so.6.0.30 /lib/aarch64-linux-gnu/libstdc++.so.6
+# Intermediate image that has the library specific to our $TARGETARCH
+FROM ${TARGETARCH}builder as intermediate
+# If a user has built without buildx, attempt to save them
+RUN if [ "${TARGETARCH}" = "" ]; then export LIBFILE="/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30"; if [ ! -e ${LIBFILE} ]; then export LIBFILE=/usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.30; fi ; cp ${LIBFILE} /home/builder/libstdc++.so.6; fi
 
-# Now copy the actual bins
-COPY --from=builder /home/server/package/lib/libSTServer.so /home/server/libSTServer.so
-COPY --from=builder /home/server/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
-COPY --from=builder /home/server/package/bin/crashpad_handler /home/server/crashpad_handler
-COPY --from=builder /home/server/build/linux/${arch}/release/libSTServer.debug /home/server/libSTServer.debug
-COPY --from=builder /home/server/build/linux/${arch}/release/SkyrimTogetherServer.debug /home/server/SkyrimTogetherServer.debug
+
+# Build actual server image
+FROM ubuntu:22.04
+
+COPY --from=intermediate /home/builder/str/package/lib/libSTServer.so /home/server/libSTServer.so
+COPY --from=intermediate /home/builder/str/package/bin/crashpad_handler /home/server/crashpad_handler
+COPY --from=intermediate /home/builder/str/package/bin/SkyrimTogetherServer /home/server/SkyrimTogetherServer
+
+COPY --from=intermediate /home/builder/libstdc++.so.6 /home/server/libstdc++.so.6
+
 WORKDIR /home/server
 ENTRYPOINT ["./SkyrimTogetherServer"]
 

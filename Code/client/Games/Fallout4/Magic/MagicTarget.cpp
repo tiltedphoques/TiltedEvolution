@@ -8,6 +8,8 @@
 #include "EffectSetting.h"
 #include "MagicItem.h"
 
+#include <Games/Overrides.h>
+
 #include <Events/AddTargetEvent.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
@@ -21,25 +23,44 @@ static thread_local bool s_autoSucceedEffectCheck = false;
 bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 {
     s_autoSucceedEffectCheck = true;
-    bool result = ThisCall(RealAddTarget, this, arData);
+    bool result = TiltedPhoques::ThisCall(RealAddTarget, this, arData);
     s_autoSucceedEffectCheck = false;
     return result;
 }
 
+Actor* MagicTarget::GetTargetAsActor()
+{
+    TP_THIS_FUNCTION(TGetTargetAsActor, Actor*, MagicTarget);
+    POINTER_FALLOUT4(TGetTargetAsActor, getTargetAsActor, 129826);
+    return TiltedPhoques::ThisCall(getTargetAsActor, this);
+}
+
+// TODO: ft (verify)
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
-    // TODO: this can be fixed by properly implementing multiple inheritance
-    Actor* pTargetActor = (Actor*)((char*)apThis - 0x98);
+    Actor* pTargetActor = apThis->GetTargetAsActor();
+    if (!pTargetActor)
+        return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
 
     if (!pTargetActorEx)
-        return ThisCall(RealAddTarget, apThis, arData);
+        return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+
+    if (ScopedSpellCastOverride::IsOverriden())
+        return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+
+    AddTargetEvent addTargetEvent{};
+    addTargetEvent.TargetID = pTargetActor->formID;
+    addTargetEvent.SpellID = arData.pSpell->formID;
+    addTargetEvent.EffectID = arData.pEffectItem->pEffectSetting->formID;
+    addTargetEvent.Magnitude = arData.fMagnitude;
 
     if (pTargetActorEx->IsLocalPlayer())
     {
-        bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+        bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+        if (result)
+            World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
     else if (pTargetActorEx->IsRemotePlayer())
@@ -52,9 +73,9 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
         if (pCasterExtension->IsLocalPlayer())
         {
-            bool result = ThisCall(RealAddTarget, apThis, arData);
-            if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-                World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+            bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+            if (result)
+                World::Get().GetRunner().Trigger(addTargetEvent);
             return result;
         }
         else if (pCasterExtension->IsRemotePlayer())
@@ -65,9 +86,9 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     if (pTargetActorEx->IsLocal())
     {
-        bool result = ThisCall(RealAddTarget, apThis, arData);
-        if (result && arData.pEffectItem->pEffectSetting->eArchetype != EffectArchetypes::ArchetypeID::SUMMON_CREATURE)
-            World::Get().GetRunner().Trigger(AddTargetEvent(pTargetActor->formID, arData.pSpell->formID));
+        bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+        if (result)
+            World::Get().GetRunner().Trigger(addTargetEvent);
         return result;
     }
     else
@@ -81,12 +102,12 @@ bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, 
     if (s_autoSucceedEffectCheck)
         return true;
 
-    return ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
+    return TiltedPhoques::ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
 }
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
-    POINTER_FALLOUT4(TAddTarget, addTarget, 0x140C6C5E0 - 0x140000000);
-    POINTER_FALLOUT4(TCheckAddEffectTargetData, checkAddEffectTargetData, 0x140C6D4F0 - 0x140000000);
+    POINTER_FALLOUT4(TAddTarget, addTarget, 385036);
+    POINTER_FALLOUT4(TCheckAddEffectTargetData, checkAddEffectTargetData, 113034);
 
     RealAddTarget = addTarget.Get();
     RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();

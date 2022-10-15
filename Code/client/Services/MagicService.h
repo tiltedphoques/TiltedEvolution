@@ -3,6 +3,7 @@
 #include <Games/Events.h>
 #include <Events/EventDispatcher.h>
 #include <Messages/AddTargetRequest.h>
+#include <Messages/NotifyAddTarget.h>
 
 struct World;
 struct TransportService;
@@ -14,7 +15,6 @@ struct AddTargetEvent;
 
 struct NotifySpellCast;
 struct NotifyInterruptCast;
-struct NotifyAddTarget;
 
 /**
 * @brief Handles magic spell casting and magic effects.
@@ -26,7 +26,7 @@ struct NotifyAddTarget;
 * 
 * Contact cosideci for more info.
 */
-struct MagicService : BSTEventSink<TESMagicEffectApplyEvent>, BSTEventSink<TESActiveEffectApplyRemove>
+struct MagicService
 {
     MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
     ~MagicService() noexcept = default;
@@ -62,12 +62,9 @@ protected:
     /**
     * @brief Applies a magic effect based on a server message.
     */
-    void OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept;
+    void OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept;
 
 private:
-
-    BSTEventResult OnEvent(const TESMagicEffectApplyEvent*, const EventDispatcher<TESMagicEffectApplyEvent>*) override;
-    BSTEventResult OnEvent(const TESActiveEffectApplyRemove*, const EventDispatcher<TESActiveEffectApplyRemove>*) override;
 
     /**
     * Sometimes, certain magic effects are applied on actors that do not yet exist
@@ -86,6 +83,7 @@ private:
     * @see ApplyQueuedEffects
     */
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
+    Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

@@ -1,0 +1,72 @@
+.debug-helper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  border: solid grey 1px;
+  background-color: rgba($color: #000000, $alpha: 0.5);
+
+  &.open {
+    width: 20vw;
+  }
+
+  .debug-helper-actions {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5em;
+
+    .drag {
+      cursor: move;
+    }
+  }
+
+  .debug-helper-content {
+    margin: 0.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .debug-helper-row {
+    display: flex;
+    gap: 5px
+  }
+
+  .debug-helper-row > * {
+    flex: 1 1 0;
+  }
+}
+
+.separator {
+  color: rgba(255, 255, 255, 50%);
+}
+
+button {
+  padding: 0.25vw;
+  background-color: #292929;
+  border-radius: 2px;
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+
+  > * {
+    flex: 1 1 auto;
+  }
+}
+
+.player-actions {
+  max-height: 40vh;
+  overflow-y: auto;
+
+  .player-info {
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+}
+
+label, .title, .player-info {
+  color: rgba(255, 255, 255, 0.5);
+}

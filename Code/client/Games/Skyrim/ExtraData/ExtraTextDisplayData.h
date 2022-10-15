@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Games/ExtraData.h>
+#include "ExtraData.h"
 #include <Misc/BSFixedString.h>
 #include <Components/TESDescription.h>
 
@@ -17,7 +17,7 @@ static_assert(sizeof(BGSMessage) == 0x68);
 
 struct ExtraTextDisplayData : BSExtraData
 {
-    inline static constexpr auto eExtraData = ExtraData::TextDisplayData;
+    inline static constexpr auto eExtraData = ExtraDataType::TextDisplayData;
 
     BSFixedString DisplayName{};
     BGSMessage* pDisplayNameText{};

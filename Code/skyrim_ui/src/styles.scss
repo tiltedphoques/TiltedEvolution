@@ -52,8 +52,17 @@ select {
   padding: $-size-gap * 0.5;
   background: transparent;
   color: mod($-color-background, 1);
-  border: rem($-size-font, 2px) solid;
-  border-image: url("assets/images/separator/single.svg") 3;
+}
+
+input[type=text] {  
+  border: 3px solid #808081;
+  &:hover {
+    border: 3px solid mod($-color-background, 0.75);;
+  }
+
+  &:focus-visible {
+    border: 3px solid mod($-color-background, 0.9);;
+  }
 }
 
 input[type=range] {
@@ -175,12 +184,11 @@ button {
 }
 
 :root {
-  font-size: calc(16 * 100vw / 1920);
+  font-size: 16px;
 }
 
 ::-webkit-scrollbar {
   width: $scrollbar;
-  height: $scrollbar;
 }
 
 ::-webkit-scrollbar-button {
@@ -188,7 +196,7 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-  border: rem($-size-font, 3px) solid;
+  border: 4 solid;
   border-image: url("assets/images/scrollbar/track.svg") 4 fill;
 }
 
@@ -207,6 +215,20 @@ input[type=range] {
 input[type=checkbox] {
   width: $scrollbar;
   height: $scrollbar;
+  max-width: $scrollbar;
+  max-height: $scrollbar;
+
+  margin: 0;
+
+  appearance: none;
+  background-size: contain;
+  background-image: url(./assets/images/checkbox/unchecked.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+
+  &:checked {
+    background-image: url(./assets/images/checkbox/checked.svg);
+  }
 }
 
 ::-webkit-slider-runnable-track {
@@ -241,4 +263,45 @@ html,
 body {
   height: 100%;
   margin: 0;
+}
+
+hr {
+  border-image: url(./assets/images/separator/single.svg) 3;
+}
+
+.separator {
+  text-align: center;
+  border: 0;
+  white-space: nowrap;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+
+  & > * {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  &:before, &:after {
+    content: "";
+    height: 2px;
+    width: 50%;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 0.1rem;
+    border-bottom: 0.1rem solid;
+    border-image: url(./assets/images/separator/single.svg) 3;
+  }
+
+  &:before {
+    margin-left: -100%;
+  }
+
+  &:after {
+    margin-right: -100%;
+  }
+
 }
