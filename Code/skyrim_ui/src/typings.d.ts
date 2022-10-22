@@ -258,7 +258,7 @@ interface SkyrimTogether {
   sendMessage(type: number, message: string): void;
 
   /**
-   * Send message to server.
+   * Send a request to the server for changing the in-game time.
    */
   setTime(hours: number, minutes: number): void;
 
