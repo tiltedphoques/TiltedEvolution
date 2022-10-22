@@ -15,6 +15,7 @@
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/CommandService.h>
+#include <Services/MumbleService.h>
 #include <Services/CalendarService.h>
 #include <Services/StringCacheService.h>
 #include <Services/PlayerService.h>
@@ -38,6 +39,7 @@ World::World()
      ctx().emplace<DebugService>(m_dispatcher, *this, m_transport, ctx().at<ImguiService>());
      ctx().emplace<PapyrusService>(m_dispatcher);
      ctx().emplace<DiscordService>(m_dispatcher);
+     ctx().emplace<MumbleService>(m_dispatcher, m_transport);
      ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
      ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
      ctx().emplace<QuestService>(*this, m_dispatcher);
