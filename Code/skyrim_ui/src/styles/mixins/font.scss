@@ -6,7 +6,7 @@ $font: (
     ttf: truetype,
     otf: opentype,
     woff: woff,
-    woff2: woff2
+    woff2: woff2,
   ),
   weight: (
     thin: 100,
@@ -17,15 +17,15 @@ $font: (
     semibold: 600,
     bold: 700,
     extrabold: 800,
-    black: 900
-  )
+    black: 900,
+  ),
 );
 
-@mixin font($root, $family, $variants: ( ( regular, normal ), ), $types: ttf) {
+@mixin font($root, $family, $variants: ((regular, normal)), $types: ttf) {
   $folder: str-replace(to-lower-case($family), ' ', '-');
 
   @if type-of($types) != list {
-    $types: ( $types );
+    $types: ($types);
   }
 
   @each $variant in $variants {
@@ -44,11 +44,11 @@ $font: (
 
     $style: nth($variant, 2);
 
-    @if not(index(( normal, italic, both ), $style)) {
+    @if not(index((normal, italic, both), $style)) {
       @error '`#{dump($style)}` is not a valid style. Valid styles are: normal, italic, both.';
     }
 
-    $style-list: if($style == 'both', ( normal, italic ), ( $style ));
+    $style-list: if($style == 'both', (normal, italic), ($style));
     $type-list: map-get($font, type);
 
     @each $type in $types {
@@ -70,6 +70,5 @@ $font: (
         }
       }
     }
-
   }
 }

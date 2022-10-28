@@ -1,4 +1,4 @@
-@import "env";
+@import 'env';
 
 .dropdown-wrapper {
   --height: 2em;
@@ -49,11 +49,12 @@
     }
 
     &::after {
-      content: "";
+      content: '';
       height: 1em;
       min-width: 1em;
       width: 1em;
-      background: no-repeat center/contain url(../../../assets/images/arrow/south.svg);
+      background: no-repeat center/contain
+        url(../../../assets/images/arrow/south.svg);
     }
 
     &:hover {
@@ -89,14 +90,15 @@
       }
 
       &::after {
-        content: "";
+        content: '';
         height: 1em;
         min-width: 1em;
         width: 1em;
-  
-        background: no-repeat center/contain url(../../../assets/images/checkbox/unchecked.svg);
+
+        background: no-repeat center/contain
+          url(../../../assets/images/checkbox/unchecked.svg);
       }
-      
+
       &.selected::after {
         background-image: url(../../../assets/images/checkbox/checked.svg);
       }
@@ -110,13 +112,14 @@
       flex-direction: column;
       width: 100%;
       top: var(--height);
-      margin-top: calc(2*var(--border-size));
+      margin-top: calc(2 * var(--border-size));
       background-color: #0e0e0e;
       border: var(--border-size) solid;
     }
   }
 
-  &:hover, &.is-open {
+  &:hover,
+  &.is-open {
     --color: var(--color-hover);
     --opacity: var(--opacity-hover);
   }

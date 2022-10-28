@@ -11,13 +11,12 @@ import { UiRepository } from '../store/ui.repository';
 import { DebugHelperComponent } from './debug-helper/debug-helper.component';
 import { SkyrimtogetherMock } from './skyrimtogether.mock';
 
-
 @Injectable({
   providedIn: 'root',
 })
 export class MockClientService extends DestroyService {
-
-  public readonly skyrimtogether: SkyrimtogetherMock = skyrimtogether as SkyrimtogetherMock;
+  public readonly skyrimtogether: SkyrimtogetherMock =
+    skyrimtogether as SkyrimtogetherMock;
 
   constructor(
     private readonly clientService: ClientService,
@@ -34,7 +33,7 @@ export class MockClientService extends DestroyService {
       .pipe(
         takeUntil(this),
         map(() => this.appRef.components[0]?.instance),
-        filter((overlay) => !!overlay),
+        filter(overlay => !!overlay),
         first(),
       )
       .subscribe((root: RootComponent) => this.init(root));
@@ -45,5 +44,4 @@ export class MockClientService extends DestroyService {
     const userProfilePortal = new ComponentPortal(DebugHelperComponent);
     overlayRef.attach(userProfilePortal);
   }
-
 }

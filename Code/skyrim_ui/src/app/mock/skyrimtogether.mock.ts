@@ -1,18 +1,27 @@
 import { createStore } from '@ngneat/elf';
-import { addEntities, deleteEntities, getAllEntities, getEntity, selectAllEntities, updateEntities, withEntities } from '@ngneat/elf-entities';
+import {
+  addEntities,
+  deleteEntities,
+  getAllEntities,
+  getEntity,
+  selectAllEntities,
+  updateEntities,
+  withEntities,
+} from '@ngneat/elf-entities';
 import { EventEmitter } from 'events';
 import { fromEvent } from 'rxjs';
 import { MessageTypes } from '../services/chat.service';
 import { ErrorEvents } from '../services/error.service';
 import { MockPlayer } from './mock-player';
 
-
 let nextPlayerId = 1;
 
-const playerStore = createStore({ name: 'players' }, withEntities<MockPlayer>());
+const playerStore = createStore(
+  { name: 'players' },
+  withEntities<MockPlayer>(),
+);
 
 export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
-
   private connected = false;
   private active = false;
   private version = 'browser';
@@ -35,7 +44,13 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
           }
           break;
         case 't-version':
-          error = { error: 'wrong_version', data: { version: '[current-version]', expectedVersion: '[expected-version]' } };
+          error = {
+            error: 'wrong_version',
+            data: {
+              version: '[current-version]',
+              expectedVersion: '[expected-version]',
+            },
+          };
           break;
         case 't-full':
           error = { error: 'server_full' };
@@ -46,7 +61,14 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         case 't-mods':
           error = {
             error: 'mods_mismatch',
-            data: { mods: [['missing.esp', '0'], ['remove.esp', '12'], ['missing_2.esp', '0'], ['remove_2.esp', '12']] },
+            data: {
+              mods: [
+                ['missing.esp', '0'],
+                ['remove.esp', '12'],
+                ['missing_2.esp', '0'],
+                ['remove_2.esp', '12'],
+              ],
+            },
           };
           break;
       }
@@ -56,10 +78,16 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         if (error && typeof error !== 'boolean') {
           this.emit('triggerError', JSON.stringify(error));
         } else {
-          this.emit('setLocalPlayerId', this.localPlayerId = nextPlayerId++);
+          this.emit('setLocalPlayerId', (this.localPlayerId = nextPlayerId++));
         }
         for (const player of playerStore.query(getAllEntities())) {
-          this.emit('playerConnected', player.id, player.name, player.level, player.cellName);
+          this.emit(
+            'playerConnected',
+            player.id,
+            player.name,
+            player.level,
+            player.cellName,
+          );
           this.emit('setPlayer3dLoaded', player.id, player.health);
         }
       }, 250);
@@ -92,8 +120,13 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       const player = playerStore.query(getEntity(playerId));
       if (player) {
         console.log(
-          `%cTELEPORT`, 'background: #F09688; color: #fff; padding: 3px; font-size: 9px;',
-          'Teleport to player', JSON.stringify(player.name), `(${ player.id })`, 'in', JSON.stringify(player.cellName),
+          `%cTELEPORT`,
+          'background: #F09688; color: #fff; padding: 3px; font-size: 9px;',
+          'Teleport to player',
+          JSON.stringify(player.name),
+          `(${player.id})`,
+          'in',
+          JSON.stringify(player.cellName),
         );
       }
     }
@@ -113,7 +146,12 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     this.emit('partyCreated');
     this.emit(
       'partyInfo',
-      [...playerStore.query(getAllEntities()).filter(p => p.isInGroup).map(p => p.id)],
+      [
+        ...playerStore
+          .query(getAllEntities())
+          .filter(p => p.isInGroup)
+          .map(p => p.id),
+      ],
       inviterId,
     );
   }
@@ -122,7 +160,10 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     playerStore.update(updateEntities(playerId, { isInGroup: false }));
     this.emit(
       'partyInfo',
-      playerStore.query(getAllEntities()).filter(p => p.isInGroup).map(p => p.id),
+      playerStore
+        .query(getAllEntities())
+        .filter(p => p.isInGroup)
+        .map(p => p.id),
       this.localPlayerId,
     );
   }
@@ -138,7 +179,12 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     playerStore.update(updateEntities(playerId, { hasOwnParty: true }));
     this.emit(
       'partyInfo',
-      [...playerStore.query(getAllEntities()).filter(p => p.isInGroup).map(p => p.id)],
+      [
+        ...playerStore
+          .query(getAllEntities())
+          .filter(p => p.isInGroup)
+          .map(p => p.id),
+      ],
       playerId,
     );
   }
@@ -147,8 +193,15 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     Object.keys((this as any)._events).forEach(e => {
       this.on(e, (...params) => {
         if (this.showEvents) {
-          const eventName = e.replace(/(\G(?!^)|\b[a-zA-Z][a-z]*)([A-Z][a-z]*|\d+)/gm, `$1_$2`).toUpperCase();
-          console.log(`%cEVENT`, 'background: #009688; color: #fff; padding: 3px; font-size: 9px;', `[${ eventName }]`, ...params.map(v => JSON.stringify(v)));
+          const eventName = e
+            .replace(/(\G(?!^)|\b[a-zA-Z][a-z]*)([A-Z][a-z]*|\d+)/gm, `$1_$2`)
+            .toUpperCase();
+          console.log(
+            `%cEVENT`,
+            'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+            `[${eventName}]`,
+            ...params.map(v => JSON.stringify(v)),
+          );
         }
       });
     });
@@ -157,23 +210,22 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     this.emit('setVersion', this.version);
     this.emit('setName', this.playerName);
 
-    fromEvent(window, 'keydown')
-      .subscribe((event: KeyboardEvent) => {
-        if (event.ctrlKey && event.location === 2) {
+    fromEvent(window, 'keydown').subscribe((event: KeyboardEvent) => {
+      if (event.ctrlKey && event.location === 2) {
+        this.active = !this.active;
+        this.emit(this.active ? 'activate' : 'deactivate');
+        event.preventDefault();
+        return;
+      }
+      switch (event.key) {
+        case 'F2': {
           this.active = !this.active;
           this.emit(this.active ? 'activate' : 'deactivate');
           event.preventDefault();
-          return;
+          break;
         }
-        switch (event.key) {
-          case 'F2': {
-            this.active = !this.active;
-            this.emit(this.active ? 'activate' : 'deactivate');
-            event.preventDefault();
-            break;
-          }
-        }
-      });
+      }
+    });
   }
 
   setMockVersion(version: string): void {
@@ -190,7 +242,16 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
 
   addMockPlayer() {
     const newPlayerId = nextPlayerId++;
-    const cities = ['Whiterun', 'Dawnstar', 'Falkreath', 'Markarth', 'Morthal', 'Riften', 'Solitude', 'Windhelm'];
+    const cities = [
+      'Whiterun',
+      'Dawnstar',
+      'Falkreath',
+      'Markarth',
+      'Morthal',
+      'Riften',
+      'Solitude',
+      'Windhelm',
+    ];
     const newPlayer: MockPlayer = {
       name: 'Player ' + newPlayerId,
       id: newPlayerId,
@@ -204,7 +265,13 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     };
     playerStore.update(addEntities(newPlayer));
     if (this.connected) {
-      this.emit('playerConnected', newPlayer.id, newPlayer.name, newPlayer.level, newPlayer.cellName);
+      this.emit(
+        'playerConnected',
+        newPlayer.id,
+        newPlayer.name,
+        newPlayer.level,
+        newPlayer.cellName,
+      );
       this.emit('setPlayer3dLoaded', newPlayer.id, newPlayer.health);
     }
     // this.emit('setHealth', newPlayer.id, newPlayer.health);
@@ -222,10 +289,15 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
   }
 
   accteptMockPlayerInvite(playerId: number) {
-    playerStore.update(updateEntities(playerId, { invited: false, isInGroup: true }));
+    playerStore.update(
+      updateEntities(playerId, { invited: false, isInGroup: true }),
+    );
     this.emit(
       'partyInfo',
-      playerStore.query(getAllEntities()).filter(p => p.isInGroup).map(p => p.id),
+      playerStore
+        .query(getAllEntities())
+        .filter(p => p.isInGroup)
+        .map(p => p.id),
       this.localPlayerId,
     );
   }
@@ -236,18 +308,29 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
   }
 
   startPlayerMockParty(playerId: number) {
-    playerStore.update(updateEntities(playerId, { hasOwnParty: true, isInGroup: true }));
+    playerStore.update(
+      updateEntities(playerId, { hasOwnParty: true, isInGroup: true }),
+    );
   }
 
   mockPlayerLeaveParty(playerId: number) {
     const player = playerStore.query(getEntity(playerId));
 
-    playerStore.update(updateEntities(playerId, { hasOwnParty: false, invitedLocalPlayer: false, isInGroup: false }));
+    playerStore.update(
+      updateEntities(playerId, {
+        hasOwnParty: false,
+        invitedLocalPlayer: false,
+        isInGroup: false,
+      }),
+    );
     if (this.connected) {
       if (player.isInGroup) {
         this.emit(
           'partyInfo',
-          playerStore.query(getAllEntities()).filter(p => p.isInGroup).map(p => p.id),
+          playerStore
+            .query(getAllEntities())
+            .filter(p => p.isInGroup)
+            .map(p => p.id),
           this.localPlayerId,
         );
       } else if (player.hasOwnParty) {
@@ -265,10 +348,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       Math.random() * 100,
       Math.random() * 100,
     ];
-    this.emit(
-      'debugData',
-      ...debugData,
-    );
+    this.emit('debugData', ...debugData);
     return debugData;
   }
 }

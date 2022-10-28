@@ -6,7 +6,6 @@ import { Sound, SoundService } from '../services/sound.service';
 })
 // @ts-ignore
 export class RadioDirective {
-
   constructor(private readonly soundService: SoundService) {}
 
   @HostListener('change')

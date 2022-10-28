@@ -13,16 +13,35 @@
     <button (click)="addMockPlayer()">Add Player</button>
     <div class="player-actions">
       <div *ngFor="let player of players$ | async">
-        <hr>
-        <div class="player-info">
-          {{ player.name }} [{{ player.cellName }}]
-        </div>
+        <hr />
+        <div class="player-info">{{ player.name }} [{{ player.cellName }}]</div>
         <div class="action-row">
           <button (click)="disconnectMockPlayer(player.id)">Disconnect</button>
-          <button *ngIf="player.invited" [disabled]="player.hasOwnParty" (click)="accteptMockPlayerInvite(player.id)">Accept Invite</button>
-          <button *ngIf="player.hasOwnParty && (connected$ | async)" (click)="inviteToPlayerMockParty(player.id)">Invite You</button>
-          <button *ngIf="!player.hasOwnParty && !player.isInGroup" (click)="startPlayerMockParty(player.id)">Start Party</button>
-          <button *ngIf="player.hasOwnParty || player.isInGroup" (click)="mockPlayerLeaveParty(player.id)">Leave Party</button>
+          <button
+            *ngIf="player.invited"
+            [disabled]="player.hasOwnParty"
+            (click)="accteptMockPlayerInvite(player.id)"
+          >
+            Accept Invite
+          </button>
+          <button
+            *ngIf="player.hasOwnParty && (connected$ | async)"
+            (click)="inviteToPlayerMockParty(player.id)"
+          >
+            Invite You
+          </button>
+          <button
+            *ngIf="!player.hasOwnParty && !player.isInGroup"
+            (click)="startPlayerMockParty(player.id)"
+          >
+            Start Party
+          </button>
+          <button
+            *ngIf="player.hasOwnParty || player.isInGroup"
+            (click)="mockPlayerLeaveParty(player.id)"
+          >
+            Leave Party
+          </button>
         </div>
       </div>
     </div>
@@ -36,8 +55,12 @@
     <div class="separator">Debug</div>
     <div>
       <label for="random-debug">Randomize Debug Info</label>
-      <input type="checkbox" id="random-debug" [ngModel]="randomizeDebug | async" (ngModelChange)="randomizeDebug.next($event)"/>
+      <input
+        type="checkbox"
+        id="random-debug"
+        [ngModel]="randomizeDebug | async"
+        (ngModelChange)="randomizeDebug.next($event)"
+      />
     </div>
   </div>
 </div>
-

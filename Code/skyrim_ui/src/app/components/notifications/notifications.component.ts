@@ -3,7 +3,6 @@ import { takeUntil } from 'rxjs';
 import { ChatMessage, ChatService } from 'src/app/services/chat.service';
 import { DestroyService } from '../../services/destroy.service';
 
-
 interface Notification extends ChatMessage {
   timer: number;
 }
@@ -15,7 +14,6 @@ interface Notification extends ChatMessage {
   providers: [DestroyService],
 })
 export class NotificationsComponent {
-
   public notifications = [] as Notification[];
 
   public constructor(
@@ -23,10 +21,8 @@ export class NotificationsComponent {
     private readonly chatService: ChatService,
   ) {
     this.chatService.messageList
-      .pipe(
-        takeUntil(this.destroy$),
-      )
-      .subscribe((message) => {
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(message => {
         this.notifications.push({
           ...message,
           timer: setTimeout(() => {
@@ -35,11 +31,13 @@ export class NotificationsComponent {
         });
 
         if (this.notifications.length > 5) {
-          for (let notification of this.notifications.splice(0, this.notifications.length - 5)) {
+          for (let notification of this.notifications.splice(
+            0,
+            this.notifications.length - 5,
+          )) {
             clearTimeout(notification.timer);
           }
         }
       });
   }
-
 }

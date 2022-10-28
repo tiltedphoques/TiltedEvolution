@@ -1,22 +1,21 @@
-@import "env";
+@import 'env';
 
-@import "mixins/gapped-vertical";
-@import "functions/mod";
-@import "functions/rem";
+@import 'mixins/gapped-vertical';
+@import 'functions/mod';
+@import 'functions/rem';
 
 :host {
   display: block;
 
-  &[data-app-root-game=false] {
-
+  &[data-app-root-game='false'] {
     &.light-image {
       // TODO replace with an independent image
-      background: url("https://static.giga.de/wp-content/uploads/2016/10/skyrim-special-edition-landschaft.jpg");
+      background: url('https://static.giga.de/wp-content/uploads/2016/10/skyrim-special-edition-landschaft.jpg');
     }
 
     &.dark-image {
       // TODO replace with an independent image
-      background: url("https://i.pinimg.com/originals/ea/b1/0f/eab10fac989a85c16dadcc1c5e27489e.jpg");
+      background: url('https://i.pinimg.com/originals/ea/b1/0f/eab10fac989a85c16dadcc1c5e27489e.jpg');
     }
 
     &.light {
@@ -29,13 +28,15 @@
           transparent #{$-size-gap},
           $lines #{$-size-gap},
           $lines calc(#{$-size-gap} + 1px)
-      ), repeating-linear-gradient(
-          to bottom,
-          transparent,
-          transparent #{$-size-gap},
-          $lines #{$-size-gap},
-          $lines calc(#{$-size-gap} + 1px)
-      ) $background;
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent #{$-size-gap},
+            $lines #{$-size-gap},
+            $lines calc(#{$-size-gap} + 1px)
+          )
+          $background;
     }
 
     &.dark {
@@ -48,13 +49,15 @@
           transparent #{$-size-gap},
           $lines #{$-size-gap},
           $lines calc(#{$-size-gap} + 1px)
-      ), repeating-linear-gradient(
-          to bottom,
-          transparent,
-          transparent #{$-size-gap},
-          $lines #{$-size-gap},
-          $lines calc(#{$-size-gap} + 1px)
-      ) $background;
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent #{$-size-gap},
+            $lines #{$-size-gap},
+            $lines calc(#{$-size-gap} + 1px)
+          )
+          $background;
     }
   }
 
@@ -77,12 +80,12 @@
       min-width: 20vw;
     }
 
-    > app-popup[data-popup=server] > app-window {
+    > app-popup[data-popup='server'] > app-window {
       max-width: 75vw;
       min-width: 40vw;
     }
 
-    > app-popup[data-popup=playerManager] > app-window {
+    > app-popup[data-popup='playerManager'] > app-window {
       max-width: 30vw;
       min-width: 25vw;
     }
