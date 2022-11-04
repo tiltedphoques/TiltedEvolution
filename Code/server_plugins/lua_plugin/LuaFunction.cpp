@@ -73,7 +73,7 @@ void LuaFunction::PushArg(ArgType type, ScriptFunctionContext& aContext)
         lua_pushinteger(m_State, static_cast<lua_Integer>(aContext.PopU64()));
         break;
     default:
-        __debugbreak();
+        //__debugbreak();
         break;
     }
 }
@@ -97,5 +97,5 @@ void LuaFunction::Invoke(ScriptFunctionContext& aContext)
     //    ValidateArg(m_args[i], i);
 
     auto result = lua_pcall(m_State, argCount, 1, 0);
-    __debugbreak();
+    //__debugbreak();
 }

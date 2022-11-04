@@ -39,7 +39,7 @@ bool LuaRuntime::Initialize()
     RegisterSafeLibraries(m_State);
 
     ArgType args[] = {ArgType::kBool, ArgType::kF32};
-    BindScriptFunction("testFunc", nullptr, args, _countof(args));
+    BindScriptFunction("testFunc", nullptr, args, sizeof(args) / sizeof(ArgType)) ;
 
     ScriptFunctionContext context(2);
     context.Push(true);
@@ -73,7 +73,7 @@ void LuaRuntime::BindScriptFunction(const PluginStringView aName, void* apFuncto
     // https://github.com/citizenfx/fivem/blob/e46db5133c30577f75e985a36f902a626013ac3c/code/components/citizen-scripting-lua/src/LuaScriptRuntime.cpp#L545
 
     static auto k = [](lua_State* state) -> int {
-        __debugbreak();
+        //__debugbreak();
         return 0;
     };
 

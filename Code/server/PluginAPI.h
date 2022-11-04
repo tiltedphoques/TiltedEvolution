@@ -6,12 +6,32 @@
 #ifdef _WIN32
 #define PLUGIN_API extern "C" __declspec(dllexport)
 #endif
+
+#ifdef __linux__
+#define PLUGIN_API extern "C" __attribute__ ((visibility ("default")))
+#endif
 #endif
 
 #ifdef BUILDING_TT_SERVER
+
+#ifdef _WIN32
 #define SERVER_API extern "C" __declspec(dllexport)
+#endif
+
+#ifdef __linux__
+#define SERVER_API extern "C" __attribute__ ((visibility ("default")))
+#endif
+
 #else
+
+#ifdef _WIN32
 #define SERVER_API extern "C" __declspec(dllimport)
+#endif
+
+#ifdef __linux__
+#define SERVER_API extern "C" __attribute__ ((visibility ("default")))
+#endif
+
 #endif
 
 // utilities for sending data to GS
