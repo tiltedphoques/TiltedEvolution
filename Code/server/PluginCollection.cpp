@@ -1,5 +1,5 @@
-#include "Pch.h"
 #include "PluginCollection.h"
+#include "Pch.h"
 
 #if defined(__linux__)
 #include <dlfcn.h>
@@ -9,9 +9,9 @@ static constexpr char kPluginFolderName[] = "plugins";
 
 static constexpr char kNativePluginExtension[] =
 #if defined(_WIN32)
-".dll";
+    ".dll";
 #elif defined(__linux__)
-".so";
+    ".so";
 #endif
 
 PluginCollection::PluginCollection()
@@ -39,24 +39,27 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
 
     for (const auto& path : canidates)
     {
-#if defined(_WIN32) 
+#if defined(_WIN32)
         if (auto pHandle = LoadLibraryW(path.c_str()))
 #elif defined(__linux__)
         if (auto pHandle = dlopen(path.c_str(), RTLD_LAZY))
 #endif
         {
-            if (PluginDescriptor* pPluginDescriptor =
-#if defined(_WIN32) 
-                    reinterpret_cast<PluginDescriptor*>(GetProcAddress(pHandle, "TT_PLUGIN")))
+            if (uint8_t* pPluginDescriptor =
+#if defined(_WIN32)
+                    reinterpret_cast<uint8_t*>(GetProcAddress(pHandle, "TT_PLUGIN")))
 #elif defined(__linux__)
-                    reinterpret_cast<PluginDescriptor*>(dlsym(pHandle, "TT_PLUGIN")))
+                    reinterpret_cast<uint8_t*>(dlsym(pHandle, "TT_PLUGIN")))
 #endif
             {
-                // TODO: parse out version bits
-                if (pPluginDescriptor->magic == kPluginMagic)
-                    m_pluginData.emplace_back(pHandle, pPluginDescriptor, nullptr);
-                else
-                    spdlog::error("Invalid plugin magic in descriptor");
+                if (*reinterpret_cast<uint32_t*>(pPluginDescriptor) != kPluginMagic)
+                {
+                    spdlog::error("TT_PLUGIN export is invalid");
+                    continue;
+                }
+
+                m_pluginData.emplace_back(pHandle, reinterpret_cast<PluginDescriptor*>(pPluginDescriptor),
+                                          /*Interface must be instantiated first*/ nullptr);
             }
         }
     }
