@@ -13,6 +13,7 @@ class LuaRuntime final : public PluginInterface001
         // we subscribe to the v1 api
         return 1;
     }
+
     bool Initialize() override;
     void Shutdown() override;
 

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "LuaStateHolder.h"
-#include <lua/lauxlib.h>
 #include <server/PluginAPI.h>
 
 class LuaStateHolder;

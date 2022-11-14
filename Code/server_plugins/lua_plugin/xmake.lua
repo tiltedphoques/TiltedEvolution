@@ -1,3 +1,6 @@
+add_requires("sol2", {configs = {lua = "lua"}})
+--add_requires("lua")
+-- {configs = {shared = false}}
 target("LuaScriptingRuntime")
     set_group("ServerPlugins")
     set_kind("shared")
@@ -7,6 +10,9 @@ target("LuaScriptingRuntime")
         ".",
         "../.." -- main dir
     ) 
+    set_pcxxheader("Pch.h")
     add_headerfiles("**.h")
     add_files("**.c", "**.cpp")
     add_deps("SkyrimTogetherServer")
+    --add_packages("lua",  {links = "lua"})
+    add_packages("sol2")

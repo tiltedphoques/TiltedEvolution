@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lua/lauxlib.h>
+#include "Pch.h"
 
 class LuaStateHolder
 {

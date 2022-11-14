@@ -1,6 +1,6 @@
 
-#include <lua/lua.h>
-#include <lua/lualib.h>
+#include "Pch.h"
+//#include <sol/sol.hpp>
 
 #include "LuaRuntime.h"
 
@@ -65,18 +65,27 @@ void LuaRuntime::CallScriptFunction(const PluginStringView aName, ScriptFunction
     it->Invoke(aContext);
 }
 
+// functor user pointer with argstack.
+
+// https://stackoverflow.com/questions/32416388/how-to-register-member-function-to-lua-without-lua-bind-in-c
 void LuaRuntime::BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs,
                                     const size_t aArgCount)
-{
+{// todo: lock
     functions_.emplace_back(m_State, aName.data(), apArgs, aArgCount);
 
     // https://github.com/citizenfx/fivem/blob/e46db5133c30577f75e985a36f902a626013ac3c/code/components/citizen-scripting-lua/src/LuaScriptRuntime.cpp#L545
 
     static auto k = [](lua_State* state) -> int {
+        // get a lua stack ID, token, that we push on call, pop IT, then convert the args to a ScriptFunctionContext
+        // based on the argc, and the type index, we have recieved through the custom lua user data.
         __debugbreak();
         return 0;
     };
 
+    // with new userdata
+    // https://github.com/Trey2k/lua/blob/main/lua.cpp#L89
+    // https://stackoverflow.com/questions/32416388/how-to-register-member-function-to-lua-without-lua-bind-in-c
     // returns nothing
+    // https://stackoverflow.com/questions/16713837/hand-over-global-custom-data-to-lua-implemented-functions
     lua_register(m_State, aName.data(), k);
 }

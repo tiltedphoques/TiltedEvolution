@@ -1,4 +1,5 @@
 
+#include "Pch.h"
 #include "LuaRuntime.h"
 
 namespace
@@ -18,7 +19,7 @@ PLUGIN_API PluginDescriptor TT_PLUGIN{.magic = kPluginMagic,
                                       .structSize = sizeof(PluginDescriptor),
                                       .pluginVersion = 1,
                                       .pluginName = "LuaScriptingRuntime",
-                                      .authorName = "Vince",
+                                      .authorName = "VinceM",
                                       .flags = PluginDescriptor::Flags::kNone,
                                       .pCreatePlugin = CreateRuntime,
                                       .pDestroyPlugin = DestroyRuntime
