@@ -1,9 +1,18 @@
-
-#include "PluginCollection.h"
 #include "Pch.h"
+#include "PluginCollection.h"
+
+#if defined(__linux__)
+#include <dlfcn.h>
+#endif
 
 static constexpr char kPluginFolderName[] = "plugins";
-static constexpr char kNativePluginExtension[] = ".dll";
+
+static constexpr char kNativePluginExtension[] =
+#if defined(_WIN32)
+".dll";
+#elif defined(__linux__)
+".so";
+#endif
 
 PluginCollection::PluginCollection()
 {
@@ -30,10 +39,18 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
 
     for (const auto& path : canidates)
     {
+#if defined(_WIN32) 
         if (auto pHandle = LoadLibraryW(path.c_str()))
+#elif defined(__linux__)
+        if (auto pHandle = dlopen(path.c_str(), RTLD_LAZY))
+#endif
         {
             if (PluginDescriptor* pPluginDescriptor =
+#if defined(_WIN32) 
                     reinterpret_cast<PluginDescriptor*>(GetProcAddress(pHandle, "TT_PLUGIN")))
+#elif defined(__linux__)
+                    reinterpret_cast<PluginDescriptor*>(dlsym(pHandle, "TT_PLUGIN")))
+#endif
             {
                 // TODO: parse out version bits
                 if (pPluginDescriptor->magic == kPluginMagic)
@@ -104,7 +121,11 @@ void PluginCollection::UnloadPlugins()
 {
     for (const PluginData& cData : m_pluginData)
     {
+#if defined(_WIN32)
         FreeLibrary(static_cast<HMODULE>(cData.pModuleHandle));
+#elif defined(__linux__)
+        dlclose(cData.pModuleHandle);
+#endif
     }
 }
 

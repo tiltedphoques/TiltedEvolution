@@ -39,7 +39,7 @@ bool LuaRuntime::Initialize()
     RegisterSafeLibraries(m_State);
 
     ArgType args[] = {ArgType::kBool, ArgType::kF32};
-    BindScriptFunction("testFunc", nullptr, args, _countof(args));
+    BindScriptFunction("testFunc", nullptr, args, sizeof(args) / sizeof(ArgType)) ;
 
     ScriptFunctionContext context(2);
     context.Push(true);
