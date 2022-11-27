@@ -452,35 +452,7 @@ void Actor::SetPlayerTeammate(bool aSet) noexcept
 
 void Actor::UnEquipAll() noexcept
 {
-    // For each change 
-    const auto pContainerChanges = GetContainerChanges()->entries;
-    for (auto pChange : *pContainerChanges)
-    {
-        if (pChange && pChange->form && pChange->dataList)
-        {
-            // Parse all extra data lists
-            const auto pDataLists = pChange->dataList;
-            for (auto* pDataList : *pDataLists)
-            {
-                if (pDataList)
-                {
-                    BSScopedLock<BSRecursiveLock> _(pDataList->lock);
-
-                    // Right slot
-                    if (pDataList->Contains(ExtraDataType::Worn))
-                    {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
-                    }
-
-                    // Left slot
-                    if (pDataList->Contains(ExtraDataType::WornLeft))
-                    {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false, nullptr);
-                    }
-                }
-            }
-        }
-    }
+    EquipManager::Get()->UnequipAll(this);
 
     // Taken from skyrim's code shouts can be two form types apparently
     if (equippedShout && ((int)equippedShout->formType - 41) <= 1)

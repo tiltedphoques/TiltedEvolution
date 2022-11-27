@@ -131,6 +131,16 @@ void* EquipManager::UnEquipShout(Actor* apActor, TESForm* apShout)
     return TiltedPhoques::ThisCall(s_unequipFunc, this, apActor, apShout);
 }
 
+void EquipManager::UnequipAll(Actor* apActor)
+{
+    TP_THIS_FUNCTION(TUnEquipAll, void, EquipManager, Actor*);
+    POINTER_SKYRIMSE(TUnEquipAll, s_unequipAll, 38899);
+
+    ScopedEquipOverride equipOverride;
+
+    TiltedPhoques::ThisCall(s_unequipAll, this, apActor);
+}
+
 void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData)
 {
     if (!apActor)
