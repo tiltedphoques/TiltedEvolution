@@ -28,7 +28,7 @@ String ReadWString(Buffer::Reader& aReader) noexcept
 
 ESLoader::ESLoader()
 {
-    m_directory = fs::current_path() / "Data"; //< Keep upper case to match Skyrim's file system
+    m_directory = fs::current_path() / "Data"; //< Keep upper case to match the game's file system
 }
 
 UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
