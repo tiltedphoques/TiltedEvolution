@@ -21,6 +21,7 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifySettingsChange.h>
 #include <console/ConsoleRegistry.h>
+#include <resources/ResourceCollection.h>
 
 constexpr size_t kMaxServerNameLength = 128u;
 
@@ -161,6 +162,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     BindMessageHandlers();
     UpdateTimeScale();
 
+    m_pResources = MakeUnique<Resources::ResourceCollection>();
     m_pPlugins = MakeUnique<PluginCollection>();
 }
 
@@ -184,6 +186,7 @@ void GameServer::Initialize()
     BindServerCommands();
 
     m_pPlugins->InitializePlugins();
+    m_pResources->CollectResources();
 }
 
 void GameServer::Kill()
@@ -312,6 +315,8 @@ void GameServer::BindServerCommands()
             out->error("Hour must be between 0-23 and minute must be between 0-59");
         }
     });
+
+    //spdlog::trace("{} Server commands bound", 1337);
 }
     /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()

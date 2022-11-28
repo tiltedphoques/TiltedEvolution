@@ -14,6 +14,11 @@ struct Player;
 struct PartyComponent;
 class PluginCollection;
 
+namespace Resources
+{
+class ResourceCollection;
+}
+
 namespace Console
 {
 class ConsoleRegistry;
@@ -102,6 +107,7 @@ private:
     bool m_isPasswordProtected{};
 
     Info m_info{};
+    UniquePtr<Resources::ResourceCollection> m_pResources;
     UniquePtr<PluginCollection> m_pPlugins;
     UniquePtr<World> m_pWorld;
     Console::ConsoleRegistry& m_commands;

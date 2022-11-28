@@ -1,6 +1,8 @@
-component("Resourcecs")
-	set_pcxxheader("Pch.h")
-	add_headerfiles("Pch.h", {prefixdir = "ESLoader"})
-	add_files("stdafx.cpp")
+local function include_resources()
 	add_packages("zlib", "glm")
+end
 
+component("Resources")
+	include_resources()
+unittest("Resources")
+	include_resources()
