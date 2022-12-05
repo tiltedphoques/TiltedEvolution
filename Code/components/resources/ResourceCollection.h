@@ -22,7 +22,9 @@ class ResourceCollection
         return m_resourcePath;
     }
 
-    bool LoadManifestData(const std::filesystem::path&);
+    bool ValidateDependencyVersions();
+
+    bool LoadManifestData(const std::filesystem::path& aPath);
 
   private:
     std::filesystem::path m_resourcePath;
