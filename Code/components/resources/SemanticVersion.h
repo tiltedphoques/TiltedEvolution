@@ -30,6 +30,7 @@ namespace Resources
         bool operator>(const SemanticVersion& acRhs) const noexcept;
 
         operator bool() const noexcept { return m_versionbits != 0; }
+        uint32_t GetVersionBits() const noexcept { return m_versionbits; }
 
     private:
         uint32_t m_versionbits = 0;

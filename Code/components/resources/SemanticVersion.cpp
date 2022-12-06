@@ -43,6 +43,68 @@ namespace Resources
 // For each digit, we check if it is the least significant digit, and if it is not, we appends a period (.) to
 // the string. Then, the code appends the character representation of the digit (by adding '0' to the numeric value of
 // the digit) to the string.
+/*
+uint32_t version = 0;
+    uint32_t shift = 0;
+    int period_count = 0;
+
+    // Skip leading whitespace
+    while (*apText && std::isspace(*apText))
+    {
+        ++apText;
+    }
+
+    // Iterate over the string and extract the numeric components
+    while (*apText)
+    {
+        // Check for non-numeric characters
+        if (!std::isdigit(*apText))
+        {
+            // If the character is a period, increment the period count
+            if (*apText == '.')
+            {
+                ++period_count;
+
+                // If we've found more than three periods, return false
+                if (period_count > 3)
+                {
+                    return false;
+                }
+
+                // Shift the bits to the left by 8
+                shift += 8;
+            }
+            else
+            {
+                // If the character is not a period, return false
+                return false;
+            }
+        }
+        else
+        {
+            // If the character is a digit, shift the bits to the left by 4
+            version |= (*apText - '0') << shift;
+            shift += 4;
+        }
+        ++apText;
+    }
+
+    // Skip trailing whitespace
+    while (*apText && std::isspace(*apText))
+    {
+        ++apText;
+    }
+
+    // If the string contains only numeric characters and at most three periods, return true
+    if (*apText == '\0')
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+*/
     bool SemanticVersion::FromString(const char* apText) const noexcept
     {
         uint32_t version = 0;
