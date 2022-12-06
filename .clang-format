@@ -4,17 +4,18 @@ AccessModifierOffset: -4
 AlignAfterOpenBracket: AlwaysBreak
 AlignEscapedNewlines: Left
 AlignOperands: true
-AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: false
-AllowShortIfStatementsOnASingleLine: true
-AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: None
+AllowShortLambdasOnASingleLine: None
 AlwaysBreakTemplateDeclarations: true
 BraceWrapping:
   AfterCaseLabel: true
   IndentBraces: true
 BreakBeforeBraces: Allman
-ColumnLimit: 120
+BreakConstructorInitializers: BeforeComma
+ColumnLimit: 300
 IndentWidth: 4
+PenaltyBreakFirstLessLess: 300
+PointerAlignment: Left
 SpaceBeforeParensOptions:
   AfterControlStatements: false
