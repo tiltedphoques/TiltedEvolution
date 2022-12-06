@@ -1,0 +1,20 @@
+---
+BasedOnStyle: LLVM
+AccessModifierOffset: -4
+AlignAfterOpenBracket: AlwaysBreak
+AlignEscapedNewlines: Left
+AlignOperands: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: true
+BraceWrapping:
+  AfterCaseLabel: true
+  IndentBraces: true
+BreakBeforeBraces: Allman
+ColumnLimit: 120
+IndentWidth: 4
+SpaceBeforeParensOptions:
+  AfterControlStatements: false
