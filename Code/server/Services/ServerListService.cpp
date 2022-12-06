@@ -10,7 +10,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 
-
 extern Console::Setting<uint32_t> uMaxPlayerCount;
 
 static constexpr char kMasterServerEndpoint[] =
@@ -21,12 +20,12 @@ static constexpr char kMasterServerEndpoint[] =
     "https://fallout-reborn-list.skyrim-together.com";
 #endif
 
-static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
-                                        "Whether to list the server on the public server list", false};
+static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
 
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
-    : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this)),
-      m_nextAnnounce(std::chrono::seconds(0))
+    : m_world(aWorld)
+    , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this))
+    , m_nextAnnounce(std::chrono::seconds(0))
 {
     if (!bAnnounceServer)
         spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
@@ -70,12 +69,10 @@ void ServerListService::Announce() const noexcept
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(),
-                   cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
+    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(), cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
 }
 
-void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
-                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept
+void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick, uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept
 {
     const std::string kVersion{BUILD_COMMIT};
     const httplib::Params params{
@@ -88,7 +85,7 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         {"player_count", std::to_string(aPlayerCount)},
         {"max_player_count", std::to_string(aPlayerMaxCount)},
         {"tags", std::string(acTagList.c_str(), acTagList.size())},
-        {"public", aPublic ? "true" : "false" },
+        {"public", aPublic ? "true" : "false"},
     };
 
     httplib::Client client(kMasterServerEndpoint);

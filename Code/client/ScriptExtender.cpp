@@ -15,9 +15,9 @@ constexpr wchar_t kScriptExtenderName[] =
 
 constexpr char kScriptExtenderEntrypoint[] =
 #if TP_SKYRIM
-"StartSKSE"
+    "StartSKSE"
 #elif TP_FALLOUT
-"StartF4SE"
+    "StartF4SE"
 #endif
     ;
 
@@ -134,13 +134,11 @@ void LoadScriptExender()
         return;
     }
 
-    auto skseVersion = fmt::format("v{}.{}.{}.{}", fileVersion.versions[0], fileVersion.versions[1],
-                                   fileVersion.versions[2], fileVersion.versions[3]);
+    auto skseVersion = fmt::format("v{}.{}.{}.{}", fileVersion.versions[0], fileVersion.versions[1], fileVersion.versions[2], fileVersion.versions[3]);
 
 #if TP_SKYRIM
     // nice try.
-    int SkseVCum = fileVersion.versions[0] * 1000000 + fileVersion.versions[1] * 10000 + fileVersion.versions[2] * 100 +
-                   fileVersion.versions[3];
+    int SkseVCum = fileVersion.versions[0] * 1000000 + fileVersion.versions[1] * 10000 + fileVersion.versions[2] * 100 + fileVersion.versions[3];
     if (SkseVCum < kSKSEMinBuild)
     {
         spdlog::error("Pre anniversary Script Extender is unsupported");
@@ -150,8 +148,7 @@ void LoadScriptExender()
 
     if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
     {
-        if (auto* pStartSKSE =
-                reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, kScriptExtenderEntrypoint)))
+        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, kScriptExtenderEntrypoint)))
         {
             spdlog::info(
                 "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "
@@ -167,7 +164,6 @@ void LoadScriptExender()
     }
     else
     {
-        spdlog::error("Failed to load {}! Check your privileges or re-download the Script Extender files.",
-                      needle->string());
+        spdlog::error("Failed to load {}! Check your privileges or re-download the Script Extender files.", needle->string());
     }
 }

@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_CowRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_CowRootBehavior::AnimationGraphDescriptor_CowRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -103,28 +101,10 @@ AnimationGraphDescriptor_CowRootBehavior::AnimationGraphDescriptor_CowRootBehavi
     };
 
     uint64_t key = 17103635255379484992;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbHeadTrackingOn,
-            kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kbDisableHeadTrack,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbSkeeverLunge,
-            kbFootIKEnable,
-            kisMoving},
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kTurnDeltaDamped,
-            kSpeedSampled},
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncForwardState,
-            kiMovementSpeed}));
+            {kbHeadTrackingOn, kbAnimationDriven, kbAllowRotation, kbHeadTracking, kbDisableHeadTrack, kIsRecoiling, kIsStaggering, kIsAttacking, kbSkeeverLunge, kbFootIKEnable, kisMoving}, {kSpeed, kTurnDelta, kturnSpeedMult, kDirection, kTurnDeltaDamped, kSpeedSampled},
+            {kiSyncIdleLocomotion, kiSyncTurnState, kiSyncForwardState, kiMovementSpeed}));
 }

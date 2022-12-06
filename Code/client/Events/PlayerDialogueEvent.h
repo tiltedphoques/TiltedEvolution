@@ -2,7 +2,7 @@
 
 struct PlayerDialogueEvent
 {
-    PlayerDialogueEvent(String aText) 
+    PlayerDialogueEvent(String aText)
         : Text(std::move(aText))
     {
     }

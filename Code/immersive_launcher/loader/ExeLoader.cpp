@@ -54,8 +54,7 @@ std::wstring ConvertStringToWstring(const std::string_view str)
     if (nChars)
     {
         wstrTo.resize(nChars);
-        if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), static_cast<int>(str.length()), &wstrTo[0],
-                                nChars))
+        if (MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, str.data(), static_cast<int>(str.length()), &wstrTo[0], nChars))
         {
             return wstrTo;
         }
@@ -64,7 +63,8 @@ std::wstring ConvertStringToWstring(const std::string_view str)
 }
 
 ExeLoader::ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncHandler)
-    : m_loadLimit(aLoadLimit), m_pFuncHandler(aFuncHandler)
+    : m_loadLimit(aLoadLimit)
+    , m_pFuncHandler(aFuncHandler)
 {
 }
 
@@ -169,30 +169,24 @@ void ExeLoader::LoadTLS(const IMAGE_NT_HEADERS* apNtHeader, const IMAGE_NT_HEADE
 {
     if (apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].Size)
     {
-        const auto* sourceTls = GetTargetRVA<IMAGE_TLS_DIRECTORY>(
-            apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);
-        const auto* targetTls = GetTargetRVA<IMAGE_TLS_DIRECTORY>(
-            apSourceNt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);
+        const auto* sourceTls = GetTargetRVA<IMAGE_TLS_DIRECTORY>(apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);
+        const auto* targetTls = GetTargetRVA<IMAGE_TLS_DIRECTORY>(apSourceNt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress);
 
         *(DWORD*)(sourceTls->AddressOfIndex) = 0;
 
         LPVOID tlsBase = *(LPVOID*)__readgsqword(0x58);
 
         DWORD oldProtect;
-        VirtualProtect(reinterpret_cast<LPVOID>(targetTls->StartAddressOfRawData),
-                       sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData, PAGE_READWRITE, &oldProtect);
+        VirtualProtect(reinterpret_cast<LPVOID>(targetTls->StartAddressOfRawData), sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData, PAGE_READWRITE, &oldProtect);
 
-        std::memcpy(tlsBase, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
-                    sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
-        std::memcpy((void*)targetTls->StartAddressOfRawData, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData),
-                    sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
+        std::memcpy(tlsBase, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData), sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
+        std::memcpy((void*)targetTls->StartAddressOfRawData, reinterpret_cast<void*>(sourceTls->StartAddressOfRawData), sourceTls->EndAddressOfRawData - sourceTls->StartAddressOfRawData);
     }
 }
 
 void ExeLoader::LoadExceptionTable(IMAGE_NT_HEADERS* apNtHeader)
 {
-    IMAGE_DATA_DIRECTORY* exceptionDirectory =
-        &apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
+    IMAGE_DATA_DIRECTORY* exceptionDirectory = &apNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
 
     RUNTIME_FUNCTION* functionList = GetTargetRVA<RUNTIME_FUNCTION>(exceptionDirectory->VirtualAddress);
     DWORD entryCount = exceptionDirectory->Size / sizeof(RUNTIME_FUNCTION);
@@ -206,8 +200,7 @@ void ExeLoader::LoadExceptionTable(IMAGE_NT_HEADERS* apNtHeader)
     // replace the function table stored for debugger purposes (though we just added it above)
     {
         PLIST_ENTRY(NTAPI * rtlGetFunctionTableListHead)(VOID);
-        rtlGetFunctionTableListHead = (decltype(rtlGetFunctionTableListHead))GetProcAddress(
-            GetModuleHandleW(L"ntdll.dll"), "RtlGetFunctionTableListHead");
+        rtlGetFunctionTableListHead = (decltype(rtlGetFunctionTableListHead))GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetFunctionTableListHead");
 
         if (rtlGetFunctionTableListHead)
         {
@@ -271,8 +264,7 @@ void ExeLoader::DecryptCeg(IMAGE_NT_HEADERS* apSourceNt)
         }
     }
 
-    steam::CEGLocationInfo info{GetOffset<uint8_t>(entry),
-                                {GetOffset<uint8_t>(section->VirtualAddress), section->SizeOfRawData}};
+    steam::CEGLocationInfo info{GetOffset<uint8_t>(entry), {GetOffset<uint8_t>(section->VirtualAddress), section->SizeOfRawData}};
 
     auto realEntry = steam::CrackCEGInPlace(info);
 
@@ -321,11 +313,9 @@ bool ExeLoader::Load(const uint8_t* apProgramBuffer)
     VirtualProtect(sourceNtHeader, 0x1000, PAGE_EXECUTE_READWRITE, &oldProtect);
 
     // re-target the import directory to the target's; ours isn't needed anymore.
-    sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT] =
-        ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+    sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT] = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 
-    const size_t ntCompleteHeaderSize =
-        sizeof(IMAGE_NT_HEADERS) + (ntHeader->FileHeader.NumberOfSections * (sizeof(IMAGE_SECTION_HEADER)));
+    const size_t ntCompleteHeaderSize = sizeof(IMAGE_NT_HEADERS) + (ntHeader->FileHeader.NumberOfSections * (sizeof(IMAGE_SECTION_HEADER)));
 
     // overwrite our headers with the target headers
     std::memcpy(sourceNtHeader, ntHeader, ntCompleteHeaderSize);

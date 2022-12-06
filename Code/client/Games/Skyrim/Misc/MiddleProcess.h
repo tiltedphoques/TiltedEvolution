@@ -7,7 +7,7 @@ struct InventoryEntry;
 
 struct MiddleProcess
 {
-    //void SaveActiveEffects()
+    // void SaveActiveEffects()
     void LoadActiveEffects(BGSLoadFormBuffer* apLoadGameBuffer);
 
     // 0xB0 - pitch
@@ -24,7 +24,7 @@ struct MiddleProcess
     InventoryEntry* ammoEquippedObject; // could be more than just ammo
     // 0xB8 - direction
     //
-    // 0x326 - bool lookat 
+    // 0x326 - bool lookat
 };
 
 static_assert(offsetof(MiddleProcess, direction) == 0xB8);

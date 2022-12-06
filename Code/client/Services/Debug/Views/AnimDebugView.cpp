@@ -51,8 +51,7 @@ void DebugService::DrawAnimDebugView()
 
     ImGui::Begin("Animation debugging");
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32,
-                       ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &fetchFormId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
@@ -275,10 +274,8 @@ void DebugService::DrawAnimDebugView()
         }
         if (ImGui::BeginTabItem("Control"))
         {
-            ImGui::InputInt("Animation graph count", (int*)&pManager->animationGraphs.size, 0, 0,
-                            ImGuiInputTextFlags_ReadOnly);
-            ImGui::InputInt("Animation graph index", (int*)&pManager->animationGraphIndex, 0, 0,
-                            ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt("Animation graph count", (int*)&pManager->animationGraphs.size, 0, 0, ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputInt("Animation graph index", (int*)&pManager->animationGraphIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
 
             char name[256];
             sprintf_s(name, std::size(name), "%s", pGraph->behaviorGraph->stateMachine->name);
@@ -312,8 +309,7 @@ void DebugService::DrawAnimDebugView()
 
                         const auto varName = s_varMap[i];
 
-                        spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i,
-                                     *(float*)&pVariableSet->data[i], *(int32_t*)&pVariableSet->data[i]);
+                        spdlog::info("Variable k{} ({}) initialized to f: {} i: {}", varName, i, *(float*)&pVariableSet->data[i], *(int32_t*)&pVariableSet->data[i]);
                     }
                     else if (iter->second != pVariableSet->data[i])
                     {
@@ -335,8 +331,7 @@ void DebugService::DrawAnimDebugView()
                         {
                             s_valueTypes[i] = 2;
                         }
-                        else if (varTypeChar != 'b' &&
-                                 s_valueTypes[i] != 1) // no char hint to go off of and not assuming float
+                        else if (varTypeChar != 'b' && s_valueTypes[i] != 1) // no char hint to go off of and not assuming float
                         {
                             if (intCast > 1000 || intCast < -1000) // arbitrary int threshold
                             {

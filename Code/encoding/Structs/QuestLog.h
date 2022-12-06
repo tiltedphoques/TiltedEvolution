@@ -12,15 +12,9 @@ struct QuestLog
         GameId Id;
         uint16_t Stage;
 
-        bool operator==(const Entry& acRhs) const noexcept
-        {
-            return Id == acRhs.Id && Stage == acRhs.Stage;
-        }
+        bool operator==(const Entry& acRhs) const noexcept { return Id == acRhs.Id && Stage == acRhs.Stage; }
 
-        bool operator!=(const Entry& acRhs) const noexcept
-        {
-            return !this->operator==(acRhs);
-        }
+        bool operator!=(const Entry& acRhs) const noexcept { return !this->operator==(acRhs); }
     };
 
     Vector<Entry> Entries{};

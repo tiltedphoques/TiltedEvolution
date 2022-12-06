@@ -67,22 +67,22 @@ extern void* RipAllocateN(size_t blockLength);
 #include <BuildInfo.h>
 #include <Games/Primitives.h>
 
+using TiltedPhoques::Allocator;
+using TiltedPhoques::App;
 using TiltedPhoques::AutoPtr;
-using TiltedPhoques::Set;
+using TiltedPhoques::Buffer;
 using TiltedPhoques::List;
 using TiltedPhoques::Map;
-using TiltedPhoques::SortedMap;
-using TiltedPhoques::Vector;
-using TiltedPhoques::String;
-using TiltedPhoques::UniquePtr;
-using TiltedPhoques::Allocator;
-using TiltedPhoques::ScratchAllocator;
-using TiltedPhoques::ScopedAllocator;
-using TiltedPhoques::StackAllocator;
-using TiltedPhoques::ThisCall;
-using TiltedPhoques::Buffer;
 using TiltedPhoques::Outcome;
-using TiltedPhoques::App;
+using TiltedPhoques::ScopedAllocator;
+using TiltedPhoques::ScratchAllocator;
+using TiltedPhoques::Set;
+using TiltedPhoques::SortedMap;
+using TiltedPhoques::StackAllocator;
+using TiltedPhoques::String;
+using TiltedPhoques::ThisCall;
+using TiltedPhoques::UniquePtr;
+using TiltedPhoques::Vector;
 
 using namespace std::chrono_literals;
 
@@ -90,4 +90,3 @@ using namespace std::chrono_literals;
 
 #include <Utils.h>
 #include <RTTI.h>
-

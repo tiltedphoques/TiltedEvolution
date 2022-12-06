@@ -6,7 +6,7 @@
 #include <TiltedCore/MimallocAllocator.hpp>
 #include <mimalloc.h>
 
-#pragma optimize( "", off )
+#pragma optimize("", off)
 
 struct GameHeap
 {
@@ -22,7 +22,6 @@ struct GameHeap
 TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, size_t aAlignment, bool aAligned);
 TP_THIS_FUNCTION(TFormFree, void, GameHeap, void* apPtr, bool aAligned);
 
-
 TFormAllocate* RealFormAllocate = nullptr;
 TFormFree* RealFormFree = nullptr;
 
@@ -32,9 +31,9 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 {
     switch (aSize)
     {
-        case sizeof(Actor): aSize = sizeof(ExActor); break;
-        case sizeof(PlayerCharacter) : aSize = sizeof(ExPlayerCharacter); break;
-        default: break;
+    case sizeof(Actor): aSize = sizeof(ExActor); break;
+    case sizeof(PlayerCharacter): aSize = sizeof(ExPlayerCharacter); break;
+    default: break;
     }
 
     auto* pPointer = TiltedPhoques::ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
@@ -46,12 +45,12 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 
     switch (aSize)
     {
-        case sizeof(ExActor) : pExtension = static_cast<ActorExtension*>(static_cast<ExActor*>(pPointer)); break;
-        case sizeof(ExPlayerCharacter) : pExtension = static_cast<ActorExtension*>(static_cast<ExPlayerCharacter*>(pPointer));  break;
-        default: break;
+    case sizeof(ExActor): pExtension = static_cast<ActorExtension*>(static_cast<ExActor*>(pPointer)); break;
+    case sizeof(ExPlayerCharacter): pExtension = static_cast<ActorExtension*>(static_cast<ExPlayerCharacter*>(pPointer)); break;
+    default: break;
     }
 
-    if(pExtension)
+    if (pExtension)
     {
         new (pExtension) ActorExtension;
     }
@@ -107,7 +106,8 @@ void* Hook_aligned_malloc(size_t aSize, size_t aAlignment)
     return mi_malloc_aligned(aSize, aAlignment);
 }
 
-static TiltedPhoques::Initializer s_memoryHooks([]()
+static TiltedPhoques::Initializer s_memoryHooks(
+    []()
     {
         POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
         POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 652768);
@@ -149,4 +149,4 @@ static TiltedPhoques::Initializer s_memoryHooks([]()
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });
 
-#pragma optimize( "", on )
+#pragma optimize("", on)

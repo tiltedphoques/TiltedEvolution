@@ -11,7 +11,7 @@ struct hkbStateMachine;
 struct SomeData
 {
     uint8_t pad0[0x58];
-    hkbGenerator* generator; // 58
+    hkbGenerator* generator;                // 58
     struct hkbBehaviorGraph* behaviorGraph; // 60
     uint8_t pad68[0x84 - 0x68];
     uint8_t byte84; // 84
@@ -47,7 +47,7 @@ struct hkbBehaviorGraph
     uint8_t pad8[0x80 - 0x8];
     hkbStateMachine* stateMachine;
     uint8_t pad88[0x98 - 0x88];
-    Struct98* struct98;          // 98
+    Struct98* struct98; // 98
     uint8_t padA0[0xB8 - 0xA0];
     hkbSymbolIdMap* symbolIdMap; // B8
     uint8_t padC0[0xD8 - 0xC0];
@@ -62,4 +62,3 @@ static_assert(offsetof(hkbBehaviorGraph, struct98) == 0x98);
 static_assert(offsetof(hkbBehaviorGraph, symbolIdMap) == 0xB8);
 static_assert(offsetof(hkbBehaviorGraph, animationVariables) == 0xD8);
 static_assert(offsetof(hkbBehaviorGraph, byte12C) == 0x12C);
-

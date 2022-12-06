@@ -13,7 +13,7 @@ struct DefaultObjectManager
     TESForm* voiceEquipSlot;
     TESForm* potionEquipSlot;
     uint8_t pad0[0x220 - 0xE0];
-    BGSAction* someAction;  // 220
+    BGSAction* someAction; // 220
     uint8_t pad228[0xBC0 - 0x228];
     bool isSomeActionReady; // BC0
 };

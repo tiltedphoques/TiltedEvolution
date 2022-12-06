@@ -75,8 +75,8 @@ static void UnfreezeMenu(IMenu* apEntry)
 }
 
 static constexpr const char* kAllowList[] = {
-    "TweenMenu", "MagicMenu", "StatsMenu", "InventoryMenu", "MessageBoxMenu", "ContainerMenu",
-    "FavoritesMenu", "Tutorial Menu", "Console"
+    "TweenMenu",     "MagicMenu",     "StatsMenu",     "InventoryMenu", "MessageBoxMenu",
+    "ContainerMenu", "FavoritesMenu", "Tutorial Menu", "Console"
     //"MapMenu", // MapMenu is disabled till we find a proper fix for first person.
     //"Journal Menu", // Journal menu, aka pause menu, is disabled until we find a fix for manual save crashing while unpaused.
 };
@@ -89,7 +89,7 @@ static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundIt
     if (!apMenu || !World::Get().GetTransport().IsConnected())
         return UI_AddToActiveQueue(apSelf, apMenu, apFoundItem);
 
-    #if 0
+#if 0
         if (auto* pName = apSelf->LookupMenuNameByInstance(apEntry))
         {
             spdlog::info("Menu requested {}", pName->AsAscii());
@@ -119,30 +119,32 @@ void UIMessageQueue__AddMessage(void* a1, const BSFixedString* a2, UIMessage::UI
     UIMessageQueue__AddMessage_Real(a1, a2, a3, a4);
 }
 
-static TiltedPhoques::Initializer s_s([]() {
-    // pray that this doesnt fail!
-    VersionDbPtr<uint8_t> ProcessHook(82082);
-    TiltedPhoques::SwapCall(ProcessHook.Get() + 0x682, UI_AddToActiveQueue, &UI_AddToActiveQueue_Hook);
+static TiltedPhoques::Initializer s_s(
+    []()
+    {
+        // pray that this doesnt fail!
+        VersionDbPtr<uint8_t> ProcessHook(82082);
+        TiltedPhoques::SwapCall(ProcessHook.Get() + 0x682, UI_AddToActiveQueue, &UI_AddToActiveQueue_Hook);
 
-    // Ignore startup movie
-    // TODO: Move me later.
-    VersionDbPtr<uint8_t> MainInit(36548);
-    TiltedPhoques::Put<uint8_t>(MainInit.Get() + 0xFE, 0xEB);
+        // Ignore startup movie
+        // TODO: Move me later.
+        VersionDbPtr<uint8_t> MainInit(36548);
+        TiltedPhoques::Put<uint8_t>(MainInit.Get() + 0xFE, 0xEB);
 
-    // Credits to Skyrim Souls RE for this fix.
-    // Allows the favorites menu to be numbered during connect.
-    VersionDbPtr<uint8_t> FavoritesCanProcess(51538);
-    TiltedPhoques::Put<uint16_t>(FavoritesCanProcess.Get() + 0x15, 0x9090);
+        // Credits to Skyrim Souls RE for this fix.
+        // Allows the favorites menu to be numbered during connect.
+        VersionDbPtr<uint8_t> FavoritesCanProcess(51538);
+        TiltedPhoques::Put<uint16_t>(FavoritesCanProcess.Get() + 0x15, 0x9090);
 
-    // Some experiments:
-    // POINTER_SKYRIMSE(TCallback, s_start, 13631);
-    // UIMessageQueue__AddMessage_Real = s_start.Get();
-    // TP_HOOK(&UIMessageQueue__AddMessage_Real, UIMessageQueue__AddMessage);
+        // Some experiments:
+        // POINTER_SKYRIMSE(TCallback, s_start, 13631);
+        // UIMessageQueue__AddMessage_Real = s_start.Get();
+        // TP_HOOK(&UIMessageQueue__AddMessage_Real, UIMessageQueue__AddMessage);
 
-    // This kills the loading spinner
-    // TiltedPhoques::Put<uint8_t>(0x1405D51C1, 0xEB);
-    // TiltedPhoques::Nop(0x1405D51A2, 5);
+        // This kills the loading spinner
+        // TiltedPhoques::Put<uint8_t>(0x1405D51C1, 0xEB);
+        // TiltedPhoques::Nop(0x1405D51A2, 5);
 
-    // use 8 threads by default!
-    // TiltedPhoques::Put<uint8_t>(0x141E45770, 8);
-});
+        // use 8 threads by default!
+        // TiltedPhoques::Put<uint8_t>(0x141E45770, 8);
+    });

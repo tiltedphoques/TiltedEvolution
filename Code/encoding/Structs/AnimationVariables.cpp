@@ -4,9 +4,7 @@
 
 bool AnimationVariables::operator==(const AnimationVariables& acRhs) const noexcept
 {
-    return Booleans == acRhs.Booleans &&
-        Integers == acRhs.Integers &&
-        Floats == acRhs.Floats;
+    return Booleans == acRhs.Booleans && Integers == acRhs.Integers && Floats == acRhs.Floats;
 }
 
 bool AnimationVariables::operator!=(const AnimationVariables& acRhs) const noexcept
@@ -33,7 +31,7 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     uint64_t changes = 0;
     uint32_t idx = 0;
 
-    if(Booleans != aPrevious.Booleans)
+    if (Booleans != aPrevious.Booleans)
     {
         changes |= (1ull << idx);
     }
@@ -139,7 +137,6 @@ void AnimationVariables::ApplyDiff(TiltedPhoques::Buffer::Reader& aReader)
         }
         ++idx;
     }
-
 
     for (auto& value : Floats)
     {

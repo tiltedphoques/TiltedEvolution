@@ -17,7 +17,7 @@ public:
     String m_sunTexture = "";
     // GNAM
     String m_glareTexture = "";
-    //TNAM
+    // TNAM
     Chunks::TNAM m_timing{};
 
     void ParseChunks(CLMT& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;

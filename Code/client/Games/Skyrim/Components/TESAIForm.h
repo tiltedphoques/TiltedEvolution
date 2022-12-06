@@ -10,4 +10,3 @@ struct TESAIForm : BaseFormComponent
     uint8_t unkC[0xC];
     GameList<TESPackage> AIPackList;
 };
-

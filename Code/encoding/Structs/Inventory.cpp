@@ -93,9 +93,7 @@ bool Inventory::operator!=(const Inventory& acRhs) const noexcept
 
 bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
 {
-    return BaseId == acRhs.BaseId &&
-           Count == acRhs.Count &&
-           IsExtraDataEquals(acRhs);
+    return BaseId == acRhs.BaseId && Count == acRhs.Count && IsExtraDataEquals(acRhs);
 }
 
 bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept
@@ -148,10 +146,7 @@ int32_t Inventory::GetEntryCountById(GameId& aItemId) const noexcept
 // TODO: unit testing
 void Inventory::AddOrRemoveEntry(const Entry& acEntry) noexcept
 {
-    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acEntry](Entry& entry)
-    {
-        return entry.CanBeMerged(acEntry);
-    });
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [acEntry](Entry& entry) { return entry.CanBeMerged(acEntry); });
 
     if (duplicate != Entries.end())
     {
@@ -181,8 +176,7 @@ void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
         if (!newEntry.IsWorn())
             continue;
 
-        auto entry = std::find_if(Entries.begin(), Entries.end(),
-                                  [&newEntry](auto& aEntry) { return aEntry.BaseId == newEntry.BaseId; });
+        auto entry = std::find_if(Entries.begin(), Entries.end(), [&newEntry](auto& aEntry) { return aEntry.BaseId == newEntry.BaseId; });
 
         // This shouldn't happen
         if (entry == Entries.end())

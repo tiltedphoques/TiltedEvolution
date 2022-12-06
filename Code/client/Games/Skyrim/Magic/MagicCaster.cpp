@@ -17,4 +17,3 @@ void MagicCaster::InterruptCast() noexcept
 
     TiltedPhoques::ThisCall(s_interruptCast, this);
 }
-

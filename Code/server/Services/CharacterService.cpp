@@ -144,14 +144,11 @@ void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCell
         if (acEvent.Owner == pPlayer)
             continue;
 
-        if (pPlayer->GetCellComponent().WorldSpaceId != acEvent.WorldSpaceId ||
-            pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
+        if (pPlayer->GetCellComponent().WorldSpaceId != acEvent.WorldSpaceId || pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId && !GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(removeMessage);
         }
-        else if (pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId &&
-                 GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
+        else if (pPlayer->GetCellComponent().WorldSpaceId == acEvent.WorldSpaceId && GridCellCoords::IsCellInGridCell(acEvent.CurrentCoords, pPlayer->GetCellComponent().CenterCoords, false))
         {
             pPlayer->Send(spawnMessage);
         }
@@ -192,7 +189,9 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
         // Look for the character
         auto view = m_world.view<FormIdComponent, ActorValuesComponent, CharacterComponent, MovementComponent, CellIdComponent, OwnerComponent, InventoryComponent>();
 
-        const auto itor = std::find_if(std::begin(view), std::end(view), [view, refId](auto entity)
+        const auto itor = std::find_if(
+            std::begin(view), std::end(view),
+            [view, refId](auto entity)
             {
                 const auto& formIdComponent = view.get<FormIdComponent>(entity);
 
@@ -215,8 +214,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             bool isOwner = false;
 
-            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer)
-                && !characterComponent.IsMount())
+            if (partyService.IsPlayerInParty(acMessage.pPlayer) && partyService.IsPlayerLeader(acMessage.pPlayer) && !characterComponent.IsMount())
             {
                 PartyService::Party* pParty = partyService.GetPlayerParty(acMessage.pPlayer);
                 Player* pOwningPlayer = view.get<OwnerComponent>(*itor).GetOwner();
@@ -312,7 +310,7 @@ void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& ac
 
     NotifyOwnershipTransfer response;
     response.ServerId = World::ToInteger(acEvent.Entity);
-    
+
     bool foundOwner = false;
     for (auto pPlayer : m_world.GetPlayerManager())
     {
@@ -354,7 +352,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     NotifyRemoveCharacter response;
     response.ServerId = acEvent.ServerId;
 
-    for(auto pPlayer : m_world.GetPlayerManager())
+    for (auto pPlayer : m_world.GetPlayerManager())
     {
         if (characterOwnerComponent.GetOwner() == pPlayer)
             continue;
@@ -453,8 +451,8 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
         for (auto& action : update.ActionEvents)
         {
-            //TODO: HandleAction
-            //auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.Player.ConnectionId, kvp.first);
+            // TODO: HandleAction
+            // auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.Player.ConnectionId, kvp.first);
 
             animationComponent.CurrentAction = action;
 
@@ -663,7 +661,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
 
 void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept
 {
-    //const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    // const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
     auto view = m_world.view<OwnerComponent>();
     const auto it = view.find(static_cast<entt::entity>(acServerId));
     if (it == view.end())
@@ -698,7 +696,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
 
     lastSendTimePoint = now;
 
-    const auto characterView = m_world.view < CellIdComponent, CharacterComponent, OwnerComponent>();
+    const auto characterView = m_world.view<CellIdComponent, CharacterComponent, OwnerComponent>();
 
     TiltedPhoques::Map<Player*, NotifyFactionsChanges> messages;
 
@@ -794,18 +792,16 @@ void CharacterService::ProcessMovementChanges() const noexcept
         }
     }
 
-    m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent)
-    {
-        if (!animationComponent.Actions.empty())
-            animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+    m_world.view<AnimationComponent>().each(
+        [](AnimationComponent& animationComponent)
+        {
+            if (!animationComponent.Actions.empty())
+                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
 
-        animationComponent.Actions.clear();
-    });
+            animationComponent.Actions.clear();
+        });
 
-    m_world.view<MovementComponent>().each([](MovementComponent& movementComponent)
-    {
-        movementComponent.Sent = true;
-    });
+    m_world.view<MovementComponent>().each([](MovementComponent& movementComponent) { movementComponent.Sent = true; });
 
     for (auto& [pPlayer, message] : messages)
     {
@@ -813,4 +809,3 @@ void CharacterService::ProcessMovementChanges() const noexcept
             pPlayer->Send(message);
     }
 }
-

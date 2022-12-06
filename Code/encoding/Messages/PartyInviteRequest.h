@@ -6,7 +6,8 @@ struct PartyInviteRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kPartyInviteRequest;
 
-    PartyInviteRequest() : ClientMessage(Opcode)
+    PartyInviteRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -15,11 +16,7 @@ struct PartyInviteRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const PartyInviteRequest& achRhs) const noexcept
-    {
-        return PlayerId == achRhs.PlayerId &&
-            GetOpcode() == achRhs.GetOpcode();
-    }
+    bool operator==(const PartyInviteRequest& achRhs) const noexcept { return PlayerId == achRhs.PlayerId && GetOpcode() == achRhs.GetOpcode(); }
 
     uint32_t PlayerId{};
 };

@@ -19,4 +19,3 @@
 
 using namespace TiltedPhoques;
 using TiltedPhoques::Serialization;
-

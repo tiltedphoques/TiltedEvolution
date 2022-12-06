@@ -20,19 +20,18 @@ void DebugService::DrawCellView()
         if (ImGui::CollapsingHeader("World space", ImGuiTreeNodeFlags_DefaultOpen))
         {
             const uint32_t worldFormId = pWorldSpace->formID;
-            ImGui::InputScalar("Id", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32,
-                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            ImGui::InputScalar("Id", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
             char* pName = (char*)pWorldSpace->GetName();
             size_t nameLen = strlen(pName);
             ImGui::InputText("Name", pName, nameLen, ImGuiInputTextFlags_ReadOnly);
 
             // TODO: ft
-        #if TP_SKYRIM64
+#if TP_SKYRIM64
             char* pEditorId = (char*)pWorldSpace->GetFormEditorID();
             size_t editorIdLen = strlen(pEditorId);
             ImGui::InputText("Editor ID", pEditorId, editorIdLen, ImGuiInputTextFlags_ReadOnly);
-        #endif
+#endif
         }
     }
 
@@ -41,19 +40,18 @@ void DebugService::DrawCellView()
         if (ImGui::CollapsingHeader("Parent cell", ImGuiTreeNodeFlags_DefaultOpen))
         {
             const uint32_t cellId = pCell->formID;
-            ImGui::InputScalar("Id", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
-                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            ImGui::InputScalar("Id", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
 
             char* pName = (char*)pCell->GetName();
             size_t nameLen = strlen(pName);
             ImGui::InputText("Name", pName, nameLen, ImGuiInputTextFlags_ReadOnly);
 
             // TODO: ft
-        #if TP_SKYRIM64
+#if TP_SKYRIM64
             char* pEditorId = (char*)pCell->GetFormEditorID();
             size_t editorIdLen = strlen(pEditorId);
             ImGui::InputText("Editor ID", pEditorId, editorIdLen, ImGuiInputTextFlags_ReadOnly);
-        #endif
+#endif
         }
     }
 

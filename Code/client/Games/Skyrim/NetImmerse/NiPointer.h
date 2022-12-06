@@ -1,14 +1,15 @@
 #pragma once
 
-template <class T>
-struct NiPointer
+template <class T> struct NiPointer
 {
     NiPointer<T>& operator=(const NiPointer& acRhs)
     {
         if (object != acRhs.object)
         {
-            if (acRhs.object) acRhs.object->IncRef();
-            if (object) object->DecRef();
+            if (acRhs.object)
+                acRhs.object->IncRef();
+            if (object)
+                object->DecRef();
 
             object = acRhs.object;
         }
@@ -20,8 +21,10 @@ struct NiPointer
     {
         if (object != aRhs)
         {
-            if (aRhs) aRhs->IncRef();
-            if (object) object->DecRef();
+            if (aRhs)
+                aRhs->IncRef();
+            if (object)
+                object->DecRef();
 
             object = aRhs;
         }

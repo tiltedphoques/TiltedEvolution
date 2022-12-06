@@ -11,7 +11,8 @@
 #include <World.h>
 
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
-    : TiltedPhoques::OverlayClient(apHandler), m_transport(aTransport)
+    : TiltedPhoques::OverlayClient(apHandler)
+    , m_transport(aTransport)
 {
 }
 
@@ -19,8 +20,7 @@ OverlayClient::~OverlayClient() noexcept
 {
 }
 
-bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                             CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
+bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
 {
     if (message->GetName() == "ui-event")
     {
@@ -93,9 +93,7 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
 
     std::string endpoint = baseIp + ":" + std::to_string(port);
 
-    World::Get().GetRunner().Queue([endpoint] { 
-        World::Get().GetTransport().Connect(endpoint);
-    });
+    World::Get().GetRunner().Queue([endpoint] { World::Get().GetTransport().Connect(endpoint); });
 }
 
 void OverlayClient::ProcessDisconnectMessage()
@@ -111,8 +109,8 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
         SendChatMessageRequest messageRequest;
         messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
         messageRequest.ChatMessage = contents;
-        
-        spdlog::info("Send chat message of type {}: '{}' " , messageRequest.MessageType, messageRequest.ChatMessage);
+
+        spdlog::info("Send chat message of type {}: '{}' ", messageRequest.MessageType, messageRequest.ChatMessage);
         m_transport.Send(messageRequest);
     }
 }

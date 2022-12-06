@@ -40,7 +40,6 @@ void DebugService::DrawNetworkView()
             ImGui::PlotLines("Lines", values, IM_ARRAYSIZE(values), values_offset, nullptr, 0.f, FLT_MAX, ImVec2(0, 160.0f));
         }
 
-
         /*
         float width = -ImGui::CalcItemWidth();
         ImGui::PushItemWidth(width);
@@ -61,13 +60,9 @@ void DebugService::DrawNetworkView()
         ImGui::PopItemWidth();
         */
 
-
-
         ImGui::End();
     }
 
     // online indicator
-    ImGui::GetBackgroundDrawList()->AddRectFilled(
-        ImVec2(23.f, 23.f), 
-        ImVec2(50.f, 50.f), m_transport.IsConnected() ? ImColor(0, 230, 64) : ImColor(240, 52, 52));
+    ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(23.f, 23.f), ImVec2(50.f, 50.f), m_transport.IsConnected() ? ImColor(0, 230, 64) : ImColor(240, 52, 52));
 }

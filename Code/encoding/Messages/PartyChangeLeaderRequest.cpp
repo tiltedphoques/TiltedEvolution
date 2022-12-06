@@ -6,7 +6,7 @@ void PartyChangeLeaderRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrit
 }
 
 void PartyChangeLeaderRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
-{ 
+{
     ClientMessage::DeserializeRaw(aReader);
     PartyMemberPlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }

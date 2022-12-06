@@ -6,11 +6,10 @@
 #include <AdminMessages/AdminShutdownRequest.h>
 #include <AdminMessages/ServerLogs.h>
 
-
-AdminService::AdminService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
+AdminService::AdminService(World& aWorld, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
 {
-    m_shutdownConnection =
-        aDispatcher.sink<AdminPacketEvent<AdminShutdownRequest>>().connect<&AdminService::HandleShutdown>(this);
+    m_shutdownConnection = aDispatcher.sink<AdminPacketEvent<AdminShutdownRequest>>().connect<&AdminService::HandleShutdown>(this);
 }
 
 void AdminService::HandleShutdown(const AdminPacketEvent<AdminShutdownRequest>& acMessage) noexcept
@@ -24,7 +23,7 @@ void AdminService::sink_it_(const spdlog::details::log_msg& msg)
 {
     spdlog::memory_buf_t formatted;
     formatter_->format(msg, formatted);
-    
+
     ServerLogs logs;
     logs.Logs = fmt::to_string(formatted);
 

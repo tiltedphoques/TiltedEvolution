@@ -12,11 +12,11 @@ namespace
 {
 class ConsoleRegistryTest : public ::testing::Test
 {
-  public:
+public:
     void SetUp() override;
     void TearDown() override;
 
-  private:
+private:
 };
 
 void ConsoleRegistryTest::SetUp()
@@ -32,18 +32,24 @@ void ConsoleRegistryTest::TearDown()
 TEST_F(ConsoleRegistryTest, RegisterCommand)
 {
     // "static" command
-    static Command<int> sc{"test0", "desc", [&](ArgStack& stack) {
-                        EXPECT_EQ(stack.Pop<int>(), 7);
-                    }};
+    static Command<int> sc{
+        "test0", "desc",
+        [&](ArgStack& stack)
+        {
+            EXPECT_EQ(stack.Pop<int>(), 7);
+        }};
 
     // "static" setting
     static Setting<bool> ss{"test0", "", true, SettingsFlags::kLocked};
 
     auto r{std::make_unique<ConsoleRegistry>("Test")};
-    r->RegisterCommand<bool, bool>("name", "description", [&](ArgStack& stack) {
-        EXPECT_TRUE(stack.Pop<bool>());
-        EXPECT_FALSE(stack.Pop<bool>());
-    });
+    r->RegisterCommand<bool, bool>(
+        "name", "description",
+        [&](ArgStack& stack)
+        {
+            EXPECT_TRUE(stack.Pop<bool>());
+            EXPECT_FALSE(stack.Pop<bool>());
+        });
 
     ASSERT_TRUE(r->FindCommand("name"));
 
@@ -65,10 +71,10 @@ TEST_F(ConsoleRegistryTest, RegisterCommand)
 
 TEST_F(ConsoleRegistryTest, RegisterSetting)
 {
-   // ConsoleRegistry r("Test");
-   // r.RegisterSetting<bool>("name", "desc", false);
+    // ConsoleRegistry r("Test");
+    // r.RegisterSetting<bool>("name", "desc", false);
 
-    //ASSERT_TRUE(r.FindSetting("name"));
+    // ASSERT_TRUE(r.FindSetting("name"));
 }
 } // namespace
 } // namespace Console

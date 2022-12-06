@@ -31,4 +31,3 @@ struct SpellItem : MagicItem
     MagicSystem::Delivery eDelivery;
     // more stuff
 };
-

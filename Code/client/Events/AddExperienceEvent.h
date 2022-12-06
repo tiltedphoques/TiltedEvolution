@@ -1,11 +1,11 @@
 #pragma once
 
 /**
-* @brief Experience added to an arbitrary skill.
-*/
+ * @brief Experience added to an arbitrary skill.
+ */
 struct AddExperienceEvent
 {
-    AddExperienceEvent(float aExperience) 
+    AddExperienceEvent(float aExperience)
         : Experience(aExperience)
     {
     }

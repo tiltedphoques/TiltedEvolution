@@ -6,7 +6,8 @@ struct AdminSessionOpen : ServerAdminMessage
 {
     static constexpr ServerAdminOpcode Opcode = kAdminSessionOpen;
 
-    AdminSessionOpen() : ServerAdminMessage(Opcode)
+    AdminSessionOpen()
+        : ServerAdminMessage(Opcode)
     {
     }
 
@@ -15,9 +16,5 @@ struct AdminSessionOpen : ServerAdminMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const AdminSessionOpen& achRhs) const noexcept
-    {
-        return GetOpcode() == achRhs.GetOpcode();
-    }
-
+    bool operator==(const AdminSessionOpen& achRhs) const noexcept { return GetOpcode() == achRhs.GetOpcode(); }
 };

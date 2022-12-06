@@ -10,7 +10,7 @@ void NotifyChatMessageBroadcast::SerializeRaw(TiltedPhoques::Buffer::Writer& aWr
 void NotifyChatMessageBroadcast::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ServerMessage::DeserializeRaw(aReader);
-    
+
     MessageType = static_cast<ChatMessageType>(Serialization::ReadVarInt(aReader));
     PlayerName = Serialization::ReadString(aReader);
     ChatMessage = Serialization::ReadString(aReader);

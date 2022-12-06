@@ -129,7 +129,7 @@ struct Mod
     {
         return standardId != 0xFF;
     }
-    
+
     [[nodiscard]] bool IsLite() const noexcept
     {
         return ((flags >> 9) & 1) != 0;
@@ -139,7 +139,7 @@ struct Mod
     {
         return IsLite() ? liteId : standardId;
     }
-    
+
     [[nodiscard]] uint32_t GetFormId(uint32_t aBaseId) const noexcept;
 };
 
@@ -206,4 +206,3 @@ struct INISettingCollection
     uint8_t unk0[0x118];
     Entry head;
 };
-

@@ -17,7 +17,7 @@ bool Mods::operator!=(const Mods& acRhs) const noexcept
 void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     const uint16_t modCount = std::min(ModList.size(), size_t(4096)) & 0xFFFF;
-    aWriter.WriteBits(modCount, 13); 
+    aWriter.WriteBits(modCount, 13);
 
     for (auto& entry : ModList)
     {

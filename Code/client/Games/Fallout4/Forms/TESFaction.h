@@ -6,4 +6,3 @@ struct TESFaction : TESForm
 {
     virtual ~TESFaction();
 };
-

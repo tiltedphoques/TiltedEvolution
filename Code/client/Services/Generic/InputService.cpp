@@ -22,7 +22,7 @@ void ForceKillAllInput()
 #if TP_SKYRIM
     MenuControls::GetInstance()->SetToggle(false);
 #else
-// TODO! Crash the project so we notice
+    // TODO! Crash the project so we notice
     int* t = nullptr;
     *t = 42;
 #endif
@@ -158,60 +158,28 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
         {
             switch (aKey)
             {
-            case VK_CONTROL:
-                aKey = VK_RCONTROL;
-                break;
-            case VK_MENU:
-                aKey = VK_RMENU;
-                break;
-            case VK_RETURN:
-                aKey = VK_SEPARATOR;
-                break;
+            case VK_CONTROL: aKey = VK_RCONTROL; break;
+            case VK_MENU: aKey = VK_RMENU; break;
+            case VK_RETURN: aKey = VK_SEPARATOR; break;
             }
         }
         else
         {
             switch (aKey)
             {
-            case VK_CONTROL:
-                aKey = VK_LCONTROL;
-                break;
-            case VK_MENU:
-                aKey = VK_LMENU;
-                break;
-            case VK_INSERT:
-                aKey = VK_NUMPAD0;
-                break;
-            case VK_DELETE:
-                aKey = VK_DECIMAL;
-                break;
-            case VK_HOME:
-                aKey = VK_NUMPAD7;
-                break;
-            case VK_END:
-                aKey = VK_NUMPAD1;
-                break;
-            case VK_PRIOR:
-                aKey = VK_NUMPAD9;
-                break;
-            case VK_NEXT:
-                aKey = VK_NUMPAD3;
-                break;
-            case VK_LEFT:
-                aKey = VK_NUMPAD4;
-                break;
-            case VK_RIGHT:
-                aKey = VK_NUMPAD6;
-                break;
-            case VK_UP:
-                aKey = VK_NUMPAD8;
-                break;
-            case VK_DOWN:
-                aKey = VK_NUMPAD2;
-                break;
-            case VK_CLEAR:
-                aKey = VK_NUMPAD5;
-                break;
+            case VK_CONTROL: aKey = VK_LCONTROL; break;
+            case VK_MENU: aKey = VK_LMENU; break;
+            case VK_INSERT: aKey = VK_NUMPAD0; break;
+            case VK_DELETE: aKey = VK_DECIMAL; break;
+            case VK_HOME: aKey = VK_NUMPAD7; break;
+            case VK_END: aKey = VK_NUMPAD1; break;
+            case VK_PRIOR: aKey = VK_NUMPAD9; break;
+            case VK_NEXT: aKey = VK_NUMPAD3; break;
+            case VK_LEFT: aKey = VK_NUMPAD4; break;
+            case VK_RIGHT: aKey = VK_NUMPAD6; break;
+            case VK_UP: aKey = VK_NUMPAD8; break;
+            case VK_DOWN: aKey = VK_NUMPAD2; break;
+            case VK_CLEAR: aKey = VK_NUMPAD5; break;
             }
         }
     }
@@ -297,7 +265,7 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
 }
 
 void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButton, bool aDown)
-{   
+{
     auto& overlay = *s_pOverlay;
 
     const auto pApp = overlay.GetOverlayApp();
@@ -358,7 +326,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     if (!pRenderer)
         return 0;
 
-    auto &discord = World::Get().ctx().at<DiscordService>();
+    auto& discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
 #if TP_SKYRIM64
@@ -467,4 +435,3 @@ InputService::~InputService() noexcept
 {
     s_pOverlay = nullptr;
 }
-

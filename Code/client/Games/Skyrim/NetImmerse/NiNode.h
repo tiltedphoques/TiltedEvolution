@@ -7,7 +7,7 @@ struct NiNode : NiAVObject
 {
     virtual ~NiNode();
 
-      // in reality:
+    // in reality:
     // NiTObjectArray<NiPointer<NiAVObject>> children;
     //  but we are lazy:
     NiTObjectArray<NiAVObject*> children;

@@ -7,28 +7,18 @@ template <class T> struct BSTEventSink;
 // Very nasty work around to avoid template code duplication
 namespace details
 {
-    void InternalRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
-    void InternalUnRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
-    void InternalPushEvent(void* apEventDispatcher, void* apEvent) noexcept;
-}
+void InternalRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
+void InternalUnRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
+void InternalPushEvent(void* apEventDispatcher, void* apEvent) noexcept;
+} // namespace details
 
-template<class T>
-struct EventDispatcher
+template <class T> struct EventDispatcher
 {
-    void RegisterSink(BSTEventSink<T>* apSink) noexcept
-    {
-        details::InternalRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink));
-    }
+    void RegisterSink(BSTEventSink<T>* apSink) noexcept { details::InternalRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink)); }
 
-    void UnRegisterSink(BSTEventSink<T>* apSink) noexcept
-    {
-        details::InternalUnRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink));
-    }
+    void UnRegisterSink(BSTEventSink<T>* apSink) noexcept { details::InternalUnRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink)); }
 
-    void PushEvent(const T* apEvent) noexcept
-    {
-        details::InternalPushEvent(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apEvent));
-    }
+    void PushEvent(const T* apEvent) noexcept { details::InternalPushEvent(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apEvent)); }
 
     uint8_t pad0[0x58];
 };
@@ -89,13 +79,13 @@ struct BGSInventoryListEvent
 // TODO: idk why, but it can't find POINTER_FALLOUT4
 #define POINTER_FALLOUT4(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
 
-#define DECLARE_DISPATCHER(name, id) \
-inline EventDispatcher<name>* GetEventDispatcher_##name() \
-    { \
-    using TGetDispatcher = EventDispatcher<name>*(); \
-    POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, id); \
-    return s_getEventDispatcher.Get()(); \
-}; \
+#define DECLARE_DISPATCHER(name, id)                                \
+    inline EventDispatcher<name>* GetEventDispatcher_##name()       \
+    {                                                               \
+        using TGetDispatcher = EventDispatcher<name>*();            \
+        POINTER_FALLOUT4(TGetDispatcher, s_getEventDispatcher, id); \
+        return s_getEventDispatcher.Get()();                        \
+    };
 
 DECLARE_DISPATCHER(TESQuestStartStopEvent, 1404316);
 DECLARE_DISPATCHER(TESQuestStageItemDoneEvent, 181652);

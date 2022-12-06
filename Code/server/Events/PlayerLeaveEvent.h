@@ -3,11 +3,12 @@
 struct Player;
 
 /**
-* @brief Dispatches when a player leaves the server.
-*/
+ * @brief Dispatches when a player leaves the server.
+ */
 struct PlayerLeaveEvent
 {
-    PlayerLeaveEvent(Player* apPlayer) : pPlayer{apPlayer}
+    PlayerLeaveEvent(Player* apPlayer)
+        : pPlayer{apPlayer}
     {
     }
 

@@ -22,18 +22,18 @@ struct TESActorBase : TESBoundAnimObject
     virtual void sub_67();
     virtual void sub_68();
 
-    TESActorBaseData actorData; // 68
-    TESContainer container; // D0
-    TESSpellList spellList; // E8
-    TESAIForm aiForm; // F8
-    TESFullName	fullName; // 120
-    ActorValueOwner actorValueOwner; // 130
+    TESActorBaseData actorData;                       // 68
+    TESContainer container;                           // D0
+    TESSpellList spellList;                           // E8
+    TESAIForm aiForm;                                 // F8
+    TESFullName fullName;                             // 120
+    ActorValueOwner actorValueOwner;                  // 130
     BGSDestructibleObjectForm destructibleObjectForm; // 138
-    BGSSkinForm skinForm; // 148
-    BGSKeywordForm keywordForm; // 158
-    BGSAttackDataForm attackDataForm; // 178
-    BGSPerkRankArray perkRankArray; // 188
-    BGSPropertySheet propertySheet; // 1A0
+    BGSSkinForm skinForm;                             // 148
+    BGSKeywordForm keywordForm;                       // 158
+    BGSAttackDataForm attackDataForm;                 // 178
+    BGSPerkRankArray perkRankArray;                   // 188
+    BGSPropertySheet propertySheet;                   // 1A0
 };
 
 static_assert(offsetof(TESActorBase, actorData) == 0x68);
@@ -46,4 +46,3 @@ static_assert(offsetof(TESActorBase, destructibleObjectForm) == 0x138);
 static_assert(offsetof(TESActorBase, skinForm) == 0x148);
 static_assert(offsetof(TESActorBase, propertySheet) == 0x1A0);
 static_assert(sizeof(TESActorBase) == 0x1B0);
-

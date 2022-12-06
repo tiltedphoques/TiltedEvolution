@@ -2,5 +2,4 @@
 
 struct Cell
 {
-    
 };

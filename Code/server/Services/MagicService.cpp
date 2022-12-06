@@ -11,7 +11,7 @@
 #include <Messages/NotifyInterruptCast.h>
 #include <Messages/NotifyAddTarget.h>
 
-MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher) noexcept 
+MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
 {
     m_spellCastConnection = aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&MagicService::OnSpellCastRequest>(this);
@@ -59,4 +59,3 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     const auto entity = static_cast<entt::entity>(message.TargetId);
     GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
 }
-

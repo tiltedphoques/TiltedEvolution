@@ -24,12 +24,12 @@ void* TP_MAKE_THISCALL(HookInitializeSummonCreatureEffect, Actor, MagicItem* apS
     return TiltedPhoques::ThisCall(RealInitializeSummonCreatureEffect, apThis, apSpell, apEffect);
 }
 
-static TiltedPhoques::Initializer s_summonCreatureEffectsHooks([]()
-{
-    POINTER_SKYRIMSE(TInitializeSummonCreatureEffect, s_start, 34989);
+static TiltedPhoques::Initializer s_summonCreatureEffectsHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TInitializeSummonCreatureEffect, s_start, 34989);
 
-    RealInitializeSummonCreatureEffect = s_start.Get();
+        RealInitializeSummonCreatureEffect = s_start.Get();
 
-    TP_HOOK(&RealInitializeSummonCreatureEffect, HookInitializeSummonCreatureEffect);
-});
-
+        TP_HOOK(&RealInitializeSummonCreatureEffect, HookInitializeSummonCreatureEffect);
+    });
