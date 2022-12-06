@@ -3,16 +3,17 @@
 #pragma once
 
 #include "Pch.h"
+#include "SemanticVersion.h"
 
 namespace Resources
 {
 struct Manifest001
 {
     /// name @ version
-    using DependencyTuple = std::pair<TiltedPhoques::String, uint32_t>;
+    using DependencyTuple = std::pair<TiltedPhoques::String, SemanticVersion>;
 
-    uint32_t apiSet;                                                                // < major * 100 + minor
-    uint32_t resourceVersion;                                                       // < major>.<minor>.<patch>
+    SemanticVersion apiSet;                                                                // < major * 100 + minor
+    SemanticVersion resourceVersion;                                                       // < major>.<minor>.<patch>
     TiltedPhoques::String name;                                                     // < name of the resource
     TiltedPhoques::String description;                                              // < description of the resource
     TiltedPhoques::String keywords;                                                 // < keywords for the resource

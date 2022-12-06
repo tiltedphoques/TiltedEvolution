@@ -78,7 +78,7 @@ void LuaRuntime::BindScriptFunction(const PluginStringView aName, void* apFuncto
     static auto k = [](lua_State* state) -> int {
         // get a lua stack ID, token, that we push on call, pop IT, then convert the args to a ScriptFunctionContext
         // based on the argc, and the type index, we have recieved through the custom lua user data.
-        __debugbreak();
+        //__debugbreak();
         return 0;
     };
 

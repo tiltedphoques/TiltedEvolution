@@ -1,6 +1,7 @@
 // Copyright (C) 2022 TiltedPhoques SRL.
 // For licensing information see LICENSE at the root of this distribution.
 
+#include "SemanticVersion.h"
 #include "ResourceCollection.h"
 
 #include <base/Check.h>
@@ -12,63 +13,6 @@ namespace
 {
 constexpr char kResourceFolderName[] = "resources";
 constexpr char kResourceManifestExt[] = ".manifest";
-
-// The function takes a string containing a version number in the format X.X.X (where each X is a single digit) and
-// converts it to a 32-bit integer by encoding each digit in 4 bits, with the most significant digit being stored in the
-// highest-order 4 bits of the integer. The periods are ignored. For example, the string "1.2.3" would be converted to
-// the integer value 0x123.
-static uint32_t ParseSemVer(const char* apText)
-{
-    uint32_t version = 0;
-    uint32_t shift = 0;
-    while (*apText)
-    {
-        if (*apText == '.')
-        {
-            shift += 8;
-        }
-        else
-        {
-            version |= (*apText - '0') << shift;
-            shift += 4;
-        }
-        ++apText;
-    }
-    return version;
-}
-
-// For each digit, we check if it is the least significant digit, and if it is not, we appends a period (.) to
-// the string. Then, the code appends the character representation of the digit (by adding '0' to the numeric value of
-// the digit) to the string.
-TiltedPhoques::String SemVerToString(uint32_t aVersion)
-{
-    TiltedPhoques::String result;
-    for (int i = 2; i >= 0; --i)
-    {
-        if (i < 2)
-        {
-            result += '.';
-        }
-        result += '0' + ((aVersion >> (i * 4)) & 0xF);
-    }
-    return result;
-}
-
-// to create a character, simply append '0'
-uint8_t GetMinorNumber(uint32_t aVersion)
-{
-    return (aVersion >> 4) & 0xF;
-}
-
-uint8_t GetMajorNumber(uint32_t aVersion)
-{
-    return (aVersion >> 8) & 0xF;
-}
-
-uint8_t GetPatchNumber(uint32_t aVersion)
-{
-    return aVersion & 0xF;
-}
 
 TiltedPhoques::Vector<TiltedPhoques::String> ParseQuotedTokens(const TiltedPhoques::String& aString)
 {
@@ -91,16 +35,17 @@ TiltedPhoques::Vector<TiltedPhoques::String> ParseQuotedTokens(const TiltedPhoqu
     return result;
 }
 
-std::pair<TiltedPhoques::String, uint32_t> SplitDependencyString(const TiltedPhoques::String& aString)
+Manifest001::DependencyTuple SplitDependencyString(const TiltedPhoques::String& aString)
 {
     size_t atPos = aString.find_first_of('@');
     if (atPos == TiltedPhoques::String::npos)
     {
-        return {aString, 0};
+        return {aString, {0, 0, 0}};
     }
     auto name = aString.substr(0, atPos);
     auto versionString = aString.substr(atPos + 1);
-    uint32_t version = ParseSemVer(versionString.c_str());
+
+    SemanticVersion version(versionString.c_str());
     return {name, version};
 }
 
@@ -172,8 +117,8 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     manifest->entryPoint = readString("entrypoint");
 
     // numerics
-    auto readSemVer = [&ini](const char* apName) -> uint32_t {
-        return ParseSemVer(ini.GetValue("Manifest", apName, "0.0.0"));
+    auto readSemVer = [&ini](const char* apName) -> SemanticVersion {
+        return ini.GetValue("Manifest", apName, "0.0.0");
     };
     manifest->apiSet = readSemVer("apiset");
     manifest->resourceVersion = readSemVer("resource_version");
@@ -201,7 +146,7 @@ bool ResourceCollection::ValidateDependencyVersions()
             {
                 if (it2->name == dep.first)
                 {
-                    if (dep.second != 0 && dep.second != it2->resourceVersion)
+                    if (dep.second && dep.second != it2->resourceVersion)
                     {
                         spdlog::error("Dependency {} has version {} but {} is required", dep.first,
                                       SemVerToString(it2->resourceVersion), SemVerToString(dep.second));
