@@ -45,7 +45,6 @@ import { SoundService } from './services/sound.service';
 import { StoreService } from './services/store.service';
 import { TranslocoRootModule } from './transloco-root.module';
 
-
 @NgModule({
   declarations: [
     ChatComponent,
@@ -103,5 +102,4 @@ import { TranslocoRootModule } from './transloco-root.module';
   ],
   bootstrap: [RootComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

@@ -1,7 +1,7 @@
-@import "env";
+@import 'env';
 
-@import "functions/mod";
-@import "mixins/gapped-vertical";
+@import 'functions/mod';
+@import 'mixins/gapped-vertical';
 
 .container {
   @include gapped-vertical($-size-gap);
@@ -30,8 +30,6 @@
   margin: 0.3em;
   line-height: $-size-line;
 }
-
-
 
 input {
   width: 100%;

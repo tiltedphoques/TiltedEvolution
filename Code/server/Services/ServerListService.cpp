@@ -69,6 +69,7 @@ void ServerListService::Announce() const noexcept
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
+
     auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(), cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
 }
 
@@ -90,7 +91,7 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
 
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
-    client.set_read_timeout(std::chrono::milliseconds(1500));
+    client.set_read_timeout(std::chrono::milliseconds(30000));
     const auto response = client.Post("/announce", params);
 
     // If we send a 403 it means we banned this server

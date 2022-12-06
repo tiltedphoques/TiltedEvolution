@@ -5,7 +5,6 @@
 
 import { Provider } from '@angular/core';
 
-
 export const environment = {
   production: false,
   game: true,

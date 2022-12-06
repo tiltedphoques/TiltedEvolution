@@ -1658,7 +1658,7 @@ void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) 
 
         data.m_timer += acUpdateEvent.Delta;
 
-        // We do 2 passes because Skyrim's weapon drawing is the most finnicky thing in existance
+        // We do 2 passes because Skyrim's weapon drawing is the most finnicky thing in existence
         double maxTime = data.m_isFirstPass ? 0.5 : 2.0;
         if (data.m_timer <= maxTime)
             continue;

@@ -1,6 +1,8 @@
 import { APP_INITIALIZER, Provider } from '@angular/core';
-import { mockSkyrimTogether, SkyrimtogetherMock } from '../app/mock/skyrimtogether.mock';
-
+import {
+  mockSkyrimTogether,
+  SkyrimtogetherMock,
+} from '../app/mock/skyrimtogether.mock';
 
 mockSkyrimTogether();
 

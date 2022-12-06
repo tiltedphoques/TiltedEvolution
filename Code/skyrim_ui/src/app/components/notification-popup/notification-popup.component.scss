@@ -1,7 +1,7 @@
-@import "env";
+@import 'env';
 
-@import "functions/mod";
-@import "mixins/gapped-vertical";
+@import 'functions/mod';
+@import 'mixins/gapped-vertical';
 
 :host {
   display: block;
@@ -27,11 +27,12 @@
   margin-left: 1em;
 }
 
-.notification-popup > *{
+.notification-popup > * {
   margin-right: 1em;
 }
 
-img, .icon {
+img,
+.icon {
   width: 2em;
   height: 2em;
   background-size: contain;
@@ -54,5 +55,3 @@ p {
 button {
   font-size: 1em;
 }
-
-

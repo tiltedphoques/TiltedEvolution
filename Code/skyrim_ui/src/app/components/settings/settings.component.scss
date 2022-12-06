@@ -1,6 +1,6 @@
-@import "env";
+@import 'env';
 
-@import "functions/rem";
+@import 'functions/rem';
 
 :host {
   position: relative;
@@ -10,7 +10,7 @@
 .container {
   overflow: auto;
   max-height: 60vh;
-  padding-right: 15px;
+  padding-right: 1rem;
 
   .settings {
     display: flex;
@@ -18,52 +18,13 @@
     justify-content: space-between;
     flex-direction: column;
 
-    .section {
-      padding-bottom: 15px;
-      margin-bottom: 0.1rem;
+    section {
+      margin-bottom: 1rem;
       border-bottom: 2px solid;
-      border-image: url("../../../assets/images/separator/single.svg") 3;
-      display: flex;
-      justify-content: space-between;
-      flex-direction: column;
-
-      &:not(:first-child) {
-        margin-top: 15px;
-      }
     }
 
-    .section > div:not(:last-child) {
+    section > div:not(:last-child) {
       margin-bottom: 0.5rem;
-    }
-
-    .flex-item {
-      position: relative;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .radio-group {
-        display: flex;
-        justify-content: space-between;
-        width: 40%;
-
-        div {
-          display: flex;
-          align-items: center;
-        }
-      }
-    }
-
-    .flex-item > label {
-      width: 55%;
-    }
-
-    .flex-item > input {
-      width: 40%;
-    }
-
-    .settings-dropdown {
-      width: 40%;
     }
 
     hr {
@@ -73,6 +34,25 @@
     h2:first-child {
       margin-top: 0;
     }
+  }
+}
+
+.setting {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1em 0;
+
+  & > label {
+    width: 15em;
+  }
+
+  & > input,
+  > app-dropdown {
+    width: 10em;
+    max-width: 10em;
+    font-size: inherit;
   }
 }
 

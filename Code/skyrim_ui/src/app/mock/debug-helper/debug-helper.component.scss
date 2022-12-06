@@ -28,7 +28,7 @@
 
   .debug-helper-row {
     display: flex;
-    gap: 5px
+    gap: 5px;
   }
 
   .debug-helper-row > * {
@@ -67,6 +67,8 @@ button {
   }
 }
 
-label, .title, .player-info {
+label,
+.title,
+.player-info {
   color: rgba(255, 255, 255, 0.5);
 }

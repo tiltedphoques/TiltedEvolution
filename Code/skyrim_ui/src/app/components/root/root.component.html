@@ -1,16 +1,17 @@
 <ng-container *ngIf="inGame$ | async">
-
   <ng-container *ngIf="!(menuOpen$ | async)">
     <app-debug></app-debug>
 
     <app-group></app-group>
   </ng-container>
 
-  <app-notification-popup-container class="app-notification-popup"></app-notification-popup-container>
+  <app-notification-popup-container
+    class="app-notification-popup"
+  ></app-notification-popup-container>
 
   <app-notifications [@notifications]="!(active$ | async)"></app-notifications>
   <div
-    [@controls]="(active$ | async)"
+    [@controls]="active$ | async"
     class="app-root-controls"
     [class.background-element]="view$ | async"
   >
@@ -23,7 +24,7 @@
       >
         {{ 'COMPONENT.ROOT.CONNECT' | transloco }}
       </button>
-      <ng-container *ngIf="(connected$ | async)">
+      <ng-container *ngIf="connected$ | async">
         <button
           data-style-ornament="inverted"
           [attr.data-style-active]="(view$ | async) === RootView.DISCONNECT"
@@ -68,7 +69,7 @@
       <app-chat #chat></app-chat>
     </app-window>
   </div>
-  <div [@fadeInOutActive]="(active$ | async)" class="app-root-popups">
+  <div [@fadeInOutActive]="active$ | async" class="app-root-popups">
     <app-loading></app-loading>
 
     <ng-container [ngSwitch]="view$ | async">
@@ -82,9 +83,15 @@
         <app-server-list (done)="closeView()"></app-server-list>
       </app-popup>
       <app-popup *ngSwitchCase="RootView.SETTINGS" data-popup="settings">
-        <app-settings (done)="closeView()" (settingsUpdated)="updateGroupPosition()"></app-settings>
+        <app-settings
+          (done)="closeView()"
+          (settingsUpdated)="updateGroupPosition()"
+        ></app-settings>
       </app-popup>
-      <app-popup *ngSwitchCase="RootView.PLAYER_MANAGER" data-popup="playerManager">
+      <app-popup
+        *ngSwitchCase="RootView.PLAYER_MANAGER"
+        data-popup="playerManager"
+      >
         <app-player-manager (done)="closeView()"></app-player-manager>
       </app-popup>
     </ng-container>
