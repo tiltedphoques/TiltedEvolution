@@ -1,12 +1,12 @@
 
-#include "LuaRuntime.h"
 #include "Pch.h"
+#include "PythonRuntime.h"
 
 namespace
 {
 PluginInterface001* CreateRuntime()
 {
-    return new LuaRuntime();
+    return new PythonRuntime();
 }
 
 void DestroyRuntime(PluginInterface001* interface)
@@ -18,9 +18,9 @@ void DestroyRuntime(PluginInterface001* interface)
 PLUGIN_API PluginDescriptor TT_PLUGIN{.magic = kPluginMagic,
                                       .structSize = sizeof(PluginDescriptor),
                                       .pluginVersion = 1,
-                                      .pluginName = "LuaScriptingRuntime",
+                                      .pluginName = "PythonScriptingRuntime",
                                       .authorName = "VinceM (Force67)",
-                                      .flags = PluginDescriptor::Flags::kNone,
+                                      .flags = PluginDescriptor::Flags::kHotReload,
                                       .pCreatePlugin = CreateRuntime,
                                       .pDestroyPlugin = DestroyRuntime
 
