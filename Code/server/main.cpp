@@ -32,7 +32,7 @@ struct GameServerInstance final : IGameServerInstance
     bool IsRunning() override;
     void Update() override;
 
-  private:
+private:
     GameServer m_gameServer;
 };
 
@@ -73,8 +73,7 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
     return std::strcmp(apBuildTag, kBuildTag) == 0;
 }
 
-GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg,
-                                                          const std::function<void()>& aCallback)
+GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, const std::function<void()>& aCallback)
 {
     BASE_ASSERT(aCallback, "CreateGameServer(): Callback was not provided");
 
@@ -115,13 +114,9 @@ void WriteLog(const LogLevel aLogLevel, const char* apFormat, ...)
     level_enum level;
     switch (aLogLevel)
     {
-    case LogLevel::kDebug:
-        level = level_enum::debug;
-        break;
+    case LogLevel::kDebug: level = level_enum::debug; break;
     case LogLevel::kInfo:
-    default:
-        level = level_enum::info;
-        break;
+    default: level = level_enum::info; break;
     }
 
     spdlog::log(level, apFormat);

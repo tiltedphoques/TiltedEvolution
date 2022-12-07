@@ -7,7 +7,7 @@
 
 class PluginCollection
 {
-  public:
+public:
     PluginCollection();
     ~PluginCollection();
 
@@ -22,7 +22,7 @@ class PluginCollection
 
     void DumpLoadedPuginsToLog();
 
-  private:
+private:
     std::filesystem::path m_pluginPath;
 
     struct PluginData

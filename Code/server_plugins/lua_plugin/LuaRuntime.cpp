@@ -9,14 +9,7 @@ static_assert(sizeof(LUA_INTEGER) == 8, "Lua must be compiled with 64 bit suppor
 namespace
 {
 // luaL_openlibs version without io/os libs
-constexpr const luaL_Reg kSafeLuaLibraries[] = {{"_G", luaopen_base},
-                                                {LUA_TABLIBNAME, luaopen_table},
-                                                {LUA_STRLIBNAME, luaopen_string},
-                                                {LUA_MATHLIBNAME, luaopen_math},
-                                                {LUA_DBLIBNAME, luaopen_debug},
-                                                {LUA_COLIBNAME, luaopen_coroutine},
-                                                {LUA_UTF8LIBNAME, luaopen_utf8},
-                                                {nullptr, nullptr}};
+constexpr const luaL_Reg kSafeLuaLibraries[] = {{"_G", luaopen_base}, {LUA_TABLIBNAME, luaopen_table}, {LUA_STRLIBNAME, luaopen_string}, {LUA_MATHLIBNAME, luaopen_math}, {LUA_DBLIBNAME, luaopen_debug}, {LUA_COLIBNAME, luaopen_coroutine}, {LUA_UTF8LIBNAME, luaopen_utf8}, {nullptr, nullptr}};
 
 void RegisterSafeLibraries(lua_State* apState)
 {
@@ -39,7 +32,7 @@ bool LuaRuntime::Initialize()
     RegisterSafeLibraries(m_State);
 
     ArgType args[] = {ArgType::kBool, ArgType::kF32};
-    BindScriptFunction("testFunc", nullptr, args, sizeof(args) / sizeof(ArgType)) ;
+    BindScriptFunction("testFunc", nullptr, args, sizeof(args) / sizeof(ArgType));
 
     ScriptFunctionContext context(2);
     context.Push(true);
@@ -57,8 +50,7 @@ void LuaRuntime::Shutdown()
 
 void LuaRuntime::CallScriptFunction(const PluginStringView aName, ScriptFunctionContext& aContext)
 {
-    auto it = std::find_if(functions_.begin(), functions_.end(),
-                           [&](const LuaFunction& registrar) { return registrar.GetName() == aName.data(); });
+    auto it = std::find_if(functions_.begin(), functions_.end(), [&](const LuaFunction& registrar) { return registrar.GetName() == aName.data(); });
     if (it == functions_.end())
         return;
 
@@ -68,14 +60,14 @@ void LuaRuntime::CallScriptFunction(const PluginStringView aName, ScriptFunction
 // functor user pointer with argstack.
 
 // https://stackoverflow.com/questions/32416388/how-to-register-member-function-to-lua-without-lua-bind-in-c
-void LuaRuntime::BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs,
-                                    const size_t aArgCount)
-{// todo: lock
+void LuaRuntime::BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs, const size_t aArgCount)
+{ // todo: lock
     functions_.emplace_back(m_State, aName.data(), apArgs, aArgCount);
 
     // https://github.com/citizenfx/fivem/blob/e46db5133c30577f75e985a36f902a626013ac3c/code/components/citizen-scripting-lua/src/LuaScriptRuntime.cpp#L545
 
-    static auto k = [](lua_State* state) -> int {
+    static auto k = [](lua_State* state) -> int
+    {
         // get a lua stack ID, token, that we push on call, pop IT, then convert the args to a ScriptFunctionContext
         // based on the argc, and the type index, we have recieved through the custom lua user data.
         //__debugbreak();

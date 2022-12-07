@@ -8,7 +8,7 @@
 #endif
 
 #ifdef __linux__
-#define PLUGIN_API extern "C" __attribute__ ((visibility ("default")))
+#define PLUGIN_API extern "C" __attribute__((visibility("default")))
 #endif
 #endif
 
@@ -19,7 +19,7 @@
 #endif
 
 #ifdef __linux__
-#define SERVER_API extern "C" __attribute__ ((visibility ("default")))
+#define SERVER_API extern "C" __attribute__((visibility("default")))
 #endif
 
 #else
@@ -29,7 +29,7 @@
 #endif
 
 #ifdef __linux__
-#define SERVER_API extern "C" __attribute__ ((visibility ("default")))
+#define SERVER_API extern "C" __attribute__((visibility("default")))
 #endif
 
 #endif
@@ -58,7 +58,7 @@ enum class ArgType
 
 class ScriptFunctionContext
 {
-  public:
+public:
     ScriptFunctionContext(uint32_t count)
     {
         m_pArgTypeStack = (ArgType*)malloc(count * sizeof(ArgType));
@@ -66,12 +66,9 @@ class ScriptFunctionContext
         m_argofs = 0;
     }
 
-    ArgType Type() const
-    {
-        return m_pArgTypeStack[m_ArgCount];
-    }
+    ArgType Type() const { return m_pArgTypeStack[m_ArgCount]; }
 
-    ArgType GetArg(int i) const { return m_pArgTypeStack[i]; } 
+    ArgType GetArg(int i) const { return m_pArgTypeStack[i]; }
 
     void Push(bool b) { PushVal(ArgType::kBool, b); }
     void Push(float f) { PushVal(ArgType::kF32, f); }
@@ -98,13 +95,10 @@ class ScriptFunctionContext
     bool PopI16() { return FetchVal<int16_t>(); }
     bool PopI32() { return FetchVal<int32_t>(); }
     bool PopI64() { return FetchVal<int64_t>(); }
-    
-    inline uint32_t count() const
-    {
-        return m_ArgCount;
-    }
 
-  private:
+    inline uint32_t count() const { return m_ArgCount; }
+
+private:
     template <typename T> void PushVal(const ArgType aType, const T acValue)
     {
         m_pArgTypeStack[m_ArgCount] = aType;
@@ -121,7 +115,7 @@ class ScriptFunctionContext
         return value;
     }
 
-  protected:
+protected:
     uint8_t* m_pReturnValues{nullptr};
     uint8_t* m_pArgStack{nullptr};
     ArgType* m_pArgTypeStack{nullptr};
@@ -132,13 +126,21 @@ class ScriptFunctionContext
 // abi stable span
 template <typename T> class PluginSlice
 {
-  public:
-    explicit constexpr PluginSlice(const T* ptr, size_t len) : m_pData(ptr), m_size(len) {}
-    template <size_t N> constexpr PluginSlice(T (&a)[N]) noexcept : PluginSlice(a, N) {}
+public:
+    explicit constexpr PluginSlice(const T* ptr, size_t len)
+        : m_pData(ptr)
+        , m_size(len)
+    {
+    }
+    template <size_t N>
+    constexpr PluginSlice(T (&a)[N]) noexcept
+        : PluginSlice(a, N)
+    {
+    }
 
     constexpr T* data() const { return m_pData; }
 
-  private:
+private:
     T* m_pData;
     size_t m_size;
 };
@@ -151,7 +153,7 @@ static constexpr uint32_t kMaxPluginInterfaceVersion = 1;
 // e.g PluginInterface002 : PluginInterface001
 class PluginInterface001
 {
-  public:
+public:
     virtual ~PluginInterface001() = default;
 
     virtual uint32_t GetVersion() = 0;

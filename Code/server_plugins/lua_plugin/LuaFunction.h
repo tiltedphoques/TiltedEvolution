@@ -10,7 +10,7 @@ class LuaStateHolder;
 
 class LuaFunction
 {
-  public:
+public:
     explicit LuaFunction(LuaStateHolder&, const std::string& aName, const ArgType* apArgs, size_t aCount);
 
     void ValidateArg(ArgType a, int i);
@@ -18,12 +18,9 @@ class LuaFunction
 
     void Invoke(ScriptFunctionContext&);
 
-    auto& GetName() const
-    {
-        return m_name;
-    }
+    auto& GetName() const { return m_name; }
 
-  private:
+private:
     std::string m_name;
     std::vector<ArgType> m_args;
     LuaStateHolder& m_State;

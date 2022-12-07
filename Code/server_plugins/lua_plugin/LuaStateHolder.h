@@ -4,7 +4,7 @@
 
 class LuaStateHolder
 {
-  public:
+public:
     LuaStateHolder()
     {
         m_state = luaL_newstate();
@@ -32,6 +32,6 @@ class LuaStateHolder
         return m_state;
     }
 
-  private:
+private:
     lua_State* m_state;
 };

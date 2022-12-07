@@ -1,8 +1,8 @@
 // Copyright (C) 2022 TiltedPhoques SRL.
 // For licensing information see LICENSE at the root of this distribution.
 
-#include "SemanticVersion.h"
 #include "ResourceCollection.h"
+#include "SemanticVersion2.h"
 
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>

@@ -15,13 +15,7 @@ void DestroyRuntime(PluginInterface001* interface)
 }
 } // namespace
 
-PLUGIN_API PluginDescriptor TT_PLUGIN{.magic = kPluginMagic,
-                                      .structSize = sizeof(PluginDescriptor),
-                                      .pluginVersion = 1,
-                                      .pluginName = "LuaScriptingRuntime",
-                                      .authorName = "VinceM",
-                                      .flags = PluginDescriptor::Flags::kNone,
-                                      .pCreatePlugin = CreateRuntime,
-                                      .pDestroyPlugin = DestroyRuntime
+PLUGIN_API PluginDescriptor TT_PLUGIN{
+    .magic = kPluginMagic, .structSize = sizeof(PluginDescriptor), .pluginVersion = 1, .pluginName = "LuaScriptingRuntime", .authorName = "VinceM", .flags = PluginDescriptor::Flags::kNone, .pCreatePlugin = CreateRuntime, .pDestroyPlugin = DestroyRuntime
 
 };
