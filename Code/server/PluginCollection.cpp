@@ -58,9 +58,8 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
                     continue;
                 }
 
-                m_pluginData.emplace_back(
-                    pHandle, reinterpret_cast<PluginDescriptor*>(pPluginDescriptor),
-                    /*Interface must be instantiated first*/ nullptr);
+                m_pluginData.emplace_back(pHandle, reinterpret_cast<PluginDescriptor*>(pPluginDescriptor),
+                                          /*Interface must be instantiated first*/ nullptr);
             }
         }
     }
@@ -80,7 +79,9 @@ void PluginCollection::InitializePlugins()
         PluginInterface001* pInstance = data.pDescriptor->pCreatePlugin();
         if (!pInstance)
         {
-            spdlog::error("Descriptor->CreatePlugin() for {} returned null. Did you forget to allocate the plugin instance?", data.pDescriptor->pluginName.data());
+            spdlog::error(
+                "Descriptor->CreatePlugin() for {} returned null. Did you forget to allocate the plugin instance?",
+                data.pDescriptor->pluginName.data());
             continue;
         }
 
@@ -89,7 +90,8 @@ void PluginCollection::InitializePlugins()
         bool result = pInstance->Initialize();
         if (!result)
         {
-            spdlog::error("plugin->Initialize() for {} returned false. Plugin initialization failed.", data.pDescriptor->pluginName.data());
+            spdlog::error("plugin->Initialize() for {} returned false. Plugin initialization failed.",
+                          data.pDescriptor->pluginName.data());
 
             data.pInterface = nullptr;
             continue;
@@ -134,5 +136,13 @@ void PluginCollection::DumpLoadedPuginsToLog()
 {
     for (const PluginData& cData : m_pluginData)
     {
+    }
+}
+
+void PluginCollection::ForEachPlugin(std::function<void(const PluginDescriptor&)> aCallback) const
+{
+    for (const PluginData& cData : m_pluginData)
+    {
+        aCallback(*cData.pDescriptor);
     }
 }

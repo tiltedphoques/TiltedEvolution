@@ -143,10 +143,10 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     }
 
     auto readString = [&](const char* apName) -> TiltedPhoques::String {
-        auto value = ini.GetValue("Manifest", apName, nullptr);
+        auto value = ini.GetValue("Resource", apName, nullptr);
         if (value == nullptr)
         {
-            spdlog::error("Missing {} in {}", apName, aPath.string());
+            spdlog::error("Missing \"{}\" in {}", apName, aPath.string());
             return "";
         }
         return UnescapeAndStrip(value);
@@ -213,6 +213,11 @@ void ResourceCollection::ResolveDependencies()
 void ResourceCollection::CollectResources()
 {
     m_resourcePath = std::filesystem::current_path() / kResourceFolderName;
+    if (!std::filesystem::exists(m_resourcePath))
+    {
+        spdlog::info("Resource folder {} does not exist", m_resourcePath.string());
+        return;
+    }
 
     std::vector<std::filesystem::path> manifestCanidates;
     for (auto const& dir : std::filesystem::recursive_directory_iterator{m_resourcePath})
@@ -254,6 +259,16 @@ void ResourceCollection::CollectResources()
     if (failedCount > 0)
     {
         spdlog::warn("{} resources failed to load", failedCount);
+    }
+
+    spdlog::info("Loaded {} resources", m_manifests.size());
+}
+
+void ResourceCollection::ForEachManifest(std::function<void(const Manifest001&)> aCallback) const
+{
+    for (const auto& manifest : m_manifests)
+    {
+        aCallback(*manifest);
     }
 }
 } // namespace Resources

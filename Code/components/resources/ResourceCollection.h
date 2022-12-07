@@ -31,6 +31,8 @@ class ResourceCollection
         return m_manifests;
     }
 
+    void ForEachManifest(std::function<void(const Manifest001&)> aCallback) const;
+
   private:
     std::filesystem::path m_resourcePath;
     TiltedPhoques::Vector<TiltedPhoques::UniquePtr<Resources::Manifest001>> m_manifests;

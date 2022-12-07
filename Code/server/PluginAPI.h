@@ -58,7 +58,7 @@ enum class ArgType
 
 class ScriptFunctionContext
 {
-public:
+  public:
     ScriptFunctionContext(uint32_t count)
     {
         m_pArgTypeStack = (ArgType*)malloc(count * sizeof(ArgType));
@@ -66,39 +66,108 @@ public:
         m_argofs = 0;
     }
 
-    ArgType Type() const { return m_pArgTypeStack[m_ArgCount]; }
+    ArgType Type() const
+    {
+        return m_pArgTypeStack[m_ArgCount];
+    }
 
-    ArgType GetArg(int i) const { return m_pArgTypeStack[i]; }
+    ArgType GetArg(int i) const
+    {
+        return m_pArgTypeStack[i];
+    }
 
-    void Push(bool b) { PushVal(ArgType::kBool, b); }
-    void Push(float f) { PushVal(ArgType::kF32, f); }
+    void Push(bool b)
+    {
+        PushVal(ArgType::kBool, b);
+    }
+    void Push(float f)
+    {
+        PushVal(ArgType::kF32, f);
+    }
     // unsigned
-    void Push(uint8_t i) { PushVal(ArgType::kU8, i); }
-    void Push(uint16_t i) { PushVal(ArgType::kU16, i); }
-    void Push(uint32_t i) { PushVal(ArgType::kU32, i); }
-    void Push(uint64_t i) { PushVal(ArgType::kU64, i); }
+    void Push(uint8_t i)
+    {
+        PushVal(ArgType::kU8, i);
+    }
+    void Push(uint16_t i)
+    {
+        PushVal(ArgType::kU16, i);
+    }
+    void Push(uint32_t i)
+    {
+        PushVal(ArgType::kU32, i);
+    }
+    void Push(uint64_t i)
+    {
+        PushVal(ArgType::kU64, i);
+    }
     // signed
-    void Push(int8_t i) { PushVal(ArgType::kI8, i); }
-    void Push(int16_t i) { PushVal(ArgType::kI16, i); }
-    void Push(int32_t i) { PushVal(ArgType::KI32, i); }
-    void Push(int64_t i) { PushVal(ArgType::kI64, i); }
+    void Push(int8_t i)
+    {
+        PushVal(ArgType::kI8, i);
+    }
+    void Push(int16_t i)
+    {
+        PushVal(ArgType::kI16, i);
+    }
+    void Push(int32_t i)
+    {
+        PushVal(ArgType::KI32, i);
+    }
+    void Push(int64_t i)
+    {
+        PushVal(ArgType::kI64, i);
+    }
 
-    bool PopBool() { return FetchVal<bool>(); }
-    bool PopF32() { return FetchVal<float>(); }
+    bool PopBool()
+    {
+        return FetchVal<bool>();
+    }
+    bool PopF32()
+    {
+        return FetchVal<float>();
+    }
     // unsigned
-    bool PopU8() { return FetchVal<uint8_t>(); }
-    bool PopU16() { return FetchVal<uint16_t>(); }
-    bool PopU32() { return FetchVal<uint32_t>(); }
-    bool PopU64() { return FetchVal<uint64_t>(); }
+    bool PopU8()
+    {
+        return FetchVal<uint8_t>();
+    }
+    bool PopU16()
+    {
+        return FetchVal<uint16_t>();
+    }
+    bool PopU32()
+    {
+        return FetchVal<uint32_t>();
+    }
+    bool PopU64()
+    {
+        return FetchVal<uint64_t>();
+    }
     // signed
-    bool PopI8() { return FetchVal<int8_t>(); }
-    bool PopI16() { return FetchVal<int16_t>(); }
-    bool PopI32() { return FetchVal<int32_t>(); }
-    bool PopI64() { return FetchVal<int64_t>(); }
+    bool PopI8()
+    {
+        return FetchVal<int8_t>();
+    }
+    bool PopI16()
+    {
+        return FetchVal<int16_t>();
+    }
+    bool PopI32()
+    {
+        return FetchVal<int32_t>();
+    }
+    bool PopI64()
+    {
+        return FetchVal<int64_t>();
+    }
 
-    inline uint32_t count() const { return m_ArgCount; }
+    inline uint32_t count() const
+    {
+        return m_ArgCount;
+    }
 
-private:
+  private:
     template <typename T> void PushVal(const ArgType aType, const T acValue)
     {
         m_pArgTypeStack[m_ArgCount] = aType;
@@ -115,7 +184,7 @@ private:
         return value;
     }
 
-protected:
+  protected:
     uint8_t* m_pReturnValues{nullptr};
     uint8_t* m_pArgStack{nullptr};
     ArgType* m_pArgTypeStack{nullptr};
@@ -126,21 +195,20 @@ protected:
 // abi stable span
 template <typename T> class PluginSlice
 {
-public:
-    explicit constexpr PluginSlice(const T* ptr, size_t len)
-        : m_pData(ptr)
-        , m_size(len)
+  public:
+    explicit constexpr PluginSlice(const T* ptr, size_t len) : m_pData(ptr), m_size(len)
     {
     }
-    template <size_t N>
-    constexpr PluginSlice(T (&a)[N]) noexcept
-        : PluginSlice(a, N)
+    template <size_t N> constexpr PluginSlice(T (&a)[N]) noexcept : PluginSlice(a, N)
     {
     }
 
-    constexpr T* data() const { return m_pData; }
+    constexpr T* data() const
+    {
+        return m_pData;
+    }
 
-private:
+  private:
     T* m_pData;
     size_t m_size;
 };
@@ -153,7 +221,7 @@ static constexpr uint32_t kMaxPluginInterfaceVersion = 1;
 // e.g PluginInterface002 : PluginInterface001
 class PluginInterface001
 {
-public:
+  public:
     virtual ~PluginInterface001() = default;
 
     virtual uint32_t GetVersion() = 0;
@@ -187,4 +255,9 @@ struct PluginDescriptor
     // these are for managing the lifetime of the plugin instance on your own heap.
     PluginInterface001* (*pCreatePlugin)();      // < allocate from your plugin
     void (*pDestroyPlugin)(PluginInterface001*); // < free from your plugin
+
+    bool CanHotReload() const
+    {
+        return (flags & Flags::kHotReload) != 0;
+    }
 };

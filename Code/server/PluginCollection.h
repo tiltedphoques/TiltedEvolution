@@ -7,7 +7,7 @@
 
 class PluginCollection
 {
-public:
+  public:
     PluginCollection();
     ~PluginCollection();
 
@@ -22,7 +22,14 @@ public:
 
     void DumpLoadedPuginsToLog();
 
-private:
+    void ForEachPlugin(std::function<void(const PluginDescriptor&)> aCallback) const;
+
+    size_t GetPluginCount() const
+    {
+        return m_pluginData.size();
+    }
+
+  private:
     std::filesystem::path m_pluginPath;
 
     struct PluginData
