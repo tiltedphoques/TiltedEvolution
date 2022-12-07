@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_SuperMutantRootBehavior.h>
 
-
-
-AnimationGraphDescriptor_SuperMutantRootBehavior::AnimationGraphDescriptor_SuperMutantRootBehavior(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_SuperMutantRootBehavior::AnimationGraphDescriptor_SuperMutantRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -217,7 +214,8 @@ AnimationGraphDescriptor_SuperMutantRootBehavior::AnimationGraphDescriptor_Super
 
     uint64_t key = 4192192227136413005;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kisReloading,

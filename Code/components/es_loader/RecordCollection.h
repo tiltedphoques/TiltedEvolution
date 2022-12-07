@@ -26,39 +26,15 @@ struct RecordCollection
         return record->second.GetType();
     }
 
-    bool HasAnyRecords() const noexcept
-    {
-        return m_allRecords.size();
-    }
+    bool HasAnyRecords() const noexcept { return m_allRecords.size(); }
 
-    REFR& GetObjectRefById(uint32_t aFormId) noexcept
-    {
-        return m_objectReferences[aFormId];
-    }
-    CLMT& GetClimateById(uint32_t aFormId) noexcept
-    {
-        return m_climates[aFormId];
-    }
-    NPC& GetNpcById(uint32_t aFormId) noexcept
-    {
-        return m_npcs[aFormId];
-    }
-    CONT& GetContainerById(uint32_t aFormId) noexcept
-    {
-        return m_containers[aFormId];
-    }
-    GMST& GetGameSettingById(uint32_t aFormId) noexcept
-    {
-        return m_gameSettings[aFormId];
-    }
-    WRLD& GetWorldById(uint32_t aFormId) noexcept
-    {
-        return m_worlds[aFormId];
-    }
-    NAVM& GetNavMeshById(uint32_t aFormId) noexcept
-    {
-        return m_navMeshes[aFormId];
-    }
+    REFR& GetObjectRefById(uint32_t aFormId) noexcept { return m_objectReferences[aFormId]; }
+    CLMT& GetClimateById(uint32_t aFormId) noexcept { return m_climates[aFormId]; }
+    NPC& GetNpcById(uint32_t aFormId) noexcept { return m_npcs[aFormId]; }
+    CONT& GetContainerById(uint32_t aFormId) noexcept { return m_containers[aFormId]; }
+    GMST& GetGameSettingById(uint32_t aFormId) noexcept { return m_gameSettings[aFormId]; }
+    WRLD& GetWorldById(uint32_t aFormId) noexcept { return m_worlds[aFormId]; }
+    NAVM& GetNavMeshById(uint32_t aFormId) noexcept { return m_navMeshes[aFormId]; }
 
     void BuildReferences();
 

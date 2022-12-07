@@ -5,7 +5,6 @@
 BSFixedString::BSFixedString()
     : data{nullptr}
 {
-    
 }
 
 BSFixedString::BSFixedString(const char* acpData)

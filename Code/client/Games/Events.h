@@ -8,13 +8,8 @@ enum class BSTEventResult
     kAbort
 };
 
-template<class T>
-struct BSTEventSink
+template <class T> struct BSTEventSink
 {
     virtual ~BSTEventSink() {}
-    virtual BSTEventResult OnEvent(const T* apEvent, const EventDispatcher<T>* apSender)
-    {
-        return BSTEventResult::kOk;
-    }
+    virtual BSTEventResult OnEvent(const T* apEvent, const EventDispatcher<T>* apSender) { return BSTEventResult::kOk; }
 };
-

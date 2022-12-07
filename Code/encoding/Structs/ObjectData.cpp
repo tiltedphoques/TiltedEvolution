@@ -5,14 +5,7 @@ using TiltedPhoques::Serialization;
 
 bool ObjectData::operator==(const ObjectData& acRhs) const noexcept
 {
-    return ServerId == acRhs.ServerId &&
-           Id == acRhs.Id &&
-           CellId == acRhs.CellId &&
-           WorldSpaceId == acRhs.WorldSpaceId &&
-           CurrentCoords == acRhs.CurrentCoords &&
-           CurrentLockData == acRhs.CurrentLockData &&
-           CurrentInventory == acRhs.CurrentInventory &&
-           IsSenderFirst == acRhs.IsSenderFirst;
+    return ServerId == acRhs.ServerId && Id == acRhs.Id && CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && CurrentCoords == acRhs.CurrentCoords && CurrentLockData == acRhs.CurrentLockData && CurrentInventory == acRhs.CurrentInventory && IsSenderFirst == acRhs.IsSenderFirst;
 }
 
 bool ObjectData::operator!=(const ObjectData& acRhs) const noexcept

@@ -21,9 +21,7 @@ ELF_EXP bool EarlyInstallSucceeded()
 
 static void InstallEarlyHooks()
 {
-
 }
-
 
 // create remote thread sentinel
 
@@ -34,14 +32,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     switch (fdwReason)
     {
-    case DLL_PROCESS_ATTACH: {
+    case DLL_PROCESS_ATTACH:
+    {
         // the goal here is to check if mo2 usvfs dll was loaded yet.
         g_WasUSVFSActive = GetModuleHandleW(kUSVFSDllName);
         InstallEarlyHooks();
         break;
     }
-    case DLL_PROCESS_DETACH:
-        break;
+    case DLL_PROCESS_DETACH: break;
     }
     return TRUE;
 }

@@ -21,10 +21,10 @@
 #endif
 
 // TODO: should this be debug only? I removed the check since debug is broken, can only use releasedbg
-#define TP_ASSERT(Expr, Msg, ...)                                                                                      \
-    if (!(Expr))                                                                                                       \
-    {                                                                                                                  \
-        Utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str());                                                   \
+#define TP_ASSERT(Expr, Msg, ...)                                    \
+    if (!(Expr))                                                     \
+    {                                                                \
+        Utils::Assert(#Expr, fmt::format(Msg, __VA_ARGS__).c_str()); \
     }
 
 struct TESForm;
@@ -42,8 +42,7 @@ static void Assert(const char* apExpression, const char* apMessage)
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 
-template<class T>
-T* GetByServerId(const uint32_t acServerId) noexcept
+template <class T> T* GetByServerId(const uint32_t acServerId) noexcept
 {
     auto view = World::Get().view<FormIdComponent>();
 
@@ -76,20 +75,17 @@ void ShowHudMessage(const TiltedPhoques::String& acMessage);
 
 namespace TiltedPhoques
 {
-template <class TFunc, class TThis, class... TArgs>
-constexpr decltype(auto) ThisCall(TFunc* aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept
+template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(TFunc* aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept
 {
     return ThisCall(aFunction, aThis.Get(), args...);
 }
 
-template <class TFunc, class TThis, class... TArgs>
-constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept
+template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept
 {
     return ThisCall(aFunction.Get(), aThis.Get(), args...);
 }
 
-template <class TFunc, class TThis, class... TArgs>
-constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, TThis* apThis, TArgs&&... args) noexcept
+template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, TThis* apThis, TArgs&&... args) noexcept
 {
     return ThisCall(aFunction.Get(), apThis, args...);
 }

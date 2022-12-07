@@ -9,8 +9,8 @@ struct PartyLeftEvent;
 struct NotifyWeatherChange;
 
 /**
-* @brief Responsible for weather changes, which is controlled on a party-per-party basis.
-*/
+ * @brief Responsible for weather changes, which is controlled on a party-per-party basis.
+ */
 struct WeatherService
 {
     WeatherService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher);
@@ -46,4 +46,3 @@ private:
     entt::scoped_connection m_playerRemovedConnection;
     entt::scoped_connection m_weatherChangeConnection;
 };
-

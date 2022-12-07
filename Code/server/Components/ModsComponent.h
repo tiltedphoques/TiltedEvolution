@@ -22,22 +22,13 @@ struct ModsComponent
 
     void AddServerMod(const ESLoader::PluginData& acData);
 
-    const auto& GetStandardMods() const noexcept
-    {
-        return m_standardMods;
-    }
-    const auto& GetLiteMods() const noexcept
-    {
-        return m_liteMods;
-    }
-    const auto& GetServerMods() const noexcept
-    {
-        return m_serverMods;
-    }
+    const auto& GetStandardMods() const noexcept { return m_standardMods; }
+    const auto& GetLiteMods() const noexcept { return m_liteMods; }
+    const auto& GetServerMods() const noexcept { return m_serverMods; }
 
     bool IsInstalled(const String& acpFileName) const noexcept;
 
-    using TModList = TiltedPhoques::Map<String, Entry>; 
+    using TModList = TiltedPhoques::Map<String, Entry>;
 
 private:
     uint32_t m_seed = 0;

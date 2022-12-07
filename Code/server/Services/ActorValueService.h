@@ -11,8 +11,8 @@ struct RequestHealthChangeBroadcast;
 struct RequestDeathStateChange;
 
 /**
-* @brief Broadcasts changes in (max) actor values and updates them server side.
-*/
+ * @brief Broadcasts changes in (max) actor values and updates them server side.
+ */
 struct ActorValueService
 {
     ActorValueService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -20,7 +20,7 @@ struct ActorValueService
 
     TP_NOCOPYMOVE(ActorValueService);
 
-  private:
+private:
     World& m_world;
 
     void OnActorValueChanges(const PacketEvent<RequestActorValueChanges>& acMessage) const noexcept;

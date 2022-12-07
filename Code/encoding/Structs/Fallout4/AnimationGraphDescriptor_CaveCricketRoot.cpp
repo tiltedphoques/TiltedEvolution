@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_CaveCricketRoot.h>
 
-
-AnimationGraphDescriptor_CaveCricketRoot::AnimationGraphDescriptor_CaveCricketRoot(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_CaveCricketRoot::AnimationGraphDescriptor_CaveCricketRoot(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -53,7 +51,8 @@ AnimationGraphDescriptor_CaveCricketRoot::AnimationGraphDescriptor_CaveCricketRo
 
     uint64_t key = 7359588577465619653;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbManualGraphChange,

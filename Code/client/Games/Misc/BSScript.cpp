@@ -39,11 +39,9 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
 #if TP_SKYRIM64
 void TP_MAKE_THISCALL(HookBindEverythingToScript, BSScript::IVirtualMachine*)
 {
-    (*apThis)->BindNativeMethod(new BSScript::IsRemotePlayerFunc(
-             "IsRemotePlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsRemotePlayer, BSScript::Variable::kBoolean));
+    (*apThis)->BindNativeMethod(new BSScript::IsRemotePlayerFunc("IsRemotePlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsRemotePlayer, BSScript::Variable::kBoolean));
 
-    (*apThis)->BindNativeMethod(new BSScript::IsPlayerFunc(
-             "IsPlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsPlayer, BSScript::Variable::kBoolean));
+    (*apThis)->BindNativeMethod(new BSScript::IsPlayerFunc("IsPlayer", "SkyrimTogetherUtils", PapyrusFunctions::IsPlayer, BSScript::Variable::kBoolean));
 
     TiltedPhoques::ThisCall(RealBindEverythingToScript, apThis);
 }
@@ -75,13 +73,7 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
 
     auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
 
-    if (!pPolicy ||
-        !handle1 ||
-        !handle2 ||
-        !pPolicy->HandleIsType((uint32_t)Actor::Type, handle1) ||
-        !pPolicy->HandleIsType((uint32_t)Actor::Type, handle2) ||
-        !pPolicy->IsHandleObjectAvailable(handle1) ||
-        !pPolicy->IsHandleObjectAvailable(handle2))
+    if (!pPolicy || !handle1 || !handle2 || !pPolicy->HandleIsType((uint32_t)Actor::Type, handle1) || !pPolicy->HandleIsType((uint32_t)Actor::Type, handle2) || !pPolicy->IsHandleObjectAvailable(handle1) || !pPolicy->IsHandleObjectAvailable(handle2))
     {
         return TiltedPhoques::ThisCall(RealCompareVariables, apThis, apVar1, apVar2);
     }
@@ -111,30 +103,30 @@ int64_t TP_MAKE_THISCALL(HookCompareVariables, void, BSScript::Variable* apVar1,
 #endif
 }
 
-static TiltedPhoques::Initializer s_vmHooks([]()
-{
-    POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 104788);
-    POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 919894);
+static TiltedPhoques::Initializer s_vmHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TRegisterPapyrusFunction, s_registerPapyrusFunction, 104788);
+        POINTER_FALLOUT4(TRegisterPapyrusFunction, s_registerPapyrusFunction, 919894);
 
 #if TP_SKYRIM64
-    POINTER_SKYRIMSE(TBindEverythingToScript, s_bindEverythingToScript, 55739);
-    POINTER_SKYRIMSE(TSignaturesMatch, s_signaturesMatch, 104359);
+        POINTER_SKYRIMSE(TBindEverythingToScript, s_bindEverythingToScript, 55739);
+        POINTER_SKYRIMSE(TSignaturesMatch, s_signaturesMatch, 104359);
 #endif
 
-    //POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
+        // POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
 
-    RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();
+        RealRegisterPapyrusFunction = s_registerPapyrusFunction.Get();
 #if TP_SKYRIM64
-    RealBindEverythingToScript = s_bindEverythingToScript.Get();
-    RealSignaturesMatch = s_signaturesMatch.Get();
+        RealBindEverythingToScript = s_bindEverythingToScript.Get();
+        RealSignaturesMatch = s_signaturesMatch.Get();
 #endif
-    //RealCompareVariables = s_compareVariables.Get();
+        // RealCompareVariables = s_compareVariables.Get();
 
-
-    TP_HOOK(&RealRegisterPapyrusFunction, HookRegisterPapyrusFunction);
+        TP_HOOK(&RealRegisterPapyrusFunction, HookRegisterPapyrusFunction);
 #if TP_SKYRIM64
-    TP_HOOK(&RealBindEverythingToScript, HookBindEverythingToScript);
-    TP_HOOK(&RealSignaturesMatch, HookSignaturesMatch);
+        TP_HOOK(&RealBindEverythingToScript, HookBindEverythingToScript);
+        TP_HOOK(&RealSignaturesMatch, HookSignaturesMatch);
 #endif
-    //TP_HOOK(&RealCompareVariables, HookCompareVariables);
-});
+        // TP_HOOK(&RealCompareVariables, HookCompareVariables);
+    });

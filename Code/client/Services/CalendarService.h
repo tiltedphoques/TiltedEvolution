@@ -11,10 +11,9 @@ struct UpdateEvent;
 struct TransportService;
 
 /**
-* @brief Handles time sync.
-*/
-class CalendarService final 
-    : public BSTEventSink<TESActivateEvent>
+ * @brief Handles time sync.
+ */
+class CalendarService final : public BSTEventSink<TESActivateEvent>
 {
 public:
     CalendarService(World&, entt::dispatcher&, TransportService&);
@@ -22,9 +21,9 @@ public:
     static bool AllowGameTick() noexcept;
 
 private:
-    void OnTimeUpdate(const ServerTimeSettings &) noexcept;
-    void HandleUpdate(const UpdateEvent &) noexcept;
-    void OnDisconnected(const DisconnectedEvent &) noexcept;
+    void OnTimeUpdate(const ServerTimeSettings&) noexcept;
+    void HandleUpdate(const UpdateEvent&) noexcept;
+    void OnDisconnected(const DisconnectedEvent&) noexcept;
 
     void ToggleGameClock(bool aEnable);
     float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;

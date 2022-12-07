@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Alien.h>
 
-
-AnimationGraphDescriptor_Alien::AnimationGraphDescriptor_Alien(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Alien::AnimationGraphDescriptor_Alien(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -117,7 +115,8 @@ AnimationGraphDescriptor_Alien::AnimationGraphDescriptor_Alien(
 
     uint64_t key = 1050516629324185412;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAnimationDriven,
@@ -129,33 +128,13 @@ AnimationGraphDescriptor_Alien::AnimationGraphDescriptor_Alien(
                 kbEquipOk,
             },
             {
-                kSpeed,
-                kstaggerDirection,
-                kfRunSpeed,
-                kDirection,
-                kHeadZTwist,
-                kfHeadTwistGainAdj,
-                kSpineZTwist,
-                kfSpineTwistGainAdj,
-                kfWalkSpeed,
-                kfDirectAtSavedGain,
-                kAimHeadingCurrent,
-                kTurnDeltaSmoothed,
-                kHeadYTwist,
-                kSpeedSmoothed,
-                kSpineYTwist,
-                kfTimeStep,
-                kAimPitchCurrent,
-                kHeadXTwist,
-                kSpineXTwist,
-                kTurnDelta,
-                kstaggerMagnitude,
+                kSpeed,      kstaggerDirection, kfRunSpeed,   kDirection, kHeadZTwist,      kfHeadTwistGainAdj, kSpineZTwist, kfSpineTwistGainAdj, kfWalkSpeed,       kfDirectAtSavedGain, kAimHeadingCurrent, kTurnDeltaSmoothed,
+                kHeadYTwist, kSpeedSmoothed,    kSpineYTwist, kfTimeStep, kAimPitchCurrent, kHeadXTwist,        kSpineXTwist, kTurnDelta,          kstaggerMagnitude,
             },
             {
                 kiSyncTurnState,
                 kiSyncIdleLocomotion,
                 kiCombatState,
                 kiMovementSpeed,
-            }
-        ));
+            }));
 }

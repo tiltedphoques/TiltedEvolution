@@ -20,7 +20,7 @@ TEST(ConsoleUtils, TestNumeric)
     EXPECT_TRUE(IsNumber("10.00"));
 
     // German way is not supported yet.
-    //EXPECT_TRUE(IsNumber("10,00"));
+    // EXPECT_TRUE(IsNumber("10,00"));
 
     EXPECT_FALSE(IsNumber("ten"));
     EXPECT_FALSE(IsNumber("ten100"));

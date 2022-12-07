@@ -13,7 +13,7 @@ namespace Settings
 int32_t* GetDifficulty() noexcept;
 float* GetGreetDistance() noexcept;
 float* GetVATSSelectTargetTimeMultiplier() noexcept;
-}
+} // namespace Settings
 
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept;
 
@@ -24,4 +24,3 @@ struct ExActor : Actor, ActorExtension
 struct ExPlayerCharacter : PlayerCharacter, ActorExtension
 {
 };
-

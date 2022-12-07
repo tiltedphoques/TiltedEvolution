@@ -40,17 +40,16 @@ bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
     return TiltedPhoques::ThisCall(RealPlayDialogueOption, apThis, aIndex);
 }
 
-TiltedPhoques::Initializer s_menuTopicHooks([]()
-{
-    // TODO: ft
-    // should this even be synced for fallout 4?
+TiltedPhoques::Initializer s_menuTopicHooks(
+    []()
+    {
+// TODO: ft
+// should this even be synced for fallout 4?
 #if TP_SKYRIM64
-    POINTER_SKYRIMSE(TPlayDialogueOption, s_playDialogueOption, 35269);
+        POINTER_SKYRIMSE(TPlayDialogueOption, s_playDialogueOption, 35269);
 
-    RealPlayDialogueOption = s_playDialogueOption.Get();
+        RealPlayDialogueOption = s_playDialogueOption.Get();
 
-    TP_HOOK(&RealPlayDialogueOption, HookPlayDialogueOption);
+        TP_HOOK(&RealPlayDialogueOption, HookPlayDialogueOption);
 #endif
-});
-
-
+    });

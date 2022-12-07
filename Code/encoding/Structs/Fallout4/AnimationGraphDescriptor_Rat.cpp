@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Rat.h>
 
-
-
-AnimationGraphDescriptor_Rat::AnimationGraphDescriptor_Rat(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Rat::AnimationGraphDescriptor_Rat(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -105,7 +102,8 @@ AnimationGraphDescriptor_Rat::AnimationGraphDescriptor_Rat(
 
     uint64_t key = 10665350860146563200;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kcHitReactionBodyPart,
@@ -137,6 +135,5 @@ AnimationGraphDescriptor_Rat::AnimationGraphDescriptor_Rat(
                 kiCombatState,
                 kiSyncForwardState,
                 kiSyncIdleLocomotion,
-            }
-        ));
+            }));
 }

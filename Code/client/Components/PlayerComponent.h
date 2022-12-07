@@ -13,4 +13,3 @@ struct PlayerComponent
 
     uint32_t Id;
 };
-

@@ -14,4 +14,3 @@ struct ExtraEnchantment : BSExtraData
 };
 
 static_assert(sizeof(ExtraEnchantment) == 0x20);
-

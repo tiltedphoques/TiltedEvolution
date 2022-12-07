@@ -3,7 +3,6 @@
 
 PlayerManager::PlayerManager()
 {
-    
 }
 
 Player* PlayerManager::Create(ConnectionId_t aConnectionId) noexcept

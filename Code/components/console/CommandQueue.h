@@ -10,7 +10,7 @@ namespace Console
 {
 class CommandQueue
 {
-  public:
+public:
     struct Item
     {
         // Strictly speaking, this also isn't thread safe...
@@ -18,10 +18,7 @@ class CommandQueue
         ArgStack m_stack;
     };
 
-    inline bool HasWork() const
-    {
-        return !m_queue.empty();
-    }
+    inline bool HasWork() const { return !m_queue.empty(); }
 
     // Strong-inline me.
     inline void Upload(CommandBase* apCommand, ArgStack& arStack)
@@ -45,7 +42,7 @@ class CommandQueue
         }
     }
 
-  private:
+private:
     // fast queue with up to n outstanding elements.
     // (8 would be 256)
     fast_queue<Item, 2> m_queue;

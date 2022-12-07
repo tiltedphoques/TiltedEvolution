@@ -18,8 +18,7 @@ void DebugService::DrawFormDebugView()
 
     ImGui::Begin("Form");
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
-                       ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
@@ -33,8 +32,7 @@ void DebugService::DrawFormDebugView()
 
     if (pFetchForm)
     {
-        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64,
-                           ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Memory address", ImGuiDataType_U64, (void*)&pFetchForm, 0, 0, "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
     }
 
     if (pRefr)
@@ -42,15 +40,13 @@ void DebugService::DrawFormDebugView()
         if (auto* pParentCell = pRefr->GetParentCell())
         {
             const uint32_t cellId = pParentCell->formID;
-            ImGui::InputScalar("GetParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
-                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            ImGui::InputScalar("GetParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
         if (auto* pParentCell = pRefr->parentCell)
         {
             const uint32_t cellId = pParentCell->formID;
-            ImGui::InputScalar("parentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32,
-                               ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            ImGui::InputScalar("parentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
         /*

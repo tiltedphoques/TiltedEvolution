@@ -6,9 +6,7 @@ using TiltedPhoques::Serialization;
 
 bool MagicEquipment::operator==(const MagicEquipment& acRhs) const noexcept
 {
-    return LeftHandSpell == acRhs.LeftHandSpell 
-           && RightHandSpell == acRhs.RightHandSpell
-           && Shout == acRhs.Shout;
+    return LeftHandSpell == acRhs.LeftHandSpell && RightHandSpell == acRhs.RightHandSpell && Shout == acRhs.Shout;
 }
 
 bool MagicEquipment::operator!=(const MagicEquipment& acRhs) const noexcept

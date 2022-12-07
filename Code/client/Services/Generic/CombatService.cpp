@@ -16,9 +16,9 @@
 #include <Forms/TESAmmo.h>
 #include <Games/ActorExtension.h>
 
-CombatService::CombatService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher) 
-    : m_world(aWorld), 
-      m_transport(aTransport)
+CombatService::CombatService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
+    , m_transport(aTransport)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CombatService::OnUpdate>(this);
     m_hitConnection = aDispatcher.sink<HitEvent>().connect<&CombatService::OnHitEvent>(this);
@@ -43,10 +43,7 @@ void CombatService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acE
 
     uint32_t shooterFormId = acEvent.ShooterID;
     auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == shooterFormId;
-    });
+    const auto shooterEntityIt = std::find_if(std::begin(view), std::end(view), [shooterFormId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == shooterFormId; });
 
     if (shooterEntityIt == std::end(view))
         return;
@@ -104,10 +101,7 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     ModSystem& modSystem = World::Get().GetModSystem();
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.ShooterID](auto entity) { return remoteView.get<RemoteComponent>(entity).Id == Id; });
 
     if (remoteIt == std::end(remoteView))
     {
@@ -210,10 +204,7 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
 
     auto view = m_world.view<FormIdComponent, LocalComponent>(entt::exclude<ObjectComponent>);
 
-    const auto hitteeIt =
-        std::find_if(std::begin(view), std::end(view), [id = acEvent.HitteeId, view](entt::entity entity) {
-            return view.get<FormIdComponent>(entity).Id == id;
-        });
+    const auto hitteeIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.HitteeId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (hitteeIt == std::end(view))
     {
@@ -248,7 +239,7 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
     {
         auto& combatComponent = view.get<CombatComponent>(entity);
         combatComponent.Timer = combatComponent.Timer - acDelta;
-        
+
         if (combatComponent.Timer <= 0.f)
         {
             toRemove.push_back(entity);
@@ -262,7 +253,7 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
             toRemove.push_back(entity);
             continue;
         }
-        
+
         const auto& formIdComponent = view.get<FormIdComponent>(entity);
         auto* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         if (!pActor)

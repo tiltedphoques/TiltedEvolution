@@ -16,7 +16,8 @@ constexpr char kBuildTag[]{BUILD_BRANCH "@" BUILD_COMMIT};
 
 struct GameServerInstance final : IGameServerInstance
 {
-    GameServerInstance(Console::ConsoleRegistry& aConsole) : m_gameServer(aConsole)
+    GameServerInstance(Console::ConsoleRegistry& aConsole)
+        : m_gameServer(aConsole)
     {
     }
 
@@ -115,10 +116,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     switch (fdwReason)
     {
-    case DLL_PROCESS_ATTACH:
-        break;
-    case DLL_PROCESS_DETACH:
-        break;
+    case DLL_PROCESS_ATTACH: break;
+    case DLL_PROCESS_DETACH: break;
     }
     return TRUE;
 }

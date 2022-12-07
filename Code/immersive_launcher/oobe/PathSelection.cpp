@@ -32,8 +32,7 @@ std::optional<std::wstring> OpenPathSelectionDialog2(const std::wstring& aPathSu
     ComScope _;
 
     ComPtr<IFileOpenDialog> pFileDialog;
-    auto hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog,
-                               reinterpret_cast<void**>(pFileDialog.GetAddressOf()));
+    auto hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(pFileDialog.GetAddressOf()));
     if (FAILED(hr))
         return std::nullopt;
 
@@ -105,8 +104,7 @@ bool SelectInstall(bool aForceSelect)
                 }
 
                 // if this fails, we try again
-                result = Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) &&
-                         Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
+                result = Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) && Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
 
                 if (result)
                     break;

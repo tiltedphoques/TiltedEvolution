@@ -32,21 +32,17 @@ struct World : entt::registry
     DebugService& GetDebugService() noexcept { return ctx().at<DebugService>(); }
     const DebugService& GetDebugService() const noexcept { return ctx().at<const DebugService>(); }
 
-    auto &GetDispatcher() noexcept
-    {
-        return m_dispatcher;
-    }
+    auto& GetDispatcher() noexcept { return m_dispatcher; }
 
     const ServerSettings& GetServerSettings() const noexcept { return m_serverSettings; }
     void SetServerSettings(ServerSettings aServerSettings) noexcept { m_serverSettings = aServerSettings; }
 
-    [[nodiscard]] uint64_t GetTick() const noexcept;    
+    [[nodiscard]] uint64_t GetTick() const noexcept;
 
     static void Create() noexcept;
     [[nodiscard]] static World& Get() noexcept;
 
 private:
-
     entt::dispatcher m_dispatcher;
     RunnerService m_runner;
     TransportService m_transport;

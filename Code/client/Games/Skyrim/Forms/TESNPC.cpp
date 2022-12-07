@@ -12,11 +12,12 @@ TESNPC* TP_MAKE_THISCALL(HookSetLeveledNpc, TESNPC, TESNPC* apSelectedNpc)
     return TiltedPhoques::ThisCall(RealSetLeveledNpc, apThis, Cast<TESNPC>(TESForm::GetById(0x3B547)));
 }
 
+static TiltedPhoques::Initializer s_npcInitHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TSetLeveledNpc, s_SetLeveledNpc, 14375);
 
-static TiltedPhoques::Initializer s_npcInitHooks([]() {
-    POINTER_SKYRIMSE(TSetLeveledNpc, s_SetLeveledNpc, 14375);
+        RealSetLeveledNpc = s_SetLeveledNpc.Get();
 
-    RealSetLeveledNpc = s_SetLeveledNpc.Get();
-
-    //TP_HOOK(&RealSetLeveledNpc, HookSetLeveledNpc);
-});
+        // TP_HOOK(&RealSetLeveledNpc, HookSetLeveledNpc);
+    });

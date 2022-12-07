@@ -10,4 +10,3 @@ struct ExtraCharge : BSExtraData
 };
 
 static_assert(sizeof(ExtraCharge) == 0x18);
-

@@ -12,13 +12,10 @@ struct TintMask
         type = 0;
     }
 
-    ~TintMask()
-    {
-    }
+    ~TintMask() {}
 
     TESTexture* texture;
     uint32_t color;
     float alpha;
     uint32_t type;
 };
-

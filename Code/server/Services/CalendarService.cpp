@@ -10,14 +10,14 @@
 
 #include "Game/Player.h"
 
-
-CalendarService::CalendarService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
+CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&CalendarService::OnPlayerJoin>(this);
 }
 
-void CalendarService::OnUpdate(const UpdateEvent &) noexcept
+void CalendarService::OnUpdate(const UpdateEvent&) noexcept
 {
     if (!m_lastTick)
         m_lastTick = GameServer::Get()->GetTick();

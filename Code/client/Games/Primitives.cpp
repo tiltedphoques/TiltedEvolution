@@ -23,18 +23,18 @@ void BSRecursiveLock::Lock()
     const auto tid = GetCurrentThreadId();
     _mm_lfence();
 
-    if(m_tid == tid)
+    if (m_tid == tid)
     {
         InterlockedIncrement(&m_counter);
     }
     else
     {
-        if(InterlockedCompareExchange(&m_counter, 1, 0))
+        if (InterlockedCompareExchange(&m_counter, 1, 0))
         {
-            while(true)
+            while (true)
             {
                 _mm_pause();
-                if(!InterlockedCompareExchange(&m_counter, 1, 0))
+                if (!InterlockedCompareExchange(&m_counter, 1, 0))
                 {
                     break;
                 }
@@ -52,9 +52,9 @@ void BSRecursiveLock::Lock()
 void BSRecursiveLock::Unlock()
 {
     _mm_lfence();
-    if(m_tid == GetCurrentThreadId())
+    if (m_tid == GetCurrentThreadId())
     {
-        if(m_counter == 1)
+        if (m_counter == 1)
         {
             m_tid = 0;
             _mm_mfence();

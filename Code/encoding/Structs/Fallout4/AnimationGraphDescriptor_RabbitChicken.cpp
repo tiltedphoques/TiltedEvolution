@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_RabbitChicken.h>
 
-
-AnimationGraphDescriptor_RabbitChicken::AnimationGraphDescriptor_RabbitChicken(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_RabbitChicken::AnimationGraphDescriptor_RabbitChicken(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -20,11 +18,10 @@ AnimationGraphDescriptor_RabbitChicken::AnimationGraphDescriptor_RabbitChicken(
 
     uint64_t key = 16006527083653121093;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-            {
-                kbGraphDriven
-            },
+            {kbGraphDriven},
             {
                 kSpeed,
                 kTurnDelta,
@@ -36,6 +33,5 @@ AnimationGraphDescriptor_RabbitChicken::AnimationGraphDescriptor_RabbitChicken(
                 kiLocomotionState,
                 kiSyncIdleLocomotion,
                 kiSyncTurnState,
-            }
-        ));
+            }));
 }

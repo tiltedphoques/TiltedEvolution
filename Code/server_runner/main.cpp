@@ -71,8 +71,7 @@ struct LogInstance
         // make the client aware of this logger.
         RegisterLogger(consoleOut);
 
-        auto fileOut =
-            std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
+        auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
         auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
         serverOut->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
         auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
@@ -85,10 +84,7 @@ struct LogInstance
         SetDefaultLogger(globalOut);
     }
 
-    ~LogInstance()
-    {
-        spdlog::shutdown();
-    }
+    ~LogInstance() { spdlog::shutdown(); }
 };
 
 static bool RegisterQuitHandler()
@@ -137,8 +133,7 @@ static bool RegisterQuitHandler()
 #ifdef _WIN32
 static bool ShowEULADialog()
 {
-    Base::TaskDialog dia(LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102)), L"Tilted Platform Agreement", L"Confirm the Tilted Platform EULA",
-                         L"TODO: Link to EULA", nullptr);
+    Base::TaskDialog dia(LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102)), L"Tilted Platform Agreement", L"Confirm the Tilted Platform EULA", L"TODO: Link to EULA", nullptr);
     dia.AppendButton(100, L"Accept EULA");
     dia.AppendButton(101, L"Deny EULA");
     dia.SetDefaultButton(101 /*So they have to think about it*/);
@@ -162,7 +157,8 @@ static bool IsEULAAccepted()
         preAccept = env == "true" || env == "1" || env == "TRUE";
     }
 
-    auto saveFile = [&]() {
+    auto saveFile = [&]()
+    {
 #ifdef _WIN32
         // try using the dialog
         if (!preAccept)

@@ -35,7 +35,7 @@ UniquePtr<RecordCollection> ESLoader::BuildRecordCollection() noexcept
 {
     if (!fs::is_directory(m_directory))
     {
-        //spdlog::warn("Data directory not found.");
+        // spdlog::warn("Data directory not found.");
         return nullptr;
     }
 
@@ -85,8 +85,7 @@ bool ESLoader::LoadLoadOrder()
 
         switch (extensionType)
         {
-        case 'm':
-            m_masterFiles[line] = standardId;
+        case 'm': m_masterFiles[line] = standardId;
         case 'p':
             plugin.m_standardId = standardId;
             standardId += 0x01;
@@ -99,8 +98,7 @@ bool ESLoader::LoadLoadOrder()
             plugin.m_isLite = true;
             m_loadOrder.push_back(plugin);
             break;
-        default:
-            spdlog::error("Extension in loadorder.txt not recognized: {}", line);
+        default: spdlog::error("Extension in loadorder.txt not recognized: {}", line);
         }
     }
 

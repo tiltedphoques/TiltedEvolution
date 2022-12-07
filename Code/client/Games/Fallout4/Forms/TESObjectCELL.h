@@ -20,10 +20,7 @@ struct TESObjectCELL : TESForm
     uint8_t pad88[0xC8 - 0x88];
     TESWorldSpace* worldspace; // C8
 
-    bool IsValid() const
-    {
-        return cellFlags[4] == 8;
-    }
+    bool IsValid() const { return cellFlags[4] == 8; }
 };
 
 static_assert(offsetof(TESObjectCELL, cellFlags) == 0x40);

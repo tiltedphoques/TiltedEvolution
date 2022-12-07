@@ -31,9 +31,9 @@ struct SteamStubHeaderV31
     uintptr_t OriginalEntryPoint;  // The original entry point of the binary before it was protected.
     uint32_t Unknown0001;          // [Cyanic: This field is most likely an offset to a string table.]
     uint32_t PayloadSize;
-    uint32_t DRMPDllOffset; // The offset to the SteamDrmp.dll file.
-    uint32_t DRMPDllSize; // The size of the SteamDrmp.dll file. uint32_tSteamAppId; // The Steam application id of this
-    uint32_t Flags;       // The DRM flags used while protecting this program.
+    uint32_t DRMPDllOffset;              // The offset to the SteamDrmp.dll file.
+    uint32_t DRMPDllSize;                // The size of the SteamDrmp.dll file. uint32_tSteamAppId; // The Steam application id of this
+    uint32_t Flags;                      // The DRM flags used while protecting this program.
     uint32_t BindSectionVirtualSize;     // The .bind section virtual size.
     uint32_t Unknown0002;                // [Cyanic: This field is most likely a hash of some sort.]
     uintptr_t CodeSectionVirtualAddress; // The code section virtual address.
@@ -53,4 +53,4 @@ struct SteamStubHeaderV31
 };
 
 static_assert(sizeof(SteamStubHeaderV31) == 240);
-}
+} // namespace steam

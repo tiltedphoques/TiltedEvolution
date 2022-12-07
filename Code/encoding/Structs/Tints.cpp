@@ -6,10 +6,7 @@ using TiltedPhoques::Serialization;
 
 bool Tints::Entry::operator==(const Entry& acRhs) const noexcept
 {
-    return Alpha == acRhs.Alpha &&
-        Type == acRhs.Type &&
-        Color == acRhs.Color &&
-        Name == acRhs.Name;
+    return Alpha == acRhs.Alpha && Type == acRhs.Type && Color == acRhs.Color && Name == acRhs.Name;
 }
 
 bool Tints::Entry::operator!=(const Entry& acRhs) const noexcept

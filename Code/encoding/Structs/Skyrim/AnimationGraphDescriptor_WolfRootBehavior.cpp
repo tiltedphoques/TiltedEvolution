@@ -1,7 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WolfRootBehavior.h>
 
-
 AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -102,31 +101,10 @@ AnimationGraphDescriptor_WolfRootBehavior::AnimationGraphDescriptor_WolfRootBeha
     };
 
     uint64_t key = 1344932221912162919;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbHeadTrackingOn,
-            kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kbDisableHeadTrack,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbSkeeverLunge,
-            kbFootIKEnable,
-            kisMoving},
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kTurnDeltaDamped,
-            kSpeedSampled,
-            kwalkBackSpeedMult},
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncForwardState,
-            kiCombatStance,
-            kiMovementSpeed,
-            kiSyncSprintState}));
+            {kbHeadTrackingOn, kbAnimationDriven, kbAllowRotation, kbHeadTracking, kbDisableHeadTrack, kIsRecoiling, kIsStaggering, kIsAttacking, kbSkeeverLunge, kbFootIKEnable, kisMoving}, {kSpeed, kTurnDelta, kturnSpeedMult, kDirection, kTurnDeltaDamped, kSpeedSampled, kwalkBackSpeedMult},
+            {kiSyncIdleLocomotion, kiSyncTurnState, kiSyncForwardState, kiCombatStance, kiMovementSpeed, kiSyncSprintState}));
 }

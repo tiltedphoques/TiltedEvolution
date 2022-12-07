@@ -21,7 +21,7 @@ struct BSAnimationGraphManager
     void* pad_ptrs[6];
     BSTSmallArray<BShkbAnimationGraph> animationGraphs; // 40 - 20
     void* pad_ptrs2[9];
-    BSRecursiveLock lock; // 98 - 4C
+    BSRecursiveLock lock;  // 98 - 4C
     void* unkPtrAfterLock; // A0 - 58
 
 #if TP_PLATFORM_32
@@ -34,7 +34,6 @@ struct BSAnimationGraphManager
     uint64_t GetDescriptorKey(int aForceIndex = -1);
     uint32_t ReSendEvent(BSFixedString* apEventName);
 };
-
 
 #if TP_PLATFORM_64
 static_assert(offsetof(BSAnimationGraphManager, animationGraphs) == 0x40);

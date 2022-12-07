@@ -54,10 +54,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     auto view = m_world.view<FormIdComponent>();
 
-    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) 
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (iter == std::end(view))
         return;
@@ -65,8 +62,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error(__FUNCTION__ ": failed to find server id, target form id: {:X}, item id: {:X}, count: {}", 
-                      acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
+        spdlog::error(__FUNCTION__ ": failed to find server id, target form id: {:X}, item id: {:X}, count: {}", acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
         return;
     }
 
@@ -77,8 +73,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     m_transport.Send(request);
 
-    spdlog::info("Sending item request, item: {:X}, count: {}, target object: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count,
-                 acEvent.FormId);
+    spdlog::info("Sending item request, item: {:X}, count: {}, target object: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count, acEvent.FormId);
 }
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
@@ -88,10 +83,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
     auto view = m_world.view<FormIdComponent>();
 
-    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.ActorId](auto entity) 
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.ActorId](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (iter == std::end(view))
         return;
@@ -99,8 +91,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, unequip: {}, slot: {:X}", 
-                      acEvent.ActorId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
+        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, unequip: {}, slot: {:X}", acEvent.ActorId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
         return;
     }
 

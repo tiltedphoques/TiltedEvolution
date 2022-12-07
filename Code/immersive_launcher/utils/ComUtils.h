@@ -12,8 +12,5 @@ struct ComScope
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         (void)hr;
     }
-    ~ComScope()
-    {
-        CoUninitialize();
-    }
+    ~ComScope() { CoUninitialize(); }
 };

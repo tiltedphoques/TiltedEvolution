@@ -9,4 +9,3 @@ struct BGSKeyword : TESForm
 
     BSFixedString keyword;
 };
-

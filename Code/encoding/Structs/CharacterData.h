@@ -21,27 +21,11 @@ struct CharacterData
 
     bool operator==(const CharacterData& acRhs) const noexcept
     {
-        return ReferenceId == acRhs.ReferenceId &&
-            FormId == acRhs.FormId &&
-            CellId == acRhs.CellId &&
-            WorldSpaceId == acRhs.WorldSpaceId &&
-            Position == acRhs.Position &&
-            Rotation == acRhs.Rotation &&
-            ChangeFlags == acRhs.ChangeFlags &&
-            AppearanceBuffer == acRhs.AppearanceBuffer &&
-            InventoryContent == acRhs.InventoryContent &&
-            FactionsContent == acRhs.FactionsContent &&
-            LatestAction == acRhs.LatestAction &&
-            QuestContent == acRhs.QuestContent &&
-            FaceTints == acRhs.FaceTints &&
-            AllActorValues == acRhs.AllActorValues &&
-            IsDead == acRhs.IsDead &&
-            IsWeaponDrawn == acRhs.IsWeaponDrawn;
+        return ReferenceId == acRhs.ReferenceId && FormId == acRhs.FormId && CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && Position == acRhs.Position && Rotation == acRhs.Rotation && ChangeFlags == acRhs.ChangeFlags && AppearanceBuffer == acRhs.AppearanceBuffer &&
+               InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent && LatestAction == acRhs.LatestAction && QuestContent == acRhs.QuestContent && FaceTints == acRhs.FaceTints && AllActorValues == acRhs.AllActorValues && IsDead == acRhs.IsDead &&
+               IsWeaponDrawn == acRhs.IsWeaponDrawn;
     }
-    bool operator!=(const CharacterData& acRhs) const noexcept
-    {
-        return !this->operator==(acRhs);
-    }
+    bool operator!=(const CharacterData& acRhs) const noexcept { return !this->operator==(acRhs); }
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;

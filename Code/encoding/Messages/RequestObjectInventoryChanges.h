@@ -7,7 +7,8 @@ struct RequestObjectInventoryChanges final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kRequestObjectInventoryChanges;
 
-    RequestObjectInventoryChanges() : ClientMessage(Opcode)
+    RequestObjectInventoryChanges()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -16,11 +17,7 @@ struct RequestObjectInventoryChanges final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestObjectInventoryChanges& acRhs) const noexcept
-    {
-        return Changes == acRhs.Changes &&
-            GetOpcode() == acRhs.GetOpcode();
-    }
-    
+    bool operator==(const RequestObjectInventoryChanges& acRhs) const noexcept { return Changes == acRhs.Changes && GetOpcode() == acRhs.GetOpcode(); }
+
     TiltedPhoques::Map<GameId, ObjectData> Changes;
 };

@@ -91,13 +91,13 @@ struct TESForm : BaseFormComponent
     virtual void ActivateReference();
     virtual void sub_38();
 
-    //void CopyFromEx(TESForm* rhs);
+    // void CopyFromEx(TESForm* rhs);
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
 
     bool GetIgnoreFriendlyHit() const noexcept { return (flags & IGNORE_FRIENDLY_HITS) != 0; }
-    void SetIgnoreFriendlyHit(bool aSet) noexcept 
+    void SetIgnoreFriendlyHit(bool aSet) noexcept
     {
         if (aSet)
             flags |= IGNORE_FRIENDLY_HITS;

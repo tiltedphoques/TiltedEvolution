@@ -39,7 +39,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         const auto res = TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
 
-        //spdlog::debug("Action event name: {}, target name: {}", apAction->eventName.AsAscii(), apAction->targetEventName.AsAscii());
+        // spdlog::debug("Action event name: {}, target name: {}", apAction->eventName.AsAscii(), apAction->targetEventName.AsAscii());
 
         // This is a weird case where it gets spammed and doesn't do much, not sure if it still needs to be sent over the network
         if (apAction->someFlag == 1 || g_forceAnimation)
@@ -92,15 +92,15 @@ bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
                 spdlog::info("Var {} changed from {} to {}", i, oldVars[i], newVars[i]);
             }
         }*/
-        //spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
+        // spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
     }
 
     const auto res = TiltedPhoques::ThisCall(RealPerformAction, this, apAction);
-    //const auto res = RePerformAction(apAction, aValue);
+    // const auto res = RePerformAction(apAction, aValue);
 
     if (res && apAction->actor->formID == 0x13482)
     {
-    //    spdlog::info("Passed !");
+        //    spdlog::info("Passed !");
     }
 
     return res != 0;
@@ -109,7 +109,7 @@ bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
 bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
 {
     TP_THIS_FUNCTION(TAnimationStep, uint8_t, ActorMediator, TESActionData*);
-    using TApplyAnimationVariables = void* (void*, TESActionData*);
+    using TApplyAnimationVariables = void*(void*, TESActionData*);
 
     POINTER_SKYRIMSE(TApplyAnimationVariables, ApplyAnimationVariables, 39004);
     POINTER_SKYRIMSE(TAnimationStep, PerformComplexAction, 38953);
@@ -188,13 +188,13 @@ TESActionData::~TESActionData()
     ActionInput::Release();
 }
 
-static TiltedPhoques::Initializer s_animationHook([]()
-{
-    POINTER_FALLOUT4(TPerformAction, performAction, 502377);
-    POINTER_SKYRIMSE(TPerformAction, performAction, 38949);
+static TiltedPhoques::Initializer s_animationHook(
+    []()
+    {
+        POINTER_FALLOUT4(TPerformAction, performAction, 502377);
+        POINTER_SKYRIMSE(TPerformAction, performAction, 38949);
 
-    RealPerformAction = performAction.Get();
+        RealPerformAction = performAction.Get();
 
-    TP_HOOK(&RealPerformAction, HookPerformAction);
-});
-
+        TP_HOOK(&RealPerformAction, HookPerformAction);
+    });

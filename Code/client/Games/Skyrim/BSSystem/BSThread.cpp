@@ -72,14 +72,16 @@ HANDLE WINAPI Hook_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T
 #endif
 } // namespace
 
-static TiltedPhoques::Initializer s_BSThreadInit([]() {
-    const VersionDbPtr<uint8_t> threadInit(68261);
-    BSThread_Initialize = static_cast<decltype(BSThread_Initialize)>(threadInit.GetPtr());
-    // need to detour this for now :/
-    TP_HOOK_IMMEDIATE(&BSThread_Initialize, &Hook_BSThread_Initialize);
+static TiltedPhoques::Initializer s_BSThreadInit(
+    []()
+    {
+        const VersionDbPtr<uint8_t> threadInit(68261);
+        BSThread_Initialize = static_cast<decltype(BSThread_Initialize)>(threadInit.GetPtr());
+        // need to detour this for now :/
+        TP_HOOK_IMMEDIATE(&BSThread_Initialize, &Hook_BSThread_Initialize);
 
-    const VersionDbPtr<uint8_t> setThreadName(69066);
-    TiltedPhoques::Jump(setThreadName.Get(), &Hook_SetThreadName);
+        const VersionDbPtr<uint8_t> setThreadName(69066);
+        TiltedPhoques::Jump(setThreadName.Get(), &Hook_SetThreadName);
 
 #if 0
     const VersionDbPtr<uint8_t> createHavokThread(57704);
@@ -92,4 +94,4 @@ static TiltedPhoques::Initializer s_BSThreadInit([]() {
     TiltedPhoques::Nop(0x1411F0FD4, 6);
     TiltedPhoques::PutCall(0x1411F0FD4, &Hook_CreateThread);
 #endif
-});
+    });

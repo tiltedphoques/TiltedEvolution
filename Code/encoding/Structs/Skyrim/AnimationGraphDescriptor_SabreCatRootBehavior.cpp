@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_SabreCatRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_SabreCatRootBehavior::AnimationGraphDescriptor_SabreCatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -101,34 +99,38 @@ AnimationGraphDescriptor_SabreCatRootBehavior::AnimationGraphDescriptor_SabreCat
     };
 
     uint64_t key = 8391591236278645567;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbHeadTrackingOn,
-            kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kbDisableHeadTrack,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbSkeeverLunge,
-            kbFootIKEnable,
-            kisMoving,
+            {
+                kbHeadTrackingOn,
+                kbAnimationDriven,
+                kbAllowRotation,
+                kbHeadTracking,
+                kbDisableHeadTrack,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbSkeeverLunge,
+                kbFootIKEnable,
+                kisMoving,
             },
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kTurnDeltaDamped,
-            kSpeedSampled,
-            kwalkBackSpeedMult,
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kTurnDeltaDamped,
+                kSpeedSampled,
+                kwalkBackSpeedMult,
             },
-        {kiSyncSprintState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncForwardState,
-            kiMovementSpeed,
-            kiCombatStance,
+            {
+                kiSyncSprintState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiSyncForwardState,
+                kiMovementSpeed,
+                kiCombatStance,
             }));
 }

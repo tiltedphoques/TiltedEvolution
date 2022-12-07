@@ -9,10 +9,10 @@ struct TESCameraState;
 
 struct TESCamera
 {
-    virtual ~TESCamera() {};
+    virtual ~TESCamera(){};
 
-    virtual void SetNode(NiNode* node) {};
-    virtual void Update() {};
+    virtual void SetNode(NiNode* node){};
+    virtual void Update(){};
 
     NiCamera* GetNiCamera();
 

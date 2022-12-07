@@ -15,42 +15,30 @@
 
 class ExeLoader
 {
-  public:
-    using TEntryPoint = void(*)();
-    using TFuncHandler = FARPROC(*)(HMODULE, const char*);
+public:
+    using TEntryPoint = void (*)();
+    using TFuncHandler = FARPROC (*)(HMODULE, const char*);
 
     explicit ExeLoader(uint32_t aLoadLimit, TFuncHandler aFuncPtr = GetProcAddress);
 
-    bool Load(const uint8_t *apProgramBuffer);
+    bool Load(const uint8_t* apProgramBuffer);
 
-    TEntryPoint GetEntryPoint() const
-    {
-        return static_cast<TEntryPoint>(m_pEntryPoint);
-    }
+    TEntryPoint GetEntryPoint() const { return static_cast<TEntryPoint>(m_pEntryPoint); }
 
-  private:
+private:
     void LoadSections(const IMAGE_NT_HEADERS* apNtHeader);
     void LoadImports(const IMAGE_NT_HEADERS* apNtHeader);
     void LoadTLS(const IMAGE_NT_HEADERS* apNtHeader, const IMAGE_NT_HEADERS* apSourceNt);
     void LoadExceptionTable(IMAGE_NT_HEADERS* apNtHeader);
     void DecryptCeg(IMAGE_NT_HEADERS* apSourceNt);
 
-    template <typename T> inline T* GetRVA(uint32_t aRva)
-    {
-        return (T*)(m_pBinary + aRva);
-    }
+    template <typename T> inline T* GetRVA(uint32_t aRva) { return (T*)(m_pBinary + aRva); }
 
-    template <typename T> inline T* GetOffset(uint32_t aRva)
-    {
-        return (T*)(m_pBinary + Rva2Offset(aRva));
-    }
+    template <typename T> inline T* GetOffset(uint32_t aRva) { return (T*)(m_pBinary + Rva2Offset(aRva)); }
 
-    template <typename T> inline T* GetTargetRVA(uint32_t aRva)
-    {
-        return (T*)((uint8_t*)m_moduleHandle + aRva);
-    }
+    template <typename T> inline T* GetTargetRVA(uint32_t aRva) { return (T*)((uint8_t*)m_moduleHandle + aRva); }
 
-  private:
+private:
     uint32_t Rva2Offset(uint32_t aRva) noexcept;
 
     const uint8_t* m_pBinary = nullptr;
