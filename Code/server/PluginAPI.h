@@ -1,6 +1,8 @@
 #pragma once
 // WARNING: !!!! This header musn't include any other project headers !!!!
 #include <cstdint>
+#include <cstdio>  /* printf, scanf, NULL */
+#include <cstdlib> /* malloc, free, rand */
 
 #ifndef BUILDING_TT_SERVER
 #ifdef _WIN32
