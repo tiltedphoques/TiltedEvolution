@@ -11,20 +11,28 @@ namespace Resources
 {
 class ResourceCollection
 {
-public:
+  public:
     ResourceCollection();
     ~ResourceCollection();
 
     void CollectResources();
 
-    auto& GetResourceFolderPath() const { return m_resourcePath; }
+    auto& GetResourceFolderPath() const
+    {
+        return m_resourcePath;
+    }
 
-    bool ValidateDependencyVersions();
+    void ResolveDependencies();
 
     bool LoadManifestData(const std::filesystem::path& aPath);
 
-private:
+    const auto& GetManifests() const
+    {
+        return m_manifests;
+    }
+
+  private:
     std::filesystem::path m_resourcePath;
-    TiltedPhoques::Vector<TiltedPhoques::UniquePtr<Resources::Manifest001>> manifests_;
+    TiltedPhoques::Vector<TiltedPhoques::UniquePtr<Resources::Manifest001>> m_manifests;
 };
 } // namespace Resources

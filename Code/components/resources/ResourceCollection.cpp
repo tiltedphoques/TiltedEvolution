@@ -6,6 +6,7 @@
 
 #include <base/Check.h>
 #include <base/simpleini/SimpleIni.h>
+#include <regex>
 
 namespace Resources
 {
@@ -13,6 +14,7 @@ namespace
 {
 constexpr char kResourceFolderName[] = "resources";
 constexpr char kResourceManifestExt[] = ".manifest";
+static const SemanticVersion kApiSet(1, 0, 0);
 
 TiltedPhoques::Vector<TiltedPhoques::String> ParseQuotedTokens(const TiltedPhoques::String& aString)
 {
@@ -70,6 +72,16 @@ TiltedPhoques::String UnescapeAndStrip(const std::string_view& aString)
     }
     return result;
 }
+
+// Returns true if the given string is a valid semantic version.
+bool IsValidSemanticVersion(const std::string& acVersion)
+{
+    // Use a regular expression to match the semantic version format:
+    // major.minor.patch
+    // where major, minor, and patch are non-negative integers.
+    std::regex pattern("^\\d+\\.\\d+\\.\\d+$");
+    return std::regex_match(acVersion, pattern);
+}
 } // namespace
 
 ResourceCollection::ResourceCollection()
@@ -98,74 +110,108 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     CSimpleIni ini;
     {
         auto buf = TiltedPhoques::LoadFile(aPath);
-        BASE_ASSERT(ini.LoadData(buf.c_str()) == SI_Error::SI_OK, "Failed to load ini data");
+        if (ini.LoadData(buf.c_str()) != SI_Error::SI_OK)
+        {
+            spdlog::error("Failed to load manifest file {}", aPath.string());
+            return false;
+        }
     }
 
-    // the easy to load data.
     auto manifest = TiltedPhoques::MakeUnique<Resources::Manifest001>();
+    // version data
+    auto readSemVer = [&](const char* apName) -> SemanticVersion {
+        auto stringRep = ini.GetValue("Resource", apName, "0.0.0");
+        if (!IsValidSemanticVersion(stringRep))
+        {
+            spdlog::error("Invalid semantic version for {} in {}", apName, aPath.string());
+            return {0, 0, 0};
+        }
+        return SemanticVersion(stringRep);
+    };
 
-    // text
-    auto readString = [&ini](const char* apName) -> TiltedPhoques::String {
-        auto value = ini.GetValue("Manifest", apName, "<unknown>");
+    manifest->apiSet = readSemVer("apiset");
+    manifest->resourceVersion = readSemVer("version");
+    if (!manifest->apiSet || !manifest->resourceVersion)
+    {
+        return false;
+    }
+
+    if (manifest->apiSet > Resources::kApiSet)
+    {
+        spdlog::error("Resource {} requires a newer API set than the current one", aPath.string());
+        return false;
+    }
+
+    auto readString = [&](const char* apName) -> TiltedPhoques::String {
+        auto value = ini.GetValue("Manifest", apName, nullptr);
+        if (value == nullptr)
+        {
+            spdlog::error("Missing {} in {}", apName, aPath.string());
+            return "";
+        }
         return UnescapeAndStrip(value);
     };
+
+    // read must haves
     manifest->name = readString("name");
     manifest->description = readString("description");
+    manifest->entryPoint = readString("entrypoint");
+    if (manifest->name.empty() || manifest->description.empty() || manifest->entryPoint.empty())
+    {
+        return false;
+    }
+
+    // optional entries
     manifest->license = readString("license");
     manifest->repository = readString("repository");
     manifest->homepage = readString("homepage");
-    manifest->entryPoint = readString("entrypoint");
-
-    // numerics
-    auto readSemVer = [&ini](const char* apName) -> SemanticVersion {
-        return ini.GetValue("Manifest", apName, "0.0.0");
-    };
-    manifest->apiSet = readSemVer("apiset");
-    manifest->resourceVersion = readSemVer("resource_version");
 
     // lists of strings
     auto readStringList = [&ini](const char* apName) -> TiltedPhoques::Vector<TiltedPhoques::String> {
-        return ParseQuotedTokens(ini.GetValue("Manifest", apName, ""));
+        return ParseQuotedTokens(ini.GetValue("Resource", apName, ""));
     };
     for (const auto& dep : readStringList("dependencies"))
     {
         manifest->dependencies.push_back(SplitDependencyString(dep));
     }
-    manifests_.push_back(std::move(manifest));
+
+    m_manifests.push_back(std::move(manifest));
 
     return true;
 }
 
-bool ResourceCollection::ValidateDependencyVersions()
+void ResourceCollection::ResolveDependencies()
 {
-    for (auto& it : manifests_)
+    for (auto& manifest : m_manifests)
     {
-        for (const auto& dep : it->dependencies)
+        for (const auto& dep : manifest->dependencies)
         {
-            for (auto& it2 : manifests_)
+            for (auto& it2 : m_manifests)
             {
                 if (it2->name == dep.first)
                 {
+                    if (!dep.second)
+                    {
+                        spdlog::error("Dependency {} version is invalid", dep.first);
+                        manifest->isTombstone = true;
+                        continue;
+                    }
+
                     if (dep.second && dep.second != it2->resourceVersion)
                     {
                         spdlog::error("Dependency {} has version {} but {} is required", dep.first,
                                       SemVerToString(it2->resourceVersion), SemVerToString(dep.second));
+                        manifest->isTombstone = true;
                     }
-
                     // let the loop continue to list all other conflicts immedeatly.
                 }
             }
         }
     }
-
-    return true;
 }
 
 void ResourceCollection::CollectResources()
 {
-    auto x = SemVerToString(0x123);
-    auto y = SemVerToString(0x321);
-
     m_resourcePath = std::filesystem::current_path() / kResourceFolderName;
 
     std::vector<std::filesystem::path> manifestCanidates;
@@ -177,11 +223,37 @@ void ResourceCollection::CollectResources()
         }
     }
 
+    uint32_t failedCount = 0;
     for (const auto& path : manifestCanidates)
     {
-        LoadManifestData(path);
+        if (!LoadManifestData(path))
+        {
+            failedCount++;
+        }
     }
 
-    ValidateDependencyVersions();
+    if (failedCount > 0)
+    {
+        spdlog::warn("{} manifests failed to load", failedCount);
+    }
+
+    ResolveDependencies();
+
+    failedCount = 0;
+    for (auto iter = m_manifests.begin(); iter != m_manifests.end();)
+    {
+        if ((*iter)->isTombstone)
+        {
+            failedCount++;
+            iter = m_manifests.erase(iter);
+        }
+        else
+            ++iter;
+    }
+
+    if (failedCount > 0)
+    {
+        spdlog::warn("{} resources failed to load", failedCount);
+    }
 }
 } // namespace Resources

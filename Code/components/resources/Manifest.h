@@ -12,8 +12,8 @@ struct Manifest001
     /// name @ version
     using DependencyTuple = std::pair<TiltedPhoques::String, SemanticVersion>;
 
-    SemanticVersion apiSet;                              // < major * 100 + minor
-    SemanticVersion resourceVersion;                     // < major>.<minor>.<patch>
+    SemanticVersion apiSet;                              // < version of the manifest spec
+    SemanticVersion resourceVersion;                     // < user defined version of the resource
     TiltedPhoques::String name;                          // < name of the resource
     TiltedPhoques::String description;                   // < description of the resource
     TiltedPhoques::String keywords;                      // < keywords for the resource
@@ -23,6 +23,9 @@ struct Manifest001
     TiltedPhoques::String author;                        // < author of the resource
     TiltedPhoques::String entryPoint;                    // < entry point of the resource
     TiltedPhoques::Vector<DependencyTuple> dependencies; // < dependencies of the resource
+
+    bool isTombstone = false; // < if true, this manifest is a tombstone and should be ignored, this is only relevant
+                              // during dependency resolving & loading
 };
 
 // all future manifest versions shall inherit from this.
