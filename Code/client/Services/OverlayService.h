@@ -33,8 +33,8 @@ struct PartyLeftEvent;
 using TiltedPhoques::OverlayApp;
 
 /**
-* @brief Controls the UI from the client.
-*/
+ * @brief Controls the UI from the client.
+ */
 struct OverlayService
 {
     OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher);
@@ -58,16 +58,13 @@ struct OverlayService
 
     void SetVersion(const std::string& acVersion);
 
-    OverlayApp* GetOverlayApp() const noexcept
-    {
-        return m_pOverlay.get();
-    }
+    OverlayApp* GetOverlayApp() const noexcept { return m_pOverlay.get(); }
 
     void SendSystemMessage(const std::string& acMessage);
 
     void SetPlayerHealthPercentage(uint32_t aFormId) const noexcept;
 
-  protected:
+protected:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
     void OnDisconnectedEvent(const DisconnectedEvent&) noexcept;
@@ -85,7 +82,7 @@ struct OverlayService
     void OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept;
     void OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept;
 
-  private:
+private:
     void RunDebugDataUpdates() noexcept;
     void RunPlayerHealthUpdates() noexcept;
 

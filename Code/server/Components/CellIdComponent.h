@@ -8,36 +8,27 @@
 
 struct CellIdComponent
 {
-    CellIdComponent()
-    {}
+    CellIdComponent() {}
 
     CellIdComponent(GameId aCellId)
         : Cell(aCellId)
-    {}
-
-    CellIdComponent(GameId aCellId, GameId aWorldSpaceId, GridCellCoords aCenterCoords) 
-        : Cell(aCellId), WorldSpaceId(aWorldSpaceId), CenterCoords(aCenterCoords)
-    {}
-
-    bool operator==(const CellIdComponent& acRhs) const noexcept
     {
-        return Cell == acRhs.Cell ;
     }
 
-    bool operator!=(const CellIdComponent& acRhs) const noexcept
+    CellIdComponent(GameId aCellId, GameId aWorldSpaceId, GridCellCoords aCenterCoords)
+        : Cell(aCellId)
+        , WorldSpaceId(aWorldSpaceId)
+        , CenterCoords(aCenterCoords)
     {
-        return !operator==(acRhs);
     }
 
-    operator bool() const noexcept
-    {
-        return *this != CellIdComponent{};
-    }
+    bool operator==(const CellIdComponent& acRhs) const noexcept { return Cell == acRhs.Cell; }
 
-    bool IsInInteriorCell() const noexcept
-    {
-        return !WorldSpaceId;
-    }
+    bool operator!=(const CellIdComponent& acRhs) const noexcept { return !operator==(acRhs); }
+
+    operator bool() const noexcept { return *this != CellIdComponent{}; }
+
+    bool IsInInteriorCell() const noexcept { return !WorldSpaceId; }
 
     bool IsInRange(const CellIdComponent& acRhs, bool aIsDragon) const noexcept
     {

@@ -6,7 +6,10 @@
 namespace Console
 {
 StringTokenizer::StringTokenizer(TiltedPhoques::String acInput, const char* acpDelim)
-    : m_string(std::move(acInput)), m_count(-1), m_begin(0), m_end(0)
+    : m_string(std::move(acInput))
+    , m_count(-1)
+    , m_begin(0)
+    , m_end(0)
 {
 
     if (!acpDelim)

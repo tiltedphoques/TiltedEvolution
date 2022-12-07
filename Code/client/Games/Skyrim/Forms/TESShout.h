@@ -5,4 +5,3 @@
 struct TESShout : TESForm
 {
 };
-

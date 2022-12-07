@@ -4,8 +4,7 @@
 #include <TiltedCore/Allocator.hpp>
 #include "ClientAdminMessageFactory.h"
 
-static std::function<UniquePtr<ClientAdminMessage>(TiltedPhoques::Buffer::Reader& aReader)>
-    s_clientAdminMessageExtractor[kClientAdminOpcodeMax];
+static std::function<UniquePtr<ClientAdminMessage>(TiltedPhoques::Buffer::Reader& aReader)> s_clientAdminMessageExtractor[kClientAdminOpcodeMax];
 
 namespace details
 {
@@ -13,10 +12,12 @@ static struct ClientAdminMessageFactoryInit
 {
     ClientAdminMessageFactoryInit()
     {
-        auto extractor = [](auto& x) {
+        auto extractor = [](auto& x)
+        {
             using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-            s_clientAdminMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) {
+            s_clientAdminMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader)
+            {
                 auto ptr = TiltedPhoques::MakeUnique<T>();
                 ptr->DeserializeRaw(aReader);
                 return TiltedPhoques::CastUnique<ClientAdminMessage>(std::move(ptr));

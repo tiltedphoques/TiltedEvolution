@@ -8,4 +8,3 @@ GameVM* GameVM::Get()
 
     return *s_instance.Get();
 }
-

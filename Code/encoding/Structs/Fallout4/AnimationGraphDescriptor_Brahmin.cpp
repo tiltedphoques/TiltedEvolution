@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Brahmin.h>
 
-
-AnimationGraphDescriptor_Brahmin::AnimationGraphDescriptor_Brahmin(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Brahmin::AnimationGraphDescriptor_Brahmin(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -119,7 +117,8 @@ AnimationGraphDescriptor_Brahmin::AnimationGraphDescriptor_Brahmin(
 
     uint64_t key = 9156151190671507217;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAnimationDriven,
@@ -146,6 +145,5 @@ AnimationGraphDescriptor_Brahmin::AnimationGraphDescriptor_Brahmin(
                 kiSyncTurnState,
                 kiLocomotionSpeed,
                 kiCombatState,
-            }
-        ));
+            }));
 }

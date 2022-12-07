@@ -15,7 +15,7 @@ void ProjectileLaunchRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteFloat(aWriter, ZAngle);
     Serialization::WriteFloat(aWriter, XAngle);
     Serialization::WriteFloat(aWriter, YAngle);
-    
+
     ParentCellID.Serialize(aWriter);
     SpellID.Serialize(aWriter);
 

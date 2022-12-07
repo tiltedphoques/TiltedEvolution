@@ -21,7 +21,7 @@ struct UI
     void PrintMenuMap();
     void PrintActiveMenus();
 
-  public:
+public:
     uint8_t pad0[0x1A8 - sizeof(GameArray<IMenu*>)];
     GameArray<IMenu*> MenuStack; // actually stores a smart ptr
     creation::BSTHashMap<BSFixedString, UIMenuEntry> menuMap;

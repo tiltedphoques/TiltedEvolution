@@ -26,7 +26,7 @@
 
 #include <inttypes.h>
 
-ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) 
+ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
     : m_world(aWorld)
     , m_transport(aTransport)
 {
@@ -59,8 +59,7 @@ bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
             {
             case 0xeec55: // one known exception: Sinderion's Field Lab
                 return false;
-            default:
-                return true;
+            default: return true;
             }
         }
     }
@@ -76,10 +75,8 @@ bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
     switch (apObject->formID)
     {
         // Don't sync the chest in the "Diplomatic Immunity" quest
-    case 0x39CF1:
-        return false;
-    default:
-        return true;
+    case 0x39CF1: return false;
+    default: return true;
     }
 }
 #endif
@@ -206,10 +203,7 @@ entt::entity ObjectService::CreateObjectEntity(const uint32_t acFormId, const ui
 {
     const auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
-    auto it = std::find_if(view.begin(), view.end(), [acServerId, view](entt::entity entity)
-        { 
-            return view.get<ObjectComponent>(entity).Id == acServerId;
-        });
+    auto it = std::find_if(view.begin(), view.end(), [acServerId, view](entt::entity entity) { return view.get<ObjectComponent>(entity).Id == acServerId; });
 
     if (it != view.end())
         return *it;
@@ -270,14 +264,11 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
     }
 
     auto view = m_world.view<FormIdComponent>();
-    const auto pEntity =
-        std::find_if(std::begin(view), std::end(view), [id = acEvent.pActivator->formID, view](entt::entity entity) {
-            return view.get<FormIdComponent>(entity).Id == id;
-        });
+    const auto pEntity = std::find_if(std::begin(view), std::end(view), [id = acEvent.pActivator->formID, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (pEntity == std::end(view))
     {
-        //spdlog::error("Activator entity not found for form id {:X}", acEvent.pActivator->formID);
+        // spdlog::error("Activator entity not found for form id {:X}", acEvent.pActivator->formID);
         return;
     }
 
@@ -431,10 +422,7 @@ BSTEventResult ObjectService::OnEvent(const TESActivateEvent* acEvent, const Eve
 #if ENVIRONMENT_DEBUG
     auto view = m_world.view<ObjectComponent>();
 
-    const auto itor =
-        std::find_if(std::begin(view), std::end(view), [id = acEvent->object->formID, view](entt::entity entity) {
-            return view.get<ObjectComponent>(entity).Id == id;
-        });
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acEvent->object->formID, view](entt::entity entity) { return view.get<ObjectComponent>(entity).Id == id; });
 
     if (itor == std::end(view))
     {

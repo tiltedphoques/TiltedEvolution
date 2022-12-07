@@ -5,12 +5,7 @@ using TiltedPhoques::Serialization;
 
 bool Movement::operator==(const Movement& acRhs) const noexcept
 {
-    return CellId == acRhs.CellId &&
-        WorldSpaceId == acRhs.WorldSpaceId &&
-        Position == acRhs.Position &&
-        Rotation == acRhs.Rotation &&
-        Variables == acRhs.Variables &&
-        Direction == acRhs.Direction;
+    return CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && Position == acRhs.Position && Rotation == acRhs.Rotation && Variables == acRhs.Variables && Direction == acRhs.Direction;
 }
 
 bool Movement::operator!=(const Movement& acRhs) const noexcept

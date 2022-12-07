@@ -21,7 +21,7 @@ struct Projectile : TESObjectREFR
 
         // When a player is shooting an arrow, all remaining uknown fields are null
         NiPoint3 Origin;
-        NiPoint3 ContactNormal; // always null init? not syncing it now, idk if it matters
+        NiPoint3 ContactNormal;   // always null init? not syncing it now, idk if it matters
         TESForm* pProjectileBase; // is actually BGSProjectile*
         TESObjectREFR* pShooter;
         CombatController* pCombatController;
@@ -37,16 +37,16 @@ struct Projectile : TESObjectREFR
         bool bUnkBool1;
         uint8_t unk7D[0xB]; // seemingly always null
         AlchemyItem* pPoison;
-        int32_t iArea; // set to 0 in TESObjectWEAP::Fire()
-        float fPower; // init to 1.0 and set to 1.0 before launch in TESObjectWEAP::Fire()
-        float fScale; // init to 1.0 and set to 1.0 before launch in TESObjectWEAP::Fire()
-        bool bAlwaysHit; // usually false
+        int32_t iArea;               // set to 0 in TESObjectWEAP::Fire()
+        float fPower;                // init to 1.0 and set to 1.0 before launch in TESObjectWEAP::Fire()
+        float fScale;                // init to 1.0 and set to 1.0 before launch in TESObjectWEAP::Fire()
+        bool bAlwaysHit;             // usually false
         bool bNoDamageOutsideCombat; // usually false
-        bool bAutoAim; // usually true (probably not bAutoAim then?)
-        bool bUnkBool2; // usually false
-        bool bUseOrigin; // usually false, should be set true for us
-        bool bDeferInitialization; // usually false
-        bool bForceConeOfFire; // unsure // usually false
+        bool bAutoAim;               // usually true (probably not bAutoAim then?)
+        bool bUnkBool2;              // usually false
+        bool bUseOrigin;             // usually false, should be set true for us
+        bool bDeferInitialization;   // usually false
+        bool bForceConeOfFire;       // unsure // usually false
     };
 
     uint8_t unk98[0xF0];
@@ -60,4 +60,3 @@ struct Projectile : TESObjectREFR
 };
 
 static_assert(sizeof(Projectile::LaunchData) == 0xA8);
-

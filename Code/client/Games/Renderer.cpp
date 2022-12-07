@@ -1,6 +1,5 @@
 #include <TiltedOnlinePCH.h>
 
-
 #include <Renderer.h>
 
 #include <Systems/RenderSystemD3D11.h>
@@ -55,7 +54,7 @@ static void HookPresent(LPCRITICAL_SECTION lock)
 
 // TODO (Force): handle lost devices
 
-static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowConfig *pWindowConfig, void *a4)
+static bool HookCreateViewport(void* viewport, ViewportConfig* pConfig, WindowConfig* pWindowConfig, void* a4)
 {
 #if TP_SKYRIM64
     pConfig->name = "Skyrim Together | " BUILD_BRANCH "@" BUILD_COMMIT;
@@ -76,24 +75,22 @@ static bool HookCreateViewport(void *viewport, ViewportConfig *pConfig, WindowCo
     return result;
 }
 
-static TiltedPhoques::Initializer s_viewportHooks([]()
-{
+static TiltedPhoques::Initializer s_viewportHooks(
+    []()
+    {
 #ifndef TP_SKYRIM64
+        POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 77226);
+        POINTER_FALLOUT4(TCreateViewport, s_realCreateViewport, 564406);
 
-    POINTER_SKYRIMSE(TCreateViewport, s_realCreateViewport, 77226);
-    POINTER_FALLOUT4(TCreateViewport, s_realCreateViewport, 564406);
+        RealCreateViewport = s_realCreateViewport.Get();
+        TP_HOOK(&RealCreateViewport, HookCreateViewport);
 
-    RealCreateViewport = s_realCreateViewport.Get();
-    TP_HOOK(&RealCreateViewport, HookCreateViewport);
+        POINTER_SKYRIMSE(TRenderPresent, s_realRenderPresent, 77246);
+        POINTER_FALLOUT4(TRenderPresent, s_realRenderPresent, 700870);
 
-    POINTER_SKYRIMSE(TRenderPresent, s_realRenderPresent, 77246);
-    POINTER_FALLOUT4(TRenderPresent, s_realRenderPresent, 700870);
+        RealRenderPresent = s_realRenderPresent.Get();
+        TP_HOOK(&RealRenderPresent, HookPresent);
 
-    RealRenderPresent = s_realRenderPresent.Get();
-    TP_HOOK(&RealRenderPresent, HookPresent);
-
-
-    TiltedPhoques::Put(0x140000000 +
-         (0x1D17EE7 + 1), WS_OVERLAPPEDWINDOW);
+        TiltedPhoques::Put(0x140000000 + (0x1D17EE7 + 1), WS_OVERLAPPEDWINDOW);
 #endif
-});
+    });

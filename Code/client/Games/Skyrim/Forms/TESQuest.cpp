@@ -74,14 +74,14 @@ bool TESQuest::Kill()
         flags = Flags::Completed;
         MarkChanged(2);
 
-        //SetStopped(this, false);
+        // SetStopped(this, false);
         return true;
     }
 
     return false;
 }
 
-bool TESQuest::EnsureQuestStarted(bool &success, bool force)
+bool TESQuest::EnsureQuestStarted(bool& success, bool force)
 {
     TP_THIS_FUNCTION(TSetRunning, bool, TESQuest, bool*, bool);
     POINTER_SKYRIMSE(TSetRunning, SetRunning, 25003);
@@ -116,7 +116,9 @@ void TESQuest::SetStopped()
     MarkChanged(2);
 }
 
-static TiltedPhoques::Initializer s_questInitHooks([]() {
-    // kill quest init in cold blood
-    //TiltedPhoques::Write<uint8_t>(25003, 0xC3);
-});
+static TiltedPhoques::Initializer s_questInitHooks(
+    []()
+    {
+        // kill quest init in cold blood
+        // TiltedPhoques::Write<uint8_t>(25003, 0xC3);
+    });

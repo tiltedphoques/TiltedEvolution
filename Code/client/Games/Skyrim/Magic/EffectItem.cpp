@@ -32,4 +32,3 @@ bool EffectItem::IsVampireLordEffect() const noexcept
 {
     return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kVampireLord;
 }
-

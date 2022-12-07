@@ -22,26 +22,26 @@ struct TESQuest : BGSStoryManagerTreeForm
     };
 
     enum Flags : uint16_t
-	{
-		StopStart = USHRT_MAX,
-		None = 0,
-		Enabled = 1 << 0,
-		Completed = 1 << 1,
-		AddIdleToHello = 1 << 2,
-		AllowRepeatStages = 1 << 3,
-		StartsEnabled = 1 << 4,
-		DisplayedInHUD = 1 << 5,
-		Failed = 1 << 6,
-		StageWait = 1 << 7,
-		RunOnce = 1 << 8,
-		ExcludeFromExport = 1 << 9,
-		WarnOnAliasFillFailure = 1 << 10,
-		Active = 1 << 11,
-		RepeatsConditions = 1 << 12,
-		KeepInstance = 1 << 13,
-		WantDormant = 1 << 14,
-		HasDialogueData = 1 << 15
-	};
+    {
+        StopStart = USHRT_MAX,
+        None = 0,
+        Enabled = 1 << 0,
+        Completed = 1 << 1,
+        AddIdleToHello = 1 << 2,
+        AllowRepeatStages = 1 << 3,
+        StartsEnabled = 1 << 4,
+        DisplayedInHUD = 1 << 5,
+        Failed = 1 << 6,
+        StageWait = 1 << 7,
+        RunOnce = 1 << 8,
+        ExcludeFromExport = 1 << 9,
+        WarnOnAliasFillFailure = 1 << 10,
+        Active = 1 << 11,
+        RepeatsConditions = 1 << 12,
+        KeepInstance = 1 << 13,
+        WantDormant = 1 << 14,
+        HasDialogueData = 1 << 15
+    };
 
     enum class Type : uint8_t
     {
@@ -63,7 +63,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     {
         BSFixedString nameRef; // 0x0000
         TESQuest* parent;      // 0x0008
-        char pad10[12];       // 0x0010
+        char pad10[12];        // 0x0010
         uint16_t stageId;
         uint8_t pad30;
         uint8_t state;
@@ -82,25 +82,25 @@ struct TESQuest : BGSStoryManagerTreeForm
     TESFullName fullName;
     GameArray<void*> instanceData;
     uint32_t currentInstanceID;
-    GameArray<void*> aliases;          // 0x0058
+    GameArray<void*> aliases; // 0x0058
     char pad70[0xD8 - 0x70];
-    float questDelay;                  // 0x00D8
-    uint16_t flags;                    // 0x00DC default init: 256
-    uint8_t priority;                  // 0x00DE
-    Type type;                         // 0x00DF
-    int32_t scopedStatus;              // 0x00E0 default init: -1, if not -1 outside of story manager scope
+    float questDelay;     // 0x00D8
+    uint16_t flags;       // 0x00DC default init: 256
+    uint8_t priority;     // 0x00DE
+    Type type;            // 0x00DF
+    int32_t scopedStatus; // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
     GameList<Stage> stages;
     /*
     GameList<Stage>* pExecutedStages;  // 0x00E8
     GameList<Stage>* pWaitingStages;   // 0x00F0
     */
-    GameList<Objective> objectives;    // 0x00F8
-    char pad108[0x100];                // 0x0108
-    GameArray<BGSScene*> scenes;       // 0x0208
-    char pad210[8];                    // 0x0210
-    uint16_t currentStage;             // 0x0228 
-    bool alreadyRun;                   // 0x022A
+    GameList<Objective> objectives; // 0x00F8
+    char pad108[0x100];             // 0x0108
+    GameArray<BGSScene*> scenes;    // 0x0208
+    char pad210[8];                 // 0x0210
+    uint16_t currentStage;          // 0x0228
+    bool alreadyRun;                // 0x022A
     char pad22B[2];
     BSString idName; // < this is the proper quest ID
     void* pStartEventData;
@@ -112,8 +112,8 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool IsStageDone(uint16_t stageIndex);
     void SetCompleted(bool force);
 
-    void CompleteAllObjectives();// completes all objectives + stages
-    void SetActive(bool toggle); // < is the quest selected in journal and followed?
+    void CompleteAllObjectives(); // completes all objectives + stages
+    void SetActive(bool toggle);  // < is the quest selected in journal and followed?
 
     inline void Disable() { flags &= ~Flags::Enabled; };
 
@@ -124,7 +124,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool Kill();
     State getState();
 
-    bool EnsureQuestStarted(bool &succeded, bool force);
+    bool EnsureQuestStarted(bool& succeded, bool force);
 
     bool SetStage(uint16_t stage);
     void ScriptSetStage(uint16_t stage);

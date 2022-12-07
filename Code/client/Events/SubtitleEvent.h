@@ -3,12 +3,15 @@
 struct SubtitleEvent
 {
     SubtitleEvent(uint32_t aSpeakerID, String aText)
-        : SpeakerID(aSpeakerID), Text(aText)
+        : SpeakerID(aSpeakerID)
+        , Text(aText)
     {
     }
 
     SubtitleEvent(uint32_t aSpeakerID, String aText, uint32_t aTopicFormID)
-        : SpeakerID(aSpeakerID), Text(aText), TopicFormID(aTopicFormID)
+        : SpeakerID(aSpeakerID)
+        , Text(aText)
+        , TopicFormID(aTopicFormID)
     {
     }
 

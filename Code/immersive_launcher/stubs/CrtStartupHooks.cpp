@@ -21,8 +21,7 @@ int TP_ismbblead(uint32_t c)
 }
 
 // this is more of a workaround, till we add SEH table support.
-void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments,
-                              const ULONG_PTR* lpArguments)
+void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments, const ULONG_PTR* lpArguments)
 {
     if (dwExceptionCode == 0x406D1388 && !IsDebuggerPresent())
         return; // thread naming

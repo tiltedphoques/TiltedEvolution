@@ -28,29 +28,32 @@
 AnimationGraphDescriptorManager::AnimationGraphDescriptorManager() noexcept
 {
     static std::once_flag s_initOnce;
-    std::call_once(s_initOnce, [this]() {
-        AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
-        AnimationGraphDescriptor_CaveCricketRoot initAnimationGraphDescriptor_CaveCricketRoot(*this);
-        AnimationGraphDescriptor_RootState initAnimationGraphDescriptor_RootState(*this);
-        AnimationGraphDescriptor_SuperMutantRootBehavior initAnimationGraphDescriptor_SuperMutantRootBehavior(*this);
-        AnimationGraphDescriptor_Alien initAnimationGraphDescriptor_Alien(*this);
-        AnimationGraphDescriptor_Angler initAnimationGraphDescriptor_Angler(*this);
-        AnimationGraphDescriptor_InsectsSmall initAnimationGraphDescriptor_InsectsSmall(*this);
-        AnimationGraphDescriptor_Bloatfly initAnimationGraphDescriptor_Bloatfly(*this);
-        AnimationGraphDescriptor_Bloodbug initAnimationGraphDescriptor_Bloodbug(*this);
-        AnimationGraphDescriptor_Bloodworm initAnimationGraphDescriptor_Bloodworm(*this);
-        AnimationGraphDescriptor_Brahmin initAnimationGraphDescriptor_Brahmin(*this);
-        AnimationGraphDescriptor_Deathclaw initAnimationGraphDescriptor_Deathclaw(*this);
-        AnimationGraphDescriptor_Deer initAnimationGraphDescriptor_Deer(*this);
-        AnimationGraphDescriptor_FogCrawler initAnimationGraphDescriptor_FogCrawler(*this);
-        AnimationGraphDescriptor_Ghoul initAnimationGraphDescriptor_Ghoul(*this);
-        AnimationGraphDescriptor_Gorilla initAnimationGraphDescriptor_Gorilla(*this);
-        AnimationGraphDescriptor_MutantHound initAnimationGraphDescriptor_MutantHound(*this);
-        AnimationGraphDescriptor_RabbitChicken initAnimationGraphDescriptor_RabbitChicken(*this);
-        AnimationGraphDescriptor_Radscorpion initAnimationGraphDescriptor_Radscorpion(*this);
-        AnimationGraphDescriptor_Rat initAnimationGraphDescriptor_Rat(*this);
-        AnimationGraphDescriptor_Stingwing initAnimationGraphDescriptor_Stingwing(*this);
-        AnimationGraphDescriptor_Wolflike initAnimationGraphDescriptor_Wolflike(*this);
-        AnimationGraphDescriptor_YaoGuai initAnimationGraphDescriptor_YaoGuai(*this);
-    });
+    std::call_once(
+        s_initOnce,
+        [this]()
+        {
+            AnimationGraphDescriptor_Master_Behavior initAnimationGraphDescriptor_Master_Behavior(*this);
+            AnimationGraphDescriptor_CaveCricketRoot initAnimationGraphDescriptor_CaveCricketRoot(*this);
+            AnimationGraphDescriptor_RootState initAnimationGraphDescriptor_RootState(*this);
+            AnimationGraphDescriptor_SuperMutantRootBehavior initAnimationGraphDescriptor_SuperMutantRootBehavior(*this);
+            AnimationGraphDescriptor_Alien initAnimationGraphDescriptor_Alien(*this);
+            AnimationGraphDescriptor_Angler initAnimationGraphDescriptor_Angler(*this);
+            AnimationGraphDescriptor_InsectsSmall initAnimationGraphDescriptor_InsectsSmall(*this);
+            AnimationGraphDescriptor_Bloatfly initAnimationGraphDescriptor_Bloatfly(*this);
+            AnimationGraphDescriptor_Bloodbug initAnimationGraphDescriptor_Bloodbug(*this);
+            AnimationGraphDescriptor_Bloodworm initAnimationGraphDescriptor_Bloodworm(*this);
+            AnimationGraphDescriptor_Brahmin initAnimationGraphDescriptor_Brahmin(*this);
+            AnimationGraphDescriptor_Deathclaw initAnimationGraphDescriptor_Deathclaw(*this);
+            AnimationGraphDescriptor_Deer initAnimationGraphDescriptor_Deer(*this);
+            AnimationGraphDescriptor_FogCrawler initAnimationGraphDescriptor_FogCrawler(*this);
+            AnimationGraphDescriptor_Ghoul initAnimationGraphDescriptor_Ghoul(*this);
+            AnimationGraphDescriptor_Gorilla initAnimationGraphDescriptor_Gorilla(*this);
+            AnimationGraphDescriptor_MutantHound initAnimationGraphDescriptor_MutantHound(*this);
+            AnimationGraphDescriptor_RabbitChicken initAnimationGraphDescriptor_RabbitChicken(*this);
+            AnimationGraphDescriptor_Radscorpion initAnimationGraphDescriptor_Radscorpion(*this);
+            AnimationGraphDescriptor_Rat initAnimationGraphDescriptor_Rat(*this);
+            AnimationGraphDescriptor_Stingwing initAnimationGraphDescriptor_Stingwing(*this);
+            AnimationGraphDescriptor_Wolflike initAnimationGraphDescriptor_Wolflike(*this);
+            AnimationGraphDescriptor_YaoGuai initAnimationGraphDescriptor_YaoGuai(*this);
+        });
 }

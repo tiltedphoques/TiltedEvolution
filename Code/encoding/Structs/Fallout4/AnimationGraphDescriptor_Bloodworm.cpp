@@ -1,8 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Bloodworm.h>
 
-AnimationGraphDescriptor_Bloodworm::AnimationGraphDescriptor_Bloodworm(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Bloodworm::AnimationGraphDescriptor_Bloodworm(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -64,10 +63,10 @@ AnimationGraphDescriptor_Bloodworm::AnimationGraphDescriptor_Bloodworm(
         kbAllowHeadTracking = 55,
     };
 
-
     uint64_t key = 7786656801015324445;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kIsAttackReady,
@@ -96,6 +95,5 @@ AnimationGraphDescriptor_Bloodworm::AnimationGraphDescriptor_Bloodworm(
                 kcHitReactionBodyPart,
                 kiSyncIdleLocomotion,
                 kiSyncForwardState,
-            }
-        ));
+            }));
 }

@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_DogRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -103,30 +101,10 @@ AnimationGraphDescriptor_DogRootBehavior::AnimationGraphDescriptor_DogRootBehavi
     };
 
     uint64_t key = 16093192286272613165;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbHeadTrackingOn,
-            kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kbDisableHeadTrack,
-            kIsStaggering,
-            kIsAttacking,
-            kbEquipOk,
-            kbSkeeverLunge,
-            kbFootIKEnable,
-            kisMoving},
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kTurnDeltaDamped,
-            kSpeedSampled,
-            kwalkBackSpeedMult},
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncForwardState,
-            kiCombatStance,
-            kiMovementSpeed}));
+            {kbHeadTrackingOn, kbAnimationDriven, kbAllowRotation, kbHeadTracking, kbDisableHeadTrack, kIsStaggering, kIsAttacking, kbEquipOk, kbSkeeverLunge, kbFootIKEnable, kisMoving}, {kSpeed, kTurnDelta, kturnSpeedMult, kDirection, kTurnDeltaDamped, kSpeedSampled, kwalkBackSpeedMult},
+            {kiSyncIdleLocomotion, kiSyncTurnState, kiSyncForwardState, kiCombatStance, kiMovementSpeed}));
 }

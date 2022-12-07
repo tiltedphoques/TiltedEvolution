@@ -16,4 +16,3 @@ struct EffectItem
     float fRawCost;
     void* Conditions;
 };
-

@@ -24,7 +24,8 @@
 #include <Forms/TESGlobal.h>
 
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
-    : m_world(aWorld), m_transport(aTransportService)
+    : m_world(aWorld)
+    , m_transport(aTransportService)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this);
     m_disconnectConnection = aDispatcher.sink<DisconnectedEvent>().connect<&PartyService::OnDisconnected>(this);
@@ -154,8 +155,7 @@ void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcep
 
 void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcept
 {
-    spdlog::debug("[PartyService]: Joined party. LeaderId: {}, IsLeader: {}", acPartyJoined.LeaderPlayerId,
-                  acPartyJoined.IsLeader);
+    spdlog::debug("[PartyService]: Joined party. LeaderId: {}, IsLeader: {}", acPartyJoined.LeaderPlayerId, acPartyJoined.IsLeader);
 
     m_inParty = true;
     m_isLeader = acPartyJoined.IsLeader;

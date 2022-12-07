@@ -38,15 +38,9 @@ struct World : entt::registry
     const PlayerManager& GetPlayerManager() const noexcept { return m_playerManager; }
 
     // Null checked at start when MoPo is on!
-    ESLoader::RecordCollection* GetRecordCollection() noexcept
-    {
-        return m_recordCollection.get();
-    }
+    ESLoader::RecordCollection* GetRecordCollection() noexcept { return m_recordCollection.get(); }
 
-    const ESLoader::RecordCollection* GetRecordCollection() const noexcept
-    {
-        return m_recordCollection.get();
-    }
+    const ESLoader::RecordCollection* GetRecordCollection() const noexcept { return m_recordCollection.get(); }
 
     [[nodiscard]] static uint32_t ToInteger(entt::entity aEntity) { return to_integral(aEntity); }
 

@@ -59,26 +59,14 @@ struct GameServer final : Server
     void Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;
     void SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludeSender = nullptr) const;
-    void SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
-                              const Player* apExcludeSender = nullptr) const;
-    void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                     const Player* apExcludeSender = nullptr) const;
-    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                            const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    void SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender = nullptr) const;
+    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
 
-    const Info& GetInfo() const noexcept
-    {
-        return m_info;
-    }
+    const Info& GetInfo() const noexcept { return m_info; }
 
-    bool IsRunning() const noexcept
-    {
-        return !m_requestStop;
-    }
-    bool IsPasswordProtected() const noexcept
-    {
-        return m_isPasswordProtected;
-    }
+    bool IsRunning() const noexcept { return !m_requestStop; }
+    bool IsPasswordProtected() const noexcept { return m_isPasswordProtected; }
 
     template <class T> void ForEachAdmin(const T& aFunctor)
     {

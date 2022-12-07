@@ -5,7 +5,8 @@
 
 namespace ESLoader
 {
-TESFile::TESFile(Map<String, uint8_t> &aMasterFiles) : m_masterFiles(aMasterFiles)
+TESFile::TESFile(Map<String, uint8_t>& aMasterFiles)
+    : m_masterFiles(aMasterFiles)
 {
 }
 
@@ -83,7 +84,8 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
 
         switch (pRecord->GetType())
         {
-        case FormEnum::TES4: {
+        case FormEnum::TES4:
+        {
             TES4* pFileHeader = reinterpret_cast<TES4*>(pRecord);
 
             TES4 fileHeader;
@@ -102,38 +104,44 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
             break;
         }
         // case FormEnum::ACHR:
-        case FormEnum::REFR: {
+        case FormEnum::REFR:
+        {
             REFR parsedRecord = CopyAndParseRecord<REFR>(pRecord);
             aRecordCollection.m_objectReferences[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
-        case FormEnum::CELL:
-            break;
-        case FormEnum::CLMT: {
+        case FormEnum::CELL: break;
+        case FormEnum::CLMT:
+        {
             CLMT parsedRecord = CopyAndParseRecord<CLMT>(pRecord);
             aRecordCollection.m_climates[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
-        case FormEnum::NPC_: {
+        case FormEnum::NPC_:
+        {
             NPC parsedRecord = CopyAndParseRecord<NPC>(pRecord);
             aRecordCollection.m_npcs[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
-        case FormEnum::CONT: {
+        case FormEnum::CONT:
+        {
             CONT parsedRecord = CopyAndParseRecord<CONT>(pRecord);
             aRecordCollection.m_containers[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
-        case FormEnum::GMST: {
+        case FormEnum::GMST:
+        {
             GMST parsedRecord = CopyAndParseRecord<GMST>(pRecord);
             aRecordCollection.m_gameSettings[parsedRecord.GetFormId()] = parsedRecord;
             break;
         }
-        case FormEnum::WRLD: {
+        case FormEnum::WRLD:
+        {
             WRLD parsedRecord = CopyAndParseRecord<WRLD>(pRecord);
             aRecordCollection.m_worlds[parsedRecord.GetFormId()] = parsedRecord;
         }
-        case FormEnum::NAVM: {
+        case FormEnum::NAVM:
+        {
             NAVM parsedRecord = CopyAndParseRecord<NAVM>(pRecord);
             aRecordCollection.m_navMeshes[parsedRecord.GetFormId()] = parsedRecord;
         }

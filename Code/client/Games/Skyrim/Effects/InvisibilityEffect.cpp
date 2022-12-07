@@ -21,12 +21,12 @@ void TP_MAKE_THISCALL(HookFinish, InvisibilityEffect)
     TiltedPhoques::ThisCall(RealFinish, apThis);
 }
 
-static TiltedPhoques::Initializer s_invisibilityEffectsHooks([]()
-{
-    POINTER_SKYRIMSE(TFinish, s_finish, 34370);
+static TiltedPhoques::Initializer s_invisibilityEffectsHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TFinish, s_finish, 34370);
 
-    RealFinish = s_finish.Get();
+        RealFinish = s_finish.Get();
 
-    TP_HOOK(&RealFinish, HookFinish);
-});
-
+        TP_HOOK(&RealFinish, HookFinish);
+    });

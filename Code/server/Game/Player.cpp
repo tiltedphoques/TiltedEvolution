@@ -11,7 +11,6 @@ Player::Player(ConnectionId_t aConnectionId)
     : m_id(GenerateId())
     , m_connectionId(aConnectionId)
 {
-    
 }
 
 Player::Player(Player&& aRhs) noexcept

@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Gorilla.h>
 
-
-
-AnimationGraphDescriptor_Gorilla::AnimationGraphDescriptor_Gorilla(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Gorilla::AnimationGraphDescriptor_Gorilla(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -98,7 +95,8 @@ AnimationGraphDescriptor_Gorilla::AnimationGraphDescriptor_Gorilla(
     };
     uint64_t key = 9822742478992769303;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbEquipOk,
@@ -130,6 +128,5 @@ AnimationGraphDescriptor_Gorilla::AnimationGraphDescriptor_Gorilla(
                 kiCombatState,
                 kiSyncIdleLocomotion,
                 kcHitReactionBodyPart,
-            }
-        ));
+            }));
 }

@@ -5,7 +5,6 @@
 class Record
 {
 public:
-
 #pragma pack(push, 1)
     struct Chunk
     {
@@ -79,4 +78,3 @@ private:
 
 static_assert(sizeof(Record) == 0x18);
 static_assert(sizeof(Record::Chunk) == 0x6);
-

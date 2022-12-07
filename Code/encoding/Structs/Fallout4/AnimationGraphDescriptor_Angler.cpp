@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Angler.h>
 
-
-AnimationGraphDescriptor_Angler::AnimationGraphDescriptor_Angler(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Angler::AnimationGraphDescriptor_Angler(AnimationGraphDescriptorManager& aManager)
 {
     uint64_t key = 2566467023248089962;
 
@@ -97,8 +95,8 @@ AnimationGraphDescriptor_Angler::AnimationGraphDescriptor_Angler(
         kbIsInFlavor = 85,
     };
 
-
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAllowRotation,
@@ -128,6 +126,5 @@ AnimationGraphDescriptor_Angler::AnimationGraphDescriptor_Angler(
                 kiSyncIdleLocomotion,
                 kiSyncTurnState,
                 kcHitReactionBodyPart,
-            }
-        ));
+            }));
 }

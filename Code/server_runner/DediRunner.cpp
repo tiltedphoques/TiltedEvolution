@@ -33,7 +33,7 @@ DediRunner* GetDediRunner() noexcept
 }
 
 DediRunner::DediRunner(int argc, char** argv)
-: m_console(KCompilerStopThisBullshit)
+    : m_console(KCompilerStopThisBullshit)
 {
     s_pRunner = this;
 
@@ -121,7 +121,7 @@ void DediRunner::PrintExecutorArrowHack()
     // This is a hack to get the executor arrow.
     // If you find a way to do this through the ConOut log channel
     // please let me know (The issue is the forced formatting for that channel and the forced null termination)
-    //fmt::print(">>>");
+    // fmt::print(">>>");
 }
 
 void DediRunner::RunGSThread()
@@ -137,7 +137,6 @@ void DediRunner::RunGSThread()
         }
     }
 }
-
 
 void DediRunner::StartTerminalIO()
 {

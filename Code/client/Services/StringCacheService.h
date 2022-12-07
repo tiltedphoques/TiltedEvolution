@@ -5,10 +5,10 @@ struct DisconnectedEvent;
 struct StringCacheUpdate;
 
 /**
-* @brief Caches strings to reduce data usage when sending string data between clients.
-* 
-* This service is currently not in use.
-*/
+ * @brief Caches strings to reduce data usage when sending string data between clients.
+ *
+ * This service is currently not in use.
+ */
 struct StringCacheService
 {
     StringCacheService(entt::dispatcher& aDispatcher) noexcept;
@@ -22,9 +22,7 @@ struct StringCacheService
     void HandleStringCacheUpdate(const StringCacheUpdate&) noexcept;
 
 private:
-
     entt::scoped_connection m_connectedConnection;
     entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_stringCacheUpdateConnection;
-    
 };

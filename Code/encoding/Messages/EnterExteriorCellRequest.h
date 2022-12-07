@@ -10,7 +10,8 @@ struct EnterExteriorCellRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kEnterExteriorCellRequest;
 
-    EnterExteriorCellRequest() : ClientMessage(Opcode)
+    EnterExteriorCellRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -19,14 +20,8 @@ struct EnterExteriorCellRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const EnterExteriorCellRequest& acRhs) const noexcept
-    {
-        return WorldSpaceId == acRhs.WorldSpaceId &&
-            CellId == acRhs.CellId &&
-            CurrentCoords == acRhs.CurrentCoords &&
-            GetOpcode() == acRhs.GetOpcode();
-    }
-    
+    bool operator==(const EnterExteriorCellRequest& acRhs) const noexcept { return WorldSpaceId == acRhs.WorldSpaceId && CellId == acRhs.CellId && CurrentCoords == acRhs.CurrentCoords && GetOpcode() == acRhs.GetOpcode(); }
+
     GameId WorldSpaceId{};
     GameId CellId{};
     GridCellCoords CurrentCoords{};

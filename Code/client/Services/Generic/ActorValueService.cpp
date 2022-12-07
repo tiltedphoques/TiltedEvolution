@@ -86,12 +86,14 @@ void ActorValueService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcep
     auto view = m_world.view<FormIdComponent>();
     const uint32_t formId = acEvent.FormId;
 
-    const auto it = std::find_if(std::begin(view), std::end(view), [view, formId](auto entity) 
-    {
-        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+    const auto it = std::find_if(
+        std::begin(view), std::end(view),
+        [view, formId](auto entity)
+        {
+            const auto& formIdComponent = view.get<FormIdComponent>(entity);
 
-        return formIdComponent.Id == formId;
-    });
+            return formIdComponent.Id == formId;
+        });
 
     if (it != std::end(view))
         m_world.remove<ActorValuesComponent>(*it);
@@ -171,9 +173,7 @@ void ActorValueService::OnHealthChange(const HealthChangeEvent& acEvent) noexcep
 
     auto view = m_world.view<FormIdComponent>();
 
-    const auto hitteeIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.HitteeId, view](entt::entity entity) { 
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
+    const auto hitteeIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.HitteeId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (hitteeIt == std::end(view))
     {
@@ -318,10 +318,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) 
-    {
-        return view.get<RemoteComponent>(entity).Id == id;
-    });
+    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
 
     if (itor == std::end(view))
         return;
@@ -355,10 +352,7 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity)
-    {
-        return view.get<RemoteComponent>(entity).Id == id;
-    });
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
 
     if (it == std::end(view))
         return;
@@ -386,9 +380,7 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) {
-        return view.get<RemoteComponent>(entity).Id == id;
-    });
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
 
     if (it == std::end(view))
         return;
@@ -407,4 +399,3 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 }
-
