@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <vector>
 
-#include "PluginAPI.h"
+#include "PluginAPI/PluginAPI.h"
 
 class PluginCollection
 {
@@ -20,8 +20,6 @@ class PluginCollection
 
     void UnloadPlugins();
 
-    void DumpLoadedPuginsToLog();
-
     void ForEachPlugin(std::function<void(const PluginDescriptor&)> aCallback) const;
 
     size_t GetPluginCount() const
@@ -30,13 +28,16 @@ class PluginCollection
     }
 
   private:
+    bool TryLoadPlugin(const std::filesystem::path& aPath);
+
+  private:
     std::filesystem::path m_pluginPath;
 
     struct PluginData
     {
         void* pModuleHandle;
-        PluginDescriptor* pDescriptor;
-        PluginInterface001* pInterface; // < note that this pointer is _NOT_ owned by us, so do not attempt to free it
+        const PluginDescriptor* pDescriptor;
+        IPluginInterface* pInterface; // < note that this pointer is _NOT_ owned by us, so do not attempt to free it
     };
     std::vector<PluginData> m_pluginData;
 };

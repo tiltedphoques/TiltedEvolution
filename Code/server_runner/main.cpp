@@ -130,6 +130,15 @@ static bool RegisterQuitHandler()
 #endif
 }
 
+void ConfigureConsoleMode()
+{
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    // Set the input code page to UTF-8
+    SetConsoleCP(CP_UTF8);
+#endif
+}
+
 #ifdef _WIN32
 static bool ShowEULADialog()
 {
@@ -202,6 +211,8 @@ GS_IMPORT bool CheckBuildTag(const char* apBuildTag);
 
 int main(int argc, char** argv)
 {
+    ConfigureConsoleMode();
+
     // the binaries are not from the same commit.
     if (!CheckBuildTag(kBuildTag))
         return 1;

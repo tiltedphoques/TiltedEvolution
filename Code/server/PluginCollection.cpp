@@ -37,33 +37,67 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
         }
     }
 
+    uint32_t loadCount = 0;
     for (const auto& path : canidates)
     {
-#if defined(_WIN32)
-        if (auto pHandle = LoadLibraryW(path.c_str()))
-#elif defined(__linux__)
-        if (auto pHandle = dlopen(path.c_str(), RTLD_LAZY))
-#endif
-        {
-            if (uint8_t* pPluginDescriptor =
-#if defined(_WIN32)
-                    reinterpret_cast<uint8_t*>(GetProcAddress(pHandle, "TT_PLUGIN")))
-#elif defined(__linux__)
-                    reinterpret_cast<uint8_t*>(dlsym(pHandle, "TT_PLUGIN")))
-#endif
-            {
-                if (*reinterpret_cast<uint32_t*>(pPluginDescriptor) != kPluginMagic)
-                {
-                    spdlog::error("TT_PLUGIN export is invalid");
-                    continue;
-                }
-
-                m_pluginData.emplace_back(pHandle, reinterpret_cast<PluginDescriptor*>(pPluginDescriptor),
-                                          /*Interface must be instantiated first*/ nullptr);
-            }
-        }
+        if (TryLoadPlugin(path))
+            loadCount++;
     }
+    
+    spdlog::info("Loaded {} plugins", loadCount);
 }
+
+bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
+{
+    auto doLoadPlugin = [this](void *apHandle, const uint8_t* apExport) {
+        if (*reinterpret_cast<const uint32_t*>(apExport) != kPluginMagic)
+        {
+            spdlog::error("TT_PLUGIN export is invalid (unknown magic)");
+            return false;
+        }
+
+        m_pluginData.emplace_back(apHandle, reinterpret_cast<const PluginDescriptor*>(apExport),
+                                  /*Interface must be instantiated first*/ nullptr);
+        return true;
+    };
+    
+#if defined(_WIN32)
+    auto pModuleHandle = LoadLibraryA(aPath.string().c_str());
+    if (!pModuleHandle)
+    {
+        DWORD errorCode = GetLastError();
+
+        LPSTR errorBuffer = NULL;
+        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+                       NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&errorBuffer, 0, NULL);
+
+        // Print the error message
+        spdlog::error("Error loading library {}: {}\n", aPath.string(), errorBuffer);
+        LocalFree(errorBuffer);
+        return false;
+    }
+
+    if (const uint8_t* pPluginDescriptor = reinterpret_cast<const uint8_t*>(GetProcAddress(pModuleHandle, "TT_PLUGIN")))
+    {
+        return doLoadPlugin(pModuleHandle, pPluginDescriptor);
+    }
+#elif defined(__linux__)
+    auto pHandle = dlopen(path.c_str(), RTLD_LAZY);
+    if (!pHandle)
+    {
+        spdlog::error("Failed to load plugin {}: {}", path.string(), dlerror());
+        return false;
+    }
+    
+    if (const uint8_t* pPluginDescriptor = reinterpret_cast<const uint8_t*>(dlsym(pHandle, "TT_PLUGIN")))
+    {
+        return doLoadPlugin(pHandle, pPluginDescriptor);
+    }
+#endif
+
+    return false;
+}
+
 
 void PluginCollection::InitializePlugins()
 {
@@ -76,12 +110,21 @@ void PluginCollection::InitializePlugins()
         }
 
         // TODO: do someting with the reurned interface version.
-        PluginInterface001* pInstance = data.pDescriptor->pCreatePlugin();
+        IPluginInterface* pInstance = data.pDescriptor->pCreatePlugin();
         if (!pInstance)
         {
             spdlog::error(
                 "Descriptor->CreatePlugin() for {} returned null. Did you forget to allocate the plugin instance?",
-                data.pDescriptor->pluginName.data());
+                data.pDescriptor->name.data());
+            continue;
+        }
+
+        if (pInstance->GetVersion() > kCurrentPluginInterfaceVersion)
+        {
+            spdlog::error("Plugin {} is using an unsupported interface version. Expected {}, got {}",
+                          data.pDescriptor->name.data(), kCurrentPluginInterfaceVersion, pInstance->GetVersion());
+
+            data.pDescriptor->pDestroyPlugin(pInstance);
             continue;
         }
 
@@ -91,7 +134,7 @@ void PluginCollection::InitializePlugins()
         if (!result)
         {
             spdlog::error("plugin->Initialize() for {} returned false. Plugin initialization failed.",
-                          data.pDescriptor->pluginName.data());
+                          data.pDescriptor->name.data());
 
             data.pInterface = nullptr;
             continue;
@@ -111,7 +154,7 @@ void PluginCollection::ShutdownPlugins()
 
         if (!data.pInterface)
         {
-            spdlog::error("Unable to fetch interface for plugin {}.", data.pDescriptor->pluginName.data());
+            spdlog::error("Unable to fetch interface for plugin {}.", data.pDescriptor->name.data());
             continue;
         }
 
@@ -129,13 +172,6 @@ void PluginCollection::UnloadPlugins()
 #elif defined(__linux__)
         dlclose(cData.pModuleHandle);
 #endif
-    }
-}
-
-void PluginCollection::DumpLoadedPuginsToLog()
-{
-    for (const PluginData& cData : m_pluginData)
-    {
     }
 }
 
