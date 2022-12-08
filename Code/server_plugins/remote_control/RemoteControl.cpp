@@ -11,20 +11,19 @@ RemoteControlPlugin::~RemoteControlPlugin()
 bool RemoteControlPlugin::Initialize()
 {
 
-    WriteLog(LogLevel::kInfo, "Initialized remote control plugin\n");
+    PluginAPI_WriteLog(LogLevel::kInfo, "Initialized remote control plugin");
     return true;
 }
 
 void RemoteControlPlugin::Shutdown()
 {
-    WriteLog(LogLevel::kInfo, "Shutting down remote control plugin\n");
+    PluginAPI_WriteLog(LogLevel::kInfo, "Shutting down remote control plugin");
 }
 
-void RemoteControlPlugin::CallScriptFunction(const PluginStringView aName, ScriptFunctionContext& aContext)
+void RemoteControlPlugin::OnEvent(uint32_t aEventCode)
 {
 }
 
-void RemoteControlPlugin::BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs,
-                                             const size_t aArgCount)
-{ // todo: lock
+void RemoteControlPlugin::OnTick()
+{
 }

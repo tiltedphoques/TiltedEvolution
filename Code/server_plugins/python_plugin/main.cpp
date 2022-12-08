@@ -4,24 +4,33 @@
 
 namespace
 {
-PluginInterface001* CreateRuntime()
-{
-    return new PythonRuntime();
-}
+// other runtimes might depend on a specific version of this runtime, so make sure to consider this when incrementing
+static constexpr uint32_t kPluginVersion = 1;
 
-void DestroyRuntime(PluginInterface001* interface)
-{
-    delete interface; // WARNING: your dtor will be not invoked if you not override it.
-}
+// we only support .lua files
+static const char* kLuaExt = ".lua";
+constinit ScriptInfoBlock kScriptInfoBlock{
+    .supportedExtensionCount = 1,
+    .supportedExtensions = &kLuaExt,
+};
 } // namespace
 
-PLUGIN_API PluginDescriptor TT_PLUGIN{.magic = kPluginMagic,
-                                      .structSize = sizeof(PluginDescriptor),
-                                      .pluginVersion = 1,
-                                      .pluginName = "PythonScriptingRuntime",
-                                      .authorName = "VinceM (Force67)",
-                                      .flags = PluginDescriptor::Flags::kHotReload,
-                                      .pCreatePlugin = CreateRuntime,
-                                      .pDestroyPlugin = DestroyRuntime
+PLUGIN_API constinit PluginDescriptor TT_PLUGIN{
+    .magic = kPluginMagic,
+    .structSize = sizeof(PluginDescriptor),
+    .version = kPluginVersion,
+    .name = "PythonScriptingRuntime",
+    .author = "VinceM (Force67)",
+    .infoblocks =
+        {
+            // how we will handle scripts
+            {.magic = ScriptInfoBlock::kMagic, .structSize = sizeof(ScriptInfoBlock), .ptr = &kScriptInfoBlock},
+        },
+    // this plugin can be reloaded at runtime. Notifications will be broadcasted via OnEvent()
+    .flags = PluginDescriptor::Flags::kFlagHotReload,
 
-};
+    // we request permission to use scripting features and get updated at runtime
+    .entitlements = PluginDescriptor::Entitlements::kEntScripting | PluginDescriptor::Entitlements::kEntUpdate,
+    .pCreatePlugin = []() -> IPluginInterface* { return new PythonRuntime(); },
+    .pDestroyPlugin =
+        [](IPluginInterface* apPluginInterface) { delete reinterpret_cast<PythonRuntime*>(apPluginInterface); }};

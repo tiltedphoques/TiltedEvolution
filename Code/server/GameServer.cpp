@@ -320,7 +320,7 @@ void GameServer::BindServerCommands()
 
         out->info("<------Plugins-({})--->", m_pPlugins->GetPluginCount());
         m_pPlugins->ForEachPlugin([&](const PluginDescriptor& aPlugin) {
-            out->info("{}", aPlugin.pluginName.data());
+            out->info("{}", aPlugin.name.data());
             out->info("└── {}", aPlugin.CanHotReload() ? "Hot Reloadable" : "Not Hot Reloadable");
         });
     });

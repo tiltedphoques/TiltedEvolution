@@ -1,7 +1,5 @@
 
 #include "GameServer.h"
-
-#include "PluginAPI.h"
 #include <common/GameServerInstance.h>
 
 #ifdef _WIN32
@@ -104,22 +102,6 @@ GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
     // yes this needs to be here, else the dedirunner dies
     spdlog::register_logger(std::move(aLogger));
     //#endif
-}
-
-// scripting api
-void WriteLog(const LogLevel aLogLevel, const char* apFormat, ...)
-{
-    using namespace spdlog::level;
-
-    level_enum level;
-    switch (aLogLevel)
-    {
-    case LogLevel::kDebug: level = level_enum::debug; break;
-    case LogLevel::kInfo:
-    default: level = level_enum::info; break;
-    }
-
-    spdlog::log(level, apFormat);
 }
 
 #ifdef _WIN32

@@ -1,6 +1,8 @@
 #pragma once
 
-#include <server/PluginAPI.h>
+#include <server/PluginAPI/Action.h>
+#include <server/PluginAPI/Logging.h>
+#include <server/PluginAPI/PluginAPI.h>
 
 class RemoteControlPlugin final : public PluginInterface001
 {
@@ -17,9 +19,9 @@ class RemoteControlPlugin final : public PluginInterface001
     bool Initialize() override;
     void Shutdown() override;
 
-    void CallScriptFunction(const PluginStringView aName, ScriptFunctionContext&);
-    void BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs,
-                            const size_t aArgCount);
+    void OnEvent(uint32_t aEventCode) override;
 
   private:
+    // Inherited via PluginInterface001
+    void OnTick() override;
 };

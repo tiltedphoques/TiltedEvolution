@@ -1,25 +1,27 @@
 #pragma once
 
-#include <server/PluginAPI.h>
+#include "Pch.h"
+#include <server/PluginAPI/PluginAPI.h>
 
 class PythonRuntime final : public PluginInterface001
 {
   public:
-    ~PythonRuntime() override;
+    ~PythonRuntime() noexcept override;
 
     // Inherited via PluginInterface001
     uint32_t GetVersion() override
     {
-        // we subscribe to the v1 api
         return 1;
     }
 
     bool Initialize() override;
     void Shutdown() override;
 
-    void CallScriptFunction(const PluginStringView aName, ScriptFunctionContext&);
-    void BindScriptFunction(const PluginStringView aName, void* apFunctor, const ArgType* apArgs,
-                            const size_t aArgCount);
-
+    void LoadSourceFile();
   private:
+    std::unique_ptr<pybind11::scoped_interpreter> pz;
+
+    // Inherited via PluginInterface001
+    virtual void OnTick() override;
+    // TiltedPhoques::UniquePointer<py::scoped_interpreter> m_guard;
 };

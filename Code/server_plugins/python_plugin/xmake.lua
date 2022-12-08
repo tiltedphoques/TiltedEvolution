@@ -6,10 +6,15 @@ target("PythonScriptingRuntime")
     set_targetdir("$(buildir)/$(plat)/$(arch)/$(mode)/plugins")
     add_includedirs(
         ".",
-        "../.." -- main dir
+        "../..", -- main dir
+        "../../server"
     ) 
-    set_pcxxheader("Pch.h")
+    --set_pcxxheader("Pch.h")
     add_headerfiles("**.h")
     add_files("**.cpp")
     add_deps("SkyrimTogetherServer")
-    add_packages("pybind11")
+    add_packages(
+        "pybind11", 
+        "tiltedcore",
+        "hopscotch-map"
+    )

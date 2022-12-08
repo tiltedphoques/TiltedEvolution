@@ -6,7 +6,8 @@ target("RemoteControlPlugin")
     set_targetdir("$(buildir)/$(plat)/$(arch)/$(mode)/plugins")
     add_includedirs(
         ".",
-        "../.." -- main dir
+        "../..", -- main dir
+        "../../server"
     ) 
     set_pcxxheader("Pch.h")
     add_headerfiles("**.h")
