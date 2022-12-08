@@ -120,13 +120,18 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     auto manifest = TiltedPhoques::MakeUnique<Resources::Manifest001>();
     // version data
     auto readSemVer = [&](const char* apName) -> SemanticVersion {
-        auto stringRep = ini.GetValue("Resource", apName, "0.0.0");
-        if (!IsValidSemanticVersion(stringRep))
+        const char* pValue = ini.GetValue("Resource", apName, nullptr);
+        if (pValue == nullptr)
+        {
+            spdlog::error("Missing key \"{}\" in {}", apName, aPath.string());
+            return "";
+        }
+        if (!IsValidSemanticVersion(pValue))
         {
             spdlog::error("Invalid semantic version for {} in {}", apName, aPath.string());
             return {0, 0, 0};
         }
-        return SemanticVersion(stringRep);
+        return SemanticVersion(pValue);
     };
 
     manifest->apiSet = readSemVer("apiset");
@@ -143,13 +148,13 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     }
 
     auto readString = [&](const char* apName) -> TiltedPhoques::String {
-        auto value = ini.GetValue("Resource", apName, nullptr);
-        if (value == nullptr)
+        const char* pValue = ini.GetValue("Resource", apName, nullptr);
+        if (pValue == nullptr)
         {
-            spdlog::error("Missing \"{}\" in {}", apName, aPath.string());
+            spdlog::error("Missing key \"{}\" in {}", apName, aPath.string());
             return "";
         }
-        return UnescapeAndStrip(value);
+        return UnescapeAndStrip(pValue);
     };
 
     // read must haves
@@ -196,8 +201,7 @@ void ResourceCollection::ResolveDependencies()
                         manifest->isTombstone = true;
                         continue;
                     }
-
-                    if (dep.second && dep.second != it2->resourceVersion)
+                    else if (dep.second != it2->resourceVersion)
                     {
                         spdlog::error("Dependency {} has version {} but {} is required", dep.first,
                                       SemVerToString(it2->resourceVersion), SemVerToString(dep.second));

@@ -104,7 +104,7 @@ class SemanticVersion
         return std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
     }
 
-    const underlying_type& GetVersionBits() const noexcept
+    const underlying_type GetVersionBits() const noexcept
     {
         return m_versionBits;
     }
