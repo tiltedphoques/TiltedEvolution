@@ -128,6 +128,9 @@ class IPluginInterface
     virtual bool Initialize() = 0;
     virtual void Shutdown() = 0;
 
+    // only called if the plugin has the kUpdate entitlement
+    virtual void OnTick() = 0;
+
     // these are not enum class, cause they might be extended by newer interface versions!
     enum EventCode : uint32_t
     {
@@ -139,7 +142,10 @@ class IPluginInterface
         kEventResultContinue,
         kEventResultStop,
     };
-    virtual void OnEvent(uint32_t aEventCode){};
+    virtual uint32_t OnEvent(uint32_t aEventCode)
+    {
+        return kEventResultContinue;
+    }
 };
 
 class PluginInterface001 : public IPluginInterface
@@ -151,9 +157,6 @@ class PluginInterface001 : public IPluginInterface
     {
         return 1;
     }
-
-    // only called if the plugin has the kUpdate entitlement
-    virtual void OnTick() = 0;
 
     // only called if the plugin has the kScripting entitlement
     virtual void ExecuteCode(const PluginSlice<char> acCode){};

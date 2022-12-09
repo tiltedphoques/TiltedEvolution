@@ -22,6 +22,9 @@ class PythonRuntime final : public PluginInterface001
     std::unique_ptr<pybind11::scoped_interpreter> pz;
 
     // Inherited via PluginInterface001
-    virtual void OnTick() override;
+    void OnTick() override;
+
+    void ExecuteCode(const PluginSlice<char> acCode) override;
+    void ExecuteFile(const PluginSlice<char> acFileName) override;
     // TiltedPhoques::UniquePointer<py::scoped_interpreter> m_guard;
 };

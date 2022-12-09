@@ -19,7 +19,7 @@ class RemoteControlPlugin final : public PluginInterface001
     bool Initialize() override;
     void Shutdown() override;
 
-    void OnEvent(uint32_t aEventCode) override;
+    uint32_t OnEvent(uint32_t aEventCode) override;
 
   private:
     // Inherited via PluginInterface001

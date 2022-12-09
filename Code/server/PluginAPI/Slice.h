@@ -13,13 +13,13 @@ template <typename T> class PluginSlice
     {
     }
 
-    constexpr T* data() const
+    constexpr const T* data() const
     {
         return m_pData;
     }
 
   private:
-    T* m_pData;
+    const T* m_pData;
     size_t m_size;
 };
 using PluginStringView = PluginSlice<const char>;

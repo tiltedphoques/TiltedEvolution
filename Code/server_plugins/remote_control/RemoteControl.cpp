@@ -20,8 +20,9 @@ void RemoteControlPlugin::Shutdown()
     PluginAPI_WriteLog(LogLevel::kInfo, "Shutting down remote control plugin");
 }
 
-void RemoteControlPlugin::OnEvent(uint32_t aEventCode)
+uint32_t RemoteControlPlugin::OnEvent(uint32_t aEventCode)
 {
+    return EventResult::kEventResultContinue;
 }
 
 void RemoteControlPlugin::OnTick()

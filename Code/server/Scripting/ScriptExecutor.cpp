@@ -1,8 +1,8 @@
 
 #include "ScriptExecutor.h"
 
-#include <spdlog/spdlog.h>
 #include <TiltedCore/Buffer.hpp>
+#include <spdlog/spdlog.h>
 
 #include "PluginAPI/PluginAPI.h"
 
@@ -16,7 +16,28 @@ ScriptExecutor::~ScriptExecutor()
 
 void ScriptExecutor::RegisterRuntime(const char* const apExtension, IPluginInterface* apInterface)
 {
+    auto it = std::find_if(m_scriptRuntimes.begin(), m_scriptRuntimes.end(),
+                           [apExtension](const auto& entry) { return entry.first == apExtension; });
+    if (it != m_scriptRuntimes.end())
+    {
+        spdlog::error("Failed to register script extension {}, as a runtime for it already exists");
+        return;
+    }
+
     m_scriptRuntimes[apExtension] = apInterface;
+}
+
+IPluginInterface* ScriptExecutor::SelectRuntimeForExtension(const std::string_view acExtension)
+{
+    auto it = std::find_if(m_scriptRuntimes.begin(), m_scriptRuntimes.end(),
+                           [acExtension](const auto& entry) { return entry.first == acExtension; });
+    if (it == m_scriptRuntimes.end())
+    {
+        spdlog::error("Failed to find a runtime for script extension {}", acExtension);
+        return nullptr;
+    }
+
+    return it->second;
 }
 
 void ScriptExecutor::Execute(const char* aScript)
@@ -32,30 +53,18 @@ void ScriptExecutor::ExecuteFile(const std::filesystem::path& aPath, const Resou
     }
 
     auto pathExt = aPath.extension();
-
-    IPluginInterface* pInterface = nullptr;
-    for (const auto& runtime : m_scriptRuntimes)
+    if (auto* pRuntime = SelectRuntimeForExtension(pathExt.string()))
     {
-        if (pathExt == runtime.first)
+        if (auto* p001 = CastInterfaceVersion<PluginInterface001>(pRuntime, 1))
         {
-            pInterface = runtime.second;
-            break;
+            // for now..
+            auto pathStr = aPath.string();
+            p001->ExecuteFile(PluginSlice<char>(pathStr.c_str(), pathStr.length()));
+            return;
         }
     }
 
-    if (!pInterface)
-    {
-        spdlog::error("Failed to find a runtime for file {} with extension: {}", aPath.string(), pathExt.string());
-        return;
-    }
-
-    if (pInterface->GetVersion() == 1)
-    {
-        auto* pInterface001 = reinterpret_cast<PluginInterface001*>(pInterface);
-        //pInterface001->ExecuteFile(aPath.string().c_str());
-    }
-    else
-        spdlog::error("Failed to find applicable runtime interface for file {}", aPath.string());
+    spdlog::error("Failed to find applicable runtime interface for file {}", aPath.string());
 }
 
 void ScriptExecutor::Bind(const char* const apSymbolName)
