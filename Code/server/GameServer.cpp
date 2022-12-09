@@ -96,11 +96,6 @@ Console::Command<int64_t> SetDifficulty("SetDifficulty",
 Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
                                [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
-Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
-    int* i = 0;
-    *i = 42;
-});
-
 Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
     auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
@@ -140,7 +135,8 @@ ServerSettings GetSettings()
 }
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
+    : m_startTime(std::chrono::high_resolution_clock::now()),
+      m_lastFrameTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -326,6 +322,19 @@ void GameServer::BindMessageHandlers()
 
 void GameServer::BindServerCommands()
 {
+    m_commands.RegisterCommand<>("uptime", "Show how long the server has been running for", [this](Console::ArgStack&) {
+        auto duration = std::chrono::high_resolution_clock::now() - m_startTime;
+        auto weeks = std::chrono::duration_cast<std::chrono::weeks>(duration);
+        duration -= weeks;
+        auto days = std::chrono::duration_cast<std::chrono::days>(duration);
+        duration -= days;
+        auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+        duration -= hours;
+        auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+        spdlog::get("ConOut")->info("Server uptime: {}w {}d {}h {}m", weeks.count(), days.count(), hours.count(),
+                                    minutes.count());
+    });
+
     m_commands.RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
         auto out = spdlog::get("ConOut");
         uint32_t count = m_pWorld->GetPlayerManager().Count();
