@@ -9,6 +9,7 @@
 #include <Services/QuestService.h>
 
 #include "Game/PlayerManager.h"
+#include "Scripting/ScriptExecutor.h"
 
 namespace ESLoader
 {
@@ -39,6 +40,11 @@ struct World : entt::registry
 
     // Null checked at start when MoPo is on!
     ESLoader::RecordCollection* GetRecordCollection() noexcept { return m_recordCollection.get(); }
+    
+    ScriptExecutor& GetScriptExecutor() noexcept
+    {
+        return m_scriptExecutor;
+    }
 
     const ESLoader::RecordCollection* GetRecordCollection() const noexcept { return m_recordCollection.get(); }
 
@@ -49,5 +55,6 @@ private:
 
     TiltedPhoques::SharedPtr<AdminService> m_spAdminService;
     PlayerManager m_playerManager;
+    ScriptExecutor m_scriptExecutor;
     UniquePtr<ESLoader::RecordCollection> m_recordCollection;
 };

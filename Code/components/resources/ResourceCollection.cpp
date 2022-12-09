@@ -118,6 +118,8 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     }
 
     auto manifest = TiltedPhoques::MakeUnique<Resources::Manifest001>();
+    manifest->folderName = aPath.parent_path().filename();
+    
     // version data
     auto readSemVer = [&](const char* apName) -> SemanticVersion {
         const char* pValue = ini.GetValue("Resource", apName, nullptr);

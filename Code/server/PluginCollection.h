@@ -20,7 +20,7 @@ class PluginCollection
 
     void UnloadPlugins();
 
-    void ForEachPlugin(std::function<void(const PluginDescriptor&)> aCallback) const;
+    void ForEachPlugin(std::function<void(const PluginDescriptor&, IPluginInterface&)> aCallback) const;
 
     size_t GetPluginCount() const
     {

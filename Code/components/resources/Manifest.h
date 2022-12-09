@@ -5,8 +5,12 @@
 #include "Pch.h"
 #include "SemanticVersion2.h"
 
+#include <filesystem>
+
 namespace Resources
 {
+namespace fs = std::filesystem;
+
 struct Manifest001
 {
     /// name @ version
@@ -23,7 +27,7 @@ struct Manifest001
     TiltedPhoques::String author;                        // < author of the resource
     TiltedPhoques::String entryPoint;                    // < entry point of the resource
     TiltedPhoques::Vector<DependencyTuple> dependencies; // < dependencies of the resource
-
+    fs::path folderName;
     bool isTombstone = false; // < if true, this manifest is a tombstone and should be ignored, this is only relevant
                               // during dependency resolving & loading
 };

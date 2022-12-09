@@ -65,6 +65,7 @@ class IPluginInterface;
 
 struct PluginDescriptor
 {
+    // make sure to not reorder those first two!!!
     uint32_t magic;      // < 'PLGN'
     uint32_t structSize; // < Size of this struct
 

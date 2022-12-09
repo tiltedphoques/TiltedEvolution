@@ -43,24 +43,39 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
         if (TryLoadPlugin(path))
             loadCount++;
     }
-    
+
     spdlog::info("Loaded {} plugins", loadCount);
+
+#if 0
+    // TODO: warn if multiple extensions support a file type.
+    for (const PluginData& it : m_pluginData)
+    {
+        if (it.)
+    }
+#endif
 }
 
 bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
 {
-    auto doLoadPlugin = [this](void *apHandle, const uint8_t* apExport) {
+    auto doLoadPlugin = [this](void* apHandle, const uint8_t* apExport) {
         if (*reinterpret_cast<const uint32_t*>(apExport) != kPluginMagic)
         {
             spdlog::error("TT_PLUGIN export is invalid (unknown magic)");
             return false;
         }
 
-        m_pluginData.emplace_back(apHandle, reinterpret_cast<const PluginDescriptor*>(apExport),
+        auto* pDescriptor = reinterpret_cast<const PluginDescriptor*>(apExport);
+        if (pDescriptor->structSize != sizeof(PluginDescriptor))
+        {
+            spdlog::error("TT_PLUGIN export is invalid (unknown size)");
+            return false;
+        }
+
+        m_pluginData.emplace_back(apHandle, pDescriptor,
                                   /*Interface must be instantiated first*/ nullptr);
         return true;
     };
-    
+
 #if defined(_WIN32)
     auto pModuleHandle = LoadLibraryA(aPath.string().c_str());
     if (!pModuleHandle)
@@ -88,7 +103,7 @@ bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
         spdlog::error("Failed to load plugin {}: {}", path.string(), dlerror());
         return false;
     }
-    
+
     if (const uint8_t* pPluginDescriptor = reinterpret_cast<const uint8_t*>(dlsym(pHandle, "TT_PLUGIN")))
     {
         return doLoadPlugin(pHandle, pPluginDescriptor);
@@ -97,7 +112,6 @@ bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
 
     return false;
 }
-
 
 void PluginCollection::InitializePlugins()
 {
@@ -109,7 +123,6 @@ void PluginCollection::InitializePlugins()
             continue;
         }
 
-        // TODO: do someting with the reurned interface version.
         IPluginInterface* pInstance = data.pDescriptor->pCreatePlugin();
         if (!pInstance)
         {
@@ -175,10 +188,11 @@ void PluginCollection::UnloadPlugins()
     }
 }
 
-void PluginCollection::ForEachPlugin(std::function<void(const PluginDescriptor&)> aCallback) const
+void PluginCollection::ForEachPlugin(
+    std::function<void(const PluginDescriptor&, IPluginInterface&)> aCallback) const
 {
     for (const PluginData& cData : m_pluginData)
     {
-        aCallback(*cData.pDescriptor);
+        aCallback(*cData.pDescriptor, *cData.pInterface);
     }
 }

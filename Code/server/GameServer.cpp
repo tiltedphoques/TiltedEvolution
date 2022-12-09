@@ -57,6 +57,9 @@ Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE act
                             Console::SettingsFlags::kLocked};
 Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
                            Console::SettingsFlags::kLocked};
+// Scripting
+Console::Setting bAllowScripting{"Scripting:bEnable", "Allow execution of user scripts in resources on this server",
+                                 true, Console::SettingsFlags::kLocked};
 
 // -- Commands --
 Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/off", [](Console::ArgStack&) {
@@ -202,6 +205,51 @@ void GameServer::Initialize()
 
     m_pPlugins->InitializePlugins();
     // m_pResources->CollectResources(); ctor already does this.
+
+    // begin executing scripts
+    m_pPlugins->ForEachPlugin([this](const PluginDescriptor& aPlugin, IPluginInterface& aPluginInterface) {
+        if (!aPlugin.IsScriptPlugin())
+            return;
+
+        for (const InfoBlock& infoBlock : aPlugin.infoblocks)
+        {
+            if (infoBlock.magic != ScriptInfoBlock::kMagic)
+                continue;
+
+            if (!infoBlock.ptr)
+            {
+                spdlog::error("Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned a nullptr.",
+                              aPlugin.name.data());
+                continue;
+            }
+
+            if (infoBlock.structSize != sizeof(ScriptInfoBlock))
+            {
+                spdlog::error("Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned an invalid "
+                              "struct size (expected {}, got {}).",
+                              aPlugin.name.data(), sizeof(ScriptInfoBlock), infoBlock.structSize);
+                continue;
+            }
+
+            ScriptInfoBlock* pScriptInfo = reinterpret_cast<ScriptInfoBlock*>(infoBlock.ptr);
+
+            for (int i = 0; i < pScriptInfo->supportedExtensionCount; i++)
+            {
+                if (const char* pExtension = pScriptInfo->supportedExtensions[i])
+                {
+                    m_pWorld->GetScriptExecutor().RegisterRuntime(pExtension, &aPluginInterface);
+                }
+            }
+        }
+    });
+
+    m_pResources->ForEachManifest([&](const Resources::Manifest001& aManifest) {
+        if (aManifest.entryPoint.empty())
+            return;
+
+        auto path = m_pResources->GetResourceFolderPath() / aManifest.folderName / aManifest.entryPoint;
+        m_pWorld->GetScriptExecutor().ExecuteFile(path, aManifest);
+    });
 }
 
 void GameServer::Kill()
@@ -319,7 +367,7 @@ void GameServer::BindServerCommands()
         }
 
         out->info("<------Plugins-({})--->", m_pPlugins->GetPluginCount());
-        m_pPlugins->ForEachPlugin([&](const PluginDescriptor& aPlugin) {
+        m_pPlugins->ForEachPlugin([&](const PluginDescriptor& aPlugin, const IPluginInterface&) {
             out->info("{}", aPlugin.name.data());
             out->info("└── {}", aPlugin.CanHotReload() ? "Hot Reloadable" : "Not Hot Reloadable");
         });

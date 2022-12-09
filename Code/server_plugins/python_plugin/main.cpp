@@ -8,10 +8,10 @@ namespace
 static constexpr uint32_t kPluginVersion = 1;
 
 // we only support .lua files
-static const char* kLuaExt = ".lua";
+static const char* kExtension = ".py";
 constinit ScriptInfoBlock kScriptInfoBlock{
     .supportedExtensionCount = 1,
-    .supportedExtensions = &kLuaExt,
+    .supportedExtensions = &kExtension,
 };
 } // namespace
 
