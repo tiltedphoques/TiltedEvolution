@@ -156,6 +156,9 @@ void DediRunner::StartTerminalIO()
 
 void DediRunner::RequestKill()
 {
+    spdlog::info("Shutting down server...");
+    spdlog::warn("Please always use /quit to exit cleanly");
+
     m_pServerInstance->Shutdown();
 
 #if defined(_WIN32)

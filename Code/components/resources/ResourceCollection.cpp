@@ -128,7 +128,7 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
         }
         if (!IsValidSemanticVersion(pValue))
         {
-            spdlog::error("Invalid semantic version for {} in {}", apName, aPath.string());
+            spdlog::error("Invalid semantic version for key \"{}\" in {}", apName, aPath.string());
             return {0, 0, 0};
         }
         return SemanticVersion(pValue);
@@ -187,28 +187,37 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
 
 void ResourceCollection::ResolveDependencies()
 {
+    bool wasFound;
     for (auto& manifest : m_manifests)
     {
         for (const auto& dep : manifest->dependencies)
         {
+            wasFound = false;
             for (auto& it2 : m_manifests)
             {
                 if (it2->name == dep.first)
                 {
                     if (!dep.second)
                     {
-                        spdlog::error("Dependency {} version is invalid", dep.first);
+                        spdlog::error("Resource \"{}\": Dependency {} version is invalid", manifest->name, dep.first);
                         manifest->isTombstone = true;
                         continue;
                     }
                     else if (dep.second != it2->resourceVersion)
                     {
-                        spdlog::error("Dependency {} has version {} but {} is required", dep.first,
+                        spdlog::error("Resource \"{}\": Dependency {} has version {} but {} is required",  manifest->name, dep.first,
                                       SemVerToString(it2->resourceVersion), SemVerToString(dep.second));
                         manifest->isTombstone = true;
                     }
                     // let the loop continue to list all other conflicts immedeatly.
+                    wasFound = true;
                 }
+            }
+
+            if (!wasFound)
+            {
+                spdlog::error("Resource \"{}\": Dependency {} not found", manifest->name, dep.first);
+                manifest->isTombstone = true;
             }
         }
     }
@@ -224,11 +233,20 @@ void ResourceCollection::CollectResources()
     }
 
     std::vector<std::filesystem::path> manifestCanidates;
-    for (auto const& dir : std::filesystem::recursive_directory_iterator{m_resourcePath})
+    for (const auto& packageFolder : std::filesystem::directory_iterator(m_resourcePath))
     {
-        if (dir.path().extension() == kResourceManifestExt)
+        if (!packageFolder.is_directory())
+            continue;
+
+        for (const auto& packageContent : std::filesystem::directory_iterator(packageFolder))
         {
-            manifestCanidates.push_back(dir.path());
+            if (packageContent.is_directory())
+                continue;
+
+            if (packageContent.path().extension() == kResourceManifestExt)
+            {
+                manifestCanidates.push_back(packageContent.path());
+            }
         }
     }
 
