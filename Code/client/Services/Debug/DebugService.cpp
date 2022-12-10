@@ -337,6 +337,7 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Crash Client"))
         {
 #if (!IS_MASTER)
+            spdlog::error("Crash client");
             int* m = 0;
             *m = 1338;
 #else
