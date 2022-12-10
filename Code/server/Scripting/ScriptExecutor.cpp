@@ -14,7 +14,7 @@ ScriptExecutor::~ScriptExecutor()
 {
 }
 
-void ScriptExecutor::RegisterRuntime(const char* const apExtension, IPluginInterface* apInterface)
+void ScriptExecutor::RegisterRuntime(const char* const apExtension, PluginAPI::IPluginInterface* apInterface)
 {
     auto it = std::find_if(m_scriptRuntimes.begin(), m_scriptRuntimes.end(),
                            [apExtension](const auto& entry) { return entry.first == apExtension; });
@@ -27,7 +27,7 @@ void ScriptExecutor::RegisterRuntime(const char* const apExtension, IPluginInter
     m_scriptRuntimes[apExtension] = apInterface;
 }
 
-IPluginInterface* ScriptExecutor::SelectRuntimeForExtension(const std::string_view acExtension)
+PluginAPI::IPluginInterface* ScriptExecutor::SelectRuntimeForExtension(const std::string_view acExtension)
 {
     auto it = std::find_if(m_scriptRuntimes.begin(), m_scriptRuntimes.end(),
                            [acExtension](const auto& entry) { return entry.first == acExtension; });
@@ -55,11 +55,11 @@ void ScriptExecutor::ExecuteFile(const std::filesystem::path& aPath, const Resou
     auto pathExt = aPath.extension();
     if (auto* pRuntime = SelectRuntimeForExtension(pathExt.string()))
     {
-        if (auto* p001 = CastInterfaceVersion<PluginInterface001>(pRuntime, 1))
+        if (auto* p001 = CastInterfaceVersion<PluginAPI::PluginInterface001>(pRuntime, 1))
         {
             // for now..
             auto pathStr = aPath.string();
-            p001->ExecuteFile(PluginSlice<char>(pathStr.c_str(), pathStr.length()));
+            p001->ExecuteFile(PluginAPI::StringRef(pathStr.c_str(), pathStr.length()));
             return;
         }
     }

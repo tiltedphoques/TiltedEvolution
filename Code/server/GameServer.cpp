@@ -203,13 +203,13 @@ void GameServer::Initialize()
     // m_pResources->CollectResources(); ctor already does this.
 
     // begin executing scripts
-    m_pPlugins->ForEachPlugin([this](const PluginDescriptor& aPlugin, IPluginInterface& aPluginInterface) {
+    m_pPlugins->ForEachPlugin([this](const PluginAPI::PluginDescriptor & aPlugin, PluginAPI::IPluginInterface & aPluginInterface) {
         if (!aPlugin.IsScriptPlugin())
             return;
 
-        for (const InfoBlock& infoBlock : aPlugin.infoblocks)
+        for (const PluginAPI::InfoBlock& infoBlock : aPlugin.infoblocks)
         {
-            if (infoBlock.magic != ScriptInfoBlock::kMagic)
+            if (infoBlock.magic != PluginAPI::ScriptInfoBlock::kMagic)
                 continue;
 
             if (!infoBlock.ptr)
@@ -219,16 +219,15 @@ void GameServer::Initialize()
                 continue;
             }
 
-            if (infoBlock.structSize != sizeof(ScriptInfoBlock))
+            if (infoBlock.structSize != sizeof(PluginAPI::ScriptInfoBlock))
             {
                 spdlog::error("Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned an invalid "
                               "struct size (expected {}, got {}).",
-                              aPlugin.name.data(), sizeof(ScriptInfoBlock), infoBlock.structSize);
+                              aPlugin.name.data(), sizeof(PluginAPI::ScriptInfoBlock), infoBlock.structSize);
                 continue;
             }
 
-            ScriptInfoBlock* pScriptInfo = reinterpret_cast<ScriptInfoBlock*>(infoBlock.ptr);
-
+            auto* pScriptInfo = reinterpret_cast<PluginAPI::ScriptInfoBlock*>(infoBlock.ptr);
             for (int i = 0; i < pScriptInfo->supportedExtensionCount; i++)
             {
                 if (const char* pExtension = pScriptInfo->supportedExtensions[i])
@@ -376,7 +375,7 @@ void GameServer::BindServerCommands()
         }
 
         out->info("<------Plugins-({})--->", m_pPlugins->GetPluginCount());
-        m_pPlugins->ForEachPlugin([&](const PluginDescriptor& aPlugin, const IPluginInterface&) {
+        m_pPlugins->ForEachPlugin([&](const PluginAPI::PluginDescriptor& aPlugin, const PluginAPI::IPluginInterface&) {
             out->info("{}", aPlugin.name.data());
             out->info("└── {}", aPlugin.CanHotReload() ? "Hot Reloadable" : "Not Hot Reloadable");
         });

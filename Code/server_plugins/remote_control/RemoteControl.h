@@ -1,10 +1,10 @@
 #pragma once
 
-#include <server/PluginAPI/Action.h>
-#include <server/PluginAPI/Logging.h>
 #include <server/PluginAPI/PluginAPI.h>
 
-class RemoteControlPlugin final : public PluginInterface001
+using namespace PluginAPI;
+
+class RemoteControlPlugin final : public PluginAPI::PluginInterface001
 {
   public:
     ~RemoteControlPlugin() override;

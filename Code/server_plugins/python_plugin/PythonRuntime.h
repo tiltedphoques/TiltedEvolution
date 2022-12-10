@@ -3,7 +3,9 @@
 #include "Pch.h"
 #include <server/PluginAPI/PluginAPI.h>
 
-class PythonRuntime final : public PluginInterface001
+using namespace PluginAPI;
+
+class PythonRuntime final : public PluginAPI::PluginInterface001
 {
   public:
     ~PythonRuntime() noexcept override;
@@ -18,13 +20,17 @@ class PythonRuntime final : public PluginInterface001
     void Shutdown() override;
 
     void LoadSourceFile();
+
   private:
     std::unique_ptr<pybind11::scoped_interpreter> pz;
 
     // Inherited via PluginInterface001
     void OnTick() override;
 
-    void ExecuteCode(const PluginSlice<char> acCode) override;
-    void ExecuteFile(const PluginSlice<char> acFileName) override;
+    void BindAction(const StringRef acActionName, const ArgType* args, size_t argCount,
+                    void(*aCallback)(ActionStack& acContext)) override;
+    void InvokeAction(const StringRef acActionName, ActionStack& acStack) override;
+    void ExecuteCode(const StringRef acCode) override;
+    void ExecuteFile(const StringRef acFileName) override;
     // TiltedPhoques::UniquePointer<py::scoped_interpreter> m_guard;
 };

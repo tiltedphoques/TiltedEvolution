@@ -9,28 +9,33 @@ static constexpr uint32_t kPluginVersion = 1;
 
 // we only support .lua files
 static const char* kExtension = ".py";
-constinit ScriptInfoBlock kScriptInfoBlock{
+constinit PluginAPI::ScriptInfoBlock kScriptInfoBlock{
     .supportedExtensionCount = 1,
     .supportedExtensions = &kExtension,
 };
 } // namespace
 
-PLUGIN_API constinit PluginDescriptor TT_PLUGIN{
-    .magic = kPluginMagic,
-    .structSize = sizeof(PluginDescriptor),
+PLUGIN_API constinit PluginAPI::PluginDescriptor TT_PLUGIN{
+    .magic = PluginAPI::kPluginMagic,
+    .structSize = sizeof(PluginAPI::PluginDescriptor),
     .version = kPluginVersion,
     .name = "PythonScriptingRuntime",
     .author = "VinceM (Force67)",
     .infoblocks =
         {
             // how we will handle scripts
-            {.magic = ScriptInfoBlock::kMagic, .structSize = sizeof(ScriptInfoBlock), .ptr = &kScriptInfoBlock},
+            {.magic = PluginAPI::ScriptInfoBlock::kMagic,
+             .structSize = sizeof(PluginAPI::ScriptInfoBlock),
+             .ptr = &kScriptInfoBlock},
         },
     // this plugin can be reloaded at runtime. Notifications will be broadcasted via OnEvent()
-    .flags = PluginDescriptor::Flags::kFlagHotReload,
+    .flags = PluginAPI::PluginDescriptor::Flags::kFlagHotReload,
 
     // we request permission to use scripting features and get updated at runtime
-    .entitlements = PluginDescriptor::Entitlements::kEntScripting | PluginDescriptor::Entitlements::kEntUpdate,
-    .pCreatePlugin = []() -> IPluginInterface* { return new PythonRuntime(); },
+    .entitlements = PluginAPI::PluginDescriptor::Entitlements::kEntScripting |
+                    PluginAPI::PluginDescriptor::Entitlements::kEntUpdate,
+    .pCreatePlugin = []() -> PluginAPI::IPluginInterface* { return new PythonRuntime(); },
     .pDestroyPlugin =
-        [](IPluginInterface* apPluginInterface) { delete reinterpret_cast<PythonRuntime*>(apPluginInterface); }};
+        [](PluginAPI::IPluginInterface* apPluginInterface) {
+            delete reinterpret_cast<PythonRuntime*>(apPluginInterface);
+        }};

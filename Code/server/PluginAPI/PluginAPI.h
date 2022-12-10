@@ -40,8 +40,11 @@
 
 #endif
 
+#include "Action.h"
 #include "Slice.h"
 
+namespace PluginAPI
+{
 static constexpr uint32_t kPluginMagic = 'PLGN';
 static constexpr uint32_t kMaxPluginInterfaceVersion = 1;
 
@@ -69,9 +72,9 @@ struct PluginDescriptor
     uint32_t magic;      // < 'PLGN'
     uint32_t structSize; // < Size of this struct
 
-    uint32_t version;        // < Version of the plugin (user defined)
-    PluginStringView name;   // < Name of the plugin
-    PluginStringView author; // < Author name
+    uint32_t version; // < Version of the plugin (user defined)
+    StringRef name;   // < Name of the plugin
+    StringRef author; // < Author name
     InfoBlock infoblocks[2]{};
 
     enum Flags : uint32_t
@@ -148,6 +151,8 @@ class IPluginInterface
     }
 };
 
+// maybe we just do a type inheritance instead??
+// so ScriptPlugin : IPluginInterface..
 class PluginInterface001 : public IPluginInterface
 {
   public:
@@ -159,6 +164,11 @@ class PluginInterface001 : public IPluginInterface
     }
 
     // only called if the plugin has the kScripting entitlement
-    virtual void ExecuteCode(const PluginSlice<char> acCode){};
-    virtual void ExecuteFile(const PluginSlice<char> acFileName){};
+    virtual void BindAction(const StringRef acActionName, const ArgType* args, size_t argCount,
+                            void(*aCallback)(ActionStack& acContext)){};
+    virtual void InvokeAction(const StringRef acActionName, ActionStack& acStack){};
+
+    virtual void ExecuteCode(const StringRef acCode){};
+    virtual void ExecuteFile(const StringRef acFileName){};
 };
+} // namespace PluginAPI

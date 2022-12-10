@@ -20,7 +20,8 @@ class PluginCollection
 
     void UnloadPlugins();
 
-    void ForEachPlugin(std::function<void(const PluginDescriptor&, IPluginInterface&)> aCallback) const;
+    void ForEachPlugin(
+        std::function<void(const PluginAPI::PluginDescriptor&, PluginAPI::IPluginInterface&)> aCallback) const;
 
     size_t GetPluginCount() const
     {
@@ -36,8 +37,9 @@ class PluginCollection
     struct PluginData
     {
         void* pModuleHandle;
-        const PluginDescriptor* pDescriptor;
-        IPluginInterface* pInterface; // < note that this pointer is _NOT_ owned by us, so do not attempt to free it
+        const PluginAPI::PluginDescriptor* pDescriptor;
+        PluginAPI::IPluginInterface*
+            pInterface; // < note that this pointer is _NOT_ owned by us, so do not attempt to free it
     };
     std::vector<PluginData> m_pluginData;
 };

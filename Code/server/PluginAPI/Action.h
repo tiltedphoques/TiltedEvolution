@@ -4,6 +4,8 @@
 
 #include "PluginAPI/PluginAPI.h"
 
+namespace PluginAPI
+{
 enum class ArgType
 {
     kBool,
@@ -25,7 +27,15 @@ class ActionStack
     {
         m_pArgTypeStack = (ArgType*)malloc(count * sizeof(ArgType));
         m_pArgStack = (uint8_t*)malloc(1024);
+        memset(m_pArgTypeStack, 0, count * sizeof(ArgType));
+        memset(m_pArgStack, 0, 1024);
         m_argofs = 0;
+    }
+
+    ~ActionStack()
+    {
+        free(m_pArgTypeStack);
+        free(m_pArgStack);
     }
 
     ArgType Type() const
@@ -85,7 +95,7 @@ class ActionStack
     {
         return FetchVal<bool>();
     }
-    bool PopF32()
+    float PopF32()
     {
         return FetchVal<float>();
     }
@@ -129,6 +139,11 @@ class ActionStack
         return m_ArgCount;
     }
 
+    void End()
+    {
+        m_argofs = 0;
+    }
+
   private:
     template <typename T> void PushVal(const ArgType aType, const T acValue)
     {
@@ -141,7 +156,7 @@ class ActionStack
     template <typename T> T FetchVal()
     {
         T value = *reinterpret_cast<T*>(&m_pArgStack[m_argofs]);
-        m_argofs -= sizeof(T);
+        m_argofs += sizeof(T);
         m_ArgCount--;
         return value;
     }
@@ -153,3 +168,4 @@ class ActionStack
     uint32_t m_ArgCount{0};
     uint32_t m_argofs{0};
 };
+} // namespace PluginAPI    

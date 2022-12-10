@@ -2,18 +2,20 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-// abi stable span
-template <typename T> class PluginSlice
+namespace PluginAPI
+{
+// abi stable span that prevents accessing elements out of bounds
+template <typename T> class Slice
 {
   public:
-    explicit constexpr PluginSlice(const T* ptr, size_t len) : m_pData(ptr), m_size(len)
+    explicit inline constexpr Slice(const T* ptr, size_t len) : m_pData(ptr), m_size(len)
     {
     }
-    template <size_t N> constexpr PluginSlice(T (&a)[N]) noexcept : PluginSlice(a, N)
+    template <size_t N> inline constexpr Slice(T (&a)[N]) noexcept : Slice(a, N)
     {
     }
 
-    constexpr const T* data() const
+    constexpr inline const T* data() const
     {
         return m_pData;
     }
@@ -22,4 +24,5 @@ template <typename T> class PluginSlice
     const T* m_pData;
     size_t m_size;
 };
-using PluginStringView = PluginSlice<const char>;
+using StringRef = Slice<const char>;
+}

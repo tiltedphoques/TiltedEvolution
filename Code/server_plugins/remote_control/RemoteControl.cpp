@@ -11,13 +11,13 @@ RemoteControlPlugin::~RemoteControlPlugin()
 bool RemoteControlPlugin::Initialize()
 {
 
-    PluginAPI_WriteLog(LogLevel::kInfo, "Initialized remote control plugin");
+    PluginAPI::PluginAPI_WriteLog(PluginAPI::LogLevel::kInfo, "Initialized remote control plugin");
     return true;
 }
 
 void RemoteControlPlugin::Shutdown()
 {
-    PluginAPI_WriteLog(LogLevel::kInfo, "Shutting down remote control plugin");
+    PluginAPI::PluginAPI_WriteLog(PluginAPI::LogLevel::kInfo, "Shutting down remote control plugin");
 }
 
 uint32_t RemoteControlPlugin::OnEvent(uint32_t aEventCode)

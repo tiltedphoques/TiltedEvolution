@@ -58,14 +58,14 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
 bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
 {
     auto doLoadPlugin = [this](void* apHandle, const uint8_t* apExport) {
-        if (*reinterpret_cast<const uint32_t*>(apExport) != kPluginMagic)
+        if (*reinterpret_cast<const uint32_t*>(apExport) != PluginAPI::kPluginMagic)
         {
             spdlog::error("TT_PLUGIN export is invalid (unknown magic)");
             return false;
         }
 
-        auto* pDescriptor = reinterpret_cast<const PluginDescriptor*>(apExport);
-        if (pDescriptor->structSize != sizeof(PluginDescriptor))
+        auto* pDescriptor = reinterpret_cast<const PluginAPI::PluginDescriptor*>(apExport);
+        if (pDescriptor->structSize != sizeof(PluginAPI::PluginDescriptor))
         {
             spdlog::error("TT_PLUGIN export is invalid (unknown size)");
             return false;
@@ -123,7 +123,7 @@ void PluginCollection::InitializePlugins()
             continue;
         }
 
-        IPluginInterface* pInstance = data.pDescriptor->pCreatePlugin();
+        auto* pInstance = data.pDescriptor->pCreatePlugin();
         if (!pInstance)
         {
             spdlog::error(
@@ -132,10 +132,11 @@ void PluginCollection::InitializePlugins()
             continue;
         }
 
-        if (pInstance->GetVersion() > kCurrentPluginInterfaceVersion)
+        if (pInstance->GetVersion() > PluginAPI::kCurrentPluginInterfaceVersion)
         {
             spdlog::error("Plugin {} is using an unsupported interface version. Expected {}, got {}",
-                          data.pDescriptor->name.data(), kCurrentPluginInterfaceVersion, pInstance->GetVersion());
+                          data.pDescriptor->name.data(), PluginAPI::kCurrentPluginInterfaceVersion,
+                          pInstance->GetVersion());
 
             data.pDescriptor->pDestroyPlugin(pInstance);
             continue;
@@ -189,7 +190,7 @@ void PluginCollection::UnloadPlugins()
 }
 
 void PluginCollection::ForEachPlugin(
-    std::function<void(const PluginDescriptor&, IPluginInterface&)> aCallback) const
+    std::function<void(const PluginAPI::PluginDescriptor&, PluginAPI::IPluginInterface&)> aCallback) const
 {
     for (const PluginData& cData : m_pluginData)
     {

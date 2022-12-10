@@ -3,6 +3,8 @@
 
 #include "Logging.h"
 
+namespace PluginAPI
+{
 SERVER_API void PluginAPI_WriteLog(const LogLevel aLogLevel, const char* apFormat, ...)
 {
     using namespace spdlog::level;
@@ -19,5 +21,13 @@ SERVER_API void PluginAPI_WriteLog(const LogLevel aLogLevel, const char* apForma
         break;
     }
 
-    spdlog::log(level, apFormat);
+    va_list list;
+    va_start(list, apFormat);
+
+    char buf[256]{};
+    vsprintf(buf, apFormat, list);
+
+    spdlog::log(level, buf);
+    va_end(list);
+}
 }
