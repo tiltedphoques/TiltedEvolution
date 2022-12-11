@@ -287,12 +287,4 @@ void ResourceCollection::CollectResources()
 
     spdlog::info("Loaded {} resources", m_manifests.size());
 }
-
-void ResourceCollection::ForEachManifest(std::function<void(const Manifest001&)> aCallback) const
-{
-    for (const auto& manifest : m_manifests)
-    {
-        aCallback(*manifest);
-    }
-}
 } // namespace Resources

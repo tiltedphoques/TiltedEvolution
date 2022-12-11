@@ -15,6 +15,9 @@ SERVER_API void PluginAPI_WriteLog(const LogLevel aLogLevel, const char* apForma
     case LogLevel::kDebug:
         level = level_enum::debug;
         break;
+    case LogLevel::kError:
+        level = level_enum::err;
+        break;
     case LogLevel::kInfo:
     default:
         level = level_enum::info;

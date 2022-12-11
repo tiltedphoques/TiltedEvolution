@@ -115,6 +115,26 @@ struct PluginDescriptor
 // constexpr auto x = sizeof(PluginDescriptor);
 static_assert(sizeof(PluginDescriptor) == 104, "PluginDescriptor size mismatch");
 
+enum class PluginResult
+{
+    kOk,
+    kError,
+    kNotSupported,
+    kNotImplemented,
+    kInvalidArgument,
+    kInvalidState,
+    kOutOfMemory,
+    kOutOfResources,
+    kNotFound,
+    kAlreadyExists,
+    kAccessDenied,
+    kTimeout,
+    kAborted,
+    kCallFailed,
+    kInternalError,
+    kUnknownError,
+};
+
 // the maximum plugin interface version possible at the moment!
 static constexpr uint32_t kCurrentPluginInterfaceVersion = 1;
 
@@ -163,12 +183,26 @@ class PluginInterface001 : public IPluginInterface
         return 1;
     }
 
-    // only called if the plugin has the kScripting entitlement
-    virtual void BindAction(const StringRef acActionName, const ArgType* args, size_t argCount,
-                            void(*aCallback)(ActionStack& acContext)){};
-    virtual void InvokeAction(const StringRef acActionName, ActionStack& acStack){};
+    virtual PluginResult Evaluate(const StringRef acCode)
+    {
+        return PluginResult::kNotImplemented;
+    }
 
-    virtual void ExecuteCode(const StringRef acCode){};
-    virtual void ExecuteFile(const StringRef acFileName){};
+    using Handle = size_t; // 0 means failed.
+    virtual Handle LoadFile(const StringRef acFileName)
+    {
+        return 0;
+    }
+
+    // only called if the plugin has the kScripting entitlement
+    virtual PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs,
+                                    size_t aArgCount, void (*apCallback)(ActionStack& acContext))
+    {
+        return PluginResult::kNotImplemented;
+    }
+    virtual PluginResult CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& acStack)
+    {
+        return PluginResult::kNotImplemented;
+    }
 };
 } // namespace PluginAPI

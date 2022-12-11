@@ -168,4 +168,6 @@ class ActionStack
     uint32_t m_ArgCount{0};
     uint32_t m_argofs{0};
 };
+
+using ActionCallback = void (*)(ActionStack& acContext);
 } // namespace PluginAPI    

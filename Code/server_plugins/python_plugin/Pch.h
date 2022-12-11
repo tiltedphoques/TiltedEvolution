@@ -4,6 +4,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/embed.h>
 
-//namespace py = pybind11;
+namespace py = pybind11;
 
 #include <TiltedCore/Stl.hpp>

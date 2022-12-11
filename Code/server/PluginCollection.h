@@ -20,12 +20,17 @@ class PluginCollection
 
     void UnloadPlugins();
 
-    void ForEachPlugin(
-        std::function<void(const PluginAPI::PluginDescriptor&, PluginAPI::IPluginInterface&)> aCallback) const;
-
     size_t GetPluginCount() const
     {
         return m_pluginData.size();
+    }
+
+    template <typename T> void ForEachPlugin(const T& aFunctor) const
+    {
+        for (const PluginData& cData : m_pluginData)
+        {
+            aFunctor(*cData.pDescriptor, *cData.pInterface);
+        }
     }
 
   private:

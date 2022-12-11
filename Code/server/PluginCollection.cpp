@@ -188,12 +188,3 @@ void PluginCollection::UnloadPlugins()
 #endif
     }
 }
-
-void PluginCollection::ForEachPlugin(
-    std::function<void(const PluginAPI::PluginDescriptor&, PluginAPI::IPluginInterface&)> aCallback) const
-{
-    for (const PluginData& cData : m_pluginData)
-    {
-        aCallback(*cData.pDescriptor, *cData.pInterface);
-    }
-}

@@ -203,7 +203,8 @@ void GameServer::Initialize()
     // m_pResources->CollectResources(); ctor already does this.
 
     // begin executing scripts
-    m_pPlugins->ForEachPlugin([this](const PluginAPI::PluginDescriptor & aPlugin, PluginAPI::IPluginInterface & aPluginInterface) {
+    m_pPlugins->ForEachPlugin([this](const PluginAPI::PluginDescriptor& aPlugin,
+                                     PluginAPI::IPluginInterface& aPluginInterface) {
         if (!aPlugin.IsScriptPlugin())
             return;
 
@@ -242,9 +243,12 @@ void GameServer::Initialize()
         if (aManifest.entryPoint.empty())
             return;
 
+        // setup the modules.
         auto path = m_pResources->GetResourceFolderPath() / aManifest.folderName / aManifest.entryPoint;
-        m_pWorld->GetScriptExecutor().ExecuteFile(path, aManifest);
+        m_pWorld->GetScriptExecutor().LoadFile(path, aManifest);
     });
+
+    m_pWorld->GetScriptExecutor().StartScripts();
 }
 
 void GameServer::Kill()

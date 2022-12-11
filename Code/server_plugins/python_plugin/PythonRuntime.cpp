@@ -15,14 +15,13 @@ namespace py = pybind11;
 // https://pybind11.readthedocs.io/en/stable/advanced/embedding.html
 PythonRuntime::~PythonRuntime() noexcept
 {
+    // clear these predefined env variables so that python doesn't try to use them
+    (void)putenv("PYTHONPATH=");
+    (void)putenv("PYTHONHOME=");
 }
 
 bool PythonRuntime::Initialize()
 {
-    // clear these predefined env variables so that python doesn't try to use them
-    (void)putenv("PYTHONPATH=");
-    (void)putenv("PYTHONHOME=");
-
     PLUGINAPI_LOG_INFO("Initialized python runtime");
     return true;
 }
@@ -32,51 +31,73 @@ void PythonRuntime::Shutdown()
     PLUGINAPI_LOG_INFO("Shutting down python");
 }
 
-void PythonRuntime::LoadSourceFile()
-{
-    auto module = pybind11::module::import("test");
-}
-
 void PythonRuntime::OnTick()
 {
 }
 
-void PythonRuntime::BindAction(const PluginAPI::StringRef acActionName, const ArgType* args, size_t argCount,
-                               void (*aCallback)(ActionStack& acContext))
+PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef acFilePath)
 {
-    
-}
-
-void PythonRuntime::InvokeAction(const StringRef acActionName, ActionStack& acStack)
-{
-}
-
-void PythonRuntime::ExecuteCode(const PluginAPI::StringRef acCode)
-{
-}
-
-void PythonRuntime::ExecuteFile(const PluginAPI::StringRef acFilePath)
-{
+    // for python we have to split the path into the directory and the filename, then add the directory to the python
+    // path
     auto [path, filename] = split_filepath(acFilePath.data());
 
-    pybind11::scoped_interpreter guard{};
+    auto& moduleEntry = m_Modules.emplace_back();
+
+    // keep in mind we can only create one real scoped_interpreter.
+    try
+    {
+        // create an interpreter
+        moduleEntry.m_pInterpreter = TiltedPhoques::MakeUnique<py::scoped_interpreter>();   
+    }
+    catch (std::exception& ex)
+    {
+        PLUGINAPI_LOG_ERROR("Failed to create python interpreter: %s", ex.what());
+        return 0;
+    }
+
+    // must have the interpreter constructed first.
     AddPath(path.c_str());
 
-    pybind11::module_ pyScript = pybind11::module_::import(filename.c_str());
+    try
+    {
+        moduleEntry.m_Module = std::move(py::module_::import(filename.c_str()));
+        __debugbreak();
+    }
+    catch (std::exception& ex)
+    {
+        PLUGINAPI_LOG_ERROR("Failed to load python file: %s", ex.what());
+        return 0;
+    }
 
-    const ArgType Types[] = {ArgType::kBool, ArgType::kBool};
-    RegisterMethod(*pyScript.ptr(), "test_func", Types, 2, [](ActionStack& acContext) {
-        auto a = acContext.PopBool();
-        auto b = acContext.PopBool();
-        PluginAPI::PluginAPI_WriteLog(PluginAPI::LogLevel::kInfo, "test_func: %d %d", a, b);
-    });
+    return m_Modules.size();
+}
 
-    auto res = pyScript.attr("plugin_main")();
+PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRef acActionName, const ArgType* apArgs,
+                               size_t aArgCount,
+                               void (*aCallback)(ActionStack& acContext))
+{
+    auto& moduleEntry = m_Modules[aHandle -1 ];
 
-    ActionStack stackxx(2);
-    stackxx.Push(true);
-    stackxx.Push(true);
-    CallMethod(*pyScript.ptr(), "test_func", stackxx);
+    if (!PythonScripting::RegisterMethod(*moduleEntry.m_Module.ptr(), acActionName, apArgs, aArgCount, aCallback))
+    {
+        PLUGINAPI_LOG_ERROR("Failed to bind action: %s", acActionName.data());
+        return PluginResult::kUnknownError;
+    }
+
+    return PluginResult::kOk;
+}
+
+PluginResult PythonRuntime::CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& aStack)
+{
+    auto& moduleEntry = m_Modules[aHandle -1 ];
+    
+    if (!PythonScripting::CallMethod(*moduleEntry.m_Module.ptr(), acActionName, aStack))
+    {
+        PLUGINAPI_LOG_ERROR("Failed to invoke action: %s", acActionName.data());
+        return PluginResult::kCallFailed;
+    }
+    
+    return PluginResult::kOk;
 }
 
 } // namespace PythonScripting

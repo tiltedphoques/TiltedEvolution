@@ -31,7 +31,13 @@ class ResourceCollection
         return m_manifests;
     }
 
-    void ForEachManifest(std::function<void(const Manifest001&)> aCallback) const;
+    template<typename T> void ForEachManifest(const T& aCallback) const noexcept
+    {
+        for (const auto& manifest : m_manifests)
+        {
+            aCallback(*manifest);
+        }
+    }
 
   private:
     std::filesystem::path m_resourcePath;
