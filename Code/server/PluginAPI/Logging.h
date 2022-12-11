@@ -15,4 +15,6 @@ enum class LogLevel
 
 // core imp
 SERVER_API void PluginAPI_WriteLog(const LogLevel aLogLevel, const char* apFormat, ...);
+
+#define PLUGINAPI_LOG_INFO(...) PluginAPI_WriteLog(LogLevel::kInfo, __VA_ARGS__)
 }

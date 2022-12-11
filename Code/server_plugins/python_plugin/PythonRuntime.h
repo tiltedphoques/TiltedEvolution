@@ -1,8 +1,11 @@
+// Copyright (C) Vincent Hengel 2022
 #pragma once
 
 #include "Pch.h"
 #include <server/PluginAPI/PluginAPI.h>
 
+namespace PythonScripting
+{
 using namespace PluginAPI;
 
 class PythonRuntime final : public PluginAPI::PluginInterface001
@@ -28,9 +31,12 @@ class PythonRuntime final : public PluginAPI::PluginInterface001
     void OnTick() override;
 
     void BindAction(const StringRef acActionName, const ArgType* args, size_t argCount,
-                    void(*aCallback)(ActionStack& acContext)) override;
+                    void (*aCallback)(ActionStack& acContext)) override;
     void InvokeAction(const StringRef acActionName, ActionStack& acStack) override;
     void ExecuteCode(const StringRef acCode) override;
+    
     void ExecuteFile(const StringRef acFileName) override;
     // TiltedPhoques::UniquePointer<py::scoped_interpreter> m_guard;
 };
+
+} // namespace PythonScripting

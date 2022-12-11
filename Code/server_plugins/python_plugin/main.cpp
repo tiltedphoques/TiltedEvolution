@@ -34,8 +34,8 @@ PLUGIN_API constinit PluginAPI::PluginDescriptor TT_PLUGIN{
     // we request permission to use scripting features and get updated at runtime
     .entitlements = PluginAPI::PluginDescriptor::Entitlements::kEntScripting |
                     PluginAPI::PluginDescriptor::Entitlements::kEntUpdate,
-    .pCreatePlugin = []() -> PluginAPI::IPluginInterface* { return new PythonRuntime(); },
+    .pCreatePlugin = []() -> PluginAPI::IPluginInterface* { return new PythonScripting::PythonRuntime(); },
     .pDestroyPlugin =
         [](PluginAPI::IPluginInterface* apPluginInterface) {
-            delete reinterpret_cast<PythonRuntime*>(apPluginInterface);
+            delete reinterpret_cast<PythonScripting::PythonRuntime*>(apPluginInterface);
         }};
