@@ -28,47 +28,60 @@ void TestPython()
     )");
 }
 
+static void conVat(std::vector<py::object>& args, ActionStack& stack, const ArgType type)
+{
+    switch (type)
+    {
+    case ArgType::kBool: {
+        bool b = stack.PopBool();
+        args.push_back(py::bool_(b));
+        break;
+    }
+    case ArgType::kF32:
+        args.push_back(py::float_(stack.PopF32()));
+        break;
+    case ArgType::kU8:
+        args.push_back(py::int_(stack.PopU8()));
+        break;
+    case ArgType::kU16:
+        args.push_back(py::int_(stack.PopU16()));
+        break;
+    case ArgType::kU32:
+        args.push_back(py::int_(stack.PopU32()));
+        break;
+    case ArgType::kU64:
+        args.push_back(py::int_(stack.PopU64()));
+        break;
+    case ArgType::kI8:
+        args.push_back(py::int_(stack.PopI8()));
+        break;
+    case ArgType::kI16:
+        args.push_back(py::int_(stack.PopI16()));
+        break;
+    case ArgType::KI32:
+        args.push_back(py::int_(stack.PopI32()));
+        break;
+    case ArgType::kI64:
+        args.push_back(py::int_(stack.PopI64()));
+        break;
+    }
+};
+
 py::tuple ActionStackToArgs(ActionStack& stack)
 {
+    // finish the stack
+    stack.End();
+
     std::vector<py::object> args;
 
-    for (uint32_t i = 0; i < stack.count(); ++i)
-    {
-        ArgType type = stack.GetArg(i);
+    // we must save the former argcount here
+    auto stackcount = stack.count();
 
-        switch (type)
-        {
-        case ArgType::kBool:
-            args.push_back(py::bool_(stack.PopBool()));
-            break;
-        case ArgType::kF32:
-            args.push_back(py::float_(stack.PopF32()));
-            break;
-        case ArgType::kU8:
-            args.push_back(py::int_(stack.PopU8()));
-            break;
-        case ArgType::kU16:
-            args.push_back(py::int_(stack.PopU16()));
-            break;
-        case ArgType::kU32:
-            args.push_back(py::int_(stack.PopU32()));
-            break;
-        case ArgType::kU64:
-            args.push_back(py::int_(stack.PopU64()));
-            break;
-        case ArgType::kI8:
-            args.push_back(py::int_(stack.PopI8()));
-            break;
-        case ArgType::kI16:
-            args.push_back(py::int_(stack.PopI16()));
-            break;
-        case ArgType::KI32:
-            args.push_back(py::int_(stack.PopI32()));
-            break;
-        case ArgType::kI64:
-            args.push_back(py::int_(stack.PopI64()));
-            break;
-        }
+    for (auto i = 0; i < stackcount; i++)
+    {
+        printf("I : %d\n", i);
+        ArgType type = stack.GetArg(i);
+        conVat(args, stack, type);
     }
     return py::make_tuple(args);
 }
@@ -274,15 +287,6 @@ struct ArgList : PyObject
     void (*functor)(ActionStack&);
 };
 
-#define _Py_RVALUE(EXPR) ((void)0, (EXPR))
-#define _PyTuple_ITEMS(op) _Py_RVALUE(_PyTuple_CAST(op)->ob_item)
-
-// PyArg_Parse(PyObject *args, const char *format, ...)
-// -> retval = vgetargs1(args, format, &va, FLAG_COMPAT);
-// -> vgetargs1(PyObject *args, const char *format, va_list *p_va, int flags)
-// -> vgetargs1_impl(PyObject *compat_args, PyObject *const *stack, Py_ssize_t nargs, const char *format, va_list *p_va,
-// int flags)
-//
 static PyObject* my_method(PyObject* self, PyObject* const* args, Py_ssize_t nargs, PyObject* keywords)
 {
     // we pass our own metadata as self parameter.
@@ -297,14 +301,125 @@ static PyObject* my_method(PyObject* self, PyObject* const* args, Py_ssize_t nar
 
     // https://github.com/python/cpython/blob/d5f8a2b6ad408368e728a389da918cead3ef7ee9/Python/getargs.c#L655
     ActionStack stack(b->count);
-    for (size_t i = 0; i < nargs; i++)
+    for (auto i = 0; i < nargs; i++)
     {
         auto* pObject = (PyObject*)(args[i]);
         switch (b->pTypes[i])
         {
-        case ArgType::kBool:
-            stack.Push(PyObject_IsTrue(pObject) > 0 ? true : false);
+        case ArgType::kBool: {
+            auto result = PyObject_IsTrue(pObject);
+            if (result == -1)
+            {
+                PyErr_SetString(PyExc_TypeError, "Expected a boolean");
+                return nullptr;
+            }
+
+            stack.Push(result == 1);
             break;
+        }
+        case ArgType::kU8: {
+            int value = PyLong_AsLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                PyErr_Print();
+                PyErr_Clear();
+                continue;
+            }
+            else
+                stack.Push(static_cast<uint8_t>(value));
+            break;
+        }
+        case ArgType::kI8: {
+            int value = PyLong_AsLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<int8_t>(value));
+            }
+            break;
+        }
+        case ArgType::kU16: {
+            int value = PyLong_AsLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<uint16_t>(value));
+            }
+            break;
+        }
+        case ArgType::kI16: {
+            int value = PyLong_AsLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<int16_t>(value));
+            }
+            break;
+        }
+        case ArgType::kU32: {
+            long value = PyLong_AsLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<uint32_t>(value));
+            }
+            break;
+        }
+        case ArgType::KI32: {
+            long value = PyLong_AsLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<int32_t>(value));
+            }
+            break;
+        }
+        case ArgType::kU64: {
+            PY_LONG_LONG value = PyLong_AsLongLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<uint64_t>(value));
+            }
+            break;
+        }
+        case ArgType::kI64: {
+            PY_LONG_LONG value = PyLong_AsLongLong(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+            else
+            {
+                stack.Push(static_cast<int64_t>(value));
+            }
+            break;
+        }
+        case ArgType::kF32: {
+            double value = PyFloat_AsDouble(pObject);
+            if (value == -1 && PyErr_Occurred())
+            {
+                // Handle error
+            }
+        }
         }
     }
 
@@ -331,6 +446,53 @@ void RegisterLambda(PyObject* module, const PluginAPI::StringRef acActionName, c
     }
 }
 
+// https://github.com/python/cpython/blob/2e279e85fece187b6058718ac7e82d1692461e26/Objects/call.c
+// https://github.com/python/cpython/blob/2e279e85fece187b6058718ac7e82d1692461e26/Objects/call.c#L898
+void InvokeFunc(PyObject* pModule, const StringRef acName, ActionStack& actionStack)
+{
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "test_func");
+    if (!pFunc)
+    {
+        PyErr_Print();
+        return;
+    }
+
+    actionStack.End();
+    const auto argCount = actionStack.count();
+    
+    // create a py stack.
+    PyObject** stack;
+    stack = (PyObject**)PyMem_Malloc(argCount * sizeof(stack[0]));
+    if (stack == NULL)
+    {
+        PyErr_NoMemory();
+        return;
+    }
+
+    // set base object for method.
+    int stackCounter = 0;
+    stack[stackCounter++] = pFunc;
+    
+ 
+    for (auto i = 0; i < argCount; i++)
+    {
+        auto type = actionStack.GetArg(i);
+        switch (type)
+        {
+        case ArgType::kBool: {
+            auto val = actionStack.PopBool();
+            stack[stackCounter++] = PyBool_FromLong(val);
+            
+            break;
+        }
+        }
+    }
+
+    PyThreadState* tstate = PyThreadState_Get();
+    PyObject* result = _PyObject_VectorcallTstate(tstate, pFunc, stack, argCount, NULL);
+    
+}
+
 #include <methodobject.h>
 
 void PythonRuntime::ExecuteFile(const PluginAPI::StringRef acFilePath)
@@ -350,4 +512,10 @@ void PythonRuntime::ExecuteFile(const PluginAPI::StringRef acFilePath)
     });
 
     auto res = pyScript.attr("plugin_main")();
+
+    ActionStack stackxx(2);
+    stackxx.Push(true);
+    stackxx.Push(true);
+    //pyScript.attr("test_func")(ActionStackToArgs(stackxx));
+    InvokeFunc(pyScript.ptr(), "test_func", stackxx);
 }
