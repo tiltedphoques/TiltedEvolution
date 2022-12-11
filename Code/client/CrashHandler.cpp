@@ -24,6 +24,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
     if (pExceptionInfo->ExceptionRecord->ExceptionCode == 0xC0000005)
     {
+        spdlog::error("Crash occured!");
         MINIDUMP_EXCEPTION_INFORMATION M;
         char dumpPath[MAX_PATH];
 
@@ -58,6 +59,9 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
         MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, (MINIDUMP_TYPE)dumpSettings, (pExceptionInfo) ? &M : NULL, NULL, NULL);
 
         CloseHandle(hDumpFile);
+
+        spdlog::error("Coredump created -> flush logs.");
+        spdlog::default_logger()->flush();
 
         return EXCEPTION_EXECUTE_HANDLER;
     }
