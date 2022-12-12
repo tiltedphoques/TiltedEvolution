@@ -23,7 +23,7 @@
 #include <ScriptExtender.h>
 #include <Services/DiscordService.h>
 
-//#include <imgui_internal.h>
+// #include <imgui_internal.h>
 
 static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
 

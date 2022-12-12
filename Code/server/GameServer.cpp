@@ -1,4 +1,4 @@
-#include <Components.h>
+﻿#include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
 
@@ -20,6 +20,7 @@
 #include <Messages/NotifyPlayerJoined.h>
 #include <Messages/NotifySettingsChange.h>
 #include <console/ConsoleRegistry.h>
+#include <resources/ResourceCollection.h>
 
 constexpr size_t kMaxServerNameLength = 128u;
 
@@ -172,6 +173,8 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
     BindMessageHandlers();
     UpdateTimeScale();
+
+    m_pResources = MakeUnique<Resources::ResourceCollection>();
 }
 
 GameServer::~GameServer()
@@ -305,6 +308,21 @@ void GameServer::BindServerCommands()
             {
                 out->info(it.first);
             }
+        });
+
+    m_commands.RegisterCommand<>(
+        "resources", "List all loaded resources on the server",
+        [&](Console::ArgStack&)
+        {
+            auto out = spdlog::get("ConOut");
+            if (!m_pResources || m_pResources->GetManifests().size() == 0)
+            {
+                out->warn("No resources loaded");
+                return;
+            }
+
+            out->info("<------Resources-({})--->", m_pResources->GetManifests().size());
+            m_pResources->ForEachManifest([&](const auto& aManifest) { out->info("{} -> {}", aManifest.name.c_str(), aManifest.description.c_str()); });
         });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });

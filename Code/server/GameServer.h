@@ -13,6 +13,11 @@ struct AuthenticationRequest;
 struct Player;
 struct PartyComponent;
 
+namespace Resources
+{
+class ResourceCollection;
+}
+
 namespace Console
 {
 class ConsoleRegistry;
@@ -90,6 +95,7 @@ private:
 
     Info m_info{};
     UniquePtr<World> m_pWorld;
+    UniquePtr<Resources::ResourceCollection> m_pResources;
     Console::ConsoleRegistry& m_commands;
 
     TiltedPhoques::Set<ConnectionId_t> m_adminSessions;
