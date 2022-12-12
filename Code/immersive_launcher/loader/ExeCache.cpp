@@ -4,6 +4,4 @@
 #include "ExeCache.h"
 #include "ExeLoader.h"
 
-void RequestSegment(IMAGE_NT_HEADERS* apheaders)
-{
-}
+void RequestSegment(IMAGE_NT_HEADERS* apheaders) {}

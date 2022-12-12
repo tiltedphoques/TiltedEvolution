@@ -4,25 +4,13 @@
 
 using TiltedPhoques::Serialization;
 
-bool Tints::Entry::operator==(const Entry& acRhs) const noexcept
-{
-    return Alpha == acRhs.Alpha && Type == acRhs.Type && Color == acRhs.Color && Name == acRhs.Name;
-}
+bool Tints::Entry::operator==(const Entry& acRhs) const noexcept { return Alpha == acRhs.Alpha && Type == acRhs.Type && Color == acRhs.Color && Name == acRhs.Name; }
 
-bool Tints::Entry::operator!=(const Entry& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Tints::Entry::operator!=(const Entry& acRhs) const noexcept { return !this->operator==(acRhs); }
 
-bool Tints::operator==(const Tints& acRhs) const noexcept
-{
-    return Entries == acRhs.Entries;
-}
+bool Tints::operator==(const Tints& acRhs) const noexcept { return Entries == acRhs.Entries; }
 
-bool Tints::operator!=(const Tints& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Tints::operator!=(const Tints& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void Tints::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

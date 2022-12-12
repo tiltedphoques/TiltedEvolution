@@ -1,9 +1,6 @@
 #include <Messages/NotifyPlayerRespawn.h>
 
-void NotifyPlayerRespawn::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
-{
-    Serialization::WriteVarInt(aWriter, GoldLost);
-}
+void NotifyPlayerRespawn::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept { Serialization::WriteVarInt(aWriter, GoldLost); }
 
 void NotifyPlayerRespawn::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {

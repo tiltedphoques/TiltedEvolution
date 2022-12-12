@@ -9,8 +9,6 @@
 
 namespace PythonScripting
 {
-namespace py = pybind11;
-
 // This is a great resource that i used while embedding python:
 // https://pybind11.readthedocs.io/en/stable/advanced/embedding.html
 PythonRuntime::~PythonRuntime() noexcept
@@ -26,20 +24,20 @@ bool PythonRuntime::Initialize()
     return true;
 }
 
-void PythonRuntime::Shutdown()
-{
-    PLUGINAPI_LOG_INFO("Shutting down python");
-}
+void PythonRuntime::Shutdown() { PLUGINAPI_LOG_INFO("Shutting down python"); }
 
-void PythonRuntime::OnTick()
-{
-}
+void PythonRuntime::OnTick() {}
 
 PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef acFilePath)
 {
     // for python we have to split the path into the directory and the filename, then add the directory to the python
     // path
     auto [path, filename] = split_filepath(acFilePath.data());
+    if (path.empty())
+    {
+        PLUGINAPI_LOG_ERROR("Path is empty for file %s", acFilePath.data());
+        return 0;
+    }
 
     auto& moduleEntry = m_Modules.emplace_back();
 
@@ -47,7 +45,7 @@ PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef ac
     try
     {
         // create an interpreter
-        moduleEntry.m_pInterpreter = TiltedPhoques::MakeUnique<py::scoped_interpreter>();   
+        moduleEntry.m_pInterpreter = TiltedPhoques::MakeUnique<py::scoped_interpreter>();
     }
     catch (std::exception& ex)
     {
@@ -61,7 +59,6 @@ PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef ac
     try
     {
         moduleEntry.m_Module = std::move(py::module_::import(filename.c_str()));
-        __debugbreak();
     }
     catch (std::exception& ex)
     {
@@ -72,13 +69,11 @@ PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef ac
     return m_Modules.size();
 }
 
-PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRef acActionName, const ArgType* apArgs,
-                               size_t aArgCount,
-                               void (*aCallback)(ActionStack& acContext))
+PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRef acActionName, const ArgType* apArgs, size_t aArgCount, MethodHandler aMethod)
 {
-    auto& moduleEntry = m_Modules[aHandle -1 ];
+    auto& moduleEntry = m_Modules[aHandle - 1];
 
-    if (!PythonScripting::RegisterMethod(*moduleEntry.m_Module.ptr(), acActionName, apArgs, aArgCount, aCallback))
+    if (!PythonScripting::RegisterMethod(*moduleEntry.m_Module.ptr(), acActionName, apArgs, aArgCount, aMethod))
     {
         PLUGINAPI_LOG_ERROR("Failed to bind action: %s", acActionName.data());
         return PluginResult::kUnknownError;
@@ -89,14 +84,14 @@ PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRe
 
 PluginResult PythonRuntime::CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& aStack)
 {
-    auto& moduleEntry = m_Modules[aHandle -1 ];
-    
+    auto& moduleEntry = m_Modules[aHandle - 1];
+
     if (!PythonScripting::CallMethod(*moduleEntry.m_Module.ptr(), acActionName, aStack))
     {
         PLUGINAPI_LOG_ERROR("Failed to invoke action: %s", acActionName.data());
         return PluginResult::kCallFailed;
     }
-    
+
     return PluginResult::kOk;
 }
 

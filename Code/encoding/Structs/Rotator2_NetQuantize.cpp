@@ -7,20 +7,11 @@ using TiltedPhoques::Serialization;
 constexpr float cScalingFactory = float(0xFFFF) / (2.0f * float(TiltedPhoques::Pi));
 constexpr float cReverseScalingFactory = 1.0f / cScalingFactory;
 
-bool Rotator2_NetQuantize::operator==(const Rotator2_NetQuantize& acRhs) const noexcept
-{
-    return Pack() == acRhs.Pack();
-}
+bool Rotator2_NetQuantize::operator==(const Rotator2_NetQuantize& acRhs) const noexcept { return Pack() == acRhs.Pack(); }
 
-bool Rotator2_NetQuantize::operator!=(const Rotator2_NetQuantize& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Rotator2_NetQuantize::operator!=(const Rotator2_NetQuantize& acRhs) const noexcept { return !this->operator==(acRhs); }
 
-void Rotator2_NetQuantize::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
-{
-    aWriter.WriteBits(Pack(), 32);
-}
+void Rotator2_NetQuantize::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept { aWriter.WriteBits(Pack(), 32); }
 
 void Rotator2_NetQuantize::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {

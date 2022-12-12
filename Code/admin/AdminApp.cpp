@@ -104,10 +104,7 @@ void AdminApp::drawEvent()
     redraw();
 }
 
-void AdminApp::tickEvent()
-{
-    Update();
-}
+void AdminApp::tickEvent() { Update(); }
 
 void AdminApp::viewportEvent(ViewportEvent& event)
 {
@@ -162,7 +159,4 @@ void AdminApp::textInputEvent(TextInputEvent& event)
         return;
 }
 
-void AdminApp::drawServerUi()
-{
-    m_overlay.Update(*this);
-}
+void AdminApp::drawServerUi() { m_overlay.Update(*this); }

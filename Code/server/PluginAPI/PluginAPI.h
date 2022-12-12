@@ -8,40 +8,8 @@
 #include <cstdio>  /* printf, scanf, NULL */
 #include <cstdlib> /* malloc, free, rand */
 
-#ifndef BUILDING_TT_SERVER
-#ifdef _WIN32
-#define PLUGIN_API extern "C" __declspec(dllexport)
-#endif
-
-#ifdef __linux__
-#define PLUGIN_API extern "C" __attribute__((visibility("default")))
-#endif
-#endif
-
-#ifdef BUILDING_TT_SERVER
-
-#ifdef _WIN32
-#define SERVER_API extern "C" __declspec(dllexport)
-#endif
-
-#ifdef __linux__
-#define SERVER_API extern "C" __attribute__((visibility("default")))
-#endif
-
-#else
-
-#ifdef _WIN32
-#define SERVER_API extern "C" __declspec(dllimport)
-#endif
-
-#ifdef __linux__
-#define SERVER_API extern "C" __attribute__((visibility("default")))
-#endif
-
-#endif
-
-#include "Action.h"
 #include "Slice.h"
+#include "Action.h"
 
 namespace PluginAPI
 {
@@ -85,15 +53,9 @@ struct PluginDescriptor
     };
     uint32_t flags;
 
-    bool CanHotReload() const noexcept
-    {
-        return (flags & Flags::kFlagHotReload) != 0;
-    }
+    bool CanHotReload() const noexcept { return (flags & Flags::kFlagHotReload) != 0; }
 
-    bool IsSpecialPlugin() const noexcept
-    {
-        return (flags & Flags::kFlagInternal) != 0;
-    }
+    bool IsSpecialPlugin() const noexcept { return (flags & Flags::kFlagInternal) != 0; }
 
     enum Entitlements : uint32_t
     {
@@ -103,10 +65,7 @@ struct PluginDescriptor
     };
     uint32_t entitlements;
 
-    bool IsScriptPlugin() const noexcept
-    {
-        return (entitlements & Entitlements::kEntScripting) != 0;
-    }
+    bool IsScriptPlugin() const noexcept { return (entitlements & Entitlements::kEntScripting) != 0; }
 
     // these are for managing the lifetime of the plugin instance on your own heap.
     IPluginInterface* (*pCreatePlugin)();      // < allocate from your plugin
@@ -143,7 +102,7 @@ static constexpr uint32_t kCurrentPluginInterfaceVersion = 1;
 // e.g. PluginInterface002 : IPluginInterface
 class IPluginInterface
 {
-  public:
+public:
     virtual ~IPluginInterface() = default;
 
     virtual uint32_t GetVersion() = 0;
@@ -165,44 +124,25 @@ class IPluginInterface
         kEventResultContinue,
         kEventResultStop,
     };
-    virtual uint32_t OnEvent(uint32_t aEventCode)
-    {
-        return kEventResultContinue;
-    }
+    virtual uint32_t OnEvent(uint32_t aEventCode) { return kEventResultContinue; }
 };
 
 // maybe we just do a type inheritance instead??
 // so ScriptPlugin : IPluginInterface..
 class PluginInterface001 : public IPluginInterface
 {
-  public:
+public:
     virtual ~PluginInterface001() = default;
 
-    virtual uint32_t GetVersion() override
-    {
-        return 1;
-    }
+    virtual uint32_t GetVersion() override { return 1; }
 
-    virtual PluginResult Evaluate(const StringRef acCode)
-    {
-        return PluginResult::kNotImplemented;
-    }
+    virtual PluginResult Evaluate(const StringRef acCode) { return PluginResult::kNotImplemented; }
 
     using Handle = size_t; // 0 means failed.
-    virtual Handle LoadFile(const StringRef acFileName)
-    {
-        return 0;
-    }
+    virtual Handle LoadFile(const StringRef acFileName) { return 0; }
 
     // only called if the plugin has the kScripting entitlement
-    virtual PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs,
-                                    size_t aArgCount, void (*apCallback)(ActionStack& acContext))
-    {
-        return PluginResult::kNotImplemented;
-    }
-    virtual PluginResult CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& acStack)
-    {
-        return PluginResult::kNotImplemented;
-    }
+    virtual PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs, size_t aArgCount, MethodHandler apMethod) { return PluginResult::kNotImplemented; }
+    virtual PluginResult CallMethod(Handle aHandle, const StringRef acActionName, PluginAPI::ActionStack& acStack) { return PluginResult::kNotImplemented; }
 };
 } // namespace PluginAPI

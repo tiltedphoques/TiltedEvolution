@@ -1,9 +1,6 @@
 #include <Messages/PlayerLevelRequest.h>
 
-void PlayerLevelRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
-{
-    Serialization::WriteVarInt(aWriter, NewLevel);
-}
+void PlayerLevelRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept { Serialization::WriteVarInt(aWriter, NewLevel); }
 
 void PlayerLevelRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {

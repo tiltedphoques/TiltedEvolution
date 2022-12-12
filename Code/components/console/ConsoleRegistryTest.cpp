@@ -19,15 +19,9 @@ public:
 private:
 };
 
-void ConsoleRegistryTest::SetUp()
-{
-    spdlog::stdout_color_mt("Test");
-}
+void ConsoleRegistryTest::SetUp() { spdlog::stdout_color_mt("Test"); }
 
-void ConsoleRegistryTest::TearDown()
-{
-    spdlog::drop("Test");
-}
+void ConsoleRegistryTest::TearDown() { spdlog::drop("Test"); }
 
 TEST_F(ConsoleRegistryTest, RegisterCommand)
 {

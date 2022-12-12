@@ -20,12 +20,6 @@ void StringCacheService::HandleConnected(const ConnectedEvent& acEvent) noexcept
     StringCache::Get().Clear();
 }
 
-void StringCacheService::HandleDisconnected(const DisconnectedEvent& acEvent) noexcept
-{
-    StringCache::Get().Clear();
-}
+void StringCacheService::HandleDisconnected(const DisconnectedEvent& acEvent) noexcept { StringCache::Get().Clear(); }
 
-void StringCacheService::HandleStringCacheUpdate(const StringCacheUpdate& acMessage) noexcept
-{
-    StringCache::Get().Deserialize(acMessage);
-}
+void StringCacheService::HandleStringCacheUpdate(const StringCacheUpdate& acMessage) noexcept { StringCache::Get().Deserialize(acMessage); }

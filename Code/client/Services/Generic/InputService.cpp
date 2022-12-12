@@ -92,15 +92,9 @@ uint32_t GetCefModifiers(uint16_t aVirtualKey)
 }
 
 // remember to update this when updating toggle keys
-bool IsToggleKey(int aKey) noexcept
-{
-    return aKey == VK_RCONTROL || aKey == VK_F2;
-}
+bool IsToggleKey(int aKey) noexcept { return aKey == VK_RCONTROL || aKey == VK_F2; }
 
-bool IsDisableKey(int aKey) noexcept
-{
-    return aKey == VK_ESCAPE;
-}
+bool IsDisableKey(int aKey) noexcept { return aKey == VK_ESCAPE; }
 
 #if TP_SKYRIM64
 void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
@@ -426,12 +420,6 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-InputService::InputService(OverlayService& aOverlay) noexcept
-{
-    s_pOverlay = &aOverlay;
-}
+InputService::InputService(OverlayService& aOverlay) noexcept { s_pOverlay = &aOverlay; }
 
-InputService::~InputService() noexcept
-{
-    s_pOverlay = nullptr;
-}
+InputService::~InputService() noexcept { s_pOverlay = nullptr; }

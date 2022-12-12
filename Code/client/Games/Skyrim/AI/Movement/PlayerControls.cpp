@@ -14,10 +14,7 @@ void PlayerControls::SetEnabled(bool abFlag)
     TiltedPhoques::ThisCall(setEnabled, this, abFlag);
 }
 
-void PlayerControls::SetCamSwitch(bool aSet) noexcept
-{
-    Data.remapMode = aSet;
-}
+void PlayerControls::SetCamSwitch(bool aSet) noexcept { Data.remapMode = aSet; }
 
 BSInputEnableManager* BSInputEnableManager::Get()
 {

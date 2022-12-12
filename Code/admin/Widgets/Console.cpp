@@ -1,9 +1,7 @@
 #include "Console.h"
 #include <imgui.h>
 
-Console::Console()
-{
-}
+Console::Console() {}
 
 bool Console::OnEnable()
 {
@@ -11,10 +9,7 @@ bool Console::OnEnable()
     return true;
 }
 
-bool Console::OnDisable()
-{
-    return true;
-}
+bool Console::OnDisable() { return true; }
 
 int Console::HandleConsoleHistory(ImGuiInputTextCallbackData* apData)
 {
@@ -142,7 +137,4 @@ void Console::Log(const TiltedPhoques::String& acpText)
     m_outputScroll = true;
 }
 
-bool Console::GameLogEnabled() const
-{
-    return !m_disabledGameLog;
-}
+bool Console::GameLogEnabled() const { return !m_disabledGameLog; }

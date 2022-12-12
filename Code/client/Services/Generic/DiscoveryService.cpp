@@ -248,10 +248,7 @@ void DiscoveryService::OnUpdate(const PreUpdateEvent& acUpdateEvent) noexcept
     VisitForms();
 }
 
-void DiscoveryService::OnConnected(const ConnectedEvent& acEvent) noexcept
-{
-    VisitCell(true);
-}
+void DiscoveryService::OnConnected(const ConnectedEvent& acEvent) noexcept { VisitCell(true); }
 
 BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDispatcher<TESLoadGameEvent>*)
 {

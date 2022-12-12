@@ -3,32 +3,14 @@
 #include <Games/Magic/MagicSystem.h>
 #include <Forms/EffectSetting.h>
 
-bool EffectItem::IsHealingEffect() const noexcept
-{
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kValueModifier && data.fMagnitude > 0.0f;
-}
+bool EffectItem::IsHealingEffect() const noexcept { return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kValueModifier && data.fMagnitude > 0.0f; }
 
-bool EffectItem::IsSummonEffect() const noexcept
-{
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSummonCreature;
-}
+bool EffectItem::IsSummonEffect() const noexcept { return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSummonCreature; }
 
-bool EffectItem::IsSlowEffect() const noexcept
-{
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSlowTime;
-}
+bool EffectItem::IsSlowEffect() const noexcept { return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kSlowTime; }
 
-bool EffectItem::IsInivisibilityEffect() const noexcept
-{
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kInvisibility;
-}
+bool EffectItem::IsInivisibilityEffect() const noexcept { return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kInvisibility; }
 
-bool EffectItem::IsWerewolfEffect() const noexcept
-{
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kWerewolf;
-}
+bool EffectItem::IsWerewolfEffect() const noexcept { return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kWerewolf; }
 
-bool EffectItem::IsVampireLordEffect() const noexcept
-{
-    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kVampireLord;
-}
+bool EffectItem::IsVampireLordEffect() const noexcept { return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kVampireLord; }

@@ -14,6 +14,4 @@ void* RipAllocateN(size_t blockLength)
 }
 
 // TBD
-void RipFree(void* apBlock)
-{
-}
+void RipFree(void* apBlock) {}

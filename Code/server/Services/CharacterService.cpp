@@ -364,10 +364,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     spdlog::debug("Character destroyed {:X}", acEvent.ServerId);
 }
 
-void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
-{
-    TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId);
-}
+void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept { TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId); }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
 {

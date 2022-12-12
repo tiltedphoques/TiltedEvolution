@@ -1,14 +1,8 @@
 #include <Structs/Faction.h>
 
-bool Faction::operator==(const Faction& acRhs) const noexcept
-{
-    return Id == acRhs.Id && Rank == acRhs.Rank;
-}
+bool Faction::operator==(const Faction& acRhs) const noexcept { return Id == acRhs.Id && Rank == acRhs.Rank; }
 
-bool Faction::operator!=(const Faction& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Faction::operator!=(const Faction& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void Faction::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

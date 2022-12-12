@@ -10,19 +10,16 @@ using namespace PluginAPI;
 
 class PythonRuntime final : public PluginInterface001
 {
-  public:
+public:
     ~PythonRuntime() noexcept override;
 
     // Inherited via PluginInterface001
-    uint32_t GetVersion() override
-    {
-        return 1;
-    }
+    uint32_t GetVersion() override { return 1; }
 
     bool Initialize() override;
     void Shutdown() override;
 
-  private:
+private:
     std::unique_ptr<pybind11::scoped_interpreter> pz;
 
     // Inherited via PluginInterface001
@@ -31,8 +28,7 @@ class PythonRuntime final : public PluginInterface001
     // this method is not thread safe, please call in order.
     Handle LoadFile(const StringRef acFileName) override;
 
-    PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs, size_t aArgCount,
-                    void (*apCallback)(ActionStack& acContext)) override;
+    PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs, size_t aArgCount, MethodHandler aMethod) override;
     PluginResult CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& acStack) override;
 
     struct PythonModule

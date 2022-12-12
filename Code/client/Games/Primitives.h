@@ -296,10 +296,7 @@ enum ETiltedFlags : uint8_t
     kRemote = 1 << 0
 };
 
-template <class Target, class Source> Target* niptr_cast(const Source& acSrc)
-{
-    return static_cast<Target*>(acSrc.object);
-}
+template <class Target, class Source> Target* niptr_cast(const Source& acSrc) { return static_cast<Target*>(acSrc.object); }
 
 template <uint32_t FREE_LIST_BITS = 21, uint32_t AGE_SHIFT = 5> struct BSUntypedPointerHandle
 {

@@ -95,10 +95,7 @@ void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationCompone
     aInterpolationComponent.TimePoints.push_back(acPoint);
 }
 
-InterpolationComponent& InterpolationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
-{
-    return aWorld.emplace_or_replace<InterpolationComponent>(aEntity);
-}
+InterpolationComponent& InterpolationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept { return aWorld.emplace_or_replace<InterpolationComponent>(aEntity); }
 
 void InterpolationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
 {

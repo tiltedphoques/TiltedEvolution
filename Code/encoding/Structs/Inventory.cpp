@@ -81,25 +81,13 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     IsQuestItem = Serialization::ReadBool(aReader);
 }
 
-bool Inventory::operator==(const Inventory& acRhs) const noexcept
-{
-    return Entries == acRhs.Entries;
-}
+bool Inventory::operator==(const Inventory& acRhs) const noexcept { return Entries == acRhs.Entries; }
 
-bool Inventory::operator!=(const Inventory& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Inventory::operator!=(const Inventory& acRhs) const noexcept { return !this->operator==(acRhs); }
 
-bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
-{
-    return BaseId == acRhs.BaseId && Count == acRhs.Count && IsExtraDataEquals(acRhs);
-}
+bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept { return BaseId == acRhs.BaseId && Count == acRhs.Count && IsExtraDataEquals(acRhs); }
 
-bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
@@ -189,7 +177,4 @@ void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
     CurrentMagicEquipment = acNewInventory.CurrentMagicEquipment;
 }
 
-void Inventory::RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept
-{
-    Entries.erase(std::remove_if(Entries.begin(), Entries.end(), aFilter), Entries.end());
-}
+void Inventory::RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept { Entries.erase(std::remove_if(Entries.begin(), Entries.end(), aFilter), Entries.end()); }

@@ -14,10 +14,7 @@ using TDynamicCast = void*(void* apThis, uint32_t a1, const void* acpBaseRTTI, c
 extern const VersionDbPtr<TDynamicCast> DynamicCast;
 } // namespace internal
 
-template <class T, class U> T* Cast(U* apPtr)
-{
-    return reinterpret_cast<T*>(internal::DynamicCast.Get()((void*)apPtr, 0, internal::RttiLocator<std::remove_cv_t<U>>::Get(), internal::RttiLocator<std::remove_cv_t<T>>::Get(), 0));
-}
+template <class T, class U> T* Cast(U* apPtr) { return reinterpret_cast<T*>(internal::DynamicCast.Get()((void*)apPtr, 0, internal::RttiLocator<std::remove_cv_t<U>>::Get(), internal::RttiLocator<std::remove_cv_t<T>>::Get(), 0)); }
 
 struct IFormFactory;
 extern template struct internal::RttiLocator<IFormFactory>;

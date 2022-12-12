@@ -40,36 +40,18 @@ bool GameServerInstance::Initialize()
     return true;
 }
 
-void GameServerInstance::Shutdown()
-{
-    m_gameServer.Kill();
-}
+void GameServerInstance::Shutdown() { m_gameServer.Kill(); }
 
-bool GameServerInstance::IsListening()
-{
-    return m_gameServer.IsListening();
-}
+bool GameServerInstance::IsListening() { return m_gameServer.IsListening(); }
 
-bool GameServerInstance::IsRunning()
-{
-    return m_gameServer.IsRunning();
-}
+bool GameServerInstance::IsRunning() { return m_gameServer.IsRunning(); }
 
-void GameServerInstance::Update()
-{
-    m_gameServer.Update();
-}
+void GameServerInstance::Update() { m_gameServer.Update(); }
 
 // NOTE(Vince): For now we use this to compare the dll to the server.
-GS_EXPORT const char* GetBuildTag()
-{
-    return kBuildTag;
-}
+GS_EXPORT const char* GetBuildTag() { return kBuildTag; }
 
-GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
-{
-    return std::strcmp(apBuildTag, kBuildTag) == 0;
-}
+GS_EXPORT bool CheckBuildTag(const char* apBuildTag) { return std::strcmp(apBuildTag, kBuildTag) == 0; }
 
 GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, const std::function<void()>& aCallback)
 {
@@ -91,17 +73,17 @@ GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegist
 
 GS_EXPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    //#ifdef _WIN32
+    // #ifdef _WIN32
     spdlog::set_default_logger(std::move(aLogger));
-    //#endif
+    // #endif
 }
 
 GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    //#ifdef _WIN32
-    // yes this needs to be here, else the dedirunner dies
+    // #ifdef _WIN32
+    //  yes this needs to be here, else the dedirunner dies
     spdlog::register_logger(std::move(aLogger));
-    //#endif
+    // #endif
 }
 
 #ifdef _WIN32

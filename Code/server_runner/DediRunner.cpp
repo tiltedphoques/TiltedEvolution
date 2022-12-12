@@ -27,10 +27,7 @@ GS_IMPORT TiltedPhoques::UniquePtr<IGameServerInstance> CreateGameServer(Console
 // needs to be global
 Console::Setting bConsole{"bConsole", "Enable the console", true};
 
-DediRunner* GetDediRunner() noexcept
-{
-    return s_pRunner;
-}
+DediRunner* GetDediRunner() noexcept { return s_pRunner; }
 
 DediRunner::DediRunner(int argc, char** argv)
     : m_console(KCompilerStopThisBullshit)
@@ -110,10 +107,7 @@ void DediRunner::ReadStdin(uv_stream_t* apStream, ssize_t aRead, const uv_buf_t*
         TiltedPhoques::Allocator::GetDefault()->Free(acpBuffer->base);
 }
 
-void DediRunner::AllocateBuffer(uv_handle_t* apHandle, size_t aSuggestedSize, uv_buf_t* apBuffer)
-{
-    *apBuffer = uv_buf_init(static_cast<char*>(TiltedPhoques::Allocator::GetDefault()->Allocate(aSuggestedSize)), static_cast<uint32_t>(aSuggestedSize));
-}
+void DediRunner::AllocateBuffer(uv_handle_t* apHandle, size_t aSuggestedSize, uv_buf_t* apBuffer) { *apBuffer = uv_buf_init(static_cast<char*>(TiltedPhoques::Allocator::GetDefault()->Allocate(aSuggestedSize)), static_cast<uint32_t>(aSuggestedSize)); }
 
 void DediRunner::PrintExecutorArrowHack()
 {

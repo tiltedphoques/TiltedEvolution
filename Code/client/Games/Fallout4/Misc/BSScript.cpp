@@ -2,14 +2,9 @@
 
 #include <Misc/BSScript.h>
 
-BSScript::Variable::Variable()
-{
-}
+BSScript::Variable::Variable() {}
 
-BSScript::Variable::~Variable() noexcept
-{
-    Reset();
-}
+BSScript::Variable::~Variable() noexcept { Reset(); }
 
 void BSScript::Variable::Reset() noexcept
 {

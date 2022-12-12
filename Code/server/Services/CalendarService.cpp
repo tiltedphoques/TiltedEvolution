@@ -80,10 +80,7 @@ CalendarService::TTime CalendarService::GetRealTime() noexcept
     return {h, m};
 }
 
-CalendarService::TDate CalendarService::GetDate() const noexcept
-{
-    return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
-}
+CalendarService::TDate CalendarService::GetDate() const noexcept { return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year}; }
 
 bool CalendarService::SetTimeScale(float aScale) noexcept
 {

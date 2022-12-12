@@ -1,9 +1,7 @@
 #include "PlayerManager.h"
 #include "Player.h"
 
-PlayerManager::PlayerManager()
-{
-}
+PlayerManager::PlayerManager() {}
 
 Player* PlayerManager::Create(ConnectionId_t aConnectionId) noexcept
 {
@@ -20,10 +18,7 @@ Player* PlayerManager::Create(ConnectionId_t aConnectionId) noexcept
     return nullptr;
 }
 
-void PlayerManager::Remove(Player* apPlayer) noexcept
-{
-    m_players.erase(apPlayer->GetConnectionId());
-}
+void PlayerManager::Remove(Player* apPlayer) noexcept { m_players.erase(apPlayer->GetConnectionId()); }
 
 Player* PlayerManager::GetByConnectionId(ConnectionId_t aConnectionId) noexcept
 {
@@ -71,7 +66,4 @@ Player const* PlayerManager::GetById(uint32_t aId) const noexcept
     return nullptr;
 }
 
-uint32_t PlayerManager::Count() const noexcept
-{
-    return static_cast<uint32_t>(m_players.size());
-}
+uint32_t PlayerManager::Count() const noexcept { return static_cast<uint32_t>(m_players.size()); }

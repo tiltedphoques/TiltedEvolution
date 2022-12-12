@@ -7,10 +7,7 @@ namespace HUDMenuUtils
 static float (*CameraWorldToCam)[4][4] = nullptr;
 static const NiRect<float>* CameraPort = nullptr;
 
-bool WorldPtToScreenPt3(const NiPoint3& aWorldPt, NiPoint3& aScreenPt)
-{
-    return NiCamera::WorldPtToScreenPt3(reinterpret_cast<float*>(CameraWorldToCam), CameraPort, &aWorldPt, &aScreenPt.x, &aScreenPt.y, &aScreenPt.z, 1e-5f);
-}
+bool WorldPtToScreenPt3(const NiPoint3& aWorldPt, NiPoint3& aScreenPt) { return NiCamera::WorldPtToScreenPt3(reinterpret_cast<float*>(CameraWorldToCam), CameraPort, &aWorldPt, &aScreenPt.x, &aScreenPt.y, &aScreenPt.z, 1e-5f); }
 } // namespace HUDMenuUtils
 
 static TiltedPhoques::Initializer s_Init(

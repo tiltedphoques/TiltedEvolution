@@ -41,10 +41,7 @@ HWND RenderSystemD3D11::GetWindow() const
     return desc.OutputWindow;
 }
 
-IDXGISwapChain* RenderSystemD3D11::GetSwapChain() const
-{
-    return m_pSwapChain;
-}
+IDXGISwapChain* RenderSystemD3D11::GetSwapChain() const { return m_pSwapChain; }
 
 void RenderSystemD3D11::OnDeviceCreation(IDXGISwapChain* apSwapChain)
 {

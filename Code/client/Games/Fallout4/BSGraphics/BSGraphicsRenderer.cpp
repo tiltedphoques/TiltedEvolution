@@ -19,15 +19,9 @@ static RendererWindow* g_RenderWindow = nullptr;
 static constexpr char kTogetherWindowName[]{"Fallout Together"};
 } // namespace
 
-RendererWindow* GetMainWindow()
-{
-    return g_RenderWindow;
-}
+RendererWindow* GetMainWindow() { return g_RenderWindow; }
 
-bool RendererWindow::IsForeground()
-{
-    return GetForegroundWindow() == hWnd;
-}
+bool RendererWindow::IsForeground() { return GetForegroundWindow() == hWnd; }
 
 void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*, BSGraphics::RendererInitReturn*) = nullptr;
 

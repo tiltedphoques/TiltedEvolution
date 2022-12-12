@@ -33,15 +33,9 @@ NTSTATUS(WINAPI* RealLdrGetDllFullName)(HMODULE, PUNICODE_STRING) = nullptr;
 NTSTATUS(WINAPI* RealLdrGetDllHandleEx)
 (ULONG Flags, PWSTR DllPath, PULONG DllCharacteristics, UNICODE_STRING* DllName, PVOID* DllHandle) = nullptr;
 
-inline bool IsUsingMO2()
-{
-    return GetModuleHandleW(L"usvfs_x64.dll");
-}
+inline bool IsUsingMO2() { return GetModuleHandleW(L"usvfs_x64.dll"); }
 
-inline bool IsMyModule(HMODULE aHmod)
-{
-    return aHmod == nullptr || aHmod == NtInternal::ThePeb()->pImageBase;
-}
+inline bool IsMyModule(HMODULE aHmod) { return aHmod == nullptr || aHmod == NtInternal::ThePeb()->pImageBase; }
 
 HMODULE HModFromAddress(void* apAddress)
 {

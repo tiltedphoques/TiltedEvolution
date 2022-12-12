@@ -32,10 +32,7 @@ template <class T> Differential<T> Differential<T>::Make(const T& aPreviousValue
     return diff;
 }
 
-template <class T> void Differential<T>::Serialize(TiltedPhoques::Buffer::Writer& aWriter) noexcept
-{
-    m_nextValue.GenerateDifferential(m_previousValue, aWriter);
-}
+template <class T> void Differential<T>::Serialize(TiltedPhoques::Buffer::Writer& aWriter) noexcept { m_nextValue.GenerateDifferential(m_previousValue, aWriter); }
 
 template <class T> void Differential<T>::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {

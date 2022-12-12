@@ -4,10 +4,7 @@
 
 namespace usvfs
 {
-bool IsUSVFSActive()
-{
-    return GetModuleHandleW(L"usvfs_x64.dll");
-}
+bool IsUSVFSActive() { return GetModuleHandleW(L"usvfs_x64.dll"); }
 
 USVFSSentinel::USVFSSentinel()
 {

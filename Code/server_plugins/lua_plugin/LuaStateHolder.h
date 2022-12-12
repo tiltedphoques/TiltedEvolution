@@ -13,10 +13,7 @@ public:
 #endif
     }
 
-    ~LuaStateHolder()
-    {
-        Close();
-    }
+    ~LuaStateHolder() { Close(); }
 
     void Close()
     {
@@ -27,10 +24,7 @@ public:
         }
     }
 
-    operator lua_State*()
-    {
-        return m_state;
-    }
+    operator lua_State*() { return m_state; }
 
 private:
     lua_State* m_state;

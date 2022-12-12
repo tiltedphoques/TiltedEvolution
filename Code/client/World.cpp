@@ -69,25 +69,13 @@ void World::Update() noexcept
     m_dispatcher.trigger(UpdateEvent(cDeltaSeconds));
 }
 
-RunnerService& World::GetRunner() noexcept
-{
-    return m_runner;
-}
+RunnerService& World::GetRunner() noexcept { return m_runner; }
 
-TransportService& World::GetTransport() noexcept
-{
-    return m_transport;
-}
+TransportService& World::GetTransport() noexcept { return m_transport; }
 
-ModSystem& World::GetModSystem() noexcept
-{
-    return m_modSystem;
-}
+ModSystem& World::GetModSystem() noexcept { return m_modSystem; }
 
-uint64_t World::GetTick() const noexcept
-{
-    return m_transport.GetClock().GetCurrentTick();
-}
+uint64_t World::GetTick() const noexcept { return m_transport.GetClock().GetCurrentTick(); }
 
 void World::Create() noexcept
 {
@@ -97,7 +85,4 @@ void World::Create() noexcept
     }
 }
 
-World& World::Get() noexcept
-{
-    return entt::locator<World>::value();
-}
+World& World::Get() noexcept { return entt::locator<World>::value(); }

@@ -12,16 +12,11 @@ bool g_WasUSVFSActive = false;
 
 #define ELF_EXP __declspec(dllexport)
 
-ELF_EXP bool EarlyInstallSucceeded()
-{
-    return !g_WasUSVFSActive;
-}
+ELF_EXP bool EarlyInstallSucceeded() { return !g_WasUSVFSActive; }
 
 #undef ELF_EXP
 
-static void InstallEarlyHooks()
-{
-}
+static void InstallEarlyHooks() {}
 
 // create remote thread sentinel
 

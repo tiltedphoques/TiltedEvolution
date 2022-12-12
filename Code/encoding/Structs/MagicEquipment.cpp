@@ -4,15 +4,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool MagicEquipment::operator==(const MagicEquipment& acRhs) const noexcept
-{
-    return LeftHandSpell == acRhs.LeftHandSpell && RightHandSpell == acRhs.RightHandSpell && Shout == acRhs.Shout;
-}
+bool MagicEquipment::operator==(const MagicEquipment& acRhs) const noexcept { return LeftHandSpell == acRhs.LeftHandSpell && RightHandSpell == acRhs.RightHandSpell && Shout == acRhs.Shout; }
 
-bool MagicEquipment::operator!=(const MagicEquipment& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool MagicEquipment::operator!=(const MagicEquipment& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void MagicEquipment::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

@@ -153,10 +153,7 @@ float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
     return actorValueOwner.GetMaxValue(pActorValueInfo);
 }
 
-Inventory Actor::GetActorInventory() const noexcept
-{
-    return GetInventory();
-}
+Inventory Actor::GetActorInventory() const noexcept { return GetInventory(); }
 
 Inventory Actor::GetEquipment() const noexcept
 {

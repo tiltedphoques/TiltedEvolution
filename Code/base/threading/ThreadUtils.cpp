@@ -8,18 +8,12 @@ namespace
 #include <Windows.h>
 using sentry_threadid_t = HANDLE;
 
-sentry_threadid_t GetCurrentThreadHandle()
-{
-    return ::GetCurrentThread();
-}
+sentry_threadid_t GetCurrentThreadHandle() { return ::GetCurrentThread(); }
 #else
 #include <pthread.h>
 using sentry_threadid_t = pthread_t;
 
-sentry_threadid_t GetCurrentThreadHandle()
-{
-    return ::pthread_self();
-}
+sentry_threadid_t GetCurrentThreadHandle() { return ::pthread_self(); }
 #endif
 
 } // namespace
@@ -33,14 +27,8 @@ extern "C"
 
 namespace Base
 {
-bool SetThreadName(void* apThreadHandle, const char* apThreadName)
-{
-    return sentry__thread_setname(reinterpret_cast<sentry_threadid_t>(apThreadHandle), apThreadName) == 0;
-}
+bool SetThreadName(void* apThreadHandle, const char* apThreadName) { return sentry__thread_setname(reinterpret_cast<sentry_threadid_t>(apThreadHandle), apThreadName) == 0; }
 
-bool SetCurrentThreadName(const char* apThreadName)
-{
-    return sentry__thread_setname(GetCurrentThreadHandle(), apThreadName) == 0;
-}
+bool SetCurrentThreadName(const char* apThreadName) { return sentry__thread_setname(GetCurrentThreadHandle(), apThreadName) == 0; }
 
 } // namespace Base

@@ -3,15 +3,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool ServerSettings::operator==(const ServerSettings& acRhs) const noexcept
-{
-    return Difficulty == acRhs.Difficulty && GreetingsEnabled == acRhs.GreetingsEnabled && PvpEnabled == acRhs.PvpEnabled && SyncPlayerHomes == acRhs.SyncPlayerHomes && DeathSystemEnabled == acRhs.DeathSystemEnabled;
-}
+bool ServerSettings::operator==(const ServerSettings& acRhs) const noexcept { return Difficulty == acRhs.Difficulty && GreetingsEnabled == acRhs.GreetingsEnabled && PvpEnabled == acRhs.PvpEnabled && SyncPlayerHomes == acRhs.SyncPlayerHomes && DeathSystemEnabled == acRhs.DeathSystemEnabled; }
 
-bool ServerSettings::operator!=(const ServerSettings& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool ServerSettings::operator!=(const ServerSettings& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void ServerSettings::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

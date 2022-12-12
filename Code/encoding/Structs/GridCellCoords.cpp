@@ -3,10 +3,7 @@
 
 using TiltedPhoques::Serialization;
 
-GridCellCoords::GridCellCoords()
-{
-    Reset();
-}
+GridCellCoords::GridCellCoords() { Reset(); }
 
 GridCellCoords::GridCellCoords(int32_t aX, int32_t aY) noexcept
     : X(aX)
@@ -14,15 +11,9 @@ GridCellCoords::GridCellCoords(int32_t aX, int32_t aY) noexcept
 {
 }
 
-bool GridCellCoords::operator==(const GridCellCoords& acRhs) const noexcept
-{
-    return X == acRhs.X && Y == acRhs.Y;
-}
+bool GridCellCoords::operator==(const GridCellCoords& acRhs) const noexcept { return X == acRhs.X && Y == acRhs.Y; }
 
-bool GridCellCoords::operator!=(const GridCellCoords& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool GridCellCoords::operator!=(const GridCellCoords& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void GridCellCoords::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
@@ -36,10 +27,7 @@ void GridCellCoords::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     Y = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
 
-GridCellCoords GridCellCoords::CalculateGridCellCoords(const Vector3_NetQuantize& aCoords) noexcept
-{
-    return CalculateGridCellCoords(aCoords.x, aCoords.y);
-}
+GridCellCoords GridCellCoords::CalculateGridCellCoords(const Vector3_NetQuantize& aCoords) noexcept { return CalculateGridCellCoords(aCoords.x, aCoords.y); }
 
 GridCellCoords GridCellCoords::CalculateGridCellCoords(const float aX, const float aY) noexcept
 {

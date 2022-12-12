@@ -24,10 +24,7 @@ bool ActionEvent::operator==(const ActionEvent& acRhs) const noexcept
            ActionId == acRhs.ActionId && State1 == acRhs.State1 && State2 == acRhs.State2 && Type == acRhs.Type && TargetId == acRhs.TargetId && IdleId == acRhs.IdleId && EventName == acRhs.EventName && TargetEventName == acRhs.TargetEventName && Variables == acRhs.Variables;
 }
 
-bool ActionEvent::operator!=(const ActionEvent& acRhs) const noexcept
-{
-    return !operator==(acRhs);
-}
+bool ActionEvent::operator!=(const ActionEvent& acRhs) const noexcept { return !operator==(acRhs); }
 
 void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

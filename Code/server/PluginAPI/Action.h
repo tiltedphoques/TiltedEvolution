@@ -2,166 +2,158 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include "PluginAPI/PluginAPI.h"
+#include <PluginAPI/Slice.h>
+#include <PluginAPI/APIBoundary.h>
 
 namespace PluginAPI
 {
 enum class ArgType
 {
+    kUnknown,
     kBool,
-    kU8,
-    kI8,
-    kU16,
-    kI16,
     kU32,
     KI32,
     kU64,
     kI64,
-    kF32
+    kF32,
+    kString,
 };
+
+constexpr const char* ArgTypeToString(ArgType type)
+{
+    switch (type)
+    {
+    case ArgType::kUnknown: return "unknown";
+    case ArgType::kBool: return "bool";
+    case ArgType::kU32: return "u32";
+    case ArgType::KI32: return "i32";
+    case ArgType::kU64: return "u64";
+    case ArgType::kI64: return "i64";
+    case ArgType::kF32: return "f32";
+    case ArgType::kString: return "string";
+    default: return "";
+    }
+}
+
+// This function takes the offset of the first member and the size of the second member, and calculates the number of bytes of padding that should be inserted between them. It does this by finding the next multiple of the size that is greater than or equal to the offset, and then subtracting the
+// offset from that value.
+inline constexpr uint32_t CalculatePadding(uint32_t offset, uint32_t size)
+{
+    // Calculate the next multiple of size that is greater than or equal to offset.
+    return ((offset + size - 1) / size * size) - offset;
+}
+
+// Usage: Push all your values, then call Finish, afterwards you can pop.
+// Example:
+//
+// PluginAPI::ActionStack stack(2);
+// stack.Push(true);
+// stack.Push(true);
+// stack.Push(1337ull);
+// stack.PushString("Hello World!");
+// stack.Push(true);
+//
+// stack.Finish();
+// auto v1 = stack.PopBool();
+// auto v2 = stack.PopBool();
+// auto v3 = stack.PopI64();
+//
+// String result;
+// stack.PopString(result);
+//
+// auto v4 = stack.PopBool();
 
 class ActionStack
 {
-  public:
-    ActionStack(uint32_t count)
+public:
+    ActionStack(const size_t aArgCount)
     {
-        m_pArgTypeStack = (ArgType*)malloc(count * sizeof(ArgType));
+        if (aArgCount == 0)
+        {
+            m_pArgTypeStack = nullptr;
+            m_pArgStack = nullptr;
+            m_argofs = 0;
+            return;
+        }
+
+        m_pArgTypeStack = (ArgType*)malloc(aArgCount * sizeof(ArgType));
+
         m_pArgStack = (uint8_t*)malloc(1024);
-        memset(m_pArgTypeStack, 0, count * sizeof(ArgType));
+        memset(m_pArgTypeStack, 0, aArgCount * sizeof(ArgType));
         memset(m_pArgStack, 0, 1024);
         m_argofs = 0;
     }
 
     ~ActionStack()
     {
-        free(m_pArgTypeStack);
-        free(m_pArgStack);
+        if (m_pArgTypeStack)
+            free(m_pArgTypeStack);
+        if (m_pArgStack)
+            free(m_pArgStack);
     }
 
-    ArgType Type() const
+    inline ArgType Type() const { return m_pArgTypeStack[m_ArgCount]; }
+
+    inline ArgType GetArgType(uint32_t aIndex) const noexcept
     {
-        return m_pArgTypeStack[m_ArgCount];
+        if (aIndex > m_ArgCount || aIndex < 0)
+        {
+            return ArgType::kUnknown;
+        }
+        return m_pArgTypeStack[aIndex];
     }
 
-    ArgType GetArg(int i) const
-    {
-        return m_pArgTypeStack[i];
-    }
+    inline void Push(bool b) { PushScalar(ArgType::kBool, b); }
+    inline bool PopBool() { return PopScalar<bool>(); }
 
-    void Push(bool b)
-    {
-        PushVal(ArgType::kBool, b);
-    }
-    void Push(float f)
-    {
-        PushVal(ArgType::kF32, f);
-    }
-    // unsigned
-    void Push(uint8_t i)
-    {
-        PushVal(ArgType::kU8, i);
-    }
-    void Push(uint16_t i)
-    {
-        PushVal(ArgType::kU16, i);
-    }
-    void Push(uint32_t i)
-    {
-        PushVal(ArgType::kU32, i);
-    }
-    void Push(uint64_t i)
-    {
-        PushVal(ArgType::kU64, i);
-    }
-    // signed
-    void Push(int8_t i)
-    {
-        PushVal(ArgType::kI8, i);
-    }
-    void Push(int16_t i)
-    {
-        PushVal(ArgType::kI16, i);
-    }
-    void Push(int32_t i)
-    {
-        PushVal(ArgType::KI32, i);
-    }
-    void Push(int64_t i)
-    {
-        PushVal(ArgType::kI64, i);
-    }
+    inline void Push(float f) { PushScalar(ArgType::kF32, f); }
+    inline float PopF32() { return PopScalar<float>(); }
 
-    bool PopBool()
-    {
-        return FetchVal<bool>();
-    }
-    float PopF32()
-    {
-        return FetchVal<float>();
-    }
-    // unsigned
-    bool PopU8()
-    {
-        return FetchVal<uint8_t>();
-    }
-    bool PopU16()
-    {
-        return FetchVal<uint16_t>();
-    }
-    bool PopU32()
-    {
-        return FetchVal<uint32_t>();
-    }
-    bool PopU64()
-    {
-        return FetchVal<uint64_t>();
-    }
-    // signed
-    bool PopI8()
-    {
-        return FetchVal<int8_t>();
-    }
-    bool PopI16()
-    {
-        return FetchVal<int16_t>();
-    }
-    bool PopI32()
-    {
-        return FetchVal<int32_t>();
-    }
-    bool PopI64()
-    {
-        return FetchVal<int64_t>();
-    }
+    inline void Push(uint32_t i) { PushScalar(ArgType::kU32, i); }
+    inline uint32_t PopU32() { return PopScalar<uint32_t>(); }
 
-    inline uint32_t count() const
-    {
-        return m_ArgCount;
-    }
+    inline void Push(uint64_t i) { PushScalar(ArgType::kU64, i); }
+    inline uint64_t PopU64() { return PopScalar<uint64_t>(); }
 
-    void End()
-    {
-        m_argofs = 0;
-    }
+    inline void Push(int32_t i) { PushScalar(ArgType::KI32, i); }
+    inline int32_t PopI32() { return PopScalar<int32_t>(); }
 
-  private:
-    template <typename T> void PushVal(const ArgType aType, const T acValue)
+    inline void Push(int64_t i) { PushScalar(ArgType::kI64, i); }
+    inline int64_t PopI64() { return PopScalar<int64_t>(); }
+
+    SERVER_API_CXX void PushString(const StringRef acString);
+
+    // TODO: string is an unstable interfac.e..
+    SERVER_API_CXX void PopString(TiltedPhoques::String& aOutString);
+
+    inline uint32_t count() const { return m_ArgCount; }
+    inline void Finish() { m_argofs = 0; }
+
+    auto GetOffset() { return m_argofs; }
+
+private:
+    template <typename T> constexpr void PushScalar(const ArgType aType, const T acValue)
     {
         m_pArgTypeStack[m_ArgCount] = aType;
         *reinterpret_cast<T*>(&m_pArgStack[m_argofs]) = acValue;
+
         m_argofs += sizeof(T);
+        m_argofs += CalculatePadding(m_argofs, sizeof(T));
+
         m_ArgCount++;
     }
 
-    template <typename T> T FetchVal()
+    template <typename T> T PopScalar()
     {
         T value = *reinterpret_cast<T*>(&m_pArgStack[m_argofs]);
         m_argofs += sizeof(T);
+        m_argofs += CalculatePadding(m_argofs, sizeof(T));
+
         m_ArgCount--;
         return value;
     }
 
-  protected:
+protected:
     uint8_t* m_pReturnValues{nullptr};
     uint8_t* m_pArgStack{nullptr};
     ArgType* m_pArgTypeStack{nullptr};
@@ -169,5 +161,5 @@ class ActionStack
     uint32_t m_argofs{0};
 };
 
-using ActionCallback = void (*)(ActionStack& acContext);
-} // namespace PluginAPI    
+using MethodHandler = void (*)(ActionStack& acContext);
+} // namespace PluginAPI

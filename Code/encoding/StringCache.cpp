@@ -1,10 +1,7 @@
 #include <StringCache.h>
 #include <iostream>
 
-bool StringCache::Contains(const TiltedPhoques::String& acValue) const noexcept
-{
-    return m_stringToId.contains(acValue);
-}
+bool StringCache::Contains(const TiltedPhoques::String& acValue) const noexcept { return m_stringToId.contains(acValue); }
 
 std::optional<uint32_t> StringCache::operator[](const TiltedPhoques::String& acValue) const noexcept
 {
@@ -34,15 +31,9 @@ uint32_t StringCache::Add(const TiltedPhoques::String& acValue) noexcept
     return allocatedId;
 }
 
-void StringCache::AddWanted(const TiltedPhoques::String& acValue) noexcept
-{
-    m_wantedStrings.insert(acValue);
-}
+void StringCache::AddWanted(const TiltedPhoques::String& acValue) noexcept { m_wantedStrings.insert(acValue); }
 
-size_t StringCache::Size() const noexcept
-{
-    return m_idToString.size();
-}
+size_t StringCache::Size() const noexcept { return m_idToString.size(); }
 
 StringCacheUpdate StringCache::Serialize(uint32_t& aStartId) const noexcept
 {
@@ -96,10 +87,7 @@ bool StringCache::ProcessDirty() noexcept
     return true;
 }
 
-void StringCache::ClearDirty() noexcept
-{
-    m_wantedStrings.clear();
-}
+void StringCache::ClearDirty() noexcept { m_wantedStrings.clear(); }
 
 StringCache& StringCache::Get() noexcept
 {
@@ -110,6 +98,4 @@ StringCache& StringCache::Get() noexcept
     }
 }
 
-StringCache::StringCache()
-{
-}
+StringCache::StringCache() {}

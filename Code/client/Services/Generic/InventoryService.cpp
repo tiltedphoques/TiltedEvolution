@@ -42,10 +42,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
 }
 
-void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
-{
-    RunWeaponStateUpdates();
-}
+void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept { RunWeaponStateUpdates(); }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
 {

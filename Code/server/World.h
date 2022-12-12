@@ -40,11 +40,8 @@ struct World : entt::registry
 
     // Null checked at start when MoPo is on!
     ESLoader::RecordCollection* GetRecordCollection() noexcept { return m_recordCollection.get(); }
-    
-    ScriptExecutor& GetScriptExecutor() noexcept
-    {
-        return m_scriptExecutor;
-    }
+
+    ScriptExecutor& GetScriptExecutor() noexcept { return m_scriptExecutor; }
 
     const ESLoader::RecordCollection* GetRecordCollection() const noexcept { return m_recordCollection.get(); }
 

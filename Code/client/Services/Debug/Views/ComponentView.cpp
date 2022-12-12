@@ -98,10 +98,7 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 // Engine stuff.
 // Fix cursor.
 
-void DebugService::SetDebugId(const uint32_t aFormId) noexcept
-{
-    m_formId = aFormId;
-}
+void DebugService::SetDebugId(const uint32_t aFormId) noexcept { m_formId = aFormId; }
 
 void DebugService::DrawComponentDebugView()
 {
@@ -190,7 +187,5 @@ void DebugService::DrawComponentDebugView()
 }
 
 #else
-void DebugService::DrawComponentDebugView()
-{
-}
+void DebugService::DrawComponentDebugView() {}
 #endif

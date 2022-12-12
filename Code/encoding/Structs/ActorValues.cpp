@@ -3,15 +3,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool ActorValues::operator==(const ActorValues& acRhs) const noexcept
-{
-    return ActorValuesList == acRhs.ActorValuesList;
-}
+bool ActorValues::operator==(const ActorValues& acRhs) const noexcept { return ActorValuesList == acRhs.ActorValuesList; }
 
-bool ActorValues::operator!=(const ActorValues& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool ActorValues::operator!=(const ActorValues& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void ActorValues::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

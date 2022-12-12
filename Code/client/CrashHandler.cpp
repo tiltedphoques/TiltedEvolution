@@ -65,14 +65,9 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-CrashHandler::CrashHandler()
-{
-    AddVectoredExceptionHandler(1, &VectoredExceptionHandler);
-}
+CrashHandler::CrashHandler() { AddVectoredExceptionHandler(1, &VectoredExceptionHandler); }
 
-CrashHandler::~CrashHandler()
-{
-}
+CrashHandler::~CrashHandler() {}
 
 void CrashHandler::RemovePreviousDump(std::filesystem::path path)
 {

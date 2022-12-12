@@ -326,14 +326,8 @@ public:
 
 #if defined(_MSC_VER) && _MSC_VER <= 1200
         /** STL of VC6 doesn't allow me to specify my own comparator for list::sort() */
-        bool operator<(const Entry& rhs) const
-        {
-            return LoadOrder()(*this, rhs);
-        }
-        bool operator>(const Entry& rhs) const
-        {
-            return LoadOrder()(rhs, *this);
-        }
+        bool operator<(const Entry& rhs) const { return LoadOrder()(*this, rhs); }
+        bool operator>(const Entry& rhs) const { return LoadOrder()(rhs, *this); }
 #endif
 
         /** Strict less ordering by name of key only */
@@ -496,10 +490,7 @@ public:
     void Reset();
 
     /** Has any data been loaded */
-    bool IsEmpty() const
-    {
-        return m_data.empty();
-    }
+    bool IsEmpty() const { return m_data.empty(); }
 
     /*-----------------------------------------------------------------------*/
     /** @{ @name Settings */
@@ -525,10 +516,7 @@ public:
     }
 
     /** Get the storage format of the INI data. */
-    bool IsUnicode() const
-    {
-        return m_bStoreIsUtf8;
-    }
+    bool IsUnicode() const { return m_bStoreIsUtf8; }
 
     /** Should multiple identical keys be permitted in the file. If set to false
         then the last value encountered will be used as the value of the key.
@@ -548,16 +536,10 @@ public:
 
         \param a_bAllowMultiKey  Allow multi-keys in the source?
      */
-    void SetMultiKey(bool a_bAllowMultiKey = true)
-    {
-        m_bAllowMultiKey = a_bAllowMultiKey;
-    }
+    void SetMultiKey(bool a_bAllowMultiKey = true) { m_bAllowMultiKey = a_bAllowMultiKey; }
 
     /** Get the storage format of the INI data. */
-    bool IsMultiKey() const
-    {
-        return m_bAllowMultiKey;
-    }
+    bool IsMultiKey() const { return m_bAllowMultiKey; }
 
     /** Should data values be permitted to span multiple lines in the file. If
         set to false then the multi-line construct <<<TAG as a value will be
@@ -566,16 +548,10 @@ public:
 
         \param a_bAllowMultiLine     Allow multi-line values in the source?
      */
-    void SetMultiLine(bool a_bAllowMultiLine = true)
-    {
-        m_bAllowMultiLine = a_bAllowMultiLine;
-    }
+    void SetMultiLine(bool a_bAllowMultiLine = true) { m_bAllowMultiLine = a_bAllowMultiLine; }
 
     /** Query the status of multi-line data */
-    bool IsMultiLine() const
-    {
-        return m_bAllowMultiLine;
-    }
+    bool IsMultiLine() const { return m_bAllowMultiLine; }
 
     /** Should spaces be added around the equals sign when writing key/value
         pairs out. When true, the result will be "key = value". When false,
@@ -583,16 +559,10 @@ public:
 
         \param a_bSpaces     Add spaces around the equals sign?
      */
-    void SetSpaces(bool a_bSpaces = true)
-    {
-        m_bSpaces = a_bSpaces;
-    }
+    void SetSpaces(bool a_bSpaces = true) { m_bSpaces = a_bSpaces; }
 
     /** Query the status of spaces output */
-    bool UsingSpaces() const
-    {
-        return m_bSpaces;
-    }
+    bool UsingSpaces() const { return m_bSpaces; }
 
     /*-----------------------------------------------------------------------*/
     /** @}
@@ -643,10 +613,7 @@ public:
 
         @return SI_Error    See error definitions
      */
-    SI_Error LoadData(const std::string& a_strData)
-    {
-        return LoadData(a_strData.c_str(), a_strData.size());
-    }
+    SI_Error LoadData(const std::string& a_strData) { return LoadData(a_strData.c_str(), a_strData.size()); }
 
     /** Load INI file data direct from memory
 
@@ -954,10 +921,7 @@ public:
         @return SI_UPDATED  Value was updated
         @return SI_INSERTED Value was inserted
      */
-    SI_Error SetValue(const SI_CHAR* a_pSection, const SI_CHAR* a_pKey, const SI_CHAR* a_pValue, const SI_CHAR* a_pComment = NULL, bool a_bForceReplace = false)
-    {
-        return AddEntry(a_pSection, a_pKey, a_pValue, a_pComment, a_bForceReplace, true);
-    }
+    SI_Error SetValue(const SI_CHAR* a_pSection, const SI_CHAR* a_pKey, const SI_CHAR* a_pValue, const SI_CHAR* a_pComment = NULL, bool a_bForceReplace = false) { return AddEntry(a_pSection, a_pKey, a_pValue, a_pComment, a_bForceReplace, true); }
 
     /** Add or update a numeric value. This will always insert
         when multiple keys are enabled.
@@ -1079,10 +1043,7 @@ public:
         Use this to prepare the strings that you wish to append or prepend
         to the output INI data.
      */
-    Converter GetConverter() const
-    {
-        return Converter(m_bStoreIsUtf8);
-    }
+    Converter GetConverter() const { return Converter(m_bStoreIsUtf8); }
 
     /*-----------------------------------------------------------------------*/
     /** @} */
@@ -1129,22 +1090,13 @@ public:
 
 private:
     /** Is the supplied character a whitespace character? */
-    inline bool IsSpace(SI_CHAR ch) const
-    {
-        return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n');
-    }
+    inline bool IsSpace(SI_CHAR ch) const { return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'); }
 
     /** Does the supplied character start a comment line? */
-    inline bool IsComment(SI_CHAR ch) const
-    {
-        return (ch == ';' || ch == '#');
-    }
+    inline bool IsComment(SI_CHAR ch) const { return (ch == ';' || ch == '#'); }
 
     /** Skip over a newline character (or characters) for either DOS or UNIX */
-    inline void SkipNewLine(SI_CHAR*& a_pData) const
-    {
-        a_pData += (*a_pData == '\r' && *(a_pData + 1) == '\n') ? 2 : 1;
-    }
+    inline void SkipNewLine(SI_CHAR*& a_pData) const { a_pData += (*a_pData == '\r' && *(a_pData + 1) == '\n') ? 2 : 1; }
 
     /** Make a copy of the supplied string, replacing the original pointer */
     SI_Error CopyString(const SI_CHAR*& a_pString);
@@ -1227,10 +1179,7 @@ CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::CSimpleIniTempl(bool a_bIsUt
 {
 }
 
-template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::~CSimpleIniTempl()
-{
-    Reset();
-}
+template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::~CSimpleIniTempl() { Reset(); }
 
 template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> void CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::Reset()
 {
@@ -1659,10 +1608,7 @@ template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTe
     return false;
 }
 
-template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::IsNewLineChar(SI_CHAR a_c) const
-{
-    return (a_c == '\n' || a_c == '\r');
-}
+template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::IsNewLineChar(SI_CHAR a_c) const { return (a_c == '\n' || a_c == '\r'); }
 
 template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::LoadMultiLineText(SI_CHAR*& a_pData, const SI_CHAR*& a_pVal, const SI_CHAR* a_pTagName, bool a_bAllowBlankLinesInComment) const
 {
@@ -2500,10 +2446,7 @@ template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTe
     return true;
 }
 
-template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::Delete(const SI_CHAR* a_pSection, const SI_CHAR* a_pKey, bool a_bRemoveEmpty)
-{
-    return DeleteValue(a_pSection, a_pKey, NULL, a_bRemoveEmpty);
-}
+template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::Delete(const SI_CHAR* a_pSection, const SI_CHAR* a_pKey, bool a_bRemoveEmpty) { return DeleteValue(a_pSection, a_pKey, NULL, a_bRemoveEmpty); }
 
 template <class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::DeleteValue(const SI_CHAR* a_pSection, const SI_CHAR* a_pKey, const SI_CHAR* a_pValue, bool a_bRemoveEmpty)
 {

@@ -76,35 +76,17 @@ void Memory::Free(void* apData) noexcept
 #endif
 }
 
-size_t Hook_msize(void* apData)
-{
-    return mi_malloc_size(apData);
-}
+size_t Hook_msize(void* apData) { return mi_malloc_size(apData); }
 
-void Hookfree(void* apData)
-{
-    mi_free(apData);
-}
+void Hookfree(void* apData) { mi_free(apData); }
 
-void* Hookcalloc(size_t aCount, size_t aSize)
-{
-    return mi_calloc(aCount, aSize);
-}
+void* Hookcalloc(size_t aCount, size_t aSize) { return mi_calloc(aCount, aSize); }
 
-void* Hookmalloc(size_t aSize)
-{
-    return mi_malloc(aSize);
-}
+void* Hookmalloc(size_t aSize) { return mi_malloc(aSize); }
 
-void Hook_aligned_free(void* apData)
-{
-    mi_free(apData);
-}
+void Hook_aligned_free(void* apData) { mi_free(apData); }
 
-void* Hook_aligned_malloc(size_t aSize, size_t aAlignment)
-{
-    return mi_malloc_aligned(aSize, aAlignment);
-}
+void* Hook_aligned_malloc(size_t aSize, size_t aAlignment) { return mi_malloc_aligned(aSize, aAlignment); }
 
 static TiltedPhoques::Initializer s_memoryHooks(
     []()

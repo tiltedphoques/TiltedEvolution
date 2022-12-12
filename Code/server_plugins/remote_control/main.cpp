@@ -19,10 +19,10 @@ PLUGIN_API constinit PluginAPI::PluginDescriptor TT_PLUGIN{
     .flags = PluginAPI::PluginDescriptor::Flags::kFlagHotReload,
 
     // we request permission to use scripting features and get updated at runtime
-    .entitlements = PluginAPI::PluginDescriptor::Entitlements::kEntScripting |
-                    PluginAPI::PluginDescriptor::Entitlements::kEntUpdate,
+    .entitlements = PluginAPI::PluginDescriptor::Entitlements::kEntScripting | PluginAPI::PluginDescriptor::Entitlements::kEntUpdate,
     .pCreatePlugin = []() -> PluginAPI::IPluginInterface* { return new RemoteControlPlugin(); },
     .pDestroyPlugin =
-        [](PluginAPI::IPluginInterface* apPluginInterface) {
-            delete reinterpret_cast<RemoteControlPlugin*>(apPluginInterface);
-        }};
+        [](PluginAPI::IPluginInterface* apPluginInterface)
+    {
+        delete reinterpret_cast<RemoteControlPlugin*>(apPluginInterface);
+    }};

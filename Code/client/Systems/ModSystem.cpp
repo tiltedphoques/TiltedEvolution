@@ -43,10 +43,7 @@ bool ModSystem::GetServerModId(const uint32_t aGameId, uint32_t& aModId, uint32_
     return true;
 }
 
-bool ModSystem::GetServerModId(uint32_t aGameId, GameId& aServerId) const noexcept
-{
-    return GetServerModId(aGameId, aServerId.ModId, aServerId.BaseId);
-}
+bool ModSystem::GetServerModId(uint32_t aGameId, GameId& aServerId) const noexcept { return GetServerModId(aGameId, aServerId.ModId, aServerId.BaseId); }
 
 uint32_t ModSystem::GetGameId(uint32_t aServerId, uint32_t aFormId) const noexcept
 {
@@ -71,10 +68,7 @@ uint32_t ModSystem::GetGameId(uint32_t aServerId, uint32_t aFormId) const noexce
     return 0;
 }
 
-uint32_t ModSystem::GetGameId(const GameId& acGameId) const noexcept
-{
-    return GetGameId(acGameId.ModId, acGameId.BaseId);
-}
+uint32_t ModSystem::GetGameId(const GameId& acGameId) const noexcept { return GetGameId(acGameId.ModId, acGameId.BaseId); }
 
 void ModSystem::HandleMods(const Mods& acMods) noexcept
 {

@@ -10,10 +10,7 @@ TP_THIS_FUNCTION(TLaunch, BSPointerHandle<Projectile>*, BSPointerHandle<Projecti
 
 static TLaunch* RealLaunch = nullptr;
 
-BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept
-{
-    return TiltedPhoques::ThisCall(RealLaunch, apResult, arData);
-}
+BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept { return TiltedPhoques::ThisCall(RealLaunch, apResult, arData); }
 
 BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projectile>, ProjectileLaunchData& arData)
 {

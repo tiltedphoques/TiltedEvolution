@@ -14,15 +14,9 @@ static constexpr char kNativePluginExtension[] =
     ".so";
 #endif
 
-PluginCollection::PluginCollection()
-{
-    CollectPlugins(std::filesystem::current_path());
-}
+PluginCollection::PluginCollection() { CollectPlugins(std::filesystem::current_path()); }
 
-PluginCollection::~PluginCollection()
-{
-    UnloadPlugins();
-}
+PluginCollection::~PluginCollection() { UnloadPlugins(); }
 
 void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
 {
@@ -57,7 +51,8 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
 
 bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
 {
-    auto doLoadPlugin = [this](void* apHandle, const uint8_t* apExport) {
+    auto doLoadPlugin = [this](void* apHandle, const uint8_t* apExport)
+    {
         if (*reinterpret_cast<const uint32_t*>(apExport) != PluginAPI::kPluginMagic)
         {
             spdlog::error("TT_PLUGIN export is invalid (unknown magic)");
@@ -71,8 +66,9 @@ bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
             return false;
         }
 
-        m_pluginData.emplace_back(apHandle, pDescriptor,
-                                  /*Interface must be instantiated first*/ nullptr);
+        m_pluginData.emplace_back(
+            apHandle, pDescriptor,
+            /*Interface must be instantiated first*/ nullptr);
         return true;
     };
 
@@ -83,8 +79,7 @@ bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
         DWORD errorCode = GetLastError();
 
         LPSTR errorBuffer = NULL;
-        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-                       NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&errorBuffer, 0, NULL);
+        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&errorBuffer, 0, NULL);
 
         // Print the error message
         spdlog::error("Error loading library {}: {}\n", aPath.string(), errorBuffer);
@@ -126,17 +121,13 @@ void PluginCollection::InitializePlugins()
         auto* pInstance = data.pDescriptor->pCreatePlugin();
         if (!pInstance)
         {
-            spdlog::error(
-                "Descriptor->CreatePlugin() for {} returned null. Did you forget to allocate the plugin instance?",
-                data.pDescriptor->name.data());
+            spdlog::error("Descriptor->CreatePlugin() for {} returned null. Did you forget to allocate the plugin instance?", data.pDescriptor->name.data());
             continue;
         }
 
         if (pInstance->GetVersion() > PluginAPI::kCurrentPluginInterfaceVersion)
         {
-            spdlog::error("Plugin {} is using an unsupported interface version. Expected {}, got {}",
-                          data.pDescriptor->name.data(), PluginAPI::kCurrentPluginInterfaceVersion,
-                          pInstance->GetVersion());
+            spdlog::error("Plugin {} is using an unsupported interface version. Expected {}, got {}", data.pDescriptor->name.data(), PluginAPI::kCurrentPluginInterfaceVersion, pInstance->GetVersion());
 
             data.pDescriptor->pDestroyPlugin(pInstance);
             continue;
@@ -147,8 +138,7 @@ void PluginCollection::InitializePlugins()
         bool result = pInstance->Initialize();
         if (!result)
         {
-            spdlog::error("plugin->Initialize() for {} returned false. Plugin initialization failed.",
-                          data.pDescriptor->name.data());
+            spdlog::error("plugin->Initialize() for {} returned false. Plugin initialization failed.", data.pDescriptor->name.data());
 
             data.pInterface = nullptr;
             continue;

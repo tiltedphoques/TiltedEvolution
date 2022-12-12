@@ -1,10 +1,7 @@
 
 #include "Interface/MenuControls.h"
 
-void MenuControls::SetToggle(bool b)
-{
-    canBeOpened = b;
-}
+void MenuControls::SetToggle(bool b) { canBeOpened = b; }
 
 MenuControls* MenuControls::GetInstance()
 {

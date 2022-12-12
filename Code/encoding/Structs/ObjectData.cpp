@@ -8,10 +8,7 @@ bool ObjectData::operator==(const ObjectData& acRhs) const noexcept
     return ServerId == acRhs.ServerId && Id == acRhs.Id && CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && CurrentCoords == acRhs.CurrentCoords && CurrentLockData == acRhs.CurrentLockData && CurrentInventory == acRhs.CurrentInventory && IsSenderFirst == acRhs.IsSenderFirst;
 }
 
-bool ObjectData::operator!=(const ObjectData& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool ObjectData::operator!=(const ObjectData& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void ObjectData::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

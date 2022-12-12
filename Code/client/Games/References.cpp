@@ -667,10 +667,7 @@ Lock* TESObjectREFR::CreateLock() noexcept
     return TiltedPhoques::ThisCall(realCreateLock, this);
 }
 
-void TESObjectREFR::LockChange() noexcept
-{
-    TiltedPhoques::ThisCall(RealLockChange, this);
-}
+void TESObjectREFR::LockChange() noexcept { TiltedPhoques::ThisCall(RealLockChange, this); }
 
 const float TESObjectREFR::GetHeight() noexcept
 {
@@ -748,10 +745,7 @@ void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
     TiltedPhoques::ThisCall(s_setNoBleedoutRecovery, this, aSet);
 }
 
-void Actor::DispelAllSpells(bool aNow) noexcept
-{
-    magicTarget.DispelAllSpells(aNow);
-}
+void Actor::DispelAllSpells(bool aNow) noexcept { magicTarget.DispelAllSpells(aNow); }
 
 void MagicTarget::DispelAllSpells(bool aNow) noexcept
 {
@@ -858,10 +852,7 @@ void Sky::ResetWeather() noexcept
     TiltedPhoques::ThisCall(resetWeather, this);
 }
 
-TESWeather* Sky::GetWeather() const noexcept
-{
-    return pCurrentWeather;
-}
+TESWeather* Sky::GetWeather() const noexcept { return pCurrentWeather; }
 
 char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 {

@@ -131,10 +131,7 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
     return count;
 }
 
-TESObjectCELL* TESObjectREFR::GetParentCellEx() const noexcept
-{
-    return parentCell ? parentCell : GetParentCell();
-}
+TESObjectCELL* TESObjectREFR::GetParentCellEx() const noexcept { return parentCell ? parentCell : GetParentCell(); }
 
 void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept
 {

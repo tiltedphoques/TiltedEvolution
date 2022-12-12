@@ -14,8 +14,5 @@ struct MyPEB
 };
 
 // 64 bit only
-inline MyPEB* ThePeb()
-{
-    return reinterpret_cast<MyPEB*>(__readgsqword(0x60));
-}
+inline MyPEB* ThePeb() { return reinterpret_cast<MyPEB*>(__readgsqword(0x60)); }
 } // namespace NtInternal

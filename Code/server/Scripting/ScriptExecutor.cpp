@@ -6,18 +6,13 @@
 
 #include "PluginAPI/PluginAPI.h"
 
-ScriptExecutor::ScriptExecutor()
-{
-}
+ScriptExecutor::ScriptExecutor() {}
 
-ScriptExecutor::~ScriptExecutor()
-{
-}
+ScriptExecutor::~ScriptExecutor() {}
 
 void ScriptExecutor::RegisterRuntime(const char* const apExtension, PluginAPI::IPluginInterface* apInterface)
 {
-    auto it = std::find_if(m_scriptExtToPlugin.begin(), m_scriptExtToPlugin.end(),
-                           [apExtension](const auto& entry) { return entry.first == apExtension; });
+    auto it = std::find_if(m_scriptExtToPlugin.begin(), m_scriptExtToPlugin.end(), [apExtension](const auto& entry) { return entry.first == apExtension; });
     if (it != m_scriptExtToPlugin.end())
     {
         spdlog::error("Failed to register script extension {}, as a runtime for it already exists");
@@ -29,8 +24,7 @@ void ScriptExecutor::RegisterRuntime(const char* const apExtension, PluginAPI::I
 
 PluginAPI::IPluginInterface* ScriptExecutor::SelectRuntimeForExtension(const std::string_view acExtension)
 {
-    auto it = std::find_if(m_scriptExtToPlugin.begin(), m_scriptExtToPlugin.end(),
-                           [acExtension](const auto& entry) { return entry.first == acExtension; });
+    auto it = std::find_if(m_scriptExtToPlugin.begin(), m_scriptExtToPlugin.end(), [acExtension](const auto& entry) { return entry.first == acExtension; });
     if (it == m_scriptExtToPlugin.end())
     {
         spdlog::error("Failed to find a runtime for script extension {}", acExtension);
@@ -70,8 +64,7 @@ void ScriptExecutor::LoadFile(const std::filesystem::path& aPath, const Resource
     spdlog::error("Failed to find applicable runtime interface for file {}", aPath.string());
 }
 
-void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::ArgType* apArgList, size_t aArgCount,
-                          PluginAPI::ActionCallback apCallback)
+void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::ArgType* apArgList, size_t aArgCount, PluginAPI::MethodHandler apCallback)
 {
     // TODO: this doesnt make too much sense right now.
     for (const auto& c : m_scriptExtToPlugin)
@@ -80,8 +73,7 @@ void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::
         {
             for (auto h : m_handles)
             {
-                p001->BindMethod(h, PluginAPI::StringRef(acName.data(), acName.length()), apArgList, aArgCount,
-                                 apCallback);
+                p001->BindMethod(h, PluginAPI::StringRef(acName.data(), acName.length()), apArgList, aArgCount, apCallback);
             }
         }
     }
@@ -90,11 +82,14 @@ void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::
 void ScriptExecutor::StartScripts()
 {
     const PluginAPI::ArgType Types[] = {PluginAPI::ArgType::kBool, PluginAPI::ArgType::kBool};
-    BindMethod("test_func", Types, 2, [](PluginAPI::ActionStack& acContext) {
-        auto a = acContext.PopBool();
-        auto b = acContext.PopBool();
-        spdlog::info("Context matters is {}>{}", a, b);
-    });
+    BindMethod(
+        "test_func", Types, 2,
+        [](PluginAPI::ActionStack& acContext)
+        {
+            auto a = acContext.PopBool();
+            auto b = acContext.PopBool();
+            spdlog::info("Context matters is {}>{}", a, b);
+        });
 
     for (const auto& c : m_scriptExtToPlugin)
     {

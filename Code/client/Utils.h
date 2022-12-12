@@ -8,7 +8,7 @@
 #define POINTER_SKYRIMSE(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
 #define POINTER_SKYRIMSE_LEGACY(className, variableName, ...) static AutoPtr<decltype()> variableName(__VA_ARGS__)
 
-//#define POINTER_SKYRIMSE_V2(variableName, ...) static AutoPtr<decltype()> variableName(__VA_ARGS__)
+// #define POINTER_SKYRIMSE_V2(variableName, ...) static AutoPtr<decltype()> variableName(__VA_ARGS__)
 #else
 #define POINTER_SKYRIMSE(className, variableName, ...) ;
 #endif
@@ -75,18 +75,9 @@ void ShowHudMessage(const TiltedPhoques::String& acMessage);
 
 namespace TiltedPhoques
 {
-template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(TFunc* aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept
-{
-    return ThisCall(aFunction, aThis.Get(), args...);
-}
+template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(TFunc* aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept { return ThisCall(aFunction, aThis.Get(), args...); }
 
-template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept
-{
-    return ThisCall(aFunction.Get(), aThis.Get(), args...);
-}
+template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, VersionDbPtr<TThis>& aThis, TArgs&&... args) noexcept { return ThisCall(aFunction.Get(), aThis.Get(), args...); }
 
-template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, TThis* apThis, TArgs&&... args) noexcept
-{
-    return ThisCall(aFunction.Get(), apThis, args...);
-}
+template <class TFunc, class TThis, class... TArgs> constexpr decltype(auto) ThisCall(VersionDbPtr<TFunc>& aFunction, TThis* apThis, TArgs&&... args) noexcept { return ThisCall(aFunction.Get(), apThis, args...); }
 } // namespace TiltedPhoques

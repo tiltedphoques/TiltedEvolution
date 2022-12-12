@@ -7,15 +7,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool QuestLog::operator==(const QuestLog& acRhs) const noexcept
-{
-    return Entries == acRhs.Entries;
-}
+bool QuestLog::operator==(const QuestLog& acRhs) const noexcept { return Entries == acRhs.Entries; }
 
-bool QuestLog::operator!=(const QuestLog& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool QuestLog::operator!=(const QuestLog& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void QuestLog::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

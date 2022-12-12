@@ -11,27 +11,21 @@ namespace Resources
 {
 class ResourceCollection
 {
-  public:
+public:
     ResourceCollection();
     ~ResourceCollection();
 
     void CollectResources();
 
-    auto& GetResourceFolderPath() const
-    {
-        return m_resourcePath;
-    }
+    auto& GetResourceFolderPath() const { return m_resourcePath; }
 
     void ResolveDependencies();
 
     bool LoadManifestData(const std::filesystem::path& aPath);
 
-    const auto& GetManifests() const
-    {
-        return m_manifests;
-    }
+    const auto& GetManifests() const { return m_manifests; }
 
-    template<typename T> void ForEachManifest(const T& aCallback) const noexcept
+    template <typename T> void ForEachManifest(const T& aCallback) const noexcept
     {
         for (const auto& manifest : m_manifests)
         {
@@ -39,7 +33,7 @@ class ResourceCollection
         }
     }
 
-  private:
+private:
     std::filesystem::path m_resourcePath;
     TiltedPhoques::Vector<TiltedPhoques::UniquePtr<Resources::Manifest001>> m_manifests;
 };

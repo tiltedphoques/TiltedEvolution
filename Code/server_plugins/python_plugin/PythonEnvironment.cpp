@@ -63,4 +63,4 @@ PyObject* loadModule(const char* modulePath, const char* moduleName)
     Py_XDECREF(modulePath);
     return module;
 }
-}
+} // namespace PythonScripting

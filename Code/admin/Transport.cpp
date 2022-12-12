@@ -34,14 +34,9 @@ void AdminApp::OnConnected()
     Send(request);
 }
 
-void AdminApp::OnDisconnected(EDisconnectReason aReason)
-{
-    m_state = ConnectionState::kNone;
-}
+void AdminApp::OnDisconnected(EDisconnectReason aReason) { m_state = ConnectionState::kNone; }
 
-void AdminApp::OnUpdate()
-{
-}
+void AdminApp::OnUpdate() {}
 
 bool AdminApp::Send(const ClientAdminMessage& acMessage) const noexcept
 {
@@ -105,12 +100,6 @@ void AdminApp::SendShutdownRequest()
     Send(request);
 }
 
-void AdminApp::HandleMessage(const AdminSessionOpen& acMessage)
-{
-    m_state = ConnectionState::kConnected;
-}
+void AdminApp::HandleMessage(const AdminSessionOpen& acMessage) { m_state = ConnectionState::kConnected; }
 
-void AdminApp::HandleMessage(const ServerLogs& acMessage)
-{
-    m_overlay.GetConsole().Log(acMessage.Logs);
-}
+void AdminApp::HandleMessage(const ServerLogs& acMessage) { m_overlay.GetConsole().Log(acMessage.Logs); }

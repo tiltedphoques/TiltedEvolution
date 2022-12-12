@@ -224,6 +224,4 @@ bool DiscordService::Init()
     return true;
 }
 
-void DiscordService::Update()
-{
-}
+void DiscordService::Update() {}

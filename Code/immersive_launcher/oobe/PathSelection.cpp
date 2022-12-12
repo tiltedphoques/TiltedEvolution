@@ -21,10 +21,7 @@ namespace
 constexpr wchar_t kBethesdaRegistryPath[] = LR"(Software\Wow6432Node\Bethesda Softworks\)" SHORT_NAME;
 constexpr wchar_t kTiltedRegistryPath[] = LR"(Software\TiltedPhoques\TiltedEvolution\)" SHORT_NAME;
 
-std::wstring SuggestTitlePath()
-{
-    return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, kBethesdaRegistryPath, L"installed path");
-}
+std::wstring SuggestTitlePath() { return Registry::ReadString<wchar_t>(HKEY_LOCAL_MACHINE, kBethesdaRegistryPath, L"installed path"); }
 
 std::optional<std::wstring> OpenPathSelectionDialog2(const std::wstring& aPathSuggestion)
 {

@@ -84,14 +84,9 @@ bool IsValidSemanticVersion(const std::string& acVersion)
 }
 } // namespace
 
-ResourceCollection::ResourceCollection()
-{
-    CollectResources();
-}
+ResourceCollection::ResourceCollection() { CollectResources(); }
 
-ResourceCollection::~ResourceCollection()
-{
-}
+ResourceCollection::~ResourceCollection() {}
 
 bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
 {
@@ -119,9 +114,10 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
 
     auto manifest = TiltedPhoques::MakeUnique<Resources::Manifest001>();
     manifest->folderName = aPath.parent_path().filename();
-    
+
     // version data
-    auto readSemVer = [&](const char* apName) -> SemanticVersion {
+    auto readSemVer = [&](const char* apName) -> SemanticVersion
+    {
         const char* pValue = ini.GetValue("Resource", apName, nullptr);
         if (pValue == nullptr)
         {
@@ -149,7 +145,8 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
         return false;
     }
 
-    auto readString = [&](const char* apName) -> TiltedPhoques::String {
+    auto readString = [&](const char* apName) -> TiltedPhoques::String
+    {
         const char* pValue = ini.GetValue("Resource", apName, nullptr);
         if (pValue == nullptr)
         {
@@ -174,7 +171,8 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
     manifest->homepage = readString("homepage");
 
     // lists of strings
-    auto readStringList = [&ini](const char* apName) -> TiltedPhoques::Vector<TiltedPhoques::String> {
+    auto readStringList = [&ini](const char* apName) -> TiltedPhoques::Vector<TiltedPhoques::String>
+    {
         return ParseQuotedTokens(ini.GetValue("Resource", apName, ""));
     };
     for (const auto& dep : readStringList("dependencies"))
@@ -207,8 +205,7 @@ void ResourceCollection::ResolveDependencies()
                     }
                     else if (dep.second != it2->resourceVersion)
                     {
-                        spdlog::error("Resource \"{}\": Dependency {} has version {} but {} is required",  manifest->name, dep.first,
-                                      SemVerToString(it2->resourceVersion), SemVerToString(dep.second));
+                        spdlog::error("Resource \"{}\": Dependency {} has version {} but {} is required", manifest->name, dep.first, SemVerToString(it2->resourceVersion), SemVerToString(dep.second));
                         manifest->isTombstone = true;
                     }
                     // let the loop continue to list all other conflicts immedeatly.

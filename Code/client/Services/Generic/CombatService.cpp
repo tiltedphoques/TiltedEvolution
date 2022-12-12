@@ -27,15 +27,9 @@ CombatService::CombatService(World& aWorld, TransportService& aTransport, entt::
     m_projectileLaunchConnection = aDispatcher.sink<NotifyProjectileLaunch>().connect<&CombatService::OnNotifyProjectileLaunch>(this);
 }
 
-void CombatService::OnUpdate(const UpdateEvent& acEvent) const noexcept
-{
-    RunTargetUpdates(static_cast<float>(acEvent.Delta));
-}
+void CombatService::OnUpdate(const UpdateEvent& acEvent) const noexcept { RunTargetUpdates(static_cast<float>(acEvent.Delta)); }
 
-void CombatService::OnLocalComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
-{
-    m_world.remove<CombatComponent>(aEntity);
-}
+void CombatService::OnLocalComponentRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept { m_world.remove<CombatComponent>(aEntity); }
 
 void CombatService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acEvent) const noexcept
 {

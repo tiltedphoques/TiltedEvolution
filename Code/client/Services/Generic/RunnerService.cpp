@@ -9,12 +9,6 @@ RunnerService::RunnerService(entt::dispatcher& aDispatcher) noexcept
 {
 }
 
-void RunnerService::Queue(std::function<void()> aFunctor) noexcept
-{
-    m_runner.Add(std::move(aFunctor));
-}
+void RunnerService::Queue(std::function<void()> aFunctor) noexcept { m_runner.Add(std::move(aFunctor)); }
 
-void RunnerService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
-{
-    m_runner.Drain();
-}
+void RunnerService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept { m_runner.Drain(); }

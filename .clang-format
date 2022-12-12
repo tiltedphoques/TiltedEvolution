@@ -5,7 +5,7 @@ AlignAfterOpenBracket: AlwaysBreak
 AlignEscapedNewlines: Left
 AlignOperands: true
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortFunctionsOnASingleLine: All
 AllowShortLambdasOnASingleLine: Inline
 BraceWrapping:
   AfterCaseLabel: true

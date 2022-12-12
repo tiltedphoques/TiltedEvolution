@@ -30,6 +30,4 @@ void AdminService::sink_it_(const spdlog::details::log_msg& msg)
     GameServer::Get()->ForEachAdmin([&logs](ConnectionId_t aId) { GameServer::Get()->Send(aId, logs); });
 }
 
-void AdminService::flush_()
-{
-}
+void AdminService::flush_() {}

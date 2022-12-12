@@ -6,7 +6,7 @@ using namespace PluginAPI;
 
 class RemoteControlPlugin final : public PluginAPI::PluginInterface001
 {
-  public:
+public:
     ~RemoteControlPlugin() override;
 
     // Inherited via PluginInterface001
@@ -21,7 +21,7 @@ class RemoteControlPlugin final : public PluginAPI::PluginInterface001
 
     uint32_t OnEvent(uint32_t aEventCode) override;
 
-  private:
+private:
     // Inherited via PluginInterface001
     void OnTick() override;
 };

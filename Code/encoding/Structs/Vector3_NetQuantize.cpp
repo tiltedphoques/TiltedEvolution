@@ -3,15 +3,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool Vector3_NetQuantize::operator==(const Vector3_NetQuantize& acRhs) const noexcept
-{
-    return Pack() == acRhs.Pack();
-}
+bool Vector3_NetQuantize::operator==(const Vector3_NetQuantize& acRhs) const noexcept { return Pack() == acRhs.Pack(); }
 
-bool Vector3_NetQuantize::operator!=(const Vector3_NetQuantize& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Vector3_NetQuantize::operator!=(const Vector3_NetQuantize& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 Vector3_NetQuantize& Vector3_NetQuantize::operator=(const glm::vec3& acRhs) noexcept
 {
@@ -19,10 +13,7 @@ Vector3_NetQuantize& Vector3_NetQuantize::operator=(const glm::vec3& acRhs) noex
     return *this;
 }
 
-void Vector3_NetQuantize::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
-{
-    aWriter.WriteBits(Pack(), 64);
-}
+void Vector3_NetQuantize::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept { aWriter.WriteBits(Pack(), 64); }
 
 void Vector3_NetQuantize::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {

@@ -104,10 +104,7 @@ void ScriptProperty::ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, 
     }
 }
 
-ScriptProperty::Type ScriptProperty::GetPropertyType(Type aArrayType) noexcept
-{
-    return static_cast<Type>(static_cast<int>(aArrayType) - 10);
-}
+ScriptProperty::Type ScriptProperty::GetPropertyType(Type aArrayType) noexcept { return static_cast<Type>(static_cast<int>(aArrayType) - 10); }
 
 CNTO::CNTO(Buffer::Reader& aReader)
 {
@@ -132,15 +129,9 @@ TNAM::TNAM(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_moons), 1);
 }
 
-NAME::NAME(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
-{
-    m_baseId = ReadFormId(aReader, aParentToFormIdPrefix);
-}
+NAME::NAME(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) { m_baseId = ReadFormId(aReader, aParentToFormIdPrefix); }
 
-DOFT::DOFT(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix)
-{
-    m_formId = ReadFormId(aReader, aParentToFormIdPrefix);
-}
+DOFT::DOFT(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefix) { m_formId = ReadFormId(aReader, aParentToFormIdPrefix); }
 
 ACBS::ACBS(Buffer::Reader& aReader)
 {
@@ -157,10 +148,7 @@ ACBS::ACBS(Buffer::Reader& aReader)
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_bleedoutOverride), 2);
 }
 
-MAST::MAST(Buffer::Reader& aReader)
-{
-    m_masterName = ESLoader::ReadZString(aReader);
-}
+MAST::MAST(Buffer::Reader& aReader) { m_masterName = ESLoader::ReadZString(aReader); }
 
 WCTR::WCTR(Buffer::Reader& aReader)
 {

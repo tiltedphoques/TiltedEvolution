@@ -21,15 +21,9 @@ enum class SettingsFlags : uint16_t
     kCheat = 1 << 2,
 };
 
-inline constexpr SettingsFlags operator|(SettingsFlags lhs, SettingsFlags rhs)
-{
-    return static_cast<SettingsFlags>(static_cast<uint16_t>(lhs) | static_cast<uint16_t>(rhs));
-}
+inline constexpr SettingsFlags operator|(SettingsFlags lhs, SettingsFlags rhs) { return static_cast<SettingsFlags>(static_cast<uint16_t>(lhs) | static_cast<uint16_t>(rhs)); }
 
-inline constexpr bool operator&(SettingsFlags lhs, SettingsFlags rhs)
-{
-    return static_cast<uint16_t>(lhs) & static_cast<uint16_t>(rhs);
-}
+inline constexpr bool operator&(SettingsFlags lhs, SettingsFlags rhs) { return static_cast<uint16_t>(lhs) & static_cast<uint16_t>(rhs); }
 
 struct SettingBase
 {

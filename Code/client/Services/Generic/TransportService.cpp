@@ -23,7 +23,7 @@
 #include <ScriptExtender.h>
 #include <Services/DiscordService.h>
 
-//#include <imgui_internal.h>
+// #include <imgui_internal.h>
 
 static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
 
@@ -163,14 +163,9 @@ void TransportService::OnDisconnected(EDisconnectReason aReason)
     m_dispatcher.trigger(DisconnectedEvent());
 }
 
-void TransportService::OnUpdate()
-{
-}
+void TransportService::OnUpdate() {}
 
-void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
-{
-    Update();
-}
+void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept { Update(); }
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept
 {

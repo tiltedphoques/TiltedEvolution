@@ -99,15 +99,9 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
     }
 }
 
-void PartyService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
-{
-    DestroyParty();
-}
+void PartyService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept { DestroyParty(); }
 
-void PartyService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
-{
-    m_players = acPlayerList.Players;
-}
+void PartyService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept { m_players = acPlayerList.Players; }
 
 void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
 {

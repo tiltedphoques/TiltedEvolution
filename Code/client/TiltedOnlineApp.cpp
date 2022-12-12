@@ -101,6 +101,4 @@ void TiltedOnlineApp::InstallHooks2()
     TiltedPhoques::DInputHook::Install();
 }
 
-void TiltedOnlineApp::UninstallHooks()
-{
-}
+void TiltedOnlineApp::UninstallHooks() {}

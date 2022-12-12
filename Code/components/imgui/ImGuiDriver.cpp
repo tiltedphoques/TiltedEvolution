@@ -111,10 +111,7 @@ ImGuiDriver::ImGuiDriver()
     SetTiltedImStyle();
 }
 
-ImGuiDriver::~ImGuiDriver()
-{
-    ImGui::DestroyContext();
-}
+ImGuiDriver::~ImGuiDriver() { ImGui::DestroyContext(); }
 
 void ImGuiDriver::Initialize(void* apHandle)
 {

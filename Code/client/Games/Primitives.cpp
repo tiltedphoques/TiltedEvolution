@@ -2,10 +2,7 @@
 
 #include <Games/Primitives.h>
 
-void NiRefObject::IncRef()
-{
-    InterlockedIncrement(&refCount);
-}
+void NiRefObject::IncRef() { InterlockedIncrement(&refCount); }
 
 void NiRefObject::DecRef()
 {
@@ -13,10 +10,7 @@ void NiRefObject::DecRef()
         Destroy();
 }
 
-bool NiRefObject::Release()
-{
-    return InterlockedDecrement(&refCount) == 0;
-}
+bool NiRefObject::Release() { return InterlockedDecrement(&refCount) == 0; }
 
 void BSRecursiveLock::Lock()
 {

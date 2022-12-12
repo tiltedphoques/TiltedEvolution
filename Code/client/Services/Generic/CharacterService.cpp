@@ -114,10 +114,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&CharacterService::OnPartyJoinedEvent>(this);
 }
 
-void CharacterService::DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept
-{
-    m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent, RemoteComponent, CacheComponent, WaitingFor3D, PlayerComponent>(aEntity);
-}
+void CharacterService::DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept { m_world.remove<FaceGenComponent, InterpolationComponent, RemoteAnimationComponent, RemoteComponent, CacheComponent, WaitingFor3D, PlayerComponent>(aEntity); }
 
 bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept
 {
@@ -869,10 +866,7 @@ void CharacterService::OnNotifyNewPackage(const NotifyNewPackage& acMessage) con
     pActor->SetPackage(pPackage);
 }
 
-void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept
-{
-    m_cachedExperience += acEvent.Experience;
-}
+void CharacterService::OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept { m_cachedExperience += acEvent.Experience; }
 
 void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept
 {

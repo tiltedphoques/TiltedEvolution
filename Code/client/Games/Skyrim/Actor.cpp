@@ -282,20 +282,11 @@ ActorValues Actor::GetEssentialActorValues() const noexcept
     return actorValues;
 }
 
-float Actor::GetActorValue(uint32_t aId) const noexcept
-{
-    return actorValueOwner.GetValue(aId);
-}
+float Actor::GetActorValue(uint32_t aId) const noexcept { return actorValueOwner.GetValue(aId); }
 
-float Actor::GetActorPermanentValue(uint32_t aId) const noexcept
-{
-    return actorValueOwner.GetPermanentValue(aId);
-}
+float Actor::GetActorPermanentValue(uint32_t aId) const noexcept { return actorValueOwner.GetPermanentValue(aId); }
 
-void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
-{
-    actorValueOwner.SetValue(aId, aValue);
-}
+void Actor::SetActorValue(uint32_t aId, float aValue) noexcept { actorValueOwner.SetValue(aId, aValue); }
 
 void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
@@ -497,10 +488,7 @@ void Actor::RemoveFromAllFactions() noexcept
 TP_THIS_FUNCTION(TInitiateMountPackage, bool, Actor, Actor* apMount);
 static TInitiateMountPackage* RealInitiateMountPackage = nullptr;
 
-bool Actor::InitiateMountPackage(Actor* apMount) noexcept
-{
-    return TiltedPhoques::ThisCall(RealInitiateMountPackage, this, apMount);
-}
+bool Actor::InitiateMountPackage(Actor* apMount) noexcept { return TiltedPhoques::ThisCall(RealInitiateMountPackage, this, apMount); }
 
 void Actor::GenerateMagicCasters() noexcept
 {
@@ -746,10 +734,7 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
     return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
 }
 
-void Actor::PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept
-{
-    TiltedPhoques::ThisCall(RealPickUpObject, this, apObject, aCount, aUnk1, aUnk2);
-}
+void Actor::PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2) noexcept { TiltedPhoques::ThisCall(RealPickUpObject, this, apObject, aCount, aUnk1, aUnk2); }
 
 void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation)
 {
@@ -847,10 +832,7 @@ bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 TP_THIS_FUNCTION(TUnequipObject, void, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3);
 static TUnequipObject* RealUnequipObject = nullptr;
 
-void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3)
-{
-    TiltedPhoques::ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
-}
+void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* apObject, int32_t aUnk2, void* apUnk3) { TiltedPhoques::ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3); }
 
 TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
 static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;

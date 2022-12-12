@@ -4,15 +4,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool ReferenceUpdate::operator==(const ReferenceUpdate& acRhs) const noexcept
-{
-    return UpdatedMovement == acRhs.UpdatedMovement && ActionEvents == acRhs.ActionEvents;
-}
+bool ReferenceUpdate::operator==(const ReferenceUpdate& acRhs) const noexcept { return UpdatedMovement == acRhs.UpdatedMovement && ActionEvents == acRhs.ActionEvents; }
 
-bool ReferenceUpdate::operator!=(const ReferenceUpdate& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool ReferenceUpdate::operator!=(const ReferenceUpdate& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void ReferenceUpdate::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

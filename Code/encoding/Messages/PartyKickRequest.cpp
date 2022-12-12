@@ -1,9 +1,6 @@
 #include <Messages/PartyKickRequest.h>
 
-void PartyKickRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
-{
-    Serialization::WriteVarInt(aWriter, PartyMemberPlayerId);
-}
+void PartyKickRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept { Serialization::WriteVarInt(aWriter, PartyMemberPlayerId); }
 
 void PartyKickRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {

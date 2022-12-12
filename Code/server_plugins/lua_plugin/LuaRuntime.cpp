@@ -1,6 +1,6 @@
 
 #include "Pch.h"
-//#include <sol/sol.hpp>
+// #include <sol/sol.hpp>
 
 #include "LuaRuntime.h"
 
@@ -23,9 +23,7 @@ void RegisterSafeLibraries(lua_State* apState)
 }
 } // namespace
 
-LuaRuntime::~LuaRuntime()
-{
-}
+LuaRuntime::~LuaRuntime() {}
 
 bool LuaRuntime::Initialize()
 {
@@ -43,10 +41,7 @@ bool LuaRuntime::Initialize()
     return true;
 }
 
-void LuaRuntime::Shutdown()
-{
-    WriteLog(LogLevel::kInfo, "Shutting down lua\n");
-}
+void LuaRuntime::Shutdown() { WriteLog(LogLevel::kInfo, "Shutting down lua\n"); }
 
 void LuaRuntime::CallScriptFunction(const PluginStringView aName, ScriptFunctionContext& aContext)
 {

@@ -4,9 +4,7 @@
 
 // This is a great resource that i used while embedding python:
 // https://pybind11.readthedocs.io/en/stable/advanced/embedding.html
-RemoteControlPlugin::~RemoteControlPlugin()
-{
-}
+RemoteControlPlugin::~RemoteControlPlugin() {}
 
 bool RemoteControlPlugin::Initialize()
 {
@@ -15,16 +13,8 @@ bool RemoteControlPlugin::Initialize()
     return true;
 }
 
-void RemoteControlPlugin::Shutdown()
-{
-    PluginAPI::PluginAPI_WriteLog(PluginAPI::LogLevel::kInfo, "Shutting down remote control plugin");
-}
+void RemoteControlPlugin::Shutdown() { PluginAPI::PluginAPI_WriteLog(PluginAPI::LogLevel::kInfo, "Shutting down remote control plugin"); }
 
-uint32_t RemoteControlPlugin::OnEvent(uint32_t aEventCode)
-{
-    return EventResult::kEventResultContinue;
-}
+uint32_t RemoteControlPlugin::OnEvent(uint32_t aEventCode) { return EventResult::kEventResultContinue; }
 
-void RemoteControlPlugin::OnTick()
-{
-}
+void RemoteControlPlugin::OnTick() {}

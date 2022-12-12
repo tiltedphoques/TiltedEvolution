@@ -81,10 +81,7 @@ std::string GetSKSEStyleExeVersion()
 }
 } // namespace
 
-bool IsScriptExtenderLoaded()
-{
-    return g_SKSEModuleHandle;
-}
+bool IsScriptExtenderLoaded() { return g_SKSEModuleHandle; }
 
 void LoadScriptExender()
 {

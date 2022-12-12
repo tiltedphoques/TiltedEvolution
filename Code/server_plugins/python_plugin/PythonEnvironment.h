@@ -7,4 +7,4 @@ namespace PythonScripting
 {
 std::pair<std::string, std::string> split_filepath(const std::string& filepath);
 bool AddPath(const char* acPath);
-}
+} // namespace PythonScripting

@@ -2,10 +2,7 @@
 #include <imgui.h>
 #include "AdminApp.h"
 
-Console& Overlay::GetConsole()
-{
-    return m_console;
-}
+Console& Overlay::GetConsole() { return m_console; }
 
 void Overlay::Toggle()
 {
@@ -13,10 +10,7 @@ void Overlay::Toggle()
         m_toggled = true;
 }
 
-bool Overlay::IsEnabled() const noexcept
-{
-    return m_initialized && m_enabled;
-}
+bool Overlay::IsEnabled() const noexcept { return m_initialized && m_enabled; }
 
 void Overlay::Update(AdminApp& aApp)
 {
@@ -77,9 +71,7 @@ Overlay::Overlay()
     m_widgets[static_cast<size_t>(WidgetID::ADMIN)] = &m_admin;
 }
 
-Overlay::~Overlay()
-{
-}
+Overlay::~Overlay() {}
 
 void Overlay::SetActiveWidget(WidgetID aNewActive)
 {

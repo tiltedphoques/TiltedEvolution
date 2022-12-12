@@ -4,10 +4,7 @@
 
 namespace
 {
-PluginInterface001* CreateRuntime()
-{
-    return new LuaRuntime();
-}
+PluginInterface001* CreateRuntime() { return new LuaRuntime(); }
 
 void DestroyRuntime(PluginInterface001* interface)
 {
@@ -15,13 +12,7 @@ void DestroyRuntime(PluginInterface001* interface)
 }
 } // namespace
 
-PLUGIN_API PluginDescriptor TT_PLUGIN{.magic = kPluginMagic,
-                                      .structSize = sizeof(PluginDescriptor),
-                                      .pluginVersion = 1,
-                                      .pluginName = "LuaScriptingRuntime",
-                                      .authorName = "VinceM (Force67)",
-                                      .flags = PluginDescriptor::Flags::kNone,
-                                      .pCreatePlugin = CreateRuntime,
-                                      .pDestroyPlugin = DestroyRuntime
+PLUGIN_API PluginDescriptor TT_PLUGIN{
+    .magic = kPluginMagic, .structSize = sizeof(PluginDescriptor), .pluginVersion = 1, .pluginName = "LuaScriptingRuntime", .authorName = "VinceM (Force67)", .flags = PluginDescriptor::Flags::kNone, .pCreatePlugin = CreateRuntime, .pDestroyPlugin = DestroyRuntime
 
 };

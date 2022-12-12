@@ -4,15 +4,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool Factions::operator==(const Factions& acRhs) const noexcept
-{
-    return NpcFactions == acRhs.NpcFactions && ExtraFactions == acRhs.ExtraFactions;
-}
+bool Factions::operator==(const Factions& acRhs) const noexcept { return NpcFactions == acRhs.NpcFactions && ExtraFactions == acRhs.ExtraFactions; }
 
-bool Factions::operator!=(const Factions& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Factions::operator!=(const Factions& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void Factions::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

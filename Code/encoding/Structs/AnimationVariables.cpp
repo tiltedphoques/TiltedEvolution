@@ -2,15 +2,9 @@
 #include <TiltedCore/Serialization.hpp>
 #include <iostream>
 
-bool AnimationVariables::operator==(const AnimationVariables& acRhs) const noexcept
-{
-    return Booleans == acRhs.Booleans && Integers == acRhs.Integers && Floats == acRhs.Floats;
-}
+bool AnimationVariables::operator==(const AnimationVariables& acRhs) const noexcept { return Booleans == acRhs.Booleans && Integers == acRhs.Integers && Floats == acRhs.Floats; }
 
-bool AnimationVariables::operator!=(const AnimationVariables& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool AnimationVariables::operator!=(const AnimationVariables& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void AnimationVariables::Load(std::istream& aInput)
 {

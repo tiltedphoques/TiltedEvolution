@@ -4,15 +4,9 @@
 
 using TiltedPhoques::Serialization;
 
-bool Mods::operator==(const Mods& acRhs) const noexcept
-{
-    return ModList == acRhs.ModList;
-}
+bool Mods::operator==(const Mods& acRhs) const noexcept { return ModList == acRhs.ModList; }
 
-bool Mods::operator!=(const Mods& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool Mods::operator!=(const Mods& acRhs) const noexcept { return !this->operator==(acRhs); }
 
 void Mods::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

@@ -15,21 +15,16 @@ namespace Resources
 // if it is set, every number starts at 2097151 instead of 0, but we only store the delta of (max) 2097151
 class SemanticVersion
 {
-  public:
+public:
     using underlying_type = uint64_t;
 
     SemanticVersion() = default;
-    SemanticVersion(const underlying_type aVersionBits) noexcept : m_versionBits(aVersionBits)
+    SemanticVersion(const underlying_type aVersionBits) noexcept
+        : m_versionBits(aVersionBits)
     {
     }
-    SemanticVersion(uint32_t aMajor, uint32_t aMinor, uint32_t aPatch) noexcept
-    {
-        From(aMajor, aMinor, aPatch);
-    }
-    SemanticVersion(const char* apVersion) noexcept
-    {
-        FromString(apVersion);
-    }
+    SemanticVersion(uint32_t aMajor, uint32_t aMinor, uint32_t aPatch) noexcept { From(aMajor, aMinor, aPatch); }
+    SemanticVersion(const char* apVersion) noexcept { FromString(apVersion); }
 
     bool From(uint32_t major, uint32_t minor, uint32_t patch) noexcept
     {
@@ -104,57 +99,27 @@ class SemanticVersion
         return std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
     }
 
-    const underlying_type GetVersionBits() const noexcept
-    {
-        return m_versionBits;
-    }
+    const underlying_type GetVersionBits() const noexcept { return m_versionBits; }
 
-    const uint32_t GetMajor() const noexcept
-    {
-        return (m_versionBits >> 42) & 2097151;
-    }
+    const uint32_t GetMajor() const noexcept { return (m_versionBits >> 42) & 2097151; }
 
-    const uint32_t GetMinor() const noexcept
-    {
-        return (m_versionBits >> 21) & 2097151;
-    }
+    const uint32_t GetMinor() const noexcept { return (m_versionBits >> 21) & 2097151; }
 
-    const uint32_t GetPatch() const noexcept
-    {
-        return m_versionBits & 2097151;
-    }
+    const uint32_t GetPatch() const noexcept { return m_versionBits & 2097151; }
 
-    bool IsExtended() const noexcept
-    {
-        return m_versionBits & (1ULL << 63);
-    }
+    bool IsExtended() const noexcept { return m_versionBits & (1ULL << 63); }
 
-    operator bool() const noexcept
-    {
-        return m_versionBits != 0;
-    }
+    operator bool() const noexcept { return m_versionBits != 0; }
 
-    bool operator==(const SemanticVersion& aOther) const noexcept
-    {
-        return m_versionBits == aOther.m_versionBits;
-    }
+    bool operator==(const SemanticVersion& aOther) const noexcept { return m_versionBits == aOther.m_versionBits; }
 
-    bool operator<(const SemanticVersion& aOther) const noexcept
-    {
-        return m_versionBits < aOther.m_versionBits;
-    }
+    bool operator<(const SemanticVersion& aOther) const noexcept { return m_versionBits < aOther.m_versionBits; }
 
-    bool operator>(const SemanticVersion& aOther) const noexcept
-    {
-        return m_versionBits > aOther.m_versionBits;
-    }
+    bool operator>(const SemanticVersion& aOther) const noexcept { return m_versionBits > aOther.m_versionBits; }
 
-  private:
+private:
     underlying_type m_versionBits = 0;
 };
 
-inline std::string SemVerToString(const SemanticVersion& aVersion) noexcept
-{
-    return aVersion.ToString();
-}
+inline std::string SemVerToString(const SemanticVersion& aVersion) noexcept { return aVersion.ToString(); }
 } // namespace Resources

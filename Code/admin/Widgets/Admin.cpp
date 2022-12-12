@@ -2,19 +2,11 @@
 #include <imgui.h>
 #include <AdminApp.h>
 
-Admin::Admin()
-{
-}
+Admin::Admin() {}
 
-bool Admin::OnEnable()
-{
-    return true;
-}
+bool Admin::OnEnable() { return true; }
 
-bool Admin::OnDisable()
-{
-    return true;
-}
+bool Admin::OnDisable() { return true; }
 
 void Admin::Update(AdminApp& aApp)
 {

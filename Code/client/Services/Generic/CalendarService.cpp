@@ -13,10 +13,7 @@ constexpr float kTransitionSpeed = 5.f;
 
 bool CalendarService::s_gameClockLocked = false;
 
-bool CalendarService::AllowGameTick() noexcept
-{
-    return !s_gameClockLocked;
-}
+bool CalendarService::AllowGameTick() noexcept { return !s_gameClockLocked; }
 
 CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
     : m_world(aWorld)

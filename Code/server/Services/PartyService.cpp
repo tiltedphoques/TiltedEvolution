@@ -42,10 +42,7 @@ const PartyService::Party* PartyService::GetById(uint32_t aId) const noexcept
     return nullptr;
 }
 
-bool PartyService::IsPlayerInParty(Player* const apPlayer) const noexcept
-{
-    return apPlayer->GetParty().JoinedPartyId.has_value();
-}
+bool PartyService::IsPlayerInParty(Player* const apPlayer) const noexcept { return apPlayer->GetParty().JoinedPartyId.has_value(); }
 
 bool PartyService::IsPlayerLeader(Player* const apPlayer) noexcept
 {
@@ -295,10 +292,7 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
     }
 }
 
-void PartyService::OnPartyLeave(const PacketEvent<PartyLeaveRequest>& acPacket) noexcept
-{
-    RemovePlayerFromParty(acPacket.pPlayer);
-}
+void PartyService::OnPartyLeave(const PacketEvent<PartyLeaveRequest>& acPacket) noexcept { RemovePlayerFromParty(acPacket.pPlayer); }
 
 void PartyService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 {

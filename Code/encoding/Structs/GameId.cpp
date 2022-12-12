@@ -9,20 +9,11 @@ GameId::GameId(uint32_t aModId, uint32_t aBaseId) noexcept
 {
 }
 
-bool GameId::operator==(const GameId& acRhs) const noexcept
-{
-    return BaseId == acRhs.BaseId && ModId == acRhs.ModId;
-}
+bool GameId::operator==(const GameId& acRhs) const noexcept { return BaseId == acRhs.BaseId && ModId == acRhs.ModId; }
 
-bool GameId::operator!=(const GameId& acRhs) const noexcept
-{
-    return !this->operator==(acRhs);
-}
+bool GameId::operator!=(const GameId& acRhs) const noexcept { return !this->operator==(acRhs); }
 
-GameId::operator bool() const noexcept
-{
-    return *this != GameId{};
-}
+GameId::operator bool() const noexcept { return *this != GameId{}; }
 
 void GameId::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {

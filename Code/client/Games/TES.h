@@ -125,20 +125,11 @@ struct Mod
     uint8_t padStandardId;
     uint16_t liteId;
 
-    [[nodiscard]] bool IsLoaded() const noexcept
-    {
-        return standardId != 0xFF;
-    }
+    [[nodiscard]] bool IsLoaded() const noexcept { return standardId != 0xFF; }
 
-    [[nodiscard]] bool IsLite() const noexcept
-    {
-        return ((flags >> 9) & 1) != 0;
-    }
+    [[nodiscard]] bool IsLite() const noexcept { return ((flags >> 9) & 1) != 0; }
 
-    [[nodiscard]] uint16_t GetId() const noexcept
-    {
-        return IsLite() ? liteId : standardId;
-    }
+    [[nodiscard]] uint16_t GetId() const noexcept { return IsLite() ? liteId : standardId; }
 
     [[nodiscard]] uint32_t GetFormId(uint32_t aBaseId) const noexcept;
 };

@@ -16,9 +16,7 @@ OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::Overla
 {
 }
 
-OverlayClient::~OverlayClient() noexcept
-{
-}
+OverlayClient::~OverlayClient() noexcept {}
 
 bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
 {
@@ -123,7 +121,4 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
     m_transport.Send(request);
 }
 
-void OverlayClient::ProcessToggleDebugUI()
-{
-    World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff;
-}
+void OverlayClient::ProcessToggleDebugUI() { World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff; }

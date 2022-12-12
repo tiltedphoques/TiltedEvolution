@@ -6,8 +6,7 @@
 
 namespace PythonScripting
 {
-bool RegisterMethod(PyObject& aModule, const PluginAPI::StringRef acActionName, const PluginAPI::ArgType* apArgs,
-                    size_t aArgCount, void (*aCallback)(PluginAPI::ActionStack& acContext));
+bool RegisterMethod(PyObject& aModule, const PluginAPI::StringRef acActionName, const PluginAPI::ArgType* apArgs, size_t aArgCount, void (*aCallback)(PluginAPI::ActionStack& acContext));
 
 bool CallMethod(PyObject& aModule, const PluginAPI::StringRef acName, PluginAPI::ActionStack& aActionStack);
 } // namespace PythonScripting

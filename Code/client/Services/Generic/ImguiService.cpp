@@ -15,9 +15,7 @@ ImguiService::ImguiService()
 {
 }
 
-ImguiService::~ImguiService() noexcept
-{
-}
+ImguiService::~ImguiService() noexcept {}
 
 void ImguiService::Create(RenderSystemD3D11* apRenderSystem, HWND aHwnd)
 {
@@ -54,10 +52,7 @@ void ImguiService::Reset() const
     // TODO: idk how imgui handles this
 }
 
-LRESULT ImguiService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    return ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
-}
+LRESULT ImguiService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { return ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam); }
 
 void ImguiService::RawInputHandler(RAWINPUT& aRawinput)
 {

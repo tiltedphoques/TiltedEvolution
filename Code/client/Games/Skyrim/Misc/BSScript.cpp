@@ -8,14 +8,9 @@ uint64_t BSScript::Object::GetHandle()
     return TiltedPhoques::ThisCall(s_getHandle, this);
 }
 
-BSScript::Variable::Variable()
-{
-}
+BSScript::Variable::Variable() {}
 
-BSScript::Variable::~Variable() noexcept
-{
-    Reset();
-}
+BSScript::Variable::~Variable() noexcept { Reset(); }
 
 void BSScript::Variable::Reset() noexcept
 {
@@ -109,30 +104,15 @@ BSScript::IObjectHandlePolicy* BSScript::IObjectHandlePolicy::Get() noexcept
     return *s_policy.Get();
 }
 
-BSFixedString& BSScript::NativeFunctionBase::GetName()
-{
-    return name;
-}
+BSFixedString& BSScript::NativeFunctionBase::GetName() { return name; }
 
-BSFixedString& BSScript::NativeFunctionBase::GetObjectTypeName()
-{
-    return objectName;
-}
+BSFixedString& BSScript::NativeFunctionBase::GetObjectTypeName() { return objectName; }
 
-BSFixedString& BSScript::NativeFunctionBase::GetStateName()
-{
-    return stateName;
-}
+BSFixedString& BSScript::NativeFunctionBase::GetStateName() { return stateName; }
 
-BSScript::Variable::Type& BSScript::NativeFunctionBase::GetReturnType()
-{
-    return returnType;
-}
+BSScript::Variable::Type& BSScript::NativeFunctionBase::GetReturnType() { return returnType; }
 
-uint32_t BSScript::NativeFunctionBase::GetParamCount()
-{
-    return parameters.capacity;
-}
+uint32_t BSScript::NativeFunctionBase::GetParamCount() { return parameters.capacity; }
 
 void BSScript::NativeFunctionBase::GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& aTypeOut)
 {
@@ -149,45 +129,21 @@ void BSScript::NativeFunctionBase::GetParam(uint32_t aIndex, BSFixedString& apNa
     }
 }
 
-uint32_t BSScript::NativeFunctionBase::GetStackFrameSize()
-{
-    return parameters.capacity;
-}
+uint32_t BSScript::NativeFunctionBase::GetStackFrameSize() { return parameters.capacity; }
 
-bool BSScript::NativeFunctionBase::GetIsNative()
-{
-    return true;
-}
+bool BSScript::NativeFunctionBase::GetIsNative() { return true; }
 
-bool BSScript::NativeFunctionBase::GetIsStatic()
-{
-    return isStatic;
-}
+bool BSScript::NativeFunctionBase::GetIsStatic() { return isStatic; }
 
-bool BSScript::NativeFunctionBase::GetIsEmpty()
-{
-    return false;
-}
+bool BSScript::NativeFunctionBase::GetIsEmpty() { return false; }
 
-auto BSScript::NativeFunctionBase::GetFunctionType() -> FunctionType
-{
-    return FunctionType::kNormal;
-}
+auto BSScript::NativeFunctionBase::GetFunctionType() -> FunctionType { return FunctionType::kNormal; }
 
-uint32_t BSScript::NativeFunctionBase::GetUserFlags()
-{
-    return flags;
-}
+uint32_t BSScript::NativeFunctionBase::GetUserFlags() { return flags; }
 
-BSFixedString& BSScript::NativeFunctionBase::GetDocString()
-{
-    return documentation;
-}
+BSFixedString& BSScript::NativeFunctionBase::GetDocString() { return documentation; }
 
-void BSScript::NativeFunctionBase::InsertLocals(StackFrame*)
-{
-    return;
-}
+void BSScript::NativeFunctionBase::InsertLocals(StackFrame*) { return; }
 
 BSScript::CallResult BSScript::NativeFunctionBase::Call(Stack* apStack, void* apLogger, IVirtualMachine* apVm, bool aArg4)
 {
@@ -222,15 +178,9 @@ bool BSScript::NativeFunctionBase::GetVarNameForStackIndex(std::uint32_t aIndex,
     }
 }
 
-bool BSScript::NativeFunctionBase::CanBeCalledFromTasklets()
-{
-    return isCallableFromTask;
-}
+bool BSScript::NativeFunctionBase::CanBeCalledFromTasklets() { return isCallableFromTask; }
 
-void BSScript::NativeFunctionBase::SetCallableFromTasklets(bool aCallable)
-{
-    isCallableFromTask = aCallable;
-}
+void BSScript::NativeFunctionBase::SetCallableFromTasklets(bool aCallable) { isCallableFromTask = aCallable; }
 
 BSScript::IsRemotePlayerFunc::IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType)
     : NativeFunction(apFunctionName, apClassName, true, 1)

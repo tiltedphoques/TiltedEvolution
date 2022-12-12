@@ -25,15 +25,9 @@ WeatherService::WeatherService(World& aWorld, TransportService& aTransport, entt
     m_weatherChangeConnection = aDispatcher.sink<NotifyWeatherChange>().connect<&WeatherService::OnWeatherChange>(this);
 }
 
-void WeatherService::OnUpdate(const UpdateEvent& acEvent) noexcept
-{
-    RunWeatherUpdates(acEvent.Delta);
-}
+void WeatherService::OnUpdate(const UpdateEvent& acEvent) noexcept { RunWeatherUpdates(acEvent.Delta); }
 
-void WeatherService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
-{
-    ToggleGameWeatherSystem(true);
-}
+void WeatherService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept { ToggleGameWeatherSystem(true); }
 
 void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
 {
@@ -88,10 +82,7 @@ void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcep
     }
 }
 
-void WeatherService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
-{
-    ToggleGameWeatherSystem(true);
-}
+void WeatherService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept { ToggleGameWeatherSystem(true); }
 
 // TODO: OnPlayerComponentAdded() instead? Does PlayerComponent exist already by then?
 void WeatherService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) noexcept

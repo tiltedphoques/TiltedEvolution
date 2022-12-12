@@ -61,15 +61,9 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
         return pHandler;
     }
 
-    [[nodiscard]] HWND GetWindow() override
-    {
-        return m_pRenderSystem->GetWindow();
-    }
+    [[nodiscard]] HWND GetWindow() override { return m_pRenderSystem->GetWindow(); }
 
-    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override
-    {
-        return m_pRenderSystem->GetSwapChain();
-    }
+    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override { return m_pRenderSystem->GetSwapChain(); }
 
 private:
     RenderSystemD3D11* m_pRenderSystem;
@@ -137,9 +131,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
     m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&OverlayService::OnPartyLeftEvent>(this);
 }
 
-OverlayService::~OverlayService() noexcept
-{
-}
+OverlayService::~OverlayService() noexcept {}
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 {
@@ -176,10 +168,7 @@ void OverlayService::Render() noexcept
     m_pOverlay->GetClient()->Render();
 }
 
-void OverlayService::Reset() const noexcept
-{
-    m_pOverlay->GetClient()->Reset();
-}
+void OverlayService::Reset() const noexcept { m_pOverlay->GetClient()->Reset(); }
 
 void OverlayService::Reload() noexcept
 {
@@ -192,10 +181,7 @@ void OverlayService::Reload() noexcept
     SetActive(true);
 }
 
-void OverlayService::Initialize() noexcept
-{
-    m_pOverlay->ExecuteAsync("init");
-}
+void OverlayService::Initialize() noexcept { m_pOverlay->ExecuteAsync("init"); }
 
 void OverlayService::SetActive(bool aActive) noexcept
 {
@@ -209,10 +195,7 @@ void OverlayService::SetActive(bool aActive) noexcept
     m_pOverlay->ExecuteAsync(m_active ? "activate" : "deactivate");
 }
 
-bool OverlayService::GetActive() const noexcept
-{
-    return m_active;
-}
+bool OverlayService::GetActive() const noexcept { return m_active; }
 
 void OverlayService::SetInGame(bool aInGame) noexcept
 {
@@ -233,10 +216,7 @@ void OverlayService::SetInGame(bool aInGame) noexcept
     }
 }
 
-bool OverlayService::GetInGame() const noexcept
-{
-    return m_inGame;
-}
+bool OverlayService::GetInGame() const noexcept { return m_inGame; }
 
 void OverlayService::SetVersion(const std::string& acVersion)
 {
@@ -304,10 +284,7 @@ void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
     m_pOverlay->ExecuteAsync("setLocalPlayerId", pArguments);
 }
 
-void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept
-{
-    m_pOverlay->ExecuteAsync("disconnect");
-}
+void OverlayService::OnDisconnectedEvent(const DisconnectedEvent&) noexcept { m_pOverlay->ExecuteAsync("disconnect"); }
 
 void OverlayService::OnWaitingFor3DRemoved(entt::registry& aRegistry, entt::entity aEntity) const noexcept
 {
@@ -457,10 +434,7 @@ void OverlayService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcep
         m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyCreated");
 }
 
-void OverlayService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
-{
-    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft");
-}
+void OverlayService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept { m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyLeft"); }
 
 void OverlayService::RunDebugDataUpdates() noexcept
 {

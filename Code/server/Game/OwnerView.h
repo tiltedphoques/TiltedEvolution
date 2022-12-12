@@ -76,22 +76,10 @@ template <class... T> decltype(auto) OwnerView<T...>::find(entt::entity aEntity)
     return end();
 }
 
-template <class... T> decltype(auto) OwnerView<T...>::begin() const
-{
-    return iterator(m_pPlayer, std::begin(m_view), std::end(m_view), m_view);
-}
+template <class... T> decltype(auto) OwnerView<T...>::begin() const { return iterator(m_pPlayer, std::begin(m_view), std::end(m_view), m_view); }
 
-template <class... T> decltype(auto) OwnerView<T...>::end() const
-{
-    return iterator(m_pPlayer, std::end(m_view), std::end(m_view), m_view);
-}
+template <class... T> decltype(auto) OwnerView<T...>::end() const { return iterator(m_pPlayer, std::end(m_view), std::end(m_view), m_view); }
 
-template <class... T> template <class... Components> decltype(auto) OwnerView<T...>::get(entt::entity aEntity)
-{
-    return m_view.template get<Components...>(aEntity);
-}
+template <class... T> template <class... Components> decltype(auto) OwnerView<T...>::get(entt::entity aEntity) { return m_view.template get<Components...>(aEntity); }
 
-template <class... T> template <class... Components> decltype(auto) OwnerView<T...>::get(entt::entity aEntity) const
-{
-    return m_view.template get<Components...>(aEntity);
-}
+template <class... T> template <class... Components> decltype(auto) OwnerView<T...>::get(entt::entity aEntity) const { return m_view.template get<Components...>(aEntity); }
