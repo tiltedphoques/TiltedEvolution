@@ -28,7 +28,7 @@ private:
     // this method is not thread safe, please call in order.
     Handle LoadFile(const StringRef acFileName) override;
 
-    PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs, size_t aArgCount, MethodHandler aMethod) override;
+    PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const Slice<const ArgType> aArgs, MethodHandler aMethod) override;
     PluginResult CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& acStack) override;
 
     struct PythonModule

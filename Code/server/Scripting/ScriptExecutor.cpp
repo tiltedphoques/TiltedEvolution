@@ -73,7 +73,7 @@ void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::
         {
             for (auto h : m_handles)
             {
-                p001->BindMethod(h, PluginAPI::StringRef(acName.data(), acName.length()), apArgList, aArgCount, apCallback);
+                p001->BindMethod(h, PluginAPI::StringRef(acName.data(), acName.length()), PluginAPI::Slice<const PluginAPI::ArgType>(apArgList, aArgCount), apCallback);
             }
         }
     }

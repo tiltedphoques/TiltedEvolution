@@ -138,11 +138,11 @@ public:
 
     virtual PluginResult Evaluate(const StringRef acCode) { return PluginResult::kNotImplemented; }
 
-    using Handle = size_t; // 0 means failed.
+    using Handle = uint16_t; // 0 means failed.
     virtual Handle LoadFile(const StringRef acFileName) { return 0; }
 
     // only called if the plugin has the kScripting entitlement
-    virtual PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const ArgType* apArgs, size_t aArgCount, MethodHandler apMethod) { return PluginResult::kNotImplemented; }
+    virtual PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const Slice<const ArgType> aArgs, MethodHandler apMethod) { return PluginResult::kNotImplemented; }
     virtual PluginResult CallMethod(Handle aHandle, const StringRef acActionName, PluginAPI::ActionStack& acStack) { return PluginResult::kNotImplemented; }
 };
 } // namespace PluginAPI

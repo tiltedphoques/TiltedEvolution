@@ -20,6 +20,7 @@ public:
     }
 
     constexpr inline const T* data() const { return m_pData; }
+    constexpr inline const size_t size() const { return m_size; }
 
 private:
     const T* m_pData;

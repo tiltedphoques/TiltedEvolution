@@ -69,11 +69,11 @@ PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef ac
     return m_Modules.size();
 }
 
-PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRef acActionName, const ArgType* apArgs, size_t aArgCount, MethodHandler aMethod)
+PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRef acActionName, const Slice<const ArgType> aArgs, MethodHandler aMethod)
 {
     auto& moduleEntry = m_Modules[aHandle - 1];
 
-    if (!PythonScripting::RegisterMethod(*moduleEntry.m_Module.ptr(), acActionName, apArgs, aArgCount, aMethod))
+    if (!PythonScripting::RegisterMethod(*moduleEntry.m_Module.ptr(), acActionName, aArgs.data(), aArgs.size(), aMethod))
     {
         PLUGINAPI_LOG_ERROR("Failed to bind action: %s", acActionName.data());
         return PluginResult::kUnknownError;
